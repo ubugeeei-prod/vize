@@ -333,10 +333,13 @@ function declarationTarget(edge: LocalEdge): string {
 }
 
 /** Capture actual files and module-kind attributes without converting imports into script references. */
-export function captureDeclarationGraph(directory: string): DeclarationGraph {
+export function captureDeclarationGraph(
+  directory: string,
+  entries: readonly string[] = declarationEntries,
+): DeclarationGraph {
   const root = realpathSync(directory);
   assert(statSync(root).isDirectory(), `installed package directory required: ${directory}`);
-  const pending = declarationEntries.map((name) => path.join(root, name));
+  const pending = entries.map((name) => path.join(root, name));
   const seen = new Set<string>();
   const images: FileImage[] = [];
   const edges: DeclarationEdge[] = [];

@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { beforeStaticListenerSource } from "./static-listener-prop-source.ts";
+import { beforeGenericEventSpecialization } from "./generic-event-specialization-source.ts";
+import {
+  beforeDiscriminatedJsxUnion,
+  discriminatedJsxUnionAfterSha256,
+} from "../../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 
 interface Routes {
   cheap: string[];
@@ -30,6 +36,12 @@ const producers = [
 ];
 const resolver = "crates/vize_canon/src/virtual_ts/scope/component_events/emit_resolver_share.rs";
 const arrays = "crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs";
+const overloadAsset =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
+const overloadTransition =
+  "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/emit_overload_window.rs";
+const integratedSourceTransition =
+  "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json";
 const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
 
 interface SourceIdentity {
@@ -57,6 +69,67 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  if (
+    path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
+    sha256(current) === discriminatedJsxUnionAfterSha256
+  )
+    current = beforeDiscriminatedJsxUnion(current);
+  if (
+    path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
+    sha256(current) === "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d"
+  ) {
+    const raw = read(integratedSourceTransition);
+    assert.equal(
+      sha256(raw),
+      "9f4babc2f1d99fc129ceab018266503a78b60d8174374122fcce679694159518",
+      "selected integrated component helper transition",
+    );
+    const transition = JSON.parse(raw) as {
+      file: {
+        path: string;
+        before: SourceIdentity;
+        after: SourceIdentity;
+        edits: Array<{ before: string; after: string }>;
+      };
+    };
+    assert.equal(transition.file.path, path);
+    assert.equal(Buffer.byteLength(current), transition.file.after.bytes);
+    assert.equal(sha256(current), transition.file.after.sha256);
+    for (const edit of [...transition.file.edits].reverse()) {
+      assert.equal(current.split(edit.after).length, 2);
+      current = current.replace(edit.after, edit.before);
+    }
+    assert.equal(Buffer.byteLength(current), transition.file.before.bytes);
+    assert.equal(sha256(current), transition.file.before.sha256);
+  }
+  if (
+    path === overloadAsset &&
+    sha256(current) === "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74"
+  ) {
+    const source = read(overloadTransition);
+    assert.equal(
+      sha256(source),
+      "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+      "selected emit overload source transition",
+    );
+    const value = (name: string): string => {
+      const match = new RegExp(
+        `pub\\(super\\) const ${name}: &str = ("(?:[^"\\\\]|\\\\.)*");`,
+        "u",
+      ).exec(source);
+      assert.ok(match, `selected emit overload transition: ${name}`);
+      return JSON.parse(match[1]!) as string;
+    };
+    const before = value("ASSET_BEFORE");
+    const after = value("ASSET_AFTER");
+    assert.equal(current.split(after).length, 2, "selected emit overload source transition");
+    current = current.replace(after, before);
+    assert.equal(
+      sha256(current),
+      "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5",
+      "selected emit overload source transition",
+    );
+  }
   // #11913 changes only the static loose-arity producer. Recover the exact
   // already reviewed resolver producer before entering its frozen custody chain.
   if (
@@ -136,7 +209,18 @@ export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
   assert.equal(sha256(oracle.historical.inference), oracle.historical.inferenceSha256);
   for (const [path, expected] of Object.entries(oracle.current.sourceHashes)) {
     assert.equal(
-      sha256(historicalProducer(read, path, read(path), expected)),
+      sha256(
+        historicalProducer(
+          read,
+          path,
+          beforeGenericEventSpecialization(
+            read,
+            path,
+            beforeStaticListenerSource(read, path, read(path)),
+          ),
+          expected,
+        ),
+      ),
       expected,
       `selected emit gate producer: ${path}`,
     );

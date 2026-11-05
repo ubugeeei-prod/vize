@@ -122,7 +122,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 #[cfg(test)]
 mod tests {
     use super::{
-        AFTER, BEFORE, PATH, PUBLIC_AFTER, PUBLIC_BEFORE, PUBLIC_PATH, preamble_before,
+        AFTER, BEFORE, PATH, PUBLIC_AFTER, PUBLIC_BEFORE, PUBLIC_PATH, preamble_before, previous,
         previous_public, retain_provenance, source_before,
     };
     use serde_json::json;
@@ -139,7 +139,10 @@ mod tests {
     #[test]
     fn current_asset_preamble_and_sdk_reconstruct_only_the_tail_accumulator_layer() {
         let asset = source_before(PATH, CURRENT_ASSET.to_owned());
-        assert_eq!(asset.replacen(BEFORE, AFTER, 1), CURRENT_ASSET);
+        assert_eq!(
+            asset.replacen(BEFORE, AFTER, 1),
+            super::super::public_base_keys::source_before(PATH, CURRENT_ASSET.to_owned())
+        );
         let newer = super::super::public_base_keys::preamble_before(
             vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
         );
@@ -161,18 +164,29 @@ mod tests {
 
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
+        let current = super::super::public_base_keys::source_before(PATH, CURRENT_ASSET.to_owned());
         for mutated in [
-            CURRENT_ASSET.replacen(AFTER, "", 1),
-            format!("{CURRENT_ASSET}{AFTER}"),
-            CURRENT_ASSET.replacen(AFTER, BEFORE, 1),
-            format!("{CURRENT_ASSET}\n"),
+            current.replacen(AFTER, "", 1),
+            format!("{current}{AFTER}"),
+            current.replacen(AFTER, BEFORE, 1),
+            format!("{current}\n"),
         ] {
-            assert!(std::panic::catch_unwind(|| source_before(PATH, mutated.clone())).is_err());
+            assert!(
+                std::panic::catch_unwind(|| previous(
+                    &mutated,
+                    1664,
+                    super::ASSET_BEFORE_SHA,
+                    super::ASSET_AFTER_SHA,
+                ))
+                .is_err()
+            );
         }
+        let current =
+            super::super::public_base_keys::source_before(PUBLIC_PATH, CURRENT_PUBLIC.to_owned());
         for mutated in [
-            CURRENT_PUBLIC.replacen(PUBLIC_AFTER, "", 1),
-            CURRENT_PUBLIC.replacen(PUBLIC_AFTER, PUBLIC_BEFORE, 1),
-            format!("{CURRENT_PUBLIC}\n"),
+            current.replacen(PUBLIC_AFTER, "", 1),
+            current.replacen(PUBLIC_AFTER, PUBLIC_BEFORE, 1),
+            format!("{current}\n"),
         ] {
             assert!(std::panic::catch_unwind(|| previous_public(&mutated)).is_err());
         }

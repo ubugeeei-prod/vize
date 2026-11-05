@@ -9,7 +9,7 @@ import {
   expectedBuildIdentity,
   validateBuildReceipt,
 } from "./build-receipt.ts";
-import { compareBytes } from "./compare.mjs";
+import { compilerAttempt } from "./compiler-attempt.ts";
 import { compilerCssApiReport, loadCompilerCssApiCases } from "./compiler-css-api.ts";
 import {
   COMPILER_PROJECT_CONTRACT,
@@ -32,6 +32,12 @@ import {
   dialectResultInput,
   loadDialectInput,
 } from "./compiler-dialect.ts";
+import {
+  COMPILER_DOM_ID,
+  COMPILER_DOM_ADAPTER,
+  COMPILER_DOM_CONTRACT,
+  validateCompilerDomCase,
+} from "./compiler-dom.ts";
 import { closedSetupReference } from "../tooling/support/script-setup-default-expose.ts";
 import { currentCompilerModuleReference } from "./compiler-module-reference.ts";
 import {
@@ -42,7 +48,7 @@ import {
   validateResultEnvelope,
 } from "./harness.mjs";
 
-export { COMPILER_ARGV, compilerArgv };
+export { COMPILER_ARGV, compilerArgv, compilerAttempt };
 
 const OUTPUT_FILE = "out/Layout.json";
 const NOT_COMPARED = "whole-product native compiler path unavailable";
@@ -59,7 +65,9 @@ export function loadCompilerManifest(manifestPath) {
     ...loaded,
     cssApiCases,
     cases: loaded.cases.map((fixture) => {
-      assert.deepEqual(fixture.targets, ["ssr"]);
+      const dom = fixture.id === COMPILER_DOM_ID;
+      if (dom) validateCompilerDomCase(fixture);
+      else assert.deepEqual(fixture.targets, ["ssr"]);
       assert.equal(fixture.state, "active");
       assert.equal(fixture.adapters.native, null);
       assert.equal(typeof fixture.adapters.reasons.native, "string");
@@ -78,10 +86,10 @@ export function loadCompilerManifest(manifestPath) {
       if (dialect) {
         assert.equal(fixture.id, `compiler/${dialect.registered.id}`);
       } else if (!projectFiles && !configuredProjectFiles) {
-        assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
-        assert.equal(fixture.adapters.legacyRecipe, undefined);
+        assert.equal(fixture.adapters.legacy, dom ? COMPILER_DOM_ADAPTER : "compiler-cli-ssr-v1");
+        assert.equal(fixture.adapters.legacyRecipe, dom ? BUILD_RECIPE : undefined);
         assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
-        assert.equal(fixture.id, `compiler/sfc/${fixture.inputs.root}`);
+        assert.equal(fixture.id, dom ? COMPILER_DOM_ID : `compiler/sfc/${fixture.inputs.root}`);
         assert.equal(fixture.inputs.files.length, 1);
         const entry = fixture.inputs.files[0];
         assert.equal(entry.path, "Layout.vue.txt");
@@ -97,11 +105,13 @@ export function loadCompilerManifest(manifestPath) {
       }
       assert.equal(
         fixture.comparison.contract,
-        configuredProjectFiles
-          ? COMPILER_CONFIGURED_PROJECT_CONTRACT
-          : projectFiles
-            ? COMPILER_PROJECT_CONTRACT
-            : "compiler-ssr-module-bytes-v1",
+        dom
+          ? COMPILER_DOM_CONTRACT
+          : configuredProjectFiles
+            ? COMPILER_CONFIGURED_PROJECT_CONTRACT
+            : projectFiles
+              ? COMPILER_PROJECT_CONTRACT
+              : "compiler-ssr-module-bytes-v1",
       );
       assert(["js", "ts", "jsx", "tsx"].includes(fixture.comparison.scriptLang ?? "js"));
       if (
@@ -123,7 +133,7 @@ export function loadCompilerManifest(manifestPath) {
                   ? [fixture.comparison.scriptLang]
                   : []),
               ],
-              selector: "compiler-cli-ssr-v1 default Vue 3 dialect",
+              selector: `${dom ? COMPILER_DOM_ADAPTER : "compiler-cli-ssr-v1"} default Vue 3 dialect`,
             },
           ],
         });
@@ -143,14 +153,18 @@ export function loadCompilerManifest(manifestPath) {
       const archivedExpected = readPinnedArtifact(root, fixture.reference);
       // Authenticate the original reference before applying the reviewed
       // closed-by-default setup contract. Candidate bytes remain untouched.
-      const expected = Buffer.from(
-        closedSetupReference(
-          {
-            code: currentCompilerModuleReference(root, fixture, archivedExpected).toString("utf8"),
-          },
-          input.toString("utf8"),
-        ).code,
-      );
+      const expected = dom
+        ? archivedExpected
+        : Buffer.from(
+            closedSetupReference(
+              {
+                code: currentCompilerModuleReference(root, fixture, archivedExpected).toString(
+                  "utf8",
+                ),
+              },
+              input.toString("utf8"),
+            ).code,
+          );
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {
             path: fixture.reference.cssPath,
@@ -184,67 +198,6 @@ export function loadCompilerManifest(manifestPath) {
   };
 }
 
-export function compilerAttempt(
-  result,
-  output,
-  expected,
-  expectedScriptLang = "js",
-  expectedCss = null,
-) {
-  const observation = {
-    exitStatus: result.status,
-    signal: result.signal,
-    stdoutBase64: result.stdout?.toString("base64") ?? "",
-    stderrBase64: result.stderr?.toString("base64") ?? "",
-    processError: result.error?.message ?? null,
-    jsonBase64: output?.toString("base64") ?? null,
-    jsonSha256: output ? sha256(output) : null,
-    codeBase64: null,
-    codeSha256: null,
-    cssBase64: null,
-    cssSha256: null,
-    referenceComparison: null,
-    cssReferenceComparison: null,
-    facetError: null,
-  };
-  if (output) {
-    try {
-      const parsed = JSON.parse(output.toString("utf8"));
-      assert.deepEqual(Object.keys(parsed), [
-        "filename",
-        "code",
-        "css",
-        "errors",
-        "warnings",
-        "script_lang",
-        "macro_artifacts",
-      ]);
-      assert.equal(parsed.filename, "Layout.vue");
-      assert.equal(parsed.script_lang, expectedScriptLang);
-      assert.deepEqual(parsed.errors, []);
-      assert.deepEqual(parsed.warnings, []);
-      assert.deepEqual(parsed.macro_artifacts, []);
-      assert.equal(typeof parsed.code, "string", "compiler output code must be a string");
-      const code = Buffer.from(parsed.code, "utf8");
-      observation.codeBase64 = code.toString("base64");
-      observation.codeSha256 = sha256(code);
-      observation.referenceComparison = compareBytes(expected, code);
-      if (expectedCss === null) {
-        assert.equal(parsed.css, null);
-      } else {
-        assert.equal(typeof parsed.css, "string", "compiler output css must be a string");
-        const css = Buffer.from(parsed.css, "utf8");
-        observation.cssBase64 = css.toString("base64");
-        observation.cssSha256 = sha256(css);
-        observation.cssReferenceComparison = compareBytes(expectedCss, css);
-      }
-    } catch (error) {
-      observation.facetError = error.message;
-    }
-  }
-  return observation;
-}
-
 export function validateCompilerReport(
   loaded,
   report,
@@ -275,7 +228,7 @@ export function validateCompilerReport(
   for (const [index, fixture] of loaded.cases.entries()) {
     const row = report.rows[index];
     assert.equal(row.id, fixture.id);
-    assert.equal(row.target, "ssr");
+    assert.equal(row.target, fixture.targets[0]);
     assert.deepEqual(row.native, { state: "unsupported", reason: fixture.adapters.reasons.native });
     assert.deepEqual(row.comparison, { state: "not-compared", reason: NOT_COMPARED });
     assert.equal(row.legacy.adapter, fixture.adapters.legacy);
@@ -349,7 +302,7 @@ export function validateCompilerReport(
 function runCompilerCase(fixture, binaryPath, binaryFailure) {
   const row = {
     id: fixture.id,
-    target: "ssr",
+    target: fixture.targets[0],
     legacy: {
       state: "failed",
       verdict: "failed",
@@ -446,7 +399,7 @@ export function runCompilerPack({
     binary: null,
     rows: [],
     cssApi: compilerCssApiReport(loaded.cssApiCases),
-    summary: null,
+    summary: /** @type {ReturnType<typeof validateCompilerReport> | null} */ (null),
   };
   let build = { sourceRevision };
   let binaryFailure;

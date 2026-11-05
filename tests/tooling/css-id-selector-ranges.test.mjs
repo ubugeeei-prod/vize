@@ -1,7 +1,3 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -43,9 +39,20 @@ await test("source-built CLI locates every original and authored CSS ID selector
       const source = fs.readFileSync(path.join(fixture, entry.source));
       assert.equal(source.length, entry.bytes);
       assert.equal(sha256(source), entry.sha256);
-      const expected = JSON.parse(fs.readFileSync(path.join(fixture, entry.cliExpected), "utf8"));
-      const expectedJson = currentRuleDocumentationPacket(expected.json);
-      const expectedPlain = currentRuleDocumentationPlain(expected.plain, "css/no-id-selectors");
+      const expectedBytes = fs.readFileSync(path.join(fixture, entry.cliExpected));
+      const original = JSON.parse(expectedBytes.toString("utf8"));
+      const authoredCurrent = entry.id === "repeated-compound-ids";
+      if (authoredCurrent) {
+        assert.equal(entry.cliExpected, "repeated-compound-ids.cli.expected.json");
+        assert.equal(expectedBytes.length, 2451);
+        assert.equal(
+          sha256(expectedBytes),
+          "5cc3f4660cc685b4a25450a08ff8481f2834494a9dfe9194f70f531740c33337",
+        );
+      }
+      const expected = authoredCurrent
+        ? { ...original, plain: currentCssPlain(original.plain) }
+        : currentCssReport(original);
       fs.writeFileSync(path.join(directory, entry.filename), source);
       for (const format of entry.id === "original-7981"
         ? ["json", "plain", "json"]
@@ -76,7 +83,7 @@ await test("source-built CLI locates every original and authored CSS ID selector
           error: result.error ? { name: result.error.name, message: result.error.message } : null,
           stdout: result.stdout ?? "",
           stderr: result.stderr ?? "",
-          expected: format === "json" ? expectedJson : expectedPlain,
+          expected: format === "json" ? expected.json : expected.plain,
         };
         evidence.runs.push(row);
         persist();
@@ -87,9 +94,9 @@ await test("source-built CLI locates every original and authored CSS ID selector
         if (format === "json") {
           row.actual = JSON.parse(row.stdout);
           persist();
-          assert.deepEqual(row.actual, expectedJson, entry.id);
+          assert.deepEqual(row.actual, expected.json, entry.id);
         } else {
-          assert.equal(row.stdout, expectedPlain, entry.id);
+          assert.equal(row.stdout, expected.plain, entry.id);
         }
       }
       fs.unlinkSync(path.join(directory, entry.filename));
@@ -101,3 +108,4 @@ await test("source-built CLI locates every original and authored CSS ID selector
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+import { currentCssPlain, currentCssReport } from "./support/current-css-documentation.ts";

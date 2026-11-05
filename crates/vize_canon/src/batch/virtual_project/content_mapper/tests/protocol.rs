@@ -10,7 +10,7 @@ use super::{
     CONTENT_MAPPER_VIRTUAL_EXTENSION, ContentMapperSpanKind, content_mapper_span_features,
     generate_vue_content_mapper_transform,
 };
-use crate::batch::ContentMapperTransform;
+use crate::batch::{ContentMapperSpan, ContentMapperTransform};
 
 /// #10920: `:aria-labelledby` / `:error-message` map the camelized binding onto
 /// the whole attribute. An alias would name the attribute, and a prefix range
@@ -212,18 +212,26 @@ const message = "hello"
     assert_eq!(
         result
             .text
-            .lines()
-            .filter_map(|line| line.strip_prefix("  const message "))
-            .collect::<Vec<_>>(),
-        ["= \"hello\""]
+            .split_once("// User setup code")
+            .expect("user setup section")
+            .1
+            .split_once("// @vize-map:")
+            .expect("user setup mapping")
+            .0
+            .trim(),
+        "const message = \"hello\""
     );
     assert_eq!(
         result
             .text
             .lines()
-            .filter_map(|line| line.trim_start().strip_prefix("/// <reference types="))
+            .filter(|line| line.split_whitespace().next() == Some("///"))
             .collect::<Vec<_>>(),
-        Vec::<&str>::new()
+        [
+            "/// <reference lib=\"es2022\" />",
+            "/// <reference lib=\"dom\" />",
+            "/// <reference lib=\"dom.iterable\" />"
+        ]
     );
     assert!(!result.mappings.is_empty());
     let interpolation = result
@@ -277,7 +285,20 @@ const message = "hello"
             );
         }
     }
-    assert!(result.mappings.iter().all(|mapping| {
+    let (sfc, ordinary): (Vec<&ContentMapperSpan>, Vec<_>) = result
+        .mappings
+        .iter()
+        .partition(|mapping| mapping.0[2] == 0 && mapping.0[3] == 0);
+    assert_eq!(
+        sfc.iter()
+            .map(|mapping| (mapping.0[4], mapping.0[5]))
+            .collect::<Vec<_>>(),
+        [(
+            ContentMapperSpanKind::Atom as usize,
+            CONTENT_MAPPER_SPAN_FEATURES_NAVIGATION_TARGET
+        )]
+    );
+    assert!(ordinary.iter().all(|mapping| {
         diagnostic_anchors.iter().any(|anchor| mapping.0 == *anchor)
             || mapping.0[5]
                 == match mapping.0[4] {

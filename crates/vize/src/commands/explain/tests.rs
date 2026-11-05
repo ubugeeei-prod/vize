@@ -53,7 +53,19 @@ fn every_page_in_every_locale_equals_its_committed_snapshot() {
             continue;
         }
         let committed = std::fs::read_to_string(&path).expect("snapshot is committed");
-        assert_eq!(pages.as_str(), committed, "{} explain pages", locale.code());
+        let current = match locale {
+            Locale::En => include_str!(
+                "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/explain-en.txt"
+            ),
+            Locale::Ja => include_str!(
+                "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/explain-ja.txt"
+            ),
+            Locale::Zh => include_str!(
+                "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/explain-zh.txt"
+            ),
+        };
+        validate_documentation_successor(&committed, current, locale);
+        assert_eq!(pages.as_str(), current, "{} explain pages", locale.code());
     }
 }
 
@@ -170,5 +182,99 @@ fn every_new_producer_page_uses_its_localized_message_and_help() {
             }
             assert_eq!(subjects::find(subject.code()), Some(*subject));
         }
+    }
+}
+
+// The committed page body remains the authority for every non-URL byte.
+// Current static URLs are independently tied to committed EN and JA page titles.
+fn validate_documentation_successor(before: &str, current: &str, locale: Locale) {
+    let old: Vec<_> = before.split('\n').collect();
+    let new: Vec<_> = current.split('\n').collect();
+    assert_eq!(old.len(), new.len());
+    let mut rule = "";
+    let mut urls = 0;
+    let mut transitioned_urls = 0;
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for (old, new) in old.into_iter().zip(new) {
+        if let Some(id) = old.strip_prefix("=== ") {
+            rule = id;
+        }
+        let label = match locale {
+            Locale::En => "docs: ",
+            Locale::Ja => "ドキュメント: ",
+            Locale::Zh => "文档: ",
+        };
+        if let Some(previous) = old.strip_prefix(label) {
+            let page = new.strip_prefix(label).expect("same documentation field");
+            if previous != page {
+                previous
+                    .strip_prefix("docs/content/rules/")
+                    .expect("frozen documentation field");
+                transitioned_urls += 1;
+            }
+            let route = page
+                .strip_prefix("docs/content/")
+                .expect("current documentation field");
+            let is_rule_page = matches!(
+                route.split_once('/'),
+                Some(("rules", rest)) if rest.starts_with("reference/") || rest.starts_with("project/")
+            );
+            assert!(
+                is_rule_page
+                    || (rule == "vue/comment-directive" && route == "guide/lint-execution.md"),
+                "finite current documentation field for {rule}: {page}"
+            );
+            for prefix in ["", "ja/"] {
+                let file =
+                    root.join(page.replacen("docs/content/", &format!("docs/content/{prefix}"), 1));
+                let body = std::fs::read_to_string(file).expect("committed documentation page");
+                if is_rule_page {
+                    let title = body
+                        .lines()
+                        .find(|line| line.starts_with("title: "))
+                        .expect("authored page title");
+                    assert_eq!(title, format!("title: \"{rule}\""));
+                }
+            }
+            urls += 1;
+        } else {
+            assert_eq!(old, new, "unchanged page body for {rule}");
+        }
+    }
+    assert_eq!((urls, transitioned_urls), (279, 0));
+}
+
+#[test]
+fn current_documentation_pages_reject_foreign_missing_and_non_url_changes() {
+    let old = include_str!("snapshots/en.txt");
+    let current = include_str!(
+        "../../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/explain-en.txt"
+    );
+    validate_documentation_successor(old, current, Locale::En);
+    for changed in [
+        current.replacen(
+            "docs/content/rules/reference/a11y-alt-text.md",
+            "docs/content/rules/reference/vue-multi-word-component-names.md",
+            1,
+        ),
+        current.replacen(
+            "docs/content/rules/reference/a11y-alt-text.md",
+            "docs/content/rules/reference/missing-page.md",
+            1,
+        ),
+        current.replacen(
+            "=== compiler/abrupt-closing-of-empty-comment",
+            "=== compiler/foreign-code",
+            1,
+        ),
+    ] {
+        assert!(
+            std::panic::catch_unwind(|| validate_documentation_successor(
+                old,
+                &changed,
+                Locale::En
+            ))
+            .is_err()
+        );
     }
 }

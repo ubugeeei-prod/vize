@@ -140,7 +140,7 @@ function check(all: number[], current: number[]): true | string {
                 "file":"src/MyForm.vue",
                 "messages":[{
                     "ruleId":"type/no-unsafe-template-binding",
-                    "ruleDocsPath":"docs/content/rules/type-and-script.md",
+                    "ruleDocsPath":"docs/content/rules/reference/type-no-unsafe-template-binding.md",
                     "severity":1,
                     "message":"[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
                     "line":41,

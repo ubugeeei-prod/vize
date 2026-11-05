@@ -3,6 +3,8 @@ use crate::{
 };
 use vize_l0::ToCompactString;
 
+mod documentation;
+
 #[test]
 fn json_output_uses_source_line_columns() {
     let source = r#"<script setup lang="ts">
@@ -394,67 +396,4 @@ fn agent_output_is_line_oriented() {
         "{output}"
     );
     assert!(output.contains("message: SSR risk"), "{output}");
-}
-
-/// Rule ids and catalogue links from `docs/content/rules/all.md`.
-fn published_rule_pages(catalogue: &str) -> Vec<(&str, &str)> {
-    let mut pages = Vec::new();
-    let mut rest = catalogue;
-    while let Some(start) = rest.find("[`") {
-        rest = &rest[start + 2..];
-        let Some(id_end) = rest.find("`](./") else {
-            break;
-        };
-        let id = &rest[..id_end];
-        rest = &rest[id_end + 5..];
-        let Some(path_end) = rest.find(')') else {
-            break;
-        };
-        let relative = &rest[..path_end];
-        rest = &rest[path_end + 1..];
-        if relative.starts_with("reference/") || relative.starts_with("project/") {
-            pages.push((id, relative));
-        }
-    }
-    pages
-}
-
-#[test]
-fn rule_docs_path_exists_for_every_published_rule() {
-    const CATALOGUE: &str = include_str!("../../../../docs/content/rules/all.md");
-    let pages = published_rule_pages(CATALOGUE);
-    let reference = pages
-        .iter()
-        .filter(|(_, relative)| relative.starts_with("reference/"))
-        .count();
-    let project = pages.len() - reference;
-    assert!(
-        reference >= 200 && project >= 60,
-        "published catalogue was not read: reference={reference} project={project}"
-    );
-
-    let rules_dir =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/content/rules");
-    let mut missing = vize_l0::String::new("");
-    for (id, relative) in pages {
-        let path = rule_docs_path(id);
-        // This operational check retains its established guide authority. The
-        // generated rule page supplies examples and links back to that guide.
-        let expected = if id == "vue/comment-directive" {
-            vize_l0::String::from("docs/content/guide/lint-execution.md")
-        } else {
-            vize_l0::cstr!("docs/content/rules/{relative}")
-        };
-        assert_eq!(path, expected, "{id}");
-        if !rules_dir.join(relative).is_file() {
-            if !missing.is_empty() {
-                missing.push('\n');
-            }
-            vize_l0::append!(missing, "{id} -> {path}");
-        }
-    }
-    assert!(
-        missing.is_empty(),
-        "published rules with no page:\n{missing}"
-    );
 }

@@ -1,4 +1,3 @@
-import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -76,9 +75,7 @@ await test("source CLI applies the reported boolean edit once with complete unch
           timeout: 60_000,
           maxBuffer: 4 * 1024 * 1024,
         });
-        const expected = currentRuleDocumentationPacket(
-          wholeJson(entry, pass > 0, entry.originalRules),
-        );
+        const expected = currentBooleanStylePacket(wholeJson(entry, pass > 0, entry.originalRules));
         const observation = {
           id: entry.id,
           originalRules: entry.originalRules,
@@ -141,3 +138,4 @@ await test("source CLI applies the reported boolean edit once with complete unch
     }
   }
 });
+import { currentBooleanStylePacket } from "./support/current-boolean-style-documentation.ts";

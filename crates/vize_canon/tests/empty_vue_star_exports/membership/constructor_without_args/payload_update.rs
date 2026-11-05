@@ -6,9 +6,16 @@ use std::fs;
 mod checker_augmentations;
 mod current_loose_emit;
 mod emit_overload_stall;
+mod emit_overload_window;
 mod emit_overloads;
 mod emit_props_twins;
 mod extra_keys_policy;
+mod generic_event_specialization;
+mod input_channels;
+mod integrated_source;
+mod jsx_exact_keys;
+mod loose_emit_sdk;
+mod private_emit_sdk;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
@@ -161,7 +168,13 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     extra_keys_policy::retain_provenance(manifest);
     checker_augmentations::retain_provenance(manifest);
     runtime_prop_call::retain_provenance(manifest);
+    emit_overload_window::retain_provenance(manifest);
     current_loose_emit::retain_provenance(manifest);
+    input_channels::retain_provenance(manifest);
+    loose_emit_sdk::retain_provenance(manifest);
+    private_emit_sdk::retain_provenance(manifest);
+    generic_event_specialization::retain_provenance(manifest);
+    integrated_source::retain_provenance(manifest);
 }
 
 #[cfg(test)]

@@ -382,7 +382,10 @@ test("published recursive emit helper matches the canonical native declaration",
     ),
     "utf8",
   );
-  const published = fs.readFileSync(path.join(root, "npm/cli/virtual-ts-globals.d.ts"), "utf8");
+  const published = fs.readFileSync(
+    path.join(root, "npm/cli/virtual-ts-emit-overloads.d.ts"),
+    "utf8",
+  );
   function signature(source: string): string[][] {
     const file = ts.createSourceFile("helpers.d.ts", source, ts.ScriptTarget.Latest, true);
     assert.deepEqual(file.parseDiagnostics, []);
@@ -423,7 +426,7 @@ test("published recursive emit helper matches the canonical native declaration",
   assert.deepEqual(signature(published), signature(canonical));
   // These regressions must be visible even when formatting and quote style differ.
   assert.notDeepEqual(
-    signature(published.replace("extends 900", "extends 32")),
+    signature(published.replace("extends 120", "extends 32")),
     signature(canonical),
   );
   assert.notDeepEqual(

@@ -16,7 +16,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `route-view-unknown`",
         "line": 4,
@@ -34,7 +34,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-param-type",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-param-type.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-param-type] param `id` of route `live-user` is an array, but `:id` is not repeatable",
         "line": 5,
@@ -58,7 +58,7 @@
     "messages": [
       {
         "ruleId": "ecosystem/vue-router-unknown-route",
-        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "ruleDocsPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
         "severity": 2,
         "message": "[vize:ecosystem/vue-router-unknown-route] unknown route name `preview-only`",
         "line": 3,

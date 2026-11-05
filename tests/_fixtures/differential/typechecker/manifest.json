@@ -12077,6 +12077,121 @@
       }
     },
     {
+      "id": "typechecker/loose-listener-context-11600",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "virtual_ts::scope::event_handler::contextual_listener::tests::contextual_listener_complete_projection_and_mapping_packets",
+      "inputs": [
+        {
+          "file": "src/LooseTargets.vue",
+          "path": "loose-listener-context-11600/LooseTargets.vue.txt",
+          "sha256": "d80f20003db43089c1710197924d01cea3e476b6f2f78b819044841cdfc850c0"
+        },
+        {
+          "file": "src/HandlerValues.vue",
+          "path": "loose-listener-context-11600/HandlerValues.vue.txt",
+          "sha256": "ff74d69f97f3c58f61fb30a7e1b5e5c3b828dbdb14c174b2dd7f688425c180ba"
+        },
+        {
+          "file": "src/RefAndNames.vue",
+          "path": "loose-listener-context-11600/RefAndNames.vue.txt",
+          "sha256": "03b995d927e8323257afa972d6e3f57323e0ac2557a439f47982e03f3cda376d"
+        },
+        {
+          "file": "src/TypedChild.vue",
+          "path": "loose-listener-context-11600/TypedChild.vue.txt",
+          "sha256": "c9b6f3f54226d26388ed6b64ff8a6952d0b9dd691a22def3b19f77f8eaa2731d"
+        },
+        {
+          "file": "src/ZeroChild.vue",
+          "path": "loose-listener-context-11600/ZeroChild.vue.txt",
+          "sha256": "6388d0e2dbdac1a27d2f98c1f191bca6fd29042d1c7261af95b52fa6b66b21b0"
+        },
+        {
+          "file": "src/GenericChild.vue",
+          "path": "loose-listener-context-11600/GenericChild.vue.txt",
+          "sha256": "d6a50765412654519e7e712abaab94ee4de06344f3649327d40650befde5b9b1"
+        },
+        {
+          "file": "src/TypedParent.vue",
+          "path": "loose-listener-context-11600/TypedParent.vue.txt",
+          "sha256": "74c3a44cc6e91b04bb0789775912d4cd624aa5e83829286471d9dd576314df11"
+        },
+        {
+          "file": "cases.json",
+          "path": "loose-listener-context-11600/cases.json",
+          "sha256": "04aa646e015709ff27201c03f0337bf3d1f1898e402dadb7c764b24736635ccd"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Finite loose/typed/truezero/ref/noncallable authored inputs; source execution requires exact source Actions."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/mixed-script-static-ref-11811",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "mixed-script-static-ref-11811/tsconfig.json.txt",
+          "sha256": "dccf2304f7402c4c3b687134e003315f8063c72dc1bc8eb7c0244629963470b8"
+        },
+        {
+          "file": "src/useBoxObject.ts",
+          "path": "mixed-script-static-ref-11811/useBoxObject.ts.txt",
+          "sha256": "958e83fce05146662229356e608d45d7d6cbd098ed805f78a43ea50c66370cbe"
+        },
+        {
+          "file": "src/WithScriptObject.vue",
+          "path": "mixed-script-static-ref-11811/WithScriptObject.vue.txt",
+          "sha256": "7dffbf5a05caabf15a206c90196d0e778589365280362f5304fda53b4de14d03"
+        },
+        {
+          "file": "src/WithScriptPlain.vue",
+          "path": "mixed-script-static-ref-11811/WithScriptPlain.vue.txt",
+          "sha256": "7176b221a144649c497a3b276378de1b58b07af834b594b491cf6a584318cd3f"
+        },
+        {
+          "file": "src/SetupOnlyObject.vue",
+          "path": "mixed-script-static-ref-11811/SetupOnlyObject.vue.txt",
+          "sha256": "15829101edb1726460bf944ad4ec721414ba73297ab9f6ed2e0c350eadf12532"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "actual authored mixed script/setup sources; source execution pending Actions"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/nested-function-guard-11853",
       "state": "active",
       "targets": [
@@ -12469,6 +12584,35 @@
       }
     },
     {
+      "id": "typechecker/regression/component-export-navigation-features",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-export-navigation-features/Probe.vue.txt",
+          "sha256": "1ce0d458c7437d3c5ca4b3e448974b17978f30d0f82b4e50fec5f30da7b59fe0",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::binding_output::tests::pinned_sfc_export_only_advertises_navigation; exact feature routing and stable serialized discriminants; input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/component-listener-branch-narrowing-11730",
       "state": "active",
       "targets": [
@@ -12508,6 +12652,55 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::component_listener_narrowing_11730::component_listener_branches_keep_narrowing_and_authored_body_errors; reported source/config physically consumed with wrong-member and wrong-payload controls. Input-only registration; original Windows/runtime qualification remains separate."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-tag-sfc-export-11635",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-tag-sfc-export-11635/src/App.vue.txt",
+          "sha256": "6b0cf73b7197f5893af6d8c6111ea4f1bf4f3052480145f19bf1be0cb8c1e640",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/MkNoteHeader.vue.txt",
+          "sha256": "404beeda6c705dfc85634075984d16f59d04d0bd6c0ac7d131a5b9b3db649674",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/Wrong.vue.txt",
+          "sha256": "520c93b3cfe5d979f05eeafbcc0627eba02188c2e6d78cfdae4ac0338ea45e70",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/src/types.ts.txt",
+          "sha256": "34ff170ed9c8b1ee63b1d00eaebbeb037606080aed6dd6104cf8e5a210a7bdae",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-tag-sfc-export-11635/tsconfig.json.txt",
+          "sha256": "a128eab9a15a4db14fb9600d13c21c44cfb92da119aded4e9c4c56b5920d2f10",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_editor_accuracy::component_tags::standard_tsgo_lsp_answers_component_tags_with_the_sfc; reported #11635 and #11637 under TypeScript 7.1's LSP: definition on a component tag returned nothing and its hover printed generated members. A wrong prop type keeps TS2322. Input-only registration, no diagnostic pack."
           }
         ]
       }
@@ -12981,6 +13174,40 @@
               "ts"
             ],
             "selector": "generic_attribute::tests::generic_constraints_and_defaults_report_from_one_copy and generic_parameters::recovery_tests; reported #11503/#11515 generic attribute whose setup-signature rows now carry navigation in the batch, content-mapper and sfc_typecheck projections. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/generic-emit-overload-order-11435",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-emit-overload-order-11435/App.vue.txt",
+          "sha256": "8c7b12d468f0676dd9b0312bb72f3ca10006ea359d94c375039e674bb49e8886",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-emit-overload-order-11435/Child.vue.txt",
+          "sha256": "5a4dcc9c9dcb17a66559d78f4b35f8d5939f0cf653b8f47661f9915ac7c55a43",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::generic_component_listener_payload::generic_overload_order::overloads_declared_before_a_generic_emit_keep_typed_payloads; physically consumes both inputs for #11435: emit overloads declared before a generic overload keep typed listener payloads, with a valid control and genuine wrong-payload diagnostics on the first, generic and last events. Input-only registration, no diagnostic pack."
           }
         ]
       }
@@ -14411,6 +14638,90 @@
               "tsx"
             ],
             "selector": "check_tsconfig_mixed_project_graph_cli::default_reference::later_default_reference_checks_vue_template_and_repair; physically consumes a solution with an excluded explicit file and a later implicit mixed program, wrong Vue template and repair. Input-only registration; no native, public or timing qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/tsx-in-vue-tsc-program-11629",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Foo.vue.txt",
+          "sha256": "e18a6a8ffa38986c625a24e5850dc30bdb80d1c1e503619dba98315eb83ce800",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Probe.tsx.txt",
+          "sha256": "e3d5e947b5995ec9a499db644e241045e8c2d324b74d4b25d5ef36aa141e4cd1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/Probe.vue.txt",
+          "sha256": "46868cce1b40cecaade33256ccf7b6c2254bf6a9234e5331fce205cfd145f92a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-in-vue-tsc-program-11629/tsconfig.json.txt",
+          "sha256": "b0669b5ff8c9d696cea4b78619fef8d9e3918d76edb9b021e04ffbe3d07f359c",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_declaration_fallthrough_cli::tsx-in-vue-tsc-program and check_declaration_fallthrough_attrs_cli::tsx-in-vue-tsc-program; #11629 TSX beside a .vue file in a non-strict vue-tsc program, with template fallthrough, plain TSX, strict-template, wrong-prop, missing-prop and wrong-listener controls. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/tsx-single-required-exact-keys",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "tsx-single-required-exact-keys/SingleRequired.vue.txt",
+          "sha256": "6fb55ef9694e19e539a4e12dbbd4b9c38531f6f092efec1e08a95ee40c67b302",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-single-required-exact-keys/Probe.tsx.txt",
+          "sha256": "cd8b78251133fa84de8d2987db8d06038b38a521738b0695f4f48d99272f4d04",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "tsx-single-required-exact-keys/source-transition.json",
+          "sha256": "c647fda7816e1684a864d015efde1fe8a4ada2f447e38f9930fce5e6833c6bcd",
+          "role": "source-transition"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "public_instance_contract_survives_source_and_declaration_consumers; exact empty complete packets with a live TSX negative and valid constructor/owned-attribute controls; input-only registration, no native parity claim."
           }
         ]
       }

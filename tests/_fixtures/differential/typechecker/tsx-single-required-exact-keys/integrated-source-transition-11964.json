@@ -1,0 +1,46 @@
+{
+  "schema": "vize.tsx-exact-keys-integrated-source-transition.v1",
+  "baseSource": "e967ca6c76de2b12018e141f34fdf754a256ee37",
+  "sourceHeads": [
+    {
+      "pullRequest": 11712,
+      "head": "727db3b16a8eb5151d326c73725d275498f9d54d"
+    },
+    {
+      "pullRequest": 11951,
+      "head": "f9746958867856e10474a16654fc8a4b34e87645"
+    }
+  ],
+  "observedIntegratedHead": "6fdcf4866b37a5ae0452bcb32cdd77315cbf701d",
+  "nativeAcceptanceCredit": false,
+  "originalTransition": {
+    "path": "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
+    "sha256": "c647fda7816e1684a864d015efde1fe8a4ada2f447e38f9930fce5e6833c6bcd"
+  },
+  "file": {
+    "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+    "before": {
+      "bytes": 5367,
+      "sha256": "3371eb7d3919662cbfde16a142a58c3a36739aefa127daa706307ce578808cab"
+    },
+    "after": {
+      "bytes": 5847,
+      "sha256": "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d"
+    },
+    "edits": [
+      {
+        "before": "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\n",
+        "after": "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\n"
+      },
+      {
+        "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\n",
+        "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).\ntype $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\n"
+      },
+      {
+        "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
+        "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, T extends unknown ? Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx> : never> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
+      }
+    ]
+  },
+  "scope": "Finite join of current main with the reviewed constructor and TSX input-channel heads, followed by the branch-distributive JSX union repair. The exact source is reconstructed in both directions and grants no native TypeScript consumer acceptance credit."
+}

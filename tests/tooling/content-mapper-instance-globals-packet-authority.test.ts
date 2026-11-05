@@ -31,7 +31,6 @@ test("the original twenty provisional packets retain their complete immutable bo
     legacy,
   );
 });
-
 test("CURRENT cannot relabel the provisional capture or omit planned source coordinates", () => {
   const { authority, files, cases } = readGlobalsFixture();
   const legacy = JSON.parse(files.get("source-packets.json")!);
@@ -59,7 +58,6 @@ test("CURRENT cannot relabel the provisional capture or omit planned source coor
     /every planned packet/u,
   );
 });
-
 test("packet selection rejects foreign paths and byte changes outside its authority", () => {
   const { authority, files, cases } = readGlobalsFixture();
   assert.throws(() =>
@@ -75,7 +73,6 @@ test("packet selection rejects foreign paths and byte changes outside its author
     selectPacketGoldens({ ...authority, currentSourcePackets: undefined }, edited, cases),
   );
 });
-
 test("complete packets cannot qualify omitted or skipped semantic and protocol checks", () => {
   const { files } = readGlobalsFixture();
   const provisional = JSON.parse(files.get("source-packets.json")!) as PacketGoldens;
@@ -326,6 +323,18 @@ test("CURRENT resolves the complete authenticated population in authored case or
     `source-packets-current-${producer.sourceRevision.slice(0, 12)}.json`,
   );
   assert.ok(files.has(golden.provenance as string));
+  const provenance = JSON.parse(files.get(golden.provenance as string)!);
+  assert.equal(provenance.producer.sourceRevision, producer.sourceRevision);
+  assert.equal(provenance.artifact.run, 42094909442);
+  assert.equal(provenance.artifact.job, 127483376951);
+  assert.equal(provenance.artifact.id, 13446174296);
+  assert.equal(provenance.capturedQualification.totalOutcomes, 499);
+  assert.equal(provenance.capturedQualification.passedOutcomes, 419);
+  assert.equal(provenance.capturedQualification.gapCount, 80);
+  assert.equal(provenance.review.allNonWholePacketOutcomesPassed, true);
+  assert.equal(provenance.review.sourceHostAdmitted, true);
+  assert.equal(provenance.review.qualificationCredit, false);
+  assert.equal(provenance.review.publicPackageAcceptanceCredit, false);
   for (const [index, packet] of golden.packets.entries()) {
     const entry = cases[index % 40]!;
     const source =

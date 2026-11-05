@@ -112,6 +112,15 @@ declare module 'vue' {
 
 const SOURCE_CONSUMER: &str = include_str!("public_instance_source.tsx");
 
+const SINGLE_REQUIRED: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/SingleRequired.vue.txt"
+));
+const EXACT_JSX: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/Probe.tsx.txt"
+));
+
 const TEMPLATE_REF_CONSUMER: &str = r#"<script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import Public from './Public.vue'
@@ -243,9 +252,10 @@ pub(super) fn assert_downstream_compiler(compiler: &Path, downstream: &Path) {
         "{} rejected emitted declarations:\n{output}",
         compiler.display()
     );
-    assert!(
-        !output.contains("Unused '@ts-expect-error'") && !output.contains("TS2578"),
-        "{} left a negative oracle unused:\n{output}",
+    assert_eq!(
+        output,
+        "",
+        "{} emitted an unexpected compiler packet",
         compiler.display()
     );
 }
@@ -266,6 +276,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
             .is_file(),
         "the strict JSX oracle requires the installed real Vue runtime"
     );
+    let source_consumer = format!("{SOURCE_CONSUMER}\n{EXACT_JSX}");
     let project_root = with_workspace_node_modules_override(
         Some(
             test_node_modules
@@ -284,9 +295,10 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
                     ("src/Union.vue", UNION),
                     ("src/NativeListenerProp.vue", NATIVE_LISTENER_PROP),
                     ("src/NoEmits.vue", NO_EMITS),
+                    ("src/SingleRequired.vue", SINGLE_REQUIRED),
                     ("src/nested/Nested.vue", NESTED_COMPONENT),
                     ("src/vue.d.ts", AUGMENTATION),
-                    ("src/Consumer.tsx", SOURCE_CONSUMER),
+                    ("src/Consumer.tsx", &source_consumer),
                     ("src/Parent.vue", TEMPLATE_REF_CONSUMER),
                 ],
             )
@@ -322,7 +334,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let public_dts = std::fs::read_to_string(out_dir.join("Public.vue.d.ts")).unwrap();
     assert!(
         public_dts.contains(
-            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[])"
         ) && public_dts.contains(
             "declare const __vize_component__: {\n    __vizeEmitProps?: $StaticEmitProps;\n    readonly __vizeRawProps?: Props;\n    readonly __vizeSlots?: Partial<$Slots>;\n} & $ComponentConstructor & $VueComponentOptions;"
         )
@@ -354,7 +366,7 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         nested_dts
             .matches("import(\"../__vize_helpers.js\").__EmitProps")
             .count(),
-        6,
+        4,
         "a nested retained SFC must resolve the helper from its final published depth:\n{nested_dts}"
     );
     assert_eq!(nested_dts.matches("vize:virtual-ts").count(), 0);
@@ -385,7 +397,9 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
     let downstream_dir = project_root.join("downstream");
     std::fs::create_dir_all(&downstream_dir).unwrap();
     let downstream = downstream_dir.join("verify.tsx");
-    std::fs::write(&downstream, DOWNSTREAM).unwrap();
+    let exact_declaration =
+        EXACT_JSX.replacen("./SingleRequired.vue", "../types/SingleRequired.vue", 1);
+    std::fs::write(&downstream, format!("{DOWNSTREAM}\n{exact_declaration}")).unwrap();
     assert_downstream_compiler(&tsgo, &downstream);
     if let Some(tsc) = resolve_javascript_tsc() {
         assert_downstream_compiler(&tsc, &downstream);

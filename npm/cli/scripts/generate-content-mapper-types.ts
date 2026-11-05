@@ -5,6 +5,7 @@ import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { slotPayloadExports } from "./slot-payload-exports.ts";
+import { emitInferenceExports } from "./emit-inference-exports.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const helperRoot = "crates/vize_canon/src/virtual_ts/helpers";
@@ -52,6 +53,16 @@ const outputs = new Map([
   ["npm/cli/generated/content-mapper-types.d.ts", generated],
   [`${helperRoot}/declarations/content-mapper-type-imports.d.ts.txt`, imports],
 ]);
+// The published emit-overload helpers are the canonical asset, declared globally.
+const emitOverloads = await format(
+  "virtual-ts-emit-overloads.d.ts",
+  "// Generated from the canonical emit-overload helpers. Do not edit.\ndeclare global {\n" +
+    readFileSync(path.join(root, helperRoot, "declarations/emit-overloads.d.ts.txt"), "utf8") +
+    "}\n\nexport {};\n",
+  { printWidth: 100 },
+);
+assert.deepEqual(emitOverloads.errors, [], "canonical emit-overload helpers must parse");
+outputs.set("npm/cli/virtual-ts-emit-overloads.d.ts", emitOverloads.code);
 
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
 // Synchronize this alias without replacing unrelated public declarations.
@@ -446,6 +457,8 @@ for (const extension of ["ts", "mts", "cts"]) {
     );
   }
 }
+for (const [file, contents] of await emitInferenceExports(root, outputs))
+  outputs.set(file, contents);
 // Refuse every malformed or unknown input before replacing any SDK copy.
 for (const [relativePath, contents] of outputs) {
   const filePath = path.join(root, relativePath);

@@ -114,10 +114,9 @@ mod tests {
     #[test]
     fn current_assets_and_preamble_reconstruct_only_the_runtime_prop_call_layer() {
         for file in &FILES {
-            let body = super::super::checker_augmentations::source_before(
-                file.path,
-                std::fs::read_to_string(support::repository().join(file.path)).unwrap(),
-            );
+            let body = std::fs::read_to_string(support::repository().join(file.path)).unwrap();
+            let body = super::super::integrated_source::source_before(file.path, body);
+            let body = super::super::checker_augmentations::source_before(file.path, body);
             assert_eq!(
                 source_before(file.path, body.clone()).replacen(file.before, file.after, 1),
                 body
@@ -129,18 +128,24 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| inverse(
+                        &mutated,
+                        file.before,
+                        file.after,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha,
+                    ))
+                    .is_err()
                 );
             }
         }
         let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let integrated = super::super::integrated_source::preamble_before(body);
+        let previous_loose = super::super::current_loose_emit::preamble_before(&integrated);
         assert_eq!(
-            super::super::current_loose_emit::preamble_after(&preamble_before(body).replacen(
-                FILES[0].before,
-                FILES[0].after,
-                1
-            )),
-            body
+            preamble_before(&integrated).replacen(FILES[0].before, FILES[0].after, 1),
+            previous_loose
         );
     }
 }

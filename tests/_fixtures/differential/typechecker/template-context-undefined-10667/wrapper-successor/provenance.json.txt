@@ -1,0 +1,21 @@
+{
+  "schema": "vize.typed-context-wrapper-successor.v1",
+  "source": "bb46093387c1c9ef00fe4659eb01dea3b18c5f58",
+  "before": "7a4ab266003bfea2d13d1f5901b55d11b031a702",
+  "run": 41850676932,
+  "job": 126645814884,
+  "artifact": {
+    "id": 13336316059,
+    "apiDigest": "sha256:4ef3b2f4d0bc64839007776b212ca28a22f1c5b476540adf6faaae1bab4015d7",
+    "partialRangeOnly": true,
+    "fullArchiveHashNotLocallyVerified": true
+  },
+  "captureSha256": "a8efaafcd018cbb2b315c5a7e26a06e646ba6fd1c2885489b495cdeabd044e16",
+  "beforeRawSha256": "fe62ae7118dcfe1081cb54c435ff341d8b81f400a7bcd3d4c4403f0290f68fc0",
+  "currentRawSha256": "c2f93b3a15d4bbcd8c84ad522d82083c850132ac27d738455a8693f60544c1c7",
+  "producerCommit": "46b752b95bd8e2b955148866655e01b58a166fe4",
+  "producerIssue": 11675,
+  "scope": "Expected side only: add the two proven diagnostic-only wrapper atoms; preserve every old tuple and field. Existing replay certifies complete generated text and helper transition before this mapping step.",
+  "programsRun": 0,
+  "cargoRuns": 0
+}

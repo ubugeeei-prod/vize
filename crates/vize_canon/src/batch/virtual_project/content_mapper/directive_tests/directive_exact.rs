@@ -35,10 +35,7 @@ fn expect_directive_targets_the_next_template_line() {
 /// leaving later siblings and descendant checks outside its ownership.
 #[test]
 fn volar_expect_directive_owns_the_instance_primary_not_a_navigation_copy() {
-    let source = include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../../tests/_fixtures/differential/typechecker/expect-instance-primary-11675/Directives.vue.txt"
-    ));
+    let source = include_str!("fixtures/volar-directives.vue");
     let result =
         generate_vue_content_mapper_transform(Path::new("/project/Directives.vue"), source)
             .unwrap();

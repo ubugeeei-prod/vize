@@ -21,6 +21,8 @@ Remove only the overlapping Vue rule after checking the linked Bad/Good examples
 
 `vue/component-definition-name-casing` has a deliberate scope difference: Vize checks the SFC filename, while ESLint checks the component definition name. The mapping below retains this distinction.
 
+The `vue/comment-directive` row tracks the ESLint rule migration, not Vize's opt-in unused-comment reporting. The native check is available through `reportUnusedDisableDirectives`; see [unused disable comments](../guide/lint-execution.md#unused-disable-directives). This bounded check does not establish full ESLint rule parity.
+
 For option conversion, see [Rule Options](./options.md) and [props destructuring modes](./reference/script-define-props-destructuring.md). Unsupported rows must stay with an existing checker until a supported replacement is verified.
 
 | ESLint ID | Vize ID / reference | Status |

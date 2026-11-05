@@ -12,11 +12,23 @@ import {
   assertSameGraph,
 } from "../../tools/support/compat/content-mapper/constructor-original27-current.ts";
 
-test("the current ten-file graph preserves complete source bodies, edges, order and module attributes", () => {
+test("the current mapper graph preserves complete source bodies, dependencies and module attributes", () => {
   const root = fileURLToPath(new URL("../../npm/cli", import.meta.url)),
     graph = captureDeclarationGraph(root);
   assertCurrentGraph(graph, root);
   assertSameGraph(graph, root, graph, root);
+  assert.equal(graph.files.length, 12);
+  assert.equal(graph.edges.length, 20);
+  for (const module of ["virtual-ts-emits", "virtual-ts-emit-overloads"]) {
+    const missingLeaf = structuredClone(graph);
+    missingLeaf.files = missingLeaf.files.filter((file) => !file.path.endsWith(`${module}.d.ts`));
+    assert.throws(() => assertCurrentGraph(missingLeaf, root));
+    const missingDependency = structuredClone(graph);
+    missingDependency.edges = missingDependency.edges.filter(
+      (edge) => edge.specifier !== `./${module}.js`,
+    );
+    assert.throws(() => assertCurrentGraph(missingDependency, root));
+  }
   const dropped = structuredClone(graph);
   dropped.files.pop();
   assert.throws(() => assertCurrentGraph(dropped, root));

@@ -269,6 +269,13 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
 fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
     // Uncached component references keep the authored expression's layout,
     // even when TypeScript erasure turns that expression into an identifier.
+    // Codegen reads the same runtime spelling as handler emission. Preserve
+    // authored padding when TypeScript did not change the expression.
+    let erased = match expr {
+        ExprRef::Js(js) => super::props::ts_view(js, cx.scope.is_ts()).map(|view| view.into_text()),
+        _ => None,
+    };
+    let content = erased.as_deref().unwrap_or(content);
     if cx.component_props && on::bypasses_component_cache(cx, expr) {
         return !super::prefix::is_simple_identifier(content);
     }

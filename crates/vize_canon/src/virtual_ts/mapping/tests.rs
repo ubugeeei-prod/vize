@@ -9,6 +9,26 @@ mod caret;
 mod endpoints;
 
 #[test]
+fn projection_kind_discriminants_keep_existing_serialized_values() {
+    assert_eq!(
+        [
+            ProjectionSpanKind::Unknown as u8,
+            ProjectionSpanKind::Script as u8,
+            ProjectionSpanKind::Interpolation as u8,
+            ProjectionSpanKind::DirectiveExpr as u8,
+            ProjectionSpanKind::DirectiveArg as u8,
+            ProjectionSpanKind::EventHandler as u8,
+            ProjectionSpanKind::VForVar as u8,
+            ProjectionSpanKind::SlotBinding as u8,
+            ProjectionSpanKind::ComponentRef as u8,
+            ProjectionSpanKind::TemplateExpression as u8,
+            ProjectionSpanKind::ComponentExport as u8,
+        ],
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    );
+}
+
+#[test]
 fn prefers_exact_expression_sub_spans() {
     let mapping = VizeMapping {
         gen_range: 10..80,

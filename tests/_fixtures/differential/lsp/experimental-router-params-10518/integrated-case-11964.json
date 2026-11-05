@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/experimental-router-params-integrated-11964",
+  "provenance": {
+    "fixCommit": "d705ee2b31c59ab975bb885eee061af08cbf00c9",
+    "inputOrigin": "The exact published Vue Router 5.4.0 page and project configuration retained by the original #10518 case.",
+    "contractOrigin": "Two complete number-declaration hovers pin the LSP input after the current component-export, constructor and route-projection integration."
+  },
+  "files": [
+    {
+      "source": "Page.vue.txt",
+      "runtimePath": "src/pages/products/[id=int].vue",
+      "sha256": "dfa38d4e9c1cf94a0a6d02bf31a80419d608a0a8b7376cfb360491245a81cbe6"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+    }
+  ],
+  "entry": "src/pages/products/[id=int].vue",
+  "expected": {
+    "source": "hover.expected.json",
+    "sha256": "e3ef9df44a3b8b0f273dd89faf6c864f4a5c8fa9e365b81827669490b8843b21"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "completion": true,
+    "editor": true,
+    "ecosystem": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  }
+}

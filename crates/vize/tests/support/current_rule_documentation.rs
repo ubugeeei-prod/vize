@@ -184,7 +184,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
         ),
         _ => panic!("unreviewed CLI documentation rule: {rule}"),
     };
-    assert_eq!(before, old, "frozen documentation URL for {rule}");
+    assert!(
+        before == old || before == current,
+        "reviewed documentation URL for {rule}: {before}"
+    );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     for locale in ["", "ja/"] {
         let local = current.replacen("docs/content/", &format!("docs/content/{locale}"), 1);
@@ -216,6 +219,10 @@ pub(crate) fn packet(mut expected: Value) -> Value {
         }
     }
     expected
+}
+
+pub(crate) fn props_plain(expected: &str) -> String {
+    plain(expected)
 }
 
 pub(crate) fn plain(expected: &str) -> String {
@@ -273,7 +280,7 @@ pub(crate) fn json_stdout(expected: &str) -> String {
 fn frozen_documentation_projection_rejects_changed_urls_and_foreign_rules() {
     for value in [
         serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/missing.md"}),
-        serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/reference/vue-multi-word-component-names.md"}),
+        serde_json::json!({"ruleId":"vue/multi-word-component-names","ruleDocsPath":"docs/content/rules/reference/vue-no-unused-components.md"}),
         serde_json::json!({"ruleId":"foreign/rule","ruleDocsPath":"docs/content/rules/vue.md"}),
         serde_json::json!({"ruleId":"vue/multi-word-component-names"}),
     ] {
@@ -284,6 +291,7 @@ fn frozen_documentation_projection_rejects_changed_urls_and_foreign_rules() {
     expected["ruleDocsPath"] =
         Value::String("docs/content/rules/reference/vue-multi-word-component-names.md".to_owned());
     assert_eq!(message(original), expected);
+    assert_eq!(message(expected.clone()), expected);
 }
 
 #[test]

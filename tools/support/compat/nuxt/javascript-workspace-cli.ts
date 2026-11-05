@@ -134,7 +134,7 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
         messages: [
           {
             ruleId: "script/no-dupe-keys",
-            ruleDocsPath: "docs/content/rules/type-and-script.md",
+            ruleDocsPath: "docs/content/rules/reference/script-no-dupe-keys.md",
             severity: 2,
             message: "[vize:script/no-dupe-keys] Duplicated key 'value'",
             line: at.line + 1,

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import { currentRuleDocumentationMessage } from "./current-rule-documentation.ts";
 
 const pages = {
   "vue/html-self-closing": "vue-html-self-closing",
@@ -26,15 +26,7 @@ export function currentBooleanStylePacket(expected: unknown): unknown[] {
         "docs/content/rules/vue.md",
         "frozen boolean/style documentation",
       );
-      const page = pages[rule as keyof typeof pages];
-      for (const locale of ["", "ja/"]) {
-        assert.ok(
-          fs.existsSync(
-            new URL(`../../../docs/content/${locale}rules/reference/${page}.md`, import.meta.url),
-          ),
-        );
-      }
-      return { ...message, ruleDocsPath: `docs/content/rules/reference/${page}.md` };
+      return currentRuleDocumentationMessage(message);
     }),
   }));
 }

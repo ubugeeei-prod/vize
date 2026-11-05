@@ -1,5 +1,17 @@
-use super::{emit_component_default_export, generic::slot_resolver_field};
+use super::{ComponentNames, default_export, generic::slot_resolver_field, public_name};
 use vize_carton::String;
+
+const SETUP: &str = "// generated setup helpers\n";
+
+fn value_name(name: &str, setup_binding: bool, authored_script: &str) -> String {
+    public_name(
+        SETUP,
+        String::from(name),
+        "VueComponent",
+        setup_binding,
+        Some(authored_script),
+    )
+}
 
 #[test]
 fn filename_export_does_not_shadow_authored_setup_globals() {
@@ -7,39 +19,44 @@ fn filename_export_does_not_shadow_authored_setup_globals() {
         ("Error", "throw new Error(message);"),
         ("Map", "const cache = new Map<string, number>();"),
     ] {
-        let mut output = String::from("// generated setup helpers\n");
-        emit_component_default_export(&mut output, Some(name), false, Some(authored_script));
         assert_eq!(
-            output,
-            format!(
-                "// generated setup helpers\ndeclare const {name}VueComponent: typeof __vize_component__;\nexport default {name}VueComponent;\n"
-            )
+            value_name(name, false, authored_script),
+            [name, "VueComponent"].concat().as_str()
         );
     }
 }
 
 #[test]
 fn filename_export_keeps_an_authored_setup_binding() {
-    let mut output = String::from("// generated setup helpers\n");
-    emit_component_default_export(&mut output, Some("Error"), true, Some("const Error = 1;"));
-    assert_eq!(
-        output,
-        "// generated setup helpers\ndeclare const Error: typeof __vize_component__;\nexport default Error;\n"
-    );
+    assert_eq!(value_name("Error", true, "const Error = 1;"), "Error");
 }
 
 #[test]
 fn filename_export_fallback_avoids_authored_identifiers() {
-    let mut output = String::from("// generated setup helpers\n");
-    emit_component_default_export(
-        &mut output,
-        Some("Error"),
-        false,
-        Some("void Error; void ErrorVueComponent;"),
+    assert_eq!(
+        value_name("Error", false, "void Error; void ErrorVueComponent;"),
+        "ErrorVueComponent_"
     );
+}
+
+#[test]
+fn named_export_returns_its_declared_name() {
+    let names = ComponentNames {
+        value: String::from("Child"),
+        type_name: String::from("ChildComponent"),
+    };
+    let mut output = String::from(SETUP);
+    let name = default_export(&mut output, Some(&names)).expect("named export");
+    assert_eq!(output.get(name), Some("Child"));
     assert_eq!(
         output,
-        "// generated setup helpers\ndeclare const ErrorVueComponent_: typeof __vize_component__;\nexport default ErrorVueComponent_;\n"
+        "// generated setup helpers\ndeclare const Child: typeof __vize_component__;\nexport default Child;\n"
+    );
+    let mut batch = String::from(SETUP);
+    assert_eq!(default_export(&mut batch, None), None);
+    assert_eq!(
+        batch,
+        "// generated setup helpers\nexport default __vize_component__;\n"
     );
 }
 

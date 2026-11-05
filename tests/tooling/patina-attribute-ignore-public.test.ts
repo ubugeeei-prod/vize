@@ -8,6 +8,7 @@ import {
   applyReturnedEdits,
   checkout,
   completedProducer,
+  consumerSuccessor,
   corpus,
   custody,
   expected,
@@ -18,6 +19,7 @@ import {
   requiredMerges,
   sourceFor,
   validateSourceCopies,
+  validateCurrentConsumer,
 } from "../../tools/support/release/patina_attribute_ignore_public/contract.ts";
 import { configSource } from "../../tools/support/release/patina_attribute_ignore_public/cli.ts";
 import {
@@ -106,47 +108,39 @@ await test("source custody refuses missing changed duplicated or escaped origina
   );
 });
 
-await test("the reviewed documentation successor preserves the complete original consumer and rejects unknown edits", () => {
-  const source = custody();
-  const consumer = "crates/vize/tests/lint_attribute_hyphenation_ignore.rs";
-  const archive =
-    "tests/_fixtures/differential/linter/attribute-hyphenation-ignore-6097/OriginalConsumer.rs.txt";
-  const read = (path: string) => readFileSync(join(checkout, path));
-  const historical = read(archive).toString("utf8");
-  const current = read(consumer).toString("utf8");
-  assert.equal(historical.split('"docs/content/rules/vue.md"').length - 1, 1);
-  assert.equal(
-    current,
-    historical.replace(
-      '"docs/content/rules/vue.md"',
-      '"docs/content/rules/reference/vue-attribute-hyphenation.md"',
-    ),
-  );
-  assert.deepEqual(validateSourceCopies(source, read), source);
-  for (const [path, bytes] of [
-    [archive, Buffer.concat([read(archive), Buffer.from("x")])],
-    [consumer, read(archive)],
-    [
-      consumer,
-      Buffer.from(current.replace("vue-attribute-hyphenation.md", "vue-no-unused-vars.md")),
-    ],
-    [consumer, Buffer.from(current.replace('"severity":2', '"severity":1'))],
-    [consumer, Buffer.concat([read(consumer), Buffer.from("\n// unknown source change\n")])],
-  ] as const)
-    assert.throws(() =>
-      validateSourceCopies(source, (requested) => (requested === path ? bytes : read(requested))),
+await test("the current source consumer is an exact documentation-only successor of the retained original", () => {
+  const successor = consumerSuccessor();
+  const historicalPath = asString(asRecord(successor.historical).snapshot);
+  const currentPath = asString(successor.path);
+  const historical = readFileSync(join(checkout, historicalPath));
+  const current = readFileSync(join(checkout, currentPath));
+  validateCurrentConsumer(historical, current);
+  assert.deepEqual(asRecord(successor.change), {
+    ruleId: "vue/attribute-hyphenation",
+    before: "docs/content/rules/vue.md",
+    after: "docs/content/rules/reference/vue-attribute-hyphenation.md",
+    occurrences: 1,
+  });
+  for (const locale of ["", "ja/"]) {
+    const page = readFileSync(
+      join(checkout, `docs/content/${locale}rules/reference/vue-attribute-hyphenation.md`),
+      "utf8",
     );
+    assert.equal(/^title: "([^"]+)"$/mu.exec(page)?.[1], "vue/attribute-hyphenation");
+  }
+  assert.throws(() =>
+    validateCurrentConsumer(Buffer.concat([historical, Buffer.from("x")]), current),
+  );
+  assert.throws(() =>
+    validateCurrentConsumer(historical, Buffer.concat([current, Buffer.from("x")])),
+  );
+  assert.throws(() => validateCurrentConsumer(historical, historical));
+  const source = custody();
   assert.throws(() =>
     validateSourceCopies(source, (path) => {
-      if (path === archive) throw new Error("missing historical consumer");
-      return read(path);
+      if (path === historicalPath) throw new Error("missing original consumer");
+      return readFileSync(join(checkout, path));
     }),
-  );
-  const sharedHistoricalBuffer = read(archive);
-  assert.throws(() =>
-    validateSourceCopies(source, (path) =>
-      path === archive || path === consumer ? sharedHistoricalBuffer : read(path),
-    ),
   );
 });
 
@@ -269,4 +263,47 @@ await test("both original CLI carrier forms preserve the complete source policy 
     assert.equal(configSource(row.policy, true), `export default () => ({ vue: ${body} });\n`);
   }
   assert(configSource({ ignore: [] }, false, true).includes('"vue/attribute-hyphenation":"off"'));
+});
+
+await test("the reviewed documentation successor preserves the complete original consumer and rejects unknown edits", () => {
+  const source = custody();
+  const consumer = "crates/vize/tests/lint_attribute_hyphenation_ignore.rs";
+  const archive = asString(asRecord(consumerSuccessor().historical).snapshot);
+  const read = (path: string) => readFileSync(join(checkout, path));
+  const historical = read(archive).toString("utf8");
+  const current = read(consumer).toString("utf8");
+  assert.equal(historical.split('"docs/content/rules/vue.md"').length - 1, 1);
+  assert.equal(
+    current,
+    historical.replace(
+      '"docs/content/rules/vue.md"',
+      '"docs/content/rules/reference/vue-attribute-hyphenation.md"',
+    ),
+  );
+  assert.deepEqual(validateSourceCopies(source, read), source);
+  for (const [path, bytes] of [
+    [archive, Buffer.concat([read(archive), Buffer.from("x")])],
+    [consumer, read(archive)],
+    [
+      consumer,
+      Buffer.from(current.replace("vue-attribute-hyphenation.md", "vue-no-unused-vars.md")),
+    ],
+    [consumer, Buffer.from(current.replace('"severity":2', '"severity":1'))],
+    [consumer, Buffer.concat([read(consumer), Buffer.from("\n// unknown source change\n")])],
+  ] as const)
+    assert.throws(() =>
+      validateSourceCopies(source, (requested) => (requested === path ? bytes : read(requested))),
+    );
+  assert.throws(() =>
+    validateSourceCopies(source, (path) => {
+      if (path === archive) throw new Error("missing historical consumer");
+      return read(path);
+    }),
+  );
+  const sharedHistoricalBuffer = read(archive);
+  assert.throws(() =>
+    validateSourceCopies(source, (path) =>
+      path === archive || path === consumer ? sharedHistoricalBuffer : read(path),
+    ),
+  );
 });

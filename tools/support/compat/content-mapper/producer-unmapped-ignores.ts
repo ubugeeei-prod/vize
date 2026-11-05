@@ -92,6 +92,16 @@ export function withoutProducerUnmappedIgnores<T extends Packet>(
   return result;
 }
 
+/** Authenticate the complete producer population in every current transform. */
+export function certifyCurrentProducerPopulation(packets: Iterable<Packet>): number {
+  let count = 0;
+  for (const packet of packets) {
+    withoutProducerUnmappedIgnores(packet, { requireComplete: true });
+    count++;
+  }
+  return count;
+}
+
 /** Authored directives after the producer's unmapped IGNORE rows are certified. */
 export function authoredDirectives(packet: Packet, requireComplete = false) {
   const certified = withoutProducerUnmappedIgnores(packet, { requireComplete });

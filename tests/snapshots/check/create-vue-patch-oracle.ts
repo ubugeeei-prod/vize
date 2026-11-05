@@ -740,7 +740,7 @@ function assertFmtResult(result: CommandResult, status: number, stderr: string):
   assert.deepEqual(result, { status, stdout: "", stderr });
 }
 
-function sha256(source: string | Buffer): string {
+function sha256(source: Parameters<ReturnType<typeof createHash>["update"]>[0]): string {
   return createHash("sha256").update(source).digest("hex");
 }
 

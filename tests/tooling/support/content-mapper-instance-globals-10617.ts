@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { captureCurrentSdkDeclarations } from "../../../tools/support/compat/content-mapper/current-sdk-declarations.ts";
 
 export type GlobalCase = {
   id: string;
@@ -460,24 +461,14 @@ export function makeSourceProject(
   manifest.private = true;
   manifest.typescript.contentMapper.exec = [binary, "content-mapper"];
   fs.writeFileSync(path.join(adapter, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
-  const helperFiles = [
-    "content-mapper-helpers.d.ts",
-    "content-mapper-helpers.d.mts",
-    "content-mapper-helpers.d.cts",
-    "generated/content-mapper-types.d.ts",
-    "virtual-ts-checker.d.ts",
-    "virtual-ts-globals.d.ts",
-    "virtual-ts-patterns.d.ts",
-    "virtual-ts-slots.d.ts",
-    "virtual-ts.d.ts",
-    "virtual-ts.d.mts",
-    "virtual-ts.d.cts",
-  ];
+  const sourceSdk = captureCurrentSdkDeclarations(path.join(repoRoot, "npm/cli"));
+  const helperFiles = sourceSdk.files;
   for (const name of helperFiles) {
     const target = path.join(adapter, name);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(path.join(repoRoot, "npm/cli", name), target);
   }
+  captureCurrentSdkDeclarations(adapter);
   return {
     role: "source protocol adapter, not public-package acceptance",
     manifestSha256: sha(fs.readFileSync(path.join(adapter, "package.json"))),

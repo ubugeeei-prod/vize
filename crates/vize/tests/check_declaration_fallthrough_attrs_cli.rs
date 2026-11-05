@@ -23,6 +23,22 @@ const PROBE: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/typechecker/declaration-fallthrough-attrs-11454/Probe.vue.txt"
 ));
 
+/// A non-strict vue-tsc program whose `.tsx` file sits beside a `.vue` file.
+const MIXED_CONFIG: &str = r#"{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "jsx": "preserve",
+    "jsxImportSource": "vue"
+  },
+  "include": ["src/**/*"]
+}
+"#;
+
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -49,14 +65,23 @@ fn consume(corsa: &Path, foo: &str, probe: &str, config: &str) -> Vec<(u32, u32,
         .unwrap();
     let producer = dir.path().join("producer");
     let consumer = dir.path().join("consumer");
+    let mixed = config == MIXED_CONFIG;
+    let (file, template) = if mixed {
+        ("Probe.tsx", PROBE)
+    } else {
+        ("Probe.vue", probe)
+    };
     for (project, file, source, config) in [
         (&producer, "Foo.vue", foo, CONFIG),
-        (&consumer, "Probe.vue", probe, config),
+        (&consumer, "Probe.vue", template, config),
+        (&consumer, file, probe, config),
     ] {
         fs::create_dir_all(project.join("src")).unwrap();
         fs::write(project.join("tsconfig.json"), config).unwrap();
         fs::write(project.join("src").join(file), source).unwrap();
-        link_provider(project);
+        if !project.join("node_modules").exists() {
+            link_provider(project);
+        }
     }
     let emitted = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&producer)
@@ -89,7 +114,9 @@ fn consume(corsa: &Path, foo: &str, probe: &str, config: &str) -> Vec<(u32, u32,
         .lines()
         .filter_map(|line| {
             let (site, rest) = line
-                .strip_prefix("src/Probe.vue(")?
+                .strip_prefix("src/")?
+                .strip_prefix(file)?
+                .strip_prefix('(')?
                 .split_once("): error TS")?;
             let (line, column) = site.split_once(',')?;
             let (code, _) = rest.split_once(':')?;
@@ -118,7 +145,8 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         "\"include\"",
         "\"vueCompilerOptions\": { \"checkUnknownProps\": true },\n  \"include\"",
     );
-    let cases: [Case; 9] = [
+    let tsx = "import Foo from \"./vendor/Foo.vue\";\n\nexport const probe = <Foo bar={1} id=\"r\" />;\nexport const owned = <Foo bar={1} class=\"r\" />;\n";
+    let cases: [Case; 10] = [
         ("original", FOO, PROBE.into(), CONFIG, vec![]),
         (
             "two-required",
@@ -183,7 +211,15 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             FOO,
             PROBE.into(),
             &strict,
-            vec![(6, 4, 2345)],
+            vec![(6, 17, 2353)],
+        ),
+        // vue-tsc's template fallback does not reach TSX in the same program (#11629).
+        (
+            "tsx-in-vue-tsc-program",
+            FOO,
+            tsx.into(),
+            MIXED_CONFIG,
+            vec![(3, 35, 2322)],
         ),
     ];
     for (id, foo, probe, config, expected) in cases {

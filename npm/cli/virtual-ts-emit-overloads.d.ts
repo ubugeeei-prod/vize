@@ -1,0 +1,88 @@
+// Generated from the canonical emit-overload helpers. Do not edit.
+declare global {
+  type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
+  type $OverloadUnionRecursive<
+    TOverload,
+    TPartialOverload = unknown,
+    TDepth extends unknown[] = [],
+    TAccumulated = never,
+  > = TDepth["length"] extends 120
+    ? TAccumulated
+    : TOverload extends unknown
+      ? TPartialOverload extends TOverload
+        ? TAccumulated
+        : TPartialOverload & TOverload extends {
+              (...args: infer A0): infer R0;
+              (...args: infer A1): infer R1;
+              (...args: infer A2): infer R2;
+              (...args: infer A3): infer R3;
+              (...args: infer A4): infer R4;
+              (...args: infer A5): infer R5;
+              (...args: infer A6): infer R6;
+              (...args: infer A7): infer R7;
+            }
+          ? (<G>() => G extends TAccumulated ? 1 : 2) extends <G>() => G extends
+              | TAccumulated
+              | ((...args: A0) => R0)
+              | ((...args: A1) => R1)
+              | ((...args: A2) => R2)
+              | ((...args: A3) => R3)
+              | ((...args: A4) => R4)
+              | ((...args: A5) => R5)
+              | ((...args: A6) => R6)
+              | ((...args: A7) => R7)
+              ? 1
+              : 2
+            ? TAccumulated
+            : $OverloadUnionRecursive<
+                TOverload,
+                TPartialOverload &
+                  ((...args: A0) => R0) &
+                  ((...args: A1) => R1) &
+                  ((...args: A2) => R2) &
+                  ((...args: A3) => R3) &
+                  ((...args: A4) => R4) &
+                  ((...args: A5) => R5) &
+                  ((...args: A6) => R6) &
+                  ((...args: A7) => R7) &
+                  $OverloadProps<TOverload>,
+                [...TDepth, unknown],
+                | TAccumulated
+                | ((...args: A0) => R0)
+                | ((...args: A1) => R1)
+                | ((...args: A2) => R2)
+                | ((...args: A3) => R3)
+                | ((...args: A4) => R4)
+                | ((...args: A5) => R5)
+                | ((...args: A6) => R6)
+                | ((...args: A7) => R7)
+              >
+          : TAccumulated
+      : never;
+  type $OverloadUnion<TOverload extends (...args: any[]) => any> = Exclude<
+    $OverloadUnionRecursive<(() => never) & TOverload>,
+    TOverload extends () => never ? never : () => never
+  >;
+  type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
+  type $IsStringLiteral<T> = T extends string ? (string extends T ? false : true) : false;
+  type $ParametersToFns<T extends any[]> = string extends T[0]
+    ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any }
+    : {
+        [K in T[0]]: $IsStringLiteral<K> extends true
+          ? (
+              ...args: T extends [e: infer E, ...args: infer P] ? (K extends E ? P : never) : never
+            ) => any
+          : never;
+      };
+  type __EmitOptions<T, S = __EmitShape<T>> = {
+    [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any;
+  } & (__EmitShape<T> extends (...args: any[]) => any
+    ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>>
+    : {});
+  type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}`
+    ? `${Head}${Capitalize<$Camelize<Tail>>}`
+    : S;
+  type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
+}
+
+export {};

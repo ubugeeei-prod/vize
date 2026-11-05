@@ -178,15 +178,15 @@ fn authored_index_access_options_reach_native_boolean_types_and_complete_cli_rep
             assert_eq!(process.stderr, b"", "{name}/{format} complete stderr");
             let stdout = String::from_utf8(process.stdout).unwrap();
             if format == "json" {
-                let expected = current_rule_documentation::packet(json_file(
+                let expected = crate::support::current_rule_documentation::packet(json_file(
                     &corpus,
                     case["json"].as_str().unwrap(),
                 ));
                 assert_eq!(
                     stdout,
-                    current_rule_documentation::json_stdout(&read(
+                    crate::support::current_rule_documentation::json_stdout(&read(
                         &corpus,
-                        case["stdout"].as_str().unwrap(),
+                        case["stdout"].as_str().unwrap()
                     )),
                     "{name} complete stdout bytes"
                 );
@@ -194,9 +194,9 @@ fn authored_index_access_options_reach_native_boolean_types_and_complete_cli_rep
             } else {
                 assert_eq!(
                     stdout,
-                    current_rule_documentation::plain(&read(
+                    crate::support::current_rule_documentation::plain(&read(
                         &corpus,
-                        case["plain"].as_str().unwrap(),
+                        case["plain"].as_str().unwrap()
                     )),
                     "{name} complete plain stdout"
                 );

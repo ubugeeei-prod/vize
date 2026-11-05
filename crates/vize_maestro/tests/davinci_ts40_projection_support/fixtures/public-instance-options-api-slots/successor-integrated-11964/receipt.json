@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "pullRequest": 11964,
+  "sourcePullRequests": [11919, 11951],
+  "predecessors": {
+    "main": {
+      "path": "successor-owned-constructor-20261105/projection-record.txt",
+      "bytes": 2234,
+      "sha256": "6496191943ec3a16c44b1c50f15423bfc9a41f7aa9dfd572f39c32b10a9024fa"
+    },
+    "tsx": {
+      "path": "successor-11629-2/projection-record.txt",
+      "bytes": 2234,
+      "sha256": "b708aa6c43ca7349c5fb65f11f6e6995858b7fac193d7442e98903b2e5321b27"
+    }
+  },
+  "successor": {
+    "path": "successor-integrated-11964/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "648929d8d9c636e143980a4fc1fb2bbf487701223d9a71f41c9700df692ff360"
+  },
+  "deltaFromMain": {
+    "canonGeneratedTextBytes": 225,
+    "contentMapperGeneratedTextBytes": 226,
+    "maestroGeneratedTextBytes": 225,
+    "contentMapperMappings": 1,
+    "contentMapperAuthoredHits": 0
+  },
+  "deltaFromTsx": {
+    "canonGeneratedTextBytes": 28,
+    "contentMapperGeneratedTextBytes": 86,
+    "maestroGeneratedTextBytes": 28,
+    "contentMapperMappings": 3,
+    "contentMapperAuthoredHits": 2
+  },
+  "qualification": {
+    "head": "d5e55331c62d304e8bab2d5fcbe2097064512d0e",
+    "run": 42089460359,
+    "artifact": {
+      "id": 13444742138,
+      "name": "component-input-packets-head-d5e55331c62d304e8bab2d5fcbe2097064512d0e-42089460359",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "sha256": "fb29a6ea745462c954eb0e7b0b4c008b4c1d5ec8379ec99400ddacaf075e779f"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authenticated join of the verified main constructor projection and the reviewed TSX input-channel projection. The successor is the exact complete record captured by GitHub Actions for the integrated head; this preserves both predecessor histories and grants no native TypeScript consumer acceptance credit."
+}

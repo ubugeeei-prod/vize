@@ -4,12 +4,84 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadLinterManifest, validateLinterReport } from "../differential/linter-api.ts";
+import {
+  currentReportReference,
+  loadLinterManifest,
+  validateLinterReport,
+} from "../differential/linter-api.ts";
 import { sha256 } from "../differential/harness.mjs";
 import { nativeArgv, NATIVE_APIS, validateNativeContract } from "../differential/linter-native.ts";
 import { sourceInspectedDialectCoverage } from "../differential/source-dialect-coverage.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+void test("current report documentation references retain legacy source and exact selectors", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-report-docs-owner-"));
+  const producer = path.join(directory, "producer");
+  const referenceRoot = path.join(directory, "references");
+  const source = "crates/vize_patina/src/output/shared.rs";
+  const root = "tests/_fixtures/differential/linter/diagnostic-documentation-11818";
+  const names = ["original-line-columns", "unicode-crlf-columns", "source-map-order-and-missing"];
+  fs.mkdirSync(path.dirname(path.join(producer, source)), { recursive: true });
+  fs.mkdirSync(path.join(referenceRoot, root), { recursive: true });
+  try {
+    const sourceBytes = fs.readFileSync(path.join(repoRoot, source));
+    for (const name of names) {
+      const id = `linter/report/${name}`;
+      const legacy = fs.readFileSync(
+        path.join(
+          repoRoot,
+          `crates/vize_patina/tests/snapshots/integration__report_history__${name}.snap`,
+        ),
+      );
+      const before = legacy.subarray(legacy.indexOf(Buffer.from("\n---\n"), 4) + 5);
+      const currentPath = path.join(root, `${name}.report.txt`);
+      const current = fs.readFileSync(path.join(repoRoot, currentPath));
+      fs.writeFileSync(path.join(referenceRoot, currentPath), current);
+      fs.writeFileSync(path.join(producer, source), "unregistered historical source\n");
+      assert.deepEqual(
+        currentReportReference(id, legacy, producer, "--report", referenceRoot),
+        before,
+      );
+      fs.writeFileSync(path.join(producer, source), sourceBytes);
+      assert.deepEqual(
+        currentReportReference(id, legacy, producer, "--report", referenceRoot),
+        current,
+      );
+      assert.throws(() =>
+        currentReportReference(id, legacy, producer, "--current-api", referenceRoot),
+      );
+      assert.throws(() =>
+        currentReportReference(
+          id,
+          Buffer.concat([legacy, Buffer.from("changed")]),
+          producer,
+          "--report",
+          referenceRoot,
+        ),
+      );
+      fs.writeFileSync(
+        path.join(referenceRoot, currentPath),
+        Buffer.concat([current, Buffer.from("changed")]),
+      );
+      assert.throws(() => currentReportReference(id, legacy, producer, "--report", referenceRoot));
+      fs.rmSync(path.join(referenceRoot, currentPath));
+      assert.throws(() => currentReportReference(id, legacy, producer, "--report", referenceRoot));
+      assert.deepEqual(
+        currentReportReference(
+          "linter/report/unregistered",
+          legacy,
+          producer,
+          "--report",
+          referenceRoot,
+        ),
+        before,
+      );
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 const manifestPath = path.join(repoRoot, "tests/_fixtures/differential/linter/manifest.json");
 
 void test("source inspection recognizes quoted and unquoted Pug template declarations", () => {

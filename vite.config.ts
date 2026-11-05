@@ -93,6 +93,13 @@ const config = {
       "**/__ubugeeei__/**",
       "tests/_fixtures/**",
       editorScenarioFixtureIgnorePattern,
+      // These authenticated inputs and captures retain their exact original bytes.
+      "crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests/fixtures/volar-directives.vue",
+      "crates/vize_maestro/tests/davinci_ts40_projection_support/fixtures/public-instance-mixed-vue2/successor-11675/receipt.json",
+      "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681-provenance.json",
+      "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681.json",
+      "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-ccf36f226d00-provenance.json",
+      "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-ccf36f226d00.json",
       // Authenticated upstream originals keep their complete source/fixture bytes.
       // The CSS vendor custody guard verifies them before focused Rust checks.
       "vendor/{lightningcss,parcel_sourcemap}/.cargo_vcs_info.json",

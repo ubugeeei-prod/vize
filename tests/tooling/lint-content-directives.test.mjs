@@ -1,8 +1,5 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
+import { currentContentDirectivePacket } from "./support/current-content-directive-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -74,7 +71,11 @@ await test("source-built lint matches complete original and configured content-d
       path.join(fixture, "Controls.vue.fixture"),
       path.join(directory, "Controls.vue"),
     );
-    for (const scenario of references.scenarios) {
+    for (const original of references.scenarios) {
+      const scenario = {
+        ...original,
+        expectedCli: currentContentDirectivePacket(original.expectedCli),
+      };
       writeVueConfigFixture(directory, scenario.config);
       for (let pass = 0; pass < 3; pass++) {
         const raw = run([
@@ -92,7 +93,7 @@ await test("source-built lint matches complete original and configured content-d
           pass,
           config: scenario.config,
           raw,
-          expected: currentRuleDocumentationPacket(scenario.expectedCli),
+          expected: scenario.expectedCli,
         };
         evidence.runs.push(observation);
         persist();
@@ -103,11 +104,7 @@ await test("source-built lint matches complete original and configured content-d
           scenario.expectedCli[0].errorCount > 0 ? 1 : 0,
           JSON.stringify(raw),
         );
-        assert.deepEqual(
-          JSON.parse(raw.stdout),
-          currentRuleDocumentationPacket(scenario.expectedCli),
-          scenario.id,
-        );
+        assert.deepEqual(JSON.parse(raw.stdout), scenario.expectedCli, scenario.id);
       }
     }
     // Preserve the original config bytes in custody and execute its equivalent
@@ -124,10 +121,7 @@ await test("source-built lint matches complete original and configured content-d
     assert.equal(plain.status, 1);
     assert.equal(
       plain.stdout,
-      currentRuleDocumentationPlain(
-        "Patina lint report: 1 error in 1 file\n\nNotice.vue\n  Notice.vue:10:5 error html/no-empty-palpable-content <p> element is empty but expects visible content\n    Reference: docs/content/rules/html.md\n",
-        "html/no-empty-palpable-content",
-      ),
+      "Patina lint report: 1 error in 1 file\n\nNotice.vue\n  Notice.vue:10:5 error html/no-empty-palpable-content <p> element is empty but expects visible content\n    Reference: docs/content/rules/reference/html-no-empty-palpable-content.md\n",
     );
     for (const row of source.inputs) {
       if (row.path !== "vize.config.json")

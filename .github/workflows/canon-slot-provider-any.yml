@@ -18,6 +18,7 @@ on:
       - tests/differential/typechecker-registry.ts
       - tests/_fixtures/differential/typechecker/manifest.json
       - npm/cli/virtual-ts.d.*
+      - npm/cli/virtual-ts-emit-overloads.d.ts
       - npm/cli/virtual-ts-globals.d.ts
       - npm/cli/virtual-ts-patterns.d.ts
       - npm/cli/virtual-ts-slots.d.ts
@@ -41,6 +42,10 @@ on:
       - tools/benchmarks/scripts/canon-registered-slot-provider.ts
       - tools/benchmarks/scripts/canon-slot-provider-collisions.ts
       - tools/benchmarks/scripts/canon-slot-provider-cli.ts
+      - tools/benchmarks/scripts/canon-slot-provider-preamble.ts
+      - tools/benchmarks/scripts/canon-slot-provider-current-preamble.ts
+      - crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt
+      - tests/tooling/fixtures/emit-overload-transition/**
       - tools/benchmarks/scripts/canon-component-casing-observe.ts
       - .github/workflows/canon-slot-provider-any.yml
   workflow_dispatch:

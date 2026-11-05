@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from "vue"
+declare const loose: any
+type Function = string
+type Pick<T> = T
+const globalThis = { Function: "label" as Function }
+const named = (value: Pick<string>) => value
+const handler = ref(named)
+</script>
+<template>
+<component :is="loose" @pick="handler" />
+<span>{{ globalThis.Function }}</span>
+</template>

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2022",
+      "DOM"
+    ]
+  },
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [
+        ".vue"
+      ]
+    }
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ]
+}

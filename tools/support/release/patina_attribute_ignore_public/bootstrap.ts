@@ -13,7 +13,9 @@ import { archiveComparison, recheckFiles, type ArchiveReceipt } from "../public_
 import { sriSha512 } from "../public_install/registry.ts";
 import {
   ancestry,
+  checkout,
   completedProducer,
+  consumerSuccessor,
   custody,
   digest,
   image,
@@ -135,6 +137,13 @@ export async function bootstrap(
     assert.equal(digest(bytes), row.sha256);
   }
   write(join(proof, "source-custody.json"), source);
+  const successor = consumerSuccessor();
+  write(join(proof, "consumer-successor.json"), successor);
+  writeFileSync(
+    join(proof, "historical-source-consumer.rs.txt"),
+    readFileSync(join(checkout, asString(asRecord(successor.historical).snapshot))),
+    { flag: "wx" },
+  );
   write(join(proof, "release-authority.json"), {
     version,
     candidate,

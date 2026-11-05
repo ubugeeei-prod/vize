@@ -21,7 +21,7 @@ export function installMapperCapture(
   return [process.execPath, mapperCaptureAsset, "--capture", captureDirectory, configuration];
 }
 
-async function capture(directory: string, configuration: string) {
+async function capture(directory: string, configuration: string, forwarded: string[]) {
   const { command, packageRoot } = JSON.parse(readFileSync(configuration, "utf8")) as {
     command: string[];
     packageRoot: string;
@@ -30,7 +30,9 @@ async function capture(directory: string, configuration: string) {
   const input = openSync(join(directory, `in-${process.pid}.bin`), "wx");
   const output = openSync(join(directory, `out-${process.pid}.bin`), "wx");
   const errors = openSync(join(directory, `err-${process.pid}.bin`), "wx");
-  const child = spawn(command[0], command.slice(1), { stdio: ["pipe", "pipe", "pipe"] });
+  const child = spawn(command[0], [...command.slice(1), ...forwarded], {
+    stdio: ["pipe", "pipe", "pipe"],
+  });
   let error: string | null = null;
   const recordInput = (bytes: Buffer) => writeSync(input, bytes);
   const fail = (cause: Error) => {
@@ -79,9 +81,9 @@ async function capture(directory: string, configuration: string) {
 
 if (process.argv[1] && resolve(process.argv[1]) === mapperCaptureAsset) {
   assert.equal(process.argv[2], "--capture");
-  const [directory, configuration] = process.argv.slice(3);
+  const [directory, configuration, ...forwarded] = process.argv.slice(3);
   assert.ok(directory && configuration);
-  capture(directory, configuration).catch((error) => {
+  capture(directory, configuration, forwarded).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });

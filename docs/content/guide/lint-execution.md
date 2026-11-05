@@ -33,7 +33,7 @@ export default defineConfig({
 | `crossFileComplexity` | `false` | Print complexity scores and hotspots and enable cross-file analysis. |
 | `strictReactivity` | `false` | Enable `type/no-reactivity-loss`, unless an explicit rule setting overrides it. |
 | `maxWarnings` | Unset | Fail when the warning count exceeds this limit; `0` permits none. |
-| `reportUnusedDisableDirectives` | `false` | Report template disable comments that suppress no Vize finding. |
+| `reportUnusedDisableDirectives` | `false` | Report supported disable comments that suppress no Vize finding. |
 
 For settings shared with CLI and editor, put these keys in `vue.linter`. `crossFileTree` and
 `crossFileComplexity` also enable cross-file analysis. Cross-file checks operate
@@ -60,13 +60,30 @@ Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vue`
 instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.
 
-`reportUnusedDisableDirectives: true` reports unused template `eslint-disable`,
-`eslint-disable-line`, and `eslint-disable-next-line` comments, including their
-`oxlint-` equivalents. It is off by default; `false` disables it for configured
-entries. The explicit `--report-unused-disable-directives` flag enables reporting
-even when configuration is `false`. Only rules executed by Vize count, so comments
-for external linters are left alone. This uses the existing native template pragma
-check; script/style and `vize-disable` comments do not produce unused reports.
+<span id="unused-disable-directives"></span>
+
+## Unused disable comments
+
+`reportUnusedDisableDirectives: true` reports unused suppression comments as
+`vue/comment-directive` errors at the comment. This is an opt-in execution setting,
+not a preset rule: adding the diagnostic ID to `rules` does not enable the check.
+It is off by default; `false` disables it for configured entries. The explicit
+`--report-unused-disable-directives` flag enables it even when configuration is `false`.
+
+In templates, this checks `eslint-disable`, `eslint-disable-line`, and
+`eslint-disable-next-line`, including their `oxlint-` equivalents. A comment is used
+when it suppresses a finding. Only enabled rules executed by Vize count. Disabled
+rules are not counted; names owned by other linters are left to those linters.
+
+When cross-file analysis is enabled, supported named project-rule directives in
+the selected Vue files also participate, including supported script-block comments.
+This does not imply general coverage for arbitrary script/style directives or all
+`vize-disable` alias forms. Text inside strings, attributes, or custom blocks cannot
+create a suppression comment.
+
+See [comment annotations](./comment-annotations.md) for suppression scope and
+[cross-file rules](../rules/cross-file.md) for the project checks. This native
+reporting option does not establish full `eslint-plugin-vue` comment-directive parity.
 
 ## Parser and project diagnostics
 

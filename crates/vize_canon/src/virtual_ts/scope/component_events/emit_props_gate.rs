@@ -4,8 +4,9 @@
 //! resolver (a `__vizeResolveEmitProps`/`__vizeResolveProps` function, or a
 //! vue-tsc library export) or through a route whose result is fixed by the
 //! component alone: `__EmitProps<E>`, with `E` inferred from the component
-//! argument, or `{}`. Only a generic resolver reads the props literal. For every
-//! other component the second call's result is the factory's return type, so
+//! argument, or `{}`. Generic resolvers and unmarked constructors can retain
+//! type parameters until the props call. Those routes keep the original factory.
+//! For the remaining components the second call's result is the factory's return type, so
 //! `__vize_emit_input` checks the literal against `any`. The authored literal is
 //! still emitted because the type level, not the generator, picks the route.
 //!
@@ -27,7 +28,7 @@ use vize_croquis::{Croquis, ScopeData, drawer::dynamic_component_alias};
 /// that reads the props, `false` one that does not. A union call combines its
 /// members' returns with subtype reduction, which no type alias can spell, so
 /// the cheap call also requires every member to return the identical type.
-const GATE_ALIASES: &str = "type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : false : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : false : false) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
+const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\ntype __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
 
 /// Declares the gate aliases once per module that can reach a gated call.
 pub(crate) fn emit_gate_aliases(

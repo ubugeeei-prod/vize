@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
+assertion_line: 223
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -64,13 +65,15 @@ type $MissingRequiredInputKeys<T, Authored, K extends $RequiredKeys<T> & string 
 type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
 type $IsSinglePropKey<T> = [T] extends [never] ? false : $IsPropKeyUnion<T> extends true ? false : true;
 type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [$MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>; } };
 type $ComponentInputGuard<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? {} : T extends unknown ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentInputGuardFor<T, Declared, Authored, Allowed>;
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
+// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
+type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & $ComponentMetadataKeys<$ComponentInputProps<T, Declared>>> & (T extends unknown ? $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx> : never)> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -134,7 +137,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 15766:15795 -> 0:76
+  // @vize-map: 16269:16298 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -168,9 +171,9 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17368:17373 -> 18:23
+  // @vize-map: 17871:17876 -> 18:23
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17451:17462 -> 40:51
+  // @vize-map: 17954:17965 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -260,12 +263,7 @@ type $ComponentInstance = {
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{
-  $props: Props;
-  readonly __vizeRawProps?: Props;
-  $emit: $PublicEmit<Emits>;
-  $slots: $PublicSlots<$Slots>;
-}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

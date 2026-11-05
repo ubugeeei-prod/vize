@@ -111,6 +111,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::integrated_source::source_before(path, current);
     let current = super::checker_augmentations::source_before(path, current);
     let current = super::runtime_prop_call::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
@@ -126,8 +127,9 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::integrated_source::preamble_before(current);
     invert(
-        &super::runtime_prop_call::preamble_before(current),
+        &super::runtime_prop_call::preamble_before(&current),
         PREAMBLE_EDITS,
         PREAMBLE_BEFORE_BYTES,
         PREAMBLE_BEFORE_SHA,
@@ -158,7 +160,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 
 #[cfg(test)]
 mod tests {
-    use super::{FILES, PREAMBLE_EDITS, preamble_before, retain_provenance, source_before};
+    use super::{FILES, PREAMBLE_EDITS, invert, preamble_before, retain_provenance, source_before};
     use serde_json::json;
 
     fn current(path: &str) -> String {
@@ -176,9 +178,11 @@ mod tests {
     fn current_assets_preamble_and_sdk_reconstruct_only_the_extra_keys_layer() {
         for file in &FILES {
             let current_text = current(file.path);
+            let integrated =
+                super::super::integrated_source::source_before(file.path, current_text.clone());
             let body = super::super::runtime_prop_call::source_before(
                 file.path,
-                super::super::checker_augmentations::source_before(file.path, current_text.clone()),
+                super::super::checker_augmentations::source_before(file.path, integrated),
             );
             assert_eq!(
                 redo(source_before(file.path, current_text), file.edits),
@@ -186,9 +190,10 @@ mod tests {
             );
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let integrated = super::super::integrated_source::preamble_before(preamble);
         assert_eq!(
             redo(preamble_before(preamble), PREAMBLE_EDITS),
-            super::super::runtime_prop_call::preamble_before(preamble)
+            super::super::runtime_prop_call::preamble_before(&integrated)
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
@@ -200,7 +205,10 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            let body =
+                super::super::integrated_source::source_before(file.path, current(file.path));
+            let body = super::super::checker_augmentations::source_before(file.path, body);
+            let body = super::super::runtime_prop_call::source_before(file.path, body);
             let (before, after) = file.edits[0];
             for mutated in [
                 body.replacen(after, "", 1),
@@ -209,7 +217,14 @@ mod tests {
                 format!("{body}\n"),
             ] {
                 assert!(
-                    std::panic::catch_unwind(|| source_before(file.path, mutated.clone())).is_err()
+                    std::panic::catch_unwind(|| invert(
+                        &mutated,
+                        file.edits,
+                        file.before_bytes,
+                        file.before_sha,
+                        file.after_sha,
+                    ))
+                    .is_err()
                 );
             }
         }

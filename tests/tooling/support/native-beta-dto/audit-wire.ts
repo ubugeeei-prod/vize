@@ -27,7 +27,6 @@ import {
   observeRootWatchWarning as observeHistoricalRootWatchWarning,
 } from "./historical-acknowledged-root-warning.ts";
 import { buildRoleDisposition } from "./role-disposition.ts";
-
 const root = process.env.VIZE_NATIVE_DTO_CAPTURE!;
 const load = (name: string): unknown => JSON.parse(fs.readFileSync(path.join(root, name), "utf8"));
 const save = (name: string, value: unknown) =>
@@ -303,10 +302,11 @@ for (const [index, process] of native.entries()) {
   });
 }
 assert.equal(source.attached.rows.length, 4);
-assert.equal(
-  stableRegistrationBaseline ? registrationRefusals <= 1 : registrationRefusals === 0,
-  true,
-  "Only the exact historical stable watcher registration request may race shutdown",
+assert(
+  stableRegistrationBaseline
+    ? receipts.every((receipt) => receipt.registrationRefusals <= 1)
+    : registrationRefusals === 0,
+  "Only one exact historical stable watcher registration request per native owner may race shutdown",
 );
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (source.role === "after")
@@ -469,13 +469,13 @@ if (baseline) {
   }
 }
 assert.ok(splitWatchLogObservations.length <= 1, "one historical split watch log observation only");
-save("stable-split-watch-log-observation.json", splitWatchLogObservations);
 const terminalOwners = [
   ...terminalStderrObservations.map((row) => row.nativeOwner),
   ...rootWatchWarningObservations
     .filter((row) => !row.observation.stderrOutputComplete)
     .map((row) => row.nativeOwner),
 ];
+save("stable-split-watch-log-observation.json", splitWatchLogObservations);
 if (terminalOwners.length)
   requireSingleTerminalStderrRole(
     terminalOwners,

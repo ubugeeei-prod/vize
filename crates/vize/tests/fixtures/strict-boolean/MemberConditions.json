@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.",
         "line": 3,
@@ -14,7 +14,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
         "line": 4,
@@ -24,7 +24,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly.",
         "line": 5,
@@ -34,7 +34,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 6,
@@ -44,7 +44,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected object value in conditional. An object is always truthy.",
         "line": 7,
@@ -54,7 +54,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 8,

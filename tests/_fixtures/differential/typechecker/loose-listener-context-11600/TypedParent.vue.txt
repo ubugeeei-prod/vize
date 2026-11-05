@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import TypedChild from "./TypedChild.vue"
+import ZeroChild from "./ZeroChild.vue"
+import GenericChild from "./GenericChild.vue"
+const takeString = (value: string) => value
+const takeNumber = (value: number) => value
+</script>
+<template>
+<component :is="TypedChild" @pick="(value) => takeString(value)" />
+<component :is="TypedChild" @pick="(value) => takeNumber(value)" />
+<component :is="ZeroChild" @pick="() => 0" />
+<component :is="ZeroChild" @pick="(value: number) => value" />
+<GenericChild :value="'typed'" @pick="(value) => takeString(value)" />
+<GenericChild :value="'typed'" @pick="(value) => takeNumber(value)" />
+</template>

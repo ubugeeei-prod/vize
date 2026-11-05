@@ -32,6 +32,7 @@ function roots(context: TestContext) {
     for (const file of [
       ...canonicalPaths,
       nativeAttributesPath,
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
       "crates/vize_canon/src/virtual_ts/helpers/declarations/content-mapper-type-imports.d.ts.txt",
     ]) {
       const destination = path.join(role, file);

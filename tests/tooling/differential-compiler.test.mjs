@@ -71,7 +71,7 @@ function syntheticReport(code = fixture.expected) {
         : null;
     const row = {
       id: current.id,
-      target: "ssr",
+      target: current.targets[0],
       legacy: {
         state: recipeFailure ? "failed" : "completed",
         verdict: recipeFailure ? "failed" : verdict,

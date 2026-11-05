@@ -95,6 +95,22 @@ const TSX_CONFIG: &str = r#"{
 }
 "#;
 
+/// A non-strict vue-tsc program: a `.vue` file puts vue-tsc's template fallback in scope.
+const MIXED_CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-in-vue-tsc-program-11629/tsconfig.json.txt"
+));
+
+const MIXED_TEMPLATE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-in-vue-tsc-program-11629/Probe.vue.txt"
+));
+
+const MIXED_TSX: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/tsx-in-vue-tsc-program-11629/Probe.tsx.txt"
+));
+
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -179,9 +195,11 @@ fn consume(corsa: &Path, foo: &str, probe: &str, config: &str) -> (Vec<(u32, u32
     fs::create_dir_all(consumer.join("src/vendor")).unwrap();
     fs::write(consumer.join("src/vendor/Foo.vue.d.ts"), &declaration).unwrap();
     fs::write(consumer.join("src/vendor/library.d.ts"), LIBRARY).unwrap();
-    let tsx = config == TSX_CONFIG;
-    let (file, checker) = if tsx {
+    let (file, checker) = if config == TSX_CONFIG {
         ("src/Probe.tsx", "tests/node_modules/typescript/bin/tsc")
+    } else if config == MIXED_CONFIG {
+        fs::write(consumer.join("src/Probe.vue"), MIXED_TEMPLATE).unwrap();
+        ("src/Probe.tsx", "tests/node_modules/vue-tsc/bin/vue-tsc.js")
     } else {
         ("src/Probe.vue", "tests/node_modules/vue-tsc/bin/vue-tsc.js")
     };
@@ -230,7 +248,8 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         "defineEmits",
         "defineProps<{ configuration: string }>();\ndefineEmits",
     );
-    let cases: [Case; 12] = [
+    let tsx_probe = MIXED_TSX;
+    let cases: [Case; 13] = [
         (
             "original",
             EMIT_ONLY.into(),
@@ -288,7 +307,7 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             EMIT_ONLY.into(),
             reported("id=\"r\""),
             &strict,
-            vec![(6, 4, 2345)],
+            vec![(6, 8, 2353)],
         ),
         (
             "generic-library",
@@ -308,9 +327,16 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         (
             "plain-tsx",
             EMIT_ONLY.into(),
-            "import Foo from \"./vendor/Foo.vue\";\n\nexport const probe = <Foo id=\"r\" />;\n"
-                .into(),
+            tsx_probe.into(),
             TSX_CONFIG,
+            vec![(3, 23, 2322)],
+        ),
+        // vue-tsc's template fallback does not reach TSX in the same program (#11629).
+        (
+            "tsx-in-vue-tsc-program",
+            EMIT_ONLY.into(),
+            tsx_probe.into(),
+            MIXED_CONFIG,
             vec![(3, 23, 2322)],
         ),
     ];

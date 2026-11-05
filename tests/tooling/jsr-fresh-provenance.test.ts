@@ -9,24 +9,23 @@ import {
   parsePermissionAudience,
   publishWithFreshProvenance,
 } from "../../tools/support/release/jsr/publish-with-fresh-provenance.ts";
+import type {
+  JwtPayload,
+  PermissionBinding,
+} from "../../tools/support/release/jsr/provenance-types.ts";
 
-interface PermissionBinding {
-  scope: string;
-  packageName: string;
-  version: string;
-  tarballHash: string;
-}
-type JwtPayload = Readonly<Record<string, unknown>>;
 interface OidcCall {
   audience: string | null;
   authorization: string | undefined;
 }
+
 interface RegistryCall {
   method: string | undefined;
   url: string | undefined;
   authorization: string | undefined;
   body: string;
 }
+
 interface ScenarioOptions {
   permissionAudience?: string;
   path?: string;
@@ -115,6 +114,7 @@ function claims(tokenAudience: string | null, overrides: JwtPayload = {}) {
     ...overrides,
     aud: tokenAudience,
   };
+  // Preserve the issuer's original JSON key position while rejecting issuer overrides.
   payload.iss = issuer;
   return payload;
 }

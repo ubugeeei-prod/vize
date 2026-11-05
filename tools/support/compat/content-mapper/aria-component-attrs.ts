@@ -8,6 +8,11 @@ import { fileURLToPath } from "node:url";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import { verifyRawAriaContext } from "./aria-component-raw-context.ts";
 import {
+  ariaDeclarationDigests,
+  copyAriaDeclarations,
+  sourceAriaDeclarationFiles,
+} from "./aria-source-package.ts";
+import {
   ariaComponentProjects,
   ariaPropReference,
   ariaPropReferenceStdout,
@@ -58,10 +63,6 @@ const consumer = fs.realpathSync(required("--consumer")),
     ? fs.realpathSync(required("--candidate-cli"))
     : undefined;
 assert.equal(options.has("--source-sha"), !!candidate);
-// Source-mode packages include the extracted slot family and the checker
-// entry the current producer imports. Installed release roles retain their
-// separately pinned declaration inventory until qualified.
-if (candidate) packageFiles.push("virtual-ts-slots.d.ts", "virtual-ts-checker.d.ts");
 assert.ok(
   !options.has("--source-package") || candidate,
   "installed mode cannot override package files",
@@ -74,6 +75,8 @@ const sourcePackage = candidate
   : path.join(consumer, "node_modules/vize");
 const manifest = JSON.parse(fs.readFileSync(path.join(sourcePackage, "package.json"), "utf8"));
 assert.equal(manifest.name, "vize");
+// Source packages follow their declared inventory; installed roles retain the frozen release image.
+const declarationFiles = candidate ? sourceAriaDeclarationFiles(manifest) : packageFiles;
 for (const name of ["./virtual-ts", "./content-mapper-helpers"]) assert.ok(manifest.exports[name]);
 const environment = Object.fromEntries(
   Object.entries(process.env).filter(
@@ -138,10 +141,7 @@ if (candidate) {
     "declarations and source CLI must name the same exact revision",
   );
 }
-const declarations = packageFiles.map((file) => ({
-  file,
-  sha256: digest(fs.readFileSync(path.join(sourcePackage, file))),
-}));
+const declarations = ariaDeclarationDigests(sourcePackage, declarationFiles);
 write(path.join(output, "providers.json"), {
   issue: 11144,
   mode: candidate ? "source-cli-with-shipped-declarations" : "unmodified-installed-package",
@@ -210,11 +210,7 @@ for (const project of ariaComponentProjects()) {
         );
     }
     packageRoot = path.join(modules, "vize");
-    for (const file of packageFiles) {
-      const target = path.join(packageRoot, file);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.copyFileSync(path.join(sourcePackage, file), target);
-    }
+    copyAriaDeclarations(sourcePackage, packageRoot, declarationFiles);
     const sourceManifest = structuredClone(manifest);
     sourceManifest.typescript.contentMapper.exec = [candidate, "content-mapper"];
     write(path.join(packageRoot, "package.json"), sourceManifest);

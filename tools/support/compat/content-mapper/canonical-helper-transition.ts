@@ -1,6 +1,7 @@
 /** Authenticate the only changed canonical body before packet relocation. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { certifyJsxWitnessChange } from "./constructor-jsx-witness-transition.ts";
 
 const runtimePropPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
 export const previousRuntimeProp =
@@ -24,6 +25,11 @@ export function certifyCanonicalAssets(
     assert.ok(before && after);
     if (before.equals(after)) continue;
     const label = `canonical helper body changed: ${file}`;
+    if (file !== runtimePropPath) {
+      const proof = certifyJsxWitnessChange(file, before, after);
+      assert.equal(proof.nativeAcceptanceCredit, false, label);
+      continue;
+    }
     assert.equal(file, runtimePropPath, label);
     assert.equal(before.length, 2004, label);
     assert.equal(after.length, 2004, label);

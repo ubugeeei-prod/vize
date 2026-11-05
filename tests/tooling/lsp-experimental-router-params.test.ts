@@ -66,21 +66,36 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
   const bytes = fs.readFileSync(path.join(custody, entry.file));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
-  const receipt = fs.readFileSync(path.join(custody, "owned-constructor-20261105.json"));
+  const receipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
   assert.equal(
     createHash("sha256").update(receipt).digest("hex"),
-    "e1b0adcb4d2b92fc782d08449f6fed6bcd755e6db7f64347ce4c2df938acdc2a",
+    "5ed5d324fe566f4d5de43b31bd0e4695b1e6ce2fb359ee493e03d40b56fd54be",
   );
   const successor = JSON.parse(receipt.toString("utf8"));
-  assert.equal(successor.kind, "exact-generated-constructor-successor");
+  assert.equal(successor.schema, "vize.experimental-router-generated-transition.v1");
   assert.equal(successor.qualificationCredit, false);
   const transition = successor.entries.find((row: { file: string }) => row.file === entry.file);
   assert.ok(transition);
-  assert.equal(transition.beforeSha256, entry.sha256);
-  const before = bytes.toString("utf8");
-  assert.equal(before.split(successor.edit.before).length, 2);
-  const current = before.replace(successor.edit.before, successor.edit.after);
-  assert.equal(createHash("sha256").update(current).digest("hex"), transition.afterSha256);
+  assert.equal(transition.currentSha256, entry.sha256);
+  const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
+  assert.equal(
+    createHash("sha256").update(ownedReceipt).digest("hex"),
+    successor.ownedConstructor.sha256,
+  );
+  const owned = JSON.parse(ownedReceipt.toString("utf8")).entries.find(
+    (row: { file: string }) => row.file === entry.file,
+  );
+  assert.ok(owned);
+  assert.equal(owned.beforeSha256, transition.baselineSha256);
+  assert.equal(owned.afterSha256, transition.ownedConstructorSha256);
+  const integratedSource = fs.readFileSync(path.resolve(custody, successor.integratedSource.path));
+  assert.equal(
+    createHash("sha256").update(integratedSource).digest("hex"),
+    successor.integratedSource.sha256,
+  );
+  const current = bytes.toString("utf8");
+  assert.equal(current.includes(successor.currentEdit.before), false);
+  assert.equal(current.split(successor.currentEdit.after).length, 2);
   return current;
 }
 

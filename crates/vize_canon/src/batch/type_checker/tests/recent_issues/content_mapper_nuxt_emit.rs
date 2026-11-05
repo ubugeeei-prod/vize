@@ -17,7 +17,7 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
     assert_eq!(
         result
             .text
-            .matches("$ReplaceComponentProps<{\n  $props: Props & __EmitProps<Emits>;")
+            .matches("=> $ComponentInstanceFor<$ComponentInstance, ")
             .count(),
         1
     );

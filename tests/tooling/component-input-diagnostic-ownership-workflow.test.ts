@@ -15,6 +15,47 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const historicalBefore = "78719553cf550bcffbf1d0fb891fda642f42de3a";
+const comparatorInputs = [
+  "tools/support/compat/content-mapper/canonical-helper-transition.ts",
+  "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
+  "tools/support/compat/content-mapper/component-constructor-transition.ts",
+  "tools/support/compat/content-mapper/component-export-transition.ts",
+  "tests/tooling/support/generic-event-specialization-source.ts",
+  "tests/tooling/support/static-listener-prop-source.ts",
+  "tests/_fixtures/tooling/static-listener-prop-update-11815.json",
+  "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/generic-event-specialization-update-11815.json",
+  "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+  "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+  "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+  "tests/tooling/public-emit-overload-package.test.ts",
+] as const;
+
+function assertComparatorInputsSelected(source: string): void {
+  const paths = [...source.matchAll(/^      - "([^"]+)"$/gmu)].map((match) => match[1]);
+  for (const file of comparatorInputs) assert.ok(paths.includes(file), file);
+  const packed = source
+    .split("  packed-emit-overloads:\n")[1]
+    ?.split("  published-sdk-packets:")[0];
+  assert.ok(packed);
+  assert.match(
+    packed,
+    /run-install: true[\s\S]+run: node --test tests\/tooling\/public-emit-overload-package\.test\.ts/u,
+  );
+}
+
+test("the comparator dependencies and packed-consumer refusal test remain selected by CI", () => {
+  const source = fs.readFileSync(
+    path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
+    "utf8",
+  );
+  assertComparatorInputsSelected(source);
+  for (const file of comparatorInputs) {
+    assert.throws(
+      () => assertComparatorInputsSelected(source.replace(`      - "${file}"\n`, "")),
+      assert.AssertionError,
+    );
+  }
+});
 
 test("callback packets certify only the unmapped public Slots re-export", () => {
   const before = {

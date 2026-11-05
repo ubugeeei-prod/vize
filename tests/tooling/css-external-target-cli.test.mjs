@@ -1,4 +1,4 @@
-import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
+import { currentCssCases } from "./support/current-css-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -10,7 +10,8 @@ import { fixture, frozenCorpus, root, sha256 } from "./css-external-target-refer
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 await test("source CLI preserves both CSS originals and complete subject-owned reports", () => {
-  const { source, cases } = frozenCorpus();
+  const { source, cases: historicalCases } = frozenCorpus();
+  const cases = currentCssCases(historicalCases);
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8"));
@@ -84,17 +85,8 @@ await test("source CLI preserves both CSS originals and complete subject-owned r
       const carrier = writeVueConfigFixture(directory, config);
       const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
       for (let pass = 0; pass < 3; pass++) {
-        const raw = run(
-          `${row.id}-pass-${pass}`,
-          args,
-          config,
-          currentRuleDocumentationPacket(row.expectedCli),
-        );
-        assert.deepEqual(
-          JSON.parse(raw.stdout),
-          currentRuleDocumentationPacket(row.expectedCli),
-          row.id,
-        );
+        const raw = run(`${row.id}-pass-${pass}`, args, config, row.expectedCli);
+        assert.deepEqual(JSON.parse(raw.stdout), row.expectedCli, row.id);
         assert.equal(fs.readFileSync(path.join(directory, row.filename), "utf8"), row.source);
         assert.equal(fs.readFileSync(originalConfig, "utf8"), config);
         assert.equal(fs.readFileSync(carrier, "utf8"), vueConfigFixtureSource(config));
