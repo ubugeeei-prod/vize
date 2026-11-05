@@ -11,7 +11,7 @@ use vize_carton::FxHashSet;
 use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 
 mod materialized_sources;
-pub(crate) use materialized_sources::MaterializedSourceMappingKind;
+pub(crate) use materialized_sources::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 
 impl VirtualProject {
     pub(crate) fn preferred_materialized_path_for_original(

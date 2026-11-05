@@ -274,6 +274,75 @@ fn config_source_options_and_requested_membership_keep_distinct_revisions() {
 }
 
 #[test]
+fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("Host.vue");
+    let child = root.path().join("Child.vue");
+    std::fs::write(&host, HOST).unwrap();
+    std::fs::write(&child, CHILD).unwrap();
+    let session = EditorMirrorSession::new();
+    drop(prepare(&session, &host, HOST, &[], &[]));
+    let initial = context(&session, &host, HOST, &[]);
+    let surface = initial.query_surface.get().expect("surface");
+    let host_uri = surface.host.request_uri.clone();
+    let dependency_slots = surface
+        .documents
+        .iter()
+        .enumerate()
+        .filter(|(_, (uri, _))| uri != &host_uri)
+        .map(|(index, document)| (index, document as *const _))
+        .collect::<Vec<_>>();
+    assert!(
+        !dependency_slots.is_empty(),
+        "the child document is part of the prepared graph"
+    );
+    let dependency_code = surface.host.dependencies[0].code.as_str().as_ptr();
+    let child_materialized = surface
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path.ends_with("Child.vue"))
+        .expect("child mirror document")
+        .code
+        .as_str()
+        .as_ptr();
+    drop(initial);
+
+    let edited = HOST.replace("日本語 🦀", "changed 🦀");
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let revised = context(&session, &host, &edited, &[]);
+    let surface = revised.query_surface.get().expect("revised surface");
+    assert!(surface.host.code.contains("changed"));
+    assert!(!surface.host.code.contains("日本語"));
+    for (index, previous) in dependency_slots {
+        assert!(
+            std::ptr::eq(previous, &surface.documents[index]),
+            "unchanged dependency documents stay in the prepared graph"
+        );
+    }
+    assert_eq!(
+        surface.host.dependencies[0].code.as_str().as_ptr(),
+        dependency_code
+    );
+    assert_eq!(
+        surface
+            .host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path.ends_with("Child.vue"))
+            .expect("child mirror document")
+            .code
+            .as_str()
+            .as_ptr(),
+        child_materialized
+    );
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let cold = context(&session, &host, &edited, &[]);
+    complete_surface(surface, cold.query_surface.get().expect("cold surface"));
+}
+
+#[test]
 fn identical_source_in_separate_roots_keeps_authored_membership() {
     let roots = [tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap()];
     let session = EditorMirrorSession::new();

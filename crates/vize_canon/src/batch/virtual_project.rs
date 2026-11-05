@@ -85,7 +85,7 @@ pub use jsx_codegen::{
     generate_jsx_virtual_ts as generate_jsx_document_virtual_ts,
 };
 mod mapping;
-pub(crate) use mapping::MaterializedSourceMappingKind;
+pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 mod materialize;
 mod materialize_delta;
 mod materialize_links;

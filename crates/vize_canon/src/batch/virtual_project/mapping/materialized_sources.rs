@@ -24,46 +24,21 @@ pub(crate) struct MaterializedSourceDocument {
 }
 
 impl VirtualProject {
+    /// One authored file's mirror document, without cloning the rest of the graph.
+    pub(crate) fn materialized_source_document(
+        &self,
+        original: &std::path::Path,
+    ) -> Option<MaterializedSourceDocument> {
+        let original = vize_carton::path::canonicalize_non_verbatim(original);
+        self.find_by_original(&original)
+            .map(|file| virtual_file_document(self, file))
+    }
+
     pub(crate) fn materialized_source_documents(&self) -> Vec<MaterializedSourceDocument> {
         let mut documents = self
             .virtual_files_sorted()
             .into_iter()
-            .map(|file| {
-                let source = self
-                    .original_contents
-                    .get(&file.virtual_path)
-                    .cloned()
-                    .unwrap_or_default();
-                let mappings = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.mappings().to_vec())
-                    .unwrap_or_default();
-                let prop_default_key_links = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.prop_default_key_links().to_vec())
-                    .unwrap_or_default();
-                let semantic_links = file
-                    .source_map
-                    .sfc_map
-                    .as_ref()
-                    .map(|map| map.semantic_links().to_vec())
-                    .unwrap_or_default();
-                MaterializedSourceDocument {
-                    materialized_path: file.virtual_path.clone(),
-                    source_path: file.original_path.clone(),
-                    source,
-                    code: file.content.clone(),
-                    mappings,
-                    semantic_links,
-                    prop_default_key_links,
-                    import_source_map: file.source_map.import_map.clone(),
-                    mapping_kind: MaterializedSourceMappingKind::Generated,
-                }
-            })
+            .map(|file| virtual_file_document(self, file))
             .collect::<Vec<_>>();
 
         for (materialized_path, canonical_path) in &self.package_shadow_files {
@@ -151,6 +126,46 @@ impl VirtualProject {
         documents.sort_by(|left, right| left.materialized_path.cmp(&right.materialized_path));
         documents.dedup_by(|left, right| left.materialized_path == right.materialized_path);
         documents
+    }
+}
+
+fn virtual_file_document(
+    project: &VirtualProject,
+    file: &super::super::VirtualFile,
+) -> MaterializedSourceDocument {
+    let source = project
+        .original_contents
+        .get(&file.virtual_path)
+        .cloned()
+        .unwrap_or_default();
+    let mappings = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.mappings().to_vec())
+        .unwrap_or_default();
+    let prop_default_key_links = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.prop_default_key_links().to_vec())
+        .unwrap_or_default();
+    let semantic_links = file
+        .source_map
+        .sfc_map
+        .as_ref()
+        .map(|map| map.semantic_links().to_vec())
+        .unwrap_or_default();
+    MaterializedSourceDocument {
+        materialized_path: file.virtual_path.clone(),
+        source_path: file.original_path.clone(),
+        source,
+        code: file.content.clone(),
+        mappings,
+        semantic_links,
+        prop_default_key_links,
+        import_source_map: file.source_map.import_map.clone(),
+        mapping_kind: MaterializedSourceMappingKind::Generated,
     }
 }
 
