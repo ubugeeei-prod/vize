@@ -97,13 +97,13 @@ void test("plants scale with the project and always reach the last feature", () 
   );
 });
 
-void test("lanes that miss a plant by a pinned issue expect zero there", () => {
+void test("fixed model plants stay required while remaining handler misses stay pinned", () => {
   const { plants } = generateScaleProject({ sfcs: minSfcs("vue"), kind: "vue" });
   const vModel = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "v-model")?.count;
   assert.equal(vModel("vue-tsc"), 1);
-  assert.equal(vModel("tsc-vize-mapper"), 0);
-  assert.equal(vModel("tsrs-fast-vize-mapper"), 0);
+  assert.equal(vModel("tsc-vize-mapper"), 1);
+  assert.equal(vModel("tsrs-fast-vize-mapper"), 1);
   const listener = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "listener-prop")?.count;
   assert.deepEqual(["vize-check", "tsc-vize-mapper", "vue-tsc"].map(listener), [2, 1, 1]);
