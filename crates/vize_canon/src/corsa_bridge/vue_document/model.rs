@@ -81,8 +81,8 @@ pub struct CorsaVueVirtualDependency {
     pub virtual_suffix: &'static str,
 }
 
-/// Native inputs share only the existing immutable URI/code batch. Appended
-/// live members retain the same selected owned strings as the original Vec.
+/// Native inputs share immutable URI/code payloads without carrying source
+/// mappings or a catalog into the native worker.
 #[expect(
     clippy::disallowed_types,
     reason = "immutable payload bytes cross native workers"
@@ -90,7 +90,7 @@ pub struct CorsaVueVirtualDependency {
 #[derive(Clone, Default)]
 pub(crate) struct CorsaNativeDocumentBatch {
     shared: std::sync::Arc<Vec<(String, String)>>,
-    appended: Vec<(String, String)>,
+    additions: Vec<std::sync::Arc<(String, String)>>,
 }
 
 #[expect(
@@ -101,20 +101,27 @@ impl CorsaNativeDocumentBatch {
     pub(crate) fn shared(shared: std::sync::Arc<Vec<(String, String)>>) -> Self {
         Self {
             shared,
-            appended: Vec::new(),
+            additions: Vec::new(),
         }
     }
 
     pub(crate) fn iter(&self) -> impl Iterator<Item = &(String, String)> {
-        self.shared.iter().chain(self.appended.iter())
+        self.shared
+            .iter()
+            .chain(self.additions.iter().map(std::sync::Arc::as_ref))
     }
 
     pub(crate) fn len(&self) -> usize {
-        self.shared.len() + self.appended.len()
+        self.shared.len() + self.additions.len()
     }
 
-    pub(crate) fn push(&mut self, document: (String, String)) {
-        self.appended.push(document);
+    pub(crate) fn push_shared(&mut self, document: std::sync::Arc<(String, String)>) {
+        self.additions.push(document);
+    }
+
+    #[cfg(test)]
+    pub(crate) fn shared_additions_for_test(&self) -> &[std::sync::Arc<(String, String)>] {
+        &self.additions
     }
 
     #[cfg(test)]
