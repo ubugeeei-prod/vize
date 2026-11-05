@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { certifyDiscriminatedJsxUnionTransition } from "./discriminated-jsx-union-transition.ts";
 
 const recordUrl = new URL(
   "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
@@ -17,6 +18,12 @@ const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex
 const identity = (bytes: Buffer) => ({ bytes: bytes.length, sha256: digest(bytes) });
 
 export function certifyJsxWitnessChange(file: string, before: Buffer, after: Buffer) {
+  const successor = certifyDiscriminatedJsxUnionTransition(file, before, after);
+  if (successor)
+    return {
+      ...successor,
+      comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+    };
   const bytes = readFileSync(recordUrl);
   assert.equal(digest(bytes), recordSha256);
   const record = JSON.parse(bytes.toString());

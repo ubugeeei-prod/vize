@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
+import { beforeDiscriminatedJsxUnionIn } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
@@ -115,6 +116,11 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     read(base + "pattern_matching.d.ts"),
   ].join("");
   assert.deepEqual(identity(current), {
+    bytes: 46557,
+    sha256: "635acca0b25877f2132902fe777d894287100a7c993066066a67812deab2f255",
+  });
+  const integratedCurrent = beforeDiscriminatedJsxUnionIn(current);
+  assert.deepEqual(identity(integratedCurrent), {
     bytes: 46534,
     sha256: "7be160e1798f4368642597b67db232b1a72309dc18eb637a4ec7d868f3457bcb",
   });
@@ -130,8 +136,8 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
       file: { edits: Array<{ before: string; after: string }> };
     }
   ).file.edits.at(-1)!;
-  assert.equal(current.split(repair.after).length, 2);
-  const repairedCurrent = current.replace(repair.after, repair.before);
+  assert.equal(integratedCurrent.split(repair.after).length, 2);
+  const repairedCurrent = integratedCurrent.replace(repair.after, repair.before);
   assert.deepEqual(identity(repairedCurrent), {
     bytes: 46506,
     sha256: "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
@@ -141,7 +147,7 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   assert.equal(
     hash(integratedSource),
-    "c0a1a85b9820c648bc4293267f8bbdd6417be2784e951a45f7d2e49c8af96642",
+    "b95db1c28d2e0c825d88f475b674c1c606a8f2ae72e9ba725031198660ef9c8e",
   );
   assert.ok(integratedSource.includes(identity(repairedCurrent).sha256));
   const genericEdit = generic.preamble.edits[0]!;

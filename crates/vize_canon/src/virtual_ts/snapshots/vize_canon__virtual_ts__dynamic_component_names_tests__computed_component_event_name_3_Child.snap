@@ -136,7 +136,7 @@ function __setup() {
   const enter = 'enter'
   let pressed = false
   
-  // @vize-map: 15665:15845 -> 0:197
+  // @vize-map: 15688:15868 -> 0:197
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

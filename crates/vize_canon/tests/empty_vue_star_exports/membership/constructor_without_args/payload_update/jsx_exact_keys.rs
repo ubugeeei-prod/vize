@@ -1,6 +1,6 @@
 //! Authenticate the TSX-only exact-key change before the older input-channel layer.
 use super::support;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 const RECORD: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -102,7 +102,7 @@ mod tests {
     use super::{
         load, preamble_edits_before, retain_provenance, source_before, source_edits_before,
     };
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
 
     fn forward(mut previous: String, record: &Value) -> String {
         for edit in record["edits"].as_array().unwrap().iter().rev() {

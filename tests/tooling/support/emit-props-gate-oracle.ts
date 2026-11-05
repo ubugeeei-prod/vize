@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { beforeStaticListenerSource } from "./static-listener-prop-source.ts";
 import { beforeGenericEventSpecialization } from "./generic-event-specialization-source.ts";
+import {
+  beforeDiscriminatedJsxUnion,
+  discriminatedJsxUnionAfterSha256,
+} from "../../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 
 interface Routes {
   cheap: string[];
@@ -65,6 +69,11 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  if (
+    path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
+    sha256(current) === discriminatedJsxUnionAfterSha256
+  )
+    current = beforeDiscriminatedJsxUnion(current);
   if (
     path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
     sha256(current) === "989c87b3f04ffab6a0b8be1c4249bb38d98dd383a6199a90522c18cf7cb13f0d"

@@ -21,6 +21,10 @@ import {
   beforeGenericEventPreamble,
   genericEventRecordPath,
 } from "./support/generic-event-specialization-source.ts";
+import {
+  applyDiscriminatedJsxUnionIn,
+  beforeDiscriminatedJsxUnionIn,
+} from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -117,7 +121,9 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     currentPreamble,
   );
   const overloadPreamble = applyCurrentOverloadPreamble(successorPreamble);
-  const currentSourcePreamble = applyIntegratedSourcePreambleTransitions(overloadPreamble);
+  const integratedSourcePreamble = applyIntegratedSourcePreambleTransitions(overloadPreamble);
+  const currentSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
+  assert.equal(beforeDiscriminatedJsxUnionIn(currentSourcePreamble), integratedSourcePreamble);
   assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
   assert.equal(currentSourcePreamble.includes("declare var __vizeTemplateChecker: true;"), false);
   assert.ok(currentSourcePreamble.includes("type $ComponentInstanceFor<"));

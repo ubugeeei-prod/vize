@@ -1,6 +1,6 @@
 //! Reconstruct the exact main source beneath the reviewed #11964 join.
 use super::support;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 struct File {
     path: &'static str,

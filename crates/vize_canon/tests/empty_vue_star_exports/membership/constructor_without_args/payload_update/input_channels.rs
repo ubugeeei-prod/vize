@@ -1,6 +1,6 @@
 //! Invert only the #11629 split of template and TSX input channels before #11630.
 use super::support;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 const F0_BEFORE_0: &str = "type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;\ntype $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<Exclude<keyof Authored, keyof Allowed>, typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P; __vizeTemplateChecker?: never } ? keyof P : never>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\ntype $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;\n";
 const F0_AFTER_0: &str = "type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;\ntype $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;\ntype $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;\n";
@@ -177,7 +177,7 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 #[cfg(test)]
 mod tests {
     use super::{
-        preamble_edits_before, retain_provenance, source_edits_before, FILES, PREAMBLE_EDITS,
+        FILES, PREAMBLE_EDITS, preamble_edits_before, retain_provenance, source_edits_before,
     };
     use serde_json::json;
 

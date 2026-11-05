@@ -9,6 +9,7 @@ import {
 } from "../../../../tests/tooling/support/static-listener-prop-source.ts";
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
+import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -104,9 +105,10 @@ export function currentCallbackSourceEdits(
   };
   assert.equal(transition.file.path, componentHelperSource);
   const currentHelper = readSource(componentHelperSource);
-  assert.equal(Buffer.byteLength(currentHelper), transition.file.after.bytes);
-  assert.equal(digest(currentHelper), transition.file.after.sha256);
-  let previousHelper = currentHelper;
+  const integratedHelper = beforeDiscriminatedJsxUnion(currentHelper);
+  assert.equal(Buffer.byteLength(integratedHelper), transition.file.after.bytes);
+  assert.equal(digest(integratedHelper), transition.file.after.sha256);
+  let previousHelper = integratedHelper;
   for (const edit of [...transition.file.edits].reverse()) {
     assert.equal(previousHelper.split(edit.after).length, 2);
     previousHelper = previousHelper.replace(edit.after, edit.before);

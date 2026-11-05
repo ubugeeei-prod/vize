@@ -1,7 +1,7 @@
 //! Full ordered malformed membership; reference bodies have separate provenance.
 
 use super::support;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     fs,
     path::{Component, Path, PathBuf},
