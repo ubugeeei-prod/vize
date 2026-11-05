@@ -4,7 +4,7 @@ title: "vize:croquis/cf/object-identity-comparison"
 
 # `vize:croquis/cf/object-identity-comparison`
 
-Un objet réactif est comparé par identité, laquelle change lorsque l’enveloppe est retirée.
+Comparez les identifiants stables des enregistrements représentés par des objets bruts et des proxies réactifs.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 Il s’agit d’un contrat de diagnostic publié sans producteur actuel. Le scénario Mauvais/Bon ci-dessous explique le risque et la correction ; aucune option ne permet actuellement de déclencher ce code.
 
 L’exemple suppose que les identifiants distinguent les enregistrements de façon unique. Comparer deux références au même proxy réactif reste valide ; ce contrat n’a actuellement aucun producteur de diagnostics. Un objet brut et son proxy réactif ont des identités distinctes, et toRaw() renvoie l’objet d’origine.
+
+## Champ d’application et limites
+
+Un objet brut et son proxy réactif ont des identités d’objet distinctes, et toRaw() renvoie l’objet original. Ce contrat illustre la comparaison d’identifiants stables d’enregistrement lorsque c’est l’identité de l’enregistrement qui est recherchée.
 
 ## Fichiers communs du projet
 

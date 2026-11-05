@@ -14,7 +14,11 @@ import { extra, composed } from "./cross-extra.ts";
 import { crossMetadata, explanation } from "./project-metadata.ts";
 import { routerExamples } from "./router-project.ts";
 import { projectExplanations } from "./project-explanations.ts";
-import { projectDocumentationNote } from "./project-purposes.ts";
+import {
+  projectDocumentationNote,
+  projectPurpose,
+  projectScopeQualification,
+} from "./project-purposes.ts";
 import { contractExamples } from "./project-contracts.ts";
 import { reactiveCycleExample } from "./reactive-cycle-project.ts";
 const examples: Record<string, ProjectExample> = {
@@ -97,7 +101,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     "",
     `# \`${code}\``,
     "",
-    info.purpose,
+    projectPurpose(name, info.purpose, ja),
     "",
     ...projectFacts(ja, {
       severity: status === "contract" ? label("Not emitted", "現在は生成されません") : severity,
@@ -171,9 +175,12 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
     contractExamples[name] ??
     (name === "circular-reactive-dependency" ? reactiveCycleExample : undefined);
   const contractNote = contractExamples[name]?.note?.[ja ? "ja" : "en"];
-  const qualification = projectDocumentationNote(name, ja);
+  const qualification = projectScopeQualification(name, ja);
+  const note = projectDocumentationNote(name, ja);
   if (contractNote) lines.push(contractNote, "");
-  if (qualification) lines.push(qualification, "");
+  if (note) lines.push(note, "");
+  if (qualification)
+    lines.push(`## ${label("Scope and limitations", "範囲と制約")}`, "", qualification, "");
   if (example) lines.push(...fixture({ ...example, ...projectExplanations.get(name) }, ja));
   else throw new Error(`Missing complete project scenario: ${code}`);
   lines.push(

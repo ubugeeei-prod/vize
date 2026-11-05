@@ -4,7 +4,7 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` 启动异步任务，却无法清理上一轮执行。
+为异步 watchEffect 处理失效清理，避免写入过期响应。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -12,7 +12,9 @@ title: "vize:croquis/cf/watcheffect-async"
 
 适用范围: 已分析的组件图，以及下方说明的受支持事实
 
-Vue 支持 watchEffect 的清理；正确示例使用显式的 watch 来源，并取消已失效的工作。
+## 适用范围与限制
+
+这里的异步 watchEffect 没有失效清理，也没有防止过期响应的保护。Vue 支持 watchEffect 的清理；正确示例使用显式的 watch 来源，并取消已失效的工作。
 
 ## 共享项目文件
 

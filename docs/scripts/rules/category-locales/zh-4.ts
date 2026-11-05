@@ -40,7 +40,7 @@ export const chineseRules4: Record<string, readonly [string, string, string]> = 
     "改用可容纳子组件块级元素的 `<section>` 容器；子组件保持不变。",
   ],
   "vize:croquis/cf/array-mutation": [
-    "通过索引修改数组，无法被该响应式数组跟踪。",
+    "在 Vue 2.7 中，使用可通知更新的操作替换数组索引处的值。",
     "在此历史 Vue 2.7 项目中，`items[0] = next` 修改数组却不通知 Vue 2 数组观察器，因此显示的首项不一定更新。",
     "`splice(0, 1, next)` 使用 Vue 2 可观察的数组修改方法，使同样的替换能更新视图。",
   ],

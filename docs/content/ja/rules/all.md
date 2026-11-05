@@ -344,7 +344,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="ecosystem-vue-router-param-type"></span>[`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | 宣言されたパスが受け付けないルートパラメーター値を報告します。 | `vp run lint` で診断 |
 | <span id="ecosystem-vue-router-unknown-route"></span>[`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | インストール済みのルーターにない遷移名を報告します。 | `vp run lint` で診断 |
 | <span id="html-cross-component-nesting"></span>[`html/cross-component-nesting`](./project/html-cross-component-nesting.md) | import した子コンポーネントの要素を合成して HTML の入れ子を検査します。 | `vp run lint` で診断 |
-| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 配列を添字で変更していますが、reactive な配列はそれを追跡しません。 | 予定。まだ診断されません |
+| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | Vue 2.7 の配列のインデックス更新に、通知される操作を使います。 | 予定。まだ診断されません |
 | <span id="vize-croquis-cf-async-boundary"></span>[`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | reactive な状態が async 境界を越え、古い値が見えることがあります。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-async-no-suspense"></span>[`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | async コンポーネントが Suspense 境界なしで描画されています。 | 実験的。CLI ではまだ診断されません |
 | <span id="vize-croquis-cf-browser-api-ssr"></span>[`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | サーバーでも描画され得る場所で、ブラウザ専用 API を使っています。 | `vp run lint` で診断 |
@@ -373,8 +373,8 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vize-croquis-cf-mutated-after-escape"></span>[`vize:croquis/cf/mutated-after-escape`](./project/vize-croquis-cf-mutated-after-escape.md) | reactive オブジェクトが、所有者から漏れた後に変更されています。 | 予定。まだ診断されません |
 | <span id="vize-croquis-cf-non-reactive-provide"></span>[`vize:croquis/cf/non-reactive-provide`](./project/vize-croquis-cf-non-reactive-provide.md) | provide した値が reactive ではないため、子孫は更新を観測できません。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-non-unique-id"></span>[`vize:croquis/cf/non-unique-id`](./project/vize-croquis-cf-non-unique-id.md) | ループ内の要素 id が項目ごとに一意ではありません。 | `vp run lint` で診断 |
-| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。 | 予定。まだ診断されません |
-| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。 | 予定。まだ診断されません |
+| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | オブジェクトと Proxy が表すレコードの同一性を、安定した ID で比較します。 | 予定。まだ診断されません |
+| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | setup で Pinia の getter を更新に追従しない値へコピーする操作を避けます。 | 予定。まだ診断されません |
 | <span id="vize-croquis-cf-prop-type-mismatch"></span>[`vize:croquis/cf/prop-type-mismatch`](./project/vize-croquis-cf-prop-type-mismatch.md) | 渡した prop の値が、宣言された型と一致しません。 | 実験的。CLI ではまだ診断されません |
 | <span id="vize-croquis-cf-provide-inject-type"></span>[`vize:croquis/cf/provide-inject-type`](./project/vize-croquis-cf-provide-inject-type.md) | provide した値と inject の型が一致しません。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-provide-without-symbol"></span>[`vize:croquis/cf/provide-without-symbol`](./project/vize-croquis-cf-provide-without-symbol.md) | `provide` が `InjectionKey` のシンボルではなく素のキーを使っています。 | `vp run lint` で診断 |
@@ -382,7 +382,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vize-croquis-cf-reactivity-outside-setup"></span>[`vize:croquis/cf/reactivity-outside-setup`](./project/vize-croquis-cf-reactivity-outside-setup.md) | reactive API が `setup` の外で呼ばれています。 | 予定。まだ診断されません |
 | <span id="vize-croquis-cf-reassignment-breaks-reactivity"></span>[`vize:croquis/cf/reassignment-breaks-reactivity`](./project/vize-croquis-cf-reassignment-breaks-reactivity.md) | reactive な束縛を再代入すると、ただの値に置き換わります。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-reference-escapes-scope"></span>[`vize:croquis/cf/reference-escapes-scope`](./project/vize-croquis-cf-reference-escapes-scope.md) | reactive な参照が、寿命を持つスコープの外へ漏れています。 | 予定。まだ診断されません |
-| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | Vue が許さない使い方で setup コンテキストを使っています。 | 実験的。CLI ではまだ診断されません |
+| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | インスタンスごとに持つリアクティブな状態を setup 内で作ります。 | 実験的。CLI ではまだ診断されません |
 | <span id="vize-croquis-cf-shallow-deep-access"></span>[`vize:croquis/cf/shallow-deep-access`](./project/vize-croquis-cf-shallow-deep-access.md) | `shallowReactive` または `shallowRef` の深いプロパティを、追跡されるものとして読んでいます。 | 予定。まだ診断されません |
 | <span id="vize-croquis-cf-spread-breaks-reactivity"></span>[`vize:croquis/cf/spread-breaks-reactivity`](./project/vize-croquis-cf-spread-breaks-reactivity.md) | reactive オブジェクトのスプレッドは値をコピーし、追跡を失います。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-suspense-no-fallback"></span>[`vize:croquis/cf/suspense-no-fallback`](./project/vize-croquis-cf-suspense-no-fallback.md) | `<Suspense>` に fallback がありません。 | 予定。まだ診断されません |
@@ -402,7 +402,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vize-croquis-cf-unused-provide"></span>[`vize:croquis/cf/unused-provide`](./project/vize-croquis-cf-unused-provide.md) | provide したキーが一度も inject されていません。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-value-extraction-breaks-reactivity"></span>[`vize:croquis/cf/value-extraction-breaks-reactivity`](./project/vize-croquis-cf-value-extraction-breaks-reactivity.md) | reactive な値をローカルへ取り出すと、その後の更新が失われます。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-watch-can-be-computed"></span>[`vize:croquis/cf/watch-can-be-computed`](./project/vize-croquis-cf-watch-can-be-computed.md) | ウォッチャが値を状態へ写しているだけで、computed にできます。 | 予定。まだ診断されません |
-| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | `watchEffect` が async タスクを始め、前回の実行を片付けられません。 | `vp run lint` で診断 |
+| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | 非同期の watchEffect で無効になった処理を中止し、古い応答を反映しないようにします。 | `vp run lint` で診断 |
 | <span id="vize-croquis-cf-watcher-outside-setup"></span>[`vize:croquis/cf/watcher-outside-setup`](./project/vize-croquis-cf-watcher-outside-setup.md) | `watch` または `watchEffect` が `setup` の外で呼ばれています。 | 予定。まだ診断されません |
 | <span id="vue-cross-file-attrs-fallthrough"></span>[`vue/cross-file-attrs-fallthrough`](./project/vue-cross-file-attrs-fallthrough.md) | 属性を渡す親と、属性を自動継承できず $attrs も使っていない子コンポーネントの関係を検査します。 | `vp run lint` で診断 |
 

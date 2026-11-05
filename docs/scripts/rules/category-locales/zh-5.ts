@@ -5,12 +5,12 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     "标题 ID 包含结果的稳定 ID，为每个列表项产生不同的文档标识符。",
   ],
   "vize:croquis/cf/object-identity-comparison": [
-    "响应式对象按身份比较，解包后身份会改变。",
+    "用稳定的记录 ID 比较原始对象与响应式代理所表示的记录。",
     "此约定示例在意图判断记录身份时比较稳定的记录 ID。`proxy === raw` 比较包装对象身份，因此即使二者代表同一用户记录，结果也是 false。应用希望比较记录身份，而非包装对象身份。",
     "比较稳定的记录 `id`，回答预期问题，不依赖对象是原始对象还是代理。",
   ],
   "vize:croquis/cf/pinia-getter": [
-    "Pinia getter 未通过 `storeToRefs` 读取，无法保持响应性。",
+    "避免在 setup 中将 Pinia getter 的值复制为不再跟随更新的快照。",
     "`const doubled = store.doubled` 在 setup 时复制 getter 的当前数字。复制的数字不会跟随后续 `store.count` 更新。",
     "`storeToRefs(store)` 提供响应式 getter ref，可被解构并由模板解包，同时继续关联 store。",
   ],
@@ -50,7 +50,7 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     "缓存接收当前普通数字，保留快照而不保留组件拥有的 ref。",
   ],
   "vize:croquis/cf/setup-context-violation": [
-    "setup 上下文被以 Vue 不允许的方式使用。",
+    "在每个实例的 setup 中创建应由组件实例独立持有的响应式状态。",
     "`ref(0)` 在普通脚本模块作用域创建，位于此分析器情形所表示的按实例 setup 上下文之外。",
     "将绑定移入 script setup，使每个组件实例拥有自己的 count，模板也能读取它。",
   ],
@@ -150,7 +150,7 @@ export const chineseRules5: Record<string, readonly [string, string, string]> = 
     "计算 getter 直接表达相同派生关系，移除手动同步及额外可写状态。",
   ],
   "vize:croquis/cf/watcheffect-async": [
-    "`watchEffect` 启动异步任务，却无法清理上一轮执行。",
+    "为异步 watchEffect 处理失效清理，避免写入过期响应。",
     "此处的异步 watchEffect 没有失效清理，也没有防止过期响应的保护。异步 `watchEffect` 将隐式依赖收集与等待请求混合，且没有失效保护。",
     "显式的 `watch(() => props.query, ...)` 声明来源、注册请求清理，并在失效后拒绝过期响应。",
   ],

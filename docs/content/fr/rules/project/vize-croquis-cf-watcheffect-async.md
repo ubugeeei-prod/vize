@@ -4,7 +4,7 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` lance une tâche asynchrone et ne peut pas nettoyer l’exécution précédente.
+Protégez le travail asynchrone de watchEffect contre l’invalidation et les réponses périmées.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -12,7 +12,9 @@ title: "vize:croquis/cf/watcheffect-async"
 
 Champ d’application: Graphe de composants analysé et faits pris en charge décrits ci-dessous
 
-Vue prend en charge le nettoyage de watchEffect ; l’exemple Bon utilise une source de watch explicite et annule le travail invalidé.
+## Champ d’application et limites
+
+Le watchEffect asynchrone présenté ici n’a ni nettoyage lors de l’invalidation ni garde contre les réponses périmées. Vue prend en charge le nettoyage de watchEffect ; l’exemple Bon utilise une source de watch explicite et annule le travail invalidé.
 
 ## Fichiers communs du projet
 

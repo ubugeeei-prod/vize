@@ -4,7 +4,7 @@ title: "vize:croquis/cf/array-mutation"
 
 # `vize:croquis/cf/array-mutation`
 
-Um array é alterado por índice, o que um array reativo não rastreia.
+Use operações observáveis para atualizar índices de arrays no Vue 2.7.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 Este é um contrato de diagnóstico publicado sem produtor atual. O cenário incorreto e correto abaixo explica o risco e a correção; nenhuma opção atualmente faz este código ser emitido.
 
 Apenas para o Vue 2.7 histórico: use dependências compatíveis do Vue 2.7 e do compilador de SFCs neste cenário. Os proxies do Vue 3 rastreiam atribuições a índices de arrays, então `items[0] = next` é reativo no Vue 3 e não é um defeito do Vue 3. Este código publicado não tem produtor atual.
+
+## Escopo e limitações
+
+Este contrato sem produtor atual usa um cenário histórico de atribuição a índices de arrays no Vue 2.7. O Vue 2 não notifica atualizações por atribuição direta ao índice; o Vue 3 rastreia essas atribuições. Os arquivos incorreto e correto ilustram a correção para o Vue 2, e não um defeito do Vue 3.
 
 ## Arquivos compartilhados do projeto
 

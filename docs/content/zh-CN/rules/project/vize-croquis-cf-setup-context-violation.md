@@ -4,7 +4,7 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-setup 上下文被以 Vue 不允许的方式使用。
+在每个实例的 setup 中创建应由组件实例独立持有的响应式状态。
 
 | 默认严重程度 | 自动修复 | 选项 |
 | --- | --- | --- |
@@ -14,7 +14,9 @@ setup 上下文被以 Vue 不允许的方式使用。
 
 实验性 Rust CrossFileAnalyzer 有此诊断代码的实现。CLI 分析遍不会单独发出该代码；配置其 ID 不会启用该 Rust 分析遍。这些情形描述分析器支持的图与事实，并非 Vite+ 功能承诺。
 
-Vue 允许这种响应式状态；此示例要求每个组件实例拥有自己的 count。
+## 适用范围与限制
+
+这个实验性分析器情形将 ref(0) 放在普通脚本的模块作用域，而不是每个实例的 setup 中。Vue 允许创建这样的响应式状态；此示例要求每个组件实例独立持有自己的 count。CLI 不会发出这个单独的诊断代码。
 
 ## 共享项目文件
 

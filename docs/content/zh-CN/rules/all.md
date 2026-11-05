@@ -344,7 +344,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="ecosystem-vue-router-param-type"></span>[`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | 报告路由参数值不被所声明的路径段接受。 | 由 `vp run lint` 报告 |
 | <span id="ecosystem-vue-router-unknown-route"></span>[`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | 报告已安装路由器未声明的导航名称。 | 由 `vp run lint` 报告 |
 | <span id="html-cross-component-nesting"></span>[`html/cross-component-nesting`](./project/html-cross-component-nesting.md) | 检查导入组件组合后的实际 HTML 嵌套。 | 由 `vp run lint` 报告 |
-| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 通过索引修改数组，无法被该响应式数组跟踪。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 在 Vue 2.7 中，使用可通知更新的操作替换数组索引处的值。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-async-boundary"></span>[`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | 响应式状态跨越异步边界，可能被观察为过期值。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-async-no-suspense"></span>[`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | 异步组件在没有 Suspense 边界的情况下渲染。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-browser-api-ssr"></span>[`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | 在组件可能于服务端渲染的位置使用了浏览器专用 API。 | 由 `vp run lint` 报告 |
@@ -373,8 +373,8 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-mutated-after-escape"></span>[`vize:croquis/cf/mutated-after-escape`](./project/vize-croquis-cf-mutated-after-escape.md) | 响应式对象逸出其所有者后被修改。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-non-reactive-provide"></span>[`vize:croquis/cf/non-reactive-provide`](./project/vize-croquis-cf-non-reactive-provide.md) | 提供的值不具响应性，后代无法看到更新。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-non-unique-id"></span>[`vize:croquis/cf/non-unique-id`](./project/vize-croquis-cf-non-unique-id.md) | 循环内的元素 id 对每个列表项并不唯一。 | 由 `vp run lint` 报告 |
-| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | 响应式对象按身份比较，解包后身份会改变。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | Pinia getter 未通过 `storeToRefs` 读取，无法保持响应性。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | 用稳定的记录 ID 比较原始对象与响应式代理所表示的记录。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | 避免在 setup 中将 Pinia getter 的值复制为不再跟随更新的快照。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-prop-type-mismatch"></span>[`vize:croquis/cf/prop-type-mismatch`](./project/vize-croquis-cf-prop-type-mismatch.md) | 传入的 prop 值与声明类型不匹配。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-provide-inject-type"></span>[`vize:croquis/cf/provide-inject-type`](./project/vize-croquis-cf-provide-inject-type.md) | 提供值与其 inject 类型不一致。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-provide-without-symbol"></span>[`vize:croquis/cf/provide-without-symbol`](./project/vize-croquis-cf-provide-without-symbol.md) | `provide` 使用普通键，而不是 `InjectionKey` symbol。 | 由 `vp run lint` 报告 |
@@ -382,7 +382,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-reactivity-outside-setup"></span>[`vize:croquis/cf/reactivity-outside-setup`](./project/vize-croquis-cf-reactivity-outside-setup.md) | 响应式 API 在 `setup` 外被调用。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-reassignment-breaks-reactivity"></span>[`vize:croquis/cf/reassignment-breaks-reactivity`](./project/vize-croquis-cf-reassignment-breaks-reactivity.md) | 重新赋值响应式绑定，将其替换为普通值。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-reference-escapes-scope"></span>[`vize:croquis/cf/reference-escapes-scope`](./project/vize-croquis-cf-reference-escapes-scope.md) | 响应式引用逸出拥有其生命周期的作用域。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | setup 上下文被以 Vue 不允许的方式使用。 | 实验性；CLI 尚未报告 |
+| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | 在每个实例的 setup 中创建应由组件实例独立持有的响应式状态。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-shallow-deep-access"></span>[`vize:croquis/cf/shallow-deep-access`](./project/vize-croquis-cf-shallow-deep-access.md) | 读取 `shallowReactive` 或 `shallowRef` 的深层属性，却假定它受到跟踪。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-spread-breaks-reactivity"></span>[`vize:croquis/cf/spread-breaks-reactivity`](./project/vize-croquis-cf-spread-breaks-reactivity.md) | 展开响应式对象会复制值并丢失跟踪。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-suspense-no-fallback"></span>[`vize:croquis/cf/suspense-no-fallback`](./project/vize-croquis-cf-suspense-no-fallback.md) | `<Suspense>` 没有后备内容。 | 计划中；尚未报告 |
@@ -402,7 +402,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-unused-provide"></span>[`vize:croquis/cf/unused-provide`](./project/vize-croquis-cf-unused-provide.md) | 提供的键从未被注入。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-value-extraction-breaks-reactivity"></span>[`vize:croquis/cf/value-extraction-breaks-reactivity`](./project/vize-croquis-cf-value-extraction-breaks-reactivity.md) | 将响应式值读取到局部变量后丢失后续更新。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-watch-can-be-computed"></span>[`vize:croquis/cf/watch-can-be-computed`](./project/vize-croquis-cf-watch-can-be-computed.md) | 侦听器只将值复制到状态，可以改为计算属性。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | `watchEffect` 启动异步任务，却无法清理上一轮执行。 | 由 `vp run lint` 报告 |
+| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | 为异步 watchEffect 处理失效清理，避免写入过期响应。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-watcher-outside-setup"></span>[`vize:croquis/cf/watcher-outside-setup`](./project/vize-croquis-cf-watcher-outside-setup.md) | `watch` 或 `watchEffect` 在 `setup` 外被调用。 | 计划中；尚未报告 |
 | <span id="vue-cross-file-attrs-fallthrough"></span>[`vue/cross-file-attrs-fallthrough`](./project/vue-cross-file-attrs-fallthrough.md) | 父组件传入属性，但已解析子组件的根无法继承它们，也没有显式使用 $attrs。 | 由 `vp run lint` 报告 |
 

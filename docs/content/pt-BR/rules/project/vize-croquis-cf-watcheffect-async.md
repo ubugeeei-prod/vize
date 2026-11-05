@@ -4,7 +4,7 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` inicia uma tarefa assíncrona e não consegue limpar a execução anterior.
+Proteja o trabalho assíncrono de watchEffect contra invalidação e respostas desatualizadas.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -12,7 +12,9 @@ title: "vize:croquis/cf/watcheffect-async"
 
 Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
-O Vue oferece limpeza para watchEffect; o exemplo correto usa uma origem de watch explícita e cancela o trabalho invalidado.
+## Escopo e limitações
+
+O watchEffect assíncrono mostrado aqui não tem limpeza na invalidação nem proteção contra respostas desatualizadas. O Vue oferece limpeza para watchEffect; o exemplo correto usa uma origem de watch explícita e cancela o trabalho invalidado.
 
 ## Arquivos compartilhados do projeto
 

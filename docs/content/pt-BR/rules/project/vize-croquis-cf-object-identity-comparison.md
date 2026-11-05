@@ -4,7 +4,7 @@ title: "vize:croquis/cf/object-identity-comparison"
 
 # `vize:croquis/cf/object-identity-comparison`
 
-Um objeto reativo é comparado por identidade, que muda ao remover os invólucros.
+Compare IDs estáveis de registros entre objetos brutos e proxies reativos.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 Este é um contrato de diagnóstico publicado sem produtor atual. O cenário incorreto e correto abaixo explica o risco e a correção; nenhuma opção atualmente faz este código ser emitido.
 
 O exemplo pressupõe que os IDs identifiquem os registros de forma única. Comparar duas referências ao mesmo proxy reativo continua válido; este contrato não tem produtor atual. Um objeto bruto e seu proxy reativo têm identidades distintas, e toRaw() devolve o objeto original.
+
+## Escopo e limitações
+
+Um objeto bruto e seu proxy reativo têm identidades de objeto distintas, e toRaw() retorna o objeto original. Este contrato ilustra a comparação de IDs estáveis de registros quando se pretende comparar a identidade do registro.
 
 ## Arquivos compartilhados do projeto
 

@@ -4,7 +4,7 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-Le contexte setup est utilisé d’une manière que Vue n’autorise pas.
+Créez l’état réactif propre à chaque composant dans le setup de son instance.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -14,7 +14,9 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 
 L’analyseur Rust expérimental CrossFileAnalyzer possède un producteur pour ce code. La passe CLI n’émet pas ce code individuel ; configurer son identifiant n’active pas cette passe Rust. Ces scénarios décrivent le graphe et les faits pris en charge par l’analyseur, sans constituer une promesse de Vite+.
 
-Vue autorise cet état réactif ; l’exemple exige que chaque instance de composant possède son propre décompte.
+## Champ d’application et limites
+
+Ce scénario de l’analyseur expérimental place ref(0) au niveau du module d’un script normal plutôt que dans le setup propre à chaque instance. Vue autorise cet état réactif ; l’exemple exige que chaque instance du composant possède son propre compteur. La CLI n’émet pas ce code individuel.
 
 ## Fichiers communs du projet
 

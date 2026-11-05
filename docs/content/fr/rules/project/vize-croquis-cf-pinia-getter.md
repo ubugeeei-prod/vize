@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-Un getter Pinia est lu sans `storeToRefs` ; il ne restera donc pas réactif.
+Évitez de copier les valeurs des getters Pinia sous forme d’instantanés pendant setup.
 
 | Gravité par défaut | Correction automatique | Options |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Champ d’application: Graphe de composants analysé et faits pris en charge dé
 Il s’agit d’un contrat de diagnostic publié sans producteur actuel. Le scénario Mauvais/Bon ci-dessous explique le risque et la correction ; aucune option ne permet actuellement de déclencher ce code.
 
 Pinia doit être installé, et main.ts installe son plugin avant le montage. Lire directement `store.doubled` dans un calcul suivi ou un template est valide ; le défaut consiste ici à prendre un simple instantané. Ce contrat n’a actuellement aucun producteur de diagnostics.
+
+## Champ d’application et limites
+
+Ce contrat illustre la copie de la valeur primitive actuelle d’un getter Pinia pendant setup, produisant un instantané qui ne suit plus les mises à jour. Lire directement le getter dans un calcul suivi ou dans le template reste réactif ; storeToRefs() est la méthode d’extraction présentée ici pour corriger le problème.
 
 ## Fichiers communs du projet
 
