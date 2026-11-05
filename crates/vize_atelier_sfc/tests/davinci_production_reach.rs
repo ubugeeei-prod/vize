@@ -45,6 +45,8 @@ mod davinci_production_reach {
     #[cfg(test)]
     mod inline_parity_regressions;
     pub mod parity;
+    #[cfg(test)]
+    mod prebackend_tests;
     pub mod refusal;
     #[cfg(test)]
     mod refusal_tests;

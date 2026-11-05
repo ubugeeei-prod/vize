@@ -12,7 +12,7 @@ use vize_l0::profiler::CounterSummary;
 use super::refusal::RefusalCensus;
 use super::shapes::Shape;
 use super::vapor_surface;
-use vize_atelier_sfc::SfcDescriptor;
+use vize_atelier_sfc::{SfcDescriptor, SfcError};
 use vize_l1_to_l2::EmitError;
 
 /// The selection reason of a template the L2 DOM emitter attempted and refused.
@@ -111,6 +111,8 @@ pub struct Tally {
     pub unrecorded_samples: Vec<String>,
     /// `compile_sfc` errors per error code (not templates this shape reached).
     pub sfc_errors: BTreeMap<String, u64>,
+    /// Original inputs and complete diagnostics rejected before backend selection.
+    pub prebackend_rejections: Vec<(String, Vec<SfcError>)>,
     /// Croquis-refused DOM templates L2 emits under the projection
     /// (`with_croquis_projection`): parity-ready, not yet selected.
     pub ready: u64,
