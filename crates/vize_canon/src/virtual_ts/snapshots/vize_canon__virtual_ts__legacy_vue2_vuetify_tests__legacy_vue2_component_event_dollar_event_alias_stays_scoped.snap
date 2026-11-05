@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
+assertion_line: 140
 expression: legacy
 ---
 /// <reference lib="es2022" />

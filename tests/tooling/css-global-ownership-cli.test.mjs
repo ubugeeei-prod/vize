@@ -1,7 +1,4 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
+import { currentCssCases } from "./support/current-css-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -13,7 +10,8 @@ import { globalCorpus, root, sha256 } from "./css-global-ownership-reference.mjs
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 await test("source CLI preserves foreign and potentially local global ownership reports", () => {
-  const { source, cases } = globalCorpus();
+  const { source, cases: historicalCases } = globalCorpus();
+  const cases = currentCssCases(historicalCases);
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8"));

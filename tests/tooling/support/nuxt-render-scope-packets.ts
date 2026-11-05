@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import {
+  currentRuleDocumentationJson,
+  currentRuleDocumentationPlain,
+} from "./current-rule-documentation.ts";
 
 export type ProcessPacket = {
   command: string;
@@ -60,6 +64,17 @@ export function exact(actual: ProcessPacket, expected: ProcessPacket): void {
   assert.equal(actual.status, expected.status);
   assert.equal(actual.stdout, expected.stdout);
   assert.equal(actual.stderr, expected.stderr);
+}
+export function currentDocumentation(expected: ProcessPacket): ProcessPacket {
+  const index = expected.args.findIndex((argument) => argument === "--format" || argument === "-f");
+  assert.ok(index >= 0, "explicit authored report format");
+  const format = expected.args[index + 1];
+  assert.ok(format === "json" || format === "plain", "finite authored report format");
+  const stdout =
+    format === "json"
+      ? currentRuleDocumentationJson(expected.stdout)
+      : currentRuleDocumentationPlain(expected.stdout);
+  return { ...expected, stdout };
 }
 export function body(packet: ProcessPacket): LintFile[] {
   valid(packet);

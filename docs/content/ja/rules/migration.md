@@ -21,6 +21,8 @@ Vite+ の設定では Vize のルールを `vue.linter.rules` に指定します
 
 `vue/component-definition-name-casing` には意図的な適用範囲の差があります。Vize は SFC のファイル名を検査し、ESLint はコンポーネントの定義名を検査します。この差を以下にも残しています。
 
+`vue/comment-directive` の行は ESLint ルールの移行状況であり、Vize で明示的に有効化する未使用コメント報告の対応状況ではありません。ネイティブの検査は `reportUnusedDisableDirectives` で有効にできます。[使われていない抑制コメント](../guide/lint-execution.md#unused-disable-directives)を参照してください。この限定した検査は、ESLint ルールとの完全な互換性を保証しません。
+
 オプションの変換は[ルールのオプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。
 
 | ESLint ID | Vize ID / リファレンス | 対応状況 |

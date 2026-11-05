@@ -4,7 +4,7 @@
     "messages": [
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 3,
@@ -14,7 +14,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 4,
@@ -24,7 +24,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 5,
@@ -34,7 +34,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 6,
@@ -44,7 +44,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 7,
@@ -54,7 +54,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 8,
@@ -64,7 +64,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 9,
@@ -74,7 +74,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 11,
@@ -84,7 +84,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 11,
@@ -94,7 +94,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 12,
@@ -104,7 +104,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 12,
@@ -114,7 +114,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
         "line": 13,
@@ -124,7 +124,7 @@
       },
       {
         "ruleId": "type/strict-boolean-expressions",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
         "line": 15,

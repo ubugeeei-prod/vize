@@ -13,6 +13,7 @@ import {
 } from "./javascript-sfc-source-context.mjs";
 import { authenticateEmptyVueStarJoinedSource } from "./empty-vue-star-javascript-source.mjs";
 import { ensureHostedLiteralSource } from "../../../../tests/performance/support/warm-type-backed-git-reader-literal-source.ts";
+import { ownedCounterpartTemporaryRoot } from "./source-counterpart-snapshot.mjs";
 
 const source = "3a680d0a0b59b720af0d23a70a85cf56c5c4f175";
 const law = "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts";
@@ -234,6 +235,7 @@ export async function runRetainedEmptyVueStarCustody(root) {
   assert.equal(frame.tree, "577d549f8a9c6b0a51f6bf99bc23fb35eec5942a");
   const selected = select(root, frame);
   provision(root, selected);
+  const temporary = ownedCounterpartTemporaryRoot(root);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-star-original-custody-"));
   const keys = [
     "GIT_ALLOW_PROTOCOL",
@@ -307,7 +309,11 @@ export async function runRetainedEmptyVueStarCustody(root) {
       }
     });
     cleanupRegistered = true;
-    await import(pathToFileURL(path.join(directory, law)).href);
+    try {
+      await import(pathToFileURL(path.join(directory, law)).href);
+    } finally {
+      after(() => temporary.release());
+    }
     return Object.freeze({
       sourceOnly: true,
       currentBodies: 322,
@@ -322,6 +328,7 @@ export async function runRetainedEmptyVueStarCustody(root) {
     if (!cleanupRegistered) {
       restore();
       fs.rmSync(directory, { recursive: true, force: true });
+      temporary.release();
     }
   }
 }

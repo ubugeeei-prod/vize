@@ -91,7 +91,7 @@ pub enum Form {
 pub struct Decl {
     pub name: CompactString,
     pub form: Form,
-    /// The identifier span, recorded where production records one.
+    /// The authored local identifier span.
     pub span: Option<(u32, u32)>,
 }
 
@@ -267,7 +267,7 @@ fn push_pattern(
                 source,
                 direct,
             },
-            span: None,
+            span: Some((id.span.start, id.span.end)),
         }),
         BindingPattern::ObjectPattern(object) => {
             for property in &object.properties {

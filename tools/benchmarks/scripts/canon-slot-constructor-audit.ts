@@ -6,6 +6,7 @@ import { authoredDirectives } from "../../support/compat/content-mapper/producer
 import { parenthesisDiagnosticMappings } from "../../../tests/tooling/support/content-mapper-parenthesis-mappings-11675.ts";
 import { isRecord, jsonValue, type PacketObservation } from "./canon-instance-directives-model.ts";
 import { save } from "./canon-instance-directives-io.ts";
+import { assertConstructorWrapperMappings } from "./canon-slot-constructor-wrapper-mappings.ts";
 
 export type Row = { file: string; line: number; column: number; code: number; message: string };
 type Tuple = [number, number, number, number, number, number];
@@ -164,7 +165,35 @@ export function auditPackets(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
   component = "WitnessChild",
+  producer: Uint8Array = fs.readFileSync(
+    new URL(
+      "../../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs",
+      import.meta.url,
+    ),
+  ),
 ) {
+  const fields = new Set([
+    "text",
+    "mappings",
+    "diagnostics",
+    "extension",
+    "diagnosticDirectives",
+    "semanticLinks",
+  ]);
+  for (const packet of [before, after])
+    assert.ok(
+      Object.keys(packet).every((key) => fields.has(key)),
+      "unknown mapper packet fields are refused",
+    );
+  assert.deepEqual(
+    Object.keys(after)
+      .filter((key) => key !== "diagnosticDirectives")
+      .sort(),
+    Object.keys(before)
+      .filter((key) => key !== "diagnosticDirectives")
+      .sort(),
+    "all mapper packet fields remain exact",
+  );
   const baseText = text(before),
     headText = text(after),
     legacy = `__VizeSlotConstructor<typeof ${component}>)({`,
@@ -196,7 +225,12 @@ export function auditPackets(
     "constructor unions use one non-distributive native factory",
   );
   assert.notEqual(headText, baseText, "the source repair must change the virtual program");
-  assertMappedContracts(before, after);
+  assertConstructorWrapperMappings(
+    { text: baseText, rows: tuples(before.mappings) },
+    { text: headText, rows: tuples(after.mappings) },
+    canonicalMappedGenerated,
+    producer,
+  );
   assert.deepEqual(
     directiveContract(certifiedDirectives(after, true)),
     directiveContract(certifiedDirectives(before, false)),

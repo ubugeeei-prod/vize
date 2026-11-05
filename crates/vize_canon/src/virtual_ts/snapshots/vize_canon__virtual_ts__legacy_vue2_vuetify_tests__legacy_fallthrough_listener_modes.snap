@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
+assertion_line: 77
 expression: "format!(\"=== omitted ===\\n{omitted}\\n=== explicit false ===\\n{explicit_false}\\n=== explicit true ===\\n{explicit_true}\")"
 ---
 === omitted ===

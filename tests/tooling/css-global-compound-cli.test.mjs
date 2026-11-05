@@ -1,7 +1,4 @@
-import {
-  currentRuleDocumentationPacket,
-  currentRuleDocumentationPlain,
-} from "./support/current-rule-documentation.ts";
+import { currentCssCases } from "./support/current-css-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -14,8 +11,10 @@ import { compoundCorpus, root, sha256 } from "./css-global-compound-reference.mj
 import { fixture as universalFixture, universalCorpus } from "./css-global-universal-reference.mjs";
 
 await test("source CLI preserves whole compound global ownership and refusal reports", () => {
-  const { source, cases } = compoundCorpus();
-  const universal = universalCorpus();
+  const { source, cases: historicalCases } = compoundCorpus();
+  const cases = currentCssCases(historicalCases);
+  const historicalUniversal = universalCorpus();
+  const universal = { ...historicalUniversal, cases: currentCssCases(historicalUniversal.cases) };
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8"));

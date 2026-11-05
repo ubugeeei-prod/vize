@@ -169,6 +169,22 @@ function appPacket(packets: Packet[]): Packet {
 }
 function expectedFromBefore(packets: Packet[], input: Input): Packet[] {
   const expected = structuredClone(packets);
+  // Keep the public-before packet intact; only current source uses rule leaf pages.
+  for (const packet of expected) {
+    for (const message of packet.messages) {
+      if (message.ruleId !== "vue/no-multi-spaces") continue;
+      assert.equal(message.ruleDocsPath, "docs/content/rules/vue.md");
+      for (const locale of ["", "ja/"]) {
+        assert.ok(
+          fs.existsSync(
+            path.join(root, "docs/content", locale, "rules/reference/vue-no-multi-spaces.md"),
+          ),
+          "committed current rule documentation page",
+        );
+      }
+      message.ruleDocsPath = "docs/content/rules/reference/vue-no-multi-spaces.md";
+    }
+  }
   for (const message of appPacket(expected).messages.filter(scriptProvide)) {
     const anchor = diagnosticAnchors(input.app, message).find(
       (entry) => JSON.stringify(entry.before) === JSON.stringify(location(message)),
@@ -326,7 +342,8 @@ test("cross-file split-script coordinates preserve complete public packets and a
         assert.deepEqual(
           canonical(after),
           canonical(expectedFromBefore(before, input)),
-          input.name + ": every field except the bounded script coordinates stays identical",
+          input.name +
+            ": every field except bounded script coordinates and current rule documentation stays identical",
         );
         assert.deepEqual(
           JSON.parse(entry.afterDoctor.stdout),

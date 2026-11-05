@@ -23,7 +23,7 @@ fn diagnostic(rule: &str, message: &str, start: usize, len: usize) -> Value {
     let line = prefix.bytes().filter(|byte| *byte == b'\n').count() + 1;
     let column = prefix.rsplit('\n').next().unwrap().chars().count() + 1;
     crate::support::current_rule_documentation::message(
-        json!({"ruleId":rule,"ruleDocsPath":"docs/content/rules/type-and-script.md",
+        json!({"ruleId":rule,"ruleDocsPath":match rule { EMITS => "docs/content/rules/reference/type-require-typed-emits.md", RULE => "docs/content/rules/reference/type-strict-boolean-expressions.md", _ => panic!("unknown authored rule") },
         "severity":2,"message":message,"line":line,"column":column,
         "endLine":line,"endColumn":column+SOURCE[start..start+len].chars().count()}),
     )

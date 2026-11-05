@@ -76,9 +76,7 @@ await test("source CLI applies the reported boolean edit once with complete unch
           timeout: 60_000,
           maxBuffer: 4 * 1024 * 1024,
         });
-        const expected = currentRuleDocumentationPacket(
-          wholeJson(entry, pass > 0, entry.originalRules),
-        );
+        const expected = currentBooleanStylePacket(wholeJson(entry, pass > 0, entry.originalRules));
         const observation = {
           id: entry.id,
           originalRules: entry.originalRules,
@@ -141,3 +139,4 @@ await test("source CLI applies the reported boolean edit once with complete unch
     }
   }
 });
+import { currentBooleanStylePacket } from "./support/current-boolean-style-documentation.ts";

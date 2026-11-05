@@ -63,3 +63,6 @@ pub(super) fn emit(
     // second synthetic error for an already rejected constructor.
     expression
 }
+
+#[cfg(test)]
+mod tests;

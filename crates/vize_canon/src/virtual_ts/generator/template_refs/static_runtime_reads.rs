@@ -135,9 +135,9 @@ fn runtime_binding(summary: &Croquis, bindings: ScriptBindings<'_>, name: &str) 
     ) {
         return false;
     }
-    // Top-level destructures have a Bindings fact but no definition span;
-    // nested locals live only in Scope. A mixed-script summary without a
-    // span cannot prove which script owns such a declaration.
+    // Definition spans establish the owning script, including destructures.
+    // Keep spanless summaries conservative when multiple scripts are present;
+    // nested locals live only in Scope, not in the top-level Bindings fact.
     summary.scopes.iter().any(|scope| {
         scope.kind == ScopeKind::ScriptSetup
             && span.is_none_or(|(start, _)| scope.span.start <= start && start < scope.span.end)

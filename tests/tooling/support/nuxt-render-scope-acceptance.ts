@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { currentRuleDocumentationPacket } from "./current-rule-documentation.ts";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +15,7 @@ import {
 } from "./nuxt-render-scope-runtime.ts";
 import {
   body,
+  currentDocumentation,
   duplicates,
   exact,
   profile,
@@ -346,7 +348,7 @@ for (const spec of specs) {
         ),
         spec.id + "/public warning " + id,
       );
-    exact(row.processes.sourceOff, row.processes.beforeOff);
+    exact(row.processes.sourceOff, currentDocumentation(row.processes.beforeOff));
     if (spec.exclusive) {
       assert.equal(
         row.processes.genuineNuxtConfig.status,
@@ -358,18 +360,22 @@ for (const spec of specs) {
         "vize.nuxt-render.genuine-effective-config.v1",
       );
       const expected = withoutOriginalTwoGroups(beforeBody);
-      assert.deepEqual(sourceBody, expected, "Only the two original groups may change");
+      assert.deepEqual(
+        sourceBody,
+        currentRuleDocumentationPacket(expected),
+        "Only the two original groups may change",
+      );
       assert.deepEqual(
         expected,
         body(row.processes.beforeOff),
         "No unrelated CF diagnostics in this supported positive",
       );
-      exact(row.processes.sourcePlain, row.processes.beforePlainOff!);
+      exact(row.processes.sourcePlain, currentDocumentation(row.processes.beforePlainOff!));
       assert.equal(row.processes.sourceOn.status, row.processes.beforeOff.status);
       assert.equal(row.processes.sourceOn.stderr, row.processes.beforeOn.stderr);
     } else {
-      exact(row.processes.sourceOn, row.processes.beforeOn);
-      exact(row.processes.sourcePlain, row.processes.beforePlain);
+      exact(row.processes.sourceOn, currentDocumentation(row.processes.beforeOn));
+      exact(row.processes.sourcePlain, currentDocumentation(row.processes.beforePlain));
     }
     assert.equal(row.processes.beforeDoctor.status, 0);
     assert.equal(row.processes.sourceDoctor.status, 0);

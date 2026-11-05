@@ -555,7 +555,7 @@ function assertBrokenLint(result: LintResult): void {
   ]);
 }
 
-function sha256(source: string): string {
+function sha256(source: Parameters<ReturnType<typeof createHash>["update"]>[0]): string {
   return createHash("sha256").update(source).digest("hex");
 }
 

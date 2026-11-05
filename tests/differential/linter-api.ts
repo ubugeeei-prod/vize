@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import { compareBytes } from "./compare.mjs";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
@@ -50,6 +52,57 @@ function snapshotBody(bytes: Buffer) {
   const body = bytes.subarray(end + 5);
   assert(body.length > 0 && body.at(-1) === 10, "complete newline-terminated oracle is required");
   return body;
+}
+
+const CURRENT_REPORT_SOURCES = new Set([
+  "3669701b338f2143de056d6d456697e57b7fd6efc8e0a3b478af6811ef1dff58",
+  "903c64528a6b6ac65e4a65c1cc8e17de3a997eda605255c6e0d0864bc715cfd1",
+  "8546a802cdd63774341ff98257d6a249103634984e4af893bad657f782bcb249",
+]);
+const CURRENT_REPORT_ORACLES: Record<
+  string,
+  { legacySha256: string; current: { path: string; sha256: string } }
+> = {
+  "linter/report/original-line-columns": {
+    legacySha256: "c87adcf0ab771ce49a82e1f581142a6f7317170a5b14021a6a70cbb4cd3ddfee",
+    current: {
+      path: "tests/_fixtures/differential/linter/diagnostic-documentation-11818/original-line-columns.report.txt",
+      sha256: "35c374fb355e6f67e080b0f82f1c58fce64ccd6dd018f3f39ff1728ddd94c44c",
+    },
+  },
+  "linter/report/unicode-crlf-columns": {
+    legacySha256: "3c66954ca7ad3698fd357394ca099fd195f1d86463967689d41c6b9723544c2d",
+    current: {
+      path: "tests/_fixtures/differential/linter/diagnostic-documentation-11818/unicode-crlf-columns.report.txt",
+      sha256: "2d8fd0eb3211193aeea73bc80057a0c74ad4ed2ab56eb525dd814d685946e6f3",
+    },
+  },
+  "linter/report/source-map-order-and-missing": {
+    legacySha256: "7c57c37c78a6010db15fb882dbf0c5926e4ff74a845d39a76f58bc29f8fb967e",
+    current: {
+      path: "tests/_fixtures/differential/linter/diagnostic-documentation-11818/source-map-order-and-missing.report.txt",
+      sha256: "415145418a9c2231e826520c1f31090bfcd4f26cc6cbf6a0682e0aa13ca2ade6",
+    },
+  },
+};
+
+/** These three current report packets retain every non-documentation byte. */
+export function currentReportReference(
+  id: string,
+  legacy: Buffer,
+  producerRoot: string,
+  api: string,
+  oracleRoot = fileURLToPath(new URL("../../", import.meta.url)),
+): Buffer {
+  const contract = CURRENT_REPORT_ORACLES[id];
+  if (!contract) return snapshotBody(legacy);
+  assert.equal(api, "--report", "current documentation owns only the report selector");
+  assert.equal(sha256(legacy), contract.legacySha256, "immutable historical report oracle");
+  const producer = path.join(producerRoot, "crates/vize_patina/src/output/shared.rs");
+  // Legacy or unregistered source images retain their original reference.
+  if (!existsSync(producer) || !CURRENT_REPORT_SOURCES.has(sha256(readFileSync(producer))))
+    return snapshotBody(legacy);
+  return readPinnedArtifact(oracleRoot, contract.current);
 }
 
 export function loadLinterManifest(manifestPath: string, repoRoot: string) {
@@ -110,7 +163,12 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
       inputs.set(id, {
         argv: [cohort.api],
         input: Buffer.from(JSON.stringify(fixture)),
-        expected: snapshotBody(readPinnedArtifact(repoRoot, oracles[id])),
+        expected: currentReportReference(
+          id,
+          readPinnedArtifact(repoRoot, oracles[id]),
+          repoRoot,
+          cohort.api,
+        ),
       });
     }
   }

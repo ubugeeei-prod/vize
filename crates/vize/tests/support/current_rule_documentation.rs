@@ -218,6 +218,10 @@ pub(crate) fn packet(mut expected: Value) -> Value {
     expected
 }
 
+pub(crate) fn props_plain(expected: &str) -> String {
+    plain(expected)
+}
+
 pub(crate) fn plain(expected: &str) -> String {
     let mut rule = None;
     let mut current = String::new();

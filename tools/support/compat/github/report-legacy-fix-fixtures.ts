@@ -2,7 +2,7 @@
 // new pinned differential input for each affected product. Native parity is not
 // judged here; it stays a report until native product adapters exist.
 import { execFileSync, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { checkCompilerCase, requirePinned } from "./compiler-fixture-contract.ts";
 import { appendFileSync } from "node:fs";
 
 import { changedPaths } from "./plan-source-checks.ts";

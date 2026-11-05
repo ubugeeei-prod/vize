@@ -70,6 +70,7 @@ fn inverse(current: &str, before: &str, after: &str, bytes: usize, old: &str, ne
 
 pub(super) fn source_before(path: &str, current: String) -> String {
     let current = super::current_loose_emit::source_before(path, current);
+    let current = super::loose_emit_sdk::source_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
@@ -86,6 +87,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn preamble_before(current: &str) -> String {
     let current = &super::emit_overload_window::preamble_before(current);
     let current = &super::current_loose_emit::preamble_before(current);
+    let current = &super::loose_emit_sdk::preamble_before(current);
     let file = &FILES[0];
     inverse(
         current,
@@ -143,15 +145,10 @@ mod tests {
             }
         }
         let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let previous_loose = super::super::loose_emit_sdk::preamble_before(body);
         assert_eq!(
-            super::super::emit_overload_window::preamble_after(
-                &super::super::current_loose_emit::preamble_after(&preamble_before(body).replacen(
-                    FILES[0].before,
-                    FILES[0].after,
-                    1
-                )),
-            ),
-            body
+            preamble_before(body).replacen(FILES[0].before, FILES[0].after, 1),
+            previous_loose
         );
     }
 }

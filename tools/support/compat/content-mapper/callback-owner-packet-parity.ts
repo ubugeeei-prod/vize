@@ -13,6 +13,11 @@ import {
   previousSlotsMarker,
 } from "./constructor-projection-parity.ts";
 
+import { withoutProducerUnmappedIgnores } from "./producer-unmapped-ignores.ts";
+import {
+  currentCallbackSourceEdits,
+  type CallbackSourceReader,
+} from "./callback-owner-current-source.ts";
 import { withInertCallbackRows, type InertCallbackBinding } from "./callback-owner-inert-packet.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -234,6 +239,7 @@ export function assertPreservedCallbackPacket(
   after: Record<string, unknown>,
   authoredSource?: string,
   inertBindings?: InertCallbackBinding[],
+  currentSourceRead?: CallbackSourceReader,
 ) {
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
@@ -248,10 +254,25 @@ export function assertPreservedCallbackPacket(
   }
   const original = before.text as string;
   const actualText = after.text as string;
-  assert.equal(original.split(previousSlotsExport).length, 2);
-  assert.equal(original.split(currentSlotsExport).length, 1);
-  assert.equal(actualText.split(previousSlotsExport).length, 1);
-  assert.equal(actualText.split(currentSlotsExport).length, 2);
+  const currentEdits = currentCallbackSourceEdits(
+    original,
+    actualText,
+    authoredSource,
+    currentSourceRead,
+  );
+  const slotsTransition = original.includes(previousSlotsExport);
+  if (slotsTransition) {
+    assert.equal(original.split(previousSlotsExport).length, 2);
+    assert.equal(original.split(currentSlotsExport).length, 1);
+    assert.equal(actualText.split(previousSlotsExport).length, 1);
+    assert.equal(actualText.split(currentSlotsExport).length, 2);
+  } else {
+    assert.ok(currentEdits.length > 0, "same current Slots requires certified emitter edits");
+    for (const text of [original, actualText]) {
+      assert.equal(text.split(previousSlotsExport).length, 1);
+      assert.equal(text.split(currentSlotsExport).length, 2);
+    }
+  }
   const markerTransition =
     original.includes(previousSlotsMarker) && !actualText.includes(previousSlotsMarker);
   if (markerTransition) {
@@ -266,8 +287,15 @@ export function assertPreservedCallbackPacket(
   const authored = authoredSource === undefined ? null : Buffer.from(authoredSource);
   assert.ok(Array.isArray(before.mappings) && Array.isArray(after.mappings));
   const nativeTransition = nativeAttributeTransition(original, actualText);
-  const edits = scaffoldEdits(original, markerTransition, nativeTransition);
-  if (nativeTransition) {
+  const edits = [
+    ...scaffoldEdits(original, markerTransition, nativeTransition),
+    ...currentEdits,
+  ].sort((left, right) => left.start - right.start);
+  for (let index = 1; index < edits.length; index++) {
+    assert.ok(edits[index - 1]!.end <= edits[index]!.start, "current scaffold edits are disjoint");
+    assert.notEqual(edits[index - 1]!.start, edits[index]!.start);
+  }
+  if (nativeTransition || currentEdits.length > 0) {
     assert.equal(typeof authoredSource, "string", "native relocation requires its authored source");
     mapCommentEdits(
       original,
@@ -287,7 +315,7 @@ export function assertPreservedCallbackPacket(
   }
   chunks.push(source.subarray(position));
   assert.deepEqual(Buffer.concat(chunks), actual, "the complete text has only certified edits");
-  const exportAt = original.indexOf(previousSlotsExport);
+  const exportAt = original.indexOf(slotsTransition ? previousSlotsExport : currentSlotsExport);
   const boundary = Buffer.byteLength(original.slice(0, exportAt));
   const range = (start: number, length: number): [number, number] => {
     assert.ok(Number.isSafeInteger(start) && start >= 0);
@@ -312,6 +340,36 @@ export function assertPreservedCallbackPacket(
     utf8Range(actual, shifted, length);
     assert.deepEqual(actual.subarray(shifted, shifted + length), source.subarray(start, end));
     return [shifted, length];
+  };
+  if (currentEdits.length > 0) {
+    for (const packet of [before, after])
+      withoutProducerUnmappedIgnores(
+        {
+          text: packet.text as string,
+          mappings: packet.mappings as number[][],
+          diagnosticDirectives: packet.diagnosticDirectives,
+        },
+        { requireComplete: true },
+      );
+  }
+  const gapRange = (start: number, end: number): [number, number] => {
+    assert.ok(
+      Number.isSafeInteger(start) &&
+        Number.isSafeInteger(end) &&
+        0 <= start &&
+        start <= end &&
+        end <= source.length,
+    );
+    for (const edit of edits)
+      if (start < edit.end && edit.start < end)
+        assert.ok(
+          start <= edit.start && edit.end <= end,
+          "a producer gap may contain only whole certified edits",
+        );
+    const shifted = point(start, edits),
+      finish = point(end, edits);
+    assert.ok(shifted <= finish && finish <= actual.length);
+    return [shifted, finish - shifted];
   };
   const expected = structuredClone(before);
   expected.text = after.text;
@@ -340,7 +398,16 @@ export function assertPreservedCallbackPacket(
         assert.ok(tuple.every(Number.isSafeInteger));
         assert.ok(tuple[0] >= 0 && tuple[1] >= 0);
         if (authored) utf8Range(authored, tuple[0], tuple[1]);
-        const [start, length] = range(tuple[2], tuple[3] - tuple[2]);
+        const syntheticGap = currentEdits.length > 0 && tuple[0] === 0 && tuple[1] === 0;
+        if (syntheticGap)
+          assert.deepEqual(
+            tuple.slice(4),
+            [0, 0],
+            "only producer-owned IGNORE gaps may contain scaffold edits",
+          );
+        const [start, length] = syntheticGap
+          ? gapRange(tuple[2], tuple[3])
+          : range(tuple[2], tuple[3] - tuple[2]);
         return [tuple[0], tuple[1], start, start + length, ...tuple.slice(4)];
       }),
     };

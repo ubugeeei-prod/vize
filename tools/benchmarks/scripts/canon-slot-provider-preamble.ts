@@ -1,5 +1,7 @@
 /** Forward the frozen preamble edits that postdate the overload-alias certificate. */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
 
 // Chronological source-owned pairs. Each historical snippet occurs once.
 const TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
@@ -44,5 +46,55 @@ export function applySourceOwnedPreambleTransitions(historical: string) {
     assert.equal(current.includes(after), false, `preamble already contains ${after.slice(0, 48)}`);
     current = current.replace(before, after);
   }
+  return current;
+}
+
+type Identity = { bytes: number; sha256: string };
+type EmitPreambleCertificate = {
+  files: { path: string; after: Identity }[];
+  preamble: {
+    before: Identity;
+    after: Identity;
+    edits: { before: string; after: string }[];
+  };
+};
+
+const emitCertificate =
+  "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/canonical-loose-emit-sdk-update-11815.json";
+const emitCertificateSha256 = "b39a4a47a11d2e343c2cec25a899830c0ac13403b9445d2bc73715f533e22247";
+const emitAssets = [
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt",
+];
+const identity = (text: string): Identity => ({
+  bytes: Buffer.byteLength(text),
+  sha256: createHash("sha256").update(text).digest("hex"),
+});
+
+/** Advance only the already certified emit-helper layout for the current source CLI. */
+export function applyCurrentEmitPreamble(
+  previous: string,
+  read = (file: string) => fs.readFileSync(file, "utf8"),
+) {
+  const raw = read(emitCertificate);
+  assert.equal(identity(raw).sha256, emitCertificateSha256, "immutable emit preamble certificate");
+  const certificate = JSON.parse(raw) as EmitPreambleCertificate;
+  assert.deepEqual(identity(previous), certificate.preamble.before, "certified previous preamble");
+  for (const file of emitAssets) {
+    const entries = certificate.files.filter((entry) => entry.path === file);
+    assert.equal(entries.length, 1, "one selected canonical emit asset");
+    assert.deepEqual(
+      identity(read(file)),
+      entries[0]!.after,
+      `selected canonical emit source: ${file}`,
+    );
+  }
+  let current = previous;
+  for (const edit of certificate.preamble.edits) {
+    assert.ok(edit.before.length > 0);
+    assert.equal(current.split(edit.before).length, 2, "one certified emit preamble replacement");
+    current = current.replace(edit.before, edit.after);
+  }
+  assert.deepEqual(identity(current), certificate.preamble.after, "certified current preamble");
   return current;
 }

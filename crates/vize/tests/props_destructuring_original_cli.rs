@@ -92,7 +92,7 @@ fn complete_original_props_styles_match_cli_config_plain_and_json() {
                 if format == "plain" {
                     assert_eq!(
                         String::from_utf8_lossy(&output.stdout),
-                        crate::support::current_rule_documentation::plain(
+                        crate::support::current_rule_documentation::props_plain(
                             &String::from_utf8_lossy(&expected_plain)
                         ),
                         "{}: complete plain output",

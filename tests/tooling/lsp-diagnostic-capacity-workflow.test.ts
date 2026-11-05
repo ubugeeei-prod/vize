@@ -77,7 +77,7 @@ test("ordinary source tooling retains complete capacity packets on success and f
   assert.ok(step);
   assert.equal(
     step.if,
-    "${{ always() && hashFiles('target/vize-tests/diagnostic-capacity-129/result.json') != '' }}",
+    "${{ always() && hashFiles('target/vize-tests/diagnostic-capacity-*/result.json') != '' }}",
   );
   assert.ok(step.uses?.startsWith("actions/upload-artifact@"));
   const uploadPaths = step.with?.path;
@@ -89,7 +89,7 @@ test("ordinary source tooling retains complete capacity packets on success and f
       .filter(Boolean)
       .sort(),
     [
-      "target/vize-tests/diagnostic-capacity-129/result.json",
+      "target/vize-tests/diagnostic-capacity-*/result.json",
       "target/ci/vize.differential-build.json",
     ].sort(),
   );

@@ -22,6 +22,7 @@
 //! run reports that half as not compared instead of passing it.
 
 mod battery;
+mod destructure_census;
 mod runner;
 
 mod generic_reads;
@@ -47,17 +48,22 @@ fn the_committed_planes_agree_with_the_specs() {
             .unused
             .verdict("unused-bindings", "battery")
             .unwrap();
+        // Keep the historical 24 facts and separately require the five exact
+        // destructured declarations newly visible through authored spans.
+        let added = destructure_census::assert_added_pattern_witnesses().unwrap();
         assert_eq!(
             (
                 battery.unused.artifacts,
                 battery.unused.compared,
                 battery.unused.facts
             ),
-            (9, 9, 24)
+            (9, 9, 24 + added)
         );
     }
     eprintln!("{}", battery.scope_lines("battery"));
-    assert_census(&battery, (9, 9, 88), (9, 9, 11), "battery");
+    // Keep the old 88 bindings and separately require the nested span-only local.
+    let added_binding = destructure_census::assert_added_span_only_binding().unwrap();
+    assert_census(&battery, (9, 9, 88 + added_binding), (9, 9, 11), "battery");
 
     let mut ladder = Planes::default();
     for fixture in &davinci_harness::fixtures::LADDER {

@@ -470,7 +470,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -524,7 +524,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -578,7 +578,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template directive expression resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -632,7 +632,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template directive expression calls a value with an unsafe `any` or `unknown` type",
               "line": 5,
@@ -686,7 +686,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template interpolation resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -740,7 +740,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -794,7 +794,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -848,7 +848,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 5,
@@ -902,7 +902,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 6,
@@ -956,7 +956,7 @@
           "messages": [
             {
               "ruleId": "type/no-unsafe-template-binding",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "ruleDocsPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
               "severity": 1,
               "message": "[vize:type/no-unsafe-template-binding] Template binding resolves to an unsafe `any` or `unknown` type",
               "line": 7,

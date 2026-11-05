@@ -212,18 +212,26 @@ const message = "hello"
     assert_eq!(
         result
             .text
-            .lines()
-            .filter_map(|line| line.strip_prefix("  const message "))
-            .collect::<Vec<_>>(),
-        ["= \"hello\""]
+            .split_once("// User setup code")
+            .expect("user setup section")
+            .1
+            .split_once("// @vize-map:")
+            .expect("user setup mapping")
+            .0
+            .trim(),
+        "const message = \"hello\""
     );
     assert_eq!(
         result
             .text
             .lines()
-            .filter_map(|line| line.trim_start().strip_prefix("/// <reference types="))
+            .filter(|line| line.split_whitespace().next() == Some("///"))
             .collect::<Vec<_>>(),
-        Vec::<&str>::new()
+        [
+            "/// <reference lib=\"es2022\" />",
+            "/// <reference lib=\"dom\" />",
+            "/// <reference lib=\"dom.iterable\" />"
+        ]
     );
     assert!(!result.mappings.is_empty());
     let interpolation = result

@@ -46,6 +46,11 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
     ),
     "",
     label(
+      "The `vue/comment-directive` row tracks the ESLint rule migration, not Vize's opt-in unused-comment reporting. The native check is available through `reportUnusedDisableDirectives`; see [unused disable comments](../guide/lint-execution.md#unused-disable-directives). This bounded check does not establish full ESLint rule parity.",
+      "`vue/comment-directive` の行は ESLint ルールの移行状況であり、Vize で明示的に有効化する未使用コメント報告の対応状況ではありません。ネイティブの検査は `reportUnusedDisableDirectives` で有効にできます。[使われていない抑制コメント](../guide/lint-execution.md#unused-disable-directives)を参照してください。この限定した検査は、ESLint ルールとの完全な互換性を保証しません。",
+    ),
+    "",
+    label(
       "For option conversion, see [Rule Options](./options.md) and [props destructuring modes](./reference/script-define-props-destructuring.md). Unsupported rows must stay with an existing checker until a supported replacement is verified.",
       "オプションの変換は[ルールのオプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。",
     ),

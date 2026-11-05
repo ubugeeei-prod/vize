@@ -48,24 +48,28 @@ function commitFixture(fixture) {
   git("commit", "-qm", "fixture");
 }
 
-void test("prepared reporter sessions survive filtered tasks without inheriting unrelated variables", () => {
+void test("prepared native fixtures retain the real Actions test reporter and reject missing dependencies", () => {
   const fixture = mkdtempSync(join(tmpdir(), "vize-prepared-reporter-'$-"));
   const packet = join(fixture, "test-cases.json");
   try {
     stageNative(fixture);
     writeFileSync(join(fixture, "package.json"), '{"type":"module"}\n');
     writeFileSync(
+      join(fixture, "probe.test.ts"),
+      'import {test} from "node:test"; test("prepared reporter case", () => {});\n',
+    );
+    writeFileSync(
       join(fixture, "filtered.test.ts"),
       `import assert from 'node:assert/strict'; import {test} from 'node:test';
-      test('filtered reporter case',()=>{assert.equal(process.execPath,${JSON.stringify(realpathSync(process.execPath))}); assert.equal(process.env.VIZE_REPORTER_UNKNOWN,undefined);});\n`,
+test('filtered reporter case',()=>{assert.equal(process.execPath,${JSON.stringify(realpathSync(process.execPath))}); assert.equal(process.env.VIZE_REPORTER_UNKNOWN,undefined);});\n`,
     );
     writeFileSync(
       join(fixture, "filtered.sh"),
       'exec env -i PATH="$PATH" node --test filtered.test.ts\n',
     );
     commitFixture(fixture);
-    const run = () =>
-      spawnSync(process.execPath, [helper, "sh", "filtered.sh"], {
+    const run = (args = ["node", "--test", "probe.test.ts"]) =>
+      spawnSync(process.execPath, [helper, ...args], {
         cwd: fixture,
         encoding: "utf8",
         env: {
@@ -79,7 +83,21 @@ void test("prepared reporter sessions survive filtered tasks without inheriting 
           VIZE_REPORTER_UNKNOWN: "caller-only",
         },
       });
-    const filtered = run();
+    const reported = run();
+    assert.equal(reported.status, 0, `${reported.stdout}\n${reported.stderr}`);
+    assert.deepEqual(JSON.parse(readFileSync(packet, "utf8")), {
+      version: 1,
+      job: "prepared native fixture reporter",
+      attempt: 1,
+      cases: [
+        {
+          path: "probe.test.ts",
+          name: "probe.test.ts › prepared reporter case",
+          outcome: "passed",
+        },
+      ],
+    });
+    const filtered = run(["sh", "filtered.sh"]);
     assert.equal(filtered.status, 0, `${filtered.stdout}\n${filtered.stderr}`);
     assert.deepEqual(JSON.parse(readFileSync(packet, "utf8")), {
       version: 1,

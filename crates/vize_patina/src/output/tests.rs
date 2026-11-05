@@ -458,3 +458,46 @@ fn rule_docs_path_exists_for_every_published_rule() {
         "published rules with no page:\n{missing}"
     );
 }
+
+#[test]
+fn synthetic_diagnostic_routes_keep_their_owned_documentation() {
+    const ROUTES: &str = include_str!(
+        "../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/routes.json"
+    );
+    const CONTROL: &str = include_str!(
+        "../../../../tests/_fixtures/differential/linter/diagnostic-documentation-11818/DocumentationControl.vue.txt"
+    );
+    let input: serde_json::Value = serde_json::from_str(ROUTES).unwrap();
+    assert_eq!(
+        input["schema"],
+        "vize.synthetic-diagnostic-documentation.v1"
+    );
+    assert_eq!(input["version"], 1);
+    let routes = input["routes"].as_array().unwrap();
+    assert_eq!(routes.len(), 2);
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for route in routes {
+        let id = route["id"].as_str().unwrap();
+        let page = route["page"].as_str().unwrap();
+        let expected = vize_l0::cstr!("docs/content/rules/{page}");
+        assert_eq!(rule_docs_path(id), expected, "{id}");
+        for locale in ["", "ja/"] {
+            let path = vize_l0::cstr!("docs/content/{locale}rules/{page}");
+            assert!(root.join(path.as_str()).is_file(), "{id}: {path}");
+        }
+    }
+    assert_eq!(
+        rule_docs_path(input["unknown"]["id"].as_str().unwrap()).as_str(),
+        input["unknown"]["path"].as_str().unwrap()
+    );
+    let filename = vize_l0::String::from("DocumentationControl.vue");
+    let actual = format_results(
+        &[Linter::new().lint_sfc(CONTROL, &filename)],
+        &[(filename, CONTROL.into())],
+        OutputFormat::Json,
+    );
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&actual).unwrap(),
+        serde_json::json!([{"file":"DocumentationControl.vue","messages":[],"errorCount":0,"warningCount":0}])
+    );
+}

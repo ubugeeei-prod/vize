@@ -46,7 +46,7 @@ fn project_tsrs_discovery_preserves_nullable_boolean_findings() {
         "file":"App.vue",
         "messages":[{
             "ruleId":RULE,
-            "ruleDocsPath":"docs/content/rules/type-and-script.md",
+            "ruleDocsPath":"docs/content/rules/reference/type-strict-boolean-expressions.md",
             "severity":2,
             "message":"[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
             "line":6,"column":12,"endLine":6,"endColumn":17

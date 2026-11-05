@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "kind": "exact-static-listener-prop-source-inverse",
+  "beforeSource": "c864b4ff9965f3220e4537dda030081e10e2ee28",
+  "nativeAcceptanceCredit": false,
+  "canonicalAssetsChanged": false,
+  "file": {
+    "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+    "before": {
+      "bytes": 17569,
+      "sha256": "d89885f81d1b911ada2b175293a4bb499f9c11ba73d8e5468a9e323685bb1829"
+    },
+    "after": {
+      "bytes": 17859,
+      "sha256": "24d519f83013b3db724a011dd99f0e5d27d02f85d4eb88f1d32fd7988a54ab25"
+    },
+    "edits": [
+      {
+        "before": "append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L",
+        "after": "// A loose static emit has no declared runtime arity. Preserve the normal\n    // listener-prop fallback; dynamic targets keep their contextual marker.\n    let loose_args = if dynamic_component || !ctx.contextual_listener {\n        \"__L\"\n    } else {\n        \"unknown[]\"\n    };\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args}"
+      }
+    ]
+  }
+}

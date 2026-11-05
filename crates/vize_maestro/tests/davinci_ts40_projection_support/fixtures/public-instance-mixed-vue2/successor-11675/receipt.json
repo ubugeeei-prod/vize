@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pullRequest": 11815,
+  "issue": 11675,
+  "predecessor": {
+    "path": "successor-11734/projection-record.txt",
+    "bytes": 2325,
+    "sha256": "d1436463d988da69b5f89a059fc768f15fc6a5dbd100ba555c25961637047ef8"
+  },
+  "successor": {
+    "path": "successor-11675/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "48e67e34753e44fe483d1c8f1907209319388304bd1598a9c627c42ff644f822"
+  },
+  "delta": {
+    "generatedTextBytesPerProjection": 0,
+    "contentMapperMappings": 2,
+    "contentMapperAuthoredHits": 2
+  },
+  "capture": {
+    "runId": 41818766110,
+    "jobId": 126536577795,
+    "artifactId": 13315708044,
+    "artifactSha256": "e70fa529f19c5bff77b1eed158c78d707927d07fc7e2e337e28c57d42c653b03",
+    "sourceRevision": "beca9eaf068137e6dffd818c4949b522c4919dd1",
+    "pullRequestHead": "b3ccaa6786e63d91902a684f41fb1ec296231602",
+    "producerCommit": "46b752b95bd8e2b955148866655e01b58a166fe4",
+    "observedLanes": [
+      "content-mapper"
+    ],
+    "pendingQualification": "The legacy-feature Canon and Maestro lanes retain their predecessor bytes and require the next exact-source Actions run."
+  },
+  "scope": "Diagnostics-only Atom spans on the two generated interpolation parentheses. All predecessor bytes except content-mapper mapping and authored-hit summaries remain identical."
+}

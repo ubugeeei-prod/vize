@@ -3,8 +3,8 @@
 //! Provides utility functions for working with binding patterns
 //! and classifying expressions as literals or functions.
 
-use oxc_ast::ast::{BindingPattern, Expression, VariableDeclarationKind};
-use vize_carton::{CompactString, String, ToCompactString};
+use oxc_ast::ast::{BindingIdentifier, BindingPattern, Expression, VariableDeclarationKind};
+use vize_carton::{CompactString, FxHashMap, String, ToCompactString};
 use vize_relief::BindingType;
 
 use crate::croquis::BindingMetadata;
@@ -41,26 +41,47 @@ pub(in crate::script_parser) fn for_each_binding_pattern_name(
     pattern: &BindingPattern<'_>,
     visit: &mut impl FnMut(&str),
 ) {
+    for_each_binding_pattern_identifier(pattern, &mut |id| visit(id.name.as_str()));
+}
+
+/// Retain declaration ranges during the existing top-level variable walk.
+/// Property keys and initializer reads never own the declared binding.
+pub(in crate::script_parser) fn record_binding_pattern_spans(
+    spans: &mut FxHashMap<CompactString, (u32, u32)>,
+    pattern: &BindingPattern<'_>,
+) {
+    for_each_binding_pattern_identifier(pattern, &mut |id| {
+        spans.insert(
+            CompactString::new(id.name.as_str()),
+            (id.span.start, id.span.end),
+        );
+    });
+}
+
+fn for_each_binding_pattern_identifier<'a>(
+    pattern: &BindingPattern<'a>,
+    visit: &mut impl FnMut(&BindingIdentifier<'a>),
+) {
     match pattern {
-        BindingPattern::BindingIdentifier(id) => visit(id.name.as_str()),
+        BindingPattern::BindingIdentifier(id) => visit(id),
         BindingPattern::ObjectPattern(object) => {
             for property in object.properties.iter() {
-                for_each_binding_pattern_name(&property.value, visit);
+                for_each_binding_pattern_identifier(&property.value, visit);
             }
             if let Some(rest) = &object.rest {
-                for_each_binding_pattern_name(&rest.argument, visit);
+                for_each_binding_pattern_identifier(&rest.argument, visit);
             }
         }
         BindingPattern::ArrayPattern(array) => {
             for element in array.elements.iter().flatten() {
-                for_each_binding_pattern_name(element, visit);
+                for_each_binding_pattern_identifier(element, visit);
             }
             if let Some(rest) = &array.rest {
-                for_each_binding_pattern_name(&rest.argument, visit);
+                for_each_binding_pattern_identifier(&rest.argument, visit);
             }
         }
         BindingPattern::AssignmentPattern(assign) => {
-            for_each_binding_pattern_name(&assign.left, visit);
+            for_each_binding_pattern_identifier(&assign.left, visit);
         }
     }
 }
