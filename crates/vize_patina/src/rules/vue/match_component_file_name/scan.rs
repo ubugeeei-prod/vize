@@ -5,8 +5,6 @@
 //! Reports are dropped by the caller when the count is greater than one.
 
 use super::casing::names_match;
-use crate::rules::script::script_source_type;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, CallExpression, ExportDefaultDeclaration, ExportDefaultDeclarationKind, Expression,
     NewExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
@@ -15,7 +13,7 @@ use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_export_default_declaration, walk_new_expression},
 };
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use oxc_span::Span;
 use vize_atelier_sfc::SfcScriptBlock;
 use vize_l0::{String, ToCompactString};
@@ -32,12 +30,16 @@ pub(super) struct Miss {
     pub(super) end: u32,
 }
 
-pub(super) fn scan_block(block: &SfcScriptBlock<'_>, setup: bool, stem: &str, scan: &mut Scan) {
+pub(super) fn scan_block(
+    block: &SfcScriptBlock<'_>,
+    parsed: &ParserReturn<'_>,
+    setup: bool,
+    stem: &str,
+    scan: &mut Scan,
+) {
     if block.src.is_some() || block.content.is_empty() {
         return;
     }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, block.content.as_ref(), script_source_type()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return;
     }

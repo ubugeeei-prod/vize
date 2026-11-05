@@ -258,15 +258,15 @@ impl Rule for NoUnusedComponents {
         );
         let credit_jsx = ctx.is_rule_enabled("vue/jsx-uses-vars");
         let setup_jsx = credit_jsx.then(|| {
-            ctx.sfc_descriptor()
-                .and_then(|descriptor| descriptor.script_setup.as_ref())
-                .map(|script| jsx_referenced_names(script.content.as_ref()))
+            ctx.sfc_scripts()
+                .and_then(|scripts| scripts.script_setup())
+                .map(jsx_referenced_names)
                 .unwrap_or_default()
         });
         let script_jsx = credit_jsx.then(|| {
-            ctx.sfc_descriptor()
-                .and_then(|descriptor| descriptor.script.as_ref())
-                .map(|script| jsx_referenced_names(script.content.as_ref()))
+            ctx.sfc_scripts()
+                .and_then(|scripts| scripts.script())
+                .map(jsx_referenced_names)
                 .unwrap_or_default()
         });
         let unused_components: Vec<_> = template_unused_components

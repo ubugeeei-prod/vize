@@ -41,6 +41,9 @@ impl Linter {
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_template_descriptor(descriptor);
         }
+        if let Some(scripts) = env.sfc_scripts {
+            ctx.set_sfc_scripts(scripts);
+        }
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
         if let Some(analysis) = analysis {

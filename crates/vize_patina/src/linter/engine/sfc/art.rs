@@ -35,15 +35,18 @@ impl Linter {
             &parsed
         };
         let source = descriptor.source.as_ref();
+        let script_allocator = oxc_allocator::Allocator::default();
+        let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
         let mut summary = self
             .has_active_semantic_template_rules()
-            .then(|| analysis::script_summary(self, descriptor));
+            .then(|| analysis::script_summary(self, descriptor, &scripts));
         let mut extra = empty_lint_result(filename);
         for (start, end) in art_variant_ranges(source, descriptor) {
             let Some(inner) = source.get(start..end) else {
                 continue;
             };
-            let one = self.lint_art_variant(inner, filename, descriptor, summary.as_mut());
+            let one =
+                self.lint_art_variant(inner, filename, descriptor, &scripts, summary.as_mut());
             extra = Self::merge_lint_results(extra, one);
         }
         if self.has_unused_bindings_demand()
@@ -64,6 +67,7 @@ impl Linter {
         source: &str,
         filename: &str,
         descriptor: &SfcDescriptor<'_>,
+        scripts: &crate::linter::sfc_scripts::SfcScripts<'_>,
         summary: Option<&mut Croquis>,
     ) -> LintResult {
         let offset = SourceRoot::new(descriptor.source.as_ref())
@@ -103,6 +107,7 @@ impl Linter {
             },
             TemplateRuleEnv {
                 sfc_descriptor: Some(descriptor),
+                sfc_scripts: Some(scripts),
                 art_script_analysis: summary.as_deref().filter(|_| !fatal),
                 dialect: vize_l0::dialect::VueDialect::Vue,
                 facade_rules: super::facade::RULES,

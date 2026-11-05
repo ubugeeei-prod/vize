@@ -26,6 +26,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/match-component-file-name",
     "vue/no-array-index-key",
     "vue/no-deprecated-functional-template",
     "ssr/no-browser-globals-in-ssr",
@@ -103,6 +104,7 @@ use vize_relief::RootNode;
 #[derive(Clone, Copy)]
 pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub sfc_scripts: Option<&'a dyn crate::linter::sfc_scripts::ScriptParses>,
     pub art_script_analysis: Option<&'a Croquis>,
     pub dialect: VueDialect,
     /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
