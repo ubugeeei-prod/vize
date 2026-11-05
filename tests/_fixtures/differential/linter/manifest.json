@@ -4312,6 +4312,34 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/regression/closed-link-component-20261105",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "closed-link-component-20261105/template.txt",
+          "sha256": "7150a1965c4b3ac6e8710c185140b1a8d1fe0c2c8545af443272c6a393203304",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "html_end_tags::tests::accepts_closed_optional_and_ordinary_tags consumes the complete authored closing tags around a Link component. Input registration is not native acceptance."
+          }
+        ]
+      }
     }
   ]
 }

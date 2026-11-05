@@ -29,7 +29,9 @@ fn accepts_closed_optional_and_ordinary_tags() {
         "<div />",
         "<Comp />",
         "<Comp></Comp>",
-        "<ul><li><Link href=\"/account\">Overview</Link></li></ul>",
+        include_str!(
+            "../../../../../../tests/_fixtures/differential/linter/closed-link-component-20261105/template.txt"
+        ),
         "<p><Input>content</Input></p>",
         "<table><tr><td>a</td></tr></table>",
         "<ul><li>a<ul><li>b</li></ul></li></ul>",
