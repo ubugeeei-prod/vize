@@ -103,15 +103,20 @@ impl CanonFileCache {
         expected: &str,
         now: SystemTime,
     ) -> std::io::Result<bool> {
-        let desired: [u8; 32] = Sha256::digest(expected.as_bytes()).into();
         let before = FileIdentity::capture(path);
-        if before.as_ref().is_some_and(|identity| {
-            identity.settled(now)
-                && self
-                    .files
-                    .get(path)
-                    .is_some_and(|old| old.identity == *identity && old.desired == desired)
-        }) {
+        let desired = before
+            .as_ref()
+            .filter(|identity| identity.settled(now))
+            .map(|_| {
+                let digest: [u8; 32] = Sha256::digest(expected.as_bytes()).into();
+                digest
+            });
+        if let (Some(identity), Some(desired)) = (before.as_ref(), desired)
+            && self
+                .files
+                .get(path)
+                .is_some_and(|old| old.identity == *identity && old.desired == desired)
+        {
             return Ok(false);
         }
         #[cfg(test)]
@@ -125,8 +130,14 @@ impl CanonFileCache {
             // someone else. Only a later stable, exact read can seed the cache.
             return Ok(true);
         }
-        let after = FileIdentity::capture(path);
-        self.retain_verified_observation(path, before, after, desired, now);
+        if let Some(desired) = desired {
+            let after = FileIdentity::capture(path);
+            self.retain_verified_observation(path, before, after, desired, now);
+        } else {
+            // Unsupported identities and recent files retain the original
+            // full read without paying for an unusable content digest.
+            self.files.remove(path);
+        }
         Ok(false)
     }
     fn retain_verified_observation(
