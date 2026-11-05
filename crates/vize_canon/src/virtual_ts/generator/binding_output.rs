@@ -45,6 +45,52 @@ mod tests {
     use vize_carton::String;
 
     #[test]
+    fn pinned_sfc_export_only_advertises_navigation() {
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/component-export-navigation-features/Probe.vue.txt"
+        ));
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .expect("pinned SFC");
+        let template = descriptor.template.as_ref().expect("template");
+        let script = descriptor.script_setup.as_ref().expect("setup script");
+        let allocator = vize_carton::Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, &template.content);
+        assert_eq!(errors.len(), 0);
+        let summary = vize_atelier_sfc::croquis::analyze_sfc_descriptor(
+            &descriptor,
+            Some(&root),
+            vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
+        );
+        let output = super::super::generate_virtual_ts_with_offsets_and_checks(
+            &summary,
+            Some(&script.content),
+            Some(&root),
+            script.loc.start as u32,
+            template.loc.start as u32,
+            &crate::virtual_ts::VirtualTsOptions::default(),
+            crate::virtual_ts::types::VirtualTsGenerationOptions {
+                component_name: Some("Probe"),
+                ..Default::default()
+            },
+        );
+        let exports = output
+            .mapping
+            .rows()
+            .filter(|row| row.meta.kind == ProjectionSpanKind::ComponentExport)
+            .map(|row| {
+                (
+                    output.code.get(row.span.gen_range.clone()),
+                    row.span.src_range.clone(),
+                    row.meta.features.bits(),
+                )
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(exports, [(Some("Probe"), 0..0, 24)]);
+    }
+
+    #[test]
     fn component_export_only_serves_navigation_and_keeps_authored_completion() {
         let code = String::from("let value;\nexport default Name;\n");
         let start = code.find("Name").expect("exported component name");
