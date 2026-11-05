@@ -6,6 +6,10 @@ import type { Page } from "playwright";
 import { verifyRenderedRuleIndentation } from "./rule-indentation-render-assertions.ts";
 import { groupIncludes, ruleGroups } from "./rules/rule-groups.ts";
 import { ruleHeadings } from "./rules/rule-page.ts";
+import {
+  isOperationalDiagnosticReference,
+  operationalDiagnosticPages,
+} from "./rules/operational-diagnostics.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const locales = ["en", "ja", "zh-CN", "pt-BR", "fr"] as const;
@@ -20,6 +24,7 @@ export const ruleRenderRoutes = [
   "/rules/reference/script-define-props-destructuring",
   "/rules/reference/a11y-form-control-has-label",
   "/rules/reference/vue-no-preprocessor-lang",
+  ...operationalDiagnosticPages.map(([, slug]) => `/rules/reference/${slug}`),
   "/rules/project/vize-croquis-cf-array-mutation",
   "/rules/project/vize-croquis-cf-circular-reactive-dependency",
 ];
@@ -72,6 +77,7 @@ function exampleAfter(source: string, heading: string) {
 export function expectedRulePages(locale: Locale) {
   const pages = ["reference", "project"].flatMap((section) =>
     readdirSync(resolve(root, `docs/content/rules/${section}`))
+      .filter((file) => section !== "reference" || !isOperationalDiagnosticReference(file))
       .sort()
       .map((file) => {
         const read = (at: Locale) =>
@@ -98,7 +104,7 @@ export function expectedRulePages(locale: Locale) {
         };
       }),
   );
-  assert.equal(pages.length, 333, "267 single-file rules plus 66 project rules per locale");
+  assert.equal(pages.length, 345, "279 single-file rules plus 66 project rules per locale");
   return pages;
 }
 
@@ -119,12 +125,14 @@ function expectedIndexLinks(locale: Locale, page: string) {
       `${locale} ${page}: ${slug} has a page`,
     );
   const ids = (section: string) =>
-    readdirSync(resolve(root, `docs/content/rules/${section}`)).map(
-      (file) =>
-        readFileSync(resolve(root, `docs/content/rules/${section}/${file}`), "utf8").match(
-          /^# `([^`]+)`/m,
-        )![1],
-    );
+    readdirSync(resolve(root, `docs/content/rules/${section}`))
+      .filter((file) => section !== "reference" || !isOperationalDiagnosticReference(file))
+      .map(
+        (file) =>
+          readFileSync(resolve(root, `docs/content/rules/${section}/${file}`), "utf8").match(
+            /^# `([^`]+)`/m,
+          )![1],
+      );
   const expected =
     page === "all"
       ? [...ids("reference"), ...ids("project")]

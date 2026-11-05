@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 252 rule IDs: 139 mapped, 2 intentional divergences, and 111 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 252 rule IDs: 151 mapped, 2 intentional divergences, and 99 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 Enable Vize rules under `vue.linter.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
@@ -40,7 +40,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/comma-dangle` | — | unimplemented |
 | `vue/comma-spacing` | — | unimplemented |
 | `vue/comma-style` | — | unimplemented |
-| `vue/comment-directive` | — | unimplemented |
+| `vue/comment-directive` | [`vue/comment-directive`](./reference/vue-comment-directive.md) | mapped |
 | `vue/component-api-style` | — | unimplemented |
 | `vue/component-definition-name-casing` | — | intentional-divergence |
 | `vue/component-name-in-template-casing` | [`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | mapped |
@@ -62,14 +62,14 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/html-comment-content-newline` | — | unimplemented |
 | `vue/html-comment-content-spacing` | — | unimplemented |
 | `vue/html-comment-indent` | — | unimplemented |
-| `vue/html-end-tags` | — | unimplemented |
+| `vue/html-end-tags` | [`vue/html-end-tags`](./reference/vue-html-end-tags.md) | mapped |
 | `vue/html-indent` | — | unimplemented |
 | `vue/html-quotes` | [`vue/html-quotes`](./reference/vue-html-quotes.md) | mapped |
 | `vue/html-self-closing` | [`vue/html-self-closing`](./reference/vue-html-self-closing.md) | mapped |
-| `vue/jsx-uses-vars` | — | unimplemented |
+| `vue/jsx-uses-vars` | [`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | mapped |
 | `vue/key-spacing` | — | unimplemented |
 | `vue/keyword-spacing` | — | unimplemented |
-| `vue/match-component-file-name` | — | unimplemented |
+| `vue/match-component-file-name` | [`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | mapped |
 | `vue/match-component-import-name` | — | unimplemented |
 | `vue/max-attributes-per-line` | — | unimplemented |
 | `vue/max-len` | — | unimplemented |
@@ -90,7 +90,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-computed-properties-in-data` | [`script/no-computed-properties-in-data`](./reference/script-no-computed-properties-in-data.md) | mapped |
 | `vue/no-console` | — | unimplemented |
 | `vue/no-constant-condition` | — | unimplemented |
-| `vue/no-custom-modifiers-on-v-model` | — | unimplemented |
+| `vue/no-custom-modifiers-on-v-model` | [`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | mapped |
 | `vue/no-deprecated-data-object-declaration` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | mapped |
 | `vue/no-deprecated-delete-set` | [`script/no-deprecated-delete-set`](./reference/script-no-deprecated-delete-set.md) | mapped |
 | `vue/no-deprecated-destroyed-lifecycle` | [`script/no-deprecated-destroyed-lifecycle`](./reference/script-no-deprecated-destroyed-lifecycle.md) | mapped |
@@ -139,7 +139,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-parsing-error` | — | unimplemented |
 | `vue/no-potential-component-option-typo` | [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | mapped |
 | `vue/no-ref-as-operand` | [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | mapped |
-| `vue/no-ref-object-reactivity-loss` | — | unimplemented |
+| `vue/no-ref-object-reactivity-loss` | [`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | mapped |
 | `vue/no-required-prop-with-default` | [`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | mapped |
 | `vue/no-reserved-component-names` | [`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | mapped |
 | `vue/no-reserved-keys` | [`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | mapped |
@@ -157,7 +157,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-restricted-v-bind` | — | unimplemented |
 | `vue/no-restricted-v-on` | — | unimplemented |
 | `vue/no-root-v-if` | [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | mapped |
-| `vue/no-setup-props-reactivity-loss` | — | unimplemented |
+| `vue/no-setup-props-reactivity-loss` | [`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | mapped |
 | `vue/no-shared-component-data` | [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | mapped |
 | `vue/no-side-effects-in-computed-properties` | [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | mapped |
 | `vue/no-spaces-around-equal-signs-in-attribute` | — | unimplemented |
@@ -167,7 +167,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-template-shadow` | [`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | mapped |
 | `vue/no-template-target-blank` | [`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | mapped |
 | `vue/no-textarea-mustache` | [`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | mapped |
-| `vue/no-this-in-before-route-enter` | — | unimplemented |
+| `vue/no-this-in-before-route-enter` | [`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | mapped |
 | `vue/no-undef-components` | — | unimplemented |
 | `vue/no-undef-directives` | — | unimplemented |
 | `vue/no-undef-properties` | — | unimplemented |
@@ -184,7 +184,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-useless-mustaches` | [`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | mapped |
 | `vue/no-useless-template-attributes` | [`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | mapped |
 | `vue/no-useless-v-bind` | [`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | mapped |
-| `vue/no-v-for-template-key` | — | unimplemented |
+| `vue/no-v-for-template-key` | [`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | mapped |
 | `vue/no-v-for-template-key-on-child` | [`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | mapped |
 | `vue/no-v-html` | [`vue/no-v-html`](./reference/vue-no-v-html.md) | mapped |
 | `vue/no-v-model-argument` | — | unimplemented |
@@ -203,7 +203,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/padding-lines-in-component-definition` | — | unimplemented |
 | `vue/prefer-define-options` | [`script/prefer-define-options`](./reference/script-prefer-define-options.md) | mapped |
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | mapped |
-| `vue/prefer-prop-type-boolean-first` | — | unimplemented |
+| `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | mapped |
 | `vue/prefer-separate-static-class` | — | unimplemented |
 | `vue/prefer-single-event-payload` | — | unimplemented |
 | `vue/prefer-template` | — | unimplemented |
@@ -219,7 +219,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/require-emit-validator` | — | unimplemented |
 | `vue/require-explicit-emits` | [`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | mapped |
 | `vue/require-explicit-slots` | [`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | mapped |
-| `vue/require-expose` | — | unimplemented |
+| `vue/require-expose` | [`vue/require-expose`](./reference/vue-require-expose.md) | mapped |
 | `vue/require-macro-variable-name` | — | unimplemented |
 | `vue/require-name-property` | — | unimplemented |
 | `vue/require-prop-comment` | — | unimplemented |
@@ -257,7 +257,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/valid-define-emits` | [`script/valid-define-emits`](./reference/script-valid-define-emits.md) | mapped |
 | `vue/valid-define-options` | [`script/valid-define-options`](./reference/script-valid-define-options.md) | mapped |
 | `vue/valid-define-props` | [`script/valid-define-props`](./reference/script-valid-define-props.md) | mapped |
-| `vue/valid-model-definition` | — | unimplemented |
+| `vue/valid-model-definition` | [`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | mapped |
 | `vue/valid-next-tick` | [`script/valid-next-tick`](./reference/script-valid-next-tick.md) | mapped |
 | `vue/valid-template-root` | [`vue/valid-template-root`](./reference/vue-valid-template-root.md) | mapped |
 | `vue/valid-v-bind` | [`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | mapped |

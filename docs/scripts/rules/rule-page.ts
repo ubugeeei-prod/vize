@@ -270,7 +270,11 @@ export function pageExamples(example: RuleExample): Record<"bad" | "good", CodeE
 export function ruleConfiguration(rule: RuleMetadata, example: RuleExample) {
   return {
     preset: "incremental",
-    rules: { [rule.name]: rule.defaultSeverity === "warning" ? "warn" : "error" },
+    rules: {
+      [rule.name]: rule.defaultSeverity === "warning" ? "warn" : "error",
+      ...example.companionRules,
+    },
+    ...(example.reportUnusedDisableDirectives ? { reportUnusedDisableDirectives: true } : {}),
     ...(example.typeAware || rule.name.startsWith("type/") ? { typeAware: true } : {}),
     ...(example.ruleOptions ? { ruleOptions: { [rule.name]: example.ruleOptions } } : {}),
   };

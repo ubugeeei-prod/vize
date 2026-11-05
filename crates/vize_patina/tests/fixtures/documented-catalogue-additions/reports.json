@@ -1,0 +1,372 @@
+{
+  "schema": "vize.documented-rule-report-packets.v1",
+  "baselineRelease": "v0.691.0",
+  "baselineCliSha256": "06e68e45966521968705a52afea7576fa8b2c34a8e120c83b65b3367808062a8",
+  "normalization": "Only file fields replace the temporary parent path with the authored file name. Every diagnostic, message, help, severity, location, reference and count is retained.",
+  "cases": [
+    {
+      "id": "vue/comment-directive",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/comment-directive",
+              "ruleDocsPath": "docs/content/guide/lint-execution.md",
+              "severity": 2,
+              "message": "[vize:vue/comment-directive] Unused eslint-disable directive (no problems were reported).",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 32
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/html-end-tags",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/html-end-tags",
+              "ruleDocsPath": "docs/content/rules/reference/vue-html-end-tags.md",
+              "severity": 1,
+              "message": "[vize:vue/html-end-tags] '<li>' should have end tag.",
+              "line": 1,
+              "column": 15,
+              "endLine": 1,
+              "endColumn": 19,
+              "help": "Add a closing </li> tag."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/jsx-uses-vars",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-unused-components",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-components.md",
+              "severity": 2,
+              "message": "[vize:vue/no-unused-components] Component 'MyButton' is registered but never used in template",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 16,
+              "help": "Remove the unused import or use the component in your template"
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/match-component-file-name",
+      "bad": [
+        {
+          "file": "MyPanel.vue",
+          "messages": [
+            {
+              "ruleId": "vue/match-component-file-name",
+              "ruleDocsPath": "docs/content/rules/reference/vue-match-component-file-name.md",
+              "severity": 1,
+              "message": "[vize:vue/match-component-file-name] Component name `OtherPanel` should match file name `MyPanel`.",
+              "line": 2,
+              "column": 23,
+              "endLine": 2,
+              "endColumn": 35,
+              "help": "Rename the component so its name matches the file name."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "MyPanel.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/no-custom-modifiers-on-v-model",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-custom-modifiers-on-v-model",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md",
+              "severity": 1,
+              "message": "[vize:vue/no-custom-modifiers-on-v-model] 'v-model' directives don't support the modifier 'capitalize'.",
+              "line": 1,
+              "column": 20,
+              "endLine": 1,
+              "endColumn": 46
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/no-ref-object-reactivity-loss",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-ref-object-reactivity-loss",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md",
+              "severity": 1,
+              "message": "[vize:vue/no-ref-object-reactivity-loss] Getting a value from the ref object in the same scope will cause the value to lose reactivity.",
+              "line": 4,
+              "column": 18,
+              "endLine": 4,
+              "endColumn": 23
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/no-setup-props-reactivity-loss",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-setup-props-reactivity-loss",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md",
+              "severity": 1,
+              "message": "[vize:vue/no-setup-props-reactivity-loss] Getting a value from the `props` in root scope of `<script setup>` will cause the value to lose reactivity.",
+              "line": 3,
+              "column": 18,
+              "endLine": 3,
+              "endColumn": 23
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/no-this-in-before-route-enter",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-this-in-before-route-enter",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-this-in-before-route-enter.md",
+              "severity": 1,
+              "message": "[vize:vue/no-this-in-before-route-enter] 'beforeRouteEnter' does NOT have access to `this` component instance. https://router.vuejs.org/guide/advanced/navigation-guards.html#in-component-guards.",
+              "line": 4,
+              "column": 5,
+              "endLine": 4,
+              "endColumn": 9
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/no-v-for-template-key",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-v-for-template-key",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-v-for-template-key.md",
+              "severity": 2,
+              "message": "[vize:vue/no-v-for-template-key] '<template v-for>' cannot be keyed. Place the key on real elements instead.",
+              "line": 1,
+              "column": 47,
+              "endLine": 1,
+              "endColumn": 61
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/prefer-prop-type-boolean-first",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/prefer-prop-type-boolean-first",
+              "ruleDocsPath": "docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md",
+              "severity": 1,
+              "message": "[vize:vue/prefer-prop-type-boolean-first] Type `Boolean` should be at first in prop types.",
+              "line": 2,
+              "column": 33,
+              "endLine": 2,
+              "endColumn": 40,
+              "help": "Move Boolean to the front of the prop type list, for example [Boolean, String]."
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/require-expose",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/require-expose",
+              "ruleDocsPath": "docs/content/rules/reference/vue-require-expose.md",
+              "severity": 1,
+              "message": "[vize:vue/require-expose] The public properties of the component must be explicitly declared using `expose`. If the component does not have public properties, declare it empty.",
+              "line": 2,
+              "column": 16,
+              "endLine": 2,
+              "endColumn": 43
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue/valid-model-definition",
+      "bad": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [
+            {
+              "ruleId": "vue/valid-model-definition",
+              "ruleDocsPath": "docs/content/rules/reference/vue-valid-model-definition.md",
+              "severity": 2,
+              "message": "[vize:vue/valid-model-definition] Invalid key 'events' in model option.",
+              "line": 2,
+              "column": 42,
+              "endLine": 2,
+              "endColumn": 57
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "good": [
+        {
+          "file": "ExampleCard.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

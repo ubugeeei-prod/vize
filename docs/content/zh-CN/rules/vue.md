@@ -9,12 +9,14 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 
 每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 
-## 基础 (51)
+## 基础 (53)
 
 `essential` 预设中的正确性规则。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | 支持 `<template>` 中的诊断控制注释。 |  |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | 将 JSX 元素名称中引用的变量视为已使用。 |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 要求组件名称由多个单词组成。 |  |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | 禁止在使用 v-html 或 v-text 时提供子内容。 |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | 禁止使用已弃用的 Vue 2 管道运算符过滤器语法。 |  |
@@ -67,7 +69,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | 要求 `v-slot` 指令有效。 |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | 要求 `v-text` 指令有效。 |  |
 
-## 默认 (23)
+## 默认 (24)
 
 由默认预设 `happy-path` 添加。
 
@@ -76,6 +78,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | 要求显式书写 HTML 中可以省略的结束标签。 | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | 规范 HTML 属性的引号风格。 | ✓ |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 要求双花括号插值内部的空格保持一致。 | ✓ |
 | <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | 禁止 HTML 属性使用无效的静态值。 |  |
@@ -131,18 +134,27 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (7)
+## 按需启用 (16)
 
 不属于任何预设。在 `vue.linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 要求声明的组件名称与文件名匹配。 |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | 限制组件自身模板的复杂度（圈复杂度和认知复杂度）。 |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | 禁止在模板中直接写入应当国际化的用户可读文本。 |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | 为兼容 Vue 2，禁止在组件的 `v-model` 上使用自定义修饰符。 |  |
 | <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | 禁止模板包含多个根节点。 |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 禁止在同一作用域中复制 ref 的值而丢失后续响应式更新。 |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 禁止通过复制 setup 的 prop 值而丢失后续响应式更新。 |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 禁止静态内联 style 属性。 |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 禁止在 `beforeRouteEnter` 中通过 `this` 访问尚未创建的组件实例。 |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | 禁止在模板中引用未定义的变量。 |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | 为兼容 Vue 2，要求将 `template v-for` 的 key 放在实际子元素上。 |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 要求在组件 prop 的类型构造函数数组中将 `Boolean` 放在首位。 |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | 要求 Options API 组件通过 `expose` 显式声明公开属性。 |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | 要求 Vue 2 的 `model` 选项使用有效的键。 |  |
 
 [规则概览](../rules/index.md) · [规则选项](/rules/options.md) · [从 ESLint 迁移](/rules/migration.md)
