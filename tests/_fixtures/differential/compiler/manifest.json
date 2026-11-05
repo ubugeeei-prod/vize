@@ -1468,6 +1468,59 @@
       }
     },
     {
+      "id": "compiler/sfc/new-unref-constructor-11915",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "new-unref-constructor-11915",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "3df618ed97a0f0984796b8eb6112da9f29c8d68ba33b904bc6cd746c87163a74"
+          }
+        ]
+      },
+      "reference": {
+        "path": "new-unref-constructor-11915/module.expected.txt",
+        "sha256": "6b373a760992cf368fddc91821b24b2d8f948d56ae825f046749904869f79ac4",
+        "source": "Public vize 0.691.0 CLI SSR separate-template control; runtime regression and Vue reference witness: crates/vize_atelier_sfc/tests/new_unref_constructor_11915.rs and tests/tooling/new-unref-constructor-runtime.mjs"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "This differential row guards the separate-template SSR control. Production inline native modules are executed against Vue in the dedicated source and installed-public runtime oracle."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ordered-object-props-10458",
       "state": "active",
       "targets": ["ssr"],
@@ -3504,59 +3557,6 @@
           {
             "kind": "source-inspection",
             "dialects": ["vue3-sfc", "html-template"],
-            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
-          }
-        ]
-      }
-    },
-    {
-      "id": "compiler/sfc/new-unref-constructor-11915",
-      "state": "active",
-      "targets": [
-        "ssr"
-      ],
-      "inputs": {
-        "root": "new-unref-constructor-11915",
-        "files": [
-          {
-            "path": "Layout.vue.txt",
-            "role": "entry",
-            "sha256": "3df618ed97a0f0984796b8eb6112da9f29c8d68ba33b904bc6cd746c87163a74"
-          }
-        ]
-      },
-      "reference": {
-        "path": "new-unref-constructor-11915/module.expected.txt",
-        "sha256": "6b373a760992cf368fddc91821b24b2d8f948d56ae825f046749904869f79ac4",
-        "source": "Public vize 0.691.0 CLI SSR separate-template control; runtime regression and Vue reference witness: crates/vize_atelier_sfc/tests/new_unref_constructor_11915.rs and tests/tooling/new-unref-constructor-runtime.mjs"
-      },
-      "adapters": {
-        "legacy": "compiler-cli-ssr-v1",
-        "native": null,
-        "reasons": {
-          "native": "This differential row guards the separate-template SSR control. Production inline native modules are executed against Vue in the dedicated source and installed-public runtime oracle."
-        }
-      },
-      "comparison": {
-        "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
-      },
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
             "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
           }
         ]
