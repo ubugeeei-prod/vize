@@ -98,6 +98,7 @@ pub(super) fn materialize_cached_revision(
         revision,
         ProjectMember {
             source_paths: mirror.registered_original_paths_sorted(),
+            refreshed_sources: context.refreshed_sources.clone(),
             expected_files,
             package_links,
             query_paths: member_query_paths,

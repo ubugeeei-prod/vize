@@ -53,6 +53,9 @@ pub(super) struct ProjectMember {
     /// Authored identities survive generated-context invalidation so their
     /// current open buffers can be rebuilt before the old revision is pruned.
     pub(super) source_paths: Vec<PathBuf>,
+    /// Open roots this member took over when another graph was retired.
+    /// Their unchanged text still needs registration when this owner rebuilds.
+    pub(super) refreshed_sources: Vec<PathBuf>,
     pub(super) expected_files: vize_carton::FxHashSet<PathBuf>,
     pub(super) package_links: vize_carton::FxHashMap<PathBuf, PathBuf>,
     pub(super) query_paths: Vec<PathBuf>,

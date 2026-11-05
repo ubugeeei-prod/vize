@@ -34,6 +34,7 @@ fn cache_evicts_only_the_least_recently_used_context() {
             host(path.clone()),
             ProjectMember {
                 source_paths: Vec::new(),
+                refreshed_sources: Vec::new(),
                 expected_files: FxHashSet::default(),
                 package_links: FxHashMap::default(),
                 query_paths: Vec::new(),
@@ -89,6 +90,7 @@ fn context_eviction_preserves_members_of_a_live_native_project() {
             host(path.clone()),
             ProjectMember {
                 source_paths: Vec::new(),
+                refreshed_sources: Vec::new(),
                 expected_files: FxHashSet::from_iter([
                     virtual_root.join(cstr!("Host{index}.vue.ts"))
                 ]),
@@ -222,6 +224,7 @@ fn project_union_drops_members_with_stale_input_stamps() {
         host(source.clone()),
         ProjectMember {
             source_paths: Vec::new(),
+            refreshed_sources: Vec::new(),
             expected_files: FxHashSet::from_iter([expected]),
             package_links: [(link.clone(), target.clone())].into_iter().collect(),
             query_paths: Vec::new(),
@@ -268,6 +271,7 @@ fn project_union_drops_members_from_a_closed_or_changed_dependency_overlay() {
             host(source),
             ProjectMember {
                 source_paths: Vec::new(),
+                refreshed_sources: Vec::new(),
                 expected_files: FxHashSet::from_iter([expected.clone()]),
                 package_links: FxHashMap::default(),
                 query_paths: vec![expected.clone()],

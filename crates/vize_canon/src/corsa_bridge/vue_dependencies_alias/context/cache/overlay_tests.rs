@@ -592,8 +592,10 @@ fn workspace_implementations_keep_an_unchanged_tsx_root_when_a_vue_class_is_remo
         for source in [changed.as_str(), removed] {
             overlays.insert(workspace.other.clone(), source);
             drop(open(&workspace.other, source, &overlays, &[]));
-            let requested = [(workspace.other.clone(), source), (beta.clone(), BETA)];
-            let current = open(&workspace.host, CONTRACT, &overlays, &requested);
+            // Implementation opens the primary and reverse SFC importer;
+            // it does not request the full workspace again after every edit.
+            drop(open(&workspace.host, CONTRACT, &overlays, &[]));
+            let current = open(&workspace.other, source, &overlays, &[]);
             let retained = current
                 .source_catalog
                 .get(&beta_path)
