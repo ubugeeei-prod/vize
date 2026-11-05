@@ -207,8 +207,15 @@
       "status": "unimplemented"
     },
     "vue/html-end-tags": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/html-end-tags",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/html-indent": {
       "issue": 3223,
@@ -1986,8 +1993,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 139,
-    "unimplemented": 111
+    "mapped": 140,
+    "unimplemented": 110
   },
   "upstream": {
     "package": "eslint-plugin-vue",

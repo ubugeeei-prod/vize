@@ -66,6 +66,7 @@ mod valid_v_text;
 
 // Strongly recommended rules
 mod component_definition_name_casing;
+mod html_end_tags;
 mod html_quotes;
 mod mustache_interpolation_spacing;
 mod no_lone_template;
@@ -161,6 +162,7 @@ pub use crate::rules::opinionated::vue::{
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
+pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
 pub use mustache_interpolation_spacing::{
     MustacheInterpolationSpacing, SpacingStyle as MustacheInterpolationSpacingStyle,
