@@ -1,0 +1,13 @@
+<script setup>
+import Panel from "./Panel.vue";
+</script>
+
+<template>
+  <Panel class="from-app" />
+</template>
+
+<style scoped>
+.leaf {
+  font-style: italic;
+}
+</style>

@@ -1,0 +1,23 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent(_resolveComponent("Cam"), _mergeProps({ "look-at": new $setup.Vector3(0, 0.75, 0) }, _attrs), null, _parent))
+}
+import { Vector3 } from './vector3.mjs'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = { Vector3 }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

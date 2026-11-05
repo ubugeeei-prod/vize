@@ -6,6 +6,7 @@ use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sf
 use vize_carton::{String, ToCompactString, cstr};
 
 mod checked_imports;
+mod conditions;
 
 #[derive(Debug, PartialEq, Eq)]
 struct RuntimeProp {

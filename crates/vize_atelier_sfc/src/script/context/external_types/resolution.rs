@@ -6,6 +6,7 @@ use vize_carton::{FxHashMap, String, ToCompactString};
 
 use super::super::batch_epoch::{NO_EPOCH, current_batch_epoch};
 
+mod conditions;
 mod exports_patterns;
 pub(crate) mod project;
 
@@ -172,7 +173,11 @@ fn resolve_import_path_uncached(
     }
 
     if !specifier.starts_with('.') && !specifier.starts_with('/') {
-        return resolve_bare_specifier(current_file, specifier);
+        return resolve_bare_specifier(
+            current_file,
+            specifier,
+            project.map_or(&[], |project| project.package_conditions.as_slice()),
+        );
     }
 
     let base_dir = current_file.parent()?;
@@ -258,7 +263,11 @@ fn package_import_target_value(
 /// Resolve a bare specifier to package type declarations through
 /// `node_modules`. Files already inside `node_modules` follow only relative
 /// imports, avoiding unrelated dependency type graphs.
-fn resolve_bare_specifier(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+fn resolve_bare_specifier(
+    current_file: &Path,
+    specifier: &str,
+    conditions: &[String],
+) -> Option<PathBuf> {
     if specifier.starts_with('#') || specifier.starts_with("node:") {
         return None;
     }
@@ -273,7 +282,7 @@ fn resolve_bare_specifier(current_file: &Path, specifier: &str) -> Option<PathBu
     for dir in current_file.ancestors().skip(1) {
         let package_dir = dir.join("node_modules").join(&package);
         if package_dir.is_dir() {
-            return resolve_package_types(&package_dir, &subpath);
+            return resolve_package_types_with_conditions(&package_dir, &subpath, conditions);
         }
     }
     None
@@ -305,8 +314,32 @@ fn split_package_specifier(specifier: &str) -> Option<(String, String)> {
     Some((package.to_compact_string(), subpath.to_compact_string()))
 }
 
+#[cfg(test)]
 fn resolve_package_types(package_dir: &Path, subpath: &str) -> Option<PathBuf> {
+    resolve_package_types_with_conditions(package_dir, subpath, &[])
+}
+
+fn resolve_package_types_with_conditions(
+    package_dir: &Path,
+    subpath: &str,
+    conditions: &[String],
+) -> Option<PathBuf> {
     let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok();
+    if !conditions.is_empty()
+        && let Some(raw) = manifest.as_deref()
+    {
+        match conditions::resolve(
+            package_dir,
+            raw,
+            subpath,
+            conditions,
+            resolve_candidate_path,
+        ) {
+            Some(conditions::Selection::Path(path)) => return Some(path),
+            Some(conditions::Selection::Excluded) => return None,
+            None => {}
+        }
+    }
     let manifest: Option<serde_json::Value> =
         manifest.and_then(|raw| serde_json::from_str(&raw).ok());
 
