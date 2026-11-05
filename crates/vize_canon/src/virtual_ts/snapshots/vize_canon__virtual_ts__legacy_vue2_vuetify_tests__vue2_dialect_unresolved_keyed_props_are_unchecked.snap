@@ -73,7 +73,7 @@ type $ComponentInputFor<T, Declared, Authored, Allowed> = Allowed & $ComponentIn
 type $ComponentInput<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? $ComponentInputProps<T, Declared> : T extends unknown ? $ComponentInputFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
 type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };
 // Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).
-type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, $AuthoredKeyWitness<Jsx> & $ComponentInputProps<T, Declared> & $ComponentInputGuard<T, Declared, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
+type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;
 type $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;
 type $UsePublicInstance<T> = $IsAny<T> extends true ? true : $IsUnknown<T>;
 type $LiteralKeys<T> = keyof { [K in keyof T as K extends string ? string extends K ? never : K extends `$${infer R}` ? string extends R ? never : K : K : number extends K ? never : symbol extends K ? never : K]: unknown };
@@ -132,7 +132,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 15579:15608 -> 0:76
+  // @vize-map: 15635:15664 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -174,13 +174,13 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 17576:17582 -> 8:14
+  // @vize-map: 17632:17638 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17659:17670 -> 21:32
+  // @vize-map: 17715:17726 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 17748:17753 -> 39:44
+  // @vize-map: 17804:17809 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17831:17836 -> 51:56
+  // @vize-map: 17887:17892 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;
