@@ -1,0 +1,4 @@
+export interface Props {
+  label: string;
+  count?: number;
+}
