@@ -11,10 +11,11 @@ mod build;
 mod cache;
 pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
-use cache::{ContextFingerprint, ProjectMember, RevisionKey};
+use cache::ContextFingerprint;
 mod namespace;
 mod prebuild;
 mod prepare;
+mod prepare_materialize;
 mod revise;
 mod routes;
 
@@ -214,6 +215,24 @@ impl AliasContext {
                     .collect()
             })
             .unwrap_or_default()
+    }
+
+    /// Documents for the files a graph-fingerprint hit is about to write.
+    pub(in crate::corsa_bridge) fn materialized_sources_for_candidates(
+        &self,
+    ) -> Vec<super::super::vue_document::CorsaMaterializedSource> {
+        let Some(mirror) = self.mirror.as_ref() else {
+            return Vec::new();
+        };
+        mirror
+            .incremental_candidate_paths()
+            .into_iter()
+            .filter_map(|path| {
+                mirror
+                    .materialized_source_document_at(&path)
+                    .map(materialized_source_from_document)
+            })
+            .collect()
     }
 
     /// The host file's mirror document after a same-graph edit.

@@ -371,6 +371,93 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
     }
 }
 
+#[test]
+fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
+    let root = tempfile::tempdir().unwrap();
+    let host = root.path().join("Host.vue");
+    let child = root.path().join("Child.vue");
+    std::fs::write(&host, HOST).unwrap();
+    std::fs::write(&child, CHILD).unwrap();
+    let session = EditorMirrorSession::new();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    let cold = prepare(&session, &host, HOST, &[], &[]);
+    let cold_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert!(
+        cold_hashes > 3,
+        "a cold build hashes every mirror file ({cold_hashes})"
+    );
+    let child_path = cold
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path.ends_with("Child.vue"))
+        .expect("child mirror")
+        .materialized_path
+        .clone();
+    let host_path = cold
+        .host
+        .materialized_sources
+        .iter()
+        .find(|source| source.source_path.ends_with("Host.vue"))
+        .expect("host mirror")
+        .materialized_path
+        .clone();
+    let child_bytes = std::fs::read(&child_path).unwrap();
+    drop(cold);
+
+    let edited = HOST.replace("日本語 🦀", "changed 🦀");
+    let hit = prepare(&session, &host, &edited, &[], &[]);
+    let hit_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert!(hit_hashes > 0, "the edited host file is hashed");
+    assert!(
+        hit_hashes < cold_hashes,
+        "a fingerprint hit hashed {hit_hashes} files; the cold mirror hashed {cold_hashes}"
+    );
+    assert_eq!(std::fs::read(&child_path).unwrap(), child_bytes);
+    let host_on_disk = std::fs::read_to_string(&host_path).unwrap();
+    assert!(host_on_disk.contains("changed"));
+    assert!(!host_on_disk.contains("日本語"));
+    assert!(
+        hit.materialized_changes.changed.contains(&host_path),
+        "the native delta still names the edited host"
+    );
+    assert!(!hit.materialized_changes.changed.contains(&child_path));
+    assert!(!hit.materialized_changes.created.contains(&child_path));
+    assert!(!hit.materialized_changes.deleted.contains(&child_path));
+    let revised = context(&session, &host, &edited, &[]);
+    drop(hit);
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let rebuilt = context(&session, &host, &edited, &[]);
+    complete_surface(
+        revised.query_surface.get().expect("hit surface"),
+        rebuilt.query_surface.get().expect("cold surface"),
+    );
+
+    let session = EditorMirrorSession::new();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let warm_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    std::fs::write(&child, CHILD.replace("title", "missTitle")).unwrap();
+    let _ = crate::batch::virtual_project::take_materialized_hash_count();
+    let miss = prepare(&session, &host, &edited, &[], &[]);
+    let miss_hashes = crate::batch::virtual_project::take_materialized_hash_count();
+    assert_eq!(
+        miss_hashes, warm_hashes,
+        "a fingerprint miss still hashes the whole mirror"
+    );
+    assert!(miss.host.dependencies[0].source.contains("missTitle"));
+    let missed = context(&session, &host, &edited, &[]);
+    drop(miss);
+    session.clear();
+    drop(prepare(&session, &host, &edited, &[], &[]));
+    let cold_miss = context(&session, &host, &edited, &[]);
+    complete_surface(
+        missed.query_surface.get().expect("miss surface"),
+        cold_miss.query_surface.get().expect("cold miss surface"),
+    );
+}
+
 #[cfg(test)]
 mod native_union;
 
