@@ -89,12 +89,17 @@ void test("unrequested SFC snapshots stay stubs until a query names them", (t) =
   assert.equal(updates, 0);
   service.getSemanticDiagnostics(abs("src/Parent.vue"));
   assert.equal(updates, 1);
-  assert.deepEqual(generated.slice().sort(), [abs("src/Child.vue"), abs("src/Parent.vue")].sort());
+  assert.deepEqual(
+    generated.slice().sort((a, b) => a.localeCompare(b)),
+    [abs("src/Child.vue"), abs("src/Parent.vue")].sort((a, b) => a.localeCompare(b)),
+  );
   assert.equal(text("src/App.vue"), "export {};\n");
   assert.equal(support.get(abs("src/App.vue")).projection.text, "export default 1;\n");
   assert.deepEqual(
-    generated.slice().sort(),
-    [abs("src/App.vue"), abs("src/Child.vue"), abs("src/Parent.vue")].sort(),
+    generated.slice().sort((a, b) => a.localeCompare(b)),
+    [abs("src/App.vue"), abs("src/Child.vue"), abs("src/Parent.vue")].sort((a, b) =>
+      a.localeCompare(b),
+    ),
   );
 });
 
@@ -117,8 +122,10 @@ void test("external file discovery skips dependency and build directories", () =
       2,
     );
     assert.deepEqual(
-      found.slice().sort(),
-      [path.join(project, "src/App.vue"), path.join(project, "src/kept/Ok.vue")].sort(),
+      found.slice().sort((a, b) => a.localeCompare(b)),
+      [path.join(project, "src/App.vue"), path.join(project, "src/kept/Ok.vue")].sort((a, b) =>
+        a.localeCompare(b),
+      ),
     );
   } finally {
     fs.rmSync(project, { recursive: true, force: true });

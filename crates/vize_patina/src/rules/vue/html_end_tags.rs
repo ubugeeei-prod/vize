@@ -217,10 +217,14 @@ fn authored_open(source: &str, element: &ElementNode<'_>) -> bool {
     let Some(name) = bytes.get(1..) else {
         return false;
     };
-    if name.len() < tag.len() || !name[..tag.len()].eq_ignore_ascii_case(tag) {
+    if !name
+        .get(..tag.len())
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case(tag))
+    {
         return false;
     }
-    name.len() == tag.len() || !name[tag.len()].is_ascii_alphanumeric()
+    name.get(tag.len())
+        .is_none_or(|byte| !byte.is_ascii_alphanumeric())
 }
 
 fn authored_self_closing(source: &str, element: &ElementNode<'_>) -> bool {
@@ -257,7 +261,10 @@ fn is_void_element(tag: &str) -> bool {
     for (slot, byte) in lower.iter_mut().zip(bytes) {
         *slot = byte.to_ascii_lowercase();
     }
-    std::str::from_utf8(&lower[..bytes.len()]).is_ok_and(|lowered| vize_l0::is_void_tag(lowered))
+    lower
+        .get(..bytes.len())
+        .and_then(|bytes| std::str::from_utf8(bytes).ok())
+        .is_some_and(vize_l0::is_void_tag)
 }
 
 /// Offset after `</tag>` when it occupies `[from, limit)`, aside from
@@ -269,7 +276,7 @@ fn closing_end(source: &str, from: u32, limit: u32, tag: &str) -> Option<u32> {
     if at > limit {
         return None;
     }
-    while at < limit && bytes[at].is_ascii_whitespace() {
+    while at < limit && bytes.get(at).is_some_and(u8::is_ascii_whitespace) {
         at += 1;
     }
     let tag = tag.as_bytes();
@@ -282,7 +289,7 @@ fn closing_end(source: &str, from: u32, limit: u32, tag: &str) -> Option<u32> {
         return None;
     }
     let mut close = name_end;
-    while close < limit && bytes[close].is_ascii_whitespace() {
+    while close < limit && bytes.get(close).is_some_and(u8::is_ascii_whitespace) {
         close += 1;
     }
     if bytes.get(close) == Some(&b'>') {

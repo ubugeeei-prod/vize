@@ -3973,6 +3973,16 @@ vue/attribute-order · lint 规则
 
 帮助:
   按推荐顺序重新排列属性
+=== vue/comment-directive
+vue/comment-directive · lint 规则
+Support comment directives in `<template>`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint 规则
 强制组件文件名使用PascalCase或kebab-case
@@ -4106,6 +4116,16 @@ Treat variables used in JSX element names as used
 类别: script
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-jsx-uses-vars.md
+=== vue/match-component-file-name
+vue/match-component-file-name · lint 规则
+Require a component name to match its file name
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-match-component-file-name.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）
@@ -4280,6 +4300,16 @@ vue/no-child-content · lint 规则
 
 帮助:
   使用v-html或v-text时，子内容会被忽略。请删除子内容
+=== vue/no-custom-modifiers-on-v-model
+vue/no-custom-modifiers-on-v-model · lint 规则
+Disallow custom modifiers on `v-model` used on a component
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint 规则
 禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）
@@ -4838,6 +4868,16 @@ vue/no-preprocessor-lang · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-ref-object-reactivity-loss
+vue/no-ref-object-reactivity-loss · lint 规则
+Disallow copying a ref value in the same scope
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint 规则
 禁止使用保留的组件名
@@ -4906,6 +4946,16 @@ vue/no-script-non-standard-lang · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-script-non-standard-lang.md
+=== vue/no-setup-props-reactivity-loss
+vue/no-setup-props-reactivity-loss · lint 规则
+Disallow setup prop reads that lose reactivity
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint 规则
 不建议在 SFC 块上使用 src 属性
@@ -5046,6 +5096,16 @@ vue/no-textarea-mustache · lint 规则
 
     <!-- 正确 -->
     <textarea v-model="message"></textarea>
+=== vue/no-this-in-before-route-enter
+vue/no-this-in-before-route-enter · lint 规则
+Disallow `this` in `beforeRouteEnter`
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-this-in-before-route-enter.md
 === vue/no-undefined-refs
 vue/no-undefined-refs · lint 规则
 禁止未定义的模板引用
@@ -5494,6 +5554,16 @@ vue/permitted-contents · lint 规则
   - <a>和<button>不能相互嵌套
   - <ul>/<ol>的直接子元素只能是<li>
   - <table>的直接子元素只能是<thead>、<tbody>、<tfoot>、<tr>或<caption>
+=== vue/prefer-prop-type-boolean-first
+vue/prefer-prop-type-boolean-first · lint 规则
+Enforce `Boolean` comes first in component prop types
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md
 === vue/prefer-props-shorthand
 vue/prefer-props-shorthand · lint 规则
 强制同名prop绑定使用简写语法
@@ -5607,6 +5677,16 @@ vue/require-component-registration · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-expose
+vue/require-expose · lint 规则
+Require declare public properties using `expose`
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-require-expose.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint 规则
 要求style块使用scoped或module属性
@@ -5985,6 +6065,16 @@ vue/valid-attribute-name · lint 规则
 
 帮助:
   属性名不能包含空格、引号、>、/、=或控制字符
+=== vue/valid-model-definition
+vue/valid-model-definition · lint 规则
+Require valid keys in the model option
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint 规则
 强制 `<template>` 根符合 Vue 3 的片段语义

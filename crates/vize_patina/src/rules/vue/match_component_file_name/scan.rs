@@ -18,6 +18,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::Span;
 use vize_atelier_sfc::SfcScriptBlock;
+use vize_carton::{String, ToCompactString};
 
 #[derive(Default)]
 pub(super) struct Scan {
@@ -82,7 +83,7 @@ impl Scanner<'_> {
             return;
         }
         self.scan.misses.push(Miss {
-            name: name.to_string(),
+            name: name.to_compact_string(),
             start: self.offset + span.start,
             end: self.offset + span.end,
         });
@@ -183,11 +184,11 @@ fn object_argument<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpressio
 fn static_name(expression: &Expression<'_>) -> Option<(String, Span)> {
     match expression.get_inner_expression() {
         Expression::StringLiteral(literal) => {
-            Some((literal.value.as_str().to_string(), literal.span))
+            Some((literal.value.as_str().to_compact_string(), literal.span))
         }
         Expression::TemplateLiteral(template) => {
             let value = template.single_quasi()?;
-            Some((value.as_str().to_string(), template.span))
+            Some((value.as_str().to_compact_string(), template.span))
         }
         _ => None,
     }

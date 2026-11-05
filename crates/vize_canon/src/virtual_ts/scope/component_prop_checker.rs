@@ -315,13 +315,26 @@ pub(super) fn append_per_prop_aliases(
         if let Some((shared_idx, canonical)) = shared
             && let Some(canonical_prop) =
                 first_emitted_prop_alias(canonical, safe_prop_name.as_str())
-            && same_prop_alias_shape(canonical_prop, prop)
         {
-            append!(
-                *ts,
-                "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
-            );
-            continue;
+            if same_prop_alias_shape(canonical_prop, prop) {
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
+                );
+                continue;
+            }
+            if canonical_prop.name == prop.name
+                && !is_inline_callback_prop(canonical_prop)
+                && is_inline_callback_prop(prop)
+                && !is_inline_ref_callback_prop(prop)
+            {
+                let callable = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {callable}<__{component_type_name}_{shared_idx}_prop_{safe_prop_name}>;\n",
+                );
+                continue;
+            }
         }
         let camel_prop_name = to_camel_case(prop.name.as_str());
         append!(

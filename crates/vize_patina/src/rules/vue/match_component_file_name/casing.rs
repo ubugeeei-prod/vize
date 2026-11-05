@@ -1,6 +1,8 @@
 //! Upstream `pascalCase` / `kebabCase` used when `shouldMatchCase` is false.
 //! The file stem is not rewritten.
 
+use vize_carton::String;
+
 pub(super) fn names_match(name: &str, stem: &str) -> bool {
     pascal_case(name) == stem || kebab_case(name) == stem
 }
@@ -10,7 +12,7 @@ fn pascal_case(value: &str) -> String {
         let mut chars = value.chars();
         match chars.next() {
             Some(first) => first.to_lowercase().collect::<String>() + chars.as_str(),
-            None => String::new(),
+            None => String::default(),
         }
     } else {
         camel_from_separators(value)
@@ -18,7 +20,7 @@ fn pascal_case(value: &str) -> String {
     let mut chars = camel.chars();
     match chars.next() {
         Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
+        None => String::default(),
     }
 }
 
@@ -51,7 +53,12 @@ fn kebab_case(value: &str) -> String {
     let dashed: Vec<char> = value.replace('_', "-").chars().collect();
     let mut out = String::with_capacity(dashed.len() + 4);
     for (index, ch) in dashed.iter().copied().enumerate() {
-        if ch.is_ascii_uppercase() && index > 0 && is_word(dashed[index - 1]) {
+        if ch.is_ascii_uppercase()
+            && index > 0
+            && dashed
+                .get(index - 1)
+                .is_some_and(|previous| is_word(*previous))
+        {
             out.push('-');
         }
         out.extend(ch.to_lowercase());

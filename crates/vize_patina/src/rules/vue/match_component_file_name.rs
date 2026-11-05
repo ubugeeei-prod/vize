@@ -15,6 +15,8 @@ use scan::{Scan, scan_block};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profile;
 
+use vize_carton::{String, cstr};
+
 const RULE: &str = "vue/match-component-file-name";
 const HELP: &str = "Rename the component so its name matches the file name.";
 
@@ -29,7 +31,7 @@ static META: RuleMeta = RuleMeta {
 pub struct MatchComponentFileName;
 
 pub(super) fn message(name: &str, filename: &str) -> String {
-    format!("Component name `{name}` should match file name `{filename}`.")
+    cstr!("Component name `{name}` should match file name `{filename}`.")
 }
 
 impl Rule for MatchComponentFileName {
