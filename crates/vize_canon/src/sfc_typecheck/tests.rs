@@ -64,17 +64,6 @@ fn test_type_check_result() {
 }
 
 #[test]
-fn test_type_check_options_default() {
-    let options = SfcTypeCheckOptions::new("test.vue");
-    assert_eq!(options.filename, "test.vue");
-    assert!(!options.strict);
-    assert!(options.check_props);
-    assert!(options.check_emits);
-    assert!(options.check_template_bindings);
-    assert!(!options.include_virtual_ts);
-}
-
-#[test]
 fn test_type_check_options_strict() {
     let options = SfcTypeCheckOptions::new("test.vue").strict();
     assert!(options.strict);
@@ -1439,3 +1428,5 @@ const count = 1
         "script setup virtual TS must stay untouched:\n{virtual_ts}"
     );
 }
+
+mod options_defaults;

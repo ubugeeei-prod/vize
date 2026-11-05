@@ -18,7 +18,7 @@ const unavailable = () => { const error = new Error("typed observation gap"); er
 fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
 fault.observers.sourceSnapshot = unavailable;
 `;
-const environment = (fixture) => ({
+const environment = (fixture: string) => ({
   ...process.env,
   GITHUB_ACTIONS: "true",
   GITHUB_RUN_ID: "123",
@@ -26,18 +26,25 @@ const environment = (fixture) => ({
   GITHUB_JOB: "law",
   RUNNER_TEMP: fixture,
 });
-const receiptAt = (fixture) =>
+const receiptAt = (fixture: string) =>
   JSON.parse(
     readFileSync(join(fixture, "js-native-fault-evidence-123-1-law/outcome.json"), "utf8"),
-  );
+  ) as {
+    commandExitCode: number;
+    commandSignal: string | null;
+    commandReturnCode: number;
+    taskDetails?: unknown;
+    observationGaps: Record<string, string>;
+  };
 
-for (const [originalStatus, detailsStatus] of [
+const statuses: Array<readonly [number, number | "SIGTERM" | "unavailable"]> = [
   [0, 0],
   [9, 0],
   [11, 23],
   [13, "SIGTERM"],
   [17, "unavailable"],
-]) {
+];
+for (const [originalStatus, detailsStatus] of statuses) {
   void test(`failed task summary preserves original ${originalStatus} with details ${detailsStatus}`, () => {
     const fixture = mkdtempSync(join(tmpdir(), "vize-js-task-details-"));
     try {
@@ -73,7 +80,10 @@ process.exitCode = await fault.main(["--", ...${JSON.stringify(command)}], "linu
       assert.equal(result.stdout, "");
       assert.equal(result.stderr, "");
       assert.deepEqual(
-        readFileSync(calls, "utf8").trim().split("\n").map(JSON.parse),
+        readFileSync(calls, "utf8")
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line) as string[]),
         originalStatus === 0 || detailsStatus === "unavailable"
           ? [command.slice(1)]
           : [command.slice(1), ["run", "--last-details"]],
@@ -93,7 +103,7 @@ process.exitCode = await fault.main(["--", ...${JSON.stringify(command)}], "linu
         assert.equal("taskDetails" in receipt, false);
         assert.equal(receipt.observationGaps["task-details"], "PermissionError");
       } else {
-        const authority = (text) => ({
+        const authority = (text: string) => ({
           bytes: Buffer.byteLength(text),
           sha256: createHash("sha256").update(text).digest("hex"),
           publicBytes: Buffer.byteLength(text),
@@ -111,7 +121,10 @@ process.exitCode = await fault.main(["--", ...${JSON.stringify(command)}], "linu
         assert.deepEqual(receipt.taskDetails, expected);
         assert.deepEqual(
           JSON.parse(
-            readFileSync(join(fixture, "js-native-fault-evidence-123-1-law/task-details.json")),
+            readFileSync(
+              join(fixture, "js-native-fault-evidence-123-1-law/task-details.json"),
+              "utf8",
+            ),
           ),
           expected,
         );

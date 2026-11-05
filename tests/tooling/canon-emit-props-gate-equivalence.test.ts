@@ -194,7 +194,12 @@ function usage(
     loose_args: "__L",
   };
   const inferred = (emit_props: string, prop_key: string, alias: string) =>
-    format(inferredTemplate, { ...values, emit_props, prop_key, inferred_args: alias });
+    format(inferredTemplate, {
+      ...values,
+      emit_props,
+      prop_key,
+      inferred_args: alias,
+    });
   return [
     `const ${component_ref} = undefined as unknown as ${shape};`,
     ...wrap([

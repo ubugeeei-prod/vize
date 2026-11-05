@@ -140,3 +140,12 @@ export function materializeConfiguredCompilerProjectInputs(
   }
   for (const file of files) fs.writeFileSync(path.join(directory, file.path), file.bytes);
 }
+
+export function compilerRecipeFailure(
+  fixture: { id: string; requiredBuildRecipe?: string },
+  observedRecipe: string,
+): string | null {
+  return fixture.requiredBuildRecipe && fixture.requiredBuildRecipe !== observedRecipe
+    ? `${fixture.id} requires source-build recipe ${fixture.requiredBuildRecipe}; observed ${observedRecipe}`
+    : null;
+}

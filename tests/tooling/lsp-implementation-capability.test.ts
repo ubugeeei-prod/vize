@@ -1,3 +1,7 @@
+import {
+  assertImplementationPacket,
+  type ImplementationLocation,
+} from "./support/lsp/assertions.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -7,7 +11,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { firstLocation, isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
 import { root, testOutputRoot } from "./support/lsp/paths.ts";
-import type { LspRange, ServerCapabilities } from "./support/lsp/protocol.ts";
+import type { ServerCapabilities } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import {
   requireTypecheckDependency,
@@ -217,29 +221,6 @@ declare module "vue/jsx-runtime" {
 `,
     "utf8",
   );
-}
-
-type ImplementationLocation = { uri: string; range: LspRange };
-
-function assertImplementationPacket(raw: unknown, expected: ImplementationLocation[]): void {
-  if (expected.length === 0) {
-    assert.equal(raw, null, "Vize returns None as null when no implementation remains");
-    return;
-  }
-  const actual: unknown[] = Array.isArray(raw) ? raw : [raw];
-  assert.equal(
-    new Set(actual.map((entry) => JSON.stringify(entry))).size,
-    actual.length,
-    "implementation locations must not repeat",
-  );
-  const uri = (entry: unknown): string =>
-    entry !== null && typeof entry === "object" && "uri" in entry
-      ? String(entry.uri)
-      : String(JSON.stringify(entry));
-  const order = (left: unknown, right: unknown) => uri(left).localeCompare(uri(right));
-  // Keep every returned field and both UTF-16 endpoints. Sorting only removes
-  // the protocol's unspecified ordering; nothing is filtered or deduplicated.
-  assert.deepEqual([...actual].sort(order), [...expected].sort(order));
 }
 
 function implementationLocation(file: string, text: string): ImplementationLocation {

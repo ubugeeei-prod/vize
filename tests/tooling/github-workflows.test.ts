@@ -213,6 +213,7 @@ test("title policy workflow mutates only issue and PR metadata", () => {
     "tools/support/lib.rs",
     "tools/support/common.rs",
     "tools/support/editors",
+    "tools/support/fixtures",
     "tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json",
   ]);
   assert.match(job, /uses:\s*dtolnay\/rust-toolchain@[0-9a-f]{40}/);

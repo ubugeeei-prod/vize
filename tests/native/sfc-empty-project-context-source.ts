@@ -36,6 +36,28 @@ function blob(bytes: Uint8Array): string {
     .digest("hex");
 }
 
+function supportingSourceForReference(file: string, bytes: Uint8Array): Uint8Array {
+  if (
+    file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs" ||
+    blob(bytes) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3"
+  )
+    return bytes;
+  let text = Buffer.from(bytes).toString("utf8");
+  for (const [current, reference] of [
+    [
+      "    Allocator, ParseMode, ParserOptions, PropNode, TemplateChildNode,",
+      "    Allocator, ParserOptions, PropNode, TemplateChildNode,",
+    ],
+    ["        ParserOptions {\n            mode: ParseMode::Sfc,\n", "        ParserOptions {\n"],
+  ]) {
+    assert.equal(text.split(current!).length, 2, "unique reviewed SFC grammar edit");
+    text = text.replace(current!, reference!);
+  }
+  const reference = Buffer.from(text);
+  assert.equal(blob(reference), "7c678c8a0b4a29f173ad67ad298afd1cb92ede8b");
+  return reference;
+}
+
 /** Authenticate only this reviewed integration, then retain the original law. */
 export function emptyCompileSourcesForReference(
   sources: Record<string, Uint8Array>,
@@ -62,7 +84,11 @@ export function emptyCompileSourcesForReference(
     );
   assert.deepEqual(Object.keys(supporting).sort(), Object.keys(plan.supportingSources).sort());
   for (const [file, expected] of Object.entries(plan.supportingSources))
-    assert.equal(blob(supporting[file]), expected, `reviewed project-context dependency: ${file}`);
+    assert.equal(
+      blob(supportingSourceForReference(file, supporting[file])),
+      expected,
+      `reviewed project-context dependency: ${file}`,
+    );
 
   const restored: Record<string, Uint8Array> = {};
   for (const source of plan.sources) {
