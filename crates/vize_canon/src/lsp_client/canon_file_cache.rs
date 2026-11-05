@@ -4,6 +4,7 @@
 //! certify a previous exact read. Recent files and other platforms keep the
 //! original full read; desired text is always compared by its strong digest.
 
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 #[cfg(any(unix, test))]
 use std::time::Duration;
@@ -102,7 +103,7 @@ impl CanonFileCache {
         expected: &str,
         now: SystemTime,
     ) -> std::io::Result<bool> {
-        let desired = *blake3::hash(expected.as_bytes()).as_bytes();
+        let desired: [u8; 32] = Sha256::digest(expected.as_bytes()).into();
         let before = FileIdentity::capture(path);
         if before.as_ref().is_some_and(|identity| {
             identity.settled(now)
@@ -125,13 +126,27 @@ impl CanonFileCache {
             return Ok(true);
         }
         let after = FileIdentity::capture(path);
-        if let Some(identity) = after.filter(|after| Some(after) == before.as_ref()) {
+        self.retain_verified_observation(path, before, after, desired, now);
+        Ok(false)
+    }
+    fn retain_verified_observation(
+        &mut self,
+        path: &Path,
+        before: Option<FileIdentity>,
+        after: Option<FileIdentity>,
+        desired: [u8; 32],
+        now: SystemTime,
+    ) {
+        if let Some(identity) =
+            after.filter(|after| Some(after) == before.as_ref() && after.settled(now))
+        {
             self.files
                 .insert(path.to_path_buf(), Observation { identity, desired });
         } else {
+            // An observation made in a timestamp's racy interval cannot later
+            // become authority merely because wall-clock time has passed.
             self.files.remove(path);
         }
-        Ok(false)
     }
 }
 
@@ -218,6 +233,35 @@ mod tests {
 
     #[cfg(unix)]
     #[test]
+    fn a_coarse_change_time_cannot_promote_a_recent_read_into_later_authority() {
+        let mut cache = CanonFileCache::default();
+        let path = Path::new("/private/A.vue.ts");
+        let identity = FileIdentity {
+            device: 1,
+            inode: 2,
+            length: ORIGINAL.len() as u64,
+            modified: (100, 0),
+            changed: (100, 0),
+        };
+        let read_time = UNIX_EPOCH + Duration::from_millis(100_100);
+        let later = UNIX_EPOCH + Duration::from_secs(102);
+        assert!(!identity.settled(read_time));
+        assert!(identity.settled(later));
+        let digest = Sha256::digest(ORIGINAL.as_bytes()).into();
+        cache.retain_verified_observation(
+            path,
+            Some(identity.clone()),
+            Some(identity),
+            digest,
+            read_time,
+        );
+        // A same-length write in the same coarse second can retain this exact
+        // metadata and restored mtime. It must encounter an absent cache later.
+        assert!(!cache.files.contains_key(path));
+    }
+
+    #[cfg(unix)]
+    #[test]
     fn symlinks_never_supply_cached_regular_file_authority() {
         let root = tempfile::tempdir().unwrap();
         let a = root.path().join("A");
@@ -238,6 +282,10 @@ mod tests {
         assert_eq!(std::fs::read(&a).unwrap(), ORIGINAL.as_bytes());
         assert_eq!(std::fs::read(&b).unwrap(), ORIGINAL.as_bytes());
         assert_eq!(cache.reads, 3);
+        assert!(
+            cache.files.is_empty(),
+            "recent exact reads are never retained as settled authority"
+        );
         assert!(cache.files.is_empty());
     }
 }
