@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import { verifyRawAriaContext } from "./aria-component-raw-context.ts";
 import {
+  ariaDeclarationDigests,
   copyAriaDeclarations,
   sourceAriaDeclarationFiles,
   sourceAriaSharedImport,
@@ -141,10 +142,7 @@ if (candidate) {
     "declarations and source CLI must name the same exact revision",
   );
 }
-const declarations = packageFiles.map((file) => ({
-  file,
-  sha256: digest(fs.readFileSync(path.join(sourcePackage, file))),
-}));
+const declarations = ariaDeclarationDigests(sourcePackage, declarationFiles);
 write(path.join(output, "providers.json"), {
   issue: 11144,
   mode: candidate ? "source-cli-with-shipped-declarations" : "unmodified-installed-package",

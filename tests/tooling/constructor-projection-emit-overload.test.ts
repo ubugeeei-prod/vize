@@ -237,6 +237,7 @@ test("the actual Unicode wrapper threads selected source custody into the owner 
   );
   assert.equal(proof.completePackets, 228);
   assert.equal(proof.ownedEmitPackets, 152);
+  assert.ok(proof.emitOverloads);
   assert.equal(proof.emitOverloads.head, pair.sources.head);
   assert.throws(
     () =>

@@ -45,7 +45,7 @@ export function certifyEmitOverloadAssets(
     [sources.base, before],
     [sources.head, after],
   ] as const) {
-    const selected = execFileSync(
+    const selected: Buffer = execFileSync(
       "git",
       ["-C", sources.repository, "show", `${revision}:${emitOverloadsPath}`],
       { stdio: ["ignore", "pipe", "pipe"] },
@@ -81,7 +81,7 @@ export function certifyEmitOverloadAssets(
       [baseRoot, sources.base, baseHash],
       [headRoot, sources.head, headHash],
     ]) {
-      const source = execFileSync(
+      const source: Buffer = execFileSync(
         "git",
         ["-C", sources.repository, "show", `${revision}:${file}`],
         { stdio: ["ignore", "pipe", "pipe"] },

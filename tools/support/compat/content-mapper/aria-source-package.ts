@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -29,4 +30,13 @@ export function copyAriaDeclarations(source: string, destination: string, files:
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, bytes);
   }
+}
+
+export function ariaDeclarationDigests(source: string, files: string[]) {
+  return files.map((file) => ({
+    file,
+    sha256: createHash("sha256")
+      .update(fs.readFileSync(path.join(source, file)))
+      .digest("hex"),
+  }));
 }
