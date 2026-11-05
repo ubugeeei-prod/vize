@@ -15,6 +15,114 @@ fn native_documents(project: &CorsaVueVirtualProject) -> Vec<(String, String)> {
 }
 
 #[test]
+fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edits() {
+    const CONTRACT: &str = "<script lang='ts'>\r\nexport interface Formatter { format(value: string): string }\r\nexport default {}\r\n</script>\r\n<template><span /></template>";
+    const ALPHA: &str = "<script lang='ts'>\r\nimport type { Formatter } from './Contract.vue'\r\nexport class Alpha implements Formatter {\r\n  /* 😀 */ format(value: string): string { return value.toUpperCase() }\r\n}\r\nexport default {}\r\n</script>\r\n<template><span /></template>";
+    const BETA: &str = "import type { Formatter } from './Contract.vue'\r\nexport class Beta implements Formatter {\r\n  /* 😀 */ format(value: string): string { return value.toUpperCase() }\r\n}\r\nexport const view = <span>implementation</span>\r\n";
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let contract = root.join("Contract.vue");
+    let alpha = root.join("Alpha.vue");
+    let beta = root.join("Beta.tsx");
+    for (path, source) in [(&contract, CONTRACT), (&alpha, ALPHA), (&beta, BETA)] {
+        std::fs::write(path, source).unwrap();
+    }
+    std::fs::write(root.join("tsconfig.json"), r#"{"compilerOptions":{"jsx":"preserve","moduleResolution":"bundler","target":"ES2022","module":"ESNext","strict":true},"include":["**/*"]}"#).unwrap();
+    let session = EditorMirrorSession::new();
+    session.trust_watched_disk_inputs();
+    let options = CorsaVueVirtualDocumentOptions {
+        jsx_typecheck: true,
+        preserve_event_navigation: true,
+        ..Default::default()
+    };
+    let open = |path: &Path, source: &str, overlays: &[(PathBuf, &str)]| {
+        build_vue_virtual_workspace_project(
+            path,
+            source,
+            options,
+            overlays,
+            &[],
+            environment(&session),
+        )
+        .unwrap()
+    };
+    let beta_context = |overlays: &[(PathBuf, &str)]| {
+        AliasContext::for_host_cached(
+            &beta,
+            BETA,
+            &overlays
+                .iter()
+                .map(|(path, source)| (path.clone(), *source))
+                .collect(),
+            options,
+            environment(&session),
+        )
+        .unwrap()
+    };
+    let mut overlays = vec![
+        (contract.clone(), CONTRACT),
+        (alpha.clone(), ALPHA),
+        (beta.clone(), BETA),
+    ];
+    drop(open(&contract, CONTRACT, &overlays));
+    drop(open(&alpha, ALPHA, &overlays));
+    let admitted_beta = beta_context(&overlays);
+    let beta_path = admitted_beta.mirror_virtual_path(&beta).unwrap();
+    let previous_beta = admitted_beta.source_catalog.get(&beta_path).unwrap();
+    drop(admitted_beta);
+    drop(open(&contract, CONTRACT, &overlays));
+    drop(open(&alpha, ALPHA, &overlays));
+    let changed = ALPHA
+        .replacen("\r\n", "\r\n// unsaved 雪😀 revision\r\n\r\n", 1)
+        .replace("/* 😀 */", "/* 雪😀 changed */");
+    let removed = "<script lang='ts'>\r\nimport type { Formatter } from './Contract.vue'\r\nexport const removed = true\r\nexport default {}\r\n</script>\r\n<template><span /></template>";
+    let mut last_native = Vec::new();
+    for source in [changed.as_str(), removed] {
+        overlays[1].1 = source;
+        drop(open(&alpha, source, &overlays));
+        let primary = open(&contract, CONTRACT, &overlays);
+        let importer = open(&alpha, source, &overlays);
+        let retained = importer
+            .host
+            .source_catalog
+            .get(&beta_path)
+            .expect("the separate TSX implementation is still admitted");
+        assert_eq!(
+            (
+                &retained.source,
+                &retained.code,
+                &retained.mapping,
+                &retained.import_source_map,
+                retained.mapping_kind
+            ),
+            (
+                &previous_beta.source,
+                &previous_beta.code,
+                &previous_beta.mapping,
+                &previous_beta.import_source_map,
+                previous_beta.mapping_kind
+            )
+        );
+        assert!(beta_path.is_file());
+        let config =
+            std::fs::read_to_string(importer.session_config_path.as_ref().unwrap()).unwrap();
+        assert!(config.contains("Beta.tsx"), "{config}");
+        last_native = native_documents(&importer);
+        assert!(last_native.iter().any(|(uri, code)| uri
+            == &crate::file_uri::path_to_file_uri(&beta_path)
+            && code == &previous_beta.code));
+        assert_eq!(native_documents(&primary), last_native);
+    }
+    session.clear();
+    drop(open(&contract, CONTRACT, &overlays));
+    drop(open(&alpha, removed, &overlays));
+    drop(beta_context(&overlays));
+    drop(open(&contract, CONTRACT, &overlays));
+    let cold = open(&alpha, removed, &overlays);
+    assert_eq!(last_native, native_documents(&cold));
+}
+
+#[test]
 /// Like `tsc`, an unresolved authored base is reported and skipped: typed
 /// services keep running on the rest of the configuration until it appears.
 fn materialization_skips_an_unresolved_base_until_physical_repair() {
