@@ -19,6 +19,7 @@ import {
 } from "./compiler-project.ts";
 import {
   COMPILER_CONFIGURED_PROJECT_ARGV,
+  compilerRecipeFailure,
   COMPILER_CONFIGURED_PROJECT_CONTRACT,
   isConfiguredCompilerProjectCase,
   loadConfiguredCompilerProjectInputs,
@@ -242,12 +243,6 @@ export function compilerAttempt(
     }
   }
   return observation;
-}
-
-function compilerRecipeFailure(fixture, observedRecipe) {
-  return fixture.requiredBuildRecipe && fixture.requiredBuildRecipe !== observedRecipe
-    ? `${fixture.id} requires source-build recipe ${fixture.requiredBuildRecipe}; observed ${observedRecipe}`
-    : null;
 }
 
 export function validateCompilerReport(
