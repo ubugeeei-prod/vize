@@ -24,6 +24,7 @@ const pluginFiles = [
   "language-service.cjs",
   "module-resolution.cjs",
   "package.json",
+  "project-options.cjs",
   "provider.cjs",
   "source-documents.cjs",
   "virtual-modules.cjs",

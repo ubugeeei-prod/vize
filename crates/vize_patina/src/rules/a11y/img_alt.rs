@@ -38,6 +38,10 @@ impl MarkupRule for ImgAlt {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         let policy = ImageAltPolicy::for_tag(element.tag());
         if !policy.applies() {

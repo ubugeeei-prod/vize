@@ -31,6 +31,9 @@ impl Linter {
             env,
         } = input;
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
+        if self.editor_callback_order {
+            ctx.enable_callback_order();
+        }
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_config_rule_severities(self.severity_overrides.clone());
@@ -40,6 +43,9 @@ impl Linter {
         ctx.art_script_analysis = env.art_script_analysis;
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_template_descriptor(descriptor);
+        }
+        if let Some(scripts) = env.sfc_scripts {
+            ctx.set_sfc_scripts(scripts);
         }
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
@@ -67,6 +73,7 @@ impl Linter {
                 rule_count,
             },
         );
+        ctx.clear_callback_site();
         finish(&mut ctx);
         if self.report_unused_disable_directives {
             unused_directives::report(self, &mut ctx);

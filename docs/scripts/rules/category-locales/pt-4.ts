@@ -25,7 +25,7 @@ export const portugueseRules4: Record<string, readonly [string, string, string]>
     "Use um contêiner `<section>` que possa conter o elemento de bloco do filho; o filho permanece inalterado.",
   ],
   "vize:croquis/cf/array-mutation": [
-    "Um array é alterado por índice, o que um array reativo não rastreia.",
+    "Use operações observáveis para atualizar índices de arrays no Vue 2.7.",
     "Neste projeto histórico com Vue 2.7, `items[0] = next` altera o array sem notificar o observador de arrays do Vue 2, de modo que o primeiro item exibido pode não ser atualizado.",
     "`splice(0, 1, next)` usa o método de mutação de arrays observado pelo Vue 2, permitindo que a mesma substituição atualize a visualização.",
   ],

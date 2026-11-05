@@ -87,17 +87,35 @@ function rustFiles(dir: string): string[] {
   });
 }
 
-/** Every lint rule's name and `RuleMeta`-family English description. */
-export function parseRules(): Map<string, string> {
+/** Literal or file-local constant strings in `RuleMeta`-family declarations. */
+export function parseRuleDescriptions(source: string): Array<[string, string]> {
+  const value = `(?:${stringLiteral}|[A-Z][A-Z0-9_]*)`;
   const meta = new RegExp(
-    String.raw`\b(?:RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*\{\s*name:\s*(${stringLiteral})\s*,\s*description:\s*(${stringLiteral})`,
+    String.raw`\b(?:RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*\{\s*name:\s*(${value})\s*,\s*description:\s*(${value})(?=\s*[,}])`,
     "gsu",
   );
+  const resolveString = (expression: string): string => {
+    if (expression.startsWith('"')) return rustString(expression);
+    const declaration = new RegExp(
+      String.raw`\bconst\s+${expression}\s*:\s*&(?:'static\s+)?str\s*=\s*(${stringLiteral})\s*;`,
+      "u",
+    );
+    const literal = declaration.exec(source)?.[1];
+    if (literal === undefined) throw new Error(`Unresolved RuleMeta string: ${expression}`);
+    return rustString(literal);
+  };
+  return [...source.matchAll(meta)].map((match) => [
+    resolveString(match[1]),
+    resolveString(match[2]),
+  ]);
+}
+
+/** Every lint rule's name and `RuleMeta`-family English description. */
+export function parseRules(): Map<string, string> {
   const rules = new Map<string, string>();
   for (const file of rustFiles(path.join("crates", "vize_patina", "src", "rules")).sort()) {
-    for (const match of read(file).matchAll(meta)) {
-      rules.set(rustString(match[1]), rustString(match[2]));
-    }
+    for (const [name, description] of parseRuleDescriptions(read(file)))
+      rules.set(name, description);
   }
   return rules;
 }

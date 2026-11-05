@@ -107,6 +107,28 @@ fn platform_version_must_match_the_selected_meta_package() {
 }
 
 #[test]
+fn typescript_six_alias_does_not_hide_a_declared_native_alias() {
+    let temp = TempDir::new().unwrap();
+    let root = temp.path();
+    let expected = native_package(root, "7.0.2");
+    fs::rename(
+        root.join("node_modules/typescript"),
+        root.join("node_modules/@typescript/native"),
+    )
+    .unwrap();
+    fs::create_dir_all(root.join("node_modules/typescript")).unwrap();
+    fs::write(
+        root.join("node_modules/typescript/package.json"),
+        r#"{"name":"@typescript/typescript6","version":"6.0.2"}"#,
+    )
+    .unwrap();
+    fs::write(root.join("package.json"),
+        r#"{"devDependencies":{"typescript":"npm:@typescript/typescript6@6.0.2","@typescript/native":"npm:typescript@7.0.2"}}"#).unwrap();
+
+    assert_eq!(resolve(None, Some(root), &[]), Ok(expected));
+}
+
+#[test]
 fn typescript_six_or_an_unrelated_alias_cannot_claim_native_platform_files() {
     let temp = TempDir::new().unwrap();
     let root = temp.path();

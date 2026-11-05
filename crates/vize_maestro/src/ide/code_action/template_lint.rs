@@ -132,7 +132,11 @@ impl CodeActionService {
             "\n"
         };
 
-        for lint_diag in &lint.result.diagnostics {
+        // Action order follows authored identity, independent of lint visitors.
+        let mut diagnostics: Vec<_> = lint.result.diagnostics.iter().collect();
+        diagnostics
+            .sort_by_key(|diagnostic| (diagnostic.start, diagnostic.end, diagnostic.rule_name));
+        for lint_diag in diagnostics {
             #[cfg(feature = "native")]
             if stamp.is_some()
                 && (template_content

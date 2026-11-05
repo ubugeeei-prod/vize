@@ -12,8 +12,8 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use scan::{Scan, scan_block};
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_l0::profile;
+
+use vize_l0::{String, cstr};
 
 const RULE: &str = "vue/match-component-file-name";
 const HELP: &str = "Rename the component so its name matches the file name.";
@@ -29,7 +29,7 @@ static META: RuleMeta = RuleMeta {
 pub struct MatchComponentFileName;
 
 pub(super) fn message(name: &str, filename: &str) -> String {
-    format!("Component name `{name}` should match file name `{filename}`.")
+    cstr!("Component name `{name}` should match file name `{filename}`.")
 }
 
 impl Rule for MatchComponentFileName {
@@ -41,32 +41,24 @@ impl Rule for MatchComponentFileName {
         let Some(stem) = checked_stem(ctx.filename) else {
             return;
         };
-        let owned_descriptor;
-        let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {
-            descriptor
-        } else {
-            owned_descriptor = match profile!(
-                "patina.rule.match_component_file_name.parse_sfc",
-                parse_sfc(
-                    ctx.source,
-                    SfcParseOptions {
-                        filename: ctx.filename.into(),
-                        ..Default::default()
-                    },
-                )
-            ) {
-                Ok(descriptor) => descriptor,
-                Err(_) => return,
-            };
-            &owned_descriptor
+        let (Some(descriptor), Some(scripts)) = (ctx.sfc_descriptor(), ctx.sfc_scripts()) else {
+            return;
         };
 
         let mut scan = Scan::default();
-        if let Some(script) = descriptor.script.as_ref() {
-            scan_block(script, false, stem, &mut scan);
+        if let Some(script) = descriptor.script.as_ref()
+            && script.src.is_none()
+            && !script.content.is_empty()
+            && let Some(parsed) = scripts.script()
+        {
+            scan_block(script, parsed, false, stem, &mut scan);
         }
-        if let Some(script) = descriptor.script_setup.as_ref() {
-            scan_block(script, true, stem, &mut scan);
+        if let Some(script) = descriptor.script_setup.as_ref()
+            && script.src.is_none()
+            && !script.content.is_empty()
+            && let Some(parsed) = scripts.script_setup()
+        {
+            scan_block(script, parsed, true, stem, &mut scan);
         }
         if scan.count > 1 {
             return;
@@ -206,5 +198,27 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(reports, [message("Other", "MyComponent").as_str()]);
+    }
+
+    #[test]
+    fn shared_jsx_parse_preserves_the_complete_name_diagnostic() {
+        let source = "<script lang=\"jsx\">\nexport default { name: 'Other', render: () => <div /> }\n</script>\n";
+        let actual = lint(source, "MyComponent.vue");
+        let start = source.find("'Other'").unwrap() as u32;
+        let expected = crate::linter::LintResult {
+            filename: "MyComponent.vue".into(),
+            diagnostics: vec![
+                crate::diagnostic::LintDiagnostic::warn(
+                    RULE,
+                    message("Other", "MyComponent"),
+                    start,
+                    start + "'Other'".len() as u32,
+                )
+                .with_help(super::HELP),
+            ],
+            error_count: 0,
+            warning_count: 1,
+        };
+        assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
     }
 }

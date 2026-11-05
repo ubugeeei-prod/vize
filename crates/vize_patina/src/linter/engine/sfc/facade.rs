@@ -60,6 +60,16 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/interactive-supports-focus",
     "vue/no-bare-strings-in-template",
     "vue/permitted-contents",
+    "a11y/alt-text",
+    "a11y/anchor-has-content",
+    "a11y/aria-props",
+    "a11y/aria-role",
+    "a11y/aria-unsupported-elements",
+    "a11y/click-events-have-key-events",
+    "a11y/label-has-for",
+    "a11y/no-refer-to-non-existent-id",
+    "a11y/no-static-element-interactions",
+    "a11y/role-has-required-aria-props",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
@@ -134,8 +144,13 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         });
     }
     profile!("patina.sfc.facade.visit", {
+        let ordered = ctx.callback_order_enabled();
         let mut markup_ctx = MarkupContext::new(ctx, &document);
-        document.visit_with(&batch::Rules(&selected), &mut markup_ctx);
+        if ordered {
+            document.visit_with(&batch::Rules::<true>(&selected), &mut markup_ctx);
+        } else {
+            document.visit_with(&batch::Rules::<false>(&selected), &mut markup_ctx);
+        }
     });
 }
 

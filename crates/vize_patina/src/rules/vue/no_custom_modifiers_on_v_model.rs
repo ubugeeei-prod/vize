@@ -11,10 +11,12 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
+use vize_l0::{String, cstr};
+
 const RULE: &str = "vue/no-custom-modifiers-on-v-model";
 
 pub(super) fn message(name: &str) -> String {
-    format!("'v-model' directives don't support the modifier '{name}'.")
+    cstr!("'v-model' directives don't support the modifier '{name}'.")
 }
 
 static META: RuleMeta = RuleMeta {

@@ -61,7 +61,7 @@ fn type_check_analyzed(
     options_api: bool,
     legacy_vue2: bool,
 ) -> SfcTypeCheckResult {
-    use vize_atelier_core::{options::ParserOptions, parser::parse_with_options};
+    use vize_atelier_core::{ParseMode, options::ParserOptions, parser::parse_with_options};
     use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -166,6 +166,7 @@ fn type_check_analyzed(
             &allocator,
             &template.content,
             ParserOptions {
+                mode: ParseMode::Sfc,
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
                 ..Default::default()
             },

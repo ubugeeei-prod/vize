@@ -69,6 +69,8 @@ pub struct Linter {
     pub(crate) severity_overrides: FxHashMap<String, Severity>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
+    /// Internal editor publication order across template callback backends.
+    pub(crate) editor_callback_order: bool,
     /// The same declarative or static custom-element policy used by the compiler.
     pub(crate) custom_elements: CustomElementMatcher,
     /// Report template disable pragmas that suppressed nothing.
@@ -118,6 +120,13 @@ pub struct Linter {
 }
 
 impl Linter {
+    /// Internal workspace bridge for the editor's template publication contract.
+    #[doc(hidden)]
+    pub fn with_editor_callback_order(mut self) -> Self {
+        self.editor_callback_order = true;
+        self
+    }
+
     pub(crate) fn apply_diagnostic_policy(&self, mut result: LintResult) -> LintResult {
         if self.help_level != HelpLevel::Full {
             for diagnostic in &mut result.diagnostics {

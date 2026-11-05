@@ -9,6 +9,51 @@ const UNICODE: &str = "<!-- 😀 --><template><div title=\"😀\"  class=\"a\">t
 const HEADER: &str = "<template\n  ><div title=\"hello\"  class=\"a\">text</div></template>";
 const CRLF: &str = "<script setup>const label = '😀'</script>\r\n<template>\r\n\t<div title=\"hello\"  class=\"a\">text</div>\r\n</template>\r\n";
 
+#[test]
+fn suppression_order_depends_on_authored_identity_instead_of_lint_traversal() {
+    let source = "<template>\n  <img src=\"/logo.png\">\n</template>";
+    let state = ServerState::new();
+    let uri = Url::parse("file:///workspace/SuppressionOrder.vue").unwrap();
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+    let ctx = IdeContext::new(&state, &uri, 13).unwrap();
+    let mut lint = CodeActionService::lint_template_once(&ctx).unwrap();
+    lint.result = vize_patina::Linter::with_preset(vize_patina::LintPreset::Opinionated)
+        .lint_template(&lint.content, uri.path());
+    lint.result.diagnostics.retain(|diagnostic| {
+        matches!(
+            diagnostic.rule_name,
+            "a11y/alt-text" | "vue/html-self-closing"
+        )
+    });
+    assert_eq!(lint.result.diagnostics.len(), 2);
+    lint.result
+        .diagnostics
+        .sort_by_key(|diagnostic| diagnostic.rule_name);
+    let range = Range::new(Position::new(1, 2), Position::new(1, 23));
+    let expected = CodeActionService::collect_forget_suppress(&ctx, range, &lint, &[], None);
+    let titles: Vec<_> = expected
+        .iter()
+        .map(|action| match action {
+            CodeActionOrCommand::CodeAction(action) => action.title.as_str(),
+            CodeActionOrCommand::Command(_) => panic!("expected a suppression action"),
+        })
+        .collect();
+    assert_eq!(
+        titles,
+        [
+            "Suppress with @vize:forget (a11y/alt-text)",
+            "Suppress with @vize:forget (vue/html-self-closing)",
+        ]
+    );
+    lint.result.diagnostics.reverse();
+    assert_eq!(
+        CodeActionService::collect_forget_suppress(&ctx, range, &lint, &[], None),
+        expected,
+    );
+}
+
 fn stamp(state: &ServerState, uri: &Url) -> LintEditStamp {
     let document = state.documents.get(uri).unwrap();
     LintEditStamp {

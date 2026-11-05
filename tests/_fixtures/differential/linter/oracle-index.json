@@ -314,5 +314,45 @@
   "linter/current-api/placeholder-label-optgroup-report": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__placeholder-label-optgroup-report.snap",
     "sha256": "3ea8668c3057db6720c9c9054c32f447242bb00a676ff864a705d77ac1e1ff7b"
+  },
+  "linter/current-api/anchor-bound-image-alt": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__anchor-bound-image-alt.snap",
+    "sha256": "92f39ceb7e2fcb5bf8faec6fe17717eb6854ad1cce0a06cf7cfc43230df0baf8"
+  },
+  "linter/current-api/anchor-empty-image-alt": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__anchor-empty-image-alt.snap",
+    "sha256": "a9b4e84f1315ad7a2d75dbb42a792d4c148963f026bd4e3663fbf567ec0d40d8"
+  },
+  "linter/current-api/click-presentation-opt-out": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__click-presentation-opt-out.snap",
+    "sha256": "c38945dca2dd91eb4528d111f1bd9d43225f14bec6f76a7aef338ff9da23010e"
+  },
+  "linter/current-api/static-composite-widgets": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__static-composite-widgets.snap",
+    "sha256": "d8fac49fad476b1cbf2c6872e3312fb0a5229008e4a79cda831f4f9fea115f5c"
+  },
+  "linter/current-api/static-presentation-opt-out": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__static-presentation-opt-out.snap",
+    "sha256": "249cd826f4cd41895e2a5f6cea18e425cbbf5e68a95d8323a820a10b5a930049"
+  },
+  "linter/current-api/role-native-checked-inputs": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__role-native-checked-inputs.snap",
+    "sha256": "3cf72a4600ece2180aef29591c23d7f0afc81a32e85e2615314749b242047ab4"
+  },
+  "linter/current-api/role-non-native-checked": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__role-non-native-checked.snap",
+    "sha256": "6deb8fadb19674fda896def69e89b7bf2b6f289b93ba3545fed53d05bb6b464d"
+  },
+  "linter/current-api/label-spread-8961": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__label-spread-8961.snap",
+    "sha256": "8acd36aa076e22279b7e9fcd3f556c4109519171e8e55dfd6947d3027d7513da"
+  },
+  "linter/current-api/id-reference-component-anchor": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__id-reference-component-anchor.snap",
+    "sha256": "f3aae0f7de1cb3383e1e7bfd180bf6e606209af3910eddb0c0a2434ba6b803c0"
+  },
+  "linter/current-api/separator-focus-7066": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__separator-focus-7066.snap",
+    "sha256": "c2c4e9f0f90a9818d0e6f72b57b6abc024ac79ff2a3d98c85653ba918cc5b56e"
   }
 }

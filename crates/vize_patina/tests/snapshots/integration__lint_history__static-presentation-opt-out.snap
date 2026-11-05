@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "static-presentation-opt-out",
+    history: "bfb7c96b81041903f4feb3164433fde717fc45b9",
+    source: "<div role=\"presentation\" @click=\"close\" /><div role=\"none\" @keydown=\"close\" /><span @keydown=\"handle\">Content</span>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-static-element-interactions",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-static-element-interactions",
+                severity: Warning,
+                message: "<span> is a static element and should not have interactive event handlers",
+                start: 78,
+                end: 102,
+                help: Some(
+                    "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-static-element-interactions",
+                    severity: Warning,
+                    message: "<span> is a static element and should not have interactive event handlers",
+                    start: 78,
+                    end: 102,
+                    help: Some(
+                        "**Why:** Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\n\n**Fix options:**\n\n1. Use a native interactive element:\n```vue\n<button @click=\"handle\">Click me</button>\n```\n\n2. Add role and tabindex:\n```vue\n<div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

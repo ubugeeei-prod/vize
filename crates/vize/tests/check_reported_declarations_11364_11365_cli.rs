@@ -128,6 +128,12 @@ fn repeated_component_declarations_preserve_no_unused_and_authored_errors() {
     let config = fixture["noUnusedConfig"].as_str().unwrap();
     let child = fixture["repeatedChild"].as_str().unwrap();
     let original = fixture["repeatedConsumer"].as_str().unwrap();
+    assert_eq!(
+        original,
+        include_str!(
+            "../../../tests/_fixtures/differential/typechecker/qualification-20261105/Repeated.vue.txt"
+        )
+    );
     let cases = [
         (
             "original-text-repeated",

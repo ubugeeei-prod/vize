@@ -151,9 +151,8 @@ fn incomplete_or_noncontiguous_dynamic_heads_keep_original_observations() {
 }
 
 #[test]
-fn existing_delimiter_capacity_is_inherited_and_unsupported_evidence_is_retained() {
+fn deep_vue_attribute_arguments_preserve_complete_output_and_source_custody() {
     use vize_l1::dialect::vue3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
-    use vize_l1::markup::DirectiveNameError;
 
     for count in [
         MAX_DIRECTIVE_DELIMITER_RUNS - 1,
@@ -170,26 +169,18 @@ fn existing_delimiter_capacity_is_inherited_and_unsupported_evidence_is_retained
         let source = std::format!("<p :[{opens}key{closes}] = 'value' />");
         let allocator = Allocator::default();
         let parsed = parse_component(&allocator, &source).unwrap();
-        if count < MAX_DIRECTIVE_DELIMITER_RUNS {
-            let document = template_document(&parsed, &allocator).unwrap();
-            assert_eq!(
-                print(
-                    document.document(),
-                    &PrintOptions {
-                        width: 512,
-                        ..PrintOptions::default()
-                    }
-                ),
-                std::format!("<p :[{opens}key{closes}]='value' />")
-            );
-            assert!(parsed.unsupported.is_empty());
-        } else {
-            assert_eq!(parsed.unsupported.len(), 1);
-            let admission = parsed.unsupported[0];
-            assert_eq!(admission.error, DirectiveNameError::NestingLimit);
-            assert!(template_document(&parsed, &allocator).is_err());
-            assert_eq!(parsed.unsupported[0], admission);
-        }
+        let document = template_document(&parsed, &allocator).unwrap();
+        assert_eq!(
+            print(
+                document.document(),
+                &PrintOptions {
+                    width: 512,
+                    ..PrintOptions::default()
+                }
+            ),
+            std::format!("<p :[{opens}key{closes}]='value' />")
+        );
+        assert!(parsed.unsupported.is_empty());
         assert_eq!(parsed.tree.source, source);
         assert_eq!(check_fidelity(&parsed.tree), Ok(()));
     }

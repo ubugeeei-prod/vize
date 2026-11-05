@@ -1,0 +1,47 @@
+[
+  {
+    "id": "imported-class",
+    "script": "import { Vector3 } from \"./vector3.mjs\";",
+    "expression": "new Vector3(0, 0.75, 0)"
+  },
+  {
+    "id": "imported-function",
+    "script": "import { constructVector } from \"./vector3.mjs\";",
+    "expression": "new constructVector(0, 0.75, 0)"
+  },
+  {
+    "id": "mutable-class",
+    "script": "let Vector3 = class { constructor(x,y,z) { Object.assign(this,{x,y,z}) } };",
+    "expression": "new Vector3(0, 0.75, 0)"
+  },
+  {
+    "id": "maybe-ref-factory",
+    "script": "import { makeClass } from \"./vector3.mjs\"; const Vector3 = makeClass();",
+    "expression": "new Vector3(0, 0.75, 0)"
+  },
+  {
+    "id": "member-constructor",
+    "script": "import { Foo } from \"./vector3.mjs\";",
+    "expression": "new Foo.Bar(0, 0.75, 0)"
+  },
+  {
+    "id": "computed-member-constructor",
+    "script": "import { Foo } from \"./vector3.mjs\"; const key = \"Bar\";",
+    "expression": "new Foo[key](0, 0.75, 0)"
+  },
+  {
+    "id": "known-ref-control",
+    "script": "import { ref } from \"vue\"; import { makeClass } from \"./vector3.mjs\"; const Vector3 = ref(makeClass());",
+    "expression": "new Vector3(0, 0.75, 0)"
+  },
+  {
+    "id": "known-class-control",
+    "script": "class Vector3 { constructor(x,y,z) { Object.assign(this,{x,y,z}) } }",
+    "expression": "new Vector3(0, 0.75, 0)"
+  },
+  {
+    "id": "ordinary-call-control",
+    "script": "import { makeVector } from \"./vector3.mjs\";",
+    "expression": "makeVector(0, 0.75, 0)"
+  }
+]

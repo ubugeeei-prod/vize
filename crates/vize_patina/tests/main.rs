@@ -74,6 +74,7 @@ mod native_textarea_mustache;
 mod next_tick_history;
 mod no_dupe_keys_447;
 mod no_dupe_keys_eslint_suppression;
+mod operational_diagnostic_docs;
 mod overwritten_child_content;
 mod plain_script_ownership_7934;
 mod prop_declaration_parity;

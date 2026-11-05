@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "kind": "exact-cli-declaration-owned-constructor-successor",
+  "qualificationCredit": false,
+  "reason": "Extend the independently specified #11699 owned-fields constructor to the build --dts slot-export packet; all earlier receipts and the complete remainder of this packet stay frozen.",
+  "source": {
+    "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+    "revision": "45ee61bd932ca84657d90326f2dee4c1aa70fe55",
+    "sha256": "3f5eec2c812921ff2bf555bdde2315fe3871f3a8af9fbba2ed488f54acb02138",
+    "bytes": 10967
+  },
+  "observation": {
+    "source": "df15a6c31306c1d30c79f221fc1b46e5887d8837",
+    "commonSource": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+    "runId": "41988034349",
+    "jobId": "127113358500",
+    "outcome": "snapshot-mismatch; exact constructor bytes only, no passing qualification credit"
+  },
+  "output": {
+    "path": "crates/vize/tests/snapshots/integration__build_declaration_emit_cli__build_dts_emits_declarations_alongside_compiled_js_slot_reexport.snap",
+    "before": {
+      "sha256": "3905ad1d521ade2512ea728cd425670d1d6b2235333e411770f0b008290bad33",
+      "bytes": 15048
+    },
+    "after": {
+      "sha256": "705c86c75c3806e1430f5982a660d46fcbbeac030663e49700c2a2c7db3af9dd",
+      "bytes": 15235
+    }
+  },
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>> & $ComponentInputGuard<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>>;\n",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{\n    $props: Props & import(\"./__vize_helpers.js\").__EmitProps<Emits>;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>> & $ComponentInputGuard<Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps>> & $ComponentPublicBase;\n"
+  }
+}

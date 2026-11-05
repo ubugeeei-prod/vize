@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "scope": "Additive exact packet successors for #11698 authored-piece TypeScript erasure. The frozen #10923 packets and imported-props successor remain authoritative. Reference observations do not qualify a candidate source build; cli-build-error-oracles.test.ts does that in Actions.",
+  "producer": {
+    "referenceVersion": "0.691.0",
+    "referenceRevision": "6c1d71493990c76d40f8bf1a2b8825040e59e2d9",
+    "changeRevision": "248648278792da378b3b3ecbe6e660fb4188d081",
+    "reviewedSourceRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+    "sourceDifference": "Only compile_template/duplicates/{surface.rs,preflight_tests.rs} differ in atelier_sfc/dom/core; none of these inputs has duplicate template attributes.",
+    "sourceActionsEvidence": "https://github.com/ubugeeei-prod/vize/actions/runs/41986160378/job/127108766580",
+    "entrySha256": "7078d8d3a7f07cf58480c26e5cfbd9e0663856be2323d2c8fdeea27dec3d71c5",
+    "nativeImageSha256": "2084f698c3ab0f96f95ff236729b7a27232a2ba55d8d1cfed8bd157fdcfc05e1",
+    "entryTarballIntegrity": "sha512-kOKiAHUopnNq0lIYSw0hJ1v0kalKodghc5zM7w6w+HFjccVPL+yN5T0XykCw7J7pN3UuC4i0glwhPao47eHtjw==",
+    "nativeTarballIntegrity": "sha512-27j/PO5vZVMQXGFgrS8AGV6IeGVMe4KO5wQlo1RhVjM0XivNX4FuL9q6nLONQZ/rHIOBtk9kd+6aJazpk1c8Kg==",
+    "routerSourceRevision": "feed382f2fbfe38b3892ea780f5aea3d5459986a",
+    "routerLinkSourceSha256": "cea86ffd7d4d8cabbe05de0bb9603b17575c0e9bf2c4900a45b208f8f4dcb6a8"
+  },
+  "rows": [
+    {
+      "id": "create-vue-clean",
+      "sourceSha256": "bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a",
+      "previousPacketSha256": "fccdc563078a16e31591a5414510d1b894353e52b1544478cfaad5d9702ac286",
+      "previousCodeSha256": "1216a548943fe8a09ab349a913c627d4115f93935b75ec89922415511475eff7",
+      "currentPacketSha256": "e15e44f59d126fe655546973c1743ac0dbb3f3ac2140e838178c15831cb3cef3",
+      "currentCodeSha256": "f6d562d54aff6db62afbfb004fdb49d28157467c1a2e22d022f2b826ff88d3c0"
+    },
+    {
+      "id": "create-vue-broken",
+      "sourceSha256": "c7eada5bbe18d933da51d550a26ee1e4c6c496d31d47dc80a373ffc3622de611",
+      "previousPacketSha256": "4ff08367baeec9209c5bdb7eddf6a8029de4f659770118cba4e6958d85382da6",
+      "previousCodeSha256": "57b73e3acc0a9d254f43e5af9208f5741407f4e464390b9425699e29198d2614",
+      "currentPacketSha256": "509e82336347e2d0806514e75c1d0113461b8c02f5044c247aa04892c632313a",
+      "currentCodeSha256": "211e09aa2317699d6b88b13ebc9b8dc89707add4989d182c63fce6794bbcf04a"
+    },
+    {
+      "id": "create-vue-formatted",
+      "sourceSha256": "f6c836cc1aa667f33f324274df259e30580183194259abe0546efd5f552b8728",
+      "previousPacketSha256": "d6a15f2cc4b7ff534b95c00be9771f7e6b5057366430bf118d77a5e5ebfa57aa",
+      "previousCodeSha256": "17e394dd258667ffaae5ae7bc92357ff703fcb15f26854244404c8587f47d07b",
+      "currentPacketSha256": "22f2d1e5607f2619e3bc4e82aaad8f69337eaca0b29d96263f1a4f6ab2d9461f",
+      "currentCodeSha256": "c79bc9681755036ee90615f131d0b25c20a9cddd20696d9f79cbc7605de552d6"
+    },
+    {
+      "id": "vue-router-clean",
+      "sourceSha256": "f5c888da7bae9c61151c7fbfde578ccdb768e75fbe2e69637d8298ca4f702c96",
+      "previousPacketSha256": "1a1d20bf236c78e3a2cf9aa1676f11eba57babce838add0f0f1257a1a2dbea0b",
+      "previousCodeSha256": "254701cecc75f1433c4625d5536847bde93c2c1cb75415599baccc43d2bad59d",
+      "currentPacketSha256": "fac9c46dad2b234586f13e890dc7e4626184d912aecf2409b6a5ac4c8bd2edd7",
+      "currentCodeSha256": "21d9f7ce65f8c84bad93ad24236757259fcfa5ebd18eeb6fd5673771576fe49c"
+    },
+    {
+      "id": "vue-router-broken",
+      "sourceSha256": "6ddb0231e81f4e6fae7d241c911e1b5141ca63e8c72546717cc05d796d95547a",
+      "previousPacketSha256": "9938ebe8a1628dee67ae443d4ebba6c921d459284f88458b3bb66900f792f279",
+      "previousCodeSha256": "d80df33d34f7d2fffbcb6571ea065a890311a6fdcf63a37805cbdde21dff8d47",
+      "currentPacketSha256": "effbd4f77cbf8cd3ea29ee70303537eff9bc5808f4a9eed161ad0aebd857039b",
+      "currentCodeSha256": "e63cb66fab69b0dbfdf8dfa696b802ddaddcb1b058765a01f1d46f4f612ab9c1"
+    }
+  ]
+}

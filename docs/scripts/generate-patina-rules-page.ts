@@ -1,5 +1,6 @@
 import type { RuleMetadata } from "./rules/types.ts";
 import { generateRulePages } from "./rules/render.ts";
+import { rustMetadataString } from "./rules/rust-metadata.ts";
 import { readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 type SourceRule = Omit<RuleMetadata, "presets" | "category"> & { category: string | null };
@@ -64,7 +65,7 @@ function readPatinaSourceRules() {
     let match;
     while ((match = metaPattern.exec(source))) {
       const [, metaType, block] = match;
-      const name = parseQuotedField(block, "name");
+      const name = rustMetadataString(block, "name", source);
       if (!name) {
         continue;
       }

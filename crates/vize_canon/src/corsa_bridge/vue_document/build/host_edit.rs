@@ -4,6 +4,11 @@
 //! host's new bytes. Replacing those bytes in the existing surface leaves every
 //! unchanged document allocation in place.
 
+#![expect(
+    clippy::disallowed_types,
+    reason = "retain the existing immutable query surface ownership while replacing host bytes"
+)]
+
 use std::path::Path;
 use std::sync::Arc;
 
@@ -46,7 +51,8 @@ pub(in crate::corsa_bridge) fn retarget_host(
     surface.host.virtual_suffix = generated.virtual_suffix;
 }
 
-/// `Arc::get_mut` edits the host entries without cloning the dependency tail.
+/// Dissociate weak batch receipts without copying a uniquely owned dependency
+/// tail. A live strong payload still gets its own complete frozen allocation.
 fn replace_document_texts(
     documents: &mut Arc<Vec<(String, String)>>,
     replacements: &FxHashMap<String, String>,
@@ -58,11 +64,32 @@ fn replace_document_texts(
             }
         }
     };
-    if let Some(entries) = Arc::get_mut(documents) {
-        apply(entries);
-        return;
+    apply(Arc::make_mut(documents));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn weak_batch_receipts_do_not_copy_a_uniquely_owned_dependency_tail() {
+        let dependency: String = "export const child = '雪😀';\r\n".repeat(4096).into();
+        let expected = dependency.clone();
+        let mut documents = Arc::new(vec![
+            ("host".into(), "before".into()),
+            ("child".into(), dependency),
+        ]);
+        let original_tail = documents[1].1.as_bytes().as_ptr();
+        let receipt = Arc::downgrade(&documents);
+        replace_document_texts(
+            &mut documents,
+            &FxHashMap::from_iter([("host".into(), "after".into())]),
+        );
+        assert!(receipt.upgrade().is_none());
+        assert_eq!(documents[1].1.as_bytes().as_ptr(), original_tail);
+        assert_eq!(
+            documents.as_ref(),
+            &vec![("host".into(), "after".into()), ("child".into(), expected)]
+        );
     }
-    let mut entries = documents.as_ref().clone();
-    apply(&mut entries);
-    *documents = Arc::new(entries);
 }

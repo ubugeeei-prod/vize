@@ -1,4 +1,15 @@
 export const chineseShared: Record<string, string> = {
+  "Scope and limitations": "适用范围与限制",
+  "This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.":
+    "这个目前没有诊断实现的约定使用历史 Vue 2.7 的数组索引赋值情形。Vue 2 不会为直接的索引赋值通知更新；Vue 3 会跟踪这种赋值。错误和正确示例展示的是 Vue 2 的修复方法，并非 Vue 3 的缺陷。",
+  "This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.":
+    "这个约定展示了在 setup 中复制 Pinia getter 的当前原始类型值，得到不再跟随更新的快照。在受跟踪的计算或模板中直接读取 getter 仍可保持响应性；这里通过 storeToRefs() 提取值来修复问题。",
+  "This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.":
+    "这个实验性分析器情形将 ref(0) 放在普通脚本的模块作用域，而不是每个实例的 setup 中。Vue 允许创建这样的响应式状态；此示例要求每个组件实例独立持有自己的 count。CLI 不会发出这个单独的诊断代码。",
+  "A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.":
+    "原始对象与其响应式代理具有不同的对象身份，toRaw() 返回原始对象。这个约定展示了在需要判断记录身份时，比较稳定的记录 ID 的方法。",
+  "The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.":
+    "这里的异步 watchEffect 没有失效清理，也没有防止过期响应的保护。Vue 支持 watchEffect 的清理；正确示例使用显式的 watch 来源，并取消已失效的工作。",
   "Shared project files": "共享项目文件",
   "Example qualification": "示例验证状态",
   "Public explanation": "公开说明",

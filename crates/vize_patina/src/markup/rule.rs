@@ -18,6 +18,23 @@ pub enum MarkupLevel {
     L2,
 }
 
+/// Callbacks a rule needs after [`MarkupRule::enter_document`].
+///
+/// The default keeps every hook. Narrower traversals may omit only hooks the
+/// rule leaves empty; element-entry rules retain the same authored ancestry.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum MarkupTraversal {
+    /// Keep every traversal callback.
+    #[default]
+    Full,
+    /// Call element entries while omitting other empty traversal callbacks.
+    Elements,
+    /// Visit bindings without empty element, directive or text callbacks.
+    Bindings,
+    /// All work happens in `enter_document`; no tree walk is needed.
+    Document,
+}
+
 /// A lint rule expressed against the zero-copy markup IR.
 ///
 /// This is the parallel of [`crate::rule::Rule`] for the unified IR: the same
@@ -36,6 +53,12 @@ pub trait MarkupRule {
     /// The level this rule reads.
     fn level(&self) -> MarkupLevel {
         MarkupLevel::L1
+    }
+
+    /// The hooks this rule needs, read once per document before `enter_document`.
+    /// Existing rules keep every hook.
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Full
     }
 
     /// Called once before traversal begins.

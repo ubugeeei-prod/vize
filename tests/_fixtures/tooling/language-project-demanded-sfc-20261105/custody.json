@@ -1,0 +1,141 @@
+{
+  "schema": "vize.languageProjectDemandedSfcSources.v1",
+  "qualificationCredit": false,
+  "predecessors": [
+    {
+      "path": "tests/_fixtures/tooling/language-project-current-20261105/custody.json",
+      "bytes": 3051,
+      "sha256": "6adafa56360823c8f6d39f5f3035c45e482ab7f9d06f6800b4bc50c6bb125b4d"
+    },
+    {
+      "path": "tests/_fixtures/tooling/language-project-current-20261105/plugin-source-successor.json",
+      "bytes": 7285,
+      "sha256": "1d6f0b13fab4363b84483a9911fc99968248e71806f5ea51836f29779be520e2"
+    }
+  ],
+  "currentFiles": [
+    {
+      "path": "npm/typescript-plugin/project-options.cjs",
+      "bytes": 2923,
+      "sha256": "6620eeb38c447f0d4de9786a0e36a29be6a0fed641c60b63d0f986686c3f8690"
+    }
+  ],
+  "transitions": [
+    {
+      "path": "npm/typescript-plugin/language-service.cjs",
+      "before": {
+        "bytes": 17072,
+        "sha256": "b708919c50259a5e66758fc7f4b9b3c16e0c68e02b100e4768f27286e623da75"
+      },
+      "after": {
+        "bytes": 17055,
+        "sha256": "98463aad4e487a0f48521a0441f935a13a19db7144e310465c122fb5321efbee"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/0.language-service.before.cjs.gz",
+        "bytes": 4532,
+        "sha256": "a9d8b1e7407a3c23427f1665bcff9f60d73df7c60b273b62b5258db9f6990312"
+      },
+      "edits": [
+        {
+          "before": "  ]) {\n    proxy[method] = (file) => {\n      if (isSfc(file)) support?.ensure?.(file);\n      const document = get(file);\n      if (!document)\n",
+          "after": "  ]) {\n    proxy[method] = (file) => {\n      support?.ensure?.(file);\n      const document = get(file);\n      if (!document)\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/typescript-plugin/source-documents.cjs",
+      "before": {
+        "bytes": 5007,
+        "sha256": "7ae5c061ecc432edc33fd92aa16e95b52abc28845a824a1bed70777639f4f293"
+      },
+      "after": {
+        "bytes": 6660,
+        "sha256": "db1a5492e86be4ed594025a30b1cbc8c1d28b7f1090ad3d69019af5d15d1deed"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/1.source-documents.before.cjs.gz",
+        "bytes": 1660,
+        "sha256": "a7109d3b55dbd82e9f76a646799618795727929aefb06e5be5de7dc7526b14a9"
+      },
+      "edits": [
+        {
+          "before": "const crypto = require(\"node:crypto\");\nconst path = require(\"node:path\");\nconst RELATIVE_SFC = /['\"](\\.[^'\"\\n]*\\.(?:vue|art))['\"]/g;\n\nfunction createSourceDocuments(\n",
+          "after": "const crypto = require(\"node:crypto\");\nconst path = require(\"node:path\");\n\nfunction createSourceDocuments(\n"
+        },
+        {
+          "before": "\n// tsserver asks for every external SFC while a project loads. Generate only\n// the file a language-service request names, plus its direct relative imports.\nfunction createLazySfcScripts({\n  ts,\n",
+          "after": "\n// tsserver asks for every external SFC while a project loads. Generate only\n// the file a language-service request names and its resolved source dependencies.\nfunction createLazySfcScripts({\n  ts,\n"
+        },
+        {
+          "before": "  snapshots,\n  isSfc,\n  readFile,\n  readSource,\n  project,\n}) {\n  const eager = new Set();\n  let updating = false;\n  const configuration = () => {\n",
+          "after": "  snapshots,\n  isSfc,\n  getSnapshot,\n  readFile,\n  resolveImport,\n  changed,\n  openFiles,\n  project,\n}) {\n  const eager = new Set();\n  const imports = new Map();\n  let updating = false;\n  const configuration = () => {\n"
+        },
+        {
+          "before": "    ensure(fileName) {\n      if (typeof fileName !== \"string\" || updating) return;\n      const added = [];\n      if (isSfc(fileName) && mark(fileName)) added.push(fileName);\n      if (!/\\.d\\.ts$/i.test(fileName)) {\n        const source = isSfc(fileName) ? readSource(fileName) : readFile(fileName);\n        if (typeof source === \"string\") {\n          for (const match of source.matchAll(RELATIVE_SFC)) {\n            const resolved = path.resolve(path.dirname(fileName), match[1]);\n            if (mark(resolved)) added.push(resolved);\n          }\n        }\n      }\n      const stale = added.some((name) => {\n        const cached = snapshots.get(name);\n        return cached?.stubSnapshot && cached.configuration === undefined;\n      });\n      if (!stale) return;\n      updating = true;\n      try {\n        project?.updateGraph?.();\n      } finally {\n        updating = false;\n",
+          "after": "    ensure(fileName) {\n      if (typeof fileName !== \"string\" || updating) return;\n      updating = true;\n      try {\n        // References in an ordinary TS file also need the SFCs imported by\n        // open entrypoints. Unrequested external SFC roots remain excluded.\n        const pending = [fileName, ...openFiles()],\n          seen = new Set();\n        let promoted = false,\n          stale = false;\n        while (pending.length) {\n          const name = pending.pop(),\n            key = path.normalize(name);\n          // Global component declarations describe all project roots. Reading\n          // one is not a request to generate every declared component.\n          if (seen.has(key) || /\\.d\\.[cm]?ts$/i.test(name)) continue;\n          seen.add(key);\n          let source;\n          if (isSfc(name)) {\n            if (mark(name)) {\n              promoted = true;\n              const cached = snapshots.get(name);\n              stale ||= !!cached?.stubSnapshot && cached.configuration === undefined;\n            }\n            // The canonical projection owns which authored imports survive.\n            // Template text and quoted import-like strings are not dependencies.\n            source = get(name)?.projection?.text;\n          } else {\n            const snapshot = getSnapshot(name);\n            source = snapshot?.getText(0, snapshot.getLength()) ?? readFile(name);\n          }\n          if (typeof source !== \"string\") continue;\n          let scan = imports.get(key);\n          if (scan?.source !== source) {\n            scan = { source, files: ts.preProcessFile(source, true, true).importedFiles };\n            if (scan.files.length)\n              scan.file = ts.createSourceFile(\n                name,\n                source,\n                ts.ScriptTarget.Latest,\n                true,\n                ts.ScriptKind.TSX,\n              );\n            imports.set(key, scan);\n          }\n          for (const imported of scan.files) {\n            const resolved = resolveImport(imported, scan.file)?.resolvedFileName;\n            if (resolved && /\\.(?:[cm]?[jt]sx?|vue|art)$/i.test(resolved)) pending.push(resolved);\n          }\n        }\n        // TypeScript skips all snapshot/version checks when the project version\n        // is unchanged. Promoting a cached stub is a real program change even\n        // when no authored source or tsserver project version changed.\n        if (promoted) changed();\n        if (stale) project?.updateGraph?.();\n      } finally {\n        updating = false;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/typescript-plugin/virtual-modules.cjs",
+      "before": {
+        "bytes": 18953,
+        "sha256": "74f82990fb1da4c17f80a0b51058b584f3f7a7991600501b48d5e19d5f8e0f8f"
+      },
+      "after": {
+        "bytes": 17247,
+        "sha256": "310a0a2dd0722953aa93fdd9645125b4a86e9af393aecd98c98d13df550c0fe1"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/2.virtual-modules.before.cjs.gz",
+        "bytes": 5394,
+        "sha256": "3e9a839580b83b2932735ef6a33c09b3a616a220be1a80bb30a92822df3c5d65"
+      },
+      "edits": [
+        {
+          "before": "const { createLazySfcScripts, createSourceDocuments } = require(\"./source-documents.cjs\");\nconst { loadNative } = require(\"./provider.cjs\");\nconst installedHosts = new WeakMap();\n\n",
+          "after": "const { createLazySfcScripts, createSourceDocuments } = require(\"./source-documents.cjs\");\nconst { loadNative } = require(\"./provider.cjs\");\nconst { createProjectOptions } = require(\"./project-options.cjs\");\nconst installedHosts = new WeakMap();\n\n"
+        },
+        {
+          "before": "  const previousNames = bind(\"resolveModuleNames\");\n  const previousKind = bind(\"getScriptKind\");\n  const lazy = createLazySfcScripts({\n    ts,\n",
+          "after": "  const previousNames = bind(\"resolveModuleNames\");\n  const previousKind = bind(\"getScriptKind\");\n  const resolveImport = (imported, sourceFile) => {\n    const settings = options();\n    sourceFile.impliedNodeFormat = ts.getImpliedNodeFormatForFile(\n      sourceFile.fileName,\n      undefined,\n      resolverHost,\n      settings,\n    );\n    let token = sourceFile;\n    for (;;) {\n      const child = token.forEachChild((node) =>\n        node.pos <= imported.pos && imported.pos < node.end ? node : undefined,\n      );\n      if (!child) break;\n      token = child;\n    }\n    const mode = ts.isStringLiteralLike(token)\n      ? ts.getModeForUsageLocation(sourceFile, token, settings)\n      : imported.resolutionMode;\n    return (\n      (mode !== undefined && resolve(imported.fileName, sourceFile.fileName, undefined, mode)) ||\n      resolve(imported.fileName, sourceFile.fileName)\n    );\n  };\n  const lazy = createLazySfcScripts({\n    ts,\n"
+        },
+        {
+          "before": "    snapshots,\n    isSfc,\n    readFile,\n    readSource,\n    project: info.project,\n  });\n",
+          "after": "    snapshots,\n    isSfc,\n    getSnapshot,\n    readFile,\n    resolveImport,\n    changed: () => {\n      sourceEpoch++;\n    },\n    openFiles: () =>\n      (host.getScriptFileNames?.() || []).filter(\n        (name) =>\n          /\\.[cm]?[jt]sx?$/i.test(name) &&\n          info.project?.projectService?.getScriptInfo?.(name)?.isScriptOpen?.() === true,\n      ),\n    project: info.project,\n  });\n"
+        },
+        {
+          "before": "    return false;\n  }\n}\n\n// tsserver caches its extends resolution, including absent package candidates.\n// Refresh only configured projects through public APIs; roots and references\n// remain owned by tsserver. No extended-config cache enters this fresh parse.\nfunction createProjectOptions(ts, info, originalOptions, readFile, fileExists) {\n  const project = info.project;\n  if (\n    project?.projectKind !== ts.server?.ProjectKind.Configured ||\n    typeof project.setCompilerOptions !== \"function\" ||\n    typeof ts.getParsedCommandLineOfConfigFile !== \"function\"\n  )\n    return undefined;\n  const server = info.serverHost || ts.sys;\n  const controlled = new Set();\n  let parsedOptions, applied;\n  return {\n    refresh(configFileName) {\n      const parsed = ts.getParsedCommandLineOfConfigFile(configFileName, undefined, {\n        ...server,\n        readFile,\n        fileExists,\n        readDirectory: server.readDirectory.bind(server),\n        getCurrentDirectory: project.getCurrentDirectory.bind(project),\n        useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,\n        onUnRecoverableConfigFileDiagnostic() {},\n      });\n      if (!parsed) return;\n      parsedOptions = parsed.options;\n      applied = undefined;\n      this.apply();\n    },\n    apply() {\n      if (!parsedOptions) return;\n      const original = originalOptions();\n      if (original === applied) return;\n      for (const name of Object.keys(parsedOptions))\n        if (name !== \"configFile\") controlled.add(name);\n      const changed = [...controlled].some(\n        (name) => JSON.stringify(original[name]) !== JSON.stringify(parsedOptions[name]),\n      );\n      applied = original;\n      if (!changed) return;\n      const descriptors = Object.getOwnPropertyDescriptors(original);\n      for (const name of controlled)\n        if (!Object.hasOwn(parsedOptions, name)) delete descriptors[name];\n      for (const [name, descriptor] of Object.entries(\n        Object.getOwnPropertyDescriptors(parsedOptions),\n      )) {\n        // The server's SourceFile carries its root specs and reload state.\n        // Preserve its exact non-enumerable descriptor and object identity.\n        if (name === \"configFile\") continue;\n        controlled.add(name);\n        const prior = descriptors[name];\n        descriptors[name] =\n          prior && \"value\" in prior ? { ...prior, value: descriptor.value } : descriptor;\n      }\n      const options = Object.create(Object.getPrototypeOf(original), descriptors);\n      applied = options;\n      // Besides changing the option values, this public operation invalidates\n      // the server's module-resolution cache when the selected options require it.\n      // reloadProjects may subsequently restore its stale cached options. Reapply\n      // this parsed snapshot to a changed host object without parsing it again.\n      project.setCompilerOptions(options);\n    },\n  };\n}\n\n",
+          "after": "    return false;\n  }\n}\n\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/typescript-plugin/packed-consumer.ts",
+      "before": {
+        "bytes": 17880,
+        "sha256": "4c5ed366e3e658772e5bd954d60a15274317c96f5fd791cb2144e1602ddd485e"
+      },
+      "after": {
+        "bytes": 18242,
+        "sha256": "11e53553055f6bfcd8b9f79e0fdecfc48ae728b18bc5f0c07698670d76517a1b"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/3.packed-consumer.before.ts.gz",
+        "bytes": 4922,
+        "sha256": "16a2b3d822c304ef8fd4abeed8ff894c2948fa5a45e7df86deed466053aec1ac"
+      },
+      "edits": [
+        {
+          "before": "  });\n  await client.send(\"open\", { file: main, fileContent: mainText }, false);\n  await client.send(\"open\", { file: vue, fileContent: vueText, scriptKindName: \"TS\" }, false);\n  await client.send(\"open\", { file: art, fileContent: artText, scriptKindName: \"TS\" }, false);\n",
+          "after": "  });\n  await client.send(\"open\", { file: main, fileContent: mainText }, false);\n  // Demand component types from TypeScript before any SFC hover/open can\n  // materialize them. Later opening those SFCs must preserve the whole packet.\n  const coldTsDiagnostics = await request<Diagnostic[]>(\n    \"cold-ts-diagnostics\",\n    \"semanticDiagnosticsSync\",\n    main,\n    mainText,\n  );\n  await client.send(\"open\", { file: vue, fileContent: vueText, scriptKindName: \"TS\" }, false);\n  await client.send(\"open\", { file: art, fileContent: artText, scriptKindName: \"TS\" }, false);\n"
+        },
+        {
+          "before": "    mainText,\n  );\n  assert(\n    tsDiagnostics.body.some((entry) => entry.code === 2307 && entry.text.includes(\"Missing.vue\")),\n",
+          "after": "    mainText,\n  );\n  assert.deepEqual(tsDiagnostics.body, coldTsDiagnostics.body);\n  assert(\n    tsDiagnostics.body.some((entry) => entry.code === 2307 && entry.text.includes(\"Missing.vue\")),\n"
+        }
+      ]
+    }
+  ]
+}

@@ -11,6 +11,7 @@ use std::{
 };
 
 use vize_tool_support::common;
+use vize_tool_support::fixtures::typechecker_qualification;
 mod corpus_paths;
 
 pub const SCHEMA: &str = "vize.davinciCorpusBaseline";
@@ -652,6 +653,16 @@ fn reduce_run(
                 payload.get(*field).unwrap()
             ));
         }
+    }
+    if tool == "typechecker"
+        && typechecker_qualification::typechecker_run_status(
+            payload.get("exitCode").and_then(Value::as_i64).unwrap_or(1),
+            &payload["parsed"],
+        ) == "configuration"
+    {
+        return Err(format!(
+            "{project_id}/{tool} payload cannot qualify semantic checking: unavailable project inputs"
+        ));
     }
     let hashed_fields =
         hashed_fields(tool).ok_or_else(|| format!("unsupported surface: {tool}"))?;

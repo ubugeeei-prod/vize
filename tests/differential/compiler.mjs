@@ -18,6 +18,14 @@ import {
   materializeCompilerProjectInputs,
 } from "./compiler-project.ts";
 import {
+  COMPILER_CONFIGURED_PROJECT_ARGV,
+  compilerRecipeFailure,
+  COMPILER_CONFIGURED_PROJECT_CONTRACT,
+  isConfiguredCompilerProjectCase,
+  loadConfiguredCompilerProjectInputs,
+  materializeConfiguredCompilerProjectInputs,
+} from "./compiler-configured-project.ts";
+import {
   COMPILER_ARGV,
   DIALECT_VITE_CONFIG_PATH,
   compilerArgv,
@@ -25,6 +33,7 @@ import {
   loadDialectInput,
 } from "./compiler-dialect.ts";
 import { closedSetupReference } from "../tooling/support/script-setup-default-expose.ts";
+import { currentCompilerModuleReference } from "./compiler-module-reference.ts";
 import {
   loadProductManifest,
   readPinnedArtifact,
@@ -61,9 +70,14 @@ export function loadCompilerManifest(manifestPath) {
             fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file)) : null,
           )
         : null;
+      const configuredProjectFiles = isConfiguredCompilerProjectCase(fixture)
+        ? loadConfiguredCompilerProjectInputs(fixture, (file) =>
+            fs.existsSync(path.join(root, file)) ? fs.readFileSync(path.join(root, file)) : null,
+          )
+        : null;
       if (dialect) {
         assert.equal(fixture.id, `compiler/${dialect.registered.id}`);
-      } else if (!projectFiles) {
+      } else if (!projectFiles && !configuredProjectFiles) {
         assert.equal(fixture.adapters.legacy, "compiler-cli-ssr-v1");
         assert.equal(fixture.adapters.legacyRecipe, undefined);
         assert.match(fixture.inputs.root, /^[a-z0-9-]+$/);
@@ -83,10 +97,19 @@ export function loadCompilerManifest(manifestPath) {
       }
       assert.equal(
         fixture.comparison.contract,
-        projectFiles ? COMPILER_PROJECT_CONTRACT : "compiler-ssr-module-bytes-v1",
+        configuredProjectFiles
+          ? COMPILER_CONFIGURED_PROJECT_CONTRACT
+          : projectFiles
+            ? COMPILER_PROJECT_CONTRACT
+            : "compiler-ssr-module-bytes-v1",
       );
       assert(["js", "ts", "jsx", "tsx"].includes(fixture.comparison.scriptLang ?? "js"));
-      if (!dialect && !projectFiles && fixture.dialectCoverage.state !== "unknown") {
+      if (
+        !dialect &&
+        !projectFiles &&
+        !configuredProjectFiles &&
+        fixture.dialectCoverage.state !== "unknown"
+      ) {
         assert.deepEqual(fixture.dialectCoverage, {
           state: "source-inspected",
           registryRef: null,
@@ -114,15 +137,19 @@ export function loadCompilerManifest(manifestPath) {
       ]);
       const input = dialect
         ? dialect.input
-        : projectFiles
-          ? projectFiles[0].bytes
+        : configuredProjectFiles || projectFiles
+          ? (configuredProjectFiles || projectFiles)[0].bytes
           : readPinnedArtifact(path.join(root, fixture.inputs.root), fixture.inputs.files[0]);
       const archivedExpected = readPinnedArtifact(root, fixture.reference);
       // Authenticate the original reference before applying the reviewed
       // closed-by-default setup contract. Candidate bytes remain untouched.
       const expected = Buffer.from(
-        closedSetupReference({ code: archivedExpected.toString("utf8") }, input.toString("utf8"))
-          .code,
+        closedSetupReference(
+          {
+            code: currentCompilerModuleReference(root, fixture, archivedExpected).toString("utf8"),
+          },
+          input.toString("utf8"),
+        ).code,
       );
       const expectedCss = fixture.reference.cssPath
         ? readPinnedArtifact(root, {
@@ -136,8 +163,11 @@ export function loadCompilerManifest(manifestPath) {
         expected,
         expectedCss,
         ...(projectFiles ? { projectFiles } : {}),
+        ...(configuredProjectFiles ? { configuredProjectFiles } : {}),
         requiredBuildRecipe: fixture.adapters.legacyRecipe ?? null,
-        argv: compilerArgv(dialect ? { dialectInput: dialect.registered } : fixture),
+        argv: configuredProjectFiles
+          ? [...COMPILER_CONFIGURED_PROJECT_ARGV]
+          : compilerArgv(dialect ? { dialectInput: dialect.registered } : fixture),
         ...(dialect
           ? {
               dialectInput: dialect.raw,
@@ -215,12 +245,6 @@ export function compilerAttempt(
   return observation;
 }
 
-function compilerRecipeFailure(fixture, observedRecipe) {
-  return fixture.requiredBuildRecipe && fixture.requiredBuildRecipe !== observedRecipe
-    ? `${fixture.id} requires source-build recipe ${fixture.requiredBuildRecipe}; observed ${observedRecipe}`
-    : null;
-}
-
 export function validateCompilerReport(
   loaded,
   report,
@@ -258,6 +282,10 @@ export function validateCompilerReport(
     assert.equal(row.legacy.requiredBuildRecipe, fixture.requiredBuildRecipe);
     assert.deepEqual(row.legacy.argv, fixture.argv);
     assert.equal(row.legacy.inputSha256, sha256(fixture.input));
+    assert.deepEqual(
+      row.legacy.configuredProjectInputs,
+      fixture.configuredProjectFiles?.map(({ path, sha256 }) => ({ path, sha256 })),
+    );
     assert.deepEqual(
       row.legacy.dialectInput,
       fixture.dialectInput ? dialectResultInput(fixture) : undefined,
@@ -329,6 +357,14 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
       requiredBuildRecipe: fixture.requiredBuildRecipe,
       argv: fixture.argv,
       inputSha256: sha256(fixture.input),
+      ...(fixture.configuredProjectFiles
+        ? {
+            configuredProjectInputs: fixture.configuredProjectFiles.map(({ path, sha256 }) => ({
+              path,
+              sha256,
+            })),
+          }
+        : {}),
       ...(fixture.dialectInput
         ? {
             dialectInput: dialectResultInput(fixture),
@@ -343,7 +379,10 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
   try {
     if (binaryFailure) throw new Error(binaryFailure);
     workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-compiler-"));
-    if (fixture.projectFiles) materializeCompilerProjectInputs(workspace, fixture.projectFiles);
+    if (fixture.configuredProjectFiles)
+      materializeConfiguredCompilerProjectInputs(workspace, fixture.configuredProjectFiles);
+    else if (fixture.projectFiles)
+      materializeCompilerProjectInputs(workspace, fixture.projectFiles);
     else fs.writeFileSync(path.join(workspace, "Layout.vue"), fixture.input);
     if (fixture.dialectConfig) {
       fs.writeFileSync(path.join(workspace, fixture.dialectConfigPath), fixture.dialectConfig);

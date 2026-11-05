@@ -4,7 +4,7 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` が async タスクを始め、前回の実行を片付けられません。
+非同期の watchEffect で無効になった処理を中止し、古い応答を反映しないようにします。
 
 | 既定の重大度 | 自動修正 | オプション |
 | --- | --- | --- |
@@ -12,7 +12,9 @@ title: "vize:croquis/cf/watcheffect-async"
 
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報
 
-Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
+## 範囲と制約
+
+この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
 
 ## 共通のプロジェクト ファイル
 

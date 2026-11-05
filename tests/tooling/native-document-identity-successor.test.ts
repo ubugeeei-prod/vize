@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { test } from "node:test";
 import {
+  historicalNativeIdentityCurrentSources,
   newNativeIdentitySuccessor,
   NATIVE_IDENTITY_SUCCESSOR_ID,
   NATIVE_OPEN_OWNER_SUCCESSOR_ID,
@@ -22,7 +23,7 @@ const firstImage = JSON.parse(gunzipSync(fs.readFileSync(rows[0].image.path)).to
 };
 type Read = (side: "base" | "head", path: string) => Buffer | null;
 const baseCache = new Map<string, Buffer | null>();
-const read: Read = (side, path) => {
+const actualRead: Read = (side, path) => {
   if (side === "base" && baseCache.has(path)) return baseCache.get(path)!;
   try {
     if (side === "base") {
@@ -38,6 +39,7 @@ const read: Read = (side, path) => {
     return null;
   }
 };
+const read = historicalNativeIdentityCurrentSources(actualRead);
 const validate = (reader: Read = read, previous?: unknown, current: unknown = rows) =>
   newNativeIdentitySuccessor(previous, current, originals, reader);
 const changed =
@@ -46,6 +48,91 @@ const changed =
     side === world && path === target
       ? Buffer.from("unregistered source mutation")
       : read(side, path);
+
+test("current source custody inverts only the complete reviewed successors", () => {
+  const image = JSON.parse(gunzipSync(fs.readFileSync(rows[2].image.path)).toString("utf8")) as {
+    headImages: Record<string, string>;
+  };
+  const paths = [
+    "crates/vize_canon/src/lsp_client/session_paths.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
+  ];
+  for (const path of paths) {
+    const original = Buffer.from(image.headImages[path]!, "base64");
+    assert.notDeepEqual(actualRead("head", path), original);
+    assert.deepEqual(read("head", path), original);
+    assert.deepEqual(read("base", path), actualRead("base", path));
+  }
+  const unrelated = "crates/vize_canon/src/lsp_client/session.rs";
+  assert.deepEqual(read("head", unrelated), actualRead("head", unrelated));
+  assert.throws(() => validate(actualRead), /changed head native identity successor source:/);
+});
+
+test("whole source custody leaves missing, duplicated, partial and unrelated edits unregistered", () => {
+  for (const [path, currentEdit, partialEdit] of [
+    [
+      "crates/vize_canon/src/lsp_client/session_paths.rs",
+      "        .is_ok_and(|physical| is_within_project_namespace(&physical, root))",
+      "        .is_ok_and(|physical| is_within_project_namespace(root, &physical))",
+    ],
+    [
+      "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+      "                session.synchronize_tracked(&mut self.document_texts)?;",
+      "                session.synchronize_tracked(&self.document_texts)?;",
+    ],
+    [
+      "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
+      "            return self.open_uris.get(index).cloned();",
+      "            return self.open_uris.get(0).cloned();",
+    ],
+  ] as const) {
+    const current = actualRead("head", path)!.toString("utf8");
+    assert.equal(current.split(currentEdit).length, 2);
+    for (const mutant of [
+      `// unregistered prefix\n${current}`,
+      `${current}\n// unregistered suffix\n`,
+      current.replace(currentEdit, ""),
+      current.replace(currentEdit, `${currentEdit}\n${currentEdit}`),
+      current.replace(currentEdit, partialEdit),
+      current.replace("use ", "// unrelated change\nuse "),
+    ]) {
+      assert.notEqual(mutant, current);
+      const body = Buffer.from(mutant);
+      const mutated = historicalNativeIdentityCurrentSources((side, file) =>
+        side === "head" && file === path ? body : actualRead(side, file),
+      );
+      assert.deepEqual(mutated("head", path), body);
+      assert.throws(
+        () => validate(mutated),
+        new RegExp(`changed head native identity successor source: ${path}`),
+      );
+    }
+    const missing = historicalNativeIdentityCurrentSources((side, file) =>
+      side === "head" && file === path ? null : actualRead(side, file),
+    );
+    assert.equal(missing("head", path), null);
+    assert.throws(
+      () => validate(missing),
+      new RegExp(`missing head native identity successor source: ${path}`),
+    );
+  }
+});
+
+test("current source replay requires the complete unchanged project-import image", () => {
+  const path = "crates/vize_canon/src/lsp_client/editor_lsp/client.rs";
+  for (const body of [null, Buffer.from("unregistered archive")]) {
+    const read = historicalNativeIdentityCurrentSources((side, file) =>
+      side === "head" && file === rows[2].image.path ? body : actualRead(side, file),
+    );
+    assert.throws(
+      () => read("head", path),
+      body === null
+        ? /missing head native identity successor source:/
+        : /changed native identity successor image:/,
+    );
+  }
+});
 
 test("the corrective transition authenticates actual source bytes and preserves the original actor", () => {
   const result = validate();
@@ -274,6 +361,14 @@ test("the project-import successor extends the published pair and authenticates 
 
 test("the mandatory source gate admits only the complete current corrective transition", () => {
   const paths = [...validate().sources];
+  // Later authored-language inputs cannot stand in for this source transition's
+  // unrelated-source negative control. Keep those cases in both comparison sides.
+  const before = JSON.parse(read("base", manifestPath)!.toString("utf8"));
+  before.cases = manifest.cases;
+  const sourceRead: Read = (side, path) =>
+    side === "base" && path === manifestPath
+      ? Buffer.from(JSON.stringify(before))
+      : read(side, path);
   const report = (registered: boolean) =>
     analyzeLegacyFix({
       title: "fix(lsp): retain URI owners and every remapped edit",
@@ -284,7 +379,7 @@ test("the mandatory source gate admits only the complete current corrective tran
           delete without.nativeDocumentIdentitySuccessors;
           return Buffer.from(JSON.stringify(without));
         }
-        return read(side, path);
+        return sourceRead(side, path);
       },
     }).products.find((product) => product.product === "typechecker");
   assert.equal(report(false)?.state, "invalid-manifest-or-input");
@@ -296,7 +391,7 @@ test("the mandatory source gate admits only the complete current corrective tran
   const unrelated = analyzeLegacyFix({
     title: "fix(lsp): retain URI owners and every remapped edit",
     paths: [...paths, "crates/vize_canon/src/lsp_client/unrelated.rs"],
-    readFile: read,
+    readFile: sourceRead,
   }).products.find((product) => product.product === "typechecker");
   assert.equal(unrelated?.state, "new-input-missing");
   const future = analyzeLegacyFix({

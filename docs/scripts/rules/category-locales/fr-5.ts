@@ -30,12 +30,12 @@ export const frenchRules5 = {
     "L’identifiant du titre inclut l’identifiant stable du résultat, produisant un identifiant distinct dans le document pour chaque entrée.",
   ],
   "vize:croquis/cf/object-identity-comparison": [
-    "Un objet réactif est comparé par identité, laquelle change lorsque l’enveloppe est retirée.",
+    "Comparez les identifiants stables des enregistrements représentés par des objets bruts et des proxies réactifs.",
     "Ce contrat illustre la comparaison d’identifiants stables d’enregistrement lorsque c’est l’identité de l’enregistrement qui est voulue. `proxy === raw` compare l’identité de l’enveloppe ; le résultat est donc faux même si les deux représentent le même enregistrement utilisateur. L’application visait l’identité de l’enregistrement, et non celle de l’enveloppe de l’objet.",
     "Comparer le `id` stable de l’enregistrement répond à la question voulue sans dépendre du fait que l’objet soit brut ou enveloppé dans un proxy.",
   ],
   "vize:croquis/cf/pinia-getter": [
-    "Un getter Pinia est lu sans `storeToRefs` ; il ne restera donc pas réactif.",
+    "Évitez de copier les valeurs des getters Pinia sous forme d’instantanés pendant setup.",
     "`const doubled = store.doubled` copie le nombre actuel du getter pendant setup. Le nombre copié ne suit pas les mises à jour ultérieures de `store.count`.",
     "`storeToRefs(store)` fournit une ref de getter réactive qui peut être déstructurée et déballée par le template tout en restant liée au store.",
   ],
@@ -75,7 +75,7 @@ export const frenchRules5 = {
     "Le cache reçoit le nombre ordinaire actuel ; il conserve donc un instantané sans retenir la ref appartenant au composant.",
   ],
   "vize:croquis/cf/setup-context-violation": [
-    "Le contexte setup est utilisé d’une manière que Vue n’autorise pas.",
+    "Créez l’état réactif propre à chaque composant dans le setup de son instance.",
     "`ref(0)` est créé au niveau du module d’un script normal, en dehors du contexte setup propre à chaque instance représenté par ce scénario d’analyse.",
     "Déplacer la liaison dans script setup, où chaque instance de composant possède son décompte et où le template peut le lire.",
   ],

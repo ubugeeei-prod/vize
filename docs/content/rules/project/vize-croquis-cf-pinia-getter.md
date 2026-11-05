@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-A Pinia getter is read without `storeToRefs`, so it will not stay reactive.
+Avoid setup-time snapshots of Pinia getter values.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Applies to: Analyzed component graph and the supported facts described below
 This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
 
 Pinia must be installed, and main.ts installs its plugin before mounting. Reading `store.doubled` directly inside a tracked computation or template is valid; the defect here is taking a plain snapshot. This contract currently has no producer.
+
+## Scope and limitations
+
+This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
 ## Shared project files
 

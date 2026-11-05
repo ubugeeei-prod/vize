@@ -172,17 +172,13 @@ fn private_fact_fits_existing_surface_layout_caps() {
 }
 
 #[test]
-fn resolved_mode_never_invents_admission_for_an_overbudget_sole_control() {
+fn resolved_vue_mode_admits_deep_argument_bytes_and_keeps_pre_scope() {
     let argument = cstr!("[{}{}]", "([".repeat(33), "])".repeat(33));
     let source = cstr!("<div v-pre:{argument}>{{{{normal}}}}</div>");
     let allocator = Allocator::new();
     let parsed = parse_component(&allocator, &source).unwrap();
-    assert_eq!(parsed.unsupported.len(), 1);
-    assert_eq!(
-        parsed.unsupported[0].error,
-        vize_l1::markup::DirectiveNameError::NestingLimit
-    );
-    assert_eq!(modes(&parsed.tree.children), [("div", false)]);
+    assert!(parsed.unsupported.is_empty());
+    assert_eq!(modes(&parsed.tree.children), [("div", true)]);
     assert_eq!(check_fidelity(&parsed.tree), Ok(()));
     for attributes in [
         cstr!("v-bind:{argument} v-pre"),

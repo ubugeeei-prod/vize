@@ -20,6 +20,8 @@ function argument(name, fallback) {
 }
 const mode = argument("--mode", "published-binding");
 assert.ok(["source-native", "published-binding"].includes(mode));
+const expectedNode = argument("--expected-node", null);
+if (expectedNode !== null) assert.equal(process.versions.node, expectedNode);
 const output = path.resolve(
   argument("--output", fs.mkdtempSync(path.join(os.tmpdir(), "vize-prettier-consumer-"))),
 );
@@ -59,13 +61,19 @@ const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json
 const packingNativeVersion = createRequire(path.join(packageRoot, "package.json"))(
   "@vizejs/native/package.json",
 ).version;
-const pack = run(
-  "npx",
-  ["--yes", "pnpm@12.9.0", "pack", "--pack-destination", output],
-  packageRoot,
+const tarballDirectory = argument("--tarball-directory", null);
+if (tarballDirectory === null) {
+  const pack = run(
+    "npx",
+    ["--yes", "pnpm@12.9.0", "pack", "--pack-destination", output],
+    packageRoot,
+  );
+  assert.equal(pack.status, 0, pack.stderr);
+}
+const tarball = path.resolve(
+  tarballDirectory ?? output,
+  `${manifest.name}-${manifest.version}.tgz`,
 );
-assert.equal(pack.status, 0, pack.stderr);
-const tarball = path.join(output, `${manifest.name}-${manifest.version}.tgz`);
 assert.equal(fs.existsSync(tarball), true);
 const consumer = path.join(output, "project with spaces 雪");
 fs.mkdirSync(path.join(consumer, "src"), { recursive: true });

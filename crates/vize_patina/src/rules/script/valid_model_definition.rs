@@ -10,10 +10,12 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program};
 use oxc_span::Span;
 
+use vize_l0::{String, cstr};
+
 const RULE: &str = "vue/valid-model-definition";
 
 pub(super) fn message(name: &str) -> String {
-    format!("Invalid key '{name}' in model option.")
+    cstr!("Invalid key '{name}' in model option.")
 }
 
 static META: ScriptRuleMeta = ScriptRuleMeta {

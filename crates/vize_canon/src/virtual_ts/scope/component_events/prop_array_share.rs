@@ -90,7 +90,6 @@ fn claim_members(
 
 #[cfg(test)]
 mod tests {
-    use super::PROPS_MEMBERS_SENTINEL;
     use crate::virtual_ts::generator::generate_virtual_ts;
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
@@ -123,10 +122,7 @@ const onOpen = () => undefined
     fn listeners_share_one_constructor_props_tuple() {
         let output = generate();
         let code = output.code.as_str();
-        assert!(
-            !code.contains(PROPS_MEMBERS_SENTINEL),
-            "the contract sentinel must not be emitted: {code}"
-        );
+        insta::assert_snapshot!("shared_listener_array_projection", code);
         for component in ["Child", "Other"] {
             let conditional = vize_carton::cstr!("typeof {component} extends {{ new (");
             assert_eq!(
@@ -140,18 +136,6 @@ const onOpen = () => undefined
             .filter(|line| line.contains("_props_members ="))
             .collect();
         assert_eq!(members.len(), 2, "one tuple per component: {code}");
-        for line in &members {
-            assert!(
-                line.contains(
-                    "extends infer __B ? __B extends [infer __P] ? [__P] : never : never;"
-                ),
-                "shared alias keeps the distributive one-tuple: {line}"
-            );
-            assert!(
-                !line.contains("typeof"),
-                "the shared tuple must not repeat the constructor conditional: {line}"
-            );
-        }
         let arrays: Vec<&str> = code
             .lines()
             .filter(|line| line.contains("_prop_arrays ="))
@@ -161,16 +145,6 @@ const onOpen = () => undefined
             4,
             "select, close, save and open each declare one array alias: {code}"
         );
-        for line in &arrays {
-            assert!(
-                line.contains(
-                    "_props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P>"
-                ),
-                "array alias must unwrap the shared tuple, not the constructor: {line}"
-            );
-            assert!(!line.contains("typeof"), "{line}");
-            assert!(!line.contains("$props"), "{line}");
-        }
         let child_members = members_alias(
             arrays
                 .iter()
@@ -211,8 +185,13 @@ const onOpen = () => undefined
             .nth(1)
             .and_then(|rest| rest.split(" | null").next())
             .expect("annotation alias");
-        assert!(alias.contains("_select_prop_arrays"), "{alias}");
-        assert!(annotations[1].contains(alias), "{annotations:?}");
+        assert_eq!(
+            annotations[1]
+                .split("_select_handler | ")
+                .nth(1)
+                .and_then(|rest| rest.split(" | null").next()),
+            Some(alias),
+        );
         let maps: Vec<&str> = code
             .lines()
             .filter(|line| line.contains("// @vize-map: handler -> "))
@@ -222,10 +201,7 @@ const onOpen = () => undefined
         for (line, range) in maps.iter().zip(expected) {
             let marked =
                 vize_carton::cstr!("// @vize-map: handler -> {}:{}\n", range.start, range.end);
-            assert!(
-                line.contains(marked.trim_end()),
-                "handler anchor moved: {line} != {marked}"
-            );
+            assert_eq!(line.trim(), marked.trim());
         }
         for event in ["select", "close", "save", "open"] {
             let name_ranges = event_name_ranges(event);

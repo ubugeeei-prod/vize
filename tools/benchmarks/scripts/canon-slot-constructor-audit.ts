@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { authoredDirectives } from "../../support/compat/content-mapper/producer-unmapped-ignores.ts";
+import { parenthesisDiagnosticMappings } from "../../../tests/tooling/support/content-mapper-parenthesis-mappings-11675.ts";
 import { isRecord, jsonValue, type PacketObservation } from "./canon-instance-directives-model.ts";
 import { save } from "./canon-instance-directives-io.ts";
 
@@ -71,13 +72,37 @@ export function canonicalMappedGenerated(source: string): string {
 function mappingContract(result: Record<string, unknown>) {
   const source = text(result);
   return tuples(result.mappings).map(
-    ([generated, length, original, originalLength, kind, features]) => ({
-      generated: canonicalMappedGenerated(bytes(source, generated, generated + length)),
-      original,
-      originalLength,
-      kind,
-      features,
-    }),
+    ([generated, length, original, originalLength, kind, features]) => {
+      assert.ok(generated + length <= Buffer.byteLength(source), "mapping fits complete program");
+      return {
+        generated: canonicalMappedGenerated(bytes(source, generated, generated + length)),
+        original,
+        originalLength,
+        kind,
+        features,
+      };
+    },
+  );
+}
+
+export function assertMappedContracts(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+) {
+  const original = tuples(before.mappings);
+  const present = new Set(original.map((row) => JSON.stringify(row)));
+  const additions = parenthesisDiagnosticMappings({
+    text: text(before),
+    mappings: original,
+  }).filter((row) => !present.has(JSON.stringify(row)));
+  const expected = {
+    ...before,
+    mappings: [...original, ...additions].sort((a, b) => a[0]! - b[0]!),
+  };
+  assert.deepEqual(
+    mappingContract(after),
+    mappingContract(expected),
+    "all mapped authored bytes and feature contracts survive with exactly the owned parenthesis atoms",
   );
 }
 
@@ -171,11 +196,7 @@ export function auditPackets(
     "constructor unions use one non-distributive native factory",
   );
   assert.notEqual(headText, baseText, "the source repair must change the virtual program");
-  assert.deepEqual(
-    mappingContract(after),
-    mappingContract(before),
-    "all mapped authored bytes and feature contracts survive",
-  );
+  assertMappedContracts(before, after);
   assert.deepEqual(
     directiveContract(certifiedDirectives(after, true)),
     directiveContract(certifiedDirectives(before, false)),

@@ -15,12 +15,17 @@ impl CorsaProjectClient {
     ) -> Result<(), String> {
         // Startup must see the complete batch, including a typed overlay API
         // fallback while replay temporarily owns the retained document map.
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "native_batch_materialized_retain",
+            documents.len(),
+        );
         for (uri, content) in documents {
             let previous = self.retain_document_text(uri, content);
             if previous.changed() {
                 self.editor_lsp_documents_dirty = true;
             }
         }
+        phase.finish();
         if self.synchronize_existing_canon_project_documents(documents)? {
             return Ok(());
         }
@@ -68,30 +73,76 @@ impl CorsaProjectClient {
         else {
             return Ok(false);
         };
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "canon_document_namespace",
+            paths.len(),
+        );
         if !paths.iter().all(|path| {
             crate::lsp_client::session_paths::is_within_project_namespace(path, &self.project_root)
                 && path.is_file()
         }) {
             return Ok(false);
         }
+        phase.finish();
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "canon_document_observations",
+            documents.len(),
+        );
+        let mut private = Vec::with_capacity(paths.len());
+        for ((_, content), path) in documents.iter().zip(&paths) {
+            let owned = crate::lsp_client::session_paths::is_within_physical_project_namespace(
+                path,
+                &self.project_root,
+            );
+            if !owned {
+                // Linked authored/package sources can be observed, never
+                // rewritten through Canon's logical namespace. Keep this
+                // guard on the ordinary writer too, including retries after
+                // an immutable-batch certificate was rejected.
+                self.canon_file_cache.forget(path);
+                if std::fs::read_to_string(path).ok().as_deref() != Some(*content) {
+                    return Err(cstr!("Canon document left its private physical namespace"));
+                }
+            }
+            private.push(owned);
+        }
         let mut summary = FileChangeSummary::default();
-        for ((uri, content), path) in documents.iter().zip(paths) {
+        for (((uri, content), path), owned) in documents.iter().zip(paths).zip(private) {
             self.clear_document_state(uri);
-            if std::fs::read_to_string(&path).ok().as_deref() != Some(*content) {
-                std::fs::write(&path, content).map_err(|error| {
+            if !owned {
+                self.remember_session_document_uri(uri, (*uri).into());
+                continue;
+            }
+            if self
+                .canon_file_cache
+                .synchronize_with_digest(&path, content, || {
+                    self.document_texts.desired_digest(uri, content)
+                })
+                .map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
                         path.display()
                     )
-                })?;
+                })?
+            {
                 summary.changed.push(uri_document_identifier(uri));
             }
             self.remember_session_document_uri(uri, (*uri).into());
         }
+        phase.finish();
         if !summary.changed.is_empty() {
             self.refresh_materialized_overlay_snapshot(Some(FileChanges::Summary(summary)))?;
         }
+        self.canon_batches.observed_canonical_sync();
         Ok(true)
+    }
+
+    #[cfg(test)]
+    pub(in crate::lsp_client) fn synchronize_canon_documents_for_test(
+        &mut self,
+        documents: &[(&str, &str)],
+    ) -> Result<bool, String> {
+        self.synchronize_existing_canon_project_documents(documents)
     }
 
     pub(in crate::lsp_client) fn refresh_materialized_overlay_snapshot(

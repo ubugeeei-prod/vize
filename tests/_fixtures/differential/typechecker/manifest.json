@@ -9629,133 +9629,6 @@
       }
     },
     {
-      "id": "typechecker/regression/capture-free-component-instance-11699",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "capture-free-component-instance-11699/Capture.vue.txt",
-          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/authored.ts.txt",
-          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
-          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/render.ts.txt",
-          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
-          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/component-v-model-once-11655",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "component-v-model-once-11655/Component.vue.txt",
-          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-v-model-once-11655/Native.vue.txt",
-          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-v-model-once-11655/SlotContent.vue.txt",
-          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/strict-v-model-mapper-11643",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "strict-v-model-mapper-11643/KitField.vue.txt",
-          "sha256": "a136df6e638a79824947d5310d7c855b14244106a649e6861434be2d490a89a4",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "strict-v-model-mapper-11643/MissingTarget.vue.txt",
-          "sha256": "ab64eee13ec4fc635f052ef90eb27510aec20b35e3ad9adc069c373d41811c2a",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "strict-v-model-mapper-11643/Page.vue.txt",
-          "sha256": "7d784542c3f5b48883bcb90354d0dd167ed8e6c6737c418a0a9c707bb430c491",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper_config::strict_v_model_tests (strict_templates_checks_the_model_write_back, strict_v_model_overrides_strict_templates, default_options_leave_the_model_write_back_unchecked, write_back_owns_the_bound_target_diagnostics); #11643 the content mapper honors strictVModel and its strictTemplates fallback as vize check does, so a v-model update payload that does not fit the bound target is reported, and the write-back owns the target diagnostics so the props literal copy adds no duplicate. Input-only registration, no diagnostic pack."
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/relative-sibling-storage-10934/typed-sibling-error",
       "state": "active",
       "targets": [
@@ -11528,32 +11401,40 @@
       ]
     },
     {
-              "id": "typechecker/ambient-template-ref-10980",
-              "state": "active",
-              "targets": ["batch"],
-              "inputs": [
-                {
-                  "path": "ambient-template-ref-10980/Probe.vue.txt",
-                  "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
-                  "role": "regression-reproduction"
-                }
-              ],
-              "dialectCoverage": {
-                "state": "source-inspected",
-                "registryRef": null,
-                "evidence": [
-                  {
-                    "kind": "source-inspection",
-                    "dialects": ["vue3-sfc", "html-template", "ts"],
-                    "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-                  }
-                ]
-              }
-            },
+      "id": "typechecker/ambient-template-ref-10980",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "ambient-template-ref-10980/Probe.vue.txt",
+          "sha256": "158a66cf752f4ba13fe3715e5a71b01a4d5f9fce9157468fb20086fd427c58b3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
     {
       "id": "typechecker/ambient-template-ref-10980/authored-global-ownership",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "test": "content_mapper_tsgo_cli::support::ambient_template_ref::ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs",
       "sourceRevision": "630f9c060e8e879a25402de099ed3931b6e42468",
       "inputs": [
@@ -11579,8 +11460,42 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs; original ambient contract, typed repair, restore, missing global and real Vue import on CLI and mapper"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-value-anchor-reuse",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "77d69b470ba48ae6014bac5ab94422f7ba2c33dc",
+      "inputs": [
+        {
+          "path": "component-value-anchor-reuse/input.json",
+          "sha256": "e3c0a69914a4b157d69dd6302b3873d770c0ec72cbe8bc518e2dca73049b9968",
+          "role": "physically-consumed-component-value-and-import-anchor-controls"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::anchors::component_value_reads::exact_component_value_reads_reuse_only_their_own_import_anchors; compile-included seven source controls feed the full generator; input-only, no diagnostic or native/performance admission"
           }
         ]
       }
@@ -11765,45 +11680,61 @@
       "scope": "Exact failing Volar Directives.vue input consumed by the named native mapper ownership unit. Input registration only; batch CLI/native after qualification remains a separate Actions gate."
     },
     {
-          "id": "typechecker/expect-sibling-interpolation-10871",
-          "state": "active",
-          "targets": ["batch"],
-          "inputs": [
-            {
-              "path": "expect-sibling-interpolation-10871/Probe.vue.txt",
-              "sha256": "a57f563535d4e9e049121ad11abdf26cd4fee2a9802cf686711ba8c9ffcebb00",
-              "role": "regression-reproduction"
-            }
-          ],
-          "dialectCoverage": {
-            "state": "source-inspected",
-            "registryRef": null,
-            "evidence": [
-              {
-                "kind": "source-inspection",
-                "dialects": ["vue3-sfc", "html-template", "ts"],
-                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-              }
-            ]
-          }
-        },
-    {
-      "id": "typechecker/generation-value-import-facts",
+      "id": "typechecker/expect-sibling-interpolation-10871",
       "state": "active",
-      "targets": ["batch"],
-      "inputs": [{
-        "path": "generation-value-import-facts/Imports.vue.txt",
-        "sha256": "295378aec0c3b8185a0445a3aac9ea137e0be1eaa1562594eeccdd796aeaaea3",
-        "role": "script-import-and-anchor-source-control"
-      }],
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "expect-sibling-interpolation-10871/Probe.vue.txt",
+          "sha256": "a57f563535d4e9e049121ad11abdf26cd4fee2a9802cf686711ba8c9ffcebb00",
+          "role": "regression-reproduction"
+        }
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "virtual_ts::generator::anchors::value_import_names::pinned_import_facts_keep_whole_sets_and_both_anchor_modes; compile-included pinned script physically feeds the actual import collector and anchor emitter; input-only registration, no native or diagnostic pack admission"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/generation-value-import-facts",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generation-value-import-facts/Imports.vue.txt",
+          "sha256": "295378aec0c3b8185a0445a3aac9ea137e0be1eaa1562594eeccdd796aeaaea3",
+          "role": "script-import-and-anchor-source-control"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::anchors::value_import_names::pinned_import_facts_keep_whole_sets_and_both_anchor_modes; compile-included pinned script physically feeds the actual import collector and anchor emitter; input-only registration, no native or diagnostic pack admission"
+          }
+        ]
       }
     },
     {
@@ -12275,28 +12206,34 @@
       }
     },
     {
-          "id": "typechecker/options-api-lexical-members-11069",
-          "state": "active",
-          "targets": ["batch"],
-          "inputs": [
-            {
-              "path": "options-api-lexical-members-11069/Options.vue.txt",
-              "sha256": "7831b78440cd5f971abbbd2a980ef94fb188742e1993437bdfdf3128a40891e8",
-              "role": "regression-reproduction"
-            }
-          ],
-          "dialectCoverage": {
-            "state": "source-inspected",
-            "registryRef": null,
-            "evidence": [
-              {
-                "kind": "source-inspection",
-                "dialects": ["vue3-sfc", "html-template", "ts"],
-                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-              }
-            ]
+      "id": "typechecker/options-api-lexical-members-11069",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "options-api-lexical-members-11069/Options.vue.txt",
+          "sha256": "7831b78440cd5f971abbbd2a980ef94fb188742e1993437bdfdf3128a40891e8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
-        },
+        ]
+      }
+    },
     {
       "id": "typechecker/page-route-normalization-11776",
       "state": "active",
@@ -12454,6 +12391,55 @@
       }
     },
     {
+      "id": "typechecker/regression/capture-free-component-instance-11699",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "capture-free-component-instance-11699/Capture.vue.txt",
+          "sha256": "6bf9afaea2560fc7011cbbbab9d5ae33ebc86805bc2517cc5b72e7902a46d75d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/authored.ts.txt",
+          "sha256": "b11109d9540edc579f7b34083c4f3e2a4ccca330677c92a8edf965d81d90a5d9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/globals.d.ts.txt",
+          "sha256": "0c8fe641cc8169d437c2ebab0a3b5b4c7f05a8f0af9bc78fa19549f69ccd9fe4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/render.ts.txt",
+          "sha256": "2d2bc543fb19612efc5306cf11a812d72342d86cb076517d66d576325db697e7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "capture-free-component-instance-11699/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "component_render_h_props::capture_free_instance_keeps_authored_names_and_public_member_types consumes these authored inputs; required-native lane preserves exposed/global member negative diagnostics and valid authored Pick/globalThis bindings. Existing imported_sfc_h_calls_check_missing_and_wrong_props retains complete TS2769 expectations. Input registration is not native or performance qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/cold-package-shadow-routes-11265",
       "state": "active",
       "targets": [
@@ -12522,6 +12508,45 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::component_listener_narrowing_11730::component_listener_branches_keep_narrowing_and_authored_body_errors; reported source/config physically consumed with wrong-member and wrong-payload controls. Input-only registration; original Windows/runtime qualification remains separate."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/component-v-model-once-11655",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-v-model-once-11655/Component.vue.txt",
+          "sha256": "78a4a3c2f3ae9a02408f43589ed5003bc8c477e1055a655e6bf4c82fc2683b80",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/Native.vue.txt",
+          "sha256": "bbbcf5a1181d362e3ddc9f388d8755ae1a522a1739f5a51ef477ecc5818f69df",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-v-model-once-11655/SlotContent.vue.txt",
+          "sha256": "3dbfeff7f188a2ddfac3bf05d3ab3fb56a5f0c76501c420f20cd8e8a3a84373d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::diagnostic_ownership::model_values (component_model_value_reports_from_one_copy, slot_scoped_component_model_value_reports_from_one_copy, native_model_value_keeps_its_statement); #11655 a component v-model value reports through exactly one copy in the content mapper: its bare VModel statement records as navigation like a :prop statement, while a native v-model keeps its statement. Input-only registration, no diagnostic pack."
           }
         ]
       }
@@ -13464,20 +13489,30 @@
     {
       "id": "typechecker/regression/mixed-vue-package-imports-11253",
       "state": "active",
-      "targets": ["batch"],
-      "inputs": [{
-        "path": "mixed-vue-package-imports-11253/input.json",
-        "sha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
-        "role": "regression-reproduction"
-      }],
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "mixed-vue-package-imports-11253/input.json",
+          "sha256": "41f272617bd60acc5c737f4d72327edcc0e85e53ca161ef076ca8509072c1ed6",
+          "role": "regression-reproduction"
+        }
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "check_mixed_vue_package_imports_cli::check_json_mixed_vue_and_private_imports_keep_every_authored_diagnostic; compile-included original five files and package imports scope; input registration only, no diagnostic pack or native admission"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_mixed_vue_package_imports_cli::check_json_mixed_vue_and_private_imports_keep_every_authored_diagnostic; compile-included original five files and package imports scope; input registration only, no diagnostic pack or native admission"
+          }
+        ]
       }
     },
     {
@@ -13592,21 +13627,68 @@
     {
       "id": "typechecker/regression/prepared-type-only-import-facts",
       "state": "active",
-      "targets": ["batch"],
-      "adapters": {"legacy": null, "native": null},
-      "inputs": [{
-        "path": "prepared-type-only-import-facts/Imports.vue.txt",
-        "sha256": "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a",
-        "role": "complete-sfc-source-generation-control"
-      }],
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": null,
+        "native": null
+      },
+      "inputs": [
+        {
+          "path": "prepared-type-only-import-facts/Imports.vue.txt",
+          "sha256": "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a",
+          "role": "complete-sfc-source-generation-control"
+        }
+      ],
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "virtual_ts::generator::type_only_imports::prepared_tests::pinned_sfc_uses_exact_facts_and_generates_default_and_hoisted_documents; compile-included full SFC feeds both production document modes; planned batch input only, null adapters, no native diagnostic packet or acceptance"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::type_only_imports::prepared_tests::pinned_sfc_uses_exact_facts_and_generates_default_and_hoisted_documents; compile-included full SFC feeds both production document modes; planned batch input only, null adapters, no native diagnostic packet or acceptance"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "qualification-20261105/Child.vue.txt",
+          "sha256": "6e17ae91abb655765e75ec91a7b9e9327ff0ad9c3925658329ae4ad7457464e6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "qualification-20261105/Repeated.vue.txt",
+          "sha256": "c014b7aba0a868e17e49cab607764c7d3381af605cb720b7f9ea2c7ed354d297",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_reported_declarations_11364_11365_cli::repeated_component_declarations_preserve_no_unused_and_authored_errors; vue_document::build::tests::native_union checks exact closed dependency membership after edits; input registration is not native acceptance."
+          }
+        ]
       }
     },
     {
@@ -14161,7 +14243,9 @@
     {
       "id": "typechecker/regression/runtime-null-prop-11252",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "inputs": [
         {
           "path": "runtime-null-prop-11252/Box.vue.txt",
@@ -14182,11 +14266,17 @@
       "dialectCoverage": {
         "state": "source-inspected",
         "registryRef": null,
-        "evidence": [{
-          "kind": "source-inspection",
-          "dialects": ["vue3-sfc", "html-template", "ts"],
-          "selector": "content_mapper_tsgo_cli::runtime_null_prop::runtime_null_prop_keeps_original_acceptance_and_authored_error_repair; original Box/config/package physically copied to the checked project, source CLI and mapper; no public version or native admission claim"
-        }]
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::runtime_null_prop::runtime_null_prop_keeps_original_acceptance_and_authored_error_repair; original Box/config/package physically copied to the checked project, source CLI and mapper; no public version or native admission claim"
+          }
+        ]
       }
     },
     {
@@ -14219,6 +14309,83 @@
       }
     },
     {
+      "id": "typechecker/regression/sfc-entry-grammar-11869",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "sfc-entry-grammar-11869/Adjacent.vue.txt",
+          "sha256": "7c2121f09734d15209abd8ae31ac5ccdcc86dea106fb9a1a04c5941a81015364",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "sfc-entry-grammar-11869/Static.vue.txt",
+          "sha256": "ae5ac8410b0b3bc7fcfa8b3dc637e7914395303a8616c8836e2323cc8d3448e1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "sfc-entry-grammar-11869/Malformed.vue.txt",
+          "sha256": "a1038319ce359a93de353afb8059467c0a0ed354b3c22fe0821b97e79125148e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "sfc_typecheck::tests::sfc_grammar and typecheck_service::sfc_grammar_tests consume these inputs through the synchronous and native-service APIs; exact unknown-binding and malformed diagnostics plus complete native output equality. The batch CLI is a source-format control, not the API-entry regression oracle."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/strict-v-model-mapper-11643",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "strict-v-model-mapper-11643/KitField.vue.txt",
+          "sha256": "a136df6e638a79824947d5310d7c855b14244106a649e6861434be2d490a89a4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/MissingTarget.vue.txt",
+          "sha256": "ab64eee13ec4fc635f052ef90eb27510aec20b35e3ad9adc069c373d41811c2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "strict-v-model-mapper-11643/Page.vue.txt",
+          "sha256": "7d784542c3f5b48883bcb90354d0dd167ed8e6c6737c418a0a9c707bb430c491",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_config::strict_v_model_tests (strict_templates_checks_the_model_write_back, strict_v_model_overrides_strict_templates, default_options_leave_the_model_write_back_unchecked, write_back_owns_the_bound_target_diagnostics); #11643 the content mapper honors strictVModel and its strictTemplates fallback as vize check does, so a v-model update payload that does not fit the bound target is reported, and the write-back owns the target diagnostics so the props literal copy adds no duplicate. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/tsconfig-reference-defaults-3984",
       "state": "active",
       "targets": [
@@ -14244,6 +14411,45 @@
               "tsx"
             ],
             "selector": "check_tsconfig_mixed_project_graph_cli::default_reference::later_default_reference_checks_vue_template_and_repair; physically consumes a solution with an excluded explicit file and a later implicit mixed program, wrong Vue template and repair. Input-only registration; no native, public or timing qualification."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/undeclared-listener-11913",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "undeclared-listener-11913/comps.ts.txt",
+          "sha256": "c69fd09826930e353bf5fb9300687c5d50c01537ce874ecf9efedfc6731a3d9a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "undeclared-listener-11913/invalid.vue.txt",
+          "sha256": "216543829007155d6e3c73d98f645aedb07347ee52939952f446d0d2d8ad6f2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "undeclared-listener-11913/valid.vue.txt",
+          "sha256": "b727505337707fc5c478935732aab28a0096dc24ed819c236a947af20516036a",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "undeclared_listener integration tests consume these inputs; undeclared listeners with and without props accept Event handlers while typed payload and zero-arity negatives remain checked. Input registration is not native qualification."
           }
         ]
       }
@@ -14462,7 +14668,9 @@
     {
       "id": "typechecker/router-mapper-capability-10579/automatic-route-props",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "test": "tests/tooling/router-preview-automatic.ts",
       "sourceRevision": "c488c1b2d14acc1818f768ee976634e36c5db0bf",
       "inputs": [
@@ -14478,7 +14686,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "tests/tooling/router-preview-automatic.ts; newly pinned original automatic64 source physically supplied to source native check and independent vue-tsc; not a new semantic program or native mapper authority"
           }
         ]
@@ -14586,7 +14798,9 @@
     {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "inputs": [
         {
           "path": "project-native-runtime-authority-10694/App.vue.txt",
@@ -14605,7 +14819,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
@@ -14614,7 +14832,9 @@
     {
       "id": "typechecker/shorthand-double-diagnostic-10920",
       "state": "active",
-      "targets": ["batch"],
+      "targets": [
+        "batch"
+      ],
       "inputs": [
         {
           "path": "shorthand-double-diagnostic-10920/Probe.vue.txt",
@@ -14628,35 +14848,45 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
         ]
       }
     },
     {
-          "id": "typechecker/slot-type-message-10902",
-          "state": "active",
-          "targets": ["batch"],
-          "inputs": [
-            {
-              "path": "slot-type-message-10902/Probe.vue.txt",
-              "sha256": "eae7608fc9a4d1a5ead540a8b57d9b5dc1c3d280b9965b523453067296833546",
-              "role": "regression-reproduction"
-            }
-          ],
-          "dialectCoverage": {
-            "state": "source-inspected",
-            "registryRef": null,
-            "evidence": [
-              {
-                "kind": "source-inspection",
-                "dialects": ["vue3-sfc", "html-template", "ts"],
-                "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-              }
-            ]
+      "id": "typechecker/slot-type-message-10902",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-type-message-10902/Probe.vue.txt",
+          "sha256": "eae7608fc9a4d1a5ead540a8b57d9b5dc1c3d280b9965b523453067296833546",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
           }
-        },
+        ]
+      }
+    },
     {
       "id": "typechecker/standalone-constructor-correlation-11023/actual-instance-public-props",
       "state": "active",

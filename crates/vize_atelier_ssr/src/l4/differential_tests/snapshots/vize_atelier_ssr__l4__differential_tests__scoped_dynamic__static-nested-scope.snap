@@ -9,7 +9,7 @@ import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, norma
 code:
 function ssrRender(_ctx, _push, _parent, _attrs) {
   _push(`<div${_ssrRenderAttrs(_attrs)} data-v-control>`)
-  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps(_mergeProps({ id: "child" }, _normalizeProps(_guardReactiveProps(_ctx.$attrs))), { "data-v-control": "" }), null, _parent))
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps({ id: "child" }, _normalizeProps(_guardReactiveProps(_ctx.$attrs))), null, _parent))
   _push(`</div>`)
 }
 

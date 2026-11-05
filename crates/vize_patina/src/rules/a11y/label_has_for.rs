@@ -21,6 +21,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
+    MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
@@ -80,9 +84,67 @@ fn has_nested_form_control(children: &[TemplateChildNode]) -> bool {
     false
 }
 
+fn has_markup_for(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= match binding.kind() {
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind => {
+                binding.is_unqualified_arg_exact("for")
+                    || binding.is_unqualified_arg_exact("htmlFor")
+                    // `v-bind="attrs"` can supply `for` at runtime (#8961).
+                    || (binding.kind() == MarkupBindingKind::Bind && binding.arg_name().is_none())
+            }
+            _ => false,
+        };
+    });
+    found
+}
+
+/// JSX conditionals and lists count by what they render, as on the lowered path.
+fn has_nested_markup_control(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_rendered_children(&mut |child| {
+        if let MarkupNode::Element(child) = child {
+            found = found
+                || FORM_CONTROL_TAGS
+                    .iter()
+                    .any(|tag| child.is_unqualified_tag_exact(tag))
+                || has_nested_markup_control(&child);
+        }
+    });
+    found
+}
+
+impl MarkupRule for LabelHasFor {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.kind() == MarkupElementKind::Component
+            || !element.is_unqualified_tag_exact("label")
+            || has_markup_for(element)
+            || has_nested_markup_control(element)
+        {
+            return;
+        }
+        let message = ctx.lint().t("a11y/label-has-for.message");
+        let help = ctx.lint().t("a11y/label-has-for.help");
+        ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
 impl Rule for LabelHasFor {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -168,5 +230,21 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<label>Name <span>Help</span></label>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn jsx_controls_inside_conditionals_and_lists_label() {
+        let linter = create_linter();
+        for (source, expected) in [
+            ("const A = () => <label>{cond && <input />}</label>;", 0),
+            (
+                "const A = () => <label>{items.map((i) => <input />)}</label>;",
+                0,
+            ),
+            ("const A = () => <label>{cond && <span />}</label>;", 1),
+        ] {
+            let result = linter.lint_jsx(source, "test.jsx", vize_atelier_jsx::JsxLang::Jsx);
+            assert_eq!(result.warning_count, expected, "{source}: {result:?}");
+        }
     }
 }

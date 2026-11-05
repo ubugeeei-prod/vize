@@ -1,0 +1,426 @@
+{
+  "schema": "vize.lint.preset-warning-current-source-successors.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "predecessor": {
+    "path": "tests/_fixtures/lint-preset-default-warnings/preset-successors.json",
+    "bytes": 142244,
+    "sha256": "ad816b78486547b543465add52f87107a5381580c774175db422b31d57938b87"
+  },
+  "sources": [
+    {
+      "path": "crates/vize_patina/src/linter/script_rules/registry/rules.rs",
+      "beforeRevision": "8f475a02929c0250a49320a1f8e83fa60331574e",
+      "afterRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+      "before": {
+        "bytes": 25724,
+        "sha256": "6e29b2f9380623eacd2b71c5033a206c7a8443fda687c25c459c69aaeaf27044"
+      },
+      "after": {
+        "bytes": 27742,
+        "sha256": "ed69c7e201116040df6c55eb6145617eaaadff9affaaffe2e98df0a6ff0c13fd"
+      },
+      "hunks": [
+        {
+          "beforeOffset": 415,
+          "afterOffset": 415,
+          "before": "    RULE_DEFINE_PROPS_DESTRUCTURING, RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED,\n    RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,\n",
+          "after": "    RULE_DEFINE_PROPS_DESTRUCTURING, RULE_JSX_USES_VARS, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,\n    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,\n"
+        },
+        {
+          "beforeOffset": 1339,
+          "afterOffset": 1359,
+          "before": "    RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,\n    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS, RULE_NO_RESERVED_PROPS,\n    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,\n    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_UNSTABLE_NESTED_COMPONENTS,\n    RULE_NO_UNUSED_EMIT_DECLARATIONS, RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,\n    RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS, RULE_NUXT_CONFIG_KEYS_ORDER,\n    RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,\n    RULE_NUXT_PREFER_IMPORT_META, RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS,\n    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING,\n    RULE_PREFER_DEFINE_OPTIONS, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_REF_OVER_REACTIVE,\n    RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID, RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF,\n    RULE_REQUIRE_DEFAULT_PROP, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,\n",
+          "after": "    RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND, RULE_NO_REF_OBJECT_REACTIVITY_LOSS,\n    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,\n    RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS,\n    RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,\n    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,\n    RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,\n    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS,\n    RULE_NUXT_CONFIG_KEYS_ORDER, RULE_NUXT_NO_CONFIG_TEST_KEY,\n    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,\n    RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS, RULE_PINIA_PREFER_STORE_TO_REFS,\n    RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING, RULE_PREFER_DEFINE_OPTIONS,\n    RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,\n    RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID,\n    RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF, RULE_REQUIRE_DEFAULT_PROP,\n    RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS, RULE_REQUIRE_EXPOSE,\n"
+        },
+        {
+          "beforeOffset": 2763,
+          "afterOffset": 2962,
+          "before": "    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,\n    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n",
+          "after": "    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_MODEL_DEFINITION,\n    RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,\n"
+        },
+        {
+          "beforeOffset": 3320,
+          "afterOffset": 3548,
+          "before": "    DefinePropsDeclaration, DefinePropsDestructuring, NoArrowFunctionsInWatch, NoAsyncInComputed,\n    NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,\n",
+          "after": "    DefinePropsDeclaration, DefinePropsDestructuring, JsxUsesVars, NoArrowFunctionsInWatch,\n    NoAsyncInComputed, NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,\n"
+        },
+        {
+          "beforeOffset": 4125,
+          "afterOffset": 4366,
+          "before": "    NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys, NoReservedProps,\n    NoRestrictedGlobals, NoRestrictedMembers, NoSideEffectsInComputed, NoTopLevelRefInScript,\n",
+          "after": "    NoRefObjectReactivityLoss, NoRequiredPropWithDefault, NoReservedIdentifiers, NoReservedKeys,\n    NoReservedProps, NoRestrictedGlobals, NoRestrictedMembers, NoSetupPropsReactivityLoss,\n    NoSideEffectsInComputed, NoThisInBeforeRouteEnter, NoTopLevelRefInScript,\n"
+        },
+        {
+          "beforeOffset": 4588,
+          "afterOffset": 4914,
+          "before": "    PreferImportFromVue, PreferImportMeta, PreferRefOverReactive, PreferUseAttrs, PreferUseId,\n    PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp, RequireExplicitEmits,\n    RequireExplicitSlots, RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes,\n    RequireRenderReturn, RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp,\n    RequireTypedRef, RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator,\n    ValidDefineEmits, ValidDefineOptions, ValidDefineProps, ValidNextTick,\n    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,\n",
+          "after": "    PreferImportFromVue, PreferImportMeta, PreferPropTypeBooleanFirst, PreferRefOverReactive,\n    PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp,\n    RequireExplicitEmits, RequireExplicitSlots, RequireExpose, RequireFunctionReturnType,\n    RequirePropTypeConstructor, RequirePropTypes, RequireRenderReturn, RequireSlotsAsFunctions,\n    RequireSymbolProvide, RequireTypedObjectProp, RequireTypedRef, RequireValidDefaultProp,\n    ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineEmits, ValidDefineOptions,\n    ValidDefineProps, ValidModelDefinition, ValidNextTick, VueRouterPreferNamedPush,\n    VueTestUtilsNoHtmlSnapshot,\n"
+        },
+        {
+          "beforeOffset": 24768,
+          "afterOffset": 25163,
+          "before": "",
+          "after": "    BuiltinScriptRuleEntry { rule_name: RULE_JSX_USES_VARS, profile_name: \"patina.script_rule.jsx_uses_vars\", category: \"Script\", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &JsxUsesVars },\n"
+        },
+        {
+          "beforeOffset": 25721,
+          "afterOffset": 26319,
+          "before": "",
+          "after": "    BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: \"patina.script_rule.no_ref_object_reactivity_loss\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: \"patina.script_rule.no_setup_props_reactivity_loss\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },\n    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: \"patina.script_rule.no_this_in_before_route_enter\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },\n    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPOSE, profile_name: \"patina.script_rule.require_expose\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireExpose },\n    BuiltinScriptRuleEntry { rule_name: RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST, profile_name: \"patina.script_rule.prefer_prop_type_boolean_first\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferPropTypeBooleanFirst },\n    BuiltinScriptRuleEntry { rule_name: RULE_VALID_MODEL_DEFINITION, profile_name: \"patina.script_rule.valid_model_definition\", category: \"Script\", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &ValidModelDefinition },\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+      "beforeRevision": "8f475a02929c0250a49320a1f8e83fa60331574e",
+      "afterRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+      "before": {
+        "bytes": 33792,
+        "sha256": "2aa167b30dd9665eef3f9ef440dcb2cbe1f4f45e0a09979481a7df3f7bd95a52"
+      },
+      "after": {
+        "bytes": 34525,
+        "sha256": "46093e85d5d381d53d0d4b2f9a601d9581b105aa304cde8fec66387dd2c994f2"
+      },
+      "hunks": [
+        {
+          "beforeOffset": 137,
+          "afterOffset": 137,
+          "before": "",
+          "after": "    \"vue/comment-directive\",\n"
+        },
+        {
+          "beforeOffset": 655,
+          "afterOffset": 684,
+          "before": "",
+          "after": "    \"vue/html-end-tags\",\n"
+        },
+        {
+          "beforeOffset": 5675,
+          "afterOffset": 5729,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 5737,
+          "afterOffset": 5816,
+          "before": "",
+          "after": "    \"vue/comment-directive\",\n"
+        },
+        {
+          "beforeOffset": 8932,
+          "afterOffset": 9040,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 8995,
+          "afterOffset": 9128,
+          "before": "",
+          "after": "    \"vue/comment-directive\",\n"
+        },
+        {
+          "beforeOffset": 9513,
+          "afterOffset": 9675,
+          "before": "",
+          "after": "    \"vue/html-end-tags\",\n"
+        },
+        {
+          "beforeOffset": 14187,
+          "afterOffset": 14374,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 14265,
+          "afterOffset": 14477,
+          "before": "",
+          "after": "    \"vue/comment-directive\",\n"
+        },
+        {
+          "beforeOffset": 14783,
+          "afterOffset": 15024,
+          "before": "",
+          "after": "    \"vue/html-end-tags\",\n"
+        },
+        {
+          "beforeOffset": 21358,
+          "afterOffset": 21624,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 21795,
+          "afterOffset": 22086,
+          "before": "",
+          "after": "    \"vue/comment-directive\",\n"
+        },
+        {
+          "beforeOffset": 22313,
+          "afterOffset": 22633,
+          "before": "",
+          "after": "    \"vue/html-end-tags\",\n"
+        },
+        {
+          "beforeOffset": 28880,
+          "afterOffset": 29225,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 29815,
+          "afterOffset": 30185,
+          "before": "",
+          "after": "    \"vue/no-v-for-template-key\",\n    \"vue/no-custom-modifiers-on-v-model\",\n"
+        },
+        {
+          "beforeOffset": 30392,
+          "afterOffset": 30837,
+          "before": "",
+          "after": "    \"vue/match-component-file-name\",\n"
+        },
+        {
+          "beforeOffset": 33450,
+          "afterOffset": 33932,
+          "before": "",
+          "after": "    \"vue/jsx-uses-vars\",\n"
+        },
+        {
+          "beforeOffset": 33604,
+          "afterOffset": 34111,
+          "before": "",
+          "after": "    \"vue/no-ref-object-reactivity-loss\",\n    \"vue/no-setup-props-reactivity-loss\",\n    \"vue/no-this-in-before-route-enter\",\n    \"vue/require-expose\",\n    \"vue/prefer-prop-type-boolean-first\",\n    \"vue/valid-model-definition\",\n"
+        }
+      ]
+    },
+    {
+      "path": "tests/_fixtures/patina-eslint-vue-rule-map.json",
+      "beforeRevision": "00e87dbef6e604c6602c7359cf752d58956d0cdc",
+      "afterRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+      "before": {
+        "bytes": 49389,
+        "sha256": "e5af5faaf686b01b3abc20e7a3e1618a8d8f2d600f06f440d832f68b9fdc2b19"
+      },
+      "after": {
+        "bytes": 50730,
+        "sha256": "57495d2ed9122cbd847599aba66c641d63dc196f321d4cbdc1de4abd5841f3fe"
+      },
+      "hunks": [
+        {
+          "beforeOffset": 1908,
+          "afterOffset": 1908,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"vue/comment-directive\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 5193,
+          "afterOffset": 5388,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"vue/html-end-tags\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 5835,
+          "afterOffset": 6202,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [\n        \"ecosystem\",\n        \"essential\",\n        \"general-recommended\",\n        \"nuxt\",\n        \"opinionated\"\n      ],\n      \"patinaRule\": \"vue/jsx-uses-vars\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 6108,
+          "afterOffset": 6666,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/match-component-file-name\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 9509,
+          "afterOffset": 10154,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/no-custom-modifiers-on-v-model\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 22009,
+          "afterOffset": 22746,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/no-ref-object-reactivity-loss\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 24689,
+          "afterOffset": 25517,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/no-setup-props-reactivity-loss\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 26950,
+          "afterOffset": 27870,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/no-this-in-before-route-enter\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 30434,
+          "afterOffset": 31445,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/no-v-for-template-key\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 33774,
+          "afterOffset": 34866,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/prefer-prop-type-boolean-first\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 36374,
+          "afterOffset": 37558,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/require-expose\",\n      \"patinaSeverity\": \"warning\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 44025,
+          "afterOffset": 45285,
+          "before": "      \"issue\": 3223,\n      \"status\": \"unimplemented\"\n",
+          "after": "      \"patinaPresets\": [],\n      \"patinaRule\": \"vue/valid-model-definition\",\n      \"patinaSeverity\": \"error\",\n      \"status\": \"mapped\"\n"
+        },
+        {
+          "beforeOffset": 49236,
+          "afterOffset": 50578,
+          "before": "    \"mapped\": 139,\n    \"unimplemented\": 111\n",
+          "after": "    \"mapped\": 151,\n    \"unimplemented\": 99\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "beforeRevision": "4742ce8b55d8fa3d25c9fdb556f70a1d8afc3fd0",
+      "afterRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+      "before": {
+        "bytes": 8816,
+        "sha256": "fe72fddccbd1df7a1cd3d6def30172ab4ea69d5767dabb18943b83215be848df"
+      },
+      "after": {
+        "bytes": 8959,
+        "sha256": "fc72c9b19794c143502c3f5e4e37073ca75c07447de9c0d4600d5ef15d8f2738"
+      },
+      "hunks": [
+        {
+          "beforeOffset": 460,
+          "afterOffset": 460,
+          "before": "",
+          "after": "        registry.register(Box::new(crate::rules::vue::CommentDirective));\n"
+        },
+        {
+          "beforeOffset": 1825,
+          "afterOffset": 1899,
+          "before": "",
+          "after": "        registry.register(Box::new(crate::rules::vue::HtmlEndTags));\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_patina/src/rules/script/define_macros_order.rs",
+      "beforeRevision": "81c040aa1a437fa8f73ff584b6c34e23c54229a1",
+      "afterRevision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+      "before": {
+        "bytes": 6656,
+        "sha256": "42cbe5b2be237511b6e4752457309c802998ac6f5943d1cbbb5dc737174a74ca"
+      },
+      "after": {
+        "bytes": 10276,
+        "sha256": "3b21b505315a3082da09cc5d76ec7f2845c8b8fa1265e97f705ff985ee38c959"
+      },
+      "hunks": [
+        {
+          "beforeOffset": 109,
+          "afterOffset": 109,
+          "before": "//! Matches eslint-plugin-vue's `vue/define-macros-order` with its default\n//! options: `defineProps` and then `defineEmits` must be the first statements\n//! of `<script setup>`, after imports, type declarations, enums and exports.\n//! Other macros (`defineOptions`, `defineModel`, `defineSlots`) are not\n//! ordered, but they count as ordinary statements. Like the upstream rule, it\n//! reports at most one statement per block.\n",
+          "after": "//! Matches eslint-plugin-vue's `vue/define-macros-order`: the configured macros\n//! must be the first statements of `<script setup>`, after imports, type\n//! declarations, enums and exports. The default order is `defineProps` and then\n//! `defineEmits`; other macros count as ordinary statements unless configured.\n//! Prefix order reports at most once; `defineExposeLast` adds a setup-only last check.\n"
+        },
+        {
+          "beforeOffset": 1288,
+          "afterOffset": 1263,
+          "before": "use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};\n",
+          "after": "use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};\n"
+        },
+        {
+          "beforeOffset": 1742,
+          "afterOffset": 1735,
+          "before": "/// The macros this rule orders: eslint-plugin-vue's default `order` option.\nconst MACRO_ORDER: [&str; 2] = [\"defineProps\", \"defineEmits\"];\n",
+          "after": "/// eslint-plugin-vue's default `order` option.\nconst DEFAULT_MACRO_ORDER: [&str; 2] = [\"defineProps\", \"defineEmits\"];\n"
+        },
+        {
+          "beforeOffset": 1983,
+          "afterOffset": 1955,
+          "before": "",
+          "after": "\nimpl DefineMacrosOrder {\n    pub fn configured(options: vize_l0::config::DefineMacrosOrderOptions) -> impl ScriptRule {\n        ConfiguredDefineMacrosOrder(options)\n    }\n}\n\nstruct ConfiguredDefineMacrosOrder(vize_l0::config::DefineMacrosOrderOptions);\n"
+        },
+        {
+          "beforeOffset": 2328,
+          "afterOffset": 2554,
+          "before": "        let body = &program.body;\n        // The last declaration of each ordered macro, in the expected order.\n        let ordered: Vec<(&'static str, usize)> = MACRO_ORDER\n",
+          "after": "        check(program, offset, result, &DEFAULT_MACRO_ORDER, false);\n    }\n}\n\nimpl ScriptRule for ConfiguredDefineMacrosOrder {\n    fn meta(&self) -> &'static ScriptRuleMeta {\n        &META\n    }\n\n    #[inline]\n    fn uses_ast(&self) -> bool {\n        true\n    }\n\n    fn check_program<'a>(\n        &self,\n        program: &'a Program<'a>,\n        source: &str,\n        offset: usize,\n        result: &mut ScriptLintResult,\n    ) {\n        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);\n    }\n\n    fn check_program_with_sfc<'a>(\n        &self,\n        program: &'a Program<'a>,\n        _source: &str,\n        offset: usize,\n        sfc: SfcScriptContext<'_>,\n        result: &mut ScriptLintResult,\n    ) {\n        let order = self\n            .0\n            .order\n"
+        },
+        {
+          "beforeOffset": 2522,
+          "afterOffset": 3382,
+          "before": "            .filter_map(|name| {\n                body.iter()\n                    .rposition(|statement| macro_name(statement) == Some(name))\n                    .map(|index| (*name, index))\n            })\n            .collect();\n        if ordered.is_empty() {\n            return;\n",
+          "after": "            .map(|name| name.as_str())\n            .collect::<Vec<_>>();\n        let expose_last = self.0.define_expose_last && sfc.is_sfc && sfc.is_script_setup;\n        let own_start = result.diagnostics.len();\n        check(program, offset, result, &order, expose_last);\n        if expose_last && let Some(own) = result.diagnostics.get_mut(own_start..) {\n            // ESLint presents these independent findings in authored source order.\n            // Keep other rules' diagnostics and the default-off path untouched.\n            own.sort_by_key(|diagnostic| (diagnostic.start, diagnostic.end));\n"
+        },
+        {
+          "beforeOffset": 2813,
+          "afterOffset": 3993,
+          "before": "        let first = body\n",
+          "after": "    }\n}\n\nfn check<'a>(\n    program: &'a Program<'a>,\n    offset: usize,\n    result: &mut ScriptLintResult,\n    macro_order: &[&str],\n    define_expose_last: bool,\n) {\n    let body = &program.body;\n    // Upstream emits this suggestion-only finding before the ordinary order\n    // finding. Trailing type/import/empty statements still occupy the last slot.\n    if define_expose_last\n        && let Some((index, statement)) = body\n"
+        },
+        {
+          "beforeOffset": 2858,
+          "afterOffset": 4442,
+          "before": "            .position(|statement| !is_skipped_statement(statement))\n            .unwrap_or(body.len());\n        for (position, &(name, index)) in ordered.iter().enumerate() {\n            let target = first + position;\n",
+          "after": "            .enumerate()\n            .rfind(|(_, statement)| is_define_expose_statement(statement))\n        && index + 1 < body.len()\n    {\n        let span = statement.span();\n        let start = offset as u32 + span.start;\n        let end = offset as u32 + span.end;\n        result.add_diagnostic(\n            LintDiagnostic::warn(\n                META.name,\n                \"`defineExpose` should be the last statement in `<script setup>`.\",\n                start,\n                end,\n            )\n            .with_label(\"compiler macro should be last\", start, end)\n            .with_help(\"Put `defineExpose` as the last statement in `<script setup>`.\"),\n        );\n    }\n    let first = body\n        .iter()\n        .position(|statement| !is_skipped_statement(statement))\n        .unwrap_or(body.len());\n    // Every occurrence occupies a slot in its configured group. Keeping the\n    // authored order within each group accepts repeated calls without hiding a\n    // group split by another macro or an ordinary statement. No list is needed.\n    let mut target = first;\n    for (group, &name) in macro_order.iter().enumerate() {\n        // Deserialized options are unique; typed callers can also construct them.\n        if macro_order\n            .iter()\n            .take(group)\n            .any(|previous| *previous == name)\n        {\n            continue;\n        }\n        for (index, statement) in body.iter().enumerate() {\n            if macro_name(statement) != Some(name) {\n                continue;\n            }\n"
+        },
+        {
+          "beforeOffset": 3109,
+          "afterOffset": 6004,
+          "before": "",
+          "after": "                target += 1;\n"
+        },
+        {
+          "beforeOffset": 3246,
+          "afterOffset": 6170,
+          "before": "                .filter(|macro_name| MACRO_ORDER.contains(macro_name));\n",
+          "after": "                .filter(|macro_name| macro_order.contains(macro_name));\n"
+        },
+        {
+          "beforeOffset": 3560,
+          "afterOffset": 6484,
+          "before": "                     potential import statements or type definitions).\"\n",
+          "after": "                         potential import statements or type definitions).\"\n"
+        },
+        {
+          "beforeOffset": 3666,
+          "afterOffset": 6594,
+          "before": "            if let Some(statement) = body.get(index) {\n                report(statement.span(), offset, message, result);\n            }\n",
+          "after": "            report(statement.span(), offset, message, result);\n"
+        },
+        {
+          "beforeOffset": 3832,
+          "afterOffset": 6687,
+          "before": "",
+          "after": "    }\n}\n\nfn is_define_expose_statement(statement: &Statement<'_>) -> bool {\n    let direct = |expression: &Expression<'_>| {\n        matches!(expression, Expression::CallExpression(call)\n            if matches!(&call.callee, Expression::Identifier(name) if name.name == \"defineExpose\"))\n    };\n    match statement {\n        Statement::ExpressionStatement(statement) => direct(&statement.expression),\n        Statement::VariableDeclaration(declaration) if !declaration.declare => declaration\n            .declarations\n            .iter()\n            .any(|value| value.init.as_ref().is_some_and(direct)),\n        _ => false,\n"
+        },
+        {
+          "beforeOffset": 4694,
+          "afterOffset": 8173,
+          "before": "        Statement::VariableDeclaration(decl) => decl\n",
+          "after": "        // Ambient declarations do not execute a macro, including initializers\n        // retained by the parser while a TypeScript buffer is being edited.\n        Statement::VariableDeclaration(decl) if !decl.declare => decl\n"
+        },
+        {
+          "beforeOffset": 5537,
+          "afterOffset": 9189,
+          "before": "    name.starts_with(\"define\").then_some(name)\n",
+          "after": "    Some(name)\n"
+        }
+      ]
+    }
+  ]
+}

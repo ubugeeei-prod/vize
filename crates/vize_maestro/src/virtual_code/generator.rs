@@ -17,6 +17,8 @@ pub(crate) mod occurrences;
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 #[cfg(test)]
+mod tests_root_template;
+#[cfg(test)]
 #[expect(
     clippy::disallowed_macros,
     reason = "`insta` snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""

@@ -11,7 +11,7 @@ import { referenceObservation, rewriteFrames } from "./support/lsp/differential-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const loaded = loadLspManifest(path.join(root, "tests/_fixtures/differential/lsp/manifest.json"));
 const originals = loaded.cases.filter(
-  (fixture) => fixture.data.method === "textDocument/documentSymbol",
+  (fixture) => fixture.inputs.root === "document-symbol-outline-original",
 );
 
 type Symbol = {
@@ -28,7 +28,13 @@ function symbolReply(messages: JsonRpcMessage[]): Symbol[] {
 }
 
 void test("outline cases preserve complete original projects and separately authored arrays", () => {
-  assert.equal(originals.length, 2);
+  assert.deepEqual(
+    originals.map((fixture) => fixture.id),
+    [
+      "lsp/regression/document-symbol-outline-myswitch",
+      "lsp/regression/document-symbol-outline-parent",
+    ],
+  );
   for (const fixture of originals) {
     assert.deepEqual(
       fixture.files.map((file) => file.runtimePath),
@@ -45,6 +51,23 @@ void test("outline cases preserve complete original projects and separately auth
     const observation = referenceObservation(fixture);
     assert.deepEqual(inspectLspObservation(fixture, observation), [
       { requestId: 2, state: "equal" },
+    ]);
+  }
+});
+
+void test("every registered outline keeps its whole reply oracle as new cases are added", () => {
+  for (const fixture of loaded.cases.filter(
+    (candidate) => candidate.data.method === "textDocument/documentSymbol",
+  )) {
+    const observation = referenceObservation(fixture);
+    assert.deepEqual(inspectLspObservation(fixture, observation), [
+      { requestId: 2, state: "equal" },
+    ]);
+    rewriteFrames(observation, "server", (messages) => {
+      symbolReply(messages)[0].kind += 1;
+    });
+    assert.deepEqual(inspectLspObservation(fixture, observation), [
+      { requestId: 2, state: "different" },
     ]);
   }
 });

@@ -1,0 +1,1 @@
+<template><p v-bind:[one][two]='value'/></template>

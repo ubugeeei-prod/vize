@@ -22,7 +22,7 @@ use alloc::vec;
 use alloc::vec::Vec;
 
 /// Accessor prefixes the rewrite inserts before an identifier reference.
-const PREFIXES: [&str; 7] = [
+const PREFIXES: [&str; 8] = [
     "_ctx.",
     "$setup.",
     "$props.",
@@ -30,6 +30,7 @@ const PREFIXES: [&str; 7] = [
     "$options.",
     "__props.",
     "_unref(",
+    "(_unref(",
 ];
 
 /// Tokens the rewrite inserts after an identifier reference.
@@ -175,6 +176,15 @@ mod tests {
             Some(vec![(0, 0, "a"), (9, 2, "b")])
         );
         assert_eq!(spans("n = n + 1", "n.value = n.value + 1"), Some(vec![]));
+        assert_eq!(
+            rewritten_identifier_spans("new Vector3(1)", "new (_unref(Vector3))(1)"),
+            Some(vec![RewrittenIdentifier {
+                emitted: 4,
+                authored: 4,
+                name: "Vector3",
+                prefix_len: 8
+            }])
+        );
     }
 
     #[test]

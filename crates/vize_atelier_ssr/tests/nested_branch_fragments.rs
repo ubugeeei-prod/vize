@@ -1,6 +1,7 @@
 //! The Elk NavUser nested template branch is a Fragment, not an attrs owner.
 #![cfg(feature = "legacy-differential")]
 
+use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 const CASES: &[(&str, &str, bool)] = &[
@@ -104,7 +105,55 @@ const CASES: &[(&str, &str, bool)] = &[
         r#"<RuntimeSlotHost><template v-for="n in 2"><button v-for="m in 2">{{ n }}:{{ m }}</button></template></RuntimeSlotHost>"#,
         false,
     ),
+    (
+        "text-template-root",
+        r#"<template v-if="outer">hi</template>"#,
+        false,
+    ),
+    (
+        "text-template-nested",
+        r#"<div class="box"><template v-if="outer">hi</template></div>"#,
+        false,
+    ),
+    (
+        "interpolation-template-nested",
+        r#"<div class="box"><template v-if="outer">{{ inner }}</template></div>"#,
+        false,
+    ),
+    (
+        "text-template-else",
+        r#"<div class="box"><b v-if="outer">on</b><template v-else>hi</template></div>"#,
+        false,
+    ),
+    (
+        "text-template-mixed",
+        r#"<div class="box"><template v-if="outer">hi<i>!</i></template></div>"#,
+        false,
+    ),
+    (
+        "single-element-template-nested",
+        r#"<div class="box"><template v-if="outer"><b>hi</b></template></div>"#,
+        false,
+    ),
 ];
+
+// #11920: execute the actual public client compiler alongside both SSR routes.
+fn client_module(source: &str) -> serde_json::Value {
+    let mut sfc_source = vize_l0::String::from("<template>");
+    sfc_source.push_str(source);
+    sfc_source.push_str("</template>");
+    let descriptor =
+        parse_sfc(&sfc_source, SfcParseOptions::default()).expect("parse complete client SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default())
+        .expect("compile complete client SFC");
+    assert!(result.errors.is_empty(), "{source}: {:?}", result.errors);
+    assert!(
+        result.warnings.is_empty(),
+        "{source}: {:?}",
+        result.warnings
+    );
+    serde_json::to_value(result).expect("retain every public client compiler field")
+}
 
 // These complete modules also run against official Vue in the scoped SSR action.
 // Pin both fragment anchors and attribute ownership without partial code checks.
@@ -198,6 +247,17 @@ fn nested_template_conditionals_keep_fragments_and_both_emission_routes() {
                     "code": pair.legacy.result.code,
                     "preamble": pair.legacy.result.preamble,
                     "map": pair.legacy.result.map,
+                },
+                "client": if !vapor && matches!(name,
+                    "text-template-root"
+                    | "text-template-nested"
+                    | "interpolation-template-nested"
+                    | "text-template-else"
+                    | "text-template-mixed"
+                    | "single-element-template-nested") {
+                    client_module(source)
+                } else {
+                    serde_json::Value::Null
                 },
             }));
         }

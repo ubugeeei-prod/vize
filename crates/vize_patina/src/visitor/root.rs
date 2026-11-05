@@ -1,7 +1,7 @@
 //! Root callbacks and suppression registration in registry order.
 
 use super::{LintVisitor, element_has_directive};
-use crate::context::LintContext;
+use crate::context::{CallbackSite, LintContext};
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::profile;
 use vize_relief::{ElementNode, RootNode, SourceLocation, TemplateChildNode};
@@ -27,6 +27,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // registered too late and template-phase rules —
         // `vue/no-dupe-v-else-if`, `vue/no-mutating-props`, etc. — can't be
         // suppressed. (#968, #1196)
+        self.ctx.record_callback_site(CallbackSite::Prescan);
         self.prescan_suppression_directives(root);
 
         // Run template-level checks under one profiling span. Rule dispatch
@@ -34,18 +35,19 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // cheaper than creating a span for every individual rule callback.
         let keep_mask = self.keep_mask;
         profile!("patina.rules.run_on_template", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                self.ctx.current_rule = rule_name;
-                if hook(index, self.ctx) || !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                rule.run_on_template(self.ctx, root);
-            }
+            Self::callback_rules::<true>(
+                self.ctx,
+                self.rules,
+                self.rule_names,
+                keep_mask,
+                CallbackSite::Template,
+                |index, rule, ctx| {
+                    if hook(index, ctx) || !Self::rule_active(keep_mask, index) {
+                        return;
+                    }
+                    rule.run_on_template(ctx, root);
+                },
+            );
         });
 
         // Visit children

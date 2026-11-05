@@ -7,8 +7,9 @@ use crate::Sweep;
 use vize_atelier_sfc::{SfcCompileResult, SfcDescriptor};
 use vize_l0::profiler::global_profiler;
 
-/// A normal script SFC returns template diagnostics on `Ok` when the template
-/// is rejected before any backend runs. That is not a missing selection.
+/// An SFC can return template diagnostics on `Ok` after its parser rejected the
+/// template before backend selection. Keep that rejection and its original
+/// diagnostics outside the successful-template denominator.
 pub fn absorb_prebackend(
     descriptor: &SfcDescriptor<'_>,
     name: &str,
@@ -17,18 +18,29 @@ pub fn absorb_prebackend(
     selected: &SfcCompileResult,
     lane: &Lane,
 ) -> bool {
-    if *lane != Lane::Unrecorded
-        || !selected
-            .errors
-            .iter()
-            .any(|error| error.code.as_deref() == Some("TEMPLATE_ERROR"))
-    {
+    if *lane != Lane::Unrecorded {
         return false;
     }
-    *tally
-        .sfc_errors
-        .entry("TEMPLATE_ERROR".to_owned())
-        .or_default() += 1;
+    let code = if selected
+        .errors
+        .iter()
+        .any(|error| error.code.as_deref() == Some("TEMPLATE_ERROR"))
+    {
+        "TEMPLATE_ERROR"
+    } else if shape == Shape::Vapor
+        && selected
+            .errors
+            .iter()
+            .any(|error| error.code.as_deref() == Some("VAPOR_TEMPLATE_ERROR"))
+    {
+        "VAPOR_TEMPLATE_ERROR"
+    } else {
+        return false;
+    };
+    *tally.sfc_errors.entry(code.to_owned()).or_default() += 1;
+    tally
+        .prebackend_rejections
+        .push((name.to_owned(), selected.errors.clone()));
     if shape.is_dom() {
         let legacy =
             vize_atelier_dom::differential::with_legacy_lane(|| compile(descriptor, name, shape));
@@ -54,9 +66,10 @@ pub fn parity_failures(sweep: &Sweep) -> Vec<String> {
                 tally.refusals.total()
             ));
         }
-        if shape.is_dom() && tally.unrecorded != 0 {
+        if (shape.is_dom() || *shape == Shape::Vapor) && tally.unrecorded != 0 {
+            let backend = if shape.is_dom() { "DOM" } else { "Vapor" };
             failures.push(format!(
-                "{}: {} DOM template compiles recorded no selection counter: {:?}",
+                "{}: {} {backend} template compiles recorded no selection counter: {:?}",
                 shape.id(),
                 tally.unrecorded,
                 tally.unrecorded_samples

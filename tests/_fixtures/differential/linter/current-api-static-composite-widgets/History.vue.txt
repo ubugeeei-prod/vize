@@ -1,0 +1,1 @@
+<div role="dialog" @click="close">Close</div><div role="alertdialog" @keydown="trap">Alert</div><div role="toolbar" @click="focusTool">Tools</div><dialog @click="close">Close</dialog><div role="button" @click="handle">Click</div>

@@ -124,10 +124,10 @@ if (module.hot) module.hot.addStatusHandler(status => { window.hotStatus = statu
                 ]
               : [
                   {
-                    test: /\.vue$/,
+                    // External style src requests name the CSS file, not the SFC.
                     oneOf: [
                       {
-                        resourceQuery: /type=style/,
+                        resourceQuery: /vue&type=style/,
                         type: "javascript/auto",
                         use: [
                           rspack.CssExtractRspackPlugin.loader,
@@ -140,6 +140,7 @@ if (module.hot) module.hot.addStatusHandler(status => { window.hotStatus = statu
                         ],
                       },
                       {
+                        test: /\.vue$/,
                         loader: "@vizejs/rspack-plugin/loader",
                         options: { sourceMap: true, css: { native: false } },
                       },

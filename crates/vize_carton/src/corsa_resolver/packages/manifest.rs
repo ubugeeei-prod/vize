@@ -29,15 +29,54 @@ fn dependency_spec<'a>(project: &'a serde_json::Value, name: &str) -> Option<&'a
 }
 
 pub(super) fn declaration_targets(project: &serde_json::Value, name: &str, target: &str) -> bool {
-    if name == target {
-        return true;
+    // An npm alias owns its package identity even when the dependency key is
+    // the canonical name (e.g. typescript -> @typescript/typescript6).
+    if let Some(aliased) = dependency_spec(project, name).and_then(|spec| spec.strip_prefix("npm:"))
+    {
+        return aliased == target
+            || aliased
+                .strip_prefix(target)
+                .is_some_and(|version| version.starts_with('@'));
     }
-    dependency_spec(project, name).is_some_and(|spec| {
-        spec.strip_prefix("npm:").is_some_and(|aliased| {
-            aliased == target
-                || aliased
-                    .strip_prefix(target)
-                    .is_some_and(|version| version.starts_with('@'))
-        })
-    })
+    name == target
+}
+
+#[cfg(test)]
+mod tests {
+    use super::declaration_targets;
+
+    #[test]
+    fn npm_alias_identity_takes_precedence_over_the_dependency_key() {
+        for section in ["dependencies", "devDependencies", "optionalDependencies"] {
+            let project = serde_json::json!({(section): {
+                "typescript": "npm:@typescript/typescript6@6.0.2",
+                "native": "npm:typescript@7.0.2",
+                "preview": "npm:@typescript/native-preview@7.0.0",
+                "unrelated": "npm:typescript-other@7.0.2"
+            }});
+            assert!(!declaration_targets(&project, "typescript", "typescript"));
+            assert!(declaration_targets(
+                &project,
+                "typescript",
+                "@typescript/typescript6"
+            ));
+            assert!(declaration_targets(&project, "native", "typescript"));
+            assert!(declaration_targets(
+                &project,
+                "preview",
+                "@typescript/native-preview"
+            ));
+            assert!(!declaration_targets(&project, "unrelated", "typescript"));
+        }
+        for spec in [
+            "6.0.3",
+            "^7.0.2",
+            "workspace:*",
+            "npm:typescript@7.0.2",
+            "npm:typescript",
+        ] {
+            let project = serde_json::json!({"devDependencies": {"typescript": spec}});
+            assert!(declaration_targets(&project, "typescript", "typescript"));
+        }
+    }
 }

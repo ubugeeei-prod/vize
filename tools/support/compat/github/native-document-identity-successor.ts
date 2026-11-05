@@ -118,6 +118,98 @@ function actualSources(read: Read, side: "base" | "head", images: Record<string,
     );
   }
 }
+const currentSourceTransitions = [
+  {
+    // The physical containment check is additive; recover the complete prior
+    // URI producer without granting new native qualification to this reader.
+    path: "crates/vize_canon/src/lsp_client/session_paths.rs",
+    before: "pub(super) fn build_materialized_session_document_uri(",
+    after: `pub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {
+    path.canonicalize()
+        .is_ok_and(|physical| is_within_project_namespace(&physical, root))
+}
+
+pub(super) fn build_materialized_session_document_uri(`,
+  },
+  {
+    // The tracked logical delta replaced the full document mirror after the
+    // project-import image. Materialized identities still use the full mirror.
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before: `        let documents = self
+            .editor_lsp_documents_dirty
+            .then(|| self.editor_documents());
+        let session = self
+            .editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
+        if let Some(documents) = documents {
+            session.synchronize(&documents)?;`,
+    after: `        let dirty = self.editor_lsp_documents_dirty || self.document_texts.is_dirty();
+        let documents =
+            (dirty && self.materialized_project_session).then(|| self.editor_documents());
+        let session = self
+            .editor_lsp
+            .as_mut()
+            .ok_or_else(|| cstr!("Corsa editor LSP session did not initialize"))?;
+        if dirty {
+            if let Some(documents) = documents {
+                // Materialized identities are projected by editor_documents;
+                // their topology is not certified by the logical source delta.
+                session.synchronize(&documents)?;
+                self.document_texts.acknowledge();
+            } else {
+                session.synchronize_tracked(&mut self.document_texts)?;
+            }`,
+  },
+  {
+    // Checked access retains the exact open-URI owner selected by binary_search.
+    path: "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
+    before: "            return Some(self.open_uris[index].clone());",
+    after: "            return self.open_uris.get(index).cloned();",
+  },
+] as const;
+
+/** Replay the historical tests only after authenticating both whole source directions.
+ * This reader grants no new source registration or native runtime qualification.
+ */
+export function historicalNativeIdentityCurrentSources(read: Read): Read {
+  let headImages: Record<string, unknown> | undefined;
+  return (side, path) => {
+    const current = read(side, path);
+    const transition = currentSourceTransitions.find((entry) => entry.path === path);
+    if (side !== "head" || !current || !transition) return current;
+    if (!headImages) {
+      const profile = profiles[2]!;
+      const archive = bytes(read, "head", profile.path);
+      assert.equal(
+        hash(archive),
+        profile.sha256,
+        `changed native identity successor image: ${profile.id}`,
+      );
+      const image = object(JSON.parse(gunzipSync(archive).toString("utf8")));
+      assert.equal(image.source, profile.source);
+      assert.equal(image.base, profile.base);
+      headImages = object(image.headImages);
+    }
+    const encoded = headImages[path];
+    assert.ok(typeof encoded === "string");
+    const original = Buffer.from(encoded, "base64");
+    const before = original.toString("utf8");
+    assert.equal(before.split(transition.before).length, 2);
+    assert.equal(before.split(transition.after).length, 1);
+    const expected = Buffer.from(before.replace(transition.before, transition.after));
+    // Unknown bytes stay actual bytes, so the unchanged source gate refuses them.
+    if (!current.equals(expected)) return current;
+    const after = current.toString("utf8");
+    assert.equal(after.split(transition.after).length, 2);
+    assert.equal(
+      after.split(transition.before).length,
+      transition.after.split(transition.before).length,
+    );
+    assert.deepEqual(Buffer.from(after.replace(transition.after, transition.before)), original);
+    return original;
+  };
+}
 const consumers = [
   [
     "crates/vize_canon/src/lsp_client/editor_lsp/client/tests.rs",

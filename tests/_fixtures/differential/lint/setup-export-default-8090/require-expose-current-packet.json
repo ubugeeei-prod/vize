@@ -1,0 +1,59 @@
+{
+  "schema": "vize.setup-export.require-expose-successor",
+  "version": 1,
+  "ruleIntroduction": "19f7ff0de8",
+  "case": "runtime-two-utf8-crlf",
+  "route": "all",
+  "sourceSha256": "365b5cfdf34da3573175f7d707ac5ce695df9c96f5f8da5512f525d6cf3e5578",
+  "routeSha256": "3533e06e7b26d0b0c968d8a602e4cf4f5b09c9410f0fb840a311f87e4ea86eda",
+  "beforePacketSha256": "4edb920534a648d426f9212895b055c21697dea402c9405ece7323a45715f6c8",
+  "packet": [
+    {
+      "file": "runtime-two-utf8-crlf.vue",
+      "messages": [
+        {
+          "ruleId": "script/no-export-in-script-setup",
+          "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
+          "severity": 2,
+          "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "line": 3,
+          "column": 1,
+          "endLine": 3,
+          "endColumn": 26
+        },
+        {
+          "ruleId": "script/no-export-in-script-setup",
+          "ruleDocsPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
+          "severity": 2,
+          "message": "[vize:script/no-export-in-script-setup] Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+          "line": 4,
+          "column": 1,
+          "endLine": 4,
+          "endColumn": 19
+        },
+        {
+          "ruleId": "script/no-options-api",
+          "ruleDocsPath": "docs/content/rules/reference/script-no-options-api.md",
+          "severity": 2,
+          "message": "[vize:script/no-options-api] Options API component declarations are not supported",
+          "line": 4,
+          "column": 16,
+          "endLine": 4,
+          "endColumn": 18
+        },
+        {
+          "ruleId": "vue/require-expose",
+          "ruleDocsPath": "docs/content/rules/reference/vue-require-expose.md",
+          "severity": 1,
+          "message": "[vize:vue/require-expose] The public properties of the component must be explicitly declared using `expose`. If the component does not have public properties, declare it empty.",
+          "line": 4,
+          "column": 16,
+          "endLine": 4,
+          "endColumn": 18
+        }
+      ],
+      "errorCount": 3,
+      "warningCount": 1
+    }
+  ]
+}

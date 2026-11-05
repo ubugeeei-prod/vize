@@ -1,0 +1,1 @@
+<label v-bind="labelProps">Email</label><label :class="labelProps.id">Email</label>

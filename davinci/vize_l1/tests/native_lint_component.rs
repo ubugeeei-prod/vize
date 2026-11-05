@@ -4,7 +4,7 @@
 mod native_lint_component {
     use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
     use vize_l1::markup::{
-        DirectiveNameError, ElementClose, NativeComponent, NativeLintComponent, NativeLintTagKind,
+        ElementClose, NativeComponent, NativeLintComponent, NativeLintTagKind,
         NativeLintTagRefusal, SurfaceChild, check_fidelity, render,
     };
 
@@ -199,7 +199,7 @@ mod native_lint_component {
     }
 
     #[test]
-    fn original_unsupported_directive_record_and_source_are_preserved() {
+    fn deep_vue_directive_heads_preserve_source_without_a_javascript_nesting_refusal() {
         let arena = Allocator::default();
         let opens: String = (0..64)
             .map(|i| if i % 2 == 0 { '(' } else { '[' })
@@ -215,9 +215,10 @@ mod native_lint_component {
         let bare = NativeLintComponent::parse_in(&arena, block).unwrap();
         let ordinary = NativeComponent::parse_in(&arena, block).unwrap();
         let unsupported = &bare.component().carrier().unsupported;
-        assert_eq!(unsupported.len(), 1);
-        assert_eq!(unsupported[0].error, DirectiveNameError::NestingLimit);
-        assert_eq!(unsupported[0].span, Span::new(5, 5 + head.len() as u32));
+        assert!(unsupported.is_empty());
+        let element = bare.children().next().unwrap().into_element().unwrap();
+        assert!(element.surface().open.is_verbatim());
+        assert_eq!(element.surface().open.attrs[0].name.text, head.as_str());
         assert_eq!(
             unsupported.as_slice(),
             ordinary.carrier().unsupported.as_slice()

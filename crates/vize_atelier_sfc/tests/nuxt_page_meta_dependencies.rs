@@ -86,8 +86,8 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
             "literal metadata has no imported dependencies in the pinned Nuxt oracle"
         );
     }
-    // The whole packet is regenerated from `WHOLE_PHOTO_COMPILER` above after
-    // an intended output change; the metadata itself is asserted above.
+    // Preserve the original packet; the closed scope-ownership successor below
+    // changes its two reviewed component calls and no other result field.
     let packet: serde_json::Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/compiler/vuefes-page-meta-dependencies/compiler.json"
     ))
@@ -95,9 +95,41 @@ fn whole_original_photo_metadata_has_no_unrelated_component_dependencies() {
     assert_eq!(packet["source"], source);
     assert_eq!(
         json!(observations),
-        packet["observations"],
+        current_scope_ownership(packet)["observations"],
         "whole code, CSS, maps, errors, warnings, bindings and provenance stay exact"
     );
+}
+
+// #11921: retain the original whole packet and apply only the reviewed scope
+// ownership successor at its two exact authored component calls. Every other
+// code byte and every non-code result field remains the original contract.
+fn current_scope_ownership(mut packet: serde_json::Value) -> serde_json::Value {
+    for observation in packet["observations"]
+        .as_array_mut()
+        .expect("complete original observation inventory")
+    {
+        if !matches!(observation["shape"].as_str(), Some("ssr" | "vapor-ssr")) {
+            continue;
+        }
+        let code = observation["compileResult"]["code"]
+            .as_str()
+            .expect("complete original SSR module");
+        let expected = code
+            .replace(
+                r#"_ssrRenderComponent($setup.VFSection, { "data-v-b7bbb04b": "" },"#,
+                "_ssrRenderComponent($setup.VFSection, null,",
+            )
+            .replace(
+                r#"_ssrRenderComponent(_resolveComponent("i18n-t"), _mergeProps({ keypath: "photo.description", tag: "p", class: "photo-description" }, { "data-v-b7bbb04b": "" }),"#,
+                r#"_ssrRenderComponent(_resolveComponent("i18n-t"), { keypath: "photo.description", tag: "p", class: "photo-description" },"#,
+            );
+        assert_ne!(
+            expected, code,
+            "the frozen packet keeps the pre-fix scope props"
+        );
+        observation["compileResult"]["code"] = expected.into();
+    }
+    packet
 }
 
 #[expect(

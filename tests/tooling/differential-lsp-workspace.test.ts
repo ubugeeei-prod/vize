@@ -53,6 +53,14 @@ test("all pinned LSP cases retain their inputs and only the configured cases gai
       "vize.config.json.fixture",
       "vite.config.mjs",
     ],
+    "lsp/regression/named-sfc-value-hover-11953": [
+      "App.vue",
+      "Child.vue",
+      "barrel.ts",
+      "tsconfig.json",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
     "lsp/regression/versioned-template-suppression-6876": [
       "App.vue",
       "vize.config.json.fixture",
@@ -117,10 +125,14 @@ test("actual current carriers import and project the complete archived policy wi
     const { default: exported } = await import(
       pathToFileURL(path.join(directory, mapping.carrierPath)).href
     );
-    assert.deepEqual(await projectViteConfigSource(exported), {
-      ...JSON.parse(raw.toString()),
-      typeChecker: { jsxTypecheck: false },
-    });
+    const expected =
+      fixture.id === "lsp/regression/named-sfc-value-hover-11953"
+        ? {
+            languageServer: { editor: true, hover: true, lint: false, typecheck: true },
+            typeChecker: { jsxTypecheck: false },
+          }
+        : { ...JSON.parse(raw.toString()), typeChecker: { jsxTypecheck: false } };
+    assert.deepEqual(await projectViteConfigSource(exported), expected);
     const evidence = {
       mapping: plan.mapping,
       before: observeLspWorkspace(directory, plan.mapping),

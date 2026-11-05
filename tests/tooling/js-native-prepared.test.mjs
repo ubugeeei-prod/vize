@@ -106,7 +106,7 @@ void test("standalone Vite tests build first; prepared tests reuse the same nati
   const manifest = JSON.parse(readFileSync(join(root, "npm/builder/vite/package.json"), "utf8"));
   assert.equal(
     manifest.scripts["test:prepared"],
-    "node scripts/run-tests.mjs --require-prepared && node src/test.ts && node --test src/vite-plus/*.test.ts",
+    'node scripts/run-tests.mjs --require-prepared && node --test --test-concurrency=1 "src/**/*.test.ts"',
   );
   for (const prepared of [false, true]) {
     const calls = [];

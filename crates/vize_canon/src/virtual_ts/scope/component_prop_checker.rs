@@ -107,16 +107,9 @@ pub(super) fn append_prop_checker_alias(
                 "  type __{component_type_name}_Component_{idx} = __{component_type_name}_Component_{shared_idx};\n",
             );
         }
-        if usage_needs_per_prop_aliases(usage) {
-            append!(
-                *ts,
-                "  type __{component_type_name}_ValueProps_{idx} = __{component_type_name}_ValueProps_{shared_idx};\n",
-            );
-            append!(
-                *ts,
-                "  type __{component_type_name}_FallthroughValue_{idx}<K extends PropertyKey> = __{component_type_name}_FallthroughValue_{shared_idx}<K>;\n",
-            );
-        }
+        // Per-prop aliases either reuse the canonical prop alias or read its
+        // value-props contract directly. Intermediate aliases would be unused
+        // whenever every prop was already shared (TS6196 under noUnusedLocals).
         append!(
             *ts,
             "  type __{component_type_name}_Check_{idx} = __{component_type_name}_Check_{shared_idx};\n",
@@ -322,13 +315,26 @@ pub(super) fn append_per_prop_aliases(
         if let Some((shared_idx, canonical)) = shared
             && let Some(canonical_prop) =
                 first_emitted_prop_alias(canonical, safe_prop_name.as_str())
-            && same_prop_alias_shape(canonical_prop, prop)
         {
-            append!(
-                *ts,
-                "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
-            );
-            continue;
+            if same_prop_alias_shape(canonical_prop, prop) {
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_{shared_idx}_prop_{safe_prop_name};\n",
+                );
+                continue;
+            }
+            if canonical_prop.name == prop.name
+                && !is_inline_callback_prop(canonical_prop)
+                && is_inline_callback_prop(prop)
+                && !is_inline_ref_callback_prop(prop)
+            {
+                let callable = shared_types::CALLABLE_PROP.select(hoist_shared_preamble);
+                append!(
+                    *ts,
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = {callable}<__{component_type_name}_{shared_idx}_prop_{safe_prop_name}>;\n",
+                );
+                continue;
+            }
         }
         let camel_prop_name = to_camel_case(prop.name.as_str());
         append!(
@@ -337,7 +343,7 @@ pub(super) fn append_per_prop_aliases(
             prop_alias_type(
                 prop,
                 component_type_name,
-                idx,
+                shared.map_or(idx, |(shared_idx, _)| shared_idx),
                 &camel_prop_name,
                 prop.name.as_str(),
                 hoist_shared_preamble,

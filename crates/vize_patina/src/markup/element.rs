@@ -12,6 +12,7 @@ use vize_relief::{ElementNode, ElementType};
 
 mod opening;
 pub(super) mod queries;
+mod rendered;
 
 use queries::{is_lint_component, l2_template_is_special};
 

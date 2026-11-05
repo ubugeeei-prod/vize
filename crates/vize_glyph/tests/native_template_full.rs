@@ -139,7 +139,13 @@ fn malformed_or_recovered_heads_keep_original_parse_observations_on_refusal() {
         "<p v-on:.once='handlers'/>",
         "<p v-custom:[='value'/>",
         "<p v-bind:[]='value'/>",
-        "<p v-bind:[one][two]='value'/>",
+        include_str!(
+            "../../../tests/_fixtures/differential/formatter/qualification-20261105/App.vue.txt"
+        )
+        .strip_prefix("<template>")
+        .unwrap()
+        .strip_suffix("</template>")
+        .unwrap(),
         "<p v-if='unterminated></p>",
         "<p v-show='ready'>",
         "<p>{{ raw }}</p>",

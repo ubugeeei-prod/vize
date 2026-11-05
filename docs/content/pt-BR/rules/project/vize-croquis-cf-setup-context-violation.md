@@ -4,7 +4,7 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-O contexto de setup é usado de uma forma que o Vue não permite.
+Crie o estado reativo pertencente a cada componente no setup de sua instância.
 
 | Severidade padrão | Correção automática | Opções |
 | --- | --- | --- |
@@ -14,7 +14,9 @@ Aplicável a: Grafo de componentes analisado e fatos suportados descritos abaixo
 
 O CrossFileAnalyzer experimental em Rust tem um produtor para este código. A etapa da CLI não emite este código individualmente; configurar seu ID não ativa essa etapa Rust. Estes cenários descrevem o grafo e os fatos suportados pelo analisador, e não uma promessa do Vite+.
 
-O Vue permite este estado reativo; o exemplo exige que cada instância de componente possua sua própria contagem.
+## Escopo e limitações
+
+Este cenário do analisador experimental coloca ref(0) no escopo do módulo de um script comum, em vez do setup por instância. O Vue permite esse estado reativo; o exemplo exige que cada instância do componente tenha sua própria contagem. A CLI não emite este código individual.
 
 ## Arquivos compartilhados do projeto
 

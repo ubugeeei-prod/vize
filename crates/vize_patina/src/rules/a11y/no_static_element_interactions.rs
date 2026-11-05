@@ -20,12 +20,17 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{
     get_static_attribute_value, has_interactive_role, is_aria_hidden_true,
-    is_component_like_element, is_interactive_element, is_presentation_role,
+    is_component_like_element, is_interactive_element, is_interactive_role, is_presentation_role,
+};
+use super::markup_helpers::{
+    get_static_markup_attribute_value, has_static_markup_event, is_aria_hidden_true_markup,
+    is_component_like_markup_element, is_presentation_markup_role,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -64,9 +69,58 @@ fn has_interactive_event(element: &ElementNode) -> bool {
     false
 }
 
+fn has_static_role_bind(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |= binding.kind() == MarkupBindingKind::Bind
+            && binding.is_static_unqualified_arg_exact("role");
+    });
+    found
+}
+
+impl MarkupRule for NoStaticElementInteractions {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        // Cheap tag checks, then the handler, before any other binding walk.
+        if is_component_like_markup_element(element)
+            || element.is_unqualified_tag_exact("dialog")
+            || is_interactive_element(element.tag())
+            || !has_static_markup_event(element, INTERACTIVE_EVENTS)
+            || has_static_role_bind(element)
+            || is_aria_hidden_true_markup(element)
+            || is_presentation_markup_role(element)
+        {
+            return;
+        }
+        let role = get_static_markup_attribute_value(element, "role");
+        if matches!(role, Some("dialog" | "alertdialog" | "toolbar"))
+            || role.is_some_and(is_interactive_role)
+        {
+            return;
+        }
+        let message = ctx.lint().t_fmt(
+            "a11y/no-static-element-interactions.message",
+            &[("tag", element.tag())],
+        );
+        let help = ctx.lint().t("a11y/no-static-element-interactions.help");
+        ctx.lint().warn_at_with_help(message, element.range(), help);
+    }
+}
+
 impl Rule for NoStaticElementInteractions {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

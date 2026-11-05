@@ -5,12 +5,12 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     "O ID do título inclui o ID estável do resultado, produzindo um identificador distinto no documento para cada item.",
   ],
   "vize:croquis/cf/object-identity-comparison": [
-    "Um objeto reativo é comparado por identidade, que muda ao remover os invólucros.",
+    "Compare IDs estáveis de registros entre objetos brutos e proxies reativos.",
     "Este contrato ilustra a comparação de IDs estáveis quando a identidade pretendida é a do registro. `proxy === raw` compara a identidade do invólucro, portanto é falso mesmo que ambos representem o mesmo registro de usuário. A aplicação pretendia comparar a identidade do registro, não a do invólucro do objeto.",
     "Comparar o `id` estável do registro responde à pergunta pretendida sem depender de o objeto ser bruto ou estar envolvido por um proxy.",
   ],
   "vize:croquis/cf/pinia-getter": [
-    "Uma função de leitura do Pinia é lida sem `storeToRefs`, portanto não permanecerá reativa.",
+    "Evite copiar valores de getters do Pinia como instantâneos durante setup.",
     "`const doubled = store.doubled` copia o número atual da função de leitura durante setup. O número copiado não acompanha atualizações posteriores de `store.count`.",
     "`storeToRefs(store)` fornece uma ref reativa da função de leitura que pode ser desestruturada e desembrulhada pelo template, mantendo a conexão com o armazenamento.",
   ],
@@ -50,7 +50,7 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     "O cache recebe o número simples atual, de modo que mantém um instantâneo sem reter a ref pertencente ao componente.",
   ],
   "vize:croquis/cf/setup-context-violation": [
-    "O contexto de setup é usado de uma forma que o Vue não permite.",
+    "Crie o estado reativo pertencente a cada componente no setup de sua instância.",
     "`ref(0)` é criada no escopo do módulo de um script comum, fora do contexto de setup por instância representado por este cenário do analisador.",
     "Mova a variável para script setup, onde cada instância de componente possui sua contagem e o template pode lê-la.",
   ],
@@ -150,7 +150,7 @@ export const portugueseRules5: Record<string, readonly [string, string, string]>
     "Uma função de leitura computada expressa diretamente a mesma derivação e remove a sincronização manual e o estado gravável adicional.",
   ],
   "vize:croquis/cf/watcheffect-async": [
-    "`watchEffect` inicia uma tarefa assíncrona e não consegue limpar a execução anterior.",
+    "Proteja o trabalho assíncrono de watchEffect contra invalidação e respostas desatualizadas.",
     "O watchEffect assíncrono mostrado aqui não tem limpeza na invalidação nem proteção contra uma resposta desatualizada. O `watchEffect` assíncrono mistura a coleta implícita de dependências com uma requisição aguardada e sem uma proteção contra invalidação.",
     "Um `watch(() => props.query, ...)` explícito declara a origem, registra a limpeza da requisição e recusa uma resposta desatualizada após a invalidação.",
   ],

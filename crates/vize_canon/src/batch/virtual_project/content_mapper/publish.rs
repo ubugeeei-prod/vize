@@ -13,6 +13,10 @@ const PRIVATE_MODULE: &str = "vize:virtual-ts";
 const PUBLISHED_MODULE: &str = "vize/virtual-ts";
 const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
 const REFERENCE_TYPES_DIRECTIVE: &str = "/// <reference types=";
+const PUBLIC_DIAGNOSTIC_HELPERS: [(&str, &str); 2] = [
+    ("$ComponentCheckProps", "ComponentPropsForTemplate"),
+    ("$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
+];
 
 pub(super) fn publish_content_mapper_text(
     code: &mut CompactString,
@@ -83,6 +87,12 @@ fn publicize_generated_diagnostic_helpers(
     mut generic_copies: Option<&mut GenericCopies>,
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
 ) {
+    if PUBLIC_DIAGNOSTIC_HELPERS
+        .iter()
+        .all(|(internal, _)| memchr::memmem::find(code.as_bytes(), internal.as_bytes()).is_none())
+    {
+        return;
+    }
     let mut authored_ranges = mappings
         .iter()
         .map(|mapping| mapping.gen_range.clone())
@@ -100,10 +110,7 @@ fn publicize_generated_diagnostic_helpers(
         }
     }
 
-    for (internal, display) in [
-        ("$ComponentCheckProps", "ComponentPropsForTemplate"),
-        ("$PublicComponentAttrs", "VueTemplatePublicAttrsType"),
-    ] {
+    for (internal, display) in PUBLIC_DIAGNOSTIC_HELPERS {
         debug_assert!(display.len() > internal.len());
         let occurrences = memchr::memmem::find_iter(code.as_bytes(), internal).collect::<Vec<_>>();
         for start in occurrences.into_iter().rev() {
@@ -205,7 +212,209 @@ fn reference_type_directive_ranges(code: &str) -> Vec<Range<usize>> {
 
 #[cfg(test)]
 mod tests {
-    use super::reference_type_directive_ranges;
+    use std::ops::Range;
+
+    use super::{
+        CompactString, GenericCopies, PRIVATE_MODULE, PUBLIC_DIAGNOSTIC_HELPERS, PUBLISHED_MODULE,
+        publicize_generated_diagnostic_helpers, publish_content_mapper_text,
+        reference_type_directive_ranges,
+    };
+    use crate::virtual_ts::diagnostic_ownership::{
+        DiagnosticOwnership, DiagnosticOwnershipCollector,
+    };
+    use crate::virtual_ts::generic_parameters::GenericParameters;
+    use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind, VizeSubSpan};
+
+    type State = (
+        CompactString,
+        Vec<VizeMapping>,
+        Vec<VizeSemanticLink>,
+        Vec<VizeSemanticLink>,
+        Option<(Range<usize>, Vec<Range<usize>>)>,
+        CompactString,
+    );
+
+    fn state(
+        code: &str,
+        mappings: &[VizeMapping],
+        links: &[VizeSemanticLink],
+        prop_links: &[VizeSemanticLink],
+        copies: Option<&GenericCopies>,
+        ownership: &DiagnosticOwnershipCollector,
+    ) -> State {
+        (
+            code.into(),
+            mappings.to_vec(),
+            links.to_vec(),
+            prop_links.to_vec(),
+            copies.map(|copies| (copies.attribute.clone(), copies.echoes().cloned().collect())),
+            vize_l0::cstr!("{:?}", ownership.borrow()),
+        )
+    }
+
+    fn collector(range: Range<usize>) -> DiagnosticOwnershipCollector {
+        let mut ownership = DiagnosticOwnership::default();
+        ownership.record_diagnostic_primary(range.clone(), 30..35);
+        ownership.protect_callback_primary(range);
+        ownership.into()
+    }
+
+    #[test]
+    fn absent_public_helpers_preserve_every_coordinate_family_and_generic_copy() {
+        let raw = "T extends Missing";
+        let mut code = vize_l0::cstr!(
+            "/// <reference types=\"日本 🧭\" />\r\nimport type {{}} from \"vize:virtual-ts\";\r\nfunction __setup<{raw}>() {{}}\r\ntype Echo<{raw}> = T;\r\n"
+        );
+        let mut parameters = GenericParameters::parse(raw);
+        parameters.origin = Some(100);
+        let start = code.find(raw).expect("authored generic");
+        let echo = code.rfind(raw).expect("generic echo");
+        let mut mappings: Vec<_> = parameters.authored_rows(start).collect();
+        mappings
+            .first_mut()
+            .expect("authored generic row")
+            .sub_spans
+            .push(VizeSubSpan {
+                gen_range: start..start + 1,
+                src_range: 100..101,
+            });
+        let mut copies = GenericCopies::find(&code, &mappings, &parameters).expect("generic copy");
+        let mut links = vec![VizeSemanticLink {
+            source_range: start..start + raw.len(),
+            target_range: echo..echo + raw.len(),
+            kind: VizeSemanticLinkKind::VueSetupImportSpecialization,
+        }];
+        let mut prop_links = links.clone();
+        let ownership = collector(echo..echo + raw.len());
+        let before = state(
+            &code,
+            &mappings,
+            &links,
+            &prop_links,
+            Some(&copies),
+            &ownership,
+        );
+        publicize_generated_diagnostic_helpers(
+            &mut code,
+            &mut mappings,
+            &mut links,
+            &mut prop_links,
+            Some(&mut copies),
+            Some(&ownership),
+        );
+        assert_eq!(
+            state(
+                &code,
+                &mappings,
+                &links,
+                &prop_links,
+                Some(&copies),
+                &ownership
+            ),
+            before
+        );
+        let mut expected = before;
+        expected.0 = code.replace(PRIVATE_MODULE, PUBLISHED_MODULE).into();
+        publish_content_mapper_text(
+            &mut code,
+            &mut mappings,
+            &mut links,
+            &mut prop_links,
+            Some(&mut copies),
+            Some(&ownership),
+            true,
+        );
+        assert_eq!(
+            state(
+                &code,
+                &mappings,
+                &links,
+                &prop_links,
+                Some(&copies),
+                &ownership
+            ),
+            expected
+        );
+    }
+
+    #[test]
+    fn generated_helper_renames_keep_mapped_user_names_and_shift_all_endpoints() {
+        for (internal, display) in PUBLIC_DIAGNOSTIC_HELPERS {
+            let user = vize_l0::cstr!("const {internal} = 1;\n");
+            let mut code = vize_l0::cstr!("type {internal}<T> = T;\n{user}let tail = 2;\n");
+            let expected = vize_l0::cstr!("type {display}<T> = T;\n{user}let tail = 2;\n");
+            let user_at = code.find(user.as_str()).expect("mapped user line");
+            let expected_user = expected.find(user.as_str()).expect("unchanged user line");
+            let tail = code.find("tail").expect("following endpoint");
+            let expected_tail = expected.find("tail").expect("shifted endpoint");
+            let row = |at| VizeMapping {
+                gen_range: at..at + user.len(),
+                src_range: 100..100 + user.len(),
+                sub_spans: vec![VizeSubSpan {
+                    gen_range: at + 6..at + 6 + internal.len(),
+                    src_range: 106..106 + internal.len(),
+                }],
+            };
+            let link = |at, target| VizeSemanticLink {
+                source_range: at + 6..at + 6 + internal.len(),
+                target_range: target..target + 4,
+                kind: VizeSemanticLinkKind::VueTemplatePropBinding,
+            };
+            let mut mappings = vec![row(user_at)];
+            let mut links = vec![link(user_at, tail)];
+            let mut prop_links = links.clone();
+            let ownership = collector(tail..tail + 4);
+            let expected_ownership = collector(expected_tail..expected_tail + 4);
+            let expected_state = state(
+                &expected,
+                &[row(expected_user)],
+                &[link(expected_user, expected_tail)],
+                &[link(expected_user, expected_tail)],
+                None,
+                &expected_ownership,
+            );
+            publicize_generated_diagnostic_helpers(
+                &mut code,
+                &mut mappings,
+                &mut links,
+                &mut prop_links,
+                None,
+                Some(&ownership),
+            );
+            assert_eq!(
+                state(&code, &mappings, &links, &prop_links, None, &ownership),
+                expected_state
+            );
+        }
+    }
+
+    #[test]
+    fn authored_only_helper_names_and_reference_packages_remain_wholly_unchanged() {
+        let mut code = CompactString::from(
+            "/// <reference types=\"$PublicComponentAttrs\" />\r\nconst $ComponentCheckProps = 1;\r\n",
+        );
+        let start = code.find("const ").expect("authored declaration");
+        let mut mappings = vec![VizeMapping::new(
+            start..code.len(),
+            100..100 + code.len() - start,
+        )];
+        let mut links = Vec::new();
+        let mut prop_links = Vec::new();
+        let ownership = collector(start..code.len());
+        let before = state(&code, &mappings, &links, &prop_links, None, &ownership);
+        publicize_generated_diagnostic_helpers(
+            &mut code,
+            &mut mappings,
+            &mut links,
+            &mut prop_links,
+            None,
+            Some(&ownership),
+        );
+        assert_eq!(
+            state(&code, &mappings, &links, &prop_links, None, &ownership),
+            before
+        );
+    }
 
     #[test]
     fn reference_directive_lines_match_a_line_scan() {

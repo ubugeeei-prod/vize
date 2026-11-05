@@ -11,6 +11,7 @@ import {
   legacyTranslations,
   locales,
   parseCompilerCodes,
+  parseRuleDescriptions,
   parseRules,
   parseVocabulary,
   read,
@@ -81,9 +82,60 @@ test("TS-53: every compiler error code is named and catalogued, English unchange
   assert.deepEqual(compilerProblems(compiler, catalogEntries()), []);
 });
 
-test("TS-53: every one of the 267 lint rules has a description in every locale", () => {
+test("TS-53: RuleMeta descriptions retain literal and constant-backed Rust strings", () => {
+  assert.deepEqual(
+    parseRuleDescriptions(String.raw`
+      pub(super) const RULE: &str = "vue/constant-name";
+      const DESCRIPTION: &'static str = "Keep \"quotes\" and \u{65e5}.";
+      static META: RuleMeta = RuleMeta {
+        name: RULE,
+        description: DESCRIPTION,
+        default_severity: Severity::Warning,
+      };
+      static SCRIPT_META: ScriptRuleMeta = ScriptRuleMeta {
+        name: "script/literal-name",
+        description: "Keep literal metadata.",
+        default_severity: Severity::Error,
+      };
+      const STYLE_META: CssRuleMeta = CssRuleMeta {
+        name: "css/final-description",
+        description: "A final field needs no trailing comma."
+      };
+    `),
+    [
+      ["vue/constant-name", 'Keep "quotes" and 日.'],
+      ["script/literal-name", "Keep literal metadata."],
+      ["css/final-description", "A final field needs no trailing comma."],
+    ],
+  );
+});
+
+test("TS-53: unresolved metadata constants fail without counting aliases as new rules", () => {
+  for (const [source, missing] of [
+    ['RuleMeta { name: MISSING, description: "Description.", }', "MISSING"],
+    ['CssRuleMeta { name: "css/example", description: MISSING, }', "MISSING"],
+    [
+      'const RULE: &str = OTHER; MuseaRuleMeta { name: RULE, description: "Description.", }',
+      "RULE",
+    ],
+  ]) {
+    assert.throws(() => parseRuleDescriptions(source), {
+      message: `Unresolved RuleMeta string: ${missing}`,
+    });
+  }
+  assert.deepEqual(
+    parseRuleDescriptions(`
+      RuleMeta { name: META.name, description: "Reused rule.", }
+      RuleMeta { other_name: "foreign/id", description: "Unrelated field.", }
+      RuleMeta { name: "vue/reused-description", description: META.description, }
+    `),
+    [],
+  );
+});
+
+test("TS-53: every one of the 279 lint rules has a description in every locale", () => {
   const rules = parseRules();
-  assert.equal(rules.size, 267, "the parser reads every RuleMeta-family declaration");
+  assert.equal(rules.size, 279, "the parser reads every RuleMeta-family declaration");
   assert.deepEqual(ruleProblems(rules, legacyTranslations(), catalogEntries()), []);
 });
 

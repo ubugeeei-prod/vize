@@ -4,7 +4,7 @@ title: "vize:croquis/cf/array-mutation"
 
 # `vize:croquis/cf/array-mutation`
 
-An array is mutated by index, which a reactive array does not track.
+Use observable mutations for array index updates in Vue 2.7.
 
 | Default severity | Automatic fix | Options |
 | --- | --- | --- |
@@ -15,6 +15,10 @@ Applies to: Analyzed component graph and the supported facts described below
 This is a published diagnostic contract without a current producer. The Bad/Good scenario below explains the risk and repair; no flag currently makes this code trigger.
 
 Historical Vue 2.7 only: use matching Vue 2.7 and SFC compiler dependencies for this scenario. Vue 3 proxies track array index assignment, so `items[0] = next` is reactive in Vue 3 and is not a Vue 3 defect. This published code has no current producer.
+
+## Scope and limitations
+
+This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.
 
 ## Shared project files
 

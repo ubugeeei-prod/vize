@@ -9,18 +9,22 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 “预设”列给出启用该规则的最小预设，规则页面列出全部预设。各预设包含的内容见[预设](../rules/index.md#预设)。
 
-## Vue 规则 (108)
+## Vue 规则 (120)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 要求图片提供 alt 属性，以支持无障碍访问。 | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | 规范自定义组件的属性命名风格。 | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | 要求属性保持一致的排列顺序。 | `happy-path` |  |
+| <span id="vue-comment-directive"></span>[`vue/comment-directive`](./reference/vue-comment-directive.md) | 支持 `<template>` 中的诊断控制注释。 | `essential` |  |
 | <span id="vue-component-definition-name-casing"></span>[`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | 要求组件定义名称使用 PascalCase 或 kebab-case。 | `happy-path` |  |
 | <span id="vue-component-name-in-template-casing"></span>[`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | 要求模板中的组件名称使用指定的大小写风格。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-html-button-has-type"></span>[`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | 要求 button 元素显式指定有效的 type。 | `nuxt`, `opinionated` |  |
+| <span id="vue-html-end-tags"></span>[`vue/html-end-tags`](./reference/vue-html-end-tags.md) | 要求显式书写 HTML 中可以省略的结束标签。 | `happy-path` | ✓ |
 | <span id="vue-html-quotes"></span>[`vue/html-quotes`](./reference/vue-html-quotes.md) | 规范 HTML 属性的引号风格。 | `happy-path` | ✓ |
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 规范自闭合标签风格。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | 将 JSX 元素名称中引用的变量视为已使用。 | `essential` |  |
+| <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 要求声明的组件名称与文件名匹配。 | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | 限制组件自身模板的复杂度（圈复杂度和认知复杂度）。 | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 要求组件名称由多个单词组成。 | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | 要求双花括号插值内部的空格保持一致。 | `happy-path` | ✓ |
@@ -28,6 +32,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | 禁止在模板中直接写入应当国际化的用户可读文本。 | — |  |
 | <span id="vue-no-boolean-attr-value"></span>[`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | 禁止为 HTML 布尔属性显式指定值。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-no-child-content"></span>[`vue/no-child-content`](./reference/vue-no-child-content.md) | 禁止在使用 v-html 或 v-text 时提供子内容。 | `essential` |  |
+| <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | 为兼容 Vue 2，禁止在组件的 `v-model` 上使用自定义修饰符。 | — |  |
 | <span id="vue-no-deprecated-filter"></span>[`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | 禁止使用已弃用的 Vue 2 管道运算符过滤器语法。 | `essential` |  |
 | <span id="vue-no-deprecated-functional-template"></span>[`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | 禁止在 SFC 的 `<template>` 上使用 `functional` 属性。 | `essential` |  |
 | <span id="vue-no-deprecated-html-element-is"></span>[`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | 禁止在原生 HTML 元素上使用已弃用的 `is` 属性。 | `essential` |  |
@@ -53,9 +58,11 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | 禁止在含有 v-else 的条件链中使用否定的 v-if 条件。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | 禁止在 `<KeepAlive>` 的直属子层使用普通元素包装。 | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | 不建议使用 CSS 预处理器，优先使用现代 CSS。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 禁止在同一作用域中复制 ref 的值而丢失后续响应式更新。 | — |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 禁止使用保留名称作为组件名称。 | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 禁止在模板的唯一根元素上使用 v-if。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | 不建议使用非标准的 script lang 值。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 禁止通过复制 setup 的 prop 值而丢失后续响应式更新。 | — |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | 不建议在 SFC 块上使用 src 属性。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 禁止静态内联 style 属性。 | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | 禁止在 `<template>` 上使用 `key` 属性。 | `essential` |  |
@@ -63,6 +70,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | 禁止使用遮蔽外层作用域变量的变量名称。 | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | 禁止使用 target="_blank" 而不设置 rel="noopener noreferrer"。 | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | 禁止在 `<textarea>` 内使用双花括号插值。 | `essential` |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 禁止在 `beforeRouteEnter` 中通过 `this` 访问尚未创建的组件实例。 | — |  |
 | <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | 禁止在模板中引用未定义的变量。 | — |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 警告可能不安全的 URL 绑定。 | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | 要求 iframe 元素具有 sandbox 属性。 | `happy-path` |  |
@@ -76,16 +84,19 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 禁止表达式为常量字符串字面量的双花括号插值。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-template-attributes"></span>[`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | 禁止在 `<template>` 元素上使用不起作用的属性。 | `essential` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 禁止值为普通字符串字面量的 v-bind。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | 为兼容 Vue 2，要求将 `template v-for` 的 key 放在实际子元素上。 | — |  |
 | <span id="vue-no-v-for-template-key-on-child"></span>[`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | 禁止在 `<template v-for>` 的子节点上使用 `key`。 | `essential` |  |
 | <span id="vue-no-v-html"></span>[`vue/no-v-html`](./reference/vue-no-v-html.md) | 警告使用 v-html，以避免 XSS 漏洞。 | `essential` |  |
 | <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | 禁止 v-text 指令，优先使用双花括号插值。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | 禁止在组件元素上使用 v-text / v-html。 | `essential` |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | 要求符合 HTML 内容模型规则。 | `happy-path` |  |
+| <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 要求在组件 prop 的类型构造函数数组中将 `Boolean` 放在首位。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | 建议使用 props 简写语法（Vue 3.4+）。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 优先使用绑定到 `true` 的布尔属性简写。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 规范所声明 prop 名称的大小写风格。 | `happy-path` |  |
 | <span id="vue-require-component-is"></span>[`vue/require-component-is`](./reference/vue-require-component-is.md) | 要求 `<component>` 元素具有 `v-bind:is`。 | `essential` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 要求显式导入或注册组件。 | `opinionated` |  |
+| <span id="vue-require-expose"></span>[`vue/require-expose`](./reference/vue-require-expose.md) | 要求 Options API 组件通过 `expose` 显式声明公开属性。 | — |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | 要求 style 标签具有 scoped 属性。 | `happy-path` |  |
 | <span id="vue-require-toggle-inside-transition"></span>[`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | 要求 `<transition>` 包裹的元素具有切换条件。 | `essential` |  |
 | <span id="vue-require-v-for-key"></span>[`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | 要求 `v-for` 指令搭配 `v-bind:key`。 | `essential` |  |
@@ -102,6 +113,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | 规范 `v-on` 指令风格。 | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 规范 `v-slot` 指令风格。 | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 要求属性名称有效。 | `essential` |  |
+| <span id="vue-valid-model-definition"></span>[`vue/valid-model-definition`](./reference/vue-valid-model-definition.md) | 要求 Vue 2 的 `model` 选项使用有效的键。 | — |  |
 | <span id="vue-valid-template-root"></span>[`vue/valid-template-root`](./reference/vue-valid-template-root.md) | 要求 `<template>` 根节点符合 Vue 3 片段语义。 | `essential` |  |
 | <span id="vue-valid-v-bind"></span>[`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | 要求 `v-bind` 指令有效。 | `essential` |  |
 | <span id="vue-valid-v-cloak"></span>[`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | 要求 `v-cloak` 指令有效。 | `essential` |  |
@@ -332,7 +344,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="ecosystem-vue-router-param-type"></span>[`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | 报告路由参数值不被所声明的路径段接受。 | 由 `vp run lint` 报告 |
 | <span id="ecosystem-vue-router-unknown-route"></span>[`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | 报告已安装路由器未声明的导航名称。 | 由 `vp run lint` 报告 |
 | <span id="html-cross-component-nesting"></span>[`html/cross-component-nesting`](./project/html-cross-component-nesting.md) | 检查导入组件组合后的实际 HTML 嵌套。 | 由 `vp run lint` 报告 |
-| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 通过索引修改数组，无法被该响应式数组跟踪。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-array-mutation"></span>[`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 在 Vue 2.7 中，使用可通知更新的操作替换数组索引处的值。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-async-boundary"></span>[`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | 响应式状态跨越异步边界，可能被观察为过期值。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-async-no-suspense"></span>[`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | 异步组件在没有 Suspense 边界的情况下渲染。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-browser-api-ssr"></span>[`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | 在组件可能于服务端渲染的位置使用了浏览器专用 API。 | 由 `vp run lint` 报告 |
@@ -361,8 +373,8 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-mutated-after-escape"></span>[`vize:croquis/cf/mutated-after-escape`](./project/vize-croquis-cf-mutated-after-escape.md) | 响应式对象逸出其所有者后被修改。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-non-reactive-provide"></span>[`vize:croquis/cf/non-reactive-provide`](./project/vize-croquis-cf-non-reactive-provide.md) | 提供的值不具响应性，后代无法看到更新。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-non-unique-id"></span>[`vize:croquis/cf/non-unique-id`](./project/vize-croquis-cf-non-unique-id.md) | 循环内的元素 id 对每个列表项并不唯一。 | 由 `vp run lint` 报告 |
-| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | 响应式对象按身份比较，解包后身份会改变。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | Pinia getter 未通过 `storeToRefs` 读取，无法保持响应性。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-object-identity-comparison"></span>[`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | 用稳定的记录 ID 比较原始对象与响应式代理所表示的记录。 | 计划中；尚未报告 |
+| <span id="vize-croquis-cf-pinia-getter"></span>[`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | 避免在 setup 中将 Pinia getter 的值复制为不再跟随更新的快照。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-prop-type-mismatch"></span>[`vize:croquis/cf/prop-type-mismatch`](./project/vize-croquis-cf-prop-type-mismatch.md) | 传入的 prop 值与声明类型不匹配。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-provide-inject-type"></span>[`vize:croquis/cf/provide-inject-type`](./project/vize-croquis-cf-provide-inject-type.md) | 提供值与其 inject 类型不一致。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-provide-without-symbol"></span>[`vize:croquis/cf/provide-without-symbol`](./project/vize-croquis-cf-provide-without-symbol.md) | `provide` 使用普通键，而不是 `InjectionKey` symbol。 | 由 `vp run lint` 报告 |
@@ -370,7 +382,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-reactivity-outside-setup"></span>[`vize:croquis/cf/reactivity-outside-setup`](./project/vize-croquis-cf-reactivity-outside-setup.md) | 响应式 API 在 `setup` 外被调用。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-reassignment-breaks-reactivity"></span>[`vize:croquis/cf/reassignment-breaks-reactivity`](./project/vize-croquis-cf-reassignment-breaks-reactivity.md) | 重新赋值响应式绑定，将其替换为普通值。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-reference-escapes-scope"></span>[`vize:croquis/cf/reference-escapes-scope`](./project/vize-croquis-cf-reference-escapes-scope.md) | 响应式引用逸出拥有其生命周期的作用域。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | setup 上下文被以 Vue 不允许的方式使用。 | 实验性；CLI 尚未报告 |
+| <span id="vize-croquis-cf-setup-context-violation"></span>[`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | 在每个实例的 setup 中创建应由组件实例独立持有的响应式状态。 | 实验性；CLI 尚未报告 |
 | <span id="vize-croquis-cf-shallow-deep-access"></span>[`vize:croquis/cf/shallow-deep-access`](./project/vize-croquis-cf-shallow-deep-access.md) | 读取 `shallowReactive` 或 `shallowRef` 的深层属性，却假定它受到跟踪。 | 计划中；尚未报告 |
 | <span id="vize-croquis-cf-spread-breaks-reactivity"></span>[`vize:croquis/cf/spread-breaks-reactivity`](./project/vize-croquis-cf-spread-breaks-reactivity.md) | 展开响应式对象会复制值并丢失跟踪。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-suspense-no-fallback"></span>[`vize:croquis/cf/suspense-no-fallback`](./project/vize-croquis-cf-suspense-no-fallback.md) | `<Suspense>` 没有后备内容。 | 计划中；尚未报告 |
@@ -390,7 +402,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vize-croquis-cf-unused-provide"></span>[`vize:croquis/cf/unused-provide`](./project/vize-croquis-cf-unused-provide.md) | 提供的键从未被注入。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-value-extraction-breaks-reactivity"></span>[`vize:croquis/cf/value-extraction-breaks-reactivity`](./project/vize-croquis-cf-value-extraction-breaks-reactivity.md) | 将响应式值读取到局部变量后丢失后续更新。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-watch-can-be-computed"></span>[`vize:croquis/cf/watch-can-be-computed`](./project/vize-croquis-cf-watch-can-be-computed.md) | 侦听器只将值复制到状态，可以改为计算属性。 | 计划中；尚未报告 |
-| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | `watchEffect` 启动异步任务，却无法清理上一轮执行。 | 由 `vp run lint` 报告 |
+| <span id="vize-croquis-cf-watcheffect-async"></span>[`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | 为异步 watchEffect 处理失效清理，避免写入过期响应。 | 由 `vp run lint` 报告 |
 | <span id="vize-croquis-cf-watcher-outside-setup"></span>[`vize:croquis/cf/watcher-outside-setup`](./project/vize-croquis-cf-watcher-outside-setup.md) | `watch` 或 `watchEffect` 在 `setup` 外被调用。 | 计划中；尚未报告 |
 | <span id="vue-cross-file-attrs-fallthrough"></span>[`vue/cross-file-attrs-fallthrough`](./project/vue-cross-file-attrs-fallthrough.md) | 父组件传入属性，但已解析子组件的根无法继承它们，也没有显式使用 $attrs。 | 由 `vp run lint` 报告 |
 

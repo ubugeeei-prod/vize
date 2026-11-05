@@ -216,8 +216,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentSymbol") {
       assert.equal(data.hierarchicalDocumentSymbols, true);
-      assert(Array.isArray(expected) && expected.length === 2);
-      assert(data.provenance.witness, "original issue custody is required");
+      const symbolCount = data.id === "lsp/regression/qualification-20261105" ? 5 : 2;
+      assert(Array.isArray(expected) && expected.length === symbolCount);
+      assert(data.provenance.witness, "original source custody is required");
       readPinnedArtifact(packRoot, data.provenance.witness);
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/codeAction") {

@@ -1,27 +1,44 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import {
+  canonical,
+  createClassSourceInverse,
+  createSourceReader,
+  identity,
+  inverse,
+  inverseCurrentSource,
+  jsonBytes,
+  loadCurrentSourceSuccessors,
+  replaceBytes,
+  sha,
+} from "./support/lint-preset-source-successors.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const sha = (body) => createHash("sha256").update(body).digest("hex");
 const directory = "tests/_fixtures/lint-preset-default-warnings";
 // Later preset-default changes are finite successor rows, newest last. Each
 // row pins both byte identities and is undone before the audits below, so they
 // keep judging the tree they reviewed while presets grow.
-const presetSuccessors = JSON.parse(
-  fs.readFileSync(path.join(root, directory, "preset-successors.json"), "utf8"),
+const presetSuccessorBytes = fs.readFileSync(path.join(root, directory, "preset-successors.json"));
+const presetSuccessors = JSON.parse(presetSuccessorBytes);
+const currentSources = loadCurrentSourceSuccessors(
+  root,
+  directory,
+  presetSuccessorBytes,
+  presetSuccessors,
 );
 // The audit judges the nextest.toml it reviewed; CI keeps editing the live file.
 const liveNextest = ".config/nextest.toml";
 const reviewedNextest = `${directory}/reviewed-nextest.toml`;
-const read = (name) =>
-  presetSuccessors.reduceRight(
-    (body, row) => (row.path === name ? inverse(row, body) : body),
-    fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name)),
-  );
+const read = createSourceReader({
+  root,
+  liveNextest,
+  reviewedNextest,
+  currentSources,
+  presetSuccessors,
+});
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
 const manifest = JSON.parse(bytes);
@@ -41,47 +58,17 @@ const {
   staticClassMembership,
 } = JSON.parse(retentionBytes);
 
-function identity(body, expected) {
-  assert.equal(body.length, expected.bytes);
-  assert.equal(sha(body), expected.sha256);
-}
+// Later additions are source-only history. Both byte directions must recover
+// complete authenticated bodies before the original finite audits run.
 
 // This inverse is an audit of these exact edits. It is never installed as an
 // adapter for an old source, compiled, runtime or performance acceptance gate.
-function inverse(row, body) {
-  identity(body, row.after);
-  let text = body.toString("utf8");
-  for (const hunk of row.hunks) {
-    assert.notEqual(hunk.before, hunk.after);
-    assert.equal(text.split(hunk.after).length, 2, row.path);
-    text = text.replace(hunk.after, hunk.before);
-  }
-  const before = Buffer.from(text);
-  identity(before, row.before);
-  return before;
-}
 
 // Restore only the reviewed class-default edits for the frozen earlier audit.
-function originalStaticClassSource(name, body) {
-  if (name === staticClassRegistration.path) return inverse(staticClassRegistration, body);
-  if (name !== staticClassMembership.path) return body;
-  identity(body, staticClassMembership.after);
-  const text = body.toString();
-  const at = text.indexOf("{");
-  const table = canonical(Buffer.from(text.slice(at)));
-  const rule = "html/no-duplicate-class";
-  for (const preset of ["happy_path", "ecosystem", "opinionated", "nuxt"]) {
-    const names = table[preset];
-    assert.equal(names.filter((name) => name === rule).length, 1);
-    assert.equal(names[names.indexOf("html/require-datetime") + 1], rule);
-    names.splice(names.indexOf(rule), 1);
-    if (preset === "opinionated" || preset === "nuxt")
-      names.splice(names.indexOf("html/no-dupe-style-properties"), 0, rule);
-  }
-  const before = Buffer.concat([Buffer.from(text.slice(0, at)), jsonBytes(table)]);
-  identity(before, staticClassMembership.before);
-  return before;
-}
+const originalStaticClassSource = createClassSourceInverse(
+  staticClassRegistration,
+  staticClassMembership,
+);
 
 // #9399 adds exactly two authored cases and two Essential memberships. Preserve
 // the old source/fixture audit as a historical stage, not a runtime adapter.
@@ -90,12 +77,6 @@ const essentialRules = [
   "script/no-duplicate-attr-inheritance",
 ];
 const essentialCases = ["essential-keep-alive", "essential-attrs-forwarding"];
-const jsonBytes = (value) => Buffer.from(JSON.stringify(value, null, 2) + "\n");
-function canonical(body) {
-  const value = JSON.parse(body.toString());
-  assert.deepEqual(body, jsonBytes(value)); // Never discard unrelated whitespace/edits.
-  return value;
-}
 function originalEssentialSource(row, body) {
   if (row.path === "crates/vize_patina/src/linter/script_rules/registry/rules.rs") {
     const text = body.toString();
@@ -163,6 +144,43 @@ function inverseCurrent(row, body) {
       : originalEssentialSource(row, originalStaticClassSource(row.path, body)),
   );
 }
+
+void test("current source successors preserve whole histories and reject missing, partial, duplicate and unrelated bytes", () => {
+  for (const row of currentSources.sources) {
+    const current = fs.readFileSync(path.join(root, row.path));
+    identity(inverseCurrentSource(row, current), row.before);
+    const hunk = row.hunks.find((hunk) => hunk.after.length > 0);
+    const changedByte = Buffer.from(current);
+    changedByte[0] ^= 1;
+    for (const changed of [
+      null,
+      current.subarray(0, current.length - 1),
+      Buffer.concat([Buffer.from("// unrelated prefix\n"), current]),
+      Buffer.concat([current, Buffer.from("\n// unrelated suffix\n")]),
+      replaceBytes(current, hunk.afterOffset, Buffer.from(hunk.after), Buffer.from(hunk.before)),
+      replaceBytes(
+        current,
+        hunk.afterOffset,
+        Buffer.from(hunk.after),
+        Buffer.from(hunk.after + hunk.after),
+      ),
+      changedByte,
+    ]) {
+      assert.notDeepEqual(changed, current);
+      assert.throws(() => inverseCurrentSource(row, changed));
+      if (changed)
+        assert.throws(() =>
+          inverseCurrentSource(
+            { ...row, after: { bytes: changed.length, sha256: sha(changed) } },
+            changed,
+          ),
+        );
+    }
+    const shifted = structuredClone(row);
+    shifted.hunks[0].afterOffset++;
+    assert.throws(() => inverseCurrentSource(shifted, current));
+  }
+});
 
 void test("class-default successors reject missing, duplicate and unrelated edits", () => {
   for (const row of [staticClassRegistration, staticClassMembership]) {

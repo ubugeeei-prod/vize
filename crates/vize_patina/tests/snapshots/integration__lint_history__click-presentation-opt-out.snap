@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "click-presentation-opt-out",
+    history: "bfb7c96b81041903f4feb3164433fde717fc45b9",
+    source: "<div role=\"presentation\" @click=\"close\" /><div role=\"none\" @click=\"close\" /><div @click=\"close\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/click-events-have-key-events",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/click-events-have-key-events",
+                severity: Warning,
+                message: "Non-interactive elements with @click must also have keyboard event handlers",
+                start: 76,
+                end: 98,
+                help: Some(
+                    "**Why:** Keyboard users cannot activate click-only handlers.\n\n**Best solution:** Use semantic elements:\n```vue\n<button @click=\"handleClick\">Click me</button>\n```\n\n**If you must use a div:**\n```vue\n<div \n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n>\n  Click me\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/click-events-have-key-events",
+                    severity: Warning,
+                    message: "Non-interactive elements with @click must also have keyboard event handlers",
+                    start: 76,
+                    end: 98,
+                    help: Some(
+                        "**Why:** Keyboard users cannot activate click-only handlers.\n\n**Best solution:** Use semantic elements:\n```vue\n<button @click=\"handleClick\">Click me</button>\n```\n\n**If you must use a div:**\n```vue\n<div \n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n>\n  Click me\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

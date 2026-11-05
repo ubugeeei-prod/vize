@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts";
+import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 
 type Step = { name?: string; if?: string; [key: string]: unknown };
 type Job = { "runs-on"?: string; if?: string; steps?: Step[]; [key: string]: unknown };
@@ -234,6 +235,7 @@ test("the seven runner selectors and exact runtime steps preserve every original
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
       restoreTestReportComment(restored, before);
+      restoreContentMapperHelperAbi(restored.jobs["node-engine-compat"]);
     }
     if (specification.name === "pr-source-checks") {
       restoreHistoryToolchainSelection(
@@ -373,8 +375,10 @@ test("all existing frontend job and step truth tables stay identical", () => {
   for (const { specification, before, after } of workflows) {
     for (const id of specification.jobs) {
       const original = before.jobs[id],
-        updated = after.jobs[id];
+        updated = structuredClone(after.jobs[id]);
       assert(original && updated, id);
+      if (specification.name === "check" && id === "node-engine-compat")
+        restoreContentMapperHelperAbi(updated);
       const predicates = [{ before: original.if ?? "true", after: updated.if ?? "true" }];
       for (const [index, step] of (original.steps ?? []).entries()) {
         const counterpart = updated.steps?.[index];
@@ -397,6 +401,54 @@ test("all existing frontend job and step truth tables stay identical", () => {
     }
   }
   assert.equal(vectors, 940);
+});
+
+test("the exact helper ABI step depends only on the engines selection", () => {
+  const current = workflows.find((entry) => entry.specification.name === "check")?.after.jobs[
+    "node-engine-compat"
+  ];
+  assert(current);
+  const restored = structuredClone(current);
+  restoreContentMapperHelperAbi(restored);
+  let vectors = 0;
+  for (const event of [...fastEvents, "schedule", "workflow_dispatch"]) {
+    for (const dependencies of ["true", "false"]) {
+      for (const engines of ["true", "false"]) {
+        for (const cancelled of [false, true]) {
+          const input = context(event, dependencies, cancelled);
+          input.needs["iteration-plan"].outputs.engines = engines;
+          assert.equal(evaluate(helperAbiStep.if, input), engines === "true");
+          vectors += 1;
+        }
+      }
+    }
+  }
+  assert.equal(vectors, 40);
+});
+
+test("helper ABI inversion rejects missing, duplicate, moved and unknown step changes", () => {
+  const current = workflows.find((entry) => entry.specification.name === "check")?.after.jobs[
+    "node-engine-compat"
+  ];
+  assert(current?.steps);
+  for (const mutate of [
+    (steps: Step[], index: number) => steps.splice(index, 1),
+    (steps: Step[], index: number) => steps.splice(index, 0, structuredClone(helperAbiStep)),
+    (steps: Step[], index: number) => steps.push(...steps.splice(index, 1)),
+    (steps: Step[], index: number) => (steps[index].name = "Unreviewed helper check"),
+    (steps: Step[], index: number) => (steps[index].if = "${{ true }}"),
+    (steps: Step[], index: number) => (steps[index].run = "true"),
+    (steps: Step[], index: number) => (steps[index]["continue-on-error"] = true),
+    (steps: Step[], index: number) => (steps[index].env = { UNREVIEWED: "true" }),
+  ]) {
+    const changed = structuredClone(current);
+    const steps = changed.steps!;
+    mutate(
+      steps,
+      steps.findIndex((step) => step.name === helperAbiStep.name),
+    );
+    assert.throws(() => restoreContentMapperHelperAbi(changed), assert.AssertionError);
+  }
 });
 
 test("full scheduled and manual native producers keep their original runner", () => {

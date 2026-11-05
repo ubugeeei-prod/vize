@@ -1,0 +1,1155 @@
+[
+  {
+    "type": "number",
+    "publication": {
+      "diagnostics": [
+        {
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean'.",
+          "range": {
+            "end": {
+              "character": 18,
+              "line": 6
+            },
+            "start": {
+              "character": 6,
+              "line": 6
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        }
+      ],
+      "uri": "file:///workspace/App.vue",
+      "version": 1
+    },
+    "requests": [
+      {
+        "id": "direct",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 54,
+              "line": 3
+            },
+            "start": {
+              "character": 44,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 28
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 41,
+              "line": 3
+            },
+            "start": {
+              "character": 28,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias-use",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 6,
+            "character": 30
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 43,
+              "line": 6
+            },
+            "start": {
+              "character": 30,
+              "line": 6
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 4,
+            "character": 23
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 34,
+              "line": 4
+            },
+            "start": {
+              "character": 23,
+              "line": 4
+            }
+          }
+        }
+      },
+      {
+        "id": "default",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst Child: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "default-as",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 20
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst DirectChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 31,
+              "line": 8
+            },
+            "start": {
+              "character": 20,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel-component",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 35
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst BarrelChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 46,
+              "line": 8
+            },
+            "start": {
+              "character": 35,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "textDocument/definition",
+        "method": "textDocument/definition",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "range": {
+            "end": {
+              "character": 23,
+              "line": 1
+            },
+            "start": {
+              "character": 13,
+              "line": 1
+            }
+          },
+          "uri": "file:///workspace/Child.vue"
+        }
+      },
+      {
+        "id": "textDocument/references",
+        "method": "textDocument/references",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          },
+          "context": {
+            "includeDeclaration": true
+          }
+        },
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 26,
+                "line": 1
+              },
+              "start": {
+                "character": 16,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 2
+              },
+              "start": {
+                "character": 23,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 54,
+                "line": 3
+              },
+              "start": {
+                "character": 44,
+                "line": 3
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 4
+              },
+              "start": {
+                "character": 23,
+                "line": 4
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 41,
+                "line": 5
+              },
+              "start": {
+                "character": 31,
+                "line": 5
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 1
+              },
+              "start": {
+                "character": 13,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/Child.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 37,
+                "line": 0
+              },
+              "start": {
+                "character": 27,
+                "line": 0
+              }
+            },
+            "uri": "file:///workspace/barrel.ts"
+          }
+        ]
+      }
+    ],
+    "childSource": "<script lang=\"ts\">\nexport const childValue: number = 1;\n</script>\n<script setup lang=\"ts\">\nconst local = \"child\";\n</script>\n<template><button>{{ local }}</button></template>\n"
+  },
+  {
+    "type": "string",
+    "publication": {
+      "diagnostics": [
+        {
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "range": {
+            "end": {
+              "character": 20,
+              "line": 5
+            },
+            "start": {
+              "character": 6,
+              "line": 5
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        },
+        {
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'boolean'.",
+          "range": {
+            "end": {
+              "character": 18,
+              "line": 6
+            },
+            "start": {
+              "character": 6,
+              "line": 6
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        }
+      ],
+      "uri": "file:///workspace/App.vue",
+      "version": 2
+    },
+    "requests": [
+      {
+        "id": "direct",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 54,
+              "line": 3
+            },
+            "start": {
+              "character": 44,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 28
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 41,
+              "line": 3
+            },
+            "start": {
+              "character": 28,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias-use",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 6,
+            "character": 30
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 43,
+              "line": 6
+            },
+            "start": {
+              "character": 30,
+              "line": 6
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 4,
+            "character": 23
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: string\n```"
+          },
+          "range": {
+            "end": {
+              "character": 34,
+              "line": 4
+            },
+            "start": {
+              "character": 23,
+              "line": 4
+            }
+          }
+        }
+      },
+      {
+        "id": "default",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst Child: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "default-as",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 20
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst DirectChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 31,
+              "line": 8
+            },
+            "start": {
+              "character": 20,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel-component",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 35
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst BarrelChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 46,
+              "line": 8
+            },
+            "start": {
+              "character": 35,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "textDocument/definition",
+        "method": "textDocument/definition",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "range": {
+            "end": {
+              "character": 23,
+              "line": 1
+            },
+            "start": {
+              "character": 13,
+              "line": 1
+            }
+          },
+          "uri": "file:///workspace/Child.vue"
+        }
+      },
+      {
+        "id": "textDocument/references",
+        "method": "textDocument/references",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          },
+          "context": {
+            "includeDeclaration": true
+          }
+        },
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 26,
+                "line": 1
+              },
+              "start": {
+                "character": 16,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 2
+              },
+              "start": {
+                "character": 23,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 54,
+                "line": 3
+              },
+              "start": {
+                "character": 44,
+                "line": 3
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 4
+              },
+              "start": {
+                "character": 23,
+                "line": 4
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 41,
+                "line": 5
+              },
+              "start": {
+                "character": 31,
+                "line": 5
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 1
+              },
+              "start": {
+                "character": 13,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/Child.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 37,
+                "line": 0
+              },
+              "start": {
+                "character": 27,
+                "line": 0
+              }
+            },
+            "uri": "file:///workspace/barrel.ts"
+          }
+        ]
+      }
+    ],
+    "childSource": "<script lang=\"ts\">\nexport const childValue: string = \"changed\";\n</script>\n<script setup lang=\"ts\">\nconst local = \"child\";\n</script>\n<template><button>{{ local }}</button></template>\n"
+  },
+  {
+    "type": "number",
+    "publication": {
+      "diagnostics": [
+        {
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean'.",
+          "range": {
+            "end": {
+              "character": 18,
+              "line": 6
+            },
+            "start": {
+              "character": 6,
+              "line": 6
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        }
+      ],
+      "uri": "file:///workspace/App.vue",
+      "version": 3
+    },
+    "requests": [
+      {
+        "id": "direct",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 54,
+              "line": 3
+            },
+            "start": {
+              "character": 44,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 28
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 41,
+              "line": 3
+            },
+            "start": {
+              "character": 28,
+              "line": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "alias-use",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 6,
+            "character": 30
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst observedValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 43,
+              "line": 6
+            },
+            "start": {
+              "character": 30,
+              "line": 6
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 4,
+            "character": 23
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\n(alias) const childValue: number\n```"
+          },
+          "range": {
+            "end": {
+              "character": 34,
+              "line": 4
+            },
+            "start": {
+              "character": 23,
+              "line": 4
+            }
+          }
+        }
+      },
+      {
+        "id": "default",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst Child: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 16,
+              "line": 8
+            },
+            "start": {
+              "character": 11,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "default-as",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 20
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst DirectChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 31,
+              "line": 8
+            },
+            "start": {
+              "character": 20,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "barrel-component",
+        "method": "textDocument/hover",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 8,
+            "character": 35
+          }
+        },
+        "result": {
+          "contents": {
+            "kind": "markdown",
+            "value": "```typescript\nconst BarrelChild: VueComponent\n```\n\nVue component: Child.vue"
+          },
+          "range": {
+            "end": {
+              "character": 46,
+              "line": 8
+            },
+            "start": {
+              "character": 35,
+              "line": 8
+            }
+          }
+        }
+      },
+      {
+        "id": "textDocument/definition",
+        "method": "textDocument/definition",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          }
+        },
+        "result": {
+          "range": {
+            "end": {
+              "character": 23,
+              "line": 1
+            },
+            "start": {
+              "character": 13,
+              "line": 1
+            }
+          },
+          "uri": "file:///workspace/Child.vue"
+        }
+      },
+      {
+        "id": "textDocument/references",
+        "method": "textDocument/references",
+        "params": {
+          "textDocument": {
+            "uri": "file:///workspace/App.vue"
+          },
+          "position": {
+            "line": 3,
+            "character": 44
+          },
+          "context": {
+            "includeDeclaration": true
+          }
+        },
+        "result": [
+          {
+            "range": {
+              "end": {
+                "character": 26,
+                "line": 1
+              },
+              "start": {
+                "character": 16,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 2
+              },
+              "start": {
+                "character": 9,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 2
+              },
+              "start": {
+                "character": 23,
+                "line": 2
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 54,
+                "line": 3
+              },
+              "start": {
+                "character": 44,
+                "line": 3
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 34,
+                "line": 4
+              },
+              "start": {
+                "character": 23,
+                "line": 4
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 41,
+                "line": 5
+              },
+              "start": {
+                "character": 31,
+                "line": 5
+              }
+            },
+            "uri": "file:///workspace/App.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 1
+              },
+              "start": {
+                "character": 13,
+                "line": 1
+              }
+            },
+            "uri": "file:///workspace/Child.vue"
+          },
+          {
+            "range": {
+              "end": {
+                "character": 37,
+                "line": 0
+              },
+              "start": {
+                "character": 27,
+                "line": 0
+              }
+            },
+            "uri": "file:///workspace/barrel.ts"
+          }
+        ]
+      }
+    ],
+    "childSource": "<script lang=\"ts\">\nexport const childValue: number = 1;\n</script>\n<script setup lang=\"ts\">\nconst local = \"child\";\n</script>\n<template><button>{{ local }}</button></template>\n"
+  }
+]

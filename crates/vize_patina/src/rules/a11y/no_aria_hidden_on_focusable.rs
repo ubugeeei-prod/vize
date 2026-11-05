@@ -64,6 +64,10 @@ impl MarkupRule for NoAriaHiddenOnFocusable {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if !Self::is_hidden_element(element) {
             return;

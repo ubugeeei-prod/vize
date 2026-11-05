@@ -99,6 +99,10 @@ impl MarkupRule for RequireDatetime {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         Self::check_element(ctx.lint(), element);
     }

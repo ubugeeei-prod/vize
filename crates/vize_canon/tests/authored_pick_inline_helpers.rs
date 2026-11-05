@@ -94,46 +94,26 @@ fn assert_owned_pick(virtual_ts: &str, alias: &str) {
             "missing owned helper {helper}"
         );
     }
-    for helper in CAPTURED_HELPERS {
-        assert!(
-            !virtual_ts.contains(helper),
-            "inline helper still instantiates unqualified Pick: {helper}"
-        );
-    }
 }
 
 #[test]
 fn authored_pick_alias_does_not_capture_inline_helper_references() {
     let virtual_ts = virtual_ts(AUTHORED_PICK);
-    for authored in [
-        "type Function = string",
-        "type Pick<T> = T",
-        "const globalThis = { Function: \"label\" as Function }",
-        "const named = (value: Pick<string>) => value",
-        "const handler = ref(named)",
-        "globalThis.Function",
-    ] {
-        assert!(
-            virtual_ts.contains(authored),
-            "authored fixture text changed: {authored}"
-        );
-    }
+    insta::assert_snapshot!("authored_pick_projection", virtual_ts.as_str());
     assert_owned_pick(&virtual_ts, "__vizePick");
 }
 
 #[test]
 fn authored_pick_alias_keeps_a_fresh_name_when_the_owned_alias_is_taken() {
     let virtual_ts = virtual_ts(SUFFIXED_PICK);
-    assert!(virtual_ts.contains("type Pick<T> = T"));
-    assert!(virtual_ts.contains("type __vizePick<T> = T"));
-    assert!(!virtual_ts.contains("type __vizePick<T, K extends keyof T>"));
+    insta::assert_snapshot!("authored_pick_fresh_name_projection", virtual_ts.as_str());
     assert_owned_pick(&virtual_ts, "__vizePick_1");
 }
 
 #[test]
 fn components_without_an_authored_pick_keep_the_builtin_spelling() {
     let virtual_ts = virtual_ts(UNCAPTURED);
-    assert!(!virtual_ts.contains("__vizePick"));
+    insta::assert_snapshot!("uncaptured_pick_projection", virtual_ts.as_str());
     for helper in CAPTURED_HELPERS {
         assert_eq!(
             virtual_ts.matches(helper).count(),

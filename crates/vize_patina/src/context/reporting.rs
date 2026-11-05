@@ -73,6 +73,7 @@ impl<'a> LintContext<'a> {
             Severity::Warning => self.warning_count += 1,
         }
         offset_diagnostic(&mut diagnostic, self.source_offset);
+        self.record_emission();
         self.diagnostics.push(diagnostic);
     }
 
@@ -175,6 +176,7 @@ impl<'a> LintContext<'a> {
             Severity::Warning => self.warning_count += 1,
         }
         offset_diagnostic(&mut diagnostic, output_offset);
+        self.record_emission();
         self.diagnostics.push(diagnostic);
     }
 }

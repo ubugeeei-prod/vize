@@ -58,6 +58,8 @@ export interface ArtFileInfo {
   isInline?: boolean;
   /** For inline art: absolute path to the host .vue component file */
   componentPath?: string;
+  /** For inline art: position of its <art> block in the native custom-block list. */
+  inlineArtBlockIndex?: number;
 }
 
 /**

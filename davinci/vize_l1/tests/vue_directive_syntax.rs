@@ -88,7 +88,13 @@ fn explicit_goldens_pin_names_arguments_modifiers_and_absolute_utf8_offsets() {
         ("v-:", Full, (2, 2), None, (3, 3)),
         ("v-.x", Full, (2, 2), None, (2, 4)),
         (":", Bind, (0, 0), None, (1, 1)),
-        (":[", Bind, (0, 0), None, (2, 2)),
+        (
+            ":[",
+            Bind,
+            (0, 0),
+            Some(ArgSyntax::Dynamic(Span::new(2, 2))),
+            (2, 2),
+        ),
         (
             ":[foo",
             Bind,
@@ -100,21 +106,21 @@ fn explicit_goldens_pin_names_arguments_modifiers_and_absolute_utf8_offsets() {
             ":[(]]",
             Bind,
             (0, 0),
-            Some(ArgSyntax::Dynamic(Span::new(2, 5))),
+            Some(ArgSyntax::Dynamic(Span::new(2, 4))),
             (5, 5),
         ),
         (
             "v-on:a[",
             Full,
             (2, 4),
-            Some(ArgSyntax::Static(Span::new(5, 6))),
+            Some(ArgSyntax::Static(Span::new(5, 7))),
             (7, 7),
         ),
         (
             ":[key]tail.mod",
             Bind,
             (0, 0),
-            Some(ArgSyntax::Static(Span::new(6, 10))),
+            Some(ArgSyntax::Dynamic(Span::new(2, 9))),
             (10, 14),
         ),
         (
@@ -238,7 +244,7 @@ fn bracket_without_colon_is_full_name_syntax_not_a_dynamic_argument() {
 }
 
 #[test]
-fn dynamic_argument_quotes_escapes_and_nested_templates_preserve_the_whole_expression() {
+fn dynamic_arguments_follow_vue_attribute_states_even_inside_javascript_quotes() {
     for expression in [
         "keys['a.b']",
         "keys['[']",
@@ -257,8 +263,16 @@ fn dynamic_argument_quotes_escapes_and_nested_templates_preserve_the_whole_expre
             panic!("{raw}: {shape:?}")
         };
         assert_eq!(span.start, 9);
-        assert_eq!(span.slice(&source), expression, "{raw}");
-        assert_eq!(shape.modifiers.slice(&source), ".stop.prevent", "{raw}");
+        let (argument, modifiers) = if expression == "({a:`outer${{b:`inner${keys[']']}`}.b}`}).a" {
+            (
+                "({a:`outer${{b:`inner${keys[']']}`",
+                ".b}`}).a].stop.prevent",
+            )
+        } else {
+            (expression, ".stop.prevent")
+        };
+        assert_eq!(span.slice(&source), argument, "{raw}");
+        assert_eq!(shape.modifiers.slice(&source), modifiers, "{raw}");
     }
     for raw in [":[keys['broken.more", ":[`broken.more", ":[keys['escaped\\"] {
         let shape = VueDirectives.decompose(raw, 0).unwrap().unwrap();
@@ -273,7 +287,7 @@ fn dynamic_argument_quotes_escapes_and_nested_templates_preserve_the_whole_expre
 }
 
 #[test]
-fn repeated_brackets_use_scalar_counts_and_excess_distinct_runs_are_explicitly_unadmitted() {
+fn vue_attribute_states_accept_repeated_and_alternating_delimiters_without_a_js_nesting_cap() {
     let expression = cstr!("{}key{}", "[".repeat(20_000), "]".repeat(20_000));
     let raw = cstr!(":[{expression}].prop");
     let shape = VueDirectives.decompose(&raw, 0).unwrap().unwrap();
@@ -297,10 +311,21 @@ fn repeated_brackets_use_scalar_counts_and_excess_distinct_runs_are_explicitly_u
             .unwrap()
             .is_some()
     );
-    assert_eq!(
-        VueDirectives.decompose(&alternating(MAX_DIRECTIVE_DELIMITER_RUNS), 0),
-        Err(DirectiveNameError::NestingLimit)
-    );
+    for count in [
+        MAX_DIRECTIVE_DELIMITER_RUNS,
+        MAX_DIRECTIVE_DELIMITER_RUNS * 2,
+    ] {
+        let raw = alternating(count);
+        let shape = VueDirectives.decompose(&raw, 0).unwrap().unwrap();
+        assert_eq!(
+            shape.arg,
+            Some(ArgSyntax::Dynamic(Span::new(2, raw.len() as u32 - 1)))
+        );
+        assert_eq!(
+            shape.modifiers,
+            Span::new(raw.len() as u32, raw.len() as u32)
+        );
+    }
 }
 
 #[test]

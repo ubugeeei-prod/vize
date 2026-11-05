@@ -244,6 +244,10 @@ impl MarkupRule for InteractiveSupportsFocus {
         Self::check_document(ctx.lint(), document);
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Elements
+    }
+
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         if ctx.is_jsx() {
             Self::check_element(ctx.lint(), element, &FxHashSet::default());

@@ -71,8 +71,98 @@ void test("the standalone public plugin shares rules and complete flat presets",
   for (const rule of Object.values(plugin.rules)) {
     assert.equal(typeof rule.create, "function");
     assert.ok(rule.meta.docs.description);
-    assert.ok(Array.isArray(rule.meta.schema));
   }
+  // ESLint accepts a complete array JSON schema as well as its shorthand tuple.
+  // These two policies constrain the canonical object and official style tuple
+  // separately. Keep the complete schemas and their inventory exact.
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(plugin.rules)
+        .filter(([, rule]) => !Array.isArray(rule.meta.schema))
+        .map(([name, rule]) => [name, rule.meta.schema]),
+    ),
+    {
+      "vue/component-name-in-template-casing": {
+        type: "array",
+        oneOf: [
+          {
+            items: [
+              { enum: ["PascalCase", "kebab-case"] },
+              {
+                type: "object",
+                properties: {
+                  registeredComponentsOnly: { type: "boolean" },
+                  globals: {
+                    type: "array",
+                    items: { type: "string", not: { pattern: "^/(.+)/(.*)$" } },
+                  },
+                },
+                additionalProperties: false,
+              },
+            ],
+            maxItems: 2,
+          },
+          {
+            items: [
+              {
+                type: "object",
+                properties: {
+                  casing: { enum: ["PascalCase", "kebab-case"] },
+                  registeredComponentsOnly: { type: "boolean" },
+                  globals: { type: "array", items: { type: "string" } },
+                },
+                additionalProperties: false,
+              },
+            ],
+            minItems: 1,
+            maxItems: 1,
+          },
+        ],
+      },
+      "vue/v-on-event-hyphenation": {
+        type: "array",
+        oneOf: [
+          {
+            items: [
+              { enum: ["always", "never"] },
+              {
+                type: "object",
+                properties: {
+                  autofix: { type: "boolean" },
+                  ignore: {
+                    type: "array",
+                    uniqueItems: true,
+                    items: { type: "string", pattern: "^(?!\\s*$)(?![\\s\\S]*:exit$)" },
+                  },
+                },
+                additionalProperties: false,
+              },
+            ],
+            maxItems: 2,
+          },
+          {
+            items: [
+              {
+                type: "object",
+                properties: {
+                  style: { enum: ["always", "never"] },
+                  autofix: { type: "boolean" },
+                  ignore: {
+                    type: "array",
+                    uniqueItems: true,
+                    items: { type: "string", pattern: "^(?!\\s*$)(?![\\s\\S]*:exit$)" },
+                  },
+                },
+                additionalProperties: false,
+              },
+            ],
+            minItems: 1,
+            maxItems: 1,
+          },
+        ],
+      },
+    },
+  );
 });
 
 void test("actual ESLint reports unsaved Unicode/CRLF source and native UTF-16 fixes", () => {

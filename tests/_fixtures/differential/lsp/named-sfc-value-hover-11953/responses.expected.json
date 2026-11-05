@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 3,
+      "character": 44
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(alias) const childValue: number\n```"
+      },
+      "range": {
+        "end": {
+          "character": 54,
+          "line": 3
+        },
+        "start": {
+          "character": 44,
+          "line": 3
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 3,
+      "character": 28
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst observedValue: number\n```"
+      },
+      "range": {
+        "end": {
+          "character": 41,
+          "line": 3
+        },
+        "start": {
+          "character": 28,
+          "line": 3
+        }
+      }
+    }
+  }
+]

@@ -29,6 +29,7 @@ pub struct Project {
     root: PathBuf,
     base_url: Option<PathBuf>,
     aliases: Vec<(String, Vec<String>)>,
+    pub(super) package_conditions: Vec<String>,
     inputs: Vec<PathBuf>,
     configuration_diagnostics: Vec<String>,
 }
@@ -339,6 +340,39 @@ fn build(
         .iter()
         .map(|unresolved| unresolved.configuration_message())
         .collect();
+    let custom_conditions = flattened
+        .options
+        .get("customConditions")
+        .map(|value| {
+            value
+                .as_array()
+                .ok_or_else(|| String::from("compilerOptions.customConditions must be an array"))?
+                .iter()
+                .map(|condition| {
+                    condition
+                        .as_str()
+                        .map(ToCompactString::to_compact_string)
+                        .ok_or_else(|| {
+                            String::from("compilerOptions.customConditions entries must be strings")
+                        })
+                })
+                .collect::<Result<Vec<_>, String>>()
+        })
+        .transpose()?
+        .unwrap_or_default();
+    let mut package_conditions = Vec::new();
+    if !custom_conditions.is_empty() {
+        package_conditions.extend([String::from("types"), String::from("import")]);
+        let bundler = flattened
+            .options
+            .get("moduleResolution")
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|resolution| resolution.eq_ignore_ascii_case("bundler"));
+        if !bundler {
+            package_conditions.push(String::from("node"));
+        }
+        package_conditions.extend(custom_conditions);
+    }
     let mut aliases = Vec::new();
     if let Some(value) = flattened.options.get("paths") {
         let paths = value
@@ -387,6 +421,7 @@ fn build(
         root: root.to_path_buf(),
         base_url,
         aliases,
+        package_conditions,
         inputs,
         configuration_diagnostics,
     })

@@ -116,6 +116,8 @@ impl CorsaProjectClient {
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
+            canon_file_cache: Default::default(),
+            canon_batches: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             overlay_storage,
@@ -195,6 +197,11 @@ impl CorsaProjectClient {
             self.remember_session_document_uri(uri.as_str(), document_uri);
         }
         self.materialized_project_session = true;
+        // The replacement transport and document names now belong to the
+        // physical mirror. A retained logical flag would refresh that API
+        // against the authored config on the next dependency edit.
+        self.logical_workspace_overlays = false;
+        self.logical_api_reset_pending = false;
         if self.explicit_project_config.is_some() {
             self.explicit_project_config = Some(config_path);
         }
@@ -227,6 +234,33 @@ fn selected_workspace_config(root: &Path, explicit: Option<&Path>) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::{resolve_corsa_executable, selected_workspace_config};
+
+    #[test]
+    fn materialized_activation_retires_the_logical_revision_and_keeps_document_bytes() {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        std::fs::write(root.join("tsconfig.json"), "{}").unwrap();
+        let mut client = crate::lsp_client::CorsaProjectClient::empty_for_test(root.clone());
+        client.logical_workspace_overlays = true;
+        client.logical_api_reset_pending = true;
+        let uri = crate::file_uri::path_to_file_uri(&root.join("App.vue.ts"));
+        let source = "export const value = '雪😀';\n";
+        client.document_texts.insert(uri.clone(), source.into());
+        client.activate_materialized_project_session().unwrap();
+        assert_eq!(
+            (
+                client.materialized_project_session,
+                client.logical_workspace_overlays,
+                client.logical_api_reset_pending
+            ),
+            (true, false, false),
+        );
+        let physical_uri = client.session_document_uri(&uri);
+        assert_ne!(physical_uri, uri);
+        let physical = crate::file_uri::file_uri_to_path(&physical_uri).unwrap();
+        assert_eq!(std::fs::read_to_string(physical).unwrap(), source);
+        assert!(!root.join("App.vue.ts").exists());
+    }
     use std::fs;
 
     #[test]

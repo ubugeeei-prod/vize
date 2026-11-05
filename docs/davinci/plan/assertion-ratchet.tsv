@@ -87,7 +87,6 @@ crates/vize_atelier_ssr/src/l4/string_plan/tests.rs	4
 crates/vize_atelier_vapor/src/l3/native/tests.rs	2
 crates/vize_atelier_vapor/src/l3/tests.rs	5
 crates/vize_atelier_vapor/src/l3/tests/attribute_modifiers.rs	1
-crates/vize_atelier_vapor/src/l3/tests/attributes.rs	6
 crates/vize_atelier_vapor/src/l3/tests/components.rs	2
 crates/vize_atelier_vapor/src/l3/tests/control.rs	5
 crates/vize_atelier_vapor/src/l3/tests/structural_slots.rs	6
@@ -201,9 +200,7 @@ crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build/package_
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build/stamp_import_facts_tests.rs	2
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog_tests.rs	3
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/scaling_tests.rs	2
-crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/tests.rs	1
 crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/routes/budget_tests.rs	2
-crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs	1
 crates/vize_canon/src/corsa_bridge/vue_document_alias_tests.rs	4
 crates/vize_canon/src/corsa_bridge/vue_document_package_compat_tests.rs	4
 crates/vize_canon/src/corsa_bridge/vue_document_package_config_tests.rs	5

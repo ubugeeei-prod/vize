@@ -87,7 +87,7 @@ fn forged_full_name_prefix_utf8_modifier_and_overflow_ranges_are_refused() {
 #[test]
 fn empty_full_names_missing_shorthands_and_incomplete_colons_stay_refusals() {
     let allocator = Allocator::default();
-    for source in ["v-", "v-.prop", ":", ".", "@", "#"] {
+    for source in ["v-", "v-.prop", ":", ".", "@", "#", "v-bind:["] {
         let block = SourceRoot::new(source).unwrap().whole_block();
         let head = VueDirectives.decompose(source, 0).unwrap();
         assert!(
@@ -101,7 +101,7 @@ fn empty_full_names_missing_shorthands_and_incomplete_colons_stay_refusals() {
             "{source}"
         );
     }
-    for source in ["v-bind:", "v-bind:.prop", "v-bind:["] {
+    for source in ["v-bind:", "v-bind:.prop"] {
         let block = SourceRoot::new(source).unwrap().whole_block();
         let head = VueDirectives.decompose(source, 0).unwrap();
         assert!(

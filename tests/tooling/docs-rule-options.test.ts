@@ -5,6 +5,7 @@ import { test } from "node:test";
 import ts from "typescript";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
+import { isOperationalDiagnosticReference } from "../../docs/scripts/rules/operational-diagnostics.ts";
 
 const configurableRuleOptions = [
   "html/no-empty-palpable-content",
@@ -218,7 +219,7 @@ test("strict boolean rows render within the complete option and type-aware table
   const reference = path.join(repoRoot, "docs/content/rules/reference");
   const typeRules = fs
     .readdirSync(reference)
-    .filter((file) => file.startsWith("type-"))
+    .filter((file) => file.startsWith("type-") && !isOperationalDiagnosticReference(file))
     .map((file) => fs.readFileSync(path.join(reference, file), "utf8"));
   for (const page of typeRules) {
     assert.match(page, /"typeAware": true/, "type-aware configuration");

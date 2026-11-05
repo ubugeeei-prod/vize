@@ -146,7 +146,10 @@ impl<'a> LintContext<'a> {
     /// Get collected diagnostics.
     #[inline]
     pub fn into_diagnostics(self) -> Vec<LintDiagnostic> {
-        self.diagnostics
+        match self.callback_order {
+            Some(order) => order.finish(self.diagnostics),
+            None => self.diagnostics,
+        }
     }
 
     /// Get reference to collected diagnostics.

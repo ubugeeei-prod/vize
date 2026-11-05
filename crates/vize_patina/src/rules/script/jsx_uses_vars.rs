@@ -24,13 +24,12 @@
 //! <template><div /></template>
 //! ```
 
-use super::{ScriptRule, ScriptRuleMeta, script_source_type};
+use super::{ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::Severity;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXMemberExpressionObject, Program};
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::walk_jsx_element;
-use oxc_parser::Parser;
+use oxc_parser::ParserReturn;
 use vize_l0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -65,16 +64,11 @@ impl ScriptRule for JsxUsesVars {
     }
 }
 
-/// Root bindings of JSX opening tags in `source`.
+/// Root bindings of JSX opening tags in the lint pass's retained script parse.
 ///
 /// `<Foo />` and `<Foo.Bar />` contribute `Foo`. Namespaced tags and `<this.Foo />`
 /// contribute nothing, matching eslint-plugin-vue.
-pub(crate) fn jsx_referenced_names(source: &str) -> FxHashSet<CompactString> {
-    if !source.contains('<') {
-        return FxHashSet::default();
-    }
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, script_source_type().with_jsx(true)).parse();
+pub(crate) fn jsx_referenced_names(parsed: &ParserReturn<'_>) -> FxHashSet<CompactString> {
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return FxHashSet::default();
     }
@@ -122,67 +116,4 @@ fn member_root<'a>(object: &'a JSXMemberExpressionObject<'a>) -> Option<&'a str>
 }
 
 #[cfg(test)]
-mod tests {
-    use super::jsx_referenced_names;
-    use crate::Linter;
-
-    fn names(source: &str) -> Vec<String> {
-        let mut names: Vec<_> = jsx_referenced_names(source)
-            .into_iter()
-            .map(|name| name.to_string())
-            .collect();
-        names.sort();
-        names
-    }
-
-    fn lint(source: &str) -> Vec<String> {
-        Linter::new()
-            .with_enabled_rules(Some(vec![
-                "vue/no-unused-components".into(),
-                "vue/jsx-uses-vars".into(),
-            ]))
-            .lint_sfc(source, "test.vue")
-            .diagnostics
-            .into_iter()
-            .map(|diagnostic| format!("{}: {}", diagnostic.rule_name, diagnostic.message))
-            .collect()
-    }
-
-    #[test]
-    fn marks_jsx_roots_and_skips_namespaced_tags() {
-        assert_eq!(names("const view = <MyButton />"), ["MyButton"]);
-        assert_eq!(names("const view = <MyButton.Item />"), ["MyButton"]);
-        assert_eq!(names("const view = <Foo.Bar.Baz />"), ["Foo"]);
-        assert_eq!(names("const view = <div><span /></div>"), ["div", "span"]);
-        assert_eq!(names("const view = <svg:path />"), Vec::<String>::new());
-        assert_eq!(names("const view = <this.Foo />"), Vec::<String>::new());
-        assert_eq!(names("const MyButton = 1"), Vec::<String>::new());
-    }
-
-    #[test]
-    fn jsx_use_keeps_the_component_import() {
-        let source = r#"<script setup>
-import MyButton from './MyButton.vue'
-const view = () => <MyButton />
-</script>
-<template><div /></template>
-"#;
-        assert_eq!(lint(source), Vec::<String>::new());
-    }
-
-    #[test]
-    fn an_unreferenced_component_import_is_still_unused() {
-        let source = r#"<script setup>
-import MyButton from './MyButton.vue'
-const view = () => <div />
-</script>
-<template><div /></template>
-"#;
-        assert_eq!(
-            lint(source),
-            [
-                "vue/no-unused-components: Component 'MyButton' is registered but never used in template"
-            ]
-        );
-    }
-}
+mod tests;

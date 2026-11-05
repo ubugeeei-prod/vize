@@ -3973,6 +3973,16 @@ vue/attribute-order · lint 规则
 
 帮助:
   按推荐顺序重新排列属性
+=== vue/comment-directive
+vue/comment-directive · lint 规则
+支持 `<template>` 中的注释指令
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/guide/lint-execution.md
 === vue/component-definition-name-casing
 vue/component-definition-name-casing · lint 规则
 强制组件文件名使用PascalCase或kebab-case
@@ -4041,6 +4051,26 @@ vue/html-button-has-type · lint 规则
 
 帮助:
   '<button>' 的 type 默认为 "submit"，会提交其所在的表单。请显式设置 type="button"、"submit" 或 "reset"。
+=== vue/html-end-tags
+vue/html-end-tags · lint 规则
+要求为允许省略结束标签的 HTML 元素显式编写结束标签
+
+精度层级: complete
+适用范围: HTML conformance of native elements with static attributes in SFC templates
+严重级别: 警告
+类别: strongly-recommended
+自动修复: 支持
+文档: docs/content/rules/reference/vue-html-end-tags.md
+
+错误示例:
+  <ul><li>a</ul>
+  <p>hello
+
+正确示例:
+  <ul><li>a</li></ul>
+  <p>hello</p>
+  <br>
+  <div></div>
 === vue/html-quotes
 vue/html-quotes · lint 规则
 强制HTML属性引号风格
@@ -4086,6 +4116,39 @@ vue/html-self-closing · lint 规则
 
 帮助:
   使用自闭合语法
+=== vue/jsx-uses-vars
+vue/jsx-uses-vars · lint 规则
+将 JSX 元素名称中引用的变量视为已使用
+
+精度层级: complete
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-jsx-uses-vars.md
+
+错误示例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  </script>
+  <template><div /></template>
+
+正确示例:
+  <script setup>
+  import MyButton from './MyButton.vue'
+  const view = () => <MyButton />
+  </script>
+  <template><div /></template>
+=== vue/match-component-file-name
+vue/match-component-file-name · lint 规则
+要求组件名称与文件名一致
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-match-component-file-name.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）
@@ -4260,6 +4323,16 @@ vue/no-child-content · lint 规则
 
 帮助:
   使用v-html或v-text时，子内容会被忽略。请删除子内容
+=== vue/no-custom-modifiers-on-v-model
+vue/no-custom-modifiers-on-v-model · lint 规则
+禁止在组件的 `v-model` 上使用自定义修饰符
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 警告
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-custom-modifiers-on-v-model.md
 === vue/no-deprecated-filter
 vue/no-deprecated-filter · lint 规则
 禁止已废弃的 Vue 2 过滤器语法（`|` 管道符）
@@ -4818,6 +4891,16 @@ vue/no-preprocessor-lang · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-preprocessor-lang.md
+=== vue/no-ref-object-reactivity-loss
+vue/no-ref-object-reactivity-loss · lint 规则
+禁止在同一作用域中复制 ref 的值
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-ref-object-reactivity-loss.md
 === vue/no-reserved-component-names
 vue/no-reserved-component-names · lint 规则
 禁止使用保留的组件名
@@ -4886,6 +4969,16 @@ vue/no-script-non-standard-lang · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-no-script-non-standard-lang.md
+=== vue/no-setup-props-reactivity-loss
+vue/no-setup-props-reactivity-loss · lint 规则
+禁止导致响应性丢失的 setup prop 读取
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-src-attribute
 vue/no-src-attribute · lint 规则
 不建议在 SFC 块上使用 src 属性
@@ -5026,6 +5119,16 @@ vue/no-textarea-mustache · lint 规则
 
     <!-- 正确 -->
     <textarea v-model="message"></textarea>
+=== vue/no-this-in-before-route-enter
+vue/no-this-in-before-route-enter · lint 规则
+禁止在 `beforeRouteEnter` 中使用 `this`
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-this-in-before-route-enter.md
 === vue/no-undefined-refs
 vue/no-undefined-refs · lint 规则
 禁止未定义的模板引用
@@ -5329,6 +5432,26 @@ vue/no-useless-v-bind · lint 规则
 
 帮助:
   请将该绑定替换为静态属性（用 foo=bar 代替 :foo='bar'）。
+=== vue/no-v-for-template-key
+vue/no-v-for-template-key · lint 规则
+禁止在 `<template v-for>` 上设置 `key`
+
+精度层级: exact
+适用范围: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
+严重级别: 错误
+类别: essential
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-v-for-template-key.md
+
+错误示例:
+  <template v-for="item in items" :key="item.id">
+    <div />
+  </template>
+
+正确示例:
+  <template v-for="item in items">
+    <div :key="item.id" />
+  </template>
 === vue/no-v-for-template-key-on-child
 vue/no-v-for-template-key-on-child · lint 规则
 禁止在`<template v-for>`的子元素上使用`key`
@@ -5464,6 +5587,16 @@ vue/permitted-contents · lint 规则
   - <a>和<button>不能相互嵌套
   - <ul>/<ol>的直接子元素只能是<li>
   - <table>的直接子元素只能是<thead>、<tbody>、<tfoot>、<tr>或<caption>
+=== vue/prefer-prop-type-boolean-first
+vue/prefer-prop-type-boolean-first · lint 规则
+要求组件 prop 类型中的 `Boolean` 排在首位
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-prefer-prop-type-boolean-first.md
 === vue/prefer-props-shorthand
 vue/prefer-props-shorthand · lint 规则
 强制同名prop绑定使用简写语法
@@ -5577,6 +5710,16 @@ vue/require-component-registration · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-expose
+vue/require-expose · lint 规则
+要求使用 `expose` 声明公共属性
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 警告
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-require-expose.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint 规则
 要求style块使用scoped或module属性
@@ -5955,6 +6098,16 @@ vue/valid-attribute-name · lint 规则
 
 帮助:
   属性名不能包含空格、引号、>、/、=或控制字符
+=== vue/valid-model-definition
+vue/valid-model-definition · lint 规则
+要求 model 选项使用有效的键
+
+精度层级: exact
+适用范围: Options API component definitions written as object literals
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint 规则
 强制 `<template>` 根符合 Vue 3 的片段语义

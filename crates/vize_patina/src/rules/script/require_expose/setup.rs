@@ -12,7 +12,7 @@ use oxc_span::{GetSpan, Span};
 use oxc_syntax::node::NodeId;
 use oxc_syntax::scope::ScopeFlags;
 use oxc_syntax::symbol::SymbolId;
-use std::collections::HashSet;
+use vize_l0::FxHashSet;
 
 pub(super) fn is_exempt<'a>(value: &Expression<'a>, semantic: &Semantic<'a>) -> bool {
     match value.without_parentheses() {
@@ -152,7 +152,7 @@ fn arrow_returns_render(arrow: &ArrowFunctionExpression<'_>, semantic: &Semantic
         let Some(Statement::ExpressionStatement(statement)) = arrow.body.statements.first() else {
             return false;
         };
-        return is_function(&statement.expression, semantic, &mut HashSet::new());
+        return is_function(&statement.expression, semantic, &mut FxHashSet::default());
     }
     returns_render(Some(&arrow.body), semantic)
 }
@@ -181,7 +181,7 @@ impl<'a> Visit<'a> for RenderProbe<'_, 'a> {
 
     fn visit_return_statement(&mut self, it: &oxc_ast::ast::ReturnStatement<'a>) {
         if let Some(argument) = &it.argument
-            && is_function(argument, self.semantic, &mut HashSet::new())
+            && is_function(argument, self.semantic, &mut FxHashSet::default())
         {
             self.found = true;
         }
@@ -191,7 +191,7 @@ impl<'a> Visit<'a> for RenderProbe<'_, 'a> {
 fn is_function<'a>(
     expression: &Expression<'a>,
     semantic: &Semantic<'a>,
-    seen: &mut HashSet<SymbolId>,
+    seen: &mut FxHashSet<SymbolId>,
 ) -> bool {
     match expression.without_parentheses() {
         Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => true,

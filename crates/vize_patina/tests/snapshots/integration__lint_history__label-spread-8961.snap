@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "label-spread-8961",
+    history: "eac97db5a2ca5aae532a7280511453b90318e434",
+    source: "<label v-bind=\"labelProps\">Email</label><label :class=\"labelProps.id\">Email</label>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/label-has-for",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/label-has-for",
+                severity: Warning,
+                message: "<label> must have a `for` attribute or wrap a form control (input, select, textarea)",
+                start: 40,
+                end: 70,
+                help: Some(
+                    "**Fix options:**\n\n1. Use `for` attribute:\n```vue\n<label for=\"name\">Name</label>\n<input id=\"name\" type=\"text\">\n```\n\n2. Wrap form control:\n```vue\n<label>Name <input type=\"text\"></label>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/label-has-for",
+                    severity: Warning,
+                    message: "<label> must have a `for` attribute or wrap a form control (input, select, textarea)",
+                    start: 40,
+                    end: 70,
+                    help: Some(
+                        "**Fix options:**\n\n1. Use `for` attribute:\n```vue\n<label for=\"name\">Name</label>\n<input id=\"name\" type=\"text\">\n```\n\n2. Wrap form control:\n```vue\n<label>Name <input type=\"text\"></label>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

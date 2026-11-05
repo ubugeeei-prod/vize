@@ -8,6 +8,7 @@ const { isSfc } = require("./virtual-modules.cjs");
 // TypeScript owns both the current source tree and lexical symbol identity.
 // A same-spelled parameter/property is never an imported component binding.
 function resolveVueImportDefinition(ts, support, fileName, position, service) {
+  support.virtual?.ensure?.(fileName);
   const program = service.getProgram?.();
   const sourceFile = program?.getSourceFile(fileName);
   if (!sourceFile) return undefined;

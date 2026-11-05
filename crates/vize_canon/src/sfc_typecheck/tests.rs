@@ -1,6 +1,7 @@
 //! Tests for SFC type checking.
 #![cfg(test)]
 mod heritage_props;
+mod sfc_grammar;
 
 mod emit_props;
 mod fallthrough_ranges;
@@ -60,17 +61,6 @@ fn test_type_check_result() {
 
     assert_eq!(result.error_count, 1);
     assert!(result.has_errors());
-}
-
-#[test]
-fn test_type_check_options_default() {
-    let options = SfcTypeCheckOptions::new("test.vue");
-    assert_eq!(options.filename, "test.vue");
-    assert!(!options.strict);
-    assert!(options.check_props);
-    assert!(options.check_emits);
-    assert!(options.check_template_bindings);
-    assert!(!options.include_virtual_ts);
 }
 
 #[test]
@@ -1438,3 +1428,5 @@ const count = 1
         "script setup virtual TS must stay untouched:\n{virtual_ts}"
     );
 }
+
+mod options_defaults;
