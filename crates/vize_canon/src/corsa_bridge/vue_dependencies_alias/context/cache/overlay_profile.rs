@@ -181,6 +181,6 @@ fn profile_unrelated_overlays() {
     let output = std::env::var_os("VIZE_OVERLAY_PROFILE_OUTPUT").expect("explicit artifact path");
     std::fs::write(output, serde_json::to_vec_pretty(&serde_json::json!({
         "schema":"vize.lsp.overlay-graph-profile.v1", "scenarios":scenarios,
-        "scope":"editor preparation only; fresh session cold, warm graph hits, unsaved sibling edits; Rust process RSS including retained old query", 
+        "scope":"editor preparation only; fresh session cold, warm graph hits, unsaved sibling edits; Rust process RSS including retained old query",
     })).unwrap()).unwrap();
 }
