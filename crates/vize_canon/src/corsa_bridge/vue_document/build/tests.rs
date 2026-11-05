@@ -284,6 +284,7 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
     drop(prepare(&session, &host, HOST, &[], &[]));
     let initial = context(&session, &host, HOST, &[]);
     let surface = initial.query_surface.get().expect("surface");
+    let original_code = surface.host.code.clone();
     let host_uri = surface.host.request_uri.clone();
     let dependency_slots = surface
         .documents
@@ -301,7 +302,7 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
         .host
         .materialized_sources
         .iter()
-        .find(|source| source.source_path.ends_with("Child.vue"))
+        .find(|source| source.source_path == child.canonicalize().unwrap())
         .expect("child mirror document")
         .code
         .as_str()
@@ -312,8 +313,17 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
     drop(prepare(&session, &host, &edited, &[], &[]));
     let revised = context(&session, &host, &edited, &[]);
     let surface = revised.query_surface.get().expect("revised surface");
-    assert!(surface.host.code.contains("changed"));
-    assert!(!surface.host.code.contains("日本語"));
+    assert_ne!(surface.host.code, original_code);
+    assert_eq!(
+        surface
+            .host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path == host.canonicalize().unwrap())
+            .expect("edited host mirror document")
+            .source,
+        edited
+    );
     for (index, previous) in dependency_slots {
         assert!(
             std::ptr::eq(previous, &surface.documents[index]),
@@ -329,7 +339,7 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
             .host
             .materialized_sources
             .iter()
-            .find(|source| source.source_path.ends_with("Child.vue"))
+            .find(|source| source.source_path == child.canonicalize().unwrap())
             .expect("child mirror document")
             .code
             .as_str()
@@ -360,14 +370,19 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
             project.host.dependencies[0].source_path,
             root.path().join("Child.vue").canonicalize().unwrap()
         );
-        let physical_root = root.path().canonicalize().unwrap();
-        assert!(
-            project
-                .host
-                .materialized_sources
-                .iter()
-                .all(|source| { source.source_path.starts_with(&physical_root) })
-        );
+        let mut members = project
+            .host
+            .materialized_sources
+            .iter()
+            .map(|source| source.source_path.clone())
+            .collect::<Vec<_>>();
+        members.sort();
+        let mut expected = vec![
+            root.path().join("Child.vue").canonicalize().unwrap(),
+            root.path().join("Host.vue").canonicalize().unwrap(),
+        ];
+        expected.sort();
+        assert_eq!(members, expected);
     }
 }
 
@@ -390,7 +405,7 @@ fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
         .host
         .materialized_sources
         .iter()
-        .find(|source| source.source_path.ends_with("Child.vue"))
+        .find(|source| source.source_path == child.canonicalize().unwrap())
         .expect("child mirror")
         .materialized_path
         .clone();
@@ -398,7 +413,7 @@ fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
         .host
         .materialized_sources
         .iter()
-        .find(|source| source.source_path.ends_with("Host.vue"))
+        .find(|source| source.source_path == host.canonicalize().unwrap())
         .expect("host mirror")
         .materialized_path
         .clone();
@@ -415,15 +430,24 @@ fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
     );
     assert_eq!(std::fs::read(&child_path).unwrap(), child_bytes);
     let host_on_disk = std::fs::read_to_string(&host_path).unwrap();
-    assert!(host_on_disk.contains("changed"));
-    assert!(!host_on_disk.contains("日本語"));
-    assert!(
-        hit.materialized_changes.changed.contains(&host_path),
-        "the native delta still names the edited host"
+    assert_eq!(host_on_disk, hit.host.code);
+    assert_eq!(
+        hit.host
+            .materialized_sources
+            .iter()
+            .find(|source| source.source_path == host.canonicalize().unwrap())
+            .expect("edited host mirror document")
+            .source,
+        edited
     );
-    assert!(!hit.materialized_changes.changed.contains(&child_path));
-    assert!(!hit.materialized_changes.created.contains(&child_path));
-    assert!(!hit.materialized_changes.deleted.contains(&child_path));
+    assert_eq!(
+        hit.materialized_changes,
+        crate::batch::virtual_project::MaterializedFileDelta {
+            changed: vec![host_path],
+            ..Default::default()
+        },
+        "only the edited host changes; the child and graph topology remain intact"
+    );
     let revised = context(&session, &host, &edited, &[]);
     drop(hit);
     session.clear();
@@ -446,7 +470,10 @@ fn fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror() {
         miss_hashes, warm_hashes,
         "a fingerprint miss still hashes the whole mirror"
     );
-    assert!(miss.host.dependencies[0].source.contains("missTitle"));
+    assert_eq!(
+        miss.host.dependencies[0].source,
+        CHILD.replace("title", "missTitle")
+    );
     let missed = context(&session, &host, &edited, &[]);
     drop(miss);
     session.clear();
