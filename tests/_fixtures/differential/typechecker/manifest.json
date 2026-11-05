@@ -11768,6 +11768,51 @@
       }
     },
     {
+      "id": "typechecker/generic-component-cast-11966",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::generic_component_cast_11966::standard_tsgo_accepts_generic_slots_and_emits_component_cast",
+      "inputs": [
+        {
+          "file": "List.vue",
+          "path": "generic-component-cast-11966/List.vue.txt",
+          "sha256": "a2f562f2e2e4af379e0d9503e883139a639eaf1d1de28a23430d0aee3676de43"
+        },
+        {
+          "file": "use.ts",
+          "path": "generic-component-cast-11966/use.ts.txt",
+          "sha256": "5f94ba6bcfa5129735c9df33aeb7d66b0c47b2f473f74f6d94be51bfb1e3c5f5"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "generic-component-cast-11966/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b"
+        },
+        {
+          "file": "cases.json",
+          "path": "generic-component-cast-11966/cases.json",
+          "sha256": "4d1a83a4e3f825cde6b7fad731747e6cb06d2d82ec0e1de2645605daa16cc182"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required actual source CLI beta content-mapper protocol; generic props, emits and slots remain castable to Vue's public Component union."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/global-component-listener-11373/original-three-components",
       "state": "active",
       "targets": [
@@ -12225,6 +12270,11 @@
           "sha256": "f319ea85d754ff72fc4effb41c000956f9c9fb0582efed0c3399bc7507a1c0f5"
         },
         {
+          "file": "ArrowFallback.vue",
+          "path": "nested-function-guard-11853/ArrowFallback.vue.txt",
+          "sha256": "3409135c50b29b2b8fed4c1fddcdfa652ac2e101660dd692eec4435742c5258a"
+        },
+        {
           "file": "UnusedHandler.vue",
           "path": "nested-function-guard-11853/UnusedHandler.vue.txt",
           "sha256": "5f2b0246c86ad16683b42b79a170476bf77216e7c0470dbf2f8aba5176172d7f"
@@ -12247,7 +12297,7 @@
         {
           "file": "cases.json",
           "path": "nested-function-guard-11853/cases.json",
-          "sha256": "fdf461c7889607fa00004dadd78b3b0d1b2e4897ba2ceb798772a521a0077f28"
+          "sha256": "d2c4376183169725e2d5a29df7c673a6637725ec6589d2a39f7ffb8d2c250043"
         }
       ],
       "dialectCoverage": {

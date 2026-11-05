@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "issue": 11966,
+  "reportedVersion": "0.691.0",
+  "reporter": "makarasty",
+  "inputs": ["List.vue", "use.ts", "tsconfig.json"],
+  "expectedStdout": ""
+}

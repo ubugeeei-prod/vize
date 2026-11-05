@@ -1,0 +1,4 @@
+import type { Component } from 'vue';
+import List from './List.vue';
+
+export const asComponent = List as Component;

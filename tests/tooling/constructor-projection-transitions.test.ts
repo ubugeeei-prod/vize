@@ -5,7 +5,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   certifyComponentConstructorTransition,
+  certifyGenericComponentContextTransition,
   componentConstructorTransitions,
+  currentGenericComponentContext,
+  previousGenericComponentContext,
 } from "../../tools/support/compat/content-mapper/component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "../../tools/support/compat/content-mapper/component-export-transition.ts";
 import { certifyJsxWitnessChange } from "../../tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts";
@@ -42,6 +45,31 @@ test("component constructor transitions retain the complete reviewed variants", 
       assert.AssertionError,
     );
   }
+});
+
+test("generic component context transition retains the complete reviewed signature", () => {
+  const before = Buffer.from(previousGenericComponentContext);
+  const after = Buffer.from(currentGenericComponentContext);
+  const certificate = certifyGenericComponentContextTransition(before, after);
+  assert.ok(certificate);
+  assert.deepEqual(
+    Buffer.concat([
+      before.subarray(0, certificate.start),
+      certificate.replacement,
+      before.subarray(certificate.end),
+    ]),
+    after,
+  );
+  assert.equal(certifyGenericComponentContextTransition(before, before), undefined);
+  assert.equal(certifyGenericComponentContextTransition(after, after), undefined);
+  for (const mutated of [
+    Buffer.from(currentGenericComponentContext.replace("attrs: any", "attrs: unknown")),
+    Buffer.from(currentGenericComponentContext.replace("slots: any", "slots: unknown")),
+  ])
+    assert.throws(
+      () => certifyGenericComponentContextTransition(before, mutated),
+      assert.AssertionError,
+    );
 });
 
 test("component export naming retains the complete generated body", () => {

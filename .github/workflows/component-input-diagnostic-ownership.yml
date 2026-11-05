@@ -20,6 +20,8 @@ on:
       - "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
       - "crates/vize_canon/src/virtual_ts/generator/emits.rs"
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs"
+      - "crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs"
+      - "crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs"
       - "crates/vize_canon/src/virtual_ts/generator/component_export.rs"
       - "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs"
       - "crates/vize_canon/tests/constructor_emission_projection.rs"

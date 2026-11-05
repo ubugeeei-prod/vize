@@ -145,6 +145,7 @@ pub(super) struct GenericSignature<'a> {
     pub(super) role: SignatureRole,
     pub(super) parameters: &'a str,
     pub(super) arguments: &'a str,
+    pub(super) vue_component_context: bool,
 }
 
 impl fmt::Display for GenericSignature<'_> {
@@ -159,13 +160,29 @@ impl fmt::Display for GenericSignature<'_> {
         let Self {
             parameters,
             arguments,
+            vue_component_context,
             ..
         } = self;
         let context = names::declared("$GenericContext");
         let pick = names::lib("Pick");
+        write!(
+            formatter,
+            "type {name} = {parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>"
+        )?;
+        if *vue_component_context {
+            // Vue's generic SFC function overlaps `Component` when emitted
+            // listeners are present. Required Vize metadata makes TypeScript
+            // compare the function branch more strictly, so preserve that
+            // public overlap without widening the retained slot context used
+            // for inference (#11966).
+            write!(
+                formatter,
+                " | {{ attrs: any; emit: (...args: any[]) => any; slots: any }}"
+            )?;
+        }
         writeln!(
             formatter,
-            "type {name} = {parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }};"
+            ", expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }};"
         )
     }
 }

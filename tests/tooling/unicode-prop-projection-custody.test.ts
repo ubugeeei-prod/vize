@@ -308,6 +308,8 @@ test("Unicode workflow registers the exact certificate, assets and refusal tests
     "tools/support/compat/content-mapper/component-export-transition.ts",
     "tools/support/compat/content-mapper/canonical-helper-transition.ts",
     "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
+    "crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
+    "crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
     "tests/tooling/constructor-projection-parity.test.ts",
     "tests/tooling/runtime-prop-projection-certificate.test.ts",
     "tests/tooling/unicode-prop-projection-custody.test.ts",

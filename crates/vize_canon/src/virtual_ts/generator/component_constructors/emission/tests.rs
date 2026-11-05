@@ -43,7 +43,8 @@ fn signature_roles_share_exact_context_grammar_and_keep_the_ref_probe_open() {
                 GenericSignature {
                     role,
                     parameters,
-                    arguments
+                    arguments,
+                    vue_component_context: false,
                 }
             ),
             expected
@@ -65,12 +66,29 @@ fn signature_views_preserve_multiline_parameters_and_quoted_defaults() {
                 GenericSignature {
                     role: SignatureRole::Component,
                     parameters: &parameters,
-                    arguments: "<T, U>"
+                    arguments: "<T, U>",
+                    vue_component_context: false,
                 }
             ),
             expected
         );
     }
+}
+
+#[test]
+fn emitted_generic_slots_keep_vue_component_context_overlap() {
+    assert_eq!(
+        cstr!(
+            "{}",
+            GenericSignature {
+                role: SignatureRole::Component,
+                parameters: "<R extends { id: string }>",
+                arguments: "<R>",
+                vue_component_context: true,
+            }
+        ),
+        "type $GenericComponent = <R extends { id: string }>(props: $GenericContext<R>['props'], ctx?: Pick<$GenericContext<R>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<R>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<R> };\n"
+    );
 }
 
 #[test]

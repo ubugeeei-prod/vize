@@ -1,21 +1,68 @@
-/** Certify the finite JSX-witness constructor transitions. */
+/** Certify the finite JSX-witness constructor and generic context transitions. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
 
-const constructorSource = readFileSync(
-  new URL(
+const constructorSources = [
+  [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
-    import.meta.url,
-  ),
-);
-assert.equal(constructorSource.length, 10645, "certified component constructor producer size");
-assert.equal(
-  createHash("sha256").update(constructorSource).digest("hex"),
-  "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
-  "certified component constructor producer source",
-);
+    10645,
+    "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
+  ],
+  [
+    "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
+    6111,
+    "03495714bf27a42979433d45320839e155869f48ca240755df157ea4d1f1094c",
+  ],
+  [
+    "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
+    2839,
+    "7c7451a47f01d61f75bac6af903ca1236c7bdf41b59ab278361898b02351db9e",
+  ],
+] as const;
+for (const [file, bytes, sha256] of constructorSources) {
+  const source = readFileSync(new URL(file, import.meta.url));
+  assert.equal(source.length, bytes, `certified component constructor producer size: ${file}`);
+  assert.equal(
+    createHash("sha256").update(source).digest("hex"),
+    sha256,
+    `certified component constructor producer source: ${file}`,
+  );
+}
+
+export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+export const currentGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+const genericComponentContextInsertion =
+  " | { attrs: any; emit: (...args: any[]) => any; slots: any }";
+
+export function certifyGenericComponentContextTransition(before: Buffer, after: Buffer) {
+  const transition = certifiedTransition(
+    before,
+    after,
+    previousGenericComponentContext,
+    currentGenericComponentContext,
+    "generic component public context",
+  );
+  if (!transition) return;
+  const insertion = previousGenericComponentContext.indexOf(", expose?:");
+  assert.ok(insertion > 0, "generic component context insertion boundary");
+  assert.equal(
+    previousGenericComponentContext.slice(0, insertion) +
+      genericComponentContextInsertion +
+      previousGenericComponentContext.slice(insertion),
+    currentGenericComponentContext,
+    "generic component context must be one exact insertion",
+  );
+  const start =
+    transition.start + Buffer.byteLength(previousGenericComponentContext.slice(0, insertion));
+  return {
+    start,
+    end: start,
+    replacement: Buffer.from(genericComponentContextInsertion),
+    label: transition.label,
+  };
+}
 
 export const componentConstructorTransitions = [
   {

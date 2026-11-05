@@ -308,16 +308,18 @@ runs:
         if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install -y strace; fi
         cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json >"$capture/build.jsonl"
         node tests/tooling/support/native-beta-shutdown/source.mjs
-    - name: Test guarded listener references with the authenticated beta checker
+    - name: Test guarded listeners and generic component casts with the authenticated beta checker
       if: ${{ !cancelled() }}
       shell: bash
       env:
         VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
         VIZE_NESTED_FUNCTION_GUARD_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/nested-function-guard-11853
+        VIZE_GENERIC_COMPONENT_CAST_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/generic-component-cast-11966
       run: |
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::nested_function_guard_11853::standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors --ignored --exact --nocapture
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::generic_component_cast_11966::standard_tsgo_accepts_generic_slots_and_emits_component_cast --ignored --exact --nocapture
     - name: Test mixed script destructured static refs and authored ownership
       if: ${{ !cancelled() }}
       shell: bash

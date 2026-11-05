@@ -22,9 +22,10 @@ const value = { kind: 'x' as 'x' | 'y' }
         .match_indices(guard)
         .map(|(offset, _)| offset)
         .collect();
-    assert!(
-        virtual_offsets.len() > 1,
-        "the callback guard must repeat the condition"
+    assert_eq!(
+        virtual_offsets.len(),
+        1,
+        "a deferred callback must not repeat the render-time condition"
     );
     assert!(
         virtual_offsets.iter().all(|offset| *offset > source.len()),
