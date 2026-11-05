@@ -1,5 +1,12 @@
 name: Component input projection packets
 on:
+  pull_request:
+    paths:
+      - .github/workflows/component-input-projection-packets.yml
+      - crates/vize_canon/src/virtual_ts/component_prop_helpers.txt
+      - crates/vize_maestro/tests/davinci_ts40_projection_support/evidence.rs
+      - crates/vize_maestro/tests/davinci_ts40_projection_support/fixtures/**
+      - tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/**
   workflow_dispatch:
     inputs:
       base-sha:
@@ -25,7 +32,7 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
-      SOURCE_SHA: ${{ matrix.role == 'base' && inputs.base-sha || inputs.head-sha }}
+      SOURCE_SHA: ${{ matrix.role == 'base' && (inputs.base-sha || github.event.pull_request.base.sha) || (inputs.head-sha || github.event.pull_request.head.sha) }}
       EVIDENCE: ${{ runner.temp }}/component-input-packets
       INSTA_UPDATE: new
       INSTA_FORCE_PASS: "0"
