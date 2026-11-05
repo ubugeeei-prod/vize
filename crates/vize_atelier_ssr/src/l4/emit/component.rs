@@ -10,9 +10,7 @@ use vize_l2::op::{self as l2, DynamicName};
 
 use super::attrs::{Attached, admit_value};
 use super::{Emitter, Flags, Result, plan_source, require_dynamic};
-use crate::codegen::element::props::{
-    component_prop_entry, component_props_object, quoted_js_string,
-};
+use crate::codegen::element::props::quoted_js_string;
 use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegment,
     SsrStringSegmentKind as Kind,
@@ -208,7 +206,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         };
         let binding = self.ctx.resolve_component_binding_expr(name);
         let props = self.component_props_with_css_vars(attached, css_vars && !inherit)?;
-        let props = self.with_scope_id_prop(props);
+        // The runtime captures scope on the VNode, outside forwarded $attrs.
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
@@ -292,19 +290,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let target = self.static_or_bound(attached, "is")?;
         let target = target.as_deref().unwrap_or("null");
         Ok(cstr!("_resolveDynamicComponent({target})"))
-    }
-
-    fn with_scope_id_prop(&mut self, props: String) -> String {
-        let options = self.ctx.options;
-        let Some(scope_id) = options.scope_id.as_deref() else {
-            return props;
-        };
-        let scope_props = component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
-        if props == "null" {
-            return scope_props;
-        }
-        self.ctx.use_core_helper(RuntimeHelper::MergeProps);
-        cstr!("_mergeProps({props}, {scope_props})")
     }
 
     fn with_fallthrough_attrs(&mut self, props: String, inherit: bool) -> String {
