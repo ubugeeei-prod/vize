@@ -12,6 +12,7 @@ use std::sync::Arc;
 use vize_l0::{FxHashMap, String};
 
 mod bootstrap;
+mod canon_file_cache;
 mod completion_order;
 mod diagnostic_phase;
 mod diagnostics;
@@ -74,6 +75,7 @@ pub struct CorsaProjectClient {
     overlay_versions: FxHashMap<String, i32>,
     /// Current in-memory contents for virtual overlays and offset mapping.
     document_texts: tracked_documents::TrackedDocumentTexts,
+    canon_file_cache: canon_file_cache::CanonFileCache,
     /// Mapping from caller-facing URIs to the session-local URIs Corsa sees.
     session_document_uris: FxHashMap<String, String>,
     /// Reverse mapping used to translate API responses back to caller-facing URIs.
@@ -145,6 +147,7 @@ impl CorsaProjectClient {
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
+            canon_file_cache: Default::default(),
             session_document_uris: Default::default(),
             external_document_uris: Default::default(),
             editor_lsp: None,

@@ -1,0 +1,243 @@
+//! Re-observe unchanged Canon files without reopening their complete contents.
+//!
+//! Only settled regular-file metadata with an unforgeable Unix change time can
+//! certify a previous exact read. Recent files and other platforms keep the
+//! original full read; desired text is always compared by its strong digest.
+
+use std::path::{Path, PathBuf};
+#[cfg(any(unix, test))]
+use std::time::Duration;
+use std::time::SystemTime;
+#[cfg(unix)]
+use std::time::UNIX_EPOCH;
+use vize_l0::FxHashMap;
+
+#[derive(Default)]
+pub(super) struct CanonFileCache {
+    files: FxHashMap<PathBuf, Observation>,
+    #[cfg(test)]
+    reads: usize,
+}
+
+struct Observation {
+    identity: FileIdentity,
+    desired: [u8; 32],
+}
+
+#[cfg(unix)]
+#[derive(Clone, PartialEq, Eq)]
+struct FileIdentity {
+    device: u64,
+    inode: u64,
+    length: u64,
+    modified: (i64, i64),
+    changed: (i64, i64),
+}
+
+#[cfg(not(unix))]
+#[derive(Clone, PartialEq, Eq)]
+struct FileIdentity;
+
+impl FileIdentity {
+    #[cfg(unix)]
+    fn capture(path: &Path) -> Option<Self> {
+        use std::os::unix::fs::MetadataExt;
+        let metadata = std::fs::symlink_metadata(path).ok()?;
+        if !metadata.file_type().is_file() || metadata.ctime() <= 0 || metadata.ino() == 0 {
+            return None;
+        }
+        Some(Self {
+            device: metadata.dev(),
+            inode: metadata.ino(),
+            length: metadata.len(),
+            modified: (metadata.mtime(), metadata.mtime_nsec()),
+            changed: (metadata.ctime(), metadata.ctime_nsec()),
+        })
+    }
+
+    #[cfg(not(unix))]
+    fn capture(_path: &Path) -> Option<Self> {
+        None
+    }
+
+    #[cfg(unix)]
+    fn settled(&self, now: SystemTime) -> bool {
+        let Some(fence) = now.checked_sub(Duration::from_secs(1)) else {
+            return false;
+        };
+        [self.modified, self.changed]
+            .into_iter()
+            .all(|(seconds, nanos)| {
+                let Ok(seconds) = u64::try_from(seconds) else {
+                    return false;
+                };
+                let Ok(nanos) = u32::try_from(nanos) else {
+                    return false;
+                };
+                nanos < 1_000_000_000
+                    && UNIX_EPOCH
+                        .checked_add(Duration::new(seconds, nanos))
+                        .is_some_and(|time| time < fence)
+            })
+    }
+
+    #[cfg(not(unix))]
+    fn settled(&self, _now: SystemTime) -> bool {
+        false
+    }
+}
+
+impl CanonFileCache {
+    pub(super) fn clear(&mut self) {
+        self.files.clear();
+    }
+
+    pub(super) fn synchronize(&mut self, path: &Path, expected: &str) -> std::io::Result<bool> {
+        self.synchronize_at(path, expected, SystemTime::now())
+    }
+
+    fn synchronize_at(
+        &mut self,
+        path: &Path,
+        expected: &str,
+        now: SystemTime,
+    ) -> std::io::Result<bool> {
+        let desired = *blake3::hash(expected.as_bytes()).as_bytes();
+        let before = FileIdentity::capture(path);
+        if before.as_ref().is_some_and(|identity| {
+            identity.settled(now)
+                && self
+                    .files
+                    .get(path)
+                    .is_some_and(|old| old.identity == *identity && old.desired == desired)
+        }) {
+            return Ok(false);
+        }
+        #[cfg(test)]
+        {
+            self.reads += 1;
+        }
+        if std::fs::read_to_string(path).ok().as_deref() != Some(expected) {
+            self.files.remove(path);
+            std::fs::write(path, expected)?;
+            // A write alone cannot acknowledge bytes written concurrently by
+            // someone else. Only a later stable, exact read can seed the cache.
+            return Ok(true);
+        }
+        let after = FileIdentity::capture(path);
+        if let Some(identity) = after.filter(|after| Some(after) == before.as_ref()) {
+            self.files
+                .insert(path.to_path_buf(), Observation { identity, desired });
+        } else {
+            self.files.remove(path);
+        }
+        Ok(false)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ORIGINAL: &str = "// 雪😀\r\nexport const value = 'before';\r\n";
+    const CHANGED: &str = "// 雪😀\r\nexport const value = 'after!';\r\n";
+
+    fn settled_clock() -> SystemTime {
+        SystemTime::now() + Duration::from_secs(3)
+    }
+
+    #[test]
+    fn exact_unchanged_text_keeps_a_settled_observation_without_reopening_it() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("A.vue.ts");
+        std::fs::write(&path, ORIGINAL).unwrap();
+        let mut cache = CanonFileCache::default();
+        let now = settled_clock();
+        for _ in 0..32 {
+            assert!(!cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+        }
+        assert_eq!(cache.reads, if cfg!(unix) { 1 } else { 32 });
+        assert_eq!(std::fs::read(&path).unwrap(), ORIGINAL.as_bytes());
+        cache.clear();
+        assert!(!cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+        assert_eq!(cache.reads, if cfg!(unix) { 2 } else { 33 });
+    }
+
+    #[test]
+    fn recent_observations_keep_complete_reads_and_different_desired_bytes_are_written() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("A.vue.ts");
+        std::fs::write(&path, ORIGINAL).unwrap();
+        let mut cache = CanonFileCache::default();
+        let now = SystemTime::now();
+        for _ in 0..3 {
+            assert!(!cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+        }
+        assert_eq!(cache.reads, 3);
+        assert!(
+            cache
+                .synchronize_at(&path, CHANGED, settled_clock())
+                .unwrap()
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), CHANGED.as_bytes());
+        assert!(
+            cache.files.is_empty(),
+            "a write never acknowledges an unseen physical revision"
+        );
+    }
+
+    #[test]
+    fn same_mtime_same_length_tampering_and_atomic_replacement_cannot_reuse_an_observation() {
+        for replace in [false, true] {
+            let root = tempfile::tempdir().unwrap();
+            let path = root.path().join("A.vue.ts");
+            std::fs::write(&path, ORIGINAL).unwrap();
+            let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
+            let mut cache = CanonFileCache::default();
+            let now = settled_clock();
+            assert!(!cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+            assert_eq!(ORIGINAL.len(), CHANGED.len());
+            if replace {
+                let next = root.path().join("next");
+                std::fs::write(&next, CHANGED).unwrap();
+                std::fs::rename(next, &path).unwrap();
+            } else {
+                std::fs::write(&path, CHANGED).unwrap();
+            }
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_times(std::fs::FileTimes::new().set_modified(modified))
+                .unwrap();
+            assert!(cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+            assert_eq!(std::fs::read(&path).unwrap(), ORIGINAL.as_bytes());
+            assert_eq!(cache.reads, 2);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlinks_never_supply_cached_regular_file_authority() {
+        let root = tempfile::tempdir().unwrap();
+        let a = root.path().join("A");
+        let b = root.path().join("B");
+        let link = root.path().join("view");
+        std::fs::write(&a, ORIGINAL).unwrap();
+        std::fs::write(&b, CHANGED).unwrap();
+        std::os::unix::fs::symlink(&a, &link).unwrap();
+        let mut cache = CanonFileCache::default();
+        let now = settled_clock();
+        assert!(!cache.synchronize_at(&link, ORIGINAL, now).unwrap());
+        assert!(!cache.synchronize_at(&link, ORIGINAL, now).unwrap());
+        assert_eq!(cache.reads, 2);
+        assert!(cache.files.is_empty());
+        std::fs::remove_file(&link).unwrap();
+        std::os::unix::fs::symlink(&b, &link).unwrap();
+        assert!(cache.synchronize_at(&link, ORIGINAL, now).unwrap());
+        assert_eq!(std::fs::read(&a).unwrap(), ORIGINAL.as_bytes());
+        assert_eq!(std::fs::read(&b).unwrap(), ORIGINAL.as_bytes());
+        assert_eq!(cache.reads, 3);
+        assert!(cache.files.is_empty());
+    }
+}

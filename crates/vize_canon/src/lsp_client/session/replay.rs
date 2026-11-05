@@ -77,13 +77,16 @@ impl CorsaProjectClient {
         let mut summary = FileChangeSummary::default();
         for ((uri, content), path) in documents.iter().zip(paths) {
             self.clear_document_state(uri);
-            if std::fs::read_to_string(&path).ok().as_deref() != Some(*content) {
-                std::fs::write(&path, content).map_err(|error| {
+            if self
+                .canon_file_cache
+                .synchronize(&path, content)
+                .map_err(|error| {
                     cstr!(
                         "Failed to update Canon document {}: {error}",
                         path.display()
                     )
-                })?;
+                })?
+            {
                 summary.changed.push(uri_document_identifier(uri));
             }
             self.remember_session_document_uri(uri, (*uri).into());
