@@ -43,6 +43,16 @@ on:
       - "tools/support/compat/content-mapper/constructor-projection-receipt.ts"
       - "tools/support/compat/content-mapper/projection-byte-relocation.ts"
       - "tools/support/compat/content-mapper/owned-emit-overload-transition.ts"
+      - "tools/support/compat/content-mapper/canonical-helper-transition.ts"
+      - "tools/support/compat/content-mapper/producer-unmapped-ignores.ts"
+      - "tools/support/release/computed_event_names.ts"
+      - "tools/support/release/computed_event_custody.ts"
+      - "tests/tooling/_helpers/tool-commands.ts"
+      - "tests/tooling/public-emit-overload-package.test.ts"
+      - "npm/ui/package.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - "tests/tooling/constructor-projection-parity.test.ts"
       - "tests/tooling/constructor-projection-emit-overload.test.ts"
       - "tests/tooling/emit-overload-transition-fixture.ts"
@@ -61,6 +71,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  packed-emit-overloads:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: true
+      - name: Verify the packed public emit helper and missing-module controls
+        run: node --test tests/tooling/public-emit-overload-package.test.ts
   published-sdk-packets:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
