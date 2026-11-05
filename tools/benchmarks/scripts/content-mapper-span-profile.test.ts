@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { counts, families, summarize } from "./content-mapper-span-profile.mjs";
+import { counts, families, summarize, type Sample } from "./content-mapper-span-profile.ts";
 
 const binaries = { base: { source: "a".repeat(40) }, head: { source: "b".repeat(40) } };
-function samples() {
-  const rows = [];
+function samples(): Sample[] {
+  const rows: Sample[] = [];
   for (const family of families)
     for (const count of counts)
-      for (const role of ["base", "head"])
-        for (const mode of ["runtime-off", "allocation"])
+      for (const role of ["base", "head"] as const)
+        for (const mode of ["runtime-off", "allocation"] as const)
           for (let round = 1; round <= 5; round++) {
             rows.push({
               schema: "vize.content-mapper-span-profile.v1",
@@ -48,7 +48,9 @@ void test("whole matrix preserves every family and median", () => {
     result.map((row) => [row.family, row.count]),
     families.flatMap((family) => counts.map((count) => [family, count])),
   );
-  assert.deepEqual(result[0].base, {
+  const first = result[0];
+  assert.ok(first);
+  assert.deepEqual(first.base, {
     generationNs: 3,
     processPeakRssKiB: 1027,
     allocationCalls: 4,
@@ -64,22 +66,38 @@ for (const field of [
   "diagnostics",
 ])
   void test(`reject changed complete ${field}`, () => {
-    const rows = samples(),
-      packet = JSON.parse(rows[0].packet);
+    const rows = samples();
+    const first = rows[0];
+    assert.ok(first);
+    const packet = JSON.parse(first.packet) as Record<string, unknown>;
     delete packet[field];
-    rows[0].packet = JSON.stringify(packet);
+    first.packet = JSON.stringify(packet);
     assert.throws(() => summarize(rows, binaries));
   });
-for (const mutation of [
+const mutations: ReadonlyArray<(rows: Sample[]) => unknown> = [
   (rows) => rows.pop(),
-  (rows) => (rows[1] = rows[0]),
-  (rows) => (rows[0].source += "x"),
-  (rows) => (rows[0].allocation.calls = 1),
+  (rows) => {
+    const first = rows[0];
+    assert.ok(first);
+    rows[1] = first;
+  },
+  (rows) => {
+    const first = rows[0];
+    assert.ok(first);
+    first.source += "x";
+  },
+  (rows) => {
+    const first = rows[0];
+    assert.ok(first);
+    first.allocation.calls = 1;
+  },
   (rows) => {
     const row = rows.find((sample) => sample.mode === "allocation");
+    assert.ok(row);
     row.allocation = { calls: 0, requestedBytes: 0, releasedBytes: 0, failures: 0 };
   },
-])
+];
+for (const mutation of mutations)
   void test("reject incomplete, duplicated or contaminated evidence", () => {
     const rows = samples();
     mutation(rows);

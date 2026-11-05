@@ -5,8 +5,8 @@ on:
       - crates/vize_canon/src/batch/virtual_project/content_mapper/publish.rs
       - crates/vize_canon/src/batch/virtual_project/content_mapper/span_normalize.rs
       - tools/benchmarks/crates/vize/tests/content_mapper_span_profile.rs
-      - tools/benchmarks/scripts/content-mapper-span-profile.mjs
-      - tools/benchmarks/scripts/content-mapper-span-profile.test.mjs
+      - tools/benchmarks/scripts/content-mapper-span-profile.ts
+      - tools/benchmarks/scripts/content-mapper-span-profile.test.ts
       - .github/workflows/content-mapper-span-allocation.yml
 permissions: { contents: read }
 concurrency:
@@ -38,10 +38,10 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Test the evidence oracle and build isolated before and after sources
         run: |
-          node --test tools/benchmarks/scripts/content-mapper-span-profile.test.mjs
-          node tools/benchmarks/scripts/content-mapper-span-profile.mjs build "$RUNNER_TEMP/span-evidence"
+          node --test tools/benchmarks/scripts/content-mapper-span-profile.test.ts
+          node tools/benchmarks/scripts/content-mapper-span-profile.ts build "$RUNNER_TEMP/span-evidence"
       - name: Compare complete packets and fresh process measurements
-        run: node tools/benchmarks/scripts/content-mapper-span-profile.mjs measure "$RUNNER_TEMP/span-evidence"
+        run: node tools/benchmarks/scripts/content-mapper-span-profile.ts measure "$RUNNER_TEMP/span-evidence"
       - name: Write every family result
         if: always()
         run: |
