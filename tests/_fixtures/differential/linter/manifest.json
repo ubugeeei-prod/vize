@@ -2878,6 +2878,99 @@
       }
     },
     {
+      "id": "linter/operational-documentation-11863",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "operational-documentation-11863",
+        "files": [
+          {
+            "path": "MissingProvider.vue.txt",
+            "role": "authored-operational-reproduction",
+            "sha256": "43fc1a494e1a7c60941ef925a8af2564681060b287bd50297ceedf9c8a83861d"
+          },
+          {
+            "path": "OrdinaryRule.vue.txt",
+            "role": "authored-operational-reproduction",
+            "sha256": "c84ac8c8516fe566e2c2f1f345c985a0865ea4b338f42a4a1cdf79e6e6bcf4aa"
+          },
+          {
+            "path": "RuntimeFailure.vue.txt",
+            "role": "authored-operational-reproduction",
+            "sha256": "92c3d0e9a189697a17e176447b3e86366d17aaee7e8d2e4ab1626940a75c908a"
+          },
+          {
+            "path": "UnusedDirective.vue.txt",
+            "role": "authored-operational-reproduction",
+            "sha256": "3c80c02573f94fa5f2a5722052036a19154a11fe1eec93ade74bf05eb060fbc1"
+          },
+          {
+            "path": "cases.json",
+            "role": "operational-documentation-invocations",
+            "sha256": "63dfef3b8df47b6d2bf288e467813fd2b91b1c371cc433d2d1e4e17aaf12de1f"
+          },
+          {
+            "path": "incremental.vite.config.mjs.txt",
+            "role": "native-cli-configuration",
+            "sha256": "43ff3221968e089ef16806a290cf2715e42a7f7b197e92fbef1bccddff26d8a3"
+          },
+          {
+            "path": "main.ts.txt",
+            "role": "installed-application-entry",
+            "sha256": "ed46e5e46f43ca996176f83d2429d3e29653f4731b15f854fca354b258d8e64b"
+          },
+          {
+            "path": "package.json.txt",
+            "role": "native-cli-configuration",
+            "sha256": "5a065fe7d8eab2a582f428e11c2ea63aaf70607a54f69cfd5c711b5c53d91b32"
+          },
+          {
+            "path": "reports/original-line-columns.report.txt",
+            "role": "current-documentation-report-reference",
+            "sha256": "35c374fb355e6f67e080b0f82f1c58fce64ccd6dd018f3f39ff1728ddd94c44c"
+          },
+          {
+            "path": "reports/source-map-order-and-missing.report.txt",
+            "role": "current-documentation-report-reference",
+            "sha256": "415145418a9c2231e826520c1f31090bfcd4f26cc6cbf6a0682e0aa13ca2ade6"
+          },
+          {
+            "path": "reports/unicode-crlf-columns.report.txt",
+            "role": "current-documentation-report-reference",
+            "sha256": "2d8fd0eb3211193aeea73bc80057a0c74ad4ed2ab56eb525dd814d685946e6f3"
+          },
+          {
+            "path": "runtime.vite.config.mjs.txt",
+            "role": "native-cli-configuration",
+            "sha256": "d88b4ade0ade016749ea181bed89ad0c530756c2a0fc4233323c4d55985c268f"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "native-cli-configuration",
+            "sha256": "ce687eb488ce45d143775b5dee9feb57f0aa699153e219994796068342709af0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/rule-fixes-9872-9873",
       "state": "active",
       "targets": ["lint"],

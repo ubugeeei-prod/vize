@@ -95,6 +95,20 @@ jobs:
             test "${INSTA_FORCE_PASS:-0}" = "0"
             printf 'INSTA_UPDATE=new\nINSTA_FORCE_PASS=0\n' >> "$GITHUB_ENV"
           fi
+      - name: Prepare the mandatory full-profile Content Mapper host
+        if: ${{ env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}
+        run: |
+          set -euo pipefail
+          provider="$RUNNER_TEMP/mq-content-mapper-host"
+          proof="$RUNNER_TEMP/mq-content-mapper-host-proof"
+          env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN -u NODE_OPTIONS -u NODE_PATH \
+            node tools/support/release/type-admission-mapper-host.ts "$provider" "$proof"
+          runtime="$provider/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          test -x "$runtime"
+          # Memo and adjacent-attribute cases use this qualified published beta.
+          # Other conformance roles keep their own checker and companion closure.
+          printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
+          printf 'VIZE_TEST_RECOVERED_ATTRIBUTE_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Hydrate the required ElementPlus projection fixture
@@ -117,6 +131,14 @@ jobs:
           mkdir -p "target/nextest/$NEXTEST_PROFILE"
           printf '{"phase":"workspace-cohort","cohort":"%s","elapsed_seconds":%d,"exit_code":%d}\n' "$COHORT" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
+      - name: Retain the Content Mapper host proof
+        if: ${{ always() && env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: content-mapper-host-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mq-content-mapper-host-proof/
+          if-no-files-found: error
+          retention-days: 7
       - name: Record Rust test cases
         id: cases
         if: ${{ !cancelled() && hashFiles(format('target/nextest/{0}/junit.xml', env.NEXTEST_PROFILE)) != '' }}

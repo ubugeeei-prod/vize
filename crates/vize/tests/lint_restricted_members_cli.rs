@@ -80,7 +80,7 @@ fn configured_restricted_members_enable_the_project_local_rule() {
           "file": "src/App.vue",
           "messages": [{
             "ruleId": "script/no-restricted-members",
-            "ruleDocsPath": "docs/content/rules/type-and-script.md",
+            "ruleDocsPath": "docs/content/rules/reference/script-no-restricted-members.md",
             "severity": 2,
             "message": "[vize:script/no-restricted-members] Use authStorage.",
             "line": 2,

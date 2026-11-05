@@ -19,6 +19,7 @@ import {
   type CompileBatchOptions,
   type CompileFileOptions,
 } from "./compile-options.ts";
+import { normalizeCustomBlocks } from "./custom-blocks.ts";
 import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
 import type { CompileJsxFn } from "./types.ts";
 
@@ -43,6 +44,13 @@ export function formatCompileErrorMessage(
 ): string {
   const details = diagnostics.map((diagnostic) => `  - ${diagnostic}`).join("\n");
   return `[vize] Compilation failed in ${filePath}:\n${details}`;
+}
+
+function customBlockFields(
+  blocks: Parameters<typeof normalizeCustomBlocks>[0],
+): { customBlocks: ReturnType<typeof normalizeCustomBlocks> } | Record<string, never> {
+  const customBlocks = normalizeCustomBlocks(blocks);
+  return customBlocks.length > 0 ? { customBlocks } : {};
 }
 
 function normalizeStyleBlocks(
@@ -96,6 +104,7 @@ export function compileFile(
   }
 
   const compiled: CompiledModule = {
+    ...(result.typeProject ? { typeProject: result.typeProject } : {}),
     source: content,
     code: result.code,
     // Set only when present: the persistent cache round-trips through JSON, so
@@ -110,6 +119,7 @@ export function compileFile(
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
     styles: normalizeStyleBlocks(result.styles, resolved),
+    ...customBlockFields(result.customBlocks),
     // `src` blocks, then what the compile itself read (pug includes).
     dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
     // The emitted module's shape, so its output is never parsed again (#3425).
@@ -250,6 +260,8 @@ export function compileBatch(
     if (fallback.css !== undefined) fileResult.css = fallback.css;
     fileResult.scopeId = fallback.scopeId;
     fileResult.hasScoped = fallback.hasScoped;
+    delete fileResult.typeProject;
+    if (fallback.typeProject !== undefined) fileResult.typeProject = fallback.typeProject;
     delete fileResult.macroArtifacts;
     if (fallback.macroArtifacts !== undefined) {
       fileResult.macroArtifacts = fallback.macroArtifacts;
@@ -268,6 +280,7 @@ export function compileBatch(
   for (const fileResult of result.results) {
     if (fileResult.errors.length === 0) {
       cache.set(fileResult.path, {
+        ...(fileResult.typeProject ? { typeProject: fileResult.typeProject } : {}),
         source: filesByPath.get(fileResult.path)?.source,
         code: fileResult.code,
         ...(fileResult.map ? { map: fileResult.map } : {}),
@@ -279,6 +292,7 @@ export function compileBatch(
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
         styles: normalizeStyleBlocks(fileResult.styles, inlinedByPath.get(fileResult.path)),
+        ...customBlockFields(fileResult.customBlocks),
         dependencies: [
           ...(inlinedByPath.get(fileResult.path)?.dependencies ?? []),
           ...(fileResult.dependencies ?? []),

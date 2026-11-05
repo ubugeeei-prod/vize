@@ -4,6 +4,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {
   "ecosystem": [
+    "vue/comment-directive",
     "vue/require-v-for-key",
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
@@ -22,6 +23,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-reserved-component-names",
     "vue/component-definition-name-casing",
     "vue/html-quotes",
+    "vue/html-end-tags",
     "vue/mustache-interpolation-spacing",
     "vue/no-lone-template",
     "vue/no-multi-spaces",
@@ -167,6 +169,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-slots-as-functions"
   ],
   "essential": [
+    "vue/comment-directive",
     "vue/require-v-for-key",
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
@@ -260,6 +263,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-slots-as-functions"
   ],
   "happy_path": [
+    "vue/comment-directive",
     "vue/require-v-for-key",
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
@@ -278,6 +282,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-reserved-component-names",
     "vue/component-definition-name-casing",
     "vue/html-quotes",
+    "vue/html-end-tags",
     "vue/mustache-interpolation-spacing",
     "vue/no-lone-template",
     "vue/no-multi-spaces",
@@ -416,6 +421,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
   ],
   "incremental": [],
   "nuxt": [
+    "vue/comment-directive",
     "vue/require-v-for-key",
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
@@ -434,6 +440,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-reserved-component-names",
     "vue/component-definition-name-casing",
     "vue/html-quotes",
+    "vue/html-end-tags",
     "vue/mustache-interpolation-spacing",
     "vue/no-lone-template",
     "vue/no-multi-spaces",
@@ -639,6 +646,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "css/prefer-slotted"
   ],
   "opinionated": [
+    "vue/comment-directive",
     "vue/require-v-for-key",
     "vue/valid-v-for",
     "vue/no-use-v-if-with-v-for",
@@ -657,6 +665,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-reserved-component-names",
     "vue/component-definition-name-casing",
     "vue/html-quotes",
+    "vue/html-end-tags",
     "vue/mustache-interpolation-spacing",
     "vue/no-lone-template",
     "vue/no-multi-spaces",

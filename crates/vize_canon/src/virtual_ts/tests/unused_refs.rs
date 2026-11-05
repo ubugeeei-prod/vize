@@ -68,7 +68,7 @@ const decoy = null
 
     // The inline renderer reads the raw ref. It must stay outside the
     // unwrapped template scope while genuinely unused locals remain unused.
-    assert!(output.code.contains("void (() => root);"));
+    assert!(output.code.contains("void (() => root!);"));
     assert!(!output.code.contains("type __R_root = typeof root;"));
     assert!(!output.code.contains("var root: __U<__R_root>"));
     assert!(!output.code.contains("void decoy;"));
@@ -226,7 +226,7 @@ fn static_ref_runtime_reads_keep_original_setup_bindings_and_deduplicate() {
             r#"<div ref="plain"></div><div ref="fromComposable"></div><div ref="props"></div><div ref="plain"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => fromComposable);\n  void (() => plain);\n  void (() => props);",
+        "  void (() => fromComposable!);\n  void (() => plain!);\n  void (() => props!);",
     );
     assert_eq!(
         static_ref_read_block(
@@ -258,7 +258,7 @@ fn static_ref_reads_respect_template_shadow_and_do_not_parse_ref_strings() {
             r#"<Comp ref="root" v-slot="{ root }">{{ root }}</Comp><div ref="other"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => other);\n  void (() => root);",
+        "  void (() => other!);\n  void (() => root!);",
     );
     assert_eq!(
         static_ref_read_block(
@@ -266,7 +266,7 @@ fn static_ref_reads_respect_template_shadow_and_do_not_parse_ref_strings() {
             r#"<div v-for="root in []">{{ root }}</div><div ref="root"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => root);",
+        "  void (() => root!);",
     );
 }
 
@@ -280,7 +280,7 @@ fn static_ref_reads_use_import_provenance_and_allow_real_non_vue_factory_results
             r#"<div ref="local"></div><div ref="opaque"></div><div ref="factory"></div><div ref="useTemplateRef"></div><div ref="Component"></div><div ref="Shape"></div><div ref="fakeUseTemplateRef"></div><div ref="plain"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => local);\n  void (() => opaque);",
+        "  void (() => local!);\n  void (() => opaque!);",
     );
     // A named non-Vue value import follows the inline compiler's maybe-ref law.
     assert_eq!(
@@ -289,19 +289,19 @@ fn static_ref_reads_use_import_provenance_and_allow_real_non_vue_factory_results
             r#"<div ref="external"></div><div ref="externalDefault"></div><div ref="namespace"></div>"#,
             VueVersion::V3
         ),
-        "  void (() => external);\n  void (() => externalDefault);"
+        "  void (() => external!);\n  void (() => externalDefault!);"
     );
 }
 
 #[test]
-fn uninitialized_static_ref_reads_are_deferred_like_the_inline_renderer() {
+fn uninitialized_static_ref_usage_witness_does_not_require_assignment() {
     assert_eq!(
         static_ref_read_block(
             "let el: HTMLElement;",
             "<div ref=\"el\"></div>",
             vize_l0::config::VueVersion::V3
         ),
-        "  void (() => el);",
+        "  void (() => el!);",
     );
 }
 

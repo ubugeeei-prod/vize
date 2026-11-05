@@ -2,10 +2,12 @@ import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import type { VizeNuxtOptions } from "./options.ts";
 import { splitNuxtCompilerDefaults } from "./compiler-option-bridge.ts";
 import { placeVizeCompileStage } from "./host-vue-bridge.ts";
+import { resolve } from "node:path";
 
 type NuxtCompilerHost = {
   options: {
     srcDir?: string;
+    buildDir?: string;
     vue?: { compilerOptions?: Record<string, unknown> };
     vite?: { plugins?: unknown[] };
   };
@@ -32,7 +34,16 @@ export async function setupNuxtViteCompiler(
   host.vite ||= {};
   host.vite.plugins = host.vite.plugins || [];
   const plugins = vize(
-    { ...explicit, nuxtPageMeta: true, ssrModuleIdRoot: host.srcDir },
+    {
+      ...explicit,
+      nuxtPageMeta: true,
+      ssrModuleIdRoot: host.srcDir,
+      // The generated root config exists across Nuxt generations. Native
+      // selection still prefers a governing user config for each source.
+      ...(host.buildDir
+        ? { typeResolutionFallbackTsconfig: resolve(host.buildDir, "tsconfig.json") }
+        : {}),
+    },
     defaults,
     "nuxt",
   );

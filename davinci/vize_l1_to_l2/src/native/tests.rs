@@ -233,7 +233,7 @@ fn real_component_carrier_keeps_full_surface_errors_and_partial_native_nodes() {
 }
 
 #[test]
-fn real_component_admission_facts_survive_and_prevent_a_false_supported_result() {
+fn long_full_pre_argument_retains_verbatim_refusal_and_its_authored_extent() {
     let a = Allocator::default();
     let opens: vize_l0::String = (0..64)
         .map(|index| if index % 2 == 0 { '(' } else { '[' })
@@ -247,21 +247,16 @@ fn real_component_admission_facts_survive_and_prevent_a_false_supported_result()
     let source = cstr!("<div {head}>{{{{kept}}}}</div><p>tail</p>");
     let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
     assert!(!lowered.is_supported());
-    let admission = lowered.component.unsupported.first().unwrap();
-    assert_eq!(lowered.component.unsupported.len(), 1);
-    assert_eq!(
-        admission.error,
-        vize_l1::markup::DirectiveNameError::NestingLimit
-    );
-    assert_eq!(
-        source.get(admission.span.start as usize..admission.span.end as usize),
-        Some(head.as_str())
-    );
-    assert!(lowered.holes.iter().any(|hole| {
-        hole.kind == NativeHoleKind::DirectiveAdmission(admission.error)
-            && hole.span == admission.span
-    }));
-    assert_eq!(lowered.embeds.len(), 1);
-    assert_eq!(lowered.artifact.node_count(), 4);
+    assert_eq!(lowered.component.unsupported.len(), 0);
+    let pre_end = source.find("</div>").unwrap() as u32 + 6;
+    let facts: Vec<_> = lowered
+        .holes
+        .iter()
+        .map(|hole| (hole.kind, hole.span))
+        .collect();
+    assert_eq!(facts, [(NativeHoleKind::PreCarrier, Span::new(0, pre_end))]);
+    assert_eq!(lowered.embeds.len(), 0);
+    assert_eq!(lowered.artifact.node_count(), 2);
     assert_eq!(lowered.component.tree.children.len(), 2);
 }
+use alloc::vec::Vec;

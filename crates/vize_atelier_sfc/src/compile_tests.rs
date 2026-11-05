@@ -203,9 +203,7 @@ import { Child } from "./components";
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
 
     assert!(
-        result
-            .code
-            .contains(r#"import { Child } from "./components";"#),
+        result.code.contains("import { Child } from './components'"),
         "script setup import should be preserved. Got:\n{}",
         result.code
     );

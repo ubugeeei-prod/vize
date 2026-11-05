@@ -16,7 +16,7 @@ import { join, resolve } from "node:path";
 import { test } from "node:test";
 import vm from "node:vm";
 import { closedSetupReference } from "./support/script-setup-default-expose.ts";
-import { advanceRuntimeOptionReference } from "./support/setup-component-bracket-reference.ts";
+import { assertDefaultRuntimeOptionPackets } from "./support/setup-component-bracket-reference.ts";
 
 const proof = process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF
   ? resolve(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF)
@@ -577,33 +577,10 @@ await test(
     assert.ok(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE);
     const before = JSON.parse(readFileSync(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_BASELINE));
     assert.equal(before.length, 144);
-    const defaults = (rows) =>
-      rows.filter(
-        (row) =>
-          row.options.runtimeModuleName === undefined &&
-          row.options.runtimeGlobalName === undefined,
-      );
-    const withoutTiming = (row) => {
-      if (!row) return row;
-      const { timeMs: _timeMs, ...rest } = row;
-      return rest;
-    };
-    const comparable = (row) => ({
-      target: row.target,
-      options: row.options,
-      single: row.single,
-      batch: withoutTiming(row.batch),
-      stats: withoutTiming(row.stats),
-      function: row.function,
-      functionBatch: withoutTiming(row.functionBatch),
-      functionStats: withoutTiming(row.functionStats),
-      syntax: row.syntax,
-    });
-    const advance = (row) => advanceRuntimeOptionReference(row, sourceFiles);
-    assert.deepEqual(
-      defaults(completeCases()).map(comparable),
-      defaults(before).map(advance).map(comparable),
+    const { parse } = require(
+      join(process.env.VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE, "node_modules/@babel/parser"),
     );
+    assertDefaultRuntimeOptionPackets(before, completeCases(), sourceFiles, parse);
   },
 );
 

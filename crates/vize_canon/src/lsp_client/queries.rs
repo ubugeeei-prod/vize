@@ -69,7 +69,7 @@ impl CorsaProjectClient {
                 position,
             ),
         ) {
-            Ok(response) => self.serialize_with_remapped_uris(response),
+            Ok(response) => self.serialize_with_remapped_uris(response, uri),
             Err(CorsaError::Unsupported(_)) => self.definition_via_editor_lsp(uri, line, character),
             Err(error) => Err(cstr!("Failed to request definition: {error}")),
         }
@@ -146,7 +146,7 @@ impl CorsaProjectClient {
                 position,
             ),
         ) {
-            Ok(response) => self.serialize_with_remapped_uris(Some(response)),
+            Ok(response) => self.serialize_with_remapped_uris(Some(response), uri),
             Err(CorsaError::Unsupported(_)) => {
                 self.references_via_editor_lsp(uri, line, character, include_declaration)
             }
@@ -182,7 +182,7 @@ impl CorsaProjectClient {
             position,
             new_name,
         )) {
-            Ok(response) => self.serialize_with_remapped_uris(response),
+            Ok(response) => self.serialize_with_remapped_uris(response, uri),
             Err(CorsaError::Unsupported(_)) => {
                 self.rename_via_editor_lsp(uri, line, character, new_name)
             }
@@ -236,7 +236,7 @@ impl CorsaProjectClient {
             position,
             Some(context),
         )) {
-            Ok(response) => self.serialize_with_remapped_uris(response),
+            Ok(response) => self.serialize_with_remapped_uris(response, uri),
             Err(CorsaError::Unsupported(_)) => self.completion_via_editor_lsp(uri, line, character),
             Err(error) => Err(cstr!("Failed to request completion: {error}")),
         }
@@ -268,7 +268,11 @@ impl CorsaProjectClient {
             .ok_or_else(|| cstr!("Failed to resolve UTF-16 offset for `{uri}`"))
     }
 
-    fn serialize_with_remapped_uris<T>(&self, response: Option<T>) -> Result<Option<Value>, String>
+    fn serialize_with_remapped_uris<T>(
+        &self,
+        response: Option<T>,
+        uri: &str,
+    ) -> Result<Option<Value>, String>
     where
         T: serde::Serialize,
     {
@@ -277,7 +281,7 @@ impl CorsaProjectClient {
         };
 
         let mut value = value_to_json(response)?;
-        self.remap_result_uris(&mut value);
+        self.remap_query_uris(&mut value, uri);
         Ok(Some(value))
     }
 }

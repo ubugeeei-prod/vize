@@ -50,7 +50,7 @@ crates/vize_atelier_jsx/src/vdom/l2_emit/scoped_tests.rs	3
 crates/vize_atelier_jsx/src/vdom/l2_emit/tests.rs	2
 crates/vize_atelier_jsx/src/vdom/l2_emit/vue_directives_tests.rs	1
 crates/vize_atelier_sfc/src/bundler/tests.rs	14
-crates/vize_atelier_sfc/src/compile/tests.rs	125
+crates/vize_atelier_sfc/src/compile/tests.rs	124
 crates/vize_atelier_sfc/src/compile/tests/custom_elements.rs	7
 crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs	17
 crates/vize_atelier_sfc/src/compile/tests/options_api_events.rs	5
@@ -153,7 +153,6 @@ crates/vize_canon/src/batch/type_checker/tests/tsx_sfc.rs	2
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests.rs	10
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/models.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/navigation.rs	6
-crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs	3
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/slot_outlet_navigation.rs	4
 crates/vize_canon/src/batch/virtual_project/dependency_scan/shared_type_sources_tests.rs	5
 crates/vize_canon/src/batch/virtual_project/dependency_scan/tests.rs	1
@@ -412,7 +411,6 @@ crates/vize_marquette/src/validate/tests.rs	4
 crates/vize_musea/src/transform/to_csf/tests.rs	5
 crates/vize_patina/src/linter/corsa_session/session/tests.rs	1
 crates/vize_patina/src/linter/native_type_aware/public_expression_tests.rs	1
-crates/vize_patina/src/linter/native_type_aware/tests.rs	15
 crates/vize_patina/src/linter/tests/basic.rs	4
 crates/vize_patina/src/linter/tests/jsx_no_duplicate_dt.rs	1
 crates/vize_patina/src/linter/tests/musea.rs	2

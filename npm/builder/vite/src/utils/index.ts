@@ -4,6 +4,7 @@ import type { CompiledModule, StyleBlockInfo } from "../types.ts";
 import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 import { assembleComponentOutput } from "./component-output.ts";
 import type { SourceMapV3 } from "./source-map.ts";
+import { customBlockModuleCode, insertBeforeSfcMainDefaultExport } from "../custom-blocks.ts";
 import { createStyleVirtualId } from "../plugin/style-request.ts";
 
 // Re-export CSS utilities for backward compatibility
@@ -312,6 +313,17 @@ export function generateOutputWithMap(
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
     // --- Fallback for callers without per-block style metadata ---
     emitted.edit(prependInlineStyleInjection(emitted.code, compiled.css, compiled.scopeId));
+  }
+
+  // Custom-block imports call `_sfc_main` before it is exported, so a user
+  // plugin's `export default (component) => { ... }` runs on the first eval.
+  if (filePath && exportsSfcMain && compiled.customBlocks?.length) {
+    emitted.edit(
+      insertBeforeSfcMainDefaultExport(
+        emitted.code,
+        customBlockModuleCode(filePath, compiled.customBlocks),
+      ),
+    );
   }
 
   // Add HMR support in development (skip in production)

@@ -1,0 +1,15 @@
+<script lang="ts">
+import { formatLabel } from './format'
+import { Label } from './label'
+
+export { formatLabel }
+export type { Label }
+</script>
+
+<script setup lang="ts">
+const label: Label = 'one'
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

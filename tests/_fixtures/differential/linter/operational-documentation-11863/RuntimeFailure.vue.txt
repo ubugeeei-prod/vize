@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const count = 1 as number | null
+</script>
+
+<template><p v-if="count">{{ count }}</p></template>

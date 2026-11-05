@@ -8,9 +8,10 @@ import { pathToFileURL } from "node:url";
 
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
-  assertCompilerPatchSuccessor,
-  compilerPatchSuccessor,
-} from "../../_helpers/compiler-patch-successors.ts";
+  assertRouterImportedPropsSuccessor,
+  importedRouterProps,
+  routerImportedPropsSuccessor,
+} from "../../_helpers/vue-router-imported-props-successor.ts";
 import {
   assertFailedBuild,
   type BuildResult,
@@ -73,7 +74,7 @@ type LintReport = Array<{
 
 test("Vue Router compiler is deterministic and recovers from an exact expression error", async () => {
   await withPinnedFixtureWorkspace(
-    { fixtureId: "vue-router", includePaths: [appPath] },
+    { fixtureId: "vue-router", includePaths: [appPath, "packages/router/src"] },
     async (fixture) => {
       const source = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
@@ -81,12 +82,25 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
         observeCompilerResult(fixture.workspaceDir, appPath, resolveVizeCommand()[0]);
       assert.equal(sha256(source), sourceSha256, "pinned Vue Router source changed");
       assert.equal(count(source, cleanHref), 1, "compiler patch anchor must stay unique");
+      assert.equal(
+        sha256(fixture.read("packages/router/src/RouterLink.ts")),
+        "cea86ffd7d4d8cabbe05de0bb9603b17575c0e9bf2c4900a45b208f8f4dcb6a8",
+      );
+      assertFailedBuild(runBuild(fixture.workspaceDir, ".vize-compiler-unresolved"), appPath, [
+        "Cannot resolve imported macro type `RouterLinkProps` from `vue-router`.",
+      ]);
+      fixture.write(
+        "tsconfig.json",
+        JSON.stringify({
+          compilerOptions: { paths: { "vue-router": ["./packages/router/src/index.ts"] } },
+        }),
+      );
 
       const cleanFirst = runBuild(fixture.workspaceDir, ".vize-compiler-clean-first");
       const cleanSecond = runBuild(fixture.workspaceDir, ".vize-compiler-clean-second");
       assertSuccessfulBuild(cleanFirst);
       assertSuccessfulBuild(cleanSecond);
-      assertCompilerPatchSuccessor("vue-router-clean", cleanFirst.outputText, {
+      assertRouterImportedPropsSuccessor("vue-router-clean", cleanFirst.outputText, {
         packetSha256: cleanOutputSha256,
         codeSha256: cleanCodeSha256,
       });
@@ -117,12 +131,12 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
           warnings: [],
         },
       );
-      assert.equal(output.code, compilerPatchSuccessor("vue-router-clean").current.code);
+      assert.equal(output.code, routerImportedPropsSuccessor("vue-router-clean").output.code);
       assertParsesAsModule(output.code, "vue-router AppLink.json#code");
       for (const expected of [
         "renderSlot as _renderSlot, mergeProps as _mergeProps",
         '__name: "AppLink"',
-        "props: { disabled: {",
+        importedRouterProps,
         "href: String(__props.to)",
         "href: _unref(href)",
         "onClick: _cache[0] || (_cache[0] = (...args) => _unref(navigate) && _unref(navigate)(...args))",
@@ -158,13 +172,13 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       const brokenSecond = runBuild(fixture.workspaceDir, ".vize-compiler-broken-second");
       const compilerFirst = observe();
       const compilerSecond = observe();
-      assertBrokenBuild(brokenFirst, compilerFirst);
-      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(
         compilerSecond.outputText,
         compilerFirst.outputText,
         "broken API output must be byte-stable",
       );
+      assertBrokenBuild(brokenFirst, compilerFirst);
+      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(fixture.read(appPath), brokenSource, "compiler must preserve the broken source");
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
 
@@ -441,7 +455,7 @@ function assertSuccessfulBuild(result: BuildResult): void {
 
 function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
   assertFailedBuild(result, appPath, compiler.output.errors);
-  assertCompilerPatchSuccessor("vue-router-broken", compiler.outputText, {
+  assertRouterImportedPropsSuccessor("vue-router-broken", compiler.outputText, {
     packetSha256: brokenOutputSha256,
     codeSha256: brokenCodeSha256,
   });
@@ -465,7 +479,7 @@ function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): 
       warnings: [],
     },
   );
-  assert.equal(compiler.output.code, compilerPatchSuccessor("vue-router-broken").current.code);
+  assert.equal(compiler.output.code, routerImportedPropsSuccessor("vue-router-broken").output.code);
   assertParsesAsModule(compiler.output.code, "broken vue-router AppLink.json#code");
   assert.equal(compiler.output.code.includes("_createElementBlock"), false, compiler.output.code);
   assert.equal(count(compiler.output.code, "return {"), 1, compiler.output.code);
@@ -522,7 +536,7 @@ function assertBrokenLint(result: LintResult): void {
       messages: [
         {
           ruleId: "vue/v-on-style",
-          ruleDocsPath: "docs/content/rules/vue.md",
+          ruleDocsPath: "docs/content/rules/reference/vue-v-on-style.md",
           severity: 2,
           message: "[vize:vue/v-on-style] Prefer shorthand `@` over `v-on:`",
           line: 23,
@@ -538,7 +552,7 @@ function assertBrokenLint(result: LintResult): void {
   ]);
 }
 
-function sha256(source: string | Buffer): string {
+function sha256(source: string): string {
   return createHash("sha256").update(source).digest("hex");
 }
 

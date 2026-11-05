@@ -1,0 +1,6 @@
+import "vue";
+declare module "vue" {
+  interface ComponentCustomProperties {
+    $typedGlobal(value: number): string;
+  }
+}

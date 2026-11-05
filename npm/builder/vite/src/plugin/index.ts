@@ -45,6 +45,7 @@ import {
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
 import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
+import { resetTypeProjectWatches } from "./type-project-watches.ts";
 import { aliasSortKey, resolveHookSsr, shouldExtractCssForBuild } from "./index-helpers.ts";
 
 export type { VizePluginState } from "./state.ts";
@@ -279,6 +280,7 @@ export function vize(
     },
 
     async buildStart() {
+      resetTypeProjectWatches(state.cache);
       state.viteResolveCache?.clear();
       if (!state.scanPatterns || state.scanPatterns.length === 0) {
         // Running in standalone rolldown context (e.g., ox-content OG image)
@@ -291,6 +293,7 @@ export function vize(
           { ...state, extractCss: shouldExtractCssForBuild(state, this) },
           precompileInputOwners(this, precompileConfig),
           (request, importer) => this.resolve(request, importer, { skipSelf: true }),
+          this.addWatchFile.bind(this),
         );
       } catch (error) {
         if (!(error instanceof PrecompileDiagnosticsError)) throw error;
@@ -307,7 +310,10 @@ export function vize(
     },
 
     load(id, loadOptions) {
-      return loadHook(state, id, { ssr: resolveHookSsr(this, loadOptions) });
+      return loadHook(state, id, {
+        ssr: resolveHookSsr(this, loadOptions),
+        addWatchFile: (file) => this.addWatchFile(file),
+      });
     },
 
     async transform(code, id, transformOptions) {

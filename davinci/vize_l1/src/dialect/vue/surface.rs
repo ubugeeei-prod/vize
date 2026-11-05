@@ -2,6 +2,12 @@
 
 pub(crate) mod sink;
 
+#[derive(Clone, Copy)]
+pub(crate) enum LexicalScope {
+    Recovered,
+    Authored,
+}
+
 use crate::event::Recorder;
 use crate::markup::Sink;
 use crate::markup::surface::LintTagFact;
@@ -16,6 +22,7 @@ pub(crate) struct HeaderPolicy {
 pub(crate) trait SurfacePolicy {
     type Boundary;
     const LINT_TAGS: bool = false;
+    const LEXICAL_SCOPE: LexicalScope = LexicalScope::Recovered;
 
     fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary>;
 

@@ -2,27 +2,41 @@
 
 use vize_l0::{Allocator, Vec, is_void_tag};
 
-use super::{HeaderPolicy, SurfacePolicy};
-use crate::build::scope::{Frame, Recovery};
+use super::{HeaderPolicy, LexicalScope, SurfacePolicy};
+use crate::build::scope::{Frame, Recovery, authored_close, namespace};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::surface::LintHeaderFact;
 use crate::markup::token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 use core::marker::PhantomData;
 
-struct ModeFrame<'a> {
-    tag: &'a str,
-    ns: Namespace,
-    verbatim: bool,
-    exact_pre: bool,
+struct RecoveredFrame<'a> {
+    scope: LexicalFrame<'a>,
     table_context: bool,
     recovery_context: bool,
 }
 
-impl<'a> Frame<'a> for ModeFrame<'a> {
+impl<'a> Frame<'a> for RecoveredFrame<'a> {
+    fn tag(&self) -> &'a str {
+        self.scope.tag
+    }
+    fn namespace(&self) -> Namespace {
+        self.scope.ns
+    }
+}
+
+struct LexicalFrame<'a> {
+    tag: &'a str,
+    ns: Namespace,
+    verbatim: bool,
+    exact_pre: bool,
+}
+
+impl<'a> Frame<'a> for LexicalFrame<'a> {
     fn tag(&self) -> &'a str {
         self.tag
     }
+
     fn namespace(&self) -> Namespace {
         self.ns
     }
@@ -32,7 +46,10 @@ pub(crate) struct VueSink<'a, 'v, P: SurfacePolicy> {
     source: &'a str,
     recorder: Recorder<'a, 'v>,
     unsupported: &'v mut Vec<'a, P::Boundary>,
-    stack: Vec<'a, ModeFrame<'a>>,
+    /// Lexical Vue ownership follows authored closing tags.
+    authored: Vec<'a, LexicalFrame<'a>>,
+    /// HTML recovery ancestry supplies conservative lint header facts.
+    stack: Vec<'a, RecoveredFrame<'a>>,
     recovery: Recovery<'a>,
     tag: Option<&'a str>,
     tag_events: usize,
@@ -50,6 +67,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
             source,
             recorder,
             unsupported,
+            authored: Vec::new_in(&allocator),
             stack: Vec::new_in(&allocator),
             recovery: Recovery::new(allocator, true),
             tag: None,
@@ -58,12 +76,19 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
+    fn lexical_parent(&self) -> Option<&LexicalFrame<'a>> {
+        match P::LEXICAL_SCOPE {
+            LexicalScope::Authored => self.authored.last(),
+            LexicalScope::Recovered => self.stack.last().map(|frame| &frame.scope),
+        }
+    }
+
     fn finish_tag(&mut self, self_closing: bool) -> (bool, LintHeaderFact) {
         let Some(tag) = self.tag.take() else {
             return (false, LintHeaderFact::default());
         };
-        // The lexer read this live mode while consuming the actual header,
-        // before complete-header recovery can end an ancestor's scope.
+        // The lexer read the dialect's mode while consuming the actual
+        // header, before HTML recovery changes structural ancestry.
         let header_literal = P::LINT_TAGS && self.mode() == LexMode::Verbatim;
         let entry_recovery = P::LINT_TAGS
             && (self.stack.len() >= 4096
@@ -75,11 +100,10 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         if let Some(depth) = implicit_depth {
             self.stack.truncate(depth);
         }
-        // Inherit after recovery: an implicitly closed owner cannot affect
-        // the newly opened sibling, even when it has the same authored name.
+        // Inherit from the dialect's lexical owner.
         let inherited = self.mode() == LexMode::Verbatim;
         let inherited_exact =
-            P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.exact_pre);
+            P::LINT_TAGS && self.lexical_parent().is_some_and(|frame| frame.exact_pre);
         let table_context =
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.table_context);
         let inherited_recovery = P::LINT_TAGS
@@ -107,13 +131,24 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
             None
         };
         if !self_closing && !is_void_tag(tag) {
+            if let LexicalScope::Authored = P::LEXICAL_SCOPE {
+                let authored_ns = namespace(&self.authored, tag);
+                self.authored.push(LexicalFrame {
+                    tag,
+                    ns: authored_ns,
+                    verbatim,
+                    exact_pre,
+                });
+            }
             let frame_recovery = P::LINT_TAGS
                 && (inherited_recovery || recovery_spelling(tag) || self.stack.len() >= 4096);
-            self.stack.push(ModeFrame {
-                tag,
-                ns,
-                verbatim,
-                exact_pre,
+            self.stack.push(RecoveredFrame {
+                scope: LexicalFrame {
+                    tag,
+                    ns,
+                    verbatim,
+                    exact_pre,
+                },
                 table_context: P::LINT_TAGS && (table_context || tag.eq_ignore_ascii_case("table")),
                 recovery_context: frame_recovery,
             });
@@ -234,7 +269,7 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn svg_title_children(&self) -> bool {
-        self.stack.last().is_some_and(|parent| {
+        self.lexical_parent().is_some_and(|parent| {
             parent.ns == Namespace::Svg && !matches!(parent.tag, "foreignObject" | "desc" | "title")
         })
     }
@@ -262,16 +297,21 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {
-        if let Some(tag) = self.source.get(start..end)
-            && let Some(depth) = self.recovery.close(&self.stack, tag)
-        {
-            self.stack.truncate(depth);
+        if let Some(tag) = self.source.get(start..end) {
+            if let LexicalScope::Authored = P::LEXICAL_SCOPE
+                && let Some(depth) = authored_close(&self.authored, tag)
+            {
+                self.authored.truncate(depth);
+            }
+            if let Some(depth) = self.recovery.close(&self.stack, tag) {
+                self.stack.truncate(depth);
+            }
         }
         self.recorder.on_close_tag(start, end);
     }
 
     fn mode(&self) -> LexMode {
-        if self.stack.last().is_some_and(|frame| frame.verbatim) {
+        if self.lexical_parent().is_some_and(|frame| frame.verbatim) {
             LexMode::Verbatim
         } else {
             LexMode::Normal

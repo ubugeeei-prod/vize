@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 
 import { nativePreparationIsActive } from "../../native/scripts/test-preparation.mjs";
 import { loadCases, wholeJson } from "../../../tests/tooling/boolean-attribute-fix-reference.mjs";
+import { currentBooleanStylePacket } from "../../../tests/tooling/support/current-boolean-style-documentation.ts";
 
 const root = path.resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const nativeDir = path.join(root, "npm/native");
@@ -67,7 +68,7 @@ const diagnostics = findings.map(([rule, target, message]) => {
 const ordered = (items) =>
   [...items].sort((a, b) => (a.rule ?? a.code).localeCompare(b.rule ?? b.code));
 function publicNativeReport(after) {
-  const report = wholeJson({ ...original, filename: file }, after, true);
+  const report = currentBooleanStylePacket(wholeJson({ ...original, filename: file }, after, true));
   const source = after ? expected : original.source;
   const target = after ? "<input disabled />" : '<input disabled="disabled" />';
   const start = source.indexOf(target);
@@ -79,7 +80,7 @@ function publicNativeReport(after) {
   // Preserve its complete finding instead of suppressing or fixing reporter input.
   report[0].messages.splice(after ? 0 : 3, 0, {
     ruleId: "a11y/form-control-has-label",
-    ruleDocsPath: "docs/content/rules/accessibility.md",
+    ruleDocsPath: "docs/content/rules/reference/a11y-form-control-has-label.md",
     severity: 1,
     message: "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
     line: from.line,

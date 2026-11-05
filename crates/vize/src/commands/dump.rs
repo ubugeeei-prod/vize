@@ -16,6 +16,7 @@ use std::path::PathBuf;
 use clap::builder::{PossibleValue, TypedValueParser};
 use clap::error::{ContextKind, ContextValue, ErrorKind};
 use clap::{Arg, ArgGroup, Args, Command, Error, ValueEnum};
+use vize_l0::cstr;
 use vize_l1::embed::Lang;
 use vize_l1::embed::syntax::{ProgramGoal, ProgramOptions};
 
@@ -91,7 +92,7 @@ fn reject_level(cmd: &Command, arg: Option<&Arg>, raw: &str) -> Error {
     let _ = err.insert(
         ContextKind::InvalidArg,
         ContextValue::String(
-            arg.map(ToString::to_string)
+            arg.map(|arg| cstr!("{arg}").into_string())
                 .unwrap_or_else(|| "--level <LEVEL>".to_owned()),
         ),
     );

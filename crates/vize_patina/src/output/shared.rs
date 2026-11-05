@@ -23,6 +23,15 @@ const PROJECT_RULES: &[&str] = &[
 /// ASCII letters are lowercased, and leading or trailing hyphens are dropped.
 /// `vue/require-v-for-key` is `docs/content/rules/reference/vue-require-v-for-key.md`.
 pub fn rule_docs_path(rule_name: &str) -> String {
+    // Operational diagnostics are outside the generated rule catalogue.
+    match rule_name {
+        "cross-file" => return String::from("docs/content/rules/cross-file.md"),
+        "type/corsa-runtime" => return String::from("docs/content/rules/type-and-script.md"),
+        "vue/comment-directive" => {
+            return String::from("docs/content/guide/lint-execution.md");
+        }
+        _ => {}
+    }
     let directory = if is_project_rule(rule_name) {
         "project"
     } else {
@@ -30,6 +39,43 @@ pub fn rule_docs_path(rule_name: &str) -> String {
     };
     let slug = rule_slug(rule_name);
     cstr!("docs/content/rules/{directory}/{slug}.md")
+}
+
+#[cfg(test)]
+mod documentation_authority_tests {
+    #[test]
+    fn operational_diagnostics_use_existing_pages_outside_the_rule_catalogue() {
+        let registry = crate::rule::RuleRegistry::with_all();
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for (rule, page) in [
+            ("cross-file", "docs/content/rules/cross-file.md"),
+            (
+                "type/corsa-runtime",
+                "docs/content/rules/type-and-script.md",
+            ),
+            (
+                "vue/comment-directive",
+                "docs/content/guide/lint-execution.md",
+            ),
+        ] {
+            assert_eq!(
+                registry.has_rule(rule),
+                rule == "vue/comment-directive",
+                "operational diagnostic: {rule}"
+            );
+            assert_eq!(super::rule_docs_path(rule), page);
+            assert!(root.join(page).is_file(), "English page: {page}");
+            assert!(
+                root.join(page.replacen("docs/content/", "docs/content/ja/", 1))
+                    .is_file(),
+                "Japanese page: {page}"
+            );
+        }
+        assert_eq!(
+            super::rule_docs_path("vue/comment-directive-host-control"),
+            "docs/content/rules/reference/vue-comment-directive-host-control.md"
+        );
+    }
 }
 
 fn is_project_rule(rule_name: &str) -> bool {

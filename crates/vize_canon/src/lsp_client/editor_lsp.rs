@@ -77,6 +77,8 @@ pub(super) struct EditorLspSession {
     shutdown_to_eof: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: FxHashMap<String, String>,
+    /// Exact source owner and delivered revision for mutation-owned deltas.
+    tracked_documents: Option<super::tracked_documents::DocumentCheckpoint>,
     issued_completions: completion_resolve::IssuedCompletions,
     /// Latest notification generation written to this transport.
     document_generation: u64,
@@ -123,6 +125,7 @@ impl EditorLspSession {
             closed: false,
             shutdown_to_eof,
             documents: Default::default(),
+            tracked_documents: None,
             issued_completions: Default::default(),
             document_generation: 0,
             ready_generation: None,
@@ -139,11 +142,13 @@ impl EditorLspSession {
         match self.documents.get(document_uri) {
             Some(previous) if previous.as_str() == text => return Ok(uri),
             Some(_) => {
+                self.tracked_documents = None;
                 self.overlay.replace(&uri, text).map_err(|error| {
                     cstr!("Failed to update editor LSP overlay for {document_uri}: {error}")
                 })?;
             }
             None => {
+                self.tracked_documents = None;
                 self.overlay
                     .open(VirtualDocument::new(
                         uri.clone(),

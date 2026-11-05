@@ -40,7 +40,9 @@ pub(super) fn emit(
     if !names.is_empty() {
         ts.push_str("  // Runtime reads for static template refs\n");
         for name in names {
-            append!(*ts, "  void (() => {name});\n");
+            // This is a usage witness, not an authored read. Even a deferred
+            // closure reports TS2454 when a mutable local is never initialized.
+            append!(*ts, "  void (() => {name}!);\n");
         }
         ts.push('\n');
     }

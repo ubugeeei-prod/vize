@@ -5,6 +5,7 @@ on:
       - .github/workflows/plain-script-import-ref.yml
       - tools/support/compat/plain-script-import-ref.ts
       - tests/tooling/support/setup-component-bracket-reference.ts
+      - tests/tooling/support/typescript-erasure-reference.ts
       - tests/_fixtures/differential/compiler/plain-script-import-10903/**
       - crates/vize_atelier_sfc/src/**
       - crates/vize_atelier_core/src/codegen/**
@@ -163,7 +164,10 @@ jobs:
           node --input-type=module -e '
           import assert from "node:assert/strict";
           import { readFileSync, writeFileSync } from "node:fs";
+          import { createRequire } from "node:module";
           import { setupComponentBracketReference } from "./tests/tooling/support/setup-component-bracket-reference.ts";
+          import { typescriptErasureReference } from "./tests/tooling/support/typescript-erasure-reference.ts";
+          const { parse } = createRequire(process.env.VIZE10903_PROOF + "/host/package.json")("@babel/parser");
           const priorPackets = JSON.parse(readFileSync(process.env.BEFORE.replace("performance.json", "full-module-packets.json")));
           const nextPackets = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/full-module-packets.json"));
           const setupComponents = { original: "Child", "named-alias": "Child", "default-unknown": "Child", "constant-controls": "DefaultAlias" };
@@ -174,8 +178,8 @@ jobs:
             if (!prior.options.inlineTemplate && prior.filename === "src/App.vue") {
               const component = setupComponents[prior.case];
               assert.equal(typeof component, "string", `missing setup component reference for ${prior.case}`);
-              assert.deepEqual(setupComponentBracketReference(prior.native, component), next.native);
-            } else if (prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(prior.native, next.native);
+              assert.deepEqual(typescriptErasureReference(setupComponentBracketReference(prior.native, component), next.native, parse), next.native);
+            } else if (prior.filename === "src/Child.vue" || prior.case === "constant-controls") assert.deepEqual(typescriptErasureReference(prior.native, next.native, parse), next.native);
           }
           const before = JSON.parse(readFileSync(process.env.BEFORE));
           const after = JSON.parse(readFileSync(process.env.VIZE10903_PROOF + "/performance.json"));

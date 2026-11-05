@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -120,7 +121,7 @@ await test("original component-registration CLI findings point to whole physical
       const source = bytes.toString("utf8");
       fs.writeFileSync(path.join(directory, filename), bytes);
       if (input === "crlf-panel.vue.txt") assert.equal(source, original.replaceAll("\n", "\r\n"));
-      const oracle = expected(source, filename, tags);
+      const oracle = currentRuleDocumentationPacket(expected(source, filename, tags));
       if (input === "my-panel.vue.txt") {
         const { line, column, endLine, endColumn } = oracle[0].messages[0];
         assert.deepEqual({ line, column, endLine, endColumn }, manifest.expectedOriginalRange);

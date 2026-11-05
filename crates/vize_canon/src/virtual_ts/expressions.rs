@@ -20,6 +20,7 @@ mod directive_values;
 mod directive_values_tests;
 mod dynamic_arguments;
 mod generic_props_call;
+mod implied_guard;
 mod incomplete;
 mod model_modifiers;
 pub(super) mod model_update;
@@ -38,6 +39,7 @@ pub(crate) use props_literal::{
 };
 mod instance_rewrite;
 pub(crate) use instance_rewrite::{PreparedInstanceRewrite, prepare_instance_rewrite};
+mod read_ownership;
 mod reserved_props;
 pub(crate) use spread_reserved_props::BindingRewrite;
 #[cfg(test)]

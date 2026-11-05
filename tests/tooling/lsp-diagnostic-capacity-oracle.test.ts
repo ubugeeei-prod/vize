@@ -4,6 +4,120 @@ import { decodeNativeSockets, nativeIpcGrew } from "./support/lsp/diagnostic-cap
 import { CapacityNativeCoverage } from "./support/lsp/diagnostic-capacity-native.ts";
 import { CapacityCoverage, capacitySource } from "./support/lsp/diagnostic-capacity.ts";
 
+function scheduledNativeCoverage(count: number) {
+  const probes = Array.from({ length: count }, (_, index) =>
+    capacitySource(index, `file:///workspace/Coverage${index}.vue`),
+  );
+  const coverage = new CapacityCoverage(probes);
+  let trace = "";
+  let now = 0;
+  const native = new CapacityNativeCoverage(coverage, () => trace);
+  const publish = (index: number, version = 1) => {
+    const probe = probes[index]!;
+    coverage.record(
+      {
+        uri: probe.uri,
+        version,
+        diagnostics: [
+          {
+            source: "vize/types",
+            code: 2339,
+            message: probe.token,
+            range: {
+              start: { line: probe.line, character: probe.character },
+              end: { line: probe.line, character: probe.character + probe.token.length },
+            },
+          },
+        ],
+      },
+      now,
+    );
+    for (const stage of [
+      "starting initial type diagnostics for",
+      "sent collected diagnostics for",
+      "finished initial type diagnostics for",
+    ])
+      trace += `${stage} ${probe.uri} version ${version}\n`;
+  };
+  return {
+    coverage,
+    native,
+    probes,
+    publish,
+    clock(onSleep: (now: number) => void) {
+      return {
+        now: () => now,
+        async sleep(milliseconds: number) {
+          now += milliseconds;
+          onSleep(now);
+        },
+      };
+    },
+  };
+}
+
+test("a native cohort can finish beyond one idle interval while new owned URI completions advance", async () => {
+  const run = scheduledNativeCoverage(3);
+  const published = new Set<number>();
+  const clock = run.clock((now) => {
+    for (let index = 0; index < 3; index++)
+      if (now >= (index + 1) * 50 && !published.has(index)) {
+        run.publish(index);
+        published.add(index);
+      }
+  });
+  assert.equal(await run.native.waitForComplete(1, false, 60, clock), true);
+  assert.equal(
+    clock.now(),
+    150,
+    "the cohort retains all three independent completed native passes",
+  );
+  run.native.assertComplete(1, false);
+});
+
+test("replayed sends and another version cannot extend a stalled native cohort", async () => {
+  const run = scheduledNativeCoverage(2);
+  run.publish(0);
+  const clock = run.clock(() => {
+    run.publish(0);
+    run.publish(1, 2);
+  });
+  assert.equal(await run.native.waitForComplete(1, false, 60, clock), false);
+  assert.ok(
+    clock.now() <= 110,
+    "repeated activity cannot refresh the unique-URI progress deadline",
+  );
+  assert.throws(() => run.native.assertComplete(1, false));
+});
+
+test("new cohort progress cannot turn an overwritten historical packet into current completion", async () => {
+  const run = scheduledNativeCoverage(2);
+  run.publish(0);
+  let second = false;
+  const clock = run.clock((now) => {
+    run.coverage.record({ uri: run.probes[0]!.uri, version: 1, diagnostics: [] }, now);
+    if (!second) {
+      run.publish(1);
+      second = true;
+    }
+  });
+  assert.equal(await run.native.waitForComplete(1, false, 60, clock), false);
+  assert.ok(clock.now() <= 160);
+  assert.equal(run.native.rows(1, false)[0]!.historicalMatchingPackets, 1);
+  assert.throws(() => run.native.assertComplete(1, false));
+});
+
+test("the outer test deadline cancels a progressing native drain", async () => {
+  const run = scheduledNativeCoverage(2);
+  const controller = new AbortController();
+  const clock = run.clock(() => {
+    run.publish(0);
+    controller.abort();
+  });
+  assert.equal(await run.native.waitForComplete(1, false, 60, clock, controller.signal), false);
+  assert.equal(clock.now(), 50, "the 300-second test bound must not become another idle interval");
+});
+
 test("bulk diagnostic coverage preserves multiplicity and requires exact native tokens and UTF16 ranges", () => {
   const probe = capacitySource(2, "file:///workspace/Coverage0002.vue");
   const coverage = new CapacityCoverage([probe]);

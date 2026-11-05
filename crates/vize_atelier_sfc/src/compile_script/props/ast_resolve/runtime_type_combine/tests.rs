@@ -120,7 +120,7 @@ fn define_model_keeps_boolean_casting_for_generic_unions() {
             r#""run": { type: Function, skipCheck: true, ...{ default: () => {} } },"#,
             r#""runModifiers": {},"#,
             r#""modelValue": { type: null },"#,
-            r#""modelModifiers": {}"#,
+            r#""modelModifiers": {},"#,
         ]
     );
     assert_eq!(
@@ -131,7 +131,7 @@ fn define_model_keeps_boolean_casting_for_generic_unions() {
             r#""run": { type: Function, ...{ default: () => {} } },"#,
             r#""runModifiers": {},"#,
             r#""modelValue": { type: null },"#,
-            r#""modelModifiers": {}"#,
+            r#""modelModifiers": {},"#,
         ]
     );
 }

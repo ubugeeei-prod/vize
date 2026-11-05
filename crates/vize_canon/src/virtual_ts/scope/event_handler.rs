@@ -10,7 +10,8 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
-use super::context::EventHandlerExprContext;
+use super::context::{EventHandlerExprContext, ScopeMappings};
+mod contextual_listener;
 use super::handler_shape::is_single_expression_statement;
 use super::vif_guard::append_ignored_vif_guard_open;
 use super::vif_guard::callback_vif_guard;
@@ -18,7 +19,7 @@ use super::vif_guard::callback_vif_guard;
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
     ts: &mut String,
-    mappings: &mut Vec<VizeMapping>,
+    mappings: &mut ScopeMappings<'_>,
     scope_id: u32,
     ctx: &EventHandlerExprContext<'_>,
 ) {
@@ -117,6 +118,23 @@ pub(super) fn generate_event_handler_expressions(
                 let mapped_end = ts.len();
                 ts.push_str(";  // handler expression (emit checks disabled)\n");
                 mapped_start..mapped_end
+            } else if let (Some(contextless), Some(listener_type)) =
+                (ctx.event_handler_contextless, ctx.event_listener_type)
+                && (is_reference || inline_callback_arg.is_some())
+            {
+                contextual_listener::emit(
+                    ts,
+                    mappings.diagnostics,
+                    contextual_listener::Listener {
+                        name: cstr!("__vize_handler_{scope_id}_{}", expr.start).as_str(),
+                        content,
+                        annotation: ctx.event_handler_type.unwrap_or(listener_type),
+                        contextless,
+                        indent: &handler_indent,
+                        source: src_start..src_end,
+                        event_name: ctx.event_name_src_range.clone(),
+                    },
+                )
             } else if let (Some(handler_type), Some(listener_type)) =
                 (ctx.event_handler_type, ctx.event_listener_type)
                 && (is_reference || inline_callback_arg.is_some())
@@ -207,6 +225,7 @@ pub(super) fn generate_event_handler_expressions(
             // expression is the next best anchor, so the identifier's error
             // still maps back instead of being dropped for want of a sub-span
             // (same fallback as a component prop's name/value ranges).
+            let value_range = gen_range.clone();
             let (gen_range, sub_spans) = match listener_spans {
                 Some((stmt_gen_range, name_gen_range)) => (
                     stmt_gen_range,
@@ -239,6 +258,18 @@ pub(super) fn generate_event_handler_expressions(
                 authored_content,
                 &scoped_access,
             );
+            if is_callable_reference && let Some(ownership) = ctx.diagnostic_ownership {
+                ownership.borrow_mut().record(
+                    crate::virtual_ts::diagnostic_ownership::InputOwner::for_listener_reference(
+                        expr.scope_id.as_u32(),
+                        expr.start,
+                        expr.end,
+                    ),
+                    value_range,
+                    src_start..src_end,
+                    false,
+                );
+            }
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",

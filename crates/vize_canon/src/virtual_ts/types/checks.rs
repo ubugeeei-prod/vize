@@ -13,7 +13,7 @@ pub(crate) enum ResolveStyleClassNames {
     All,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_props: bool,
     pub(crate) check_template_bindings: bool,

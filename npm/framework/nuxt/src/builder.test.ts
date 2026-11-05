@@ -61,6 +61,12 @@ void test("the public Nuxt 2 constructor version is detected without private ins
   assert.equal(getDetectedNuxtMajor(undefined), null);
 });
 
+void test("Nuxt 5 nightly and stable hosts retain their actual major version", () => {
+  assert.equal(getDetectedNuxtMajor({ _version: "5.0.0-2611031025-9496b7e" }), 5);
+  assert.equal(getDetectedNuxtMajor({ version: "5.0.0" }), 5);
+  assert.equal(getDetectedNuxtMajor({ version: "6.0.0" }), null);
+});
+
 void test("Nuxt 2 checker selects its actual default or Bridge builder", () => {
   class Nuxt2 {
     static version = "v2.17.3";

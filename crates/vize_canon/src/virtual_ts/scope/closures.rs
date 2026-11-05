@@ -49,6 +49,8 @@ pub(super) fn emit_scope_closures(
     options: (ScopeGenerationOptions<'_, '_>, bool),
 ) {
     let (options, pack_root_owners) = options;
+    super::component_events::reset_emit_resolvers();
+    super::component_slots::reset_slot_contracts();
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
@@ -96,18 +98,10 @@ pub(super) fn emit_scope_closures(
 
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
         profile!("canon.virtual_ts.group_template_expressions", {
-            let mut expressions_by_scope: FxHashMap<u32, Vec<_>> = FxHashMap::default();
-            let pattern_ranges = super::patterns::expression_ranges(summary);
-            for expr in &summary.template_expressions {
-                if pattern_ranges.contains(&(expr.start, expr.end)) {
-                    continue;
-                }
-                expressions_by_scope
-                    .entry(expr.scope_id.as_u32())
-                    .or_default()
-                    .push(expr);
-            }
-            expressions_by_scope
+            super::listener_values::group_expressions(
+                summary,
+                check_options.check_template_bindings && check_options.check_event_handlers(),
+            )
         });
     let event_inference_usages = std::cell::RefCell::new(FxHashSet::default());
     let event_contracts = std::cell::RefCell::new(FxHashMap::default());
@@ -445,4 +439,6 @@ pub(super) fn emit_scope_closures(
         record.push((super::REFS_RETURN_KEY, refs));
     }
     slot_outlets.emit_root_result(ts, summary, &record);
+    super::component_events::flush_emit_resolvers(ts);
+    super::component_slots::flush_slot_contracts(ts);
 }

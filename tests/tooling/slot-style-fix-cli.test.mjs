@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -70,7 +71,9 @@ await test("source CLI retains complete original slot findings, fixed files and 
           timeout: 60_000,
           maxBuffer: 4 * 1024 * 1024,
         });
-        const expected = wholeJson(entry, pass > 0, entry.originalRules);
+        const expected = currentRuleDocumentationPacket(
+          wholeJson(entry, pass > 0, entry.originalRules),
+        );
         const observation = {
           id: entry.id,
           originalRules: entry.originalRules,

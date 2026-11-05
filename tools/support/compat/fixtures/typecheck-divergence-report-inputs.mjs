@@ -9,7 +9,7 @@ import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.ts";
-import { typecheckerRunStatus } from "./typechecker-qualification.mjs";
+import { typecheckerRunStatus } from "./typechecker-qualification.ts";
 
 /**
  * The matrix artifacts a divergence run is allowed to trust, split out of

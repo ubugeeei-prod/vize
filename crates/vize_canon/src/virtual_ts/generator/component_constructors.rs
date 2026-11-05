@@ -15,7 +15,7 @@ use vize_l0::ts;
 
 use super::component_export::GenericComponentContract;
 use super::legacy_vue2::{
-    exposed_unwrap_helper, generic_instance_suffix, instance_helper, instance_suffix,
+    exposed_unwrap_helper, generic_instance_suffix, instance_base, instance_helper,
     needs_legacy_vue2_helpers,
 };
 use super::setup_props::SetupPropsPlan;
@@ -115,17 +115,22 @@ pub(super) fn emit_component_constructors<'a>(
     }
     let authored_instance = declared("$AuthoredInstance");
     if aliases.has_authored_default && legacy_component {
-        append!(*ts, "type $ComponentInstance = {authored_instance} & {{\n");
+        append!(*ts, "type $ComponentInstance = {authored_instance} & ");
     } else if aliases.has_authored_default {
         append!(
             *ts,
-            "type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {{\n"
+            "type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
         );
     } else {
-        ts.push_str("type $ComponentInstance = {\n");
+        ts.push_str("type $ComponentInstance = ");
     }
+    // Keep the public instance's anonymous object unchanged for diagnostic text.
+    // Reuse its four owned fields inline without a capturable utility lookup.
+    let mut own = String::default();
+    let fields = if legacy_component { &mut *ts } else { &mut own };
+    fields.push_str("{\n");
     setup_props_plan.emit_component_props_field(
-        ts,
+        fields,
         aliases.has_emits_for_props,
         aliases.generic_params.map(|(decl, _)| decl.as_str()),
         legacy_component,
@@ -133,20 +138,26 @@ pub(super) fn emit_component_constructors<'a>(
         aliases.hoist_shared_preamble,
     );
     if legacy_component {
-        append!(*ts, "  $emit: __EmitFn<{emits}>;\n  $slots: {slots};\n");
+        append!(*fields, "  $emit: __EmitFn<{emits}>;\n  $slots: {slots};\n");
     } else {
         append!(
-            *ts,
+            *fields,
             "  $emit: $PublicEmit<{emits}>;\n  $slots: $PublicSlots<{slots}>;\n"
         );
     }
-    instance_suffix(
+    fields.push('}');
+    if !legacy_component {
+        ts.push_str(&own);
+    }
+    ts.push_str(" & ");
+    instance_base(
         ts,
         legacy_vue2,
         dialect,
         aliases.has_exposed_type,
         (aliases.has_root_el, aliases.has_refs),
     );
+    ts.push_str(";\n");
     if legacy_component {
         ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);
         ts.push_str(
@@ -179,8 +190,22 @@ pub(super) fn emit_component_constructors<'a>(
         // inferred, so the authored contract is unchanged.
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{own}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>> & "
         );
+        if aliases.has_authored_default {
+            append!(
+                *ts,
+                "Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
+            );
+        }
+        instance_base(
+            ts,
+            legacy_vue2,
+            dialect,
+            aliases.has_exposed_type,
+            (aliases.has_root_el, aliases.has_refs),
+        );
+        ts.push_str(";\n");
     }
 
     let (generic_decl, generic_names) = aliases.generic_params?;

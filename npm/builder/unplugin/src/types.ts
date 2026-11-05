@@ -151,7 +151,7 @@ export interface VizeCompatibilityOptions {
   /**
    * Override the host Nuxt major when this option object is shared with Nuxt.
    */
-  nuxtVersion?: 2 | 3 | 4;
+  nuxtVersion?: 2 | 3 | 4 | 5;
   /**
    * Force Webpack compatibility behavior.
    *

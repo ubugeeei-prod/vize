@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -157,7 +158,7 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
         signal: result.signal,
         stdout: result.stdout ?? "",
         stderr: result.stderr ?? "",
-        expected: withoutHelp(wholeJson(entry, findings)),
+        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, findings))),
         expectedStatus: findings.some((d) => d.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(run);

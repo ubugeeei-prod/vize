@@ -12,9 +12,11 @@
 // Essential rules
 mod attribute_hyphenation;
 mod attribute_order;
+mod comment_directive;
 mod if_chain;
 mod no_bare_strings_in_template;
 mod no_child_content;
+mod no_custom_modifiers_on_v_model;
 mod no_deprecated_filter;
 mod no_deprecated_functional_template;
 mod no_deprecated_html_element_is;
@@ -38,6 +40,7 @@ mod no_unused_vars;
 mod no_use_v_else_with_v_for;
 mod no_use_v_if_with_v_for;
 mod no_useless_template_attributes;
+mod no_v_for_template_key;
 mod no_v_for_template_key_on_child;
 mod no_v_text_v_html_on_component;
 mod prop_name_casing;
@@ -66,6 +69,7 @@ mod valid_v_text;
 
 // Strongly recommended rules
 mod component_definition_name_casing;
+mod html_end_tags;
 mod html_quotes;
 mod mustache_interpolation_spacing;
 mod no_lone_template;
@@ -95,6 +99,7 @@ mod permitted_contents;
 // `use_unique_element_ids` implementation lives under rules::opinionated::vue.
 
 // Style rules
+mod match_component_file_name;
 mod single_style_block;
 // Opinionated style rules live under rules::opinionated::vue.
 
@@ -106,6 +111,7 @@ pub use crate::rules::opinionated::vue::MultiWordComponentNames;
 pub use crate::rules::opinionated::vue::UseVOnExact;
 pub use no_bare_strings_in_template::NoBareStringsInTemplate;
 pub use no_child_content::NoChildContent;
+pub use no_custom_modifiers_on_v_model::NoCustomModifiersOnVModel;
 pub use no_deprecated_filter::NoDeprecatedFilter;
 pub use no_deprecated_functional_template::NoDeprecatedFunctionalTemplate;
 pub use no_deprecated_html_element_is::NoDeprecatedHtmlElementIs;
@@ -128,6 +134,7 @@ pub use no_unused_vars::NoUnusedVars;
 pub use no_use_v_else_with_v_for::NoUseVElseWithVFor;
 pub use no_use_v_if_with_v_for::NoUseVIfWithVFor;
 pub use no_useless_template_attributes::NoUselessTemplateAttributes;
+pub use no_v_for_template_key::NoVForTemplateKey;
 pub use no_v_for_template_key_on_child::NoVForTemplateKeyOnChild;
 pub use no_v_text_v_html_on_component::NoVTextVHtmlOnComponent;
 pub use require_component_is::RequireComponentIs;
@@ -160,7 +167,9 @@ pub use crate::rules::opinionated::vue::{
 };
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
+pub use comment_directive::CommentDirective;
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
+pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
 pub use mustache_interpolation_spacing::{
     MustacheInterpolationSpacing, SpacingStyle as MustacheInterpolationSpacingStyle,
@@ -208,6 +217,7 @@ pub use crate::rules::opinionated::vue::NoPreprocessorLang;
 pub use crate::rules::opinionated::vue::NoScriptNonStandardLang;
 pub use crate::rules::opinionated::vue::NoSrcAttribute;
 pub use crate::rules::opinionated::vue::NoTemplateLang;
+pub use match_component_file_name::MatchComponentFileName;
 pub use require_scoped_style::RequireScopedStyle;
 pub use single_style_block::SingleStyleBlock;
 
@@ -272,6 +282,12 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     if !registry.has_rule("vue/no-multiple-template-root") {
         registry.register(Box::new(NoMultipleTemplateRoot));
     }
+    if !registry.has_rule("vue/no-v-for-template-key") {
+        registry.register(Box::new(NoVForTemplateKey));
+    }
+    if !registry.has_rule("vue/no-custom-modifiers-on-v-model") {
+        registry.register(Box::new(NoCustomModifiersOnVModel));
+    }
     if !registry.has_rule("vue/no-use-v-else-with-v-for") {
         registry.register(Box::new(NoUseVElseWithVFor));
     }
@@ -313,5 +329,8 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-non-component-keep-alive-child") {
         registry.register(Box::new(NoNonComponentKeepAliveChild));
+    }
+    if !registry.has_rule("vue/match-component-file-name") {
+        registry.register(Box::new(MatchComponentFileName));
     }
 }

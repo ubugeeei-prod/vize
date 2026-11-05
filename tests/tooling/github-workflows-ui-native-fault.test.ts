@@ -157,3 +157,38 @@ void test("UI caller controls reject command, environment, status, selector and 
     assert.throws(() => uiObservation(steps), assert.AssertionError);
   }
 });
+
+function independentSourceTail(steps: Step[]): void {
+  const cssRaw = exactStep(steps, "Retain every actual CSS API result and source identity");
+  const source = exactStep(
+    steps,
+    "Verify packaged direct-child props with source native on Node 22",
+  );
+  const sourceRaw = exactStep(steps, "Retain source reporter archives and whole outcomes");
+  assert.ok(
+    steps.indexOf(cssRaw) >
+      steps.indexOf(exactStep(steps, "Preserve UI conformance native fault diagnostics")),
+  );
+  assert.equal(steps.indexOf(source), steps.indexOf(cssRaw) + 1);
+  assert.equal(steps.indexOf(sourceRaw), steps.indexOf(source) + 1);
+}
+
+void test("independent source reporter phases follow retained UI and CSS evidence", () => {
+  independentSourceTail(job.steps);
+  for (const name of [
+    "Verify packaged direct-child props with source native on Node 22",
+    "Retain source reporter archives and whole outcomes",
+  ]) {
+    const omitted = structuredClone(job.steps);
+    omitted.splice(omitted.indexOf(exactStep(omitted, name)), 1);
+    assert.throws(() => independentSourceTail(omitted), assert.AssertionError);
+    const duplicated = structuredClone(job.steps);
+    duplicated.push(structuredClone(exactStep(duplicated, name)));
+    assert.throws(() => independentSourceTail(duplicated), assert.AssertionError);
+    const reordered = structuredClone(job.steps);
+    const phase = exactStep(reordered, name);
+    reordered.splice(reordered.indexOf(phase), 1);
+    reordered.unshift(phase);
+    assert.throws(() => independentSourceTail(reordered), assert.AssertionError);
+  }
+});

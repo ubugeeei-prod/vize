@@ -38,13 +38,21 @@ pub(super) struct EmitInferenceContext<'a, 'template> {
     pub(super) hoist_shared_preamble: bool,
     /// The module declares the gate aliases and this component's type is closed.
     pub(super) gated_inference: bool,
+    /// Modern consumers use loose ownership for runtime args and callback context.
+    pub(super) contextual_listener: bool,
+}
+
+/// Argument shape and listener-context ownership are independent facts.
+pub(super) struct InferredEmitArgs {
+    pub(super) arguments: String,
+    pub(super) contextless_listener: Option<String>,
 }
 
 pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     ctx: &EmitInferenceContext<'_, '_>,
-) -> Option<String> {
+) -> Option<InferredEmitArgs> {
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     let dynamic_alias =
@@ -52,8 +60,8 @@ pub(super) fn generate_inferred_emit_args(
     let dynamic_component = dynamic_alias
         || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
     // `:is` is not a passed prop. A listener-only `<component :is>` still has
-    // to call the factory: a loose target returns `$LooseEmitProps` (`[]`),
-    // which leaves `(v)` implicitly `any`. Any other component needs a valued
+    // to call the factory: a loose target returns `$LooseEmitProps`. Its marker
+    // must remain distinct from an actual declared empty tuple. Other components need a valued
     // prop or a spread before that call infers anything.
     let has_inference_prop = !usage.spread_props.is_empty()
         || usage.props.iter().any(|prop| {
@@ -165,10 +173,23 @@ pub(super) fn generate_inferred_emit_args(
     // A vue-tsc library export is called itself, so the bound props
     // instantiate its generics and its `__ctx` carries the listener props.
     if first_listener && !gated {
-        append!(
-            *ts,
-            "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
-        );
+        let share = super::emit_resolver_share::ResolverShare {
+            component_type_name: ctx.component_type_name,
+            component_ref,
+            factory: emit_props_factory,
+            dynamic: dynamic_component,
+            parent_scope: ctx.scope.parent().map(|parent| parent.as_u32()),
+            block: super::super::open_chained_vif_guard_block(),
+        };
+        if let Some(canonical) = super::emit_resolver_share::alias_target(&share) {
+            append!(*ts, "{indent}type {resolver_type} = {canonical};\n");
+        } else {
+            append!(
+                *ts,
+                "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
+            );
+            super::emit_resolver_share::record_inline(&share, resolver_type.as_str());
+        }
     }
     if first_listener && let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
@@ -316,7 +337,23 @@ pub(super) fn generate_inferred_emit_args(
         *ts,
         "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? NonNullable<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? __L : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
     );
-    Some(inferred_args)
+    let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
+        let contextless_listener = cstr!(
+        "__{}_{}_{}_contextless_listener",
+        ctx.component_type_name,
+        scope_id,
+        ctx.safe_event_name
+    );
+    append!(
+        *ts,
+        "{indent}type {contextless_listener} = {library} extends true ? false : typeof {emit_props} extends {{ readonly __vizeLooseListener: unknown[] }} ? true : false;\n"
+    );
+        contextless_listener
+    });
+    Some(InferredEmitArgs {
+        arguments: inferred_args,
+        contextless_listener,
+    })
 }
 
 /// One static prop of the inference literal, with the text it emits.

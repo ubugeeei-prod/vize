@@ -108,17 +108,13 @@ fn prior_tag_admission_facts_diagnostics_and_records_survive_later_pre() {
     let source = cstr!("{earlier}{owner}<p>ok</p>");
     let allocator = Allocator::default();
     let lowered = lower_component_native(&allocator, &source, Lang::Js).unwrap();
-    assert_eq!(lowered.component.unsupported.len(), 1);
+    assert_eq!(lowered.component.unsupported.len(), 0);
     let facts: Vec<_> = lowered.holes.iter().map(|hole| hole.kind).collect();
     assert_eq!(
         facts.as_slice(),
-        &[
-            NativeHoleKind::DirectiveAdmission(vize_l1::markup::DirectiveNameError::NestingLimit),
-            NativeHoleKind::DirectiveSyntax,
-            NativeHoleKind::PreCarrier,
-        ]
+        &[NativeHoleKind::Directive, NativeHoleKind::PreCarrier]
     );
-    assert_eq!(lowered.diagnostics.len(), 3);
+    assert_eq!(lowered.diagnostics.len(), 2);
     assert_eq!(
         lowered
             .artifact
@@ -126,7 +122,7 @@ fn prior_tag_admission_facts_diagnostics_and_records_survive_later_pre() {
             .iter()
             .filter(|record| record.rule.as_str() == "native.unsupported")
             .count(),
-        3
+        2
     );
     assert_eq!(lowered.artifact.node_count(), 3);
     assert_eq!(lowered.embeds.len(), 0);
@@ -148,9 +144,13 @@ fn upstream_admitted_full_pre_arguments_and_modifiers_use_the_original_control()
 }
 
 #[test]
-fn shorthand_pre_and_refused_dynamic_head_never_invent_a_verbatim_owner() {
+fn full_pre_arguments_and_shorthands_keep_their_distinct_lexical_control() {
     let malformed = cstr!("v-pre:[{}{}]", "([".repeat(33), "])".repeat(33));
-    for head in ["@pre", malformed.as_str(), "v-pre[broken"] {
+    for (head, verbatim, embeds, nodes) in [
+        ("@pre", false, 1, 2),
+        (malformed.as_str(), true, 0, 0),
+        ("v-pre[broken", false, 1, 2),
+    ] {
         let source = cstr!("<div {head}>{{{{value}}}}</div>");
         let allocator = Allocator::default();
         let lowered = lower_component_native(&allocator, &source, Lang::Js).unwrap();
@@ -159,17 +159,17 @@ fn shorthand_pre_and_refused_dynamic_head_never_invent_a_verbatim_owner() {
         else {
             panic!("non-control source owner");
         };
-        assert!(!carrier.open.is_verbatim());
+        assert_eq!(carrier.open.is_verbatim(), verbatim);
         assert_eq!(
             lowered
                 .holes
                 .iter()
                 .filter(|hole| hole.kind == NativeHoleKind::PreCarrier)
                 .count(),
-            0
+            usize::from(verbatim)
         );
-        assert_eq!(lowered.embeds.len(), 1);
+        assert_eq!(lowered.embeds.len(), embeds);
         assert_eq!(lowered.rejected_syntax.len(), 0);
-        assert_eq!(lowered.artifact.node_count(), 2);
+        assert_eq!(lowered.artifact.node_count(), nodes);
     }
 }

@@ -159,14 +159,3 @@ fn resolve_parent(
         )),
     }
 }
-
-#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-pub(super) fn check_unknown_props_enabled(options: &Map<std::string::String, Value>) -> bool {
-    if let Some(value) = options.get("checkUnknownProps").and_then(Value::as_bool) {
-        return value;
-    }
-    options
-        .get("strictTemplates")
-        .and_then(Value::as_bool)
-        .unwrap_or(false)
-}

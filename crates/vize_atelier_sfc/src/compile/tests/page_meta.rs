@@ -74,9 +74,7 @@ const route = useRoute()
     let result = compile_nuxt(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
     assert_eq!(result.macro_artifacts.len(), 1);
     assert!(
-        result
-            .code
-            .contains("import { useRoute } from \"#imports\""),
+        result.code.contains("import { useRoute } from '#imports'"),
         "{}",
         result.code
     );

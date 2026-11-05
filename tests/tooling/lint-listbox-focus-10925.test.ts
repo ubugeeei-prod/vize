@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -82,7 +83,7 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
         repetition,
         sourceSha256: hash(bytes),
         argv,
-        expected,
+        expected: currentRuleDocumentationPacket(expected),
         expectedStatus,
         status: child.status,
         signal: child.signal,

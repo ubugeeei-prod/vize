@@ -85,9 +85,12 @@ pub use jsx_codegen::{
     generate_jsx_virtual_ts as generate_jsx_document_virtual_ts,
 };
 mod mapping;
-pub(crate) use mapping::MaterializedSourceMappingKind;
+pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 mod materialize;
 mod materialize_delta;
+mod materialize_fingerprint;
+#[cfg(test)]
+pub(crate) use materialize_delta::take_materialized_hash_count;
 mod materialize_links;
 mod workspace_aliases;
 pub(crate) use materialize_delta::{
@@ -125,13 +128,16 @@ mod tsconfig_gen;
 pub use tsconfig_gen::{
     CompilerConfigurationAttempt, CompilerConfigurationSnapshot, CompilerOptionsSnapshot,
     ConfigurationObservations, TsconfigOwnershipCache, TsconfigOwnershipOptions,
-    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage, UnresolvedExtends,
-    snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
+    TsconfigOwnershipSnapshot, TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
+    UnresolvedExtends, snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
     snapshot_tsconfig_vue_target,
 };
 mod tsconfig_paths;
 // The Corsa session key (P5-8) digests the same `extends` chain.
 pub(crate) use tsconfig_paths::{parse_jsonc_value, resolve_extended_tsconfig_path};
+mod vue_check_options;
+#[cfg(test)]
+mod vue_check_options_tests;
 mod vue_codegen;
 mod vue_compiler_comments;
 

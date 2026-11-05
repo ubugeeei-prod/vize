@@ -3,8 +3,8 @@
 use super::{Parser, callbacks::ParserCallbacks};
 use vize_l0::{ErrorCode, Vec};
 use vize_l1::markup::lex::compat::adapter::CompatSink;
-use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
-use vize_relief::{RootNode, errors::CompilerError};
+use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer, VueComponent};
+use vize_relief::{RootNode, errors::CompilerError, options::ParseMode};
 
 impl<'a> Parser<'a> {
     pub(super) fn tokenize_template(&mut self) -> bool {
@@ -23,6 +23,7 @@ impl<'a> Parser<'a> {
         let delimiter_close: Vec<'a, u8> =
             Vec::from_iter_in(self.options.delimiters.1.bytes(), &self.allocator);
         let document = self.document;
+        let sfc = self.options.mode == ParseMode::Sfc;
         let source = self.source;
         let options = LexOptions {
             delimiters: Delimiters {
@@ -46,6 +47,8 @@ impl<'a> Parser<'a> {
         let sink = CompatSink::new(ParserCallbacks { parser: self });
         if document {
             Lexer::<Document, _>::new(source, sink, options).run();
+        } else if sfc {
+            Lexer::<VueComponent, _>::new(source, sink, options).run();
         } else {
             Lexer::<Component, _>::new(source, sink, options).run();
         }

@@ -34,8 +34,17 @@ import { newVaporStyleApiCases } from "./vapor-style-api-fixtures.ts";
 import { newJsxChildApiCases } from "./jsx-child-api-fixtures.ts";
 import { newNativeDiagnosticPhaseCases } from "./native-diagnostic-phase-fixtures.ts";
 
-/** PRs opened before this (just after the gate merged) stay report-only. */
-export const GATE_SINCE = "2026-10-20T06:00:00Z";
+import { checkCompilerCase } from "./compiler-project-fixture-contract.ts";
+
+import { enforced, failingProducts, formatSummary } from "./legacy-fix-fixture-report.ts";
+export {
+  GATE_SINCE,
+  enforced,
+  failingProducts,
+  formatSummary,
+} from "./legacy-fix-fixture-report.ts";
+import { newNativeDocumentIdentityCases } from "./native-document-identity-fixtures.ts";
+import { newNativeIdentitySuccessor } from "./native-document-identity-successor.ts";
 
 export type Product = "compiler" | "formatter" | "linter" | "lsp" | "typechecker";
 type Side = "base" | "head";
@@ -92,6 +101,8 @@ interface Manifest {
   protocolCases?: unknown;
   languageProjectCases?: unknown;
   runtimeCases?: unknown;
+  nativeDocumentIdentityCases?: unknown;
+  nativeDocumentIdentitySuccessors?: unknown;
   cssApiCases?: unknown;
   vaporStyleApiCases?: unknown;
   jsxChildApiCases?: unknown;
@@ -99,7 +110,6 @@ interface Manifest {
 }
 
 const manifestPath = (product: Product) => `tests/_fixtures/differential/${product}/manifest.json`;
-const COMPILER_FACETS = ["code", "css", "errors", "warnings", "macro_artifacts"];
 
 export function legacyProducts(paths: readonly string[]): Product[] {
   const products = new Set<Product>();
@@ -145,41 +155,6 @@ function requirePinned(readFile: ReadFile, path: string, expected: string, label
   if (bytes === null || sha256(bytes) !== expected) {
     throw new Error(`missing or mismatched pinned ${label}: ${path}`);
   }
-}
-
-// Compiler cases compare whole SSR modules, so they also pin the expected module.
-function checkCompilerCase(
-  entry: ManifestCase,
-  root: string,
-  files: PinnedInput[],
-  readFile: ReadFile,
-): void {
-  const reference = entry.reference;
-  const expectedPath = `${root}/module.expected.txt`;
-  if (
-    entry.id !== `compiler/sfc/${root}` ||
-    JSON.stringify(entry.targets) !== JSON.stringify(["ssr"]) ||
-    files.length !== 1 ||
-    files[0]?.path !== "Layout.vue.txt" ||
-    files[0]?.role !== "entry" ||
-    entry.adapters?.legacy !== "compiler-cli-ssr-v1" ||
-    entry.adapters?.native !== null ||
-    typeof entry.adapters?.reasons?.native !== "string" ||
-    entry.comparison?.contract !== "compiler-ssr-module-bytes-v1" ||
-    JSON.stringify(entry.comparison?.requiredFacets) !== JSON.stringify(COMPILER_FACETS) ||
-    reference?.path !== expectedPath ||
-    !/^[a-f0-9]{64}$/.test(reference.sha256 ?? "") ||
-    typeof reference.source !== "string" ||
-    reference.source.length === 0
-  ) {
-    throw new Error(`invalid pinned compiler reference: ${entry.id}`);
-  }
-  requirePinned(
-    readFile,
-    `tests/_fixtures/differential/compiler/${expectedPath}`,
-    reference.sha256 ?? "",
-    "compiler reference",
-  );
 }
 
 function checkProduct(
@@ -309,6 +284,23 @@ function checkProduct(
             readFile,
           )
         : { ids: [] as string[], sources: new Set<string>() };
+    const identitySuccessor =
+      product === "typechecker"
+        ? newNativeIdentitySuccessor(
+            before?.nativeDocumentIdentitySuccessors,
+            manifest.nativeDocumentIdentitySuccessors,
+            manifest.nativeDocumentIdentityCases,
+            readFile,
+          )
+        : { ids: [] as string[], sources: new Set<string>(), historyRead: readFile };
+    const identity =
+      product === "typechecker"
+        ? newNativeDocumentIdentityCases(
+            before?.nativeDocumentIdentityCases,
+            manifest.nativeDocumentIdentityCases,
+            identitySuccessor.historyRead,
+          )
+        : { ids: [] as string[], sources: new Set<string>() };
     const dtoRequired =
       product === "typechecker" &&
       canonPaths.some(
@@ -316,7 +308,9 @@ function checkProduct(
           nativeBetaDtoProtocolSource(path) &&
           !phases.sources.has(path) &&
           !currentObserver.sources.has(path) &&
-          !logical.sources.has(path),
+          !logical.sources.has(path) &&
+          !identity.sources.has(path) &&
+          !identitySuccessor.sources.has(path),
       );
     const runtime = newNativeRuntimeCases(
       product,
@@ -335,6 +329,8 @@ function checkProduct(
               !languageProject.sources.has(path) &&
               !currentObserver.sources.has(path) &&
               !logical.sources.has(path) &&
+              !identity.sources.has(path) &&
+              !identitySuccessor.sources.has(path) &&
               !(dtoRegistered && nativeBetaDtoProtocolSource(path)) &&
               !(product === "typechecker" && nativeShutdownProtocolSource(path)),
           )
@@ -396,6 +392,8 @@ function checkProduct(
         ...dtoProtocols,
         ...logical.ids,
         ...phases.ids,
+        ...identity.ids,
+        ...identitySuccessor.ids,
       ],
       ...(currentObserver.evidence ? { currentObserverSuccessor: currentObserver.evidence } : {}),
     };
@@ -420,45 +418,6 @@ export function analyzeLegacyFix({
     state: "fixture-required",
     products: products.map((product) => checkProduct(product, paths, readFile)),
   };
-}
-
-/** Whether the requirement applies to a PR opened at `createdAt`; unknown means yes. */
-export function enforced(createdAt: string | undefined): boolean {
-  return !createdAt || Date.parse(createdAt) >= Date.parse(GATE_SINCE);
-}
-
-export function failingProducts(report: LegacyFixReport): Product[] {
-  return report.products
-    .filter((product) => product.state !== "new-inputs-registered")
-    .map((product) => product.product);
-}
-
-export function formatSummary(report: LegacyFixReport, enforce: boolean): string {
-  const lines = [
-    "### Legacy fix differential inputs (#6852)",
-    "",
-    enforce
-      ? "Required: each legacy product this fix changes must register a new active case with pinned inputs. Native parity is not checked here."
-      : `Report only: this PR was opened before the requirement started (${GATE_SINCE}). Native parity is not checked here.`,
-    "",
-  ];
-  if (report.products.length === 0) {
-    lines.push(`Result: ${report.state}.`);
-  } else {
-    lines.push("| Product | Registered new input | Case IDs |", "| --- | --- | --- |");
-    for (const product of report.products) {
-      lines.push(`| ${product.product} | ${product.state} | ${product.cases.join(", ") || "—"} |`);
-      if (product.reason) lines.push(`\n${product.product}: ${product.reason}`);
-    }
-    if (enforce && failingProducts(report).length > 0) {
-      lines.push(
-        "",
-        "Add the fixed input under `tests/_fixtures/differential/<product>/<case>/` and register it at its sorted position in that product's `manifest.json` with its SHA-256.",
-      );
-    }
-  }
-  lines.push("");
-  return `${lines.join("\n")}\n`;
 }
 
 export function gitFixtureFile(revision: string, path: string, cwd = process.cwd()): Buffer | null {

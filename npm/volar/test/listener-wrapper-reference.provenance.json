@@ -1,0 +1,37 @@
+{
+  "schema": "vize.volar.authored-listener-reference.v1",
+  "issue": 11675,
+  "originalArchive": "expected-packets.provenance.json remains byte-identical",
+  "historicalImageAfterExistingPublicInstanceReference": "f1b55943869cfcc03d92cfad08d93857fdf5738280832f32f00fd32aa95413ac",
+  "currentImage": "f9c8ec10cb0a54edad788184496cefe6d55447afd86b55b585e2dbde113e107b",
+  "fixture": {
+    "file": "reference-fixtures/listener-wrapper.vue.txt",
+    "sha256": "a6c3cee7449f0b4f97930c1382561b946814d9544c3bc326a4ec6d72c5518e6e",
+    "literal": "(value: number) => undefined",
+    "start": 107,
+    "length": 28
+  },
+  "transition": {
+    "packet": "feature-boundary-diagnostics",
+    "paths": [
+      "result[0].start",
+      "result[0].length",
+      "result[0].relatedInformation[0].start",
+      "result[0].relatedInformation[0].length"
+    ],
+    "before": [105, 30, 105, 30],
+    "after": [107, 28, 107, 28]
+  },
+  "observed": {
+    "authorSource": "1263e634a115faa5b80111b3de5348ca84a0d0b1",
+    "actualSource": "5bc7d0ca587e81fc9926d8afe3bbecd5d3944453",
+    "actionsRun": 41832464621,
+    "job": 126582814050,
+    "artifact": 13322899489,
+    "archiveSha256": "7a31c7348cdd82b0a356a87bc00dd9adbc7734983b3721c876ba48c15f9eecfd",
+    "completePackets": 37,
+    "nativeImageSha256": "b8cef074f10fd8a522008ea5f2ebaa8acc54f1a7461996584d546d9bb3480f5c",
+    "nativeToken": "7a037c1f04174d63c35afb63a2127d7d"
+  },
+  "scope": "Expected-side successor only. Actual packets are unchanged. The38th rename expectation remains historical and requires the next actual Actions execution; no full38 capture credit."
+}

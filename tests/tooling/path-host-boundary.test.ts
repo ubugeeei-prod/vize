@@ -95,3 +95,21 @@ test("regression hosts retain exact real canonicalizer boundaries", () => {
     assert.match(withoutPathHostReferences(actual, `${file}.other`), pathReference);
   }
 });
+
+test("Musea story discovery admits only its complete physical metadata-path calls", () => {
+  const file = "crates/vize/src/commands/musea/files.rs";
+  const actual = read(file);
+  const call = "vize_carton::path::is_git_metadata_path";
+  assert.ok(actual.includes(call));
+  assert.doesNotMatch(withoutHostRuntimeReferences(actual, file), forbidden);
+  for (const changed of [
+    actual.replace(call, "is_other_metadata_path"),
+    `${actual}\nvize_carton::path::is_git_metadata_path(path);`,
+    actual.replace(call, "vize_carton::path::physical_path"),
+    `${actual}\nuse vize_carton::String;`,
+    `${actual}\nuse vize_carton::path as host;`,
+  ]) {
+    assert.match(withoutHostRuntimeReferences(changed, file), forbidden);
+  }
+  assert.match(withoutHostRuntimeReferences(actual, `${file}.other`), forbidden);
+});

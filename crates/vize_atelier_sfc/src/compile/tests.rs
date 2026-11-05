@@ -781,7 +781,7 @@ const msg = 'ready'
     assert!(
         result
             .code
-            .contains("import { definePage } from \"@/page.js\";"),
+            .contains("import { definePage } from '@/page.js'"),
         "runtime definePage import should be preserved:\n{}",
         result.code
     );
@@ -1250,7 +1250,7 @@ const reactiveObject = reactive({ foo: 'bar' });
         "compiled output should demote the binding to let"
     );
     assert!(
-        result.code.contains("reactiveObject = $event"),
+        result.code.contains(": (reactiveObject) = $event"),
         "compiled output should assign directly to the demoted binding"
     );
     assert_eq!(result.warnings.len(), 1, "expected exactly one warning");
@@ -2010,20 +2010,12 @@ const model = defineModel<T | T[]>({
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
     assert!(!result.code.contains("[null, Array]"), "{}", result.code);
-    assert!(
-        result
-            .code
-            .contains("title: {\n    type: null,\n    required: true\n  }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("\"modelValue\": {\n      type: null,\n      ...{ required: true }"),
-        "{}",
-        result.code
-    );
+    for runtime in [
+        "title: { type: null, required: true }",
+        "\"modelValue\": { type: null, ...{ required: true } }",
+    ] {
+        assert!(result.code.contains(runtime), "{}", result.code);
+    }
 }
 
 #[test]
@@ -2141,12 +2133,12 @@ fn test_define_props_interface_extends_reexported_vue_interface() {
 
     assert!(result.code.contains("props: {"), "{}", result.code);
     assert!(
-        result.code.contains("as: {\n      type: String"),
+        result.code.contains("as: { type: String"),
         "{}",
         result.code
     );
     assert!(
-        result.code.contains("asChild: {\n      type: Boolean"),
+        result.code.contains("asChild: { type: Boolean"),
         "{}",
         result.code
     );
@@ -2231,12 +2223,12 @@ const props = defineProps<WrapperProps>()
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains("asChild: {\n      type: Boolean"),
+        result.code.contains("asChild: { type: Boolean"),
         "{}",
         result.code
     );
     assert!(
-        result.code.contains("forceMount: {\n      type: Boolean"),
+        result.code.contains("forceMount: { type: Boolean"),
         "{}",
         result.code
     );
@@ -2301,35 +2293,37 @@ const props = withDefaults(defineProps<MkPaginationOptions & {
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
-        result.code.contains(
-            "autoLoad: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
-        ),
+        result
+            .code
+            .contains("autoLoad: { type: Boolean, required: false, default: true }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("direction: { type: String, required: false, default: \"down\" }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("pullToRefresh: { type: Boolean, required: false, default: true }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("withControl: { type: Boolean, required: false, default: true }"),
         "{}",
         result.code
     );
     assert!(
         result.code.contains(
-            "direction: {\n      type: String,\n      required: false,\n      default: \"down\"\n    }"
+            "forceDisableInfiniteScroll: { type: Boolean, required: false, default: false }"
         ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains(
-            "pullToRefresh: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
-        ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains(
-            "withControl: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
-        ),
-        "{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("forceDisableInfiniteScroll: {\n      type: Boolean,\n      required: false,\n      default: false\n    }"),
         "{}",
         result.code
     );

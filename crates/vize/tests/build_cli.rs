@@ -84,17 +84,15 @@ withDefaults(defineProps<AppProps>(), {
 
     let js = fs::read_to_string(project_root.join("dist/App.js")).unwrap();
     assert!(
-        js.contains("asChild: {\n      type: Boolean,\n      required: false\n    }"),
+        js.contains("asChild: { type: Boolean, required: false }"),
         "{js}"
     );
     assert!(
-        js.contains(
-            "as: {\n      type: String,\n      required: false,\n      default: \"span\"\n    }"
-        ),
+        js.contains("as: { type: String, required: false, default: \"span\" }"),
         "{js}"
     );
     assert!(
-        js.contains("feature: {\n      type: String,\n      required: false,\n      default: \"focusable\"\n    }"),
+        js.contains("feature: { type: String, required: false, default: \"focusable\" }"),
         "{js}"
     );
     assert!(js.contains("\"data-as\": __props.as"), "{js}");
@@ -194,11 +192,11 @@ const props = defineProps<WrapperProps>()
 
     let js = fs::read_to_string(project_root.join("dist/Wrapper.js")).unwrap();
     assert!(
-        js.contains("asChild: {\n      type: Boolean,\n      required: false\n    }"),
+        js.contains("asChild: { type: Boolean, required: false }"),
         "{js}"
     );
     assert!(
-        js.contains("forceMount: {\n      type: Boolean,\n      required: false\n    }"),
+        js.contains("forceMount: { type: Boolean, required: false }"),
         "{js}"
     );
     assert!(js.contains("as: __props.as"), "{js}");

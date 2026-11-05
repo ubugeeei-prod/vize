@@ -468,13 +468,13 @@ mod tests {
     }
 
     #[test]
-    fn original_unsupported_directive_observation_cannot_grant_name_admission() {
+    fn long_vue_directive_heads_keep_original_name_admission() {
         let arena = Allocator::default();
         let source = "<template><div v-pre:[([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([key])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]>body</div></template>";
         let owner = selected(&arena, source);
-        assert_eq!(owner.component().carrier().unsupported.len(), 1);
+        assert_eq!(owner.component().carrier().unsupported.len(), 0);
         let element = owner.children().next().unwrap().into_element().unwrap();
-        assert_eq!(element.names().unwrap_err(), Refusal::UnsupportedComponent);
+        assert_eq!(element.names().unwrap().opening().slice(source), "div");
         assert_eq!(check_fidelity(&owner.component().carrier().tree), Ok(()));
     }
 }

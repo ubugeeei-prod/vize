@@ -1,6 +1,11 @@
 import type { ExperimentalCompileFlags } from "./experimental-options.ts";
 import type { ModuleOutputInfo } from "./utils/module-output.js";
 
+export interface TypeProjectContext {
+  root: string;
+  revision: string;
+}
+
 export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   whitespace?: "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve";
   filename?: string;
@@ -10,6 +15,8 @@ export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   vapor?: boolean;
   /** Extract Nuxt page metadata; enabled by the Nuxt integration only. */
   nuxtPageMeta?: boolean;
+  /** Fallback tsconfig for imported macro types when no user project owns the file. */
+  typeResolutionFallbackTsconfig?: string;
   customRenderer?: boolean;
   customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";
@@ -57,7 +64,27 @@ export interface NativeStyleBlockInfo {
   index: number;
 }
 
+/** Native custom block. The tag name is `blockType`, not `type`. */
+export interface NativeCustomBlockInfo {
+  blockType: string;
+  content: string;
+  src?: string | null;
+  attrs?: Array<{ name: string; value?: string | null }> | null;
+  index: number;
+}
+
+/** Custom block handed to Vite. `type` is the native `blockType`. */
+export interface CustomBlockInfo {
+  type: string;
+  content: string;
+  src?: string | null;
+  /** Non-boolean attributes keep their value; boolean attributes are `true`. */
+  attrs: Record<string, string | true>;
+  index: number;
+}
+
 export interface SfcCompileResultNapi {
+  typeProject?: TypeProjectContext;
   code: string;
   /**
    * Source Map v3 document (JSON) describing `code`, present only when
@@ -73,6 +100,8 @@ export interface SfcCompileResultNapi {
   scriptHash?: string;
   hasScoped: boolean;
   styles: NativeStyleBlockInfo[];
+  /** Absent when an older binding did not return custom blocks. */
+  customBlocks?: NativeCustomBlockInfo[];
   macroArtifacts?: MacroArtifact[];
   moduleShape?: ModuleOutputInfo;
 }
@@ -98,6 +127,8 @@ export interface StyleBlockInfo {
 }
 
 export interface CompiledModule {
+  /** Shared configuration authority; its watch inputs are registered once. */
+  typeProject?: TypeProjectContext;
   /**
    * The SFC text this module was compiled from. A module answers only for this
    * text; the pre-compile cache stores its hash instead.
@@ -121,6 +152,11 @@ export interface CompiledModule {
   macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
+  /**
+   * Custom blocks. Absent on old cache entries and hand-built fixtures;
+   * absence means the module emits no custom-block imports.
+   */
+  customBlocks?: CustomBlockInfo[];
   /** Files loaded through SFC `src` imports */
   dependencies?: string[];
   /**

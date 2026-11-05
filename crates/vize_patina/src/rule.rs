@@ -282,6 +282,7 @@ impl RuleRegistry {
     pub fn with_essential() -> Self {
         let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
         // Vue Essential Rules only
+        registry.register(Box::new(crate::rules::vue::CommentDirective));
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
         registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));

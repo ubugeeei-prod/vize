@@ -30,7 +30,14 @@ impl CorsaProjectClient {
         }
         // Diagnostics may have temporarily synchronized a different document
         // set. Restore the editor view before resolving the candidate.
-        self.editor_lsp_session()?.completion_resolve(uri, item)
+        let native_uri = self.editor_document_uri(uri);
+        let mut response = self
+            .editor_lsp_session()?
+            .completion_resolve(&native_uri, item)?;
+        if let Some(value) = &mut response {
+            self.remap_query_uris(value, uri);
+        }
+        Ok(response)
     }
 }
 

@@ -3,6 +3,8 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod checker_augmentations;
+mod current_loose_emit;
 mod emit_overload_stall;
 mod emit_overloads;
 mod emit_props_twins;
@@ -157,7 +159,9 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     emit_props_twins::retain_provenance(manifest);
     required_keys_short_circuit::retain_provenance(manifest);
     extra_keys_policy::retain_provenance(manifest);
+    checker_augmentations::retain_provenance(manifest);
     runtime_prop_call::retain_provenance(manifest);
+    current_loose_emit::retain_provenance(manifest);
 }
 
 #[cfg(test)]

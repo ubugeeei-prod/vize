@@ -291,5 +291,72 @@ fn split_pattern(pattern: &str) -> (String, String, bool) {
     }
 }
 
+/// Selected override bases using the existing tsconfig origin and alias policy.
+/// An effective configuration that cannot be reconciled is deliberately unknown.
+pub(in crate::commands) fn mapper_override_candidates(
+    config_file_name: &Path,
+    effective_options: &Value,
+    specifier: &str,
+) -> Option<Vec<PathBuf>> {
+    let resolver = PathAliasResolver::from_tsconfig(Some(config_file_name));
+    let options = effective_options.as_object()?;
+    let directory = config_file_name.parent()?;
+    match (&resolver.base_url, options.get("baseUrl")) {
+        (None, None) => {}
+        (Some(configured), Some(Value::String(effective))) => {
+            let mut paths = CanonicalPathCache::default();
+            if paths.canonicalize(configured) != paths.canonicalize(&directory.join(effective)) {
+                return None;
+            }
+        }
+        _ => return None,
+    }
+    match (resolver.paths_set, options.get("paths")) {
+        (false, None) => {}
+        (true, Some(Value::Object(effective))) => {
+            if effective.len() != resolver.aliases.len() {
+                return None;
+            }
+            for alias in &resolver.aliases {
+                let pattern = if alias.has_wildcard {
+                    vize_l0::cstr!("{}*{}", alias.prefix, alias.suffix)
+                } else {
+                    alias.prefix.clone()
+                };
+                let targets = effective.get(pattern.as_str())?.as_array()?;
+                if targets.len() != alias.targets.len()
+                    || targets
+                        .iter()
+                        .zip(&alias.targets)
+                        .any(|(actual, expected)| actual.as_str() != Some(expected.as_str()))
+                {
+                    return None;
+                }
+            }
+        }
+        _ => return None,
+    }
+    if resolver.base_url.is_none()
+        && let Some(origin) = options.get("pathsBasePath")
+    {
+        let origin = directory.join(origin.as_str()?);
+        let mut paths = CanonicalPathCache::default();
+        if resolver
+            .aliases
+            .iter()
+            .any(|alias| paths.canonicalize(&alias.base_dir) != paths.canonicalize(&origin))
+        {
+            return None;
+        }
+    }
+    let (_, candidates) = resolver.resolve_with_inputs(
+        specifier,
+        &mut CanonicalPathCache::default(),
+        false,
+        |base, _, _| (None, vec![base.to_path_buf()]),
+    );
+    Some(candidates)
+}
+
 #[cfg(test)]
 mod tests;

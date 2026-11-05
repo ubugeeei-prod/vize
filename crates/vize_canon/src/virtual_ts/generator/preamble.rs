@@ -79,7 +79,11 @@ fn emit_embedded_helpers(
         .iter()
         .any(|scope| scope.kind == ScopeKind::VMatch)
     {
-        ts.push_str(include_str!("../helpers/pattern_matching.d.ts"));
+        crate::virtual_ts::helpers::hygiene::emit_helper_text(
+            ts,
+            summary,
+            include_str!("../helpers/pattern_matching.d.ts"),
+        );
         ts.push('\n');
     }
 }

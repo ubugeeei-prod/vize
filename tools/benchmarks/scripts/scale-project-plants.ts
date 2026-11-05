@@ -34,10 +34,8 @@ const VUE_LANGUAGE_TOOLS: Partial<Record<PlantKind, number>> = {
   "listener-prop": 1,
 };
 
-// #11643: the Vize mapper does not check the update:modelValue payload against the bound ref.
 // #11657 (fixed by #11667): the Vize mapper drops an inline handler's parameter mismatch.
 const VIZE_MAPPER: Partial<Record<PlantKind, number>> = {
-  "v-model": 0,
   "listener-arrow": 0,
   "listener-prop": 1,
 };
@@ -49,7 +47,6 @@ export const PLANT_MULTIPLICITY: Record<string, Partial<Record<PlantKind, number
   "tsc-vue-mapper": VUE_LANGUAGE_TOOLS,
 };
 export const PLANT_MULTIPLICITY_NOTES: readonly string[] = [
-  "The Vize mapper lanes expect no error on the `v-model` plant: the mapper does not check the `update:modelValue` payload against the bound ref (#11643).",
   "The Vize mapper lanes expect no error from an inline handler's annotated parameter on a kebab-cased camelCase emit (#11657, fixed by #11667).",
   "vue-tsc and Vue's mapper do not check an inline handler's annotated parameters, so they expect no handler error on the listener plants.",
 ];

@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { assertPackedSmokeTimingSuccessor } from "./support/native-smoke-timing-successor.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const original = fs.readFileSync(
@@ -30,9 +31,19 @@ const before = parse(original.toString()) as {
   jobs: Record<string, Job>;
   on: { schedule: unknown };
 };
-const after = parse(
-  fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8"),
-) as {
+const currentWorkflow = fs.readFileSync(
+  path.join(root, ".github/workflows/native-smoke.yml"),
+  "utf8",
+);
+const sealedWorkflow = fs.readFileSync(
+  path.join(
+    root,
+    "tests/_fixtures/differential/workflows/native-smoke-babel-inventory-10702/after.yml",
+  ),
+  "utf8",
+);
+assertPackedSmokeTimingSuccessor(sealedWorkflow, currentWorkflow);
+const after = parse(sealedWorkflow) as {
   jobs: Record<string, Job>;
   on: { schedule: unknown; workflow_dispatch: { inputs: Record<string, { default: unknown }> } };
 };

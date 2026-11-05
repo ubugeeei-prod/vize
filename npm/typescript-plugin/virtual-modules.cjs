@@ -2,10 +2,11 @@
 
 const crypto = require("node:crypto");
 const path = require("node:path");
+const { createLazySfcScripts, createSourceDocuments } = require("./source-documents.cjs");
 const { loadNative } = require("./provider.cjs");
 const installedHosts = new WeakMap();
 
-// A source snapshot is the sole invalidation authority, including unsaved edits.
+// Host versions own open buffers; file events own closed mixed-content files.
 function installVueVirtualModules(ts, info) {
   const host = info.languageServiceHost;
   if (!host) return undefined;
@@ -18,6 +19,7 @@ function installVueVirtualModules(ts, info) {
   const getSnapshot = bind("getScriptSnapshot");
   const originalOptions = bind("getCompilationSettings");
   const originalProjectVersion = bind("getProjectVersion");
+  const previousVersion = bind("getScriptVersion");
   if (!readFile || !fileExists || !getSnapshot) return undefined;
   const root = host.getCurrentDirectory?.() || info.project?.getCurrentDirectory?.();
   const engine = loadNative(root, info.config?.nativePath);
@@ -29,13 +31,18 @@ function installVueVirtualModules(ts, info) {
     /* Logging cannot affect the host. */
   }
   const snapshots = new Map();
+  let sourceEpoch = 0,
+    settingsState;
   const projectOptions = createProjectOptions(ts, info, originalOptions, readFile, fileExists);
   const projectConfiguration = createProjectConfiguration(
     engine,
     readFile,
     serverHost.watchFile?.bind(serverHost),
     originalProjectVersion,
-    () => info.project?.refreshDiagnostics?.(),
+    () => {
+      settingsState = undefined;
+      info.project?.refreshDiagnostics?.();
+    },
     (configuration) => {
       try {
         info.project?.projectService?.logger?.info?.(
@@ -47,34 +54,30 @@ function installVueVirtualModules(ts, info) {
     },
     (name) => projectOptions?.refresh(name),
   );
-  const readSource = (fileName) => {
-    if (!isSfc(fileName)) return undefined;
-    const originalSnapshot = getSnapshot(fileName);
-    const scriptInfo = info.project?.projectService?.getScriptInfo?.(fileName);
-    // tsserver deliberately exposes an empty snapshot for closed mixed files.
-    // An open, unsaved empty file is authoritative and must remain empty.
-    const closedMixed = scriptInfo?.hasMixedContent && scriptInfo.isScriptOpen?.() === false;
-    const raw = closedMixed ? undefined : originalSnapshot;
-    const source = raw?.getText(0, raw.getLength()) ?? readFile(fileName);
-    if (typeof source !== "string") return undefined;
-    if (closedMixed && originalSnapshot?.getText(0, originalSnapshot.getLength()) !== source) {
-      // Reference/rename protocol responses use ScriptInfo's own line map and
-      // snapshot, rather than LanguageService.toLineColumnOffset. Populate the
-      // authored disk text through its public API; open buffers are untouched.
-      scriptInfo.reloadFromFile?.(fileName);
-    }
-    return source;
-  };
+  const sourceDocuments = createSourceDocuments(
+    info,
+    {
+      getSnapshot,
+      previousVersion,
+      readFile,
+      watchFile: serverHost.watchFile?.bind(serverHost),
+      isSfc,
+    },
+    snapshots,
+    () => {
+      sourceEpoch++;
+      info.project?.refreshDiagnostics?.();
+    },
+  );
+  const readSource = (name) => sourceDocuments.get(name)?.source;
   const get = (fileName) => {
-    const source = readSource(fileName);
-    if (typeof source !== "string") return undefined;
+    const cached = sourceDocuments.get(fileName);
+    if (!cached) return undefined;
+    const { source } = cached;
     const settings = options();
-    const project = engine.native
-      ? projectConfiguration.get(settings)
-      : { configuration: JSON.stringify([settings.checkJs, settings.configFilePath]) };
+    const project = settingsState.project;
     const configuration = project.configuration;
-    const cached = snapshots.get(fileName);
-    if (cached?.source === source && cached.configuration === configuration) return cached;
+    if (cached.configuration === configuration) return cached;
     const version = crypto
       .createHash("sha256")
       .update(source)
@@ -99,23 +102,35 @@ function installVueVirtualModules(ts, info) {
     }
     // Failed transforms remain explicit errors, never a permissive component type.
     const snapshot = ts.ScriptSnapshot.fromString(projection?.text ?? "export {};\n");
-    const value = { source, configuration, version, projection, error, snapshot };
+    const value = { ...cached, configuration, version, projection, error, snapshot };
     snapshots.set(fileName, value);
     return value;
   };
   const options = () => {
     let original = originalOptions?.() || {};
+    const epoch = originalProjectVersion?.();
+    if (
+      originalProjectVersion &&
+      settingsState?.original === original &&
+      settingsState.epoch === epoch
+    )
+      return settingsState.settings;
+    let project = engine.native
+      ? projectConfiguration.get(original)
+      : { configuration: JSON.stringify([original.checkJs, original.configFilePath]) };
     if (engine.native) {
-      projectConfiguration.get(original);
       projectOptions?.apply();
       original = originalOptions?.() || {};
+      project = projectConfiguration.get(original);
     }
     // TypeScript stores the parsed configFile as a non-enumerable option.
     // Losing it crashes configured-project reload when another SFC opens.
-    return Object.create(Object.getPrototypeOf(original), {
+    const settings = Object.create(Object.getPrototypeOf(original), {
       ...Object.getOwnPropertyDescriptors(original),
       allowNonTsExtensions: { value: true, enumerable: true, configurable: true, writable: true },
     });
+    settingsState = { original, epoch: originalProjectVersion?.(), settings, project };
+    return settings;
   };
   const resolverHost = {
     ...serverHost,
@@ -157,20 +172,21 @@ function installVueVirtualModules(ts, info) {
   const previousLiterals = bind("resolveModuleNameLiterals");
   const previousNames = bind("resolveModuleNames");
   const previousKind = bind("getScriptKind");
-  const previousVersion = bind("getScriptVersion");
+  const lazy = createLazySfcScripts({
+    ts, get, options, settings: () => settingsState, sourceDocuments, snapshots, isSfc, readFile, readSource, project: info.project,
+  });
   const replacements = {
     getCompilationSettings: options,
-    getScriptSnapshot: (name) => (isSfc(name) ? get(name)?.snapshot : getSnapshot(name)),
+    getScriptSnapshot: (name) => (isSfc(name) ? lazy.snapshot(name) : getSnapshot(name)),
     getScriptKind: (name) =>
       isSfc(name) ? ts.ScriptKind.TSX : (previousKind?.(name) ?? ts.ScriptKind.Unknown),
     getScriptVersion: (name) =>
-      isSfc(name) ? (get(name)?.version ?? "0") : (previousVersion?.(name) ?? "0"),
+      isSfc(name) ? (lazy.version(name) ?? "0") : (previousVersion?.(name) ?? "0"),
     ...(originalProjectVersion
       ? {
           getProjectVersion() {
-            const project = projectConfiguration.get(originalOptions?.() || {});
-            projectOptions?.apply();
-            return `${originalProjectVersion()}:${project.configuration}`;
+            options();
+            return `${originalProjectVersion()}:${sourceEpoch}:${settingsState.project.configuration}`;
           },
         }
       : {}),
@@ -204,10 +220,20 @@ function installVueVirtualModules(ts, info) {
       );
     },
   };
-  const support = { get, readSource, engine, resolve, fileExists, readFile, snapshots };
+  const support = {
+    get,
+    ensure: lazy.ensure.bind(lazy),
+    readSource,
+    engine,
+    resolve,
+    fileExists,
+    readFile,
+    snapshots,
+  };
   let restore;
   support.dispose = () => {
     projectConfiguration.dispose();
+    sourceDocuments.dispose();
     snapshots.clear();
     installedHosts.delete(host);
     restore?.();
