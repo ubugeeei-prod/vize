@@ -1374,8 +1374,10 @@
       "status": "mapped"
     },
     "vue/prefer-prop-type-boolean-first": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/prefer-prop-type-boolean-first",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/prefer-separate-static-class": {
       "issue": 3223,
@@ -2021,8 +2023,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 2,
-    "mapped": 148,
-    "unimplemented": 102
+    "mapped": 149,
+    "unimplemented": 101
   },
   "upstream": {
     "package": "eslint-plugin-vue",
