@@ -8,6 +8,8 @@ on:
       - "npm/oxlint/src/eslint*"
       - "npm/oxlint/src/native.ts"
       - "npm/oxlint/src/configs.ts"
+      - "npm/oxlint/package.json"
+      - "pnpm-lock.yaml"
       - ".github/workflows/eslint-plugin-consumer.yml"
 
 permissions: { contents: read }
@@ -65,7 +67,7 @@ jobs:
           import { readFileSync, writeFileSync } from 'node:fs';
           const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           assert.equal(sha, process.env.SOURCE_SHA);
-          const files = ['Cargo.lock', 'pnpm-lock.yaml', 'npm/eslint/package.json', 'npm/eslint/src/index.ts', 'npm/eslint/test/consumer.test.mjs', 'npm/oxlint/src/eslint.ts', 'npm/oxlint/src/eslint-source.ts', 'npm/oxlint/src/native.ts'];
+          const files = ['Cargo.lock', 'pnpm-lock.yaml', 'npm/eslint/package.json', 'npm/eslint/src/index.ts', 'npm/eslint/test/consumer.test.mjs', 'npm/eslint/test/packed-consumer.mjs', 'npm/eslint/test/legacy-consumer.mjs', '.github/workflows/eslint-plugin-consumer.yml', 'npm/oxlint/src/eslint.ts', 'npm/oxlint/src/eslint-source.ts', 'npm/oxlint/src/native.ts'];
           const inputs = Object.fromEntries(files.map(file => { const bytes = readFileSync(file); return [file, { sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length }]; }));
           writeFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/source.json`, JSON.stringify({ sha, inputs }, null, 2) + '\n');
           JS
@@ -128,11 +130,85 @@ jobs:
           assert.equal(packed.nativeBuildToken, source.nativeBuildToken);
           assert.deepEqual(packed.nativeImages, source.nativeImages);
           JS
+      - name: Stage the same source addon for supported Node and TypeScript consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { copyFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+          import { join } from 'node:path';
+          const root = 'npm/native';
+          const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+          const nativeImages = readdirSync(root).filter(file => file.startsWith('vize-vitrine.') && file.endsWith('.node'));
+          assert.equal(nativeImages.length, 1);
+          const output = join(process.env.VIZE_ESLINT_EVIDENCE, 'native-package');
+          mkdirSync(output, { recursive: true });
+          for (const file of ['package.json', ...manifest.files, ...nativeImages]) {
+            copyFileSync(join(root, file), join(output, file));
+          }
+          JS
+      - name: Share packed exports and source addon without rebuilding native code
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: eslint-packed-source-${{ env.SOURCE_SHA }}
+          path: |
+            target/eslint-consumer/*.tgz
+            target/eslint-consumer/source.json
+            target/eslint-consumer/consumer.json
+            target/eslint-consumer/native-package/**
+          if-no-files-found: error
+          retention-days: 14
       - name: Retain complete source-native packets, raw traces and timings
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: eslint-plugin-consumer-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
           path: target/eslint-consumer/**
+          if-no-files-found: error
+          retention-days: 14
+
+  supported-consumer:
+    name: ESLint packed consumer (Node ${{ matrix.node }}, TS ${{ matrix.typescript }})
+    needs: consumer
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22.13.0", "24.14.0"]
+        typescript: ["4.8.4", "5.9.3", "6.0.3"]
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: eslint-packed-source-${{ env.SOURCE_SHA }}
+          path: ${{ runner.temp }}/eslint-packed-source
+      - name: Check installed public exports with the exact supported providers
+        run: >-
+          node npm/eslint/test/legacy-consumer.mjs
+          --artifacts "$RUNNER_TEMP/eslint-packed-source"
+          --output "$RUNNER_TEMP/eslint-compatibility"
+          --node "${{ matrix.node }}"
+          --typescript "${{ matrix.typescript }}"
+      - name: Retain install logs, exact providers and complete failure/clean packets
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: eslint-supported-consumer-node-${{ matrix.node }}-typescript-${{ matrix.typescript }}-${{ env.SOURCE_SHA }}
+          path: |
+            ${{ runner.temp }}/eslint-compatibility/*.json
+            ${{ runner.temp }}/eslint-compatibility/project*/package*.json
+            ${{ runner.temp }}/eslint-compatibility/project*/consumer.mjs
           if-no-files-found: error
           retention-days: 14
