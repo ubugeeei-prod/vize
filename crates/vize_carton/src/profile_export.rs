@@ -13,7 +13,7 @@ mod assemble;
 use serde::Serialize;
 
 use vize_l0::String;
-use vize_l0::profiler::{AllocationSnapshot, CounterMetrics, Metrics, Profiler, SpanAttribution};
+use vize_l0::profiler::{AllocationSnapshot, Profiler, SpanAttribution};
 
 /// Current `schema_version` stamped into every export.
 pub const PROFILE_EXPORT_SCHEMA_VERSION: u64 = 1;
@@ -269,7 +269,7 @@ pub fn export_report(profiler: &Profiler, options: &ProfileExportOptions) -> Pro
     {
         let mut report = report;
         // Micros belong to this process's global profiling window only.
-        // Owned snapshot exports remain pure and never acquire another collector.
+        // Local profiler exports never acquire another collector.
         if core::ptr::eq(profiler, vize_l0::profiler::global_profiler()) {
             let entries = vize_l0::profiler::micro::snapshot();
             if !entries.is_empty() {
@@ -296,25 +296,6 @@ pub fn export_report(profiler: &Profiler, options: &ProfileExportOptions) -> Pro
     }
     #[cfg(not(feature = "micro-profiling"))]
     report
-}
-
-/// Build the same wire report from the caller's already collected owned metrics.
-///
-/// Inputs are the existing span and counter readback shapes. This function
-/// consumes them without reading a clock, enabling a profiler, taking a lock,
-/// resetting allocation tracking or creating another collector. The caller
-/// retains authority over measured metadata: `options.allocation == None`
-/// continues to mean unavailable allocation observations, serialized as null.
-/// Ranking, full tiebreaks, entry limits and truncation are shared with
-/// [`export_report`]; use aggregated metrics for each input identity.
-pub fn export_report_from_snapshots(
-    spans: Vec<(&'static str, SpanAttribution, Metrics)>,
-    counters: Vec<(&'static str, CounterMetrics)>,
-    options: &ProfileExportOptions,
-) -> ProfileExport {
-    let spans = assemble::spans(spans, options);
-    let counters = assemble::counters(counters, options);
-    assemble::report(spans, counters, options)
 }
 
 #[cfg(test)]

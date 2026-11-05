@@ -1,5 +1,7 @@
 //! Attribution and machine-readable export tests (P0-11).
 
+mod snapshots;
+
 use super::{ProfileExportBudget, ProfileExportOptions, export_report};
 use std::time::Duration;
 use vize_l0::profiler::{Profiler, SpanAttribution, SpanRange};
