@@ -69,7 +69,6 @@ use self::setup_props::{emit_template_context, generate_setup_props, prop_source
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, template_usage};
 use self::type_only_imports::syntactic_type_only_imported_names;
-use self::unresolved_components::emit_unresolved_components;
 use super::{
     macro_type_mappings::MacroTypeMappings,
     scope::{ScopeGenerationOptions, ScopeMappings, generate_scope_closures},
@@ -714,14 +713,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 );
             }
             template_binding_access.append_instance_diagnostic_prefixes(&mut diagnostic_mappings);
-            emit_unresolved_components(
+            binding_anchors.emit_with_components(
                 &mut ts,
-                summary,
                 options,
                 &global_components,
                 &syntactic_type_only_imported_names,
             );
-            binding_anchors.emit(&mut ts, "canon.virtual_ts.emit_setup_binding_anchors");
             ts.push_str("  })();\n");
         });
     }

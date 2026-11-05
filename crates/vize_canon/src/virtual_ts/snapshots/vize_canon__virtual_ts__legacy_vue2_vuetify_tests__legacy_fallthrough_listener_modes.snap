@@ -188,7 +188,7 @@ function __setup() {
   void MyItem;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof MyItem); void onClick;
+  void onClick;
   })();
 }
 
@@ -482,7 +482,7 @@ function __setup() {
   void MyItem;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof MyItem); void onClick;
+  void onClick;
   })();
 }
 
@@ -778,7 +778,7 @@ function __setup() {
   void MyItem;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof MyItem); void onClick;
+  void onClick;
   })();
 }
 

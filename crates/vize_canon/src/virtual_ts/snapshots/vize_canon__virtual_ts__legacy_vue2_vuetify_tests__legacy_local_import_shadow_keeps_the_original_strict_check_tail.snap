@@ -165,9 +165,6 @@ function __setup() {
 
   // Mark used components as referenced
   void ExternalInput;
-
-  // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof ExternalInput);
   })();
 }
 

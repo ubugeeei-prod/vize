@@ -11459,6 +11459,36 @@
       }
     },
     {
+      "id": "typechecker/component-value-anchor-reuse",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "sourceRevision": "77d69b470ba48ae6014bac5ab94422f7ba2c33dc",
+      "inputs": [
+        {
+          "path": "component-value-anchor-reuse/input.json",
+          "sha256": "e3c0a69914a4b157d69dd6302b3873d770c0ec72cbe8bc518e2dca73049b9968",
+          "role": "physically-consumed-component-value-and-import-anchor-controls"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::anchors::component_value_reads::exact_component_value_reads_reuse_only_their_own_import_anchors; compile-included seven source controls feed the full generator; input-only, no diagnostic or native/performance admission"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/constructor-props-correlation-11023/per-usage-overloads-and-repair",
       "state": "active",
       "targets": [

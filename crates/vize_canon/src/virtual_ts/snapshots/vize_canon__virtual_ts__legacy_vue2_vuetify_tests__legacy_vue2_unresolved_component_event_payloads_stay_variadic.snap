@@ -212,7 +212,7 @@ function __setup() {
   void CalendarRange;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof CalendarRange); void submitHooks; void updateRange;
+  void submitHooks; void updateRange;
   })();
 }
 

@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/scope/component_events/prop_array_share.rs
+assertion_line: 125
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -364,7 +365,7 @@ function __setup() {
   void Other;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof Child); void (null as unknown as keyof typeof Other); void onClose; void onOpen; void onSave; void onSelect;
+  void onClose; void onOpen; void onSave; void onSelect;
   })();
 }
 
