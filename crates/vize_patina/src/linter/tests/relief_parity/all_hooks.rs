@@ -25,6 +25,16 @@ impl Rule for AllHooks {
         Some(self)
     }
 
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        self.0.as_native_template_rule()
+    }
+
+    fn as_native_sfc_template_rule(
+        &self,
+    ) -> Option<&dyn crate::native::sfc::NativeSfcTemplateRule> {
+        self.0.as_native_sfc_template_rule()
+    }
+
     fn jsx_needs_lowering(&self) -> bool {
         self.0.jsx_needs_lowering()
     }

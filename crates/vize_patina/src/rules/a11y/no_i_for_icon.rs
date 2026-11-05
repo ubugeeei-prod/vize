@@ -27,7 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::a11y::helpers::get_static_attribute_value;
 use vize_relief::ElementNode;
@@ -116,6 +116,10 @@ fn is_icon_class(class: &str) -> bool {
 impl MarkupRule for NoIForIcon {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

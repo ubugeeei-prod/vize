@@ -78,6 +78,19 @@ fn rendered(result: &LintResult, rule: &str) -> String {
 
 /// Compare every rule `family` builds on every template and JSX source.
 fn assert_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[&str]) {
+    assert_parity_with_hooks(family, templates, jsx, true);
+}
+
+fn assert_traversal_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[&str]) {
+    assert_parity_with_hooks(family, templates, jsx, false);
+}
+
+fn assert_parity_with_hooks(
+    family: fn() -> Vec<Box<dyn Rule>>,
+    templates: &[&str],
+    jsx: &[&str],
+    check_relief: bool,
+) {
     let corpus = jsx_corpus();
     let mut mismatches = Vec::new();
     let mut checked = 0;
@@ -88,7 +101,7 @@ fn assert_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[
             "{name} has no markup entry"
         );
         let facade = linter(rule);
-        let relief = linter(Box::new(ReliefOnly(baseline)));
+        let relief = check_relief.then(|| linter(Box::new(ReliefOnly(baseline))));
         let all_hooks = linter(Box::new(all_hooks::AllHooks(all_hooks)));
         let mut compare = |lane: &str, source: &str, actual: LintResult, expected: LintResult| {
             let (actual, expected) = (rendered(&actual, name), rendered(&expected, name));
@@ -100,12 +113,14 @@ fn assert_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[
             checked += 1;
         };
         for source in templates {
-            compare(
-                "template",
-                source,
-                facade.lint_template(source, "test.vue"),
-                relief.lint_template(source, "test.vue"),
-            );
+            if let Some(relief) = &relief {
+                compare(
+                    "template",
+                    source,
+                    facade.lint_template(source, "test.vue"),
+                    relief.lint_template(source, "test.vue"),
+                );
+            }
             compare(
                 "template/all-hooks",
                 source,
@@ -115,12 +130,14 @@ fn assert_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[
             let sfc = format!(
                 "<script setup>const note = '日本語😀'</script>\r\n<template>{source}</template>"
             );
-            compare(
-                "sfc",
-                source,
-                facade.lint_sfc(&sfc, "test.vue"),
-                relief.lint_sfc(&sfc, "test.vue"),
-            );
+            if let Some(relief) = &relief {
+                compare(
+                    "sfc",
+                    source,
+                    facade.lint_sfc(&sfc, "test.vue"),
+                    relief.lint_sfc(&sfc, "test.vue"),
+                );
+            }
             compare(
                 "sfc/all-hooks",
                 source,
@@ -136,12 +153,14 @@ fn assert_parity(family: fn() -> Vec<Box<dyn Rule>>, templates: &[&str], jsx: &[
             .iter()
             .map(|(source, lang, filename)| (source.as_str(), *lang, *filename));
         for (source, lang, filename) in snippets.chain(files) {
-            compare(
-                filename,
-                source,
-                facade.lint_jsx(source, filename, lang),
-                relief.lint_jsx(source, filename, lang),
-            );
+            if let Some(relief) = &relief {
+                compare(
+                    filename,
+                    source,
+                    facade.lint_jsx(source, filename, lang),
+                    relief.lint_jsx(source, filename, lang),
+                );
+            }
             compare(
                 "jsx/all-hooks",
                 source,

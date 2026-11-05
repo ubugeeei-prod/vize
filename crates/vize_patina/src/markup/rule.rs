@@ -29,6 +29,8 @@ pub enum MarkupTraversal {
     Full,
     /// Visit element entries without projecting bindings, directives or text.
     Elements,
+    /// Visit bindings without empty element, directive or text callbacks.
+    Bindings,
     /// All work happens in `enter_document`; no tree walk is needed.
     Document,
 }

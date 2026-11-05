@@ -196,16 +196,24 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_element_inner(&mut self, element: MarkupElement<'a>) {
         self.ctx.push_element(element);
 
-        self.set_rule();
-        self.rule.enter_element(self.ctx, &element);
+        if self.traversal != MarkupTraversal::Bindings {
+            self.set_rule();
+            self.rule.enter_element(self.ctx, &element);
+        }
         if self.traversal == MarkupTraversal::Full {
             self.set_rule();
             self.rule.enter_attributes(self.ctx, &element);
-
+        }
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::Bindings
+        ) {
             element.walk_bindings(&mut |binding| {
                 self.ctx.lint.current_rule = self.name;
                 self.rule.enter_binding(self.ctx, &element, &binding);
             });
+        }
+        if self.traversal == MarkupTraversal::Full {
             element.walk_directives(&mut |directive| {
                 self.ctx.lint.current_rule = self.name;
                 self.rule.enter_directive(self.ctx, &element, &directive);

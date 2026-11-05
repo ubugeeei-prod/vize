@@ -2,9 +2,12 @@
 
 use crate::rule::Rule;
 use crate::rules::a11y::{
-    AltText, AnchorHasContent, AriaProps, AriaRole, AriaUnsupportedElements,
-    ClickEventsHaveKeyEvents, LabelHasFor, NoReferToNonExistentId, NoStaticElementInteractions,
-    RoleHasRequiredAriaProps,
+    AltText, AnchorHasContent, AnchorIsValid, AriaProps, AriaRole, AriaUnsupportedElements,
+    ClickEventsHaveKeyEvents, FormControlHasLabel, HeadingHasContent, IframeHasTitle, ImgAlt,
+    InteractiveSupportsFocus, LabelHasFor, MediaHasCaption, MouseEventsHaveKeyEvents, NoAccessKey,
+    NoAriaHiddenOnFocusable, NoAutofocus, NoDistractingElements, NoIForIcon,
+    NoReferToNonExistentId, NoRolePresentationOnFocusable, NoStaticElementInteractions,
+    RoleHasRequiredAriaProps, TabindexNoPositive,
 };
 
 fn family() -> Vec<Box<dyn Rule>> {
@@ -25,7 +28,37 @@ fn family() -> Vec<Box<dyn Rule>> {
     ]
 }
 
+fn existing_family() -> Vec<Box<dyn Rule>> {
+    vec![
+        Box::new(AnchorIsValid),
+        Box::new(FormControlHasLabel),
+        Box::new(HeadingHasContent),
+        Box::new(IframeHasTitle),
+        Box::new(ImgAlt),
+        Box::new(InteractiveSupportsFocus),
+        Box::new(MediaHasCaption),
+        Box::new(MouseEventsHaveKeyEvents),
+        Box::new(NoAccessKey),
+        Box::new(NoAriaHiddenOnFocusable),
+        Box::new(NoAutofocus),
+        Box::new(NoDistractingElements),
+        Box::new(NoIForIcon),
+        Box::new(NoRolePresentationOnFocusable),
+        Box::new(TabindexNoPositive),
+    ]
+}
+
 const TEMPLATES: &[&str] = &[
+    // Existing facade rules keep their complete diagnostics with narrower hooks.
+    r#"<iframe></iframe><iframe title="Map"></iframe><h1></h1><h1>Title</h1>"#,
+    r#"<label for="known">Name</label><input id="known"><input id="missing"><label><input></label>"#,
+    r#"<a href="">Empty</a><a href="/">Home</a><img src="a"><img src="a" alt="Photo">"#,
+    r#"<button accesskey="k" autofocus tabindex="1">Go</button><button tabindex="0">Go</button>"#,
+    r#"<marquee>Moving</marquee><blink>Blinking</blink><i class="fas fa-save"></i><span class="fas fa-save"></span>"#,
+    r#"<div role="button"></div><div role="button" tabindex="0"></div><div role="presentation" tabindex="0"></div>"#,
+    r#"<div aria-hidden="true"><button>Hidden</button></div><button aria-hidden="true">Hidden</button><button>Visible</button>"#,
+    r#"<video controls></video><video controls><track kind="captions"></video><audio></audio>"#,
+    r#"<div @mouseover="f"></div><div @mouseover="f" @focus="f"></div><div @mouseout="f" @blur="f"></div>"#,
     // recovered trees whose implied end tags close v-pre on both routes
     "<p v-pre><div><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></div></p>",
     "<select><option v-pre><option><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></option></option></select>",
@@ -91,6 +124,15 @@ const TEMPLATES: &[&str] = &[
 ];
 
 const JSX: &[&str] = &[
+    r#"const A = () => <div><iframe /><iframe title="Map" /><h1 /><h1>Title</h1></div>;"#,
+    r#"const A = () => <div><label htmlFor="known">Name</label><input id="known" /><input id="missing" /><label><input /></label></div>;"#,
+    r#"const A = () => <div><a href="">Empty</a><a href="/">Home</a><img src="a" /><img src="a" alt="Photo" /></div>;"#,
+    r#"const A = () => <div><button accesskey="k" autofocus tabindex="1">Go</button><button tabIndex={0}>Go</button></div>;"#,
+    r#"const A = () => <div><marquee>Moving</marquee><blink>Blinking</blink><i className="fas fa-save" /><span className="fas fa-save" /></div>;"#,
+    r#"const A = () => <div><div role="button" /><div role="button" tabIndex={0} /><div role="presentation" tabIndex={0} /></div>;"#,
+    r#"const A = () => <div><div aria-hidden="true"><button>Hidden</button></div><button aria-hidden="true">Hidden</button><button>Visible</button></div>;"#,
+    r#"const A = () => <div><video controls /><video controls><track kind="captions" /></video><audio /></div>;"#,
+    r#"const A = () => <div><div onMouseOver={f} /><div onMouseOver={f} onFocus={f} /><div onMouseOut={f} onBlur={f} /></div>;"#,
     r#"const A = () => <div><img src="a" /><img alt="x" /><img alt={x} /><Img /><Foo.img /></div>;"#,
     r#"const A = () => <div><area href="/" /><area aria-label="x" /><input type="image" /><input type="image" alt="Go" /><object data="x" /><object title="t" /></div>;"#,
     r#"const A = () => <div><a href="/"></a><a href="/">text</a><a>{label}</a><a><img alt="x" /></a><a><img alt="" /></a><a><img alt={""} /></a></div>;"#,
@@ -115,6 +157,11 @@ const JSX: &[&str] = &[
 #[test]
 fn a11y_rules_match_their_relief_hooks() {
     super::assert_parity(family, TEMPLATES, JSX);
+}
+
+#[test]
+fn existing_a11y_traversals_preserve_complete_diagnostics() {
+    super::assert_traversal_parity(existing_family, TEMPLATES, JSX);
 }
 
 /// An ignored nested form and a self-closing nested a keep their v-pre

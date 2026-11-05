@@ -10,7 +10,7 @@
 use crate::attribute_policy::{ImageAltMessages, ImageAltPolicy};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -36,6 +36,10 @@ pub struct ImgAlt;
 impl MarkupRule for ImgAlt {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
