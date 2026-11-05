@@ -49,6 +49,7 @@ mod no_restricted_globals;
 mod no_restricted_members;
 mod no_setup_props_reactivity_loss;
 mod no_side_effects_in_computed;
+mod no_this_in_before_route_enter;
 mod no_top_level_ref_in_script;
 mod no_unstable_nested_components;
 mod no_use_computed_property_like_method;

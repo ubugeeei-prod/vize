@@ -104,6 +104,7 @@ pub(crate) const RULE_ORDER_IN_COMPONENTS: &str = "script/order-in-components";
 pub(crate) const RULE_PREFER_DEFINE_EMITS_BINDING: &str = "script/prefer-define-emits-binding";
 pub(crate) const RULE_NO_REF_OBJECT_REACTIVITY_LOSS: &str = "vue/no-ref-object-reactivity-loss";
 pub(crate) const RULE_NO_SETUP_PROPS_REACTIVITY_LOSS: &str = "vue/no-setup-props-reactivity-loss";
+pub(crate) const RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER: &str = "vue/no-this-in-before-route-enter";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -192,6 +193,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_PREFER_DEFINE_EMITS_BINDING,
     RULE_NO_REF_OBJECT_REACTIVITY_LOSS,
     RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
+    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
 ];
 
 #[cfg(test)]
@@ -280,4 +282,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_PREFER_DEFINE_EMITS_BINDING,
     RULE_NO_REF_OBJECT_REACTIVITY_LOSS,
     RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
+    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
 ];

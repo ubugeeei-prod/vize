@@ -43,6 +43,7 @@ pub(crate) use super::no_restricted_globals::RestrictedGlobals;
 pub use super::no_restricted_members::NoRestrictedMembers;
 pub use super::no_setup_props_reactivity_loss::NoSetupPropsReactivityLoss;
 pub use super::no_side_effects_in_computed::NoSideEffectsInComputed;
+pub use super::no_this_in_before_route_enter::NoThisInBeforeRouteEnter;
 pub use super::no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use super::no_unstable_nested_components::NoUnstableNestedComponents;
 pub use super::no_use_computed_property_like_method::NoUseComputedPropertyLikeMethod;
