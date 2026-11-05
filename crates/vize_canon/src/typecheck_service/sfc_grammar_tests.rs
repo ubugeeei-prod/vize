@@ -1,3 +1,9 @@
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_macros,
+    reason = "native service tests construct the shared bridge and retain complete diagnostic packets"
+)]
+
 use super::{
     CorsaBridge, SfcDiagnosticSeverity, SfcTypeCheckResult, TypeCheckService,
     TypeCheckServiceOptions,
@@ -53,8 +59,14 @@ fn adjacent_quoted_attributes_reach_the_native_service_with_identical_output() {
             .unwrap();
         assert!(reference.virtual_ts.is_some());
         let expected = packet(&reference);
-        for attributes in [r#"id="a"class="b""#, "id='a'class='b'", "id=\"a\"class='b'"] {
-            let source = format!("<template><div {attributes}>ok</div></template>");
+        let original = include_str!(
+            "../../../../tests/_fixtures/differential/typechecker/sfc-entry-grammar-11869/Static.vue.txt"
+        );
+        for source in [
+            original.to_owned(),
+            original.replace(r#"id="a"class="b""#, "id='a'class='b'"),
+            original.replace(r#"id="a"class="b""#, "id=\"a\"class='b'"),
+        ] {
             let actual = service
                 .check_sfc(&source, "SfcGrammar.vue", &options)
                 .await
@@ -71,7 +83,7 @@ fn adjacent_quoted_attributes_keep_the_exact_malformed_service_diagnostic() {
         bridge: std::sync::Arc::new(CorsaBridge::new()),
     };
     let result = corsa::runtime::block_on(service.check_sfc(
-        r#"<template><div id="a"class="b"></template>"#,
+        include_str!("../../../../tests/_fixtures/differential/typechecker/sfc-entry-grammar-11869/Malformed.vue.txt"),
         "SfcGrammar.vue",
         &TypeCheckServiceOptions::default(),
     ))

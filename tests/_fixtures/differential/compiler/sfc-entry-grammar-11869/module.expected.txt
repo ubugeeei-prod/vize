@@ -1,0 +1,17 @@
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(_ctx.result)
+    if (__vize_match_0[0] === 0) {
+      _push(`<p${_ssrRenderAttrs(_attrs)}>Ready</p>`)
+    } else if (__vize_match_0[0] === 1) {
+      _push(`<i${_ssrRenderAttrs(_attrs)}>Other</i>`)
+    } else {
+      _push(`<!---->`)
+    }
+  }
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -3,8 +3,14 @@ use super::{SfcTypeCheckOptions, SfcTypeSeverity, type_check_sfc};
 #[test]
 fn adjacent_quoted_attributes_keep_template_analysis_and_virtual_ts() {
     let options = SfcTypeCheckOptions::new("SfcGrammar.vue").with_virtual_ts();
-    for attributes in [r#"id="a"class="b""#, "id='a'class='b'", "id=\"a\"class='b'"] {
-        let source = format!("<template><div {attributes}>{{{{ missing }}}}</div></template>");
+    let original = include_str!(
+        "../../../../../tests/_fixtures/differential/typechecker/sfc-entry-grammar-11869/Adjacent.vue.txt"
+    );
+    for source in [
+        original.to_owned(),
+        original.replace(r#"id="a"class="b""#, "id='a'class='b'"),
+        original.replace(r#"id="a"class="b""#, "id=\"a\"class='b'"),
+    ] {
         let result = type_check_sfc(&source, &options);
         let start = source.find("missing").unwrap() as u32;
         let actual = result
@@ -43,7 +49,9 @@ fn adjacent_quoted_attributes_keep_template_analysis_and_virtual_ts() {
 
 #[test]
 fn adjacent_quoted_attributes_do_not_suppress_malformed_template_diagnostics() {
-    let source = r#"<template><div id="a"class="b"></template>"#;
+    let source = include_str!(
+        "../../../../../tests/_fixtures/differential/typechecker/sfc-entry-grammar-11869/Malformed.vue.txt"
+    );
     let result = type_check_sfc(
         source,
         &SfcTypeCheckOptions::new("SfcGrammar.vue").with_virtual_ts(),

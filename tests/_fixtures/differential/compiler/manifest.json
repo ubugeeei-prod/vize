@@ -381,6 +381,54 @@
       }
     },
     {
+      "id": "compiler/project/sfc-entry-grammar-11869",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "root": "sfc-entry-grammar-11869",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "7d78864e1d1cb1587cd9d1f9ef47f12a020981187c000e67ad758212a5ce4092"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "role": "config",
+            "sha256": "e1f467be0c103a7533b191addd4ab242cc2772fc58f91707faad90babe65a53c"
+          }
+        ]
+      },
+      "reference": {
+        "path": "sfc-entry-grammar-11869/module.expected.txt",
+        "sha256": "f43941c5c3f68c922f08450d6a20f29fe4dafb512db9141cd456478b32f04340",
+        "source": "Public v0.691.0 Darwin CLI whole SSR module for the archived spaced-control.vue.txt with the same pinned vite.config.mjs enabling experimentals.patternedTemplate. The reference control inserts spaces before v-match and data-note; the candidate compiles the original adjacent-attribute Layout.vue.txt. The public original input fails with Missing whitespace between attributes; this is a transformed-input reference, not a successful pre-fix observation."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-configured-project-v1",
+        "native": null,
+        "reasons": {
+          "native": "This case checks the production CLI SSR path with an explicitly configured experimental patterned-template feature; it does not establish whole-product native-only acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-configured-project-module-bytes-v1",
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"],
+        "scriptLang": "js"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "compiler-cli-ssr-configured-project-v1 pinned vite.config.mjs enables patterned templates"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
       "targets": ["ssr"],

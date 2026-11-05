@@ -1,0 +1,9 @@
+{
+  "filename": "Layout.vue",
+  "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(_ctx.result)\n    if (__vize_match_0[0] === 0) {\n      _push(`<p${_ssrRenderAttrs(_attrs)}>Ready</p>`)\n    } else if (__vize_match_0[0] === 1) {\n      _push(`<i${_ssrRenderAttrs(_attrs)}>Other</i>`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+  "css": null,
+  "errors": [],
+  "warnings": [],
+  "script_lang": "js",
+  "macro_artifacts": []
+}

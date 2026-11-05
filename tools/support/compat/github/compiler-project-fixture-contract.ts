@@ -3,6 +3,10 @@ import {
   isCompilerProjectCase,
   validateCompilerProjectCase,
 } from "../../../../tests/differential/compiler-project.ts";
+import {
+  isConfiguredCompilerProjectCase,
+  loadConfiguredCompilerProjectInputs,
+} from "../../../../tests/differential/compiler-configured-project.ts";
 
 interface PinnedInput {
   path?: string;
@@ -34,7 +38,11 @@ export function checkCompilerCase(
   const reference = entry.reference;
   const expectedPath = `${root}/module.expected.txt`;
   if (isCompilerProjectCase(entry)) validateCompilerProjectCase(entry);
-  else if (
+  else if (isConfiguredCompilerProjectCase(entry)) {
+    loadConfiguredCompilerProjectInputs(entry, (file) =>
+      readFile("head", `tests/_fixtures/differential/compiler/${file}`),
+    );
+  } else if (
     entry.id !== `compiler/sfc/${root}` ||
     JSON.stringify(entry.targets) !== JSON.stringify(["ssr"]) ||
     files.length !== 1 ||
