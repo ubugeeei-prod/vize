@@ -137,7 +137,7 @@ void test("matrix execution preserves full configuration packets and coverage", 
       stderr: "",
       parsed: output,
       typecheckerCoverage: validateTypecheckerOutput(
-        { id: "configuration" },
+        { id: "configuration", expectedVueFileCount: 1 },
         output,
         1,
         ["src/App.vue"],
