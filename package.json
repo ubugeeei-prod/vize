@@ -29,6 +29,7 @@
     "semver": "catalog:repo-tooling",
     "shiki": "catalog:content",
     "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
     "vscode-languageclient": "9.0.1",
