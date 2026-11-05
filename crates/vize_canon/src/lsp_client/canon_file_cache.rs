@@ -224,8 +224,11 @@ mod tests {
             std::fs::write(&path, ORIGINAL).unwrap();
             let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
             let mut cache = CanonFileCache::default();
-            let now = settled_clock();
-            assert!(!cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+            // Keep a real settled observation here: a future clock would let
+            // an immediate same-tick rewrite impersonate an old file, unlike
+            // synchronize's actual wall clock and its one-second racy fence.
+            std::thread::sleep(Duration::from_millis(1100));
+            assert!(!cache.synchronize(&path, ORIGINAL).unwrap());
             assert_eq!(ORIGINAL.len(), CHANGED.len());
             if replace {
                 let next = root.path().join("next");
@@ -240,7 +243,7 @@ mod tests {
                 .unwrap()
                 .set_times(std::fs::FileTimes::new().set_modified(modified))
                 .unwrap();
-            assert!(cache.synchronize_at(&path, ORIGINAL, now).unwrap());
+            assert!(cache.synchronize(&path, ORIGINAL).unwrap());
             assert_eq!(std::fs::read(&path).unwrap(), ORIGINAL.as_bytes());
             assert_eq!(cache.reads, 2);
         }
