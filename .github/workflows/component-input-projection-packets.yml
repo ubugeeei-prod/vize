@@ -33,7 +33,6 @@ jobs:
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       SOURCE_SHA: ${{ matrix.role == 'base' && (inputs.base-sha || github.event.pull_request.base.sha) || (inputs.head-sha || github.event.pull_request.head.sha) }}
-      EVIDENCE: ${{ runner.temp }}/component-input-packets
       INSTA_UPDATE: new
       INSTA_FORCE_PASS: "0"
     steps:
@@ -45,6 +44,8 @@ jobs:
           set -euo pipefail
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          EVIDENCE="$RUNNER_TEMP/component-input-packets"
+          printf 'EVIDENCE=%s\n' "$EVIDENCE" >> "$GITHUB_ENV"
           mkdir -p "$EVIDENCE"
           git rev-parse HEAD 'HEAD^{tree}' > "$EVIDENCE/source.txt"
           printf '%s\n' "$DRIVER_SHA" > "$EVIDENCE/driver.txt"
