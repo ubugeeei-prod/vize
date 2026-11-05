@@ -1,4 +1,5 @@
 import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
+import { setupExportCurrentPacket } from "./support/setup-export-current-packet.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -97,7 +98,11 @@ await test("setup export defaults preserve seventy whole source CLI packets", ()
         argv,
         originalArgv: route.argv,
         config: route.config,
-        expected: currentRuleDocumentationPacket(withoutHelp(route.afterCliPacket)),
+        expected: setupExportCurrentPacket(
+          entry,
+          route,
+          currentRuleDocumentationPacket(withoutHelp(route.afterCliPacket)),
+        ),
         expectedStatus: route.afterStatus,
         status: run.status,
         signal: run.signal,
