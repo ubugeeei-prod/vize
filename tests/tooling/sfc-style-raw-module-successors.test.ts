@@ -8,7 +8,7 @@ import {
 } from "./support/sfc-style-raw-module-successors.ts";
 import { assertVdomChildStylePackets } from "./support/jsx-vdom-child-style-successors.ts";
 const ts: typeof TS = createRequire(new URL("../../npm/cli/package.json", import.meta.url))(
-  "typescript",
+  process.env.VIZE_STYLE_AST_TYPESCRIPT ?? "typescript",
 );
 const presentation = new Set([
   "pos",

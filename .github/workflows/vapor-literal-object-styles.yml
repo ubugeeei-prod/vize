@@ -83,7 +83,11 @@ jobs:
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/vapor-literal-style-base-target" VIZE_LITERAL_STYLE_EXPECT_OLD=1 VIZE_LITERAL_STYLE_PRIORITY_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-priority.json" VIZE_LITERAL_STYLE_CASE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-attribute-case.json" VIZE_LITERAL_STYLE_REVIEW_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-review.json" VIZE_LITERAL_STYLE_SFC_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-sfc.json" VIZE_LITERAL_STYLE_PROFILE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base-profile.json" VIZE_LITERAL_STYLE_CAPTURE="$RUNNER_TEMP/vapor-literal-styles/base.json" cargo test --locked --profile ci -p vize_atelier_jsx --test literal_style_source --test literal_style_sfc -- --nocapture --test-threads=1)
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/vapor-literal-styles/base-source.txt"
           sha256sum "$observer" "$baseline/$observer" > "$RUNNER_TEMP/vapor-literal-styles/observer.sha256"
+      - name: Install the independent syntax observer
+        run: npm install --prefix "$RUNNER_TEMP/style-ast-provider" --ignore-scripts --no-package-lock --no-audit --no-fund typescript@6.0.3
       - name: Compare complete packets and explicit authored module successors
+        env:
+          VIZE_STYLE_AST_TYPESCRIPT: ${{ runner.temp }}/style-ast-provider/node_modules/typescript
         run: |
           node --test tests/tooling/jsx-child-style-successors.test.ts tests/tooling/jsx-vdom-child-style-successors.test.ts tests/tooling/sfc-style-raw-module-successors.test.ts
           node --input-type=module <<'JS'
