@@ -1,5 +1,9 @@
 "use strict";
 
+const crypto = require("node:crypto");
+const path = require("node:path");
+const RELATIVE_SFC = /['"](\.[^'"\n]*\.(?:vue|art))['"]/g;
+
 function createSourceDocuments(
   info,
   { getSnapshot, previousVersion, readFile, watchFile, isSfc },
@@ -65,4 +69,79 @@ function createSourceDocuments(
   };
 }
 
-module.exports = { createSourceDocuments };
+// tsserver asks for every external SFC while a project loads. Generate only
+// the file a language-service request names, plus its direct relative imports.
+function createLazySfcScripts({
+  ts,
+  get,
+  options,
+  settings,
+  sourceDocuments,
+  snapshots,
+  isSfc,
+  readFile,
+  readSource,
+  project,
+}) {
+  const eager = new Set();
+  let updating = false;
+  const configuration = () => {
+    options();
+    return settings().project.configuration;
+  };
+  const stub = (cached, current) => {
+    if (!cached.stubSnapshot) cached.stubSnapshot = ts.ScriptSnapshot.fromString("export {};\n");
+    if (cached.stubConfiguration !== current || cached.stubSource !== cached.source) {
+      cached.stubVersion = `stub:${crypto.createHash("sha256").update(cached.source).update("\0").update(current).digest("hex")}`;
+      cached.stubConfiguration = current;
+      cached.stubSource = cached.source;
+    }
+    return { snapshot: cached.stubSnapshot, version: cached.stubVersion };
+  };
+  const prepared = (name) => {
+    if (!isSfc(name)) return undefined;
+    const cached = sourceDocuments.get(name);
+    if (!cached) return undefined;
+    const current = configuration();
+    if (cached.configuration === current) return cached;
+    if (!eager.has(path.normalize(name))) return stub(cached, current);
+    return get(name);
+  };
+  const mark = (name) => {
+    const key = path.normalize(name);
+    if (eager.has(key)) return false;
+    eager.add(key);
+    return true;
+  };
+  return {
+    snapshot: (name) => prepared(name)?.snapshot,
+    version: (name) => prepared(name)?.version,
+    ensure(fileName) {
+      if (typeof fileName !== "string" || updating) return;
+      const added = [];
+      if (isSfc(fileName) && mark(fileName)) added.push(fileName);
+      if (!/\.d\.ts$/i.test(fileName)) {
+        const source = isSfc(fileName) ? readSource(fileName) : readFile(fileName);
+        if (typeof source === "string") {
+          for (const match of source.matchAll(RELATIVE_SFC)) {
+            const resolved = path.resolve(path.dirname(fileName), match[1]);
+            if (mark(resolved)) added.push(resolved);
+          }
+        }
+      }
+      const stale = added.some((name) => {
+        const cached = snapshots.get(name);
+        return cached?.stubSnapshot && cached.configuration === undefined;
+      });
+      if (!stale) return;
+      updating = true;
+      try {
+        project?.updateGraph?.();
+      } finally {
+        updating = false;
+      }
+    },
+  };
+}
+
+module.exports = { createSourceDocuments, createLazySfcScripts };

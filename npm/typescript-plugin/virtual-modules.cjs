@@ -2,7 +2,7 @@
 
 const crypto = require("node:crypto");
 const path = require("node:path");
-const { createSourceDocuments } = require("./source-documents.cjs");
+const { createLazySfcScripts, createSourceDocuments } = require("./source-documents.cjs");
 const { loadNative } = require("./provider.cjs");
 const installedHosts = new WeakMap();
 
@@ -172,13 +172,16 @@ function installVueVirtualModules(ts, info) {
   const previousLiterals = bind("resolveModuleNameLiterals");
   const previousNames = bind("resolveModuleNames");
   const previousKind = bind("getScriptKind");
+  const lazy = createLazySfcScripts({
+    ts, get, options, settings: () => settingsState, sourceDocuments, snapshots, isSfc, readFile, readSource, project: info.project,
+  });
   const replacements = {
     getCompilationSettings: options,
-    getScriptSnapshot: (name) => (isSfc(name) ? get(name)?.snapshot : getSnapshot(name)),
+    getScriptSnapshot: (name) => (isSfc(name) ? lazy.snapshot(name) : getSnapshot(name)),
     getScriptKind: (name) =>
       isSfc(name) ? ts.ScriptKind.TSX : (previousKind?.(name) ?? ts.ScriptKind.Unknown),
     getScriptVersion: (name) =>
-      isSfc(name) ? (get(name)?.version ?? "0") : (previousVersion?.(name) ?? "0"),
+      isSfc(name) ? (lazy.version(name) ?? "0") : (previousVersion?.(name) ?? "0"),
     ...(originalProjectVersion
       ? {
           getProjectVersion() {
@@ -219,6 +222,7 @@ function installVueVirtualModules(ts, info) {
   };
   const support = {
     get,
+    ensure: lazy.ensure.bind(lazy),
     readSource,
     engine,
     resolve,
