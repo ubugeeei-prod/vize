@@ -22,7 +22,13 @@ import {
 import type { Packet } from "./native-fault-support.ts";
 import { processRetention } from "./native-fault-retention.ts";
 
-export const observers = { sourceSnapshot, privateGuest, observeDescendants, diagnoseCore };
+export const observers = {
+  sourceSnapshot,
+  privateGuest,
+  observeDescendants,
+  diagnoseCore,
+  taskDetails: () => runCapture(["vp", "run", "--last-details"], false, 10_000),
+};
 export const uiConformancePhases = [
   { name: "native-build", command: ["vp", "run", "--filter", "./npm/native", "build:ci"] },
   { name: "ui-check", command: ["vp", "run", "--filter", "./npm/ui", "check"] },
@@ -260,6 +266,17 @@ async function observeCommand(
         ),
       () => processRetention(seen).observedPackets,
     );
+    if (
+      status !== 0 &&
+      "command" in invocation &&
+      invocation.command[0] === "vp" &&
+      invocation.command[1] === "run"
+    )
+      attempt(receipt, "task-details", () => {
+        // Read the failed run's summary once; never rerun or replace its result.
+        receipt.taskDetails = observers.taskDetails();
+        writeJson(path.join(output, "task-details.json"), receipt.taskDetails);
+      });
   } finally {
     if (typeof receipt.pid === "number")
       attempt(receipt, "process-maps-terminal", () =>
