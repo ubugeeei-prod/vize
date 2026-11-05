@@ -313,6 +313,37 @@ function implementationText(
   ).join("\r\n");
 }
 
+function captureImplementationCanon(session: LspSession, queryKind: string, phase: string): void {
+  const captures = path.join(root, "target/differential/implementation-canon");
+  fs.mkdirSync(captures, { recursive: true });
+  const projectUris = [
+    ...new Set(session.stderrText.match(/file:\/\/\/[^\s]+\/projects\/[a-f0-9]{64}\//g) ?? []),
+  ];
+  const projects = projectUris.map((uri) => {
+    const directory = new URL(uri);
+    const files: Record<string, string> = {};
+    const links: Record<string, string> = {};
+    const visit = (relative = "") => {
+      for (const entry of fs.readdirSync(new URL(relative, directory), { withFileTypes: true })) {
+        const name = `${relative}${entry.name}`;
+        if (entry.isSymbolicLink()) links[name] = fs.readlinkSync(new URL(name, directory));
+        else if (entry.isDirectory() && entry.name !== "node_modules") visit(`${name}/`);
+        else if (entry.isFile()) files[name] = fs.readFileSync(new URL(name, directory), "utf8");
+      }
+    };
+    try {
+      visit();
+      return { uri, files, links };
+    } catch (error) {
+      return { uri, files, links, observationError: String(error) };
+    }
+  });
+  fs.writeFileSync(
+    path.join(captures, `${process.pid}-${queryKind}-${phase}.json`),
+    `${JSON.stringify({ queryKind, phase, projects }, null, 2)}\n`,
+  );
+}
+
 test("native implementation retains every SFC and TSX target through unsaved Unicode CRLF edits", async (t) => {
   const corsaPath = requireTypecheckDependency(
     t,
@@ -422,6 +453,7 @@ test("native implementation retains every SFC and TSX target through unsaved Uni
         console.log(
           JSON.stringify({ oracle: "whole-implementation", queryKind, phase, raw, expected }),
         );
+        captureImplementationCanon(session, queryKind, phase);
         assertImplementationPacket(raw, expected);
         for (const [file, text] of originals)
           assert.equal(
