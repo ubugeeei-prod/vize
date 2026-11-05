@@ -31,6 +31,7 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
     let session = EditorMirrorSession::new();
     session.trust_watched_disk_inputs();
     let options = CorsaVueVirtualDocumentOptions {
+        options_api: true,
         jsx_typecheck: true,
         preserve_event_navigation: true,
         ..Default::default()

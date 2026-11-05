@@ -557,6 +557,7 @@ fn workspace_implementations_keep_an_unchanged_tsx_root_when_a_vue_class_is_remo
                 overlays,
                 requested,
                 crate::corsa_bridge::CorsaVueVirtualDocumentOptions {
+                    options_api: true,
                     jsx_typecheck: true,
                     ..Default::default()
                 },

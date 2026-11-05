@@ -187,6 +187,7 @@ jobs:
             target/differential/overlay-graphs/
             target/differential/lsp-overlay-graph-reuse/
             target/differential/lsp-sessions/
+            target/differential/implementation-canon/
             target/ci/vize.differential-build.json
           if-no-files-found: error
           retention-days: 7
