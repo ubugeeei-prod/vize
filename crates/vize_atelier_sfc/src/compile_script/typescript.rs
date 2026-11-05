@@ -27,7 +27,7 @@ pub(crate) fn transform_typescript_to_js_traced(code: &str) -> (String, Runs) {
 
 /// Print `program` as JavaScript with its tabs expanded, plus the printed
 /// text's provenance in `source` when `trace` asks for it.
-fn print_javascript(
+pub(super) fn print_javascript(
     program: &oxc_ast::ast::Program<'_>,
     source: &str,
     trace: bool,

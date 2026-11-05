@@ -24,7 +24,7 @@ pub(super) fn transform_await_expressions(
     lines: &[String],
     line_runs: Option<&[Runs]>,
     is_ts: bool,
-) -> (Vec<String>, Vec<Runs>) {
+) -> (Vec<String>, Vec<Runs>, bool) {
     let mut source = String::default();
     let mut source_runs = Runs::default();
     for (idx, line) in lines.iter().enumerate() {
@@ -38,7 +38,7 @@ pub(super) fn transform_await_expressions(
     }
 
     let mut runs = Runs::default();
-    let transformed = transform_await_source(&source, is_ts, &mut runs);
+    let (transformed, uses_async_context) = transform_await_source(&source, is_ts, &mut runs);
     let composed = runs.compose(&source_runs);
     let base = transformed.as_ptr() as usize;
     let mut output_runs = Vec::new();
@@ -52,7 +52,7 @@ pub(super) fn transform_await_expressions(
             line.to_compact_string()
         })
         .collect();
-    (output, output_runs)
+    (output, output_runs, uses_async_context)
 }
 
 const AWAIT_WRAP_PREFIX: &str = "async function __vize_async_setup__() {\n";
@@ -60,18 +60,18 @@ const AWAIT_WRAP_SUFFIX: &str = "\n}";
 
 /// Rewrite the top-level awaits of `source`, recording the result's
 /// provenance in `source` offsets into `runs`.
-fn transform_await_source(source: &str, is_ts: bool, runs: &mut Runs) -> String {
+fn transform_await_source(source: &str, is_ts: bool, runs: &mut Runs) -> (String, bool) {
     match rewrite_awaits(source, is_ts, runs) {
         Some(transformed) => transformed,
         None => {
             *runs = Runs::identity(source.len());
-            source.to_compact_string()
+            (source.to_compact_string(), false)
         }
     }
 }
 
 /// The rewritten source, or `None` when `source` is kept as it is.
-fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<String> {
+fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<(String, bool)> {
     if source.trim().is_empty() {
         return None;
     }
@@ -99,4 +99,5 @@ fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<String> 
     let mut awaits = collector::SetupAwaits::default();
     awaits.visit_statements(&body.statements);
     emit::rewrite(source, &awaits.regions, AWAIT_WRAP_PREFIX.len(), runs)
+        .map(|code| (code, !awaits.regions.is_empty()))
 }

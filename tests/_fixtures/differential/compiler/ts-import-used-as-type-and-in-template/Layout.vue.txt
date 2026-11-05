@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { Status } from './status'
+
+const current: Status = 'open'
+</script>
+
+<template>
+  <p :class="Status.className">{{ current }}</p>
+</template>

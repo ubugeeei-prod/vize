@@ -1,12 +1,20 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { test } from "node:test";
 import {
   closedSetupReference,
   historicalSetupCode,
   type ExposurePacket,
 } from "./support/script-setup-default-expose.ts";
-import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
+import {
+  assertDefaultRuntimeOptionPackets,
+  setupComponentBracketReference,
+} from "./support/setup-component-bracket-reference.ts";
+import {
+  type ParseModule,
+  typescriptErasureReference,
+} from "./support/typescript-erasure-reference.ts";
 
 const fixture = JSON.parse(
   readFileSync(
@@ -19,6 +27,55 @@ const fixture = JSON.parse(
     packets: { source: string; before: ExposurePacket; after: ExposurePacket }[];
   };
 };
+
+test("runtime matrix comparison retains semantic fields and excludes only timings", () => {
+  const packet = { code: "export default {}", errors: [], warnings: [] };
+  const row = {
+    target: "dom",
+    options: { inlineTemplate: true },
+    single: [packet],
+    batch: { results: [packet], timeMs: 1 },
+    stats: { outputBytes: Buffer.byteLength(packet.code), timeMs: 2 },
+    function: { code: "return {}" },
+    functionBatch: { results: [{ code: "return {}" }], timeMs: 3 },
+    functionStats: { outputBytes: 9, timeMs: 4 },
+    syntax: { single: true },
+  };
+  const before = [row];
+  const current = structuredClone(before);
+  current[0].batch.timeMs = 11;
+  current[0].stats.timeMs = 12;
+  current[0].functionBatch.timeMs = 13;
+  current[0].functionStats.timeMs = 14;
+  const source = ["<script>export default {}</script>"];
+  const parse: ParseModule = () => {
+    throw new Error("JavaScript packets do not require a reprint parser");
+  };
+  assertDefaultRuntimeOptionPackets(before, current, source, parse);
+  for (const mutate of [
+    (changed: typeof row) => {
+      changed.syntax.single = false;
+    },
+    (changed: typeof row) => {
+      changed.function.code += "\nvoid 1;";
+    },
+    (changed: typeof row) => {
+      changed.functionBatch.results[0].code += "\nvoid 1;";
+    },
+    (changed: typeof row) => {
+      changed.functionStats.outputBytes += 1;
+    },
+    (changed: typeof row) => {
+      changed.single[0].code += "\nvoid 1;";
+    },
+  ]) {
+    const changed = structuredClone(current);
+    mutate(changed[0]);
+    assert.throws(() => assertDefaultRuntimeOptionPackets(before, changed, source, parse), {
+      code: "ERR_ASSERTION",
+    });
+  }
+});
 
 test("the reviewed exposure edit preserves complete captured code, maps and descriptors", () => {
   assert.equal(fixture.packets.length, 3);
@@ -122,4 +179,77 @@ test("empty setup returns preserve the complete three pinned SSR modules", () =>
     assert.deepEqual(closedSetupReference(row.before, row.source), row.after);
     assert.equal(historicalSetupCode(row.after.code, row.source), row.before.code);
   }
+});
+
+const fromRoot = createRequire(import.meta.url);
+const fromBabel = createRequire(fromRoot.resolve("@babel/core"));
+const { parse } = fromBabel("@babel/parser") as { parse: ParseModule };
+
+test("per-piece erasure advances spelling and byte offsets with authored anchors intact", () => {
+  const map = JSON.stringify({
+    version: 3,
+    sources: ["Case.vue"],
+    sourcesContent: ["const value: number = 1"],
+    names: [],
+    mappings: "AAAA",
+  });
+  const preserved = {
+    code: 'const value=1;\nexport default { label: "雪", value: value };',
+    map,
+    moduleShape: {
+      defaultExportStart: 15,
+      defaultExportKeywordEnd: 29,
+      defaultExportEnd: 61,
+      hasSfcMainDefined: false,
+    },
+    errors: [],
+    warnings: [],
+  };
+  const erased = {
+    ...structuredClone(preserved),
+    code: "const value = 1;\nexport default { label: '雪', value };",
+    moduleShape: {
+      ...preserved.moduleShape,
+      defaultExportStart: 17,
+      defaultExportKeywordEnd: 31,
+      defaultExportEnd: 56,
+    },
+  };
+  const untouched = structuredClone(preserved);
+  assert.deepEqual(typescriptErasureReference(preserved, erased, parse), erased);
+  assert.deepEqual(preserved, untouched);
+  for (const mutate of [
+    (packet: typeof erased) => {
+      packet.code = packet.code.replace("= 1", "= 2");
+    },
+    (packet: typeof erased) => {
+      packet.code += "\nvoid value;";
+    },
+    (packet: typeof erased) => {
+      packet.map = packet.map.replace("AAAA", "AACA");
+    },
+    (packet: typeof erased) => {
+      packet.moduleShape.defaultExportEnd += 1;
+    },
+    (packet: typeof erased) => {
+      packet.moduleShape.hasSfcMainDefined = true;
+    },
+  ]) {
+    const changed = structuredClone(erased);
+    mutate(changed);
+    assert.throws(
+      () => assert.deepEqual(typescriptErasureReference(preserved, changed, parse), changed),
+      { code: "ERR_ASSERTION" },
+    );
+  }
+});
+
+test("per-piece erasure keeps bundler effect annotations", () => {
+  const preserved = { code: "export default /*@__PURE__*/ defineComponent({});" };
+  const erased = { code: "export default /*@__PURE__*/defineComponent({})" };
+  assert.deepEqual(typescriptErasureReference(preserved, erased, parse), erased);
+  const changed = { code: "export default defineComponent({})" };
+  assert.throws(() => typescriptErasureReference(preserved, changed, parse), {
+    code: "ERR_ASSERTION",
+  });
 });

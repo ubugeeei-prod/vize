@@ -68,6 +68,17 @@ const compilerDialectPromotionIds = new Set([
 // reference hash may differ; every other field keeps its custody.
 const compilerReferenceRepins = new Map([
   ["compiler/sfc/vue2-preserve-comment-edges-10065", "#11593 merges slot VNode text runs"],
+  ["compiler/sfc/generic-keyof-operands-skip-check", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/generic-union-skip-check-11466", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/package-import-prop-type-9894", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/plain-script-import-10903", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/root-text-patch-flag-10168", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/scoped-slot-closure-10169", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/sibling-script-import-reads-10616", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-global-prefix-10927", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-host-globals-10927", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/template-ts-unscanned-erasure", "#11698 erases TypeScript per authored piece"],
+  ["compiler/sfc/tsx-setup-jsx-bindings", "#11698 erases TypeScript per authored piece"],
 ]);
 
 function withoutReferenceHash({ reference, ...row }) {
