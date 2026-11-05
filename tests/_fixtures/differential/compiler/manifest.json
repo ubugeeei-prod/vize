@@ -3561,6 +3561,81 @@
           }
         ]
       }
+    },
+    {
+      "id": "compiler/project/macro-export-conditions-11918",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "macro-export-conditions-11918",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "c8d4320c8f99ab8456c47a358a0bc5f00a7fe9a8aba240fdfe7872a712f0fba9"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "config",
+            "sha256": "f0ecafc8f4e5d491c7655f955de585008e599fb920c33b5de50111026a989793"
+          },
+          {
+            "path": "lib.package.json.txt",
+            "role": "dependency",
+            "sha256": "a111fa69c52af5e7d924eab932e487c0dcbae5dded4f98ad27ef78f495d29a29"
+          },
+          {
+            "path": "lib.index.ts.txt",
+            "role": "dependency",
+            "sha256": "560ad6555a99b5e53f506ebf7870c6a73c8cd2c03b0d3480a1fe70f88d89d9a5"
+          },
+          {
+            "path": "lib.runtime.js.txt",
+            "role": "dependency",
+            "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+          }
+        ]
+      },
+      "reference": {
+        "path": "macro-export-conditions-11918/module.expected.txt",
+        "sha256": "ac78bc5a1b70cffca7bdc5e72307ab4855c22a943f7a81f1a64e884ed5b0167b",
+        "source": "Public vize 0.691.0 paths-alias control resolves the same source interface. The unmodified customConditions project is rejected before the fix. Whole source module oracle: crates/vize_atelier_sfc/tests/imported_props_project_resolution/conditions.rs."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-project-v1",
+        "native": null,
+        "reasons": {
+          "native": "This row authenticates the complete source-condition package project through the legacy CLI adapter. Native/public bundler consumers have separate release acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-project-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-project-v1 project inputs with TypeScript custom export conditions"
+          }
+        ]
+      }
     }
   ],
   "runtimePacks": [

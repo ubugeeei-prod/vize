@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { Props } from "lib";
+const props = defineProps<Props>();
+</script>
+<template><p>{{ props.label }} {{ props.count }}</p></template>
