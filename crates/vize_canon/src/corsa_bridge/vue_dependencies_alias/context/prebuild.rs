@@ -98,12 +98,12 @@ impl AliasContext {
             &fingerprint,
             overlays,
         );
-        if let Some((sibling, _, _)) = sibling {
-            if let Some(source) = overlays.get(&sibling) {
-                // Prepare only the changed member outside the transaction;
-                // the unchanged caller adopts its native delta later.
-                return Self::prebuild_host(&sibling, source, overlays, &[], options, environment);
-            }
+        if let Some((sibling, _, _)) = sibling
+            && let Some(source) = overlays.get(&sibling)
+        {
+            // Prepare only the changed member outside the transaction;
+            // the unchanged caller adopts its native delta later.
+            return Self::prebuild_host(&sibling, source, overlays, &[], options, environment);
         }
         Self::prebuild_host(
             source_path,

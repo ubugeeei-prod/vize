@@ -42,7 +42,7 @@ const CYCLES = 5;
 const RENAME_TO = "renamedChildValue";
 const A = `<script setup lang="ts">
 import Child, { childValue } from './Child.vue'
-const marker = 'é😀'; const requiredNumber: number = childValue
+const marker = 'é😀'; const requiredNumber: number = childValue; const observedValue = childValue
 </script>
 <template><Child />{{ requiredNumber }}{{ marker }}</template>
 `;
@@ -190,6 +190,12 @@ test(
         "childValue",
         "A imported value",
       ).start;
+      const hoverPosition = anchoredSymbolRange(
+        A,
+        "const observedValue =",
+        "observedValue",
+        "inferred value hover",
+      ).start;
       const expectedSites = sortLocations([
         ...wordRanges(A, "childValue").map((range) => ({ uri: uris.A, range })),
         ...wordRanges(CHILD, "childValue").map((range) => ({ uri: uris.Child, range })),
@@ -290,7 +296,12 @@ test(
       async function packet(session: LspSession, label: string): Promise<Packet> {
         const common = { textDocument: { uri: uris.A }, position };
         const result: Packet = {
-          hover: await measure(label, "hover", () => session.request("textDocument/hover", common)),
+          hover: await measure(label, "hover", () =>
+            session.request("textDocument/hover", {
+              textDocument: { uri: uris.A },
+              position: hoverPosition,
+            }),
+          ),
           definition: await measure(label, "definition", () =>
             session.request("textDocument/definition", common),
           ),
@@ -323,16 +334,14 @@ test(
           "rename must retain the complete authored changes vector",
         );
         assert.deepEqual(Object.keys(rename).sort(), ["changes"]);
-        const changes = sortLocations(
-          Object.entries(rename.changes).flatMap(([uri, edits]) =>
-            edits.map((edit) => {
-              assert.equal(edit.newText, RENAME_TO);
-              assert.deepEqual(Object.keys(edit).sort(), ["newText", "range"]);
-              return { uri, range: edit.range };
-            }),
-          ),
-        );
-        assert.deepEqual(changes, expectedSites);
+        assert.deepEqual(rename, {
+          changes: {
+            [uris.A]: wordRanges(A, "childValue").map((range, index) => ({
+              newText: index === 0 ? `childValue as ${RENAME_TO}` : RENAME_TO,
+              range,
+            })),
+          },
+        });
         return result;
       }
 

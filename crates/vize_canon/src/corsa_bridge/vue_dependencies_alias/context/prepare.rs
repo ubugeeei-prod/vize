@@ -51,48 +51,42 @@ impl AliasContext {
             &fingerprint,
             overlays,
         );
-        if let Some((sibling, root, previous)) = sibling {
-            if let Some(source) = overlays.get(&sibling) {
-                // This non-recursive entry refreshes all changed live sources
-                // once; several dirty buffers cannot recursively prepare each
-                // other. The unchanged caller retains its own graph.
-                let sibling_fingerprint = Self::request_fingerprint(
-                    &sibling,
-                    source,
-                    overlays,
-                    &[],
-                    options,
-                    environment,
-                );
-                drop(Self::prepare_hosts_cached(
-                    HostRevision {
-                        source_path: &sibling,
-                        content: source,
-                        fingerprint: sibling_fingerprint,
-                    },
-                    overlays,
-                    &[],
-                    options,
-                    environment,
-                )?);
-                let mut prepared = Self::prepare_hosts_cached(
-                    HostRevision {
-                        source_path,
-                        content,
-                        fingerprint,
-                    },
-                    overlays,
-                    requested_sources,
-                    options,
-                    environment,
-                )?;
-                prepared.materialized_changes = environment
-                    .editor_session
-                    .cache()
-                    .materialized_snapshot(&root)
-                    .diff(&previous);
-                return Ok(prepared);
-            }
+        if let Some((sibling, root, previous)) = sibling
+            && let Some(source) = overlays.get(&sibling)
+        {
+            // This non-recursive entry refreshes all changed live sources
+            // once; several dirty buffers cannot recursively prepare each
+            // other. The unchanged caller retains its own graph.
+            let sibling_fingerprint =
+                Self::request_fingerprint(&sibling, source, overlays, &[], options, environment);
+            drop(Self::prepare_hosts_cached(
+                HostRevision {
+                    source_path: &sibling,
+                    content: source,
+                    fingerprint: sibling_fingerprint,
+                },
+                overlays,
+                &[],
+                options,
+                environment,
+            )?);
+            let mut prepared = Self::prepare_hosts_cached(
+                HostRevision {
+                    source_path,
+                    content,
+                    fingerprint,
+                },
+                overlays,
+                requested_sources,
+                options,
+                environment,
+            )?;
+            prepared.materialized_changes = environment
+                .editor_session
+                .cache()
+                .materialized_snapshot(&root)
+                .diff(&previous);
+            return Ok(prepared);
         }
         Self::prepare_hosts_cached(
             HostRevision {

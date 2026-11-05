@@ -178,6 +178,9 @@ impl ContextFingerprint {
     /// Compare the inputs that produced the previous graph. A request still
     /// carries every current overlay, including newly opened failed probes.
     fn dependency_overlays_match(&self, previous: &Self) -> bool {
+        if self.overlays == previous.overlays {
+            return true;
+        }
         if previous.stamps.is_empty() {
             return self.overlays == previous.overlays;
         }
