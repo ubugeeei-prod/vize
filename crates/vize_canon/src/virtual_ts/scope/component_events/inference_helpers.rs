@@ -9,15 +9,12 @@ use crate::virtual_ts::helpers::shared_types::EMIT_PROPS;
 /// Unknown keys outside both surfaces remain the canonical prop checker's policy.
 /// External constructors retain higher-order inference, and generated business
 /// generics retain their existing resolver branches. Vue 2 has no root metadata.
-// A loose listener carries unknown runtime arity. Its marker controls callback
-// contextual typing separately; using [] here rejects named handlers with args
-// as soon as an otherwise unrelated prop enables the inference call (#11913).
 const EMIT_INFERENCE_HELPERS: &str =
     include_str!("../../helpers/declarations/emit-inference.d.ts.txt");
 
 const LEGACY_EMIT_INFERENCE_HELPERS_PREFIX: &str = r#"declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => "#;
 const LEGACY_EMIT_INFERENCE_HELPERS_SUFFIX: &str = r#"<E>;
-type $LooseEmitProps = { readonly __vizeLooseListener: unknown[] };
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
 type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
 type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? ($EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps) : $LooseEmitPropsFactory<C>;

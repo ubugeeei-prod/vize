@@ -254,7 +254,7 @@ type $EmitOwnedKeys<C> = $ComponentOwnKeys<C extends { readonly __vizeRawProps?:
 type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown ? F extends unknown ? { [K in keyof A]: K extends O ? K extends keyof P ? P[K] : never : K extends keyof F ? F[K] : K extends keyof P ? P[K] : unknown } & $EmitRequiredFields<P> & $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>> : never : never;
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
 type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
-type $LooseEmitProps = { readonly __vizeLooseListener: unknown[] };
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
 type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
 type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;
@@ -509,7 +509,7 @@ type $Slots = {};
 export type { $Slots as Slots };
 
 declare function __vizeConstructorEmitProps<P, E>(component: new (props: P, ...args: any[]) => { $emit: E }): (props: P) => __EmitProps<E>;
-type $LooseEmitProps = { readonly __vizeLooseListener: unknown[] };
+type $LooseEmitProps = { readonly __vizeLooseListener: [] };
 type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;
 type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E } ? ($IsAny<E> extends true ? true : E extends (...args: infer A) => any ? (string extends A[0] ? true : [A] extends [any[]] ? (any[] extends A ? true : false) : false) : false) : false;
 type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? ($EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps) : $LooseEmitPropsFactory<C>;
