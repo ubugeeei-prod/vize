@@ -28,6 +28,7 @@ const PLUGIN_FILES: &[&str] = &[
     "language-service.cjs",
     "module-resolution.cjs",
     "package.json",
+    "project-options.cjs",
     "provider.cjs",
     "source-documents.cjs",
     "virtual-modules.cjs",
