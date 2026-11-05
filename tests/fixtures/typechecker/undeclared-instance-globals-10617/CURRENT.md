@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-245bb0b6f1cb.json`: all 80 whole transform results from [source Actions 41990064443](https://github.com/ubugeeei-prod/vize/actions/runs/41990064443/job/127121264248), actual merge producer `245bb0b6f1cb0dd618268aa48cbe9c1d2e01c3cc`. Its tree is identical to PR head `45ee61bd932ca84657d90326f2dee4c1aa70fe55`; the launch receipt binds the physical source CLI.
+
+The original capture remains **unqualified**: all 318 semantic, protocol and geometry outcomes passed, and all 80 historical whole-packet comparisons failed. The reviewed text difference has exactly two forms: 78 constructors inline their four owned instance fields before intersecting the public base, and the two Options API constructors additionally retain the authored instance members. These spellings add 121 or 178 bytes. The 32 changed mapping arrays also retain every old ordered mapping and add diagnostic-only atoms for synthetic parentheses: 28 packets add two atoms and four add four. Their ignore rows exclude those single-byte anchors. All remaining result fields are unchanged apart from the generated coordinates that move after the constructor. The complete finite comparisons and mutation refusals live in `content-mapper-instance-globals-constructor-packets.test.ts`.
+
+`complete: true` records the complete expected population. It gives no new native, host-matrix, public-package or timing acceptance. Every old packet, input and strict comparator remains; no runtime normalizer or diagnostic filter is added. `source-packets-current-245bb0b6f1cb-provenance.json` binds the physical producer, full protocol, all authored inputs and all 398 original outcomes.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-2d46a96fbefd.json`: all 80 whole transform results from [source Actions 41657484505](https://github.com/ubugeeei-prod/vize/actions/runs/41657484505/job/125996432155), actual merge producer `2d46a96fbefdd4310e8631e96da3799d3663dd8d` (PR head `80dd0befe9e26a1e499d5ff63ee9d3e854a49724`). Its launch receipt binds the physical CLI it built.
 
 The original strict capture remains **unqualified**: 322 of 398 outcomes passed. Exactly 76 whole packets differ from the previous population, and only in `diagnosticDirectives`: opening-parenthesis runs before mapped spans are no longer ignored. An unmapped gap now ends before a run of `(` (with any whitespace between them) that opens a mapped span, because TypeScript anchors a parenthesized authored check at its first `(`. Each such ignore row ends earlier, at that first `(`; no byte becomes newly ignored. All 80 generated texts, mappings, diagnostics and explicit directive rows are unchanged, and the four `*-owned-attribute` packets are unchanged whole. Previous and current directive tables and the released byte ranges are retained per packet in `source-packets-current-2d46a96fbefd-provenance.json`; whole-packet gap details are retained by digest.
