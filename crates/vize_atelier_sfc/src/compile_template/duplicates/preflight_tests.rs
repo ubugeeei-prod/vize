@@ -71,12 +71,21 @@ fn actual_compatibility_entry_checks_once_and_disabled_dialect_stays_disabled() 
 
 #[test]
 fn actual_dom_dispatch_observes_native_parse_or_original_compatibility_once() {
+    let suffix = include_str!(
+        "../../../../../tests/_fixtures/differential/compiler/qualification-20261105/Layout.vue.txt"
+    )
+    .strip_prefix("<template>")
+    .unwrap()
+    .strip_suffix("</template>")
+    .unwrap();
+
     use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions,
         options::{CodegenMode, CustomElementMatcher, TemplateSyntaxMode},
     };
     for (source, native, retained) in [
         ("<div></div>", 1, 0),
+        (suffix, 1, 1),
         ("<div v-x:[a]foo='x' v-x:foo='y'></div>", 1, 1),
         ("<div/>", 0, 1),
         ("<div @[event].stop='handler'></div>", 1, 0),

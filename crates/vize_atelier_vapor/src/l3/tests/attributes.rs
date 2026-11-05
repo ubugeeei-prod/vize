@@ -97,9 +97,15 @@ fn simple_once_element_uses_native_one_shot_operations() {
 
 #[test]
 fn once_plain_descendants_are_mount_only() {
-    for source in [
-        r#"<div v-once><span :title="tip">{{ value }}</span></div>"#,
-        r#"<main><div v-once><span><b :title="tip">{{ value }}</b></span></div><i>{{ live }}</i></main>"#,
+    for (source, effects) in [
+        (
+            r#"<div v-once><span :title="tip">{{ value }}</span></div>"#,
+            0,
+        ),
+        (
+            r#"<main><div v-once><span><b :title="tip">{{ value }}</b></span></div><i>{{ live }}</i></main>"#,
+            1,
+        ),
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());
@@ -119,7 +125,7 @@ fn once_plain_descendants_are_mount_only() {
             assert!(compiled.error_messages.is_empty(), "{source}");
             assert_eq!(
                 compiled.code.matches("_renderEffect(() =>").count(),
-                usize::from(source.contains("{{ live }}")),
+                effects,
                 "{source}: {}",
                 compiled.code
             );

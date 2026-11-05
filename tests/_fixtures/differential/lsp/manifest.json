@@ -2996,6 +2996,47 @@
       }
     },
     {
+      "id": "lsp/regression/qualification-20261105",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "qualification-20261105",
+        "files": [
+          {
+            "path": "AllBlocks.vue.txt",
+            "sha256": "5fbc935b127edeb8e77b18f08fd6d035c2cce8eaf64788ae5619ecb168b6555c"
+          }
+        ]
+      },
+      "case": {
+        "path": "qualification-20261105/case.json",
+        "sha256": "01f512e4ba21e8875b4a7494dbc91a2ea1b1627e9442d1983e49b0f513a6c1c5"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/queued-edit-publication-10098",
       "state": "active",
       "targets": ["stdio"],
