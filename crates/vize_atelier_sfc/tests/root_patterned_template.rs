@@ -254,22 +254,33 @@ fn header_validation_respects_parser_options() {
     use vize_atelier_sfc::compile_sfc_with_template_syntax;
     for backend in ["vdom", "ssr", "vapor"] {
         let clean = format!("<template v-match=\"result\">{ARMS}</template>");
-        let quirky = format!("<template v-match=\"result\"foo=\"ok\">{ARMS}</template>");
-        let descriptor = parse_sfc(&quirky, Default::default()).unwrap();
-        let result = compile_sfc_with_template_syntax(
-            &descriptor,
-            options(backend),
-            TemplateSyntaxMode::Quirks,
-        )
-        .unwrap();
-        assert_eq!(result.code, compile(&clean, backend));
-        assert_eq!(
-            compile_sfc(&descriptor, options(backend))
-                .unwrap_err()
-                .code
-                .as_deref(),
-            Some("TEMPLATE_ERROR")
-        );
+        for header in [
+            r#"<template v-match="result"foo="ok">"#,
+            r#"<template lang="html"v-match="result">"#,
+            r#"<template lang='html'v-match='result'data-note='ok'>"#,
+        ] {
+            let adjacent = format!("{header}{ARMS}</template>");
+            let descriptor = parse_sfc(&adjacent, Default::default()).unwrap();
+            for syntax in [
+                TemplateSyntaxMode::Standard,
+                TemplateSyntaxMode::Strict,
+                TemplateSyntaxMode::Quirks,
+            ] {
+                let result =
+                    compile_sfc_with_template_syntax(&descriptor, options(backend), syntax)
+                        .unwrap();
+                assert!(
+                    result.errors.is_empty(),
+                    "{backend}, {syntax:?}: {:?}",
+                    result.errors
+                );
+                assert_eq!(
+                    result.code,
+                    compile(&clean, backend),
+                    "{backend}, {syntax:?}"
+                );
+            }
+        }
 
         let commented = r#"<template v-match="result"><p v-when="{ kind: 'ok', const data }"
  // body metadata
@@ -284,6 +295,74 @@ fn header_validation_respects_parser_options() {
             .experimental_in_tag_comments = true;
         let result = compile_sfc(&descriptor, enabled).unwrap();
         assert_eq!(result.code, compile(&clean, backend));
+    }
+}
+
+#[test]
+fn adjacent_sfc_header_metadata_preserves_the_complete_authored_geometry() {
+    use vize_atelier_core::TemplateSyntaxMode;
+    use vize_atelier_sfc::prepare_root_patterned_template;
+
+    let source = "<!-- 😀 -->\r\n<template lang=\"html\"v-match=\"result\"data-note=\"é\"\r\n><p v-when=\"_\"/></template>";
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let original = serde_json::to_value(&descriptor).unwrap();
+    for syntax in [
+        TemplateSyntaxMode::Standard,
+        TemplateSyntaxMode::Strict,
+        TemplateSyntaxMode::Quirks,
+    ] {
+        let prepared = prepare_root_patterned_template(&descriptor, true, false, syntax).unwrap();
+        let template = prepared.template.as_ref().unwrap();
+        assert_eq!(
+            template.content,
+            "<template            v-match=\"result\"              \r\n><p v-when=\"_\"/></template>"
+        );
+        assert_eq!(
+            template.content.len(),
+            source.len() - "<!-- 😀 -->\r\n".len()
+        );
+        assert_eq!(template.loc.start, "<!-- 😀 -->\r\n".len());
+        assert_eq!(template.loc.end, source.len());
+        assert_eq!((template.loc.start_line, template.loc.start_column), (2, 1));
+        assert_eq!((template.loc.end_line, template.loc.end_column), (3, 28));
+        assert_eq!(serde_json::to_value(&descriptor).unwrap(), original);
+    }
+}
+
+#[test]
+fn root_header_sfc_selection_preserves_the_base_whitespace_contract() {
+    use vize_atelier_core::{
+        Allocator, ErrorCode, ParseMode, ParserOptions, TemplateSyntaxMode,
+        parser::parse_with_options_and_template_syntax,
+    };
+
+    let allocator = Allocator::default();
+    let source = r#"<template v-match="result"foo="ok"><p v-when="_"/></template>"#;
+    for syntax in [TemplateSyntaxMode::Standard, TemplateSyntaxMode::Strict] {
+        let (base, diagnostics) = parse_with_options_and_template_syntax(
+            &allocator,
+            source,
+            ParserOptions::default(),
+            syntax,
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].code,
+            ErrorCode::MissingWhitespaceBetweenAttributes
+        );
+        let location = diagnostics[0].loc.as_ref().unwrap();
+        assert_eq!((location.span.start, location.span.end), (26, 27));
+        let (sfc, diagnostics) = parse_with_options_and_template_syntax(
+            &allocator,
+            source,
+            ParserOptions {
+                mode: ParseMode::Sfc,
+                ..Default::default()
+            },
+            syntax,
+        );
+        assert!(diagnostics.is_empty(), "{diagnostics:?}");
+        assert_eq!(format!("{sfc:?}"), format!("{base:?}"));
     }
 }
 

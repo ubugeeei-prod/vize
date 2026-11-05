@@ -7,7 +7,7 @@ use crate::types::{
 };
 use std::borrow::Cow;
 use vize_atelier_core::{
-    Allocator, ParserOptions, PropNode, TemplateChildNode,
+    Allocator, ParseMode, ParserOptions, PropNode, TemplateChildNode,
     parser::parse_with_options_and_template_syntax,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
@@ -111,6 +111,7 @@ pub fn prepare_root_patterned_template<'d, 's>(
         &allocator,
         original,
         ParserOptions {
+            mode: ParseMode::Sfc,
             experimental_in_tag_comments: in_tag_comments,
             ..Default::default()
         },

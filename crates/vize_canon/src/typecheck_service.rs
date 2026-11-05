@@ -128,7 +128,7 @@ impl TypeCheckService {
         legacy_vue2: bool,
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
-        use vize_atelier_core::parser::parse;
+        use vize_atelier_core::{ParseMode, ParserOptions, parser::parse_with_options};
         use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
         use vize_carton::Allocator;
 
@@ -188,7 +188,14 @@ impl TypeCheckService {
         let mut has_template_parse_errors = false;
         let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
             let template_offset = template.loc.start as u32;
-            let (root, errors) = parse(&allocator, &template.content);
+            let (root, errors) = parse_with_options(
+                &allocator,
+                &template.content,
+                ParserOptions {
+                    mode: ParseMode::Sfc,
+                    ..Default::default()
+                },
+            );
             let mut hard_template_error = false;
             for error in errors {
                 if error.is_recoverable() {
@@ -418,6 +425,10 @@ fn fallback_position_to_sfc(
         .saturating_add(end_char);
     (start, end)
 }
+
+#[cfg(test)]
+#[path = "typecheck_service/sfc_grammar_tests.rs"]
+mod sfc_grammar_tests;
 
 #[cfg(test)]
 mod tests {
