@@ -97,6 +97,7 @@ pub(crate) const RULE_NO_DEPRECATED_MODEL_DEFINITION: &str =
 pub(crate) const RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES: &str =
     "script/no-deprecated-vue-config-keycodes";
 pub(crate) const RULE_REQUIRE_RENDER_RETURN: &str = "script/require-render-return";
+pub(crate) const RULE_JSX_USES_VARS: &str = "vue/jsx-uses-vars";
 pub(crate) const RULE_REQUIRE_SLOTS_AS_FUNCTIONS: &str = "script/require-slots-as-functions";
 pub(crate) const RULE_ONE_COMPONENT_PER_FILE: &str = "script/one-component-per-file";
 pub(crate) const RULE_ORDER_IN_COMPONENTS: &str = "script/order-in-components";
@@ -182,6 +183,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_DEPRECATED_MODEL_DEFINITION,
     RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
     RULE_REQUIRE_RENDER_RETURN,
+    RULE_JSX_USES_VARS,
     RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
     RULE_ONE_COMPONENT_PER_FILE,
     RULE_ORDER_IN_COMPONENTS,
@@ -267,6 +269,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_DEPRECATED_MODEL_DEFINITION,
     RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
     RULE_REQUIRE_RENDER_RETURN,
+    RULE_JSX_USES_VARS,
     RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
     RULE_ONE_COMPONENT_PER_FILE,
     RULE_ORDER_IN_COMPONENTS,

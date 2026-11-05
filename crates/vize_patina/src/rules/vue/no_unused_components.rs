@@ -36,6 +36,7 @@ use self::script_setup_refs::script_setup_component_import_references;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::script::jsx_referenced_names;
 use vize_croquis::ScopeId;
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
@@ -255,11 +256,34 @@ impl Rule for NoUnusedComponents {
             &script_setup_candidate_names,
             &import_statement_ranges,
         );
+        let credit_jsx = ctx.is_rule_enabled("vue/jsx-uses-vars");
+        let setup_jsx = credit_jsx.then(|| {
+            ctx.sfc_descriptor()
+                .and_then(|descriptor| descriptor.script_setup.as_ref())
+                .map(|script| jsx_referenced_names(script.content.as_ref()))
+                .unwrap_or_default()
+        });
+        let script_jsx = credit_jsx.then(|| {
+            ctx.sfc_descriptor()
+                .and_then(|descriptor| descriptor.script.as_ref())
+                .map(|script| jsx_referenced_names(script.content.as_ref()))
+                .unwrap_or_default()
+        });
         let unused_components: Vec<_> = template_unused_components
             .into_iter()
             .filter(|component| {
-                !component.is_script_setup_import
-                    || !script_used_components.contains(component.local_name.as_str())
+                if component.is_script_setup_import {
+                    if script_used_components.contains(component.local_name.as_str()) {
+                        return false;
+                    }
+                    return !setup_jsx
+                        .as_ref()
+                        .is_some_and(|names| names.contains(component.local_name.as_str()));
+                }
+                !script_jsx.as_ref().is_some_and(|names| {
+                    names.contains(component.local_name.as_str())
+                        || names.contains(component.name.as_str())
+                })
             })
             .collect();
 

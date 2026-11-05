@@ -4,6 +4,7 @@ pub use super::define_emits_declaration::DefineEmitsDeclaration;
 pub use super::define_macros_order::DefineMacrosOrder;
 pub use super::define_props_declaration::DefinePropsDeclaration;
 pub use super::define_props_destructuring::DefinePropsDestructuring;
+pub use super::jsx_uses_vars::JsxUsesVars;
 pub use super::no_arrow_functions_in_watch::NoArrowFunctionsInWatch;
 pub use super::no_async_in_computed::NoAsyncInComputed;
 pub use super::no_boolean_default::NoBooleanDefault;
