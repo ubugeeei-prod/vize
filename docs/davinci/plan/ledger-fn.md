@@ -106,6 +106,32 @@ assert is not relaxed to count-only or to an optional span.
 
 **Disposition:** `deferred-with-issue` for each row — no generator yet. Delete a row only by registering its class in the same change.
 
+### Registration census, 2026-11-05
+
+The constant-backed metadata census registers twelve existing rules in the
+contract table. Ten have an Exact tier and need entries in the unclassed list
+below. Their implementation tests and documented bad/good examples remain
+coverage evidence; they do not establish seeded-defect recall. No snippet class
+or recall expectation is removed. `--check-classes` continues to report these
+rules as unclassed and returns failure until their independent classes exist.
+
+| Rule                                 | Existing coverage and remaining seeded-class scope                                                                               |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `vue/comment-directive`              | Unused suppression reports require `reportUnusedDisableDirectives`; seed both a useful suppression and an unused one.            |
+| `vue/match-component-file-name`      | Declared component names are tested against the authored filename; preserve filename and multiple-component controls in a seed.  |
+| `vue/no-custom-modifiers-on-v-model` | Component modifier examples cover the Vue 2 compatibility restriction; seed the opt-in configuration and native-element control. |
+| `vue/no-ref-object-reactivity-loss`  | AST tests cover same-scope value copies, deferred reads and writes; seed a copy without introducing an unrelated unused binding. |
+| `vue/no-setup-props-reactivity-loss` | Root-scope prop-copy tests retain Vue 3.5 reactive destructuring; seed copies and deferred-read controls.                        |
+| `vue/no-this-in-before-route-enter`  | Hook tests distinguish `this` from the callback's component argument; seed the function boundary explicitly.                     |
+| `vue/no-v-for-template-key`          | Vue 2 key placement has bad/good examples; seed its opt-in convention separately from the conflicting Vue 3 convention.          |
+| `vue/prefer-prop-type-boolean-first` | Runtime constructor-order examples cover boolean casting; seed runtime arrays and a TypeScript-union control.                    |
+| `vue/require-expose`                 | Options API tests cover explicit expose lists, setup exposure, render functions and mixins; seed those boundaries.               |
+| `vue/valid-model-definition`         | Vue 2 model-option tests reject unknown static keys; seed those keys without claiming to validate their values.                  |
+
+The complete public bad/good report packets are retained in
+`crates/vize_patina/tests/fixtures/documented-catalogue-additions/reports.json`.
+This is triage of a class-registration gap, not a zero-FN claim.
+
 <!-- p4-15a-unclassed -->
 
 - `a11y/alt-text`
@@ -220,14 +246,17 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/a11y-img-alt`
 - `vue/attribute-hyphenation`
 - `vue/attribute-order`
+- `vue/comment-directive`
 - `vue/component-definition-name-casing`
 - `vue/component-name-in-template-casing`
 - `vue/html-button-has-type`
 - `vue/html-self-closing`
+- `vue/match-component-file-name`
 - `vue/multi-word-component-names`
 - `vue/mustache-interpolation-spacing`
 - `vue/no-array-index-key`
 - `vue/no-boolean-attr-value`
+- `vue/no-custom-modifiers-on-v-model`
 - `vue/no-deprecated-filter`
 - `vue/no-deprecated-functional-template`
 - `vue/no-deprecated-html-element-is`
@@ -248,14 +277,17 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/no-negated-v-if-condition`
 - `vue/no-non-component-keep-alive-child`
 - `vue/no-preprocessor-lang`
+- `vue/no-ref-object-reactivity-loss`
 - `vue/no-reserved-component-names`
 - `vue/no-root-v-if`
 - `vue/no-script-non-standard-lang`
+- `vue/no-setup-props-reactivity-loss`
 - `vue/no-src-attribute`
 - `vue/no-static-inline-styles`
 - `vue/no-template-lang`
 - `vue/no-template-shadow`
 - `vue/no-template-target-blank`
+- `vue/no-this-in-before-route-enter`
 - `vue/no-unsandboxed-iframe`
 - `vue/no-unused-vars`
 - `vue/no-use-v-else-with-v-for`
@@ -263,12 +295,15 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/no-useless-mustaches`
 - `vue/no-useless-template-attributes`
 - `vue/no-useless-v-bind`
+- `vue/no-v-for-template-key`
 - `vue/no-v-for-template-key-on-child`
 - `vue/no-v-text`
 - `vue/no-v-text-v-html-on-component`
+- `vue/prefer-prop-type-boolean-first`
 - `vue/prefer-props-shorthand`
 - `vue/prefer-true-attribute-shorthand`
 - `vue/prop-name-casing`
+- `vue/require-expose`
 - `vue/require-scoped-style`
 - `vue/require-toggle-inside-transition`
 - `vue/scoped-event-names`
@@ -284,6 +319,7 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/v-on-style`
 - `vue/v-slot-style`
 - `vue/valid-attribute-name`
+- `vue/valid-model-definition`
 - `vue/valid-template-root`
 - `vue/valid-v-bind`
 - `vue/valid-v-cloak`
