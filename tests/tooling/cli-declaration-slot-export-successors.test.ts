@@ -5,6 +5,10 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
+import {
+  applyDiscriminatedJsxUnionIn,
+  beforeDiscriminatedJsxUnionIn,
+} from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 
 const originals = [
   [
@@ -163,6 +167,10 @@ const integratedOutput: Identity = {
   bytes: 15086,
   sha256: "aa5a51a5fb0d2127fd8ec91dbd28ce79d6f47bd94aec8ccbe487d85fe599203e",
 };
+const discriminatedOutput: Identity = {
+  bytes: 15109,
+  sha256: "4403b85ed61e9aec229ddea2b4a891950ddd2746bca69be0db4ff670679f0608",
+};
 const integratedConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
 const previousImport =
@@ -203,6 +211,22 @@ function integratedOutputTransition(current: Buffer, direction: "forward" | "inv
     text = text.replace(from, to);
   }
   const changed = Buffer.from(text);
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
+function discriminatedOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [fromIdentity, toIdentity] =
+    direction === "forward"
+      ? [integratedOutput, discriminatedOutput]
+      : [discriminatedOutput, integratedOutput];
+  assert.deepEqual(identity(current), fromIdentity);
+  const text = current.toString("utf8");
+  const changed = Buffer.from(
+    direction === "forward"
+      ? applyDiscriminatedJsxUnionIn(text)
+      : beforeDiscriminatedJsxUnionIn(text),
+  );
   assert.deepEqual(identity(changed), toIdentity);
   return changed;
 }
@@ -255,11 +279,18 @@ test("the declaration constructor successor authenticates the whole source and b
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
   const integratedEnvelope = overloadOutputTransition(current, "inverse");
-  const ownedEnvelope = integratedOutputTransition(integratedEnvelope, "inverse");
+  const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
+  const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
-    overloadOutputTransition(integratedOutputTransition(ownedEnvelope, "forward"), "forward"),
+    overloadOutputTransition(
+      discriminatedOutputTransition(
+        integratedOutputTransition(ownedEnvelope, "forward"),
+        "forward",
+      ),
+      "forward",
+    ),
     current,
   );
   assert.deepEqual(
@@ -404,10 +435,14 @@ for (const [name, digest, successorDigest] of originals) {
     const integratedEnvelope = constructor
       ? overloadOutputTransition(currentSlot, "inverse")
       : currentSlot;
+    const discriminatedEnvelope =
+      constructor === constructorSuccessor
+        ? discriminatedOutputTransition(integratedEnvelope, "inverse")
+        : integratedEnvelope;
     const ownedEnvelope =
       constructor === constructorSuccessor
-        ? integratedOutputTransition(integratedEnvelope, "inverse")
-        : integratedEnvelope;
+        ? integratedOutputTransition(discriminatedEnvelope, "inverse")
+        : discriminatedEnvelope;
     const predecessorSlot = constructor
       ? overloadOutputTransition(
           constructorTransition(ownedEnvelope, "inverse", constructor),

@@ -2,7 +2,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { certifyDiscriminatedJsxUnionTransition } from "./discriminated-jsx-union-transition.ts";
+import {
+  beforeDiscriminatedJsxUnion,
+  certifyDiscriminatedJsxUnionTransition,
+  discriminatedJsxUnionAfterSha256,
+  discriminatedJsxUnionPath,
+} from "./discriminated-jsx-union-transition.ts";
 
 const recordUrl = new URL(
   "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
@@ -17,13 +22,44 @@ const integratedRecordSha256 = "9f4babc2f1d99fc129ceab018266503a78b60d8174374122
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const identity = (bytes: Buffer) => ({ bytes: bytes.length, sha256: digest(bytes) });
 
-export function certifyJsxWitnessChange(file: string, before: Buffer, after: Buffer) {
+interface JsxWitnessChangeProof {
+  file: string;
+  beforeSha256: string;
+  afterSha256: string;
+  recordSha256: string;
+  comparatorSha256: string;
+  nativeAcceptanceCredit: false;
+  successorRecordSha256?: string;
+}
+
+export function certifyJsxWitnessChange(
+  file: string,
+  before: Buffer,
+  after: Buffer,
+): JsxWitnessChangeProof {
   const successor = certifyDiscriminatedJsxUnionTransition(file, before, after);
   if (successor)
     return {
       ...successor,
+      nativeAcceptanceCredit: false,
       comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
     };
+  if (
+    file === discriminatedJsxUnionPath &&
+    after.length === 5870 &&
+    digest(after) === discriminatedJsxUnionAfterSha256
+  ) {
+    const predecessor = Buffer.from(beforeDiscriminatedJsxUnion(after.toString("utf8")));
+    const historical = certifyJsxWitnessChange(file, before, predecessor);
+    const current = certifyDiscriminatedJsxUnionTransition(file, predecessor, after);
+    assert.ok(current);
+    return {
+      ...historical,
+      afterSha256: current.afterSha256,
+      successorRecordSha256: current.recordSha256,
+      comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+    };
+  }
   const bytes = readFileSync(recordUrl);
   assert.equal(digest(bytes), recordSha256);
   const record = JSON.parse(bytes.toString());

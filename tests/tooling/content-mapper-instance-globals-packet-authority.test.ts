@@ -31,7 +31,6 @@ test("the original twenty provisional packets retain their complete immutable bo
     legacy,
   );
 });
-
 test("CURRENT cannot relabel the provisional capture or omit planned source coordinates", () => {
   const { authority, files, cases } = readGlobalsFixture();
   const legacy = JSON.parse(files.get("source-packets.json")!);
@@ -59,7 +58,6 @@ test("CURRENT cannot relabel the provisional capture or omit planned source coor
     /every planned packet/u,
   );
 });
-
 test("packet selection rejects foreign paths and byte changes outside its authority", () => {
   const { authority, files, cases } = readGlobalsFixture();
   assert.throws(() =>
@@ -75,7 +73,6 @@ test("packet selection rejects foreign paths and byte changes outside its author
     selectPacketGoldens({ ...authority, currentSourcePackets: undefined }, edited, cases),
   );
 });
-
 test("complete packets cannot qualify omitted or skipped semantic and protocol checks", () => {
   const { files } = readGlobalsFixture();
   const provisional = JSON.parse(files.get("source-packets.json")!) as PacketGoldens;

@@ -77,7 +77,7 @@ export function compilerAttempt(
       assert.deepEqual(parsed.errors, []);
       assert.deepEqual(parsed.warnings, []);
       assert.deepEqual(parsed.macro_artifacts, []);
-      assert.equal(typeof parsed.code, "string", "compiler output code must be a string");
+      assert.ok(typeof parsed.code === "string", "compiler output code must be a string");
       const code = Buffer.from(parsed.code, "utf8");
       observation.codeBase64 = code.toString("base64");
       observation.codeSha256 = sha256(code);
@@ -85,7 +85,7 @@ export function compilerAttempt(
       if (expectedCss === null) {
         assert.equal(parsed.css, null);
       } else {
-        assert.equal(typeof parsed.css, "string", "compiler output css must be a string");
+        assert.ok(typeof parsed.css === "string", "compiler output css must be a string");
         const css = Buffer.from(parsed.css, "utf8");
         observation.cssBase64 = css.toString("base64");
         observation.cssSha256 = sha256(css);

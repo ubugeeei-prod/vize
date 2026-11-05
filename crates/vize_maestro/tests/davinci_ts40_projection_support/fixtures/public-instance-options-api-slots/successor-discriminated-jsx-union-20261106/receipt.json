@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 11964,
+  "predecessor": {
+    "path": "successor-integrated-11964/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "648929d8d9c636e143980a4fc1fb2bbf487701223d9a71f41c9700df692ff360"
+  },
+  "successor": {
+    "path": "successor-discriminated-jsx-union-20261106/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "234dcb12397e78bf1f8b94227d627c94a3d27ba65557dcbe4fc4b9e379f8ac05"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 23,
+    "contentMapperGeneratedTextBytes": 23,
+    "maestroGeneratedTextBytes": 23,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "qualification": {
+    "head": "17cd5ae925afa994999334ad408ab8b1ea59b314",
+    "run": 42101899776,
+    "artifact": {
+      "id": 13448419077,
+      "name": "component-input-packets-head-17cd5ae925afa994999334ad408ab8b1ea59b314-42101899776",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "sha256": "a85bf8e57d50f9f0623fad2a77ee5b6e4525a995e515b74482f62a69bac2da75"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authenticated exact GitHub Actions successor for the discriminated JSX union helper. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+}

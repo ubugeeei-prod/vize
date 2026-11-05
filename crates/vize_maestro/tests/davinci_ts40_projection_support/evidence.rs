@@ -197,6 +197,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
         "fb29a6ea745462c954eb0e7b0b4c008b4c1d5ec8379ec99400ddacaf075e779f",
     );
+    let discriminated_jsx_union_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-discriminated-jsx-union-20261106/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-discriminated-jsx-union-20261106/receipt.json"
+        ),
+        "c9558a5ca5294fd7f59b87ed4264bb64b4ba958f0794910575a132c6174dae0d",
+        11964,
+        integrated_successor,
+        discriminated_jsx_union_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -220,7 +232,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        integrated_successor
+        discriminated_jsx_union_successor
     );
 }
 
@@ -382,6 +394,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
             "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281",
         );
+        let discriminated_jsx_union_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-discriminated-jsx-union-20261106/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-discriminated-jsx-union-20261106/receipt.json"
+            ),
+            "f350590d07f4f46c9089001257916e011619b02d9aa75d018ea481d883b22319",
+            11964,
+            integrated_successor,
+            discriminated_jsx_union_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -395,7 +419,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            integrated_successor
+            discriminated_jsx_union_successor
         );
     }
 }
