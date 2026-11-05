@@ -71,7 +71,7 @@ export async function resolveSfcSrcRequests(
 
 // Necessary for a `src` block; other sources skip the parse (`<img src>` too).
 const SRC_BLOCK_HINT = /<(?:template|script|style)\b[^>]*\ssrc\s*=/i;
-const ATTRIBUTE_RE = /\s+([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gy;
+const ATTRIBUTE_RE = /\s*([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/gy;
 
 type BlockLoc = { start: number; end: number; tagStart: number; tagEnd: number };
 type Block = { loc: BlockLoc; scoped?: boolean; module?: string | null } | null | undefined;
@@ -115,7 +115,8 @@ function splitSrcAttribute(tag: string, openTag: string): { src: string; openTag
   }
   // Leave tags this tokenizer cannot fully read to the compiler.
   if (src === null || consumed !== body.length) return null;
-  return { src, openTag: `${head}${rest}>` };
+  const attributes = rest && !/^\s/u.test(rest) ? ` ${rest}` : rest;
+  return { src, openTag: `${head}${attributes}>` };
 }
 
 function needsContents(kind: BlockKind, block: NonNullable<Block>): string | null {
@@ -166,6 +167,18 @@ function collectSrcBlocks(
     }
   }
   return found;
+}
+
+/** Locate a script or template `src` block using the native SFC ranges. */
+export function findSfcSrcBlock(
+  parseSfc: ParseSfc,
+  filename: string,
+  source: string,
+  tag: "script" | "template",
+): SrcBlock | undefined {
+  return collectSrcBlocks(parseSfc, filename, Buffer.from(source), source).find(
+    (block) => block.tag === tag,
+  );
 }
 
 /** The `src` module requests (not relative paths) of an SFC's blocks, in source order. */

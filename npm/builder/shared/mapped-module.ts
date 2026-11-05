@@ -1,5 +1,6 @@
 import sources from "webpack-sources";
 import { diffChars } from "diff";
+import { findSfcSrcBlock, type ParseSfc } from "./sfc-src.ts";
 
 export interface SourceMapV3 {
   version: number;
@@ -106,25 +107,29 @@ export class MappedModule {
 /** Inline external SFC content while retaining the external file as its source. */
 export function inlineSrcBlock(
   module: MappedModule,
+  parseSfc: ParseSfc,
   block: "script" | "template",
   content: string,
-  filename?: string,
+  options: { filename?: string; sourceFilename?: string } = {},
 ): void {
-  const pattern = new RegExp(
-    `(<${block})([^>]*)\\bsrc=["'][^"']+["']([^>]*>)[\\s\\S]*?(<\\/${block}>)`,
-    "i",
+  const found = findSfcSrcBlock(
+    parseSfc,
+    options.sourceFilename ?? "anonymous.vue",
+    module.code,
+    block,
   );
-  const match = pattern.exec(module.code);
-  if (!match) return;
-  const [, open, beforeSrc, afterSrc, close] = match;
-  const attrs = (beforeSrc + afterSrc).replace(/\bsrc=["'][^"']+["']\s*/g, "");
+  if (!found) return;
+  // Native locations use UTF-8 bytes; webpack-sources edits use UTF-16 indices.
+  const bytes = Buffer.from(module.code);
+  const start = bytes.subarray(0, found.tagStart).toString("utf8").length;
+  const end = bytes.subarray(0, found.tagEnd).toString("utf8").length;
   module.replace(
-    match.index,
-    match.index + match[0].length,
+    start,
+    end,
     new sources.ConcatSource(
-      `${open}${attrs}\n`,
-      filename ? new sources.OriginalSource(content, filename) : content,
-      `\n${close}`,
+      `${found.openTag}\n`,
+      options.filename ? new sources.OriginalSource(content, options.filename) : content,
+      `\n</${block}>`,
     ),
   );
 }

@@ -101,33 +101,68 @@ void test("Vapor aliases reach native and top-level false restores VDOM output",
 });
 
 for (const externalScript of [false, true]) {
-  void test(`source maps survive external ${externalScript ? "script" : "template"} inlining`, (t) => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-map-")));
-    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-    fs.mkdirSync(path.join(root, "src"));
-    const script = 'export default { name: "ExternalProbe" };';
-    fs.writeFileSync(path.join(root, "src", "script.js"), script);
-    fs.writeFileSync(path.join(root, "src", "template.html"), "<div>\n<p>External</p>\n</div>");
-    const sfc =
-      '<template src="./template.html"></template>\n' +
-      (externalScript ? '<script src="./script.js"></script>' : `<script>${script}</script>`);
-    const { code, map } = compileModule({ sourceMap: true }, "development", {
-      source: sfc,
-      rootContext: root,
+  for (const selfClosing of [false, true]) {
+    void test(`source maps survive external ${externalScript ? "script" : "template"} inlining (${selfClosing ? "self-closing" : "paired"})`, (t) => {
+      const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-map-")));
+      t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+      fs.mkdirSync(path.join(root, "src"));
+      const script = 'export default { name: "ExternalProbe" };';
+      fs.writeFileSync(path.join(root, "src", "script.js"), script);
+      fs.writeFileSync(path.join(root, "src", "template.html"), "<div>\n<p>External</p>\n</div>");
+      const sfc =
+        (selfClosing
+          ? '<template src="./template.html" />\n'
+          : '<template src="./template.html"></template>\n') +
+        (externalScript
+          ? selfClosing
+            ? '<script src="./script.js" />'
+            : '<script src="./script.js"></script>'
+          : `<script>${script}</script>`);
+      const { code, map } = compileModule({ sourceMap: true }, "development", {
+        source: sfc,
+        rootContext: root,
+      });
+      assert.ok(map);
+      const offset = code.indexOf("name:");
+      const prefix = code.slice(0, offset);
+      const original = originalPositionFor(new TraceMap(JSON.stringify(map)), {
+        line: prefix.split("\n").length,
+        column: offset - prefix.lastIndexOf("\n") - 1,
+      });
+      assert.equal(
+        original.source,
+        path.join(root, "src", externalScript ? "script.js" : "App.vue"),
+      );
+      assert.equal(original.line, externalScript ? 1 : 2);
+      assert.equal(
+        original.column,
+        script.indexOf("name:") + (externalScript ? 0 : "<script>".length),
+      );
+      assert.ok(map.sourcesContent?.includes(externalScript ? script : sfc));
     });
-    assert.ok(map);
-    const offset = code.indexOf("name:");
-    const prefix = code.slice(0, offset);
-    const original = originalPositionFor(new TraceMap(JSON.stringify(map)), {
-      line: prefix.split("\n").length,
-      column: offset - prefix.lastIndexOf("\n") - 1,
-    });
-    assert.equal(original.source, path.join(root, "src", externalScript ? "script.js" : "App.vue"));
-    assert.equal(original.line, externalScript ? 1 : 2);
-    assert.equal(
-      original.column,
-      script.indexOf("name:") + (externalScript ? 0 : "<script>".length),
-    );
-    assert.ok(map.sourcesContent?.includes(externalScript ? script : sfc));
-  });
+  }
 }
+
+void test("the real loader preserves src decoys while compiling both external blocks", (t) => {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-src-decoy-")));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "src"));
+  const script = 'export default { name: "Actual" };';
+  const template = "<p>Actual template</p>";
+  fs.writeFileSync(path.join(root, "src", "script.js"), script);
+  fs.writeFileSync(path.join(root, "src", "template.html"), template);
+  for (const [source, inlined] of [
+    [
+      '<!-- <script src="./decoy.js"></script> -->\r\n<script src="./script.js" />\r\n<template src="./template.html" />',
+      `<!-- <script src="./decoy.js"></script> -->\r\n<script>\n${script}\n</script>\r\n<template>\n${template}\n</template>`,
+    ],
+    [
+      '<script>export default { decoy: `<template src="./decoy.html"></template>` };</script>\r\n<template src="./template.html" />',
+      `<script>export default { decoy: \`<template src="./decoy.html"></template>\` };</script>\r\n<template>\n${template}\n</template>`,
+    ],
+  ]) {
+    const actual = compileModule({}, "development", { source, rootContext: root });
+    const control = compileModule({}, "development", { source: inlined, rootContext: root });
+    assert.equal(actual.code, control.code);
+  }
+});

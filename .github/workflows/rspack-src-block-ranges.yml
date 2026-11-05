@@ -1,0 +1,48 @@
+name: Rspack external block ranges
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rspack-src-block-ranges.yml"
+      - "npm/builder/shared/**"
+      - "npm/builder/rspack/**"
+      - "npm/native/**"
+permissions: { contents: read }
+concurrency:
+  group: rspack-src-block-ranges-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  source-ranges:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: clippy-test, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install the locked adapter and native dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/rspack...' --filter './npm/native...'
+      - name: Prepare the exact source native image
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          vp run --workspace-root build:native:test
+      - name: Retain original src boundaries, complete modules and source maps
+        run: |
+          node npm/native/scripts/test-preparation.mjs node --test \
+            npm/builder/rspack/src/shared/src-blocks.test.ts \
+            npm/builder/rspack/src/shared/source-map.test.ts \
+            npm/builder/rspack/src/loader/index.test.ts
