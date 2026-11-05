@@ -90,6 +90,76 @@ fn typed_component_method_references_preserve_callable_identity() {
 }
 
 #[test]
+fn component_reference_layout_preserves_authored_typed_syntax() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    for (filename, handler) in [
+        ("component-ref-bare.vue", "foo"),
+        ("component-ref-padded.vue", " foo "),
+        ("component-ref-parenthesized.vue", "(foo)"),
+        ("component-ref-non-null.vue", "foo!"),
+        ("component-ref-as.vue", "foo as Handler"),
+        ("component-ref-satisfies.vue", "foo satisfies Handler"),
+        ("component-ref-assertion.vue", "(<Handler>foo)"),
+        (
+            "component-ref-composite.vue",
+            "(<Handler>foo! as Handler satisfies Handler)",
+        ),
+    ] {
+        let source = format!(
+            r#"<script setup lang="ts">
+declare function Comp(props: {{ onClick?: (event: unknown) => unknown }}): void;
+type Handler = (event: unknown) => unknown;
+declare const foo: unknown;
+</script>
+<template><Comp @click="{handler}" /></template>"#
+        );
+        assert_inline_parity(filename, &source);
+    }
+}
+
+#[test]
+fn transformed_handler_layout_matches_both_production_dom_shapes() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
+        for (filename, source) in [
+            (
+                "dynamic-typed-object-original.vue",
+                include_str!(
+                    "../../../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2514/main.vue"
+                ),
+            ),
+            (
+                "tagged-handler-original.vue",
+                include_str!(
+                    "../../../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/withDotValue/main.vue"
+                ),
+            ),
+        ] {
+            assert_dom_parity(filename, source, shape);
+        }
+        for (filename, handler) in [
+            ("tagged-handler.vue", "helper`foo`"),
+            ("typed-object-handler.vue", "({} as any)"),
+            ("reference-handler.vue", "helper"),
+            ("typed-reference-handler.vue", "helper as any"),
+            ("null-handler.vue", "null"),
+        ] {
+            for (event_case, event) in [("static", "click"), ("dynamic", "[eventName]")] {
+                let source = format!(
+                    r#"<script setup lang="ts">
+import {{ helper }} from './helper';
+let eventName: string | null = null;
+</script>
+<template><button @{event}="{handler}" /></template>"#
+                );
+                let filename = format!("{}-{event_case}-{filename}", shape.id());
+                assert_dom_parity(&filename, &source, shape);
+            }
+        }
+    }
+}
+
+#[test]
 fn typed_options_method_handlers_keep_their_live_cache() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
@@ -174,6 +244,10 @@ function switchOrg() {}
 }
 
 fn assert_inline_parity(filename: &str, source: &str) {
+    assert_dom_parity(filename, source, Shape::DomInline);
+}
+
+fn assert_dom_parity(filename: &str, source: &str, shape: Shape) {
     let descriptor = parse_sfc(
         source,
         SfcParseOptions {
@@ -185,13 +259,12 @@ fn assert_inline_parity(filename: &str, source: &str) {
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let emitted = compile(&descriptor, filename, Shape::DomInline);
+    let emitted = compile(&descriptor, filename, shape);
     let counters = profiler.counter_summary();
     profiler.disable();
     profiler.clear();
-    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-        compile(&descriptor, filename, Shape::DomInline)
-    });
+    let legacy =
+        vize_atelier_dom::differential::with_legacy_lane(|| compile(&descriptor, filename, shape));
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../target/differential/typed-slot-handler-scope");
     std::fs::create_dir_all(&root).expect("whole scope compiler packet directory");
@@ -202,7 +275,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
         .map(|byte| format!("{byte:02x}"))
         .collect::<String>();
     let packet = serde_json::json!({
-        "filename": filename, "source": source, "shape": "dom_inline",
+        "filename": filename, "source": source, "shape": shape.id(),
         "producer": { "executable": executable, "binarySha256": binary_sha256,
             "githubSha": std::env::var("GITHUB_SHA").ok(),
             "argv": std::env::args().collect::<Vec<_>>() },
@@ -210,7 +283,11 @@ fn assert_inline_parity(filename: &str, source: &str) {
         "selectedResult": emitted, "legacyResult": legacy,
     });
     std::fs::write(
-        root.join(format!("{filename}.json")),
+        root.join(if shape == Shape::DomInline {
+            format!("{filename}.json")
+        } else {
+            format!("{filename}.{}.json", shape.id())
+        }),
         serde_json::to_vec_pretty(&packet).expect("complete original compiler outputs"),
     )
     .expect("retain whole actual packet before parity assertion");
