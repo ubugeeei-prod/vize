@@ -217,7 +217,6 @@ function installVueVirtualModules(ts, info) {
           /\.[cm]?[jt]sx?$/i.test(name) &&
           info.project?.projectService?.getScriptInfo?.(name)?.isScriptOpen?.() === true,
       ),
-    readSource,
     project: info.project,
   });
   const replacements = {

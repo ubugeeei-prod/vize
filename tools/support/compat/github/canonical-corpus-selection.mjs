@@ -36,7 +36,7 @@ const inputs = [
   /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/commands\/davinci\//,
-  /^tools\/support\/(?:Cargo\.toml|lib\.rs|editors\/)/,
+  /^tools\/support\/(?:Cargo\.toml|lib\.rs|editors\/|fixtures\/)/,
   /^tools\/support\/common\.rs$/,
   /^tools\/support\/(?:command-runtime|json-value)\.ts$/,
   /^tools\/support\/compat\/davinci\/lib\/(?:corpus-baseline-contract|corpus-baseline-artifact|ordering|paths)\.ts$/,

@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   canonicalMappedGenerated,
+  assertMappedContracts,
   selectSdk,
 } from "../../tools/benchmarks/scripts/canon-slot-constructor-audit.ts";
 import { slotCases } from "../../tools/benchmarks/scripts/canon-slot-constructor-cases.ts";
@@ -32,6 +33,36 @@ function observedDisplay(id: string, kind: "native" | "cli") {
   assert.ok(isRecord(entry) && isRecord(entry[kind]));
   return entry[kind];
 }
+
+test("constructor audit retains all old mappings and requires the complete owned parenthesis pair", () => {
+  const before = { text: "(x)", mappings: [[1, 1, 7, 1, 0, 1048575]] };
+  const after = {
+    text: "(x)",
+    mappings: [
+      [0, 1, 7, 1, 1, 0],
+      [1, 1, 7, 1, 0, 1048575],
+      [2, 1, 7, 1, 1, 0],
+    ],
+  };
+  assertMappedContracts(before, after);
+  for (let index = 0; index < after.mappings.length; index++) {
+    assert.throws(() =>
+      assertMappedContracts(before, {
+        ...after,
+        mappings: after.mappings.filter((_, i) => i !== index),
+      }),
+    );
+    for (let field = 0; field < 6; field++) {
+      const changed = structuredClone(after);
+      changed.mappings[index]![field]! += 1;
+      assert.throws(() => assertMappedContracts(before, changed));
+    }
+  }
+  assert.throws(() =>
+    assertMappedContracts(before, { ...after, mappings: [...after.mappings, [0, 1, 7, 1, 1, 0]] }),
+  );
+  assert.throws(() => assertMappedContracts(before, { ...after, text: "(y)" }));
+});
 
 test("slot constructor audit canonicalizes only the certified required-slot helper rename", () => {
   assert.equal(

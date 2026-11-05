@@ -73,6 +73,10 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
     drop(admitted_beta);
     drop(open(&contract, CONTRACT, &overlays));
     drop(open(&alpha, ALPHA, &overlays));
+    let initial = open(&alpha, ALPHA, &overlays);
+    let initial_config =
+        std::fs::read_to_string(initial.session_config_path.as_ref().unwrap()).unwrap();
+    drop(initial);
     let changed = ALPHA
         .replacen("\r\n", "\r\n// unsaved 雪😀 revision\r\n\r\n", 1)
         .replace("/* 😀 */", "/* 雪😀 changed */");
@@ -107,7 +111,7 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
         assert!(beta_path.is_file());
         let config =
             std::fs::read_to_string(importer.session_config_path.as_ref().unwrap()).unwrap();
-        assert!(config.contains("Beta.tsx"), "{config}");
+        assert_eq!(config, initial_config);
         last_native = native_documents(&importer);
         assert!(last_native.iter().any(|(uri, code)| uri
             == &crate::file_uri::path_to_file_uri(&beta_path)

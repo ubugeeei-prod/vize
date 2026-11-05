@@ -36,7 +36,7 @@ jobs:
         with: { key: clippy-test, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/setup-rust-script
       - name: Install the locked adapter and native dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/rspack...' --filter './npm/native...'
+        run: vp install --frozen-lockfile --prefer-offline --filter '@vizejs/rspack-plugin...' --filter '@vizejs/builder-shared...' --filter '@vizejs/native...'
       - name: Prepare the exact source native image
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
