@@ -34,6 +34,34 @@ fn inverse(current: &str, entry: &Value) -> String {
     authenticate(&previous, &entry["before"]);
     previous
 }
+pub(super) fn source_edits_before(path: &str, mut current: String) -> String {
+    let record = load();
+    let Some(entry) = record["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["path"] == path)
+    else {
+        return current;
+    };
+    for edit in entry["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(current.matches(after).count(), 1);
+        current = current.replacen(after, before, 1);
+    }
+    current
+}
+pub(super) fn preamble_edits_before(mut current: String) -> String {
+    let record = load();
+    for edit in record["preamble"]["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(current.matches(after).count(), 1);
+        current = current.replacen(after, before, 1);
+    }
+    current
+}
 pub(super) fn source_before(path: &str, current: String) -> String {
     let record = load();
     match record["files"]
@@ -70,8 +98,9 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| source_before(path, changed)).is_err());
             }
         }
-        let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        authenticate(&preamble_before(current), &record["preamble"]["before"]);
+        let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let current = super::super::integrated_source::preamble_before_input_and_overload(physical);
+        authenticate(&preamble_before(&current), &record["preamble"]["before"]);
         assert!(std::panic::catch_unwind(|| preamble_before(&format!("{current}\n"))).is_err());
     }
 }

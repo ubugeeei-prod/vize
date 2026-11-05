@@ -70,7 +70,6 @@ fn inverse(current: &str, before: &str, after: &str, bytes: usize, old: &str, ne
 
 pub(super) fn source_before(path: &str, current: String) -> String {
     let current = super::current_loose_emit::source_before(path, current);
-    let current = super::loose_emit_sdk::source_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
@@ -85,9 +84,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    let current = &super::emit_overload_window::preamble_before(current);
     let current = &super::current_loose_emit::preamble_before(current);
-    let current = &super::loose_emit_sdk::preamble_before(current);
     let file = &FILES[0];
     inverse(
         current,
@@ -117,10 +114,9 @@ mod tests {
     #[test]
     fn current_assets_and_preamble_reconstruct_only_the_runtime_prop_call_layer() {
         for file in &FILES {
-            let body = super::super::checker_augmentations::source_before(
-                file.path,
-                std::fs::read_to_string(support::repository().join(file.path)).unwrap(),
-            );
+            let body = std::fs::read_to_string(support::repository().join(file.path)).unwrap();
+            let body = super::super::integrated_source::source_before(file.path, body);
+            let body = super::super::checker_augmentations::source_before(file.path, body);
             assert_eq!(
                 source_before(file.path, body.clone()).replacen(file.before, file.after, 1),
                 body
@@ -145,9 +141,10 @@ mod tests {
             }
         }
         let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        let previous_loose = super::super::loose_emit_sdk::preamble_before(body);
+        let integrated = super::super::integrated_source::preamble_before(body);
+        let previous_loose = super::super::current_loose_emit::preamble_before(&integrated);
         assert_eq!(
-            preamble_before(body).replacen(FILES[0].before, FILES[0].after, 1),
+            preamble_before(&integrated).replacen(FILES[0].before, FILES[0].after, 1),
             previous_loose
         );
     }

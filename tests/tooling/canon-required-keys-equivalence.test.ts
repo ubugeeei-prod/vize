@@ -266,15 +266,17 @@ void test("generated code and helpers only intersect $EmitRequiredFields, never 
 function requiredFieldSources(file: string, text: string): string[] {
   return jsonRequiredFieldSources(file, text).flatMap((source) => {
     const decoded: string[] = [];
-    const packet = file.endsWith(".snap") ? source.replace(
-      /^(\s*code: )("(?:[^"\\]|\\.)*")(,\s*)$/gmu,
-      (_whole, prefix: string, literal: string, suffix: string) => {
-        const value: unknown = JSON.parse(literal);
-        assert.equal(typeof value, "string", `${file}: complete generated code`);
-        decoded.push(value as string);
-        return `${prefix}""${suffix}`;
-      },
-    ) : source;
+    const packet = file.endsWith(".snap")
+      ? source.replace(
+          /^(\s*code: )("(?:[^"\\]|\\.)*")(,\s*)$/gmu,
+          (_whole, prefix: string, literal: string, suffix: string) => {
+            const value: unknown = JSON.parse(literal);
+            assert.equal(typeof value, "string", `${file}: complete generated code`);
+            decoded.push(value as string);
+            return `${prefix}""${suffix}`;
+          },
+        )
+      : source;
     return [packet, ...decoded];
   });
 }

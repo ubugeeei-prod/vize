@@ -21,6 +21,8 @@ export function isProjectionSourcePath(file) {
     file === "tools/support/compat/content-mapper/constructor-projection-receipt.ts" ||
     file === "tools/support/compat/content-mapper/projection-byte-relocation.ts" ||
     file === "tools/support/compat/content-mapper/owned-emit-overload-transition.ts" ||
+    file === "tools/support/compat/content-mapper/component-constructor-transition.ts" ||
+    file === "tools/support/compat/content-mapper/component-export-transition.ts" ||
     file === "tools/support/compat/content-mapper/canonical-helper-transition.ts" ||
     file === "tools/support/compat/content-mapper/producer-unmapped-ignores.ts" ||
     file.endsWith(".rs") ||

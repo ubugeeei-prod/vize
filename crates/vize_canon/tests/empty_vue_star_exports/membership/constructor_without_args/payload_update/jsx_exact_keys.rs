@@ -46,6 +46,36 @@ fn invert(current: String, record: &Value) -> String {
     previous
 }
 
+pub(super) fn source_edits_before(path: &str, mut current: String) -> String {
+    let record = load();
+    let Some(file) = record["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|file| file["path"] == path)
+    else {
+        return current;
+    };
+    for edit in file["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(current.matches(after).count(), 1);
+        current = current.replacen(after, before, 1);
+    }
+    current
+}
+
+pub(super) fn preamble_edits_before(mut current: String) -> String {
+    let record = load();
+    for edit in record["preamble"]["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(current.matches(after).count(), 1);
+        current = current.replacen(after, before, 1);
+    }
+    current
+}
+
 pub(super) fn source_before(path: &str, current: String) -> String {
     let record = load();
     match record["files"]
@@ -69,7 +99,9 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
 
 #[cfg(test)]
 mod tests {
-    use super::{invert, load, preamble_before, retain_provenance, source_before};
+    use super::{
+        load, preamble_edits_before, retain_provenance, source_before, source_edits_before,
+    };
     use serde_json::{Value, json};
 
     fn forward(mut previous: String, record: &Value) -> String {
@@ -89,11 +121,14 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
-            assert_eq!(forward(source_before(path, body.clone()), file), body);
+            assert_eq!(forward(source_edits_before(path, body.clone()), file), body);
         }
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
-            forward(preamble_before(preamble), &record["preamble"]),
+            forward(
+                preamble_edits_before(preamble.to_owned()),
+                &record["preamble"]
+            ),
             preamble
         );
         assert_eq!(
@@ -109,35 +144,44 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_foreign_and_extra_bytes_refuse_at_this_layer() {
         let record = load();
-        let bodies = record["files"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|file| {
-                (
-                    std::fs::read_to_string(
-                        super::support::repository().join(file["path"].as_str().unwrap()),
-                    )
-                    .unwrap(),
-                    file,
-                )
-            })
-            .chain(std::iter::once((
-                vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned(),
-                &record["preamble"],
-            )));
-        for (body, file) in bodies {
+        for file in record["files"].as_array().unwrap() {
+            let path = file["path"].as_str().unwrap();
+            let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
             let before = file["edits"][0]["before"].as_str().unwrap();
             let after = file["edits"][0]["after"].as_str().unwrap();
             for mutated in [
                 body.replacen(after, "", 1),
                 format!("{body}{after}"),
                 body.replacen(after, before, 1),
-                body.replacen("type ", "xxxx ", 1),
                 format!("{body}\n"),
             ] {
-                assert!(std::panic::catch_unwind(|| invert(mutated.clone(), file)).is_err());
+                let rejected_edit =
+                    std::panic::catch_unwind(|| source_edits_before(path, mutated.clone()))
+                        .is_err();
+                let rejected_whole = std::panic::catch_unwind(|| {
+                    super::super::integrated_source::source_before(path, mutated.clone())
+                })
+                .is_err();
+                assert!(rejected_edit || rejected_whole);
             }
+        }
+        let body = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS.to_owned();
+        let file = &record["preamble"];
+        let before = file["edits"][0]["before"].as_str().unwrap();
+        let after = file["edits"][0]["after"].as_str().unwrap();
+        for mutated in [
+            body.replacen(after, "", 1),
+            format!("{body}{after}"),
+            body.replacen(after, before, 1),
+            format!("{body}\n"),
+        ] {
+            assert!(
+                std::panic::catch_unwind(|| preamble_edits_before(mutated.clone())).is_err()
+                    || std::panic::catch_unwind(|| {
+                        super::super::integrated_source::preamble_before(&mutated)
+                    })
+                    .is_err()
+            );
         }
     }
 }

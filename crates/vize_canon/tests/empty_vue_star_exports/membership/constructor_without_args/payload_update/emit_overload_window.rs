@@ -2,7 +2,7 @@
 use super::support;
 use serde_json::{Value, json};
 
-const GLOBALS_BEFORE: &str = r#"  // Emit-overload helpers (consumed by the per-file __EmitProps alias)
+pub(super) const GLOBALS_BEFORE: &str = r#"  // Emit-overload helpers (consumed by the per-file __EmitProps alias)
 
   type $OverloadProps<TOverload> = Pick<TOverload, keyof TOverload>;
   // One inference per step; repeating one means a generic overload is stuck.
@@ -59,17 +59,17 @@ const GLOBALS_BEFORE: &str = r#"  // Emit-overload helpers (consumed by the per-
 
   // Compiler-macro signatures (aliased inside each module's __setup() scope)
 "#;
-const GLOBALS_AFTER: &str =
+pub(super) const GLOBALS_AFTER: &str =
     "  // Compiler-macro signatures (aliased inside each module's __setup() scope)\n";
 const ENTRY_BEFORE: &str =
     "import type {} from \"./virtual-ts-patterns.js\" with { \"resolution-mode\": \"import\" };\n";
 const ENTRY_AFTER: &str = r#"import type {} from "./virtual-ts-patterns.js" with { "resolution-mode": "import" };
 import type {} from "./virtual-ts-emit-overloads.js" with { "resolution-mode": "import" };
 "#;
-const GENERATOR_BEFORE: &str = r#"
+pub(super) const GENERATOR_BEFORE: &str = r#"
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
 "#;
-const GENERATOR_AFTER: &str = r#"// The published emit-overload helpers are the canonical asset, declared globally.
+pub(super) const GENERATOR_AFTER: &str = r#"// The published emit-overload helpers are the canonical asset, declared globally.
 const emitOverloads = await format(
   "virtual-ts-emit-overloads.d.ts",
   "// Generated from the canonical emit-overload helpers. Do not edit.\ndeclare global {\n" +
@@ -82,12 +82,12 @@ outputs.set("npm/cli/virtual-ts-emit-overloads.d.ts", emitOverloads.code);
 
 // The checked-in virtual-ts exports predate the canonical zero-call policy.
 "#;
-const MANIFEST_BEFORE: &str = "    \"virtual-ts-globals.d.ts\",\n";
-const MANIFEST_AFTER: &str = r#"    "virtual-ts-emit-overloads.d.ts",
+pub(super) const MANIFEST_BEFORE: &str = "    \"virtual-ts-globals.d.ts\",\n";
+pub(super) const MANIFEST_AFTER: &str = r#"    "virtual-ts-emit-overloads.d.ts",
     "virtual-ts-globals.d.ts",
 "#;
-const ASSET_BEFORE: &str = "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;\n";
-const ASSET_AFTER: &str = "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never> = TDepth['length'] extends 120 ? TAccumulated : TOverload extends unknown ? TPartialOverload extends TOverload ? TAccumulated : TPartialOverload & TOverload extends { (...args: infer A0): infer R0; (...args: infer A1): infer R1; (...args: infer A2): infer R2; (...args: infer A3): infer R3; (...args: infer A4): infer R4; (...args: infer A5): infer R5; (...args: infer A6): infer R6; (...args: infer A7): infer R7; } ? (<G>() => G extends TAccumulated ? 1 : 2) extends <G>() => G extends | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7) ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TOverload, TPartialOverload & ((...args: A0) => R0) & ((...args: A1) => R1) & ((...args: A2) => R2) & ((...args: A3) => R3) & ((...args: A4) => R4) & ((...args: A5) => R5) & ((...args: A6) => R6) & ((...args: A7) => R7) & $OverloadProps<TOverload>, [...TDepth, unknown], | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7)> : TAccumulated : never;\n";
+pub(super) const ASSET_BEFORE: &str = "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never, TLast = never> = TDepth['length'] extends 900 ? TAccumulated : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? TAccumulated : (<G>() => G extends (...args: TArgs) => TReturn ? 1 : 2) extends <G>() => G extends TLast ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload> & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown], TAccumulated | ((...args: TArgs) => TReturn), (...args: TArgs) => TReturn> : TAccumulated;\n";
+pub(super) const ASSET_AFTER: &str = "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = [], TAccumulated = never> = TDepth['length'] extends 120 ? TAccumulated : TOverload extends unknown ? TPartialOverload extends TOverload ? TAccumulated : TPartialOverload & TOverload extends { (...args: infer A0): infer R0; (...args: infer A1): infer R1; (...args: infer A2): infer R2; (...args: infer A3): infer R3; (...args: infer A4): infer R4; (...args: infer A5): infer R5; (...args: infer A6): infer R6; (...args: infer A7): infer R7; } ? (<G>() => G extends TAccumulated ? 1 : 2) extends <G>() => G extends | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7) ? 1 : 2 ? TAccumulated : $OverloadUnionRecursive<TOverload, TPartialOverload & ((...args: A0) => R0) & ((...args: A1) => R1) & ((...args: A2) => R2) & ((...args: A3) => R3) & ((...args: A4) => R4) & ((...args: A5) => R5) & ((...args: A6) => R6) & ((...args: A7) => R7) & $OverloadProps<TOverload>, [...TDepth, unknown], | TAccumulated | ((...args: A0) => R0) | ((...args: A1) => R1) | ((...args: A2) => R2) | ((...args: A3) => R3) | ((...args: A4) => R4) | ((...args: A5) => R5) | ((...args: A6) => R6) | ((...args: A7) => R7)> : TAccumulated : never;\n";
 const PREAMBLE_BEFORE_BYTES: usize = 44748;
 const PREAMBLE_BEFORE_SHA: &str =
     "378516f3c59cecb166ab9197761b77679824ea7145efd84d752bf5afd3060b07";
@@ -259,15 +259,17 @@ mod tests {
     #[test]
     fn current_files_and_preamble_reconstruct_only_the_emit_overload_window_layer() {
         for file in &FILES {
-            let body = current(file.path);
-            let prior = source_before(file.path, body.clone());
-            assert_eq!(prior.replacen(file.before, file.after, 1), body);
+            let physical = current(file.path);
+            let integrated = super::super::integrated_source::source_before(file.path, physical);
+            let prior = super::super::checker_augmentations::source_before(file.path, integrated);
+            let body = prior.replacen(file.before, file.after, 1);
+            assert_eq!(source_before(file.path, body), prior);
         }
-        let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        assert_eq!(
-            preamble_before(preamble).replacen(super::ASSET_BEFORE, super::ASSET_AFTER, 1),
-            preamble
-        );
+        let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let integrated = super::super::integrated_source::preamble_before(physical);
+        let prior = super::super::current_loose_emit::preamble_before(&integrated);
+        let preamble = prior.replacen(super::ASSET_BEFORE, super::ASSET_AFTER, 1);
+        assert_eq!(preamble_before(&preamble), prior);
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
@@ -278,7 +280,10 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
-            let body = current(file.path);
+            let physical = current(file.path);
+            let integrated = super::super::integrated_source::source_before(file.path, physical);
+            let prior = super::super::checker_augmentations::source_before(file.path, integrated);
+            let body = prior.replacen(file.before, file.after, 1);
             for mutated in [
                 body.replacen(file.after, "", 1),
                 format!("{body}{}", file.after),

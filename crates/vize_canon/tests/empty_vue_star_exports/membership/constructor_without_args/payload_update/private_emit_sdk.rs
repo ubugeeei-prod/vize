@@ -45,6 +45,26 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     };
     inverse(&current, entry)
 }
+pub(super) fn source_edits_before(path: &str, current: String) -> String {
+    let current = super::generic_event_specialization::source_edits_before(path, current);
+    let record = load();
+    let Some(entry) = record["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["path"] == path)
+    else {
+        return current;
+    };
+    let mut previous = current;
+    for edit in entry["edits"].as_array().unwrap() {
+        let before = edit["before"].as_str().unwrap();
+        let after = edit["after"].as_str().unwrap();
+        assert_eq!(previous.matches(after).count(), 1);
+        previous = previous.replacen(after, before, 1);
+    }
+    previous
+}
 fn inverse(current: &str, entry: &Value) -> String {
     authenticate(current, &entry["after"]);
     let mut previous = current.to_owned();
@@ -69,6 +89,7 @@ mod tests {
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::integrated_source::overload_before(path, current);
             authenticate(&source_before(path, current.clone()), &entry["before"]);
             for changed in [format!("{current}\n"), format!("{current}{current}")] {
                 assert!(std::panic::catch_unwind(|| source_before(path, changed)).is_err());

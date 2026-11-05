@@ -31,6 +31,13 @@ const TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
   ],
 ];
 
+const previousOverloadPath = "tests/tooling/fixtures/emit-overload-transition/before.d.ts.txt";
+const currentOverloadPath =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
+const previousOverloadSha256 = "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5";
+const currentOverloadSha256 = "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74";
+const overloadPrefix = "type $OverloadUnionRecursive<";
+
 export const AUTHENTICATED_PREAMBLE_BYTES = 44_748;
 export const AUTHENTICATED_PREAMBLE_SHA256 =
   "378516f3c59cecb166ab9197761b77679824ea7145efd84d752bf5afd3060b07";
@@ -70,6 +77,50 @@ const identity = (text: string): Identity => ({
   bytes: Buffer.byteLength(text),
   sha256: createHash("sha256").update(text).digest("hex"),
 });
+
+function authenticatedOverloadAliases(read: (file: string) => string) {
+  const selected = (file: string, expected: string) => {
+    const text = read(file);
+    assert.equal(identity(text).sha256, expected, `authenticated overload asset: ${file}`);
+    const lines = text.split("\n").filter((line) => line.startsWith(overloadPrefix));
+    assert.equal(lines.length, 1, `one recursive overload alias: ${file}`);
+    return lines[0]!;
+  };
+  return {
+    previous: selected(previousOverloadPath, previousOverloadSha256),
+    current: selected(currentOverloadPath, currentOverloadSha256),
+  };
+}
+
+/** Advance the immutable slot evidence to the authenticated PR-base overload helper. */
+export function applyPreviousOverloadPreamble(
+  historical: string,
+  read = (file: string) => fs.readFileSync(file, "utf8"),
+) {
+  const { previous, current } = authenticatedOverloadAliases(read);
+  const historicalAliases = historical
+    .split("\n")
+    .filter((line) => line.startsWith(overloadPrefix));
+  assert.equal(historicalAliases.length, 1, "one historical recursive overload alias");
+  const original = historicalAliases[0]!;
+  assert.notEqual(original, previous);
+  assert.notEqual(original, current);
+  assert.equal(historical.split(original).length, 2);
+  assert.equal(historical.includes(previous), false);
+  assert.equal(historical.includes(current), false);
+  return historical.replace(original, previous);
+}
+
+/** Apply the separately certified overload-helper successor after other preamble certificates. */
+export function applyCurrentOverloadPreamble(
+  previousPreamble: string,
+  read = (file: string) => fs.readFileSync(file, "utf8"),
+) {
+  const { previous, current } = authenticatedOverloadAliases(read);
+  assert.equal(previousPreamble.split(previous).length, 2);
+  assert.equal(previousPreamble.includes(current), false);
+  return previousPreamble.replace(previous, current);
+}
 
 /** Advance only the already certified emit-helper layout for the current source CLI. */
 export function applyCurrentEmitPreamble(

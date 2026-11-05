@@ -138,12 +138,18 @@ export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
   assert.equal(sha256(oracle.historical.inference), oracle.historical.inferenceSha256);
   for (const [path, expected] of Object.entries(oracle.current.sourceHashes)) {
     assert.equal(
-      sha256(historicalProducer(
-        read,
-        path,
-        beforeGenericEventSpecialization(read, path, beforeStaticListenerSource(read, path, read(path))),
-        expected,
-      )),
+      sha256(
+        historicalProducer(
+          read,
+          path,
+          beforeGenericEventSpecialization(
+            read,
+            path,
+            beforeStaticListenerSource(read, path, read(path)),
+          ),
+          expected,
+        ),
+      ),
       expected,
       `selected emit gate producer: ${path}`,
     );

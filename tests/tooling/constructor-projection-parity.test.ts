@@ -6,6 +6,11 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { certifyJsxWitnessChange } from "../../tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts";
 import {
+  certifyComponentConstructorTransition,
+  componentConstructorTransitions,
+} from "../../tools/support/compat/content-mapper/component-constructor-transition.ts";
+import { certifyComponentExportTransition } from "../../tools/support/compat/content-mapper/component-export-transition.ts";
+import {
   canonicalPaths,
   comparePackets,
   currentSlotsExport,
@@ -25,6 +30,101 @@ import {
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
 const bytes = (text: string) => Buffer.byteLength(text);
+
+test("component constructor transitions retain the two complete reviewed variants", () => {
+  for (const { previous, current } of componentConstructorTransitions) {
+    const before = Buffer.from(previous);
+    const after = Buffer.from(current);
+    const certificate = certifyComponentConstructorTransition(before, after);
+    assert.ok(certificate);
+    assert.deepEqual(
+      Buffer.concat([
+        before.subarray(0, certificate.start),
+        certificate.replacement,
+        before.subarray(certificate.end),
+      ]),
+      after,
+    );
+    assert.equal(certifyComponentConstructorTransition(before, before), undefined);
+    assert.equal(certifyComponentConstructorTransition(after, after), undefined);
+    assert.throws(
+      () =>
+        certifyComponentConstructorTransition(
+          before,
+          Buffer.from(current.replace("$JsxProps", "$Changed")),
+        ),
+      assert.AssertionError,
+    );
+  }
+});
+
+test("component export naming retains the complete generated body", () => {
+  const body = "{ readonly label: '日本'; } & Constructor";
+  const before = Buffer.from(
+    `declare const __vize_component__: ${body}\ndeclare const Constructor: typeof __vize_component__;\nexport default Constructor;`,
+  );
+  const after = Buffer.from(
+    `type ConstructorComponent = ${body}\ndeclare const __vize_component__: ConstructorComponent;\ndeclare const ConstructorVueComponent: typeof __vize_component__;\nexport default ConstructorVueComponent;`,
+  );
+  const certificate = certifyComponentExportTransition(before, after);
+  assert.ok(certificate);
+  let cursor = 0;
+  const fragments = [];
+  for (const edit of certificate.edits) {
+    fragments.push(before.subarray(cursor, edit.start), edit.replacement);
+    cursor = edit.end;
+  }
+  fragments.push(before.subarray(cursor));
+  assert.deepEqual(Buffer.concat(fragments), after);
+  assert.deepEqual(certificate.addedMapping, [
+    after.indexOf(
+      "ConstructorVueComponent",
+      after.indexOf("declare const ConstructorVueComponent"),
+    ),
+    23,
+    0,
+    0,
+    1,
+    248,
+  ]);
+  const typed = Buffer.from(
+    `type ConstructorComponent = ${body}\ndeclare const __vize_component__: ConstructorComponent;\ndeclare const Constructor: typeof __vize_component__;\nexport default Constructor;`,
+  );
+  const typedCertificate = certifyComponentExportTransition(before, typed);
+  assert.ok(typedCertificate);
+  assert.deepEqual(typedCertificate.addedMapping, [
+    typed.indexOf("Constructor", typed.indexOf("declare const Constructor:")),
+    11,
+    0,
+    0,
+    1,
+    248,
+  ]);
+  cursor = 0;
+  const typedFragments = [];
+  for (const edit of typedCertificate.edits) {
+    typedFragments.push(before.subarray(cursor, edit.start), edit.replacement);
+    cursor = edit.end;
+  }
+  typedFragments.push(before.subarray(cursor));
+  assert.deepEqual(Buffer.concat(typedFragments), typed);
+  assert.equal(
+    certifyComponentExportTransition(
+      Buffer.from("declare const __vize_component__: Existing;"),
+      Buffer.from("declare const __vize_component__: Existing;"),
+    ),
+    undefined,
+  );
+  assert.equal(certifyComponentExportTransition(before, before), undefined);
+  assert.throws(
+    () =>
+      certifyComponentExportTransition(
+        before,
+        Buffer.from(after.toString().replace("日本", "changed")),
+      ),
+    assert.AssertionError,
+  );
+});
 
 test("only the complete reviewed JSX witness source transition can change canonical helpers", () => {
   const file = "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt";

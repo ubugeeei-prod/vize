@@ -47,6 +47,7 @@ mod tests {
     #[test]
     fn current_globals_reconstruct_only_the_checker_augmentations_layer() {
         let body = current(PATH);
+        let body = super::super::integrated_source::source_before(PATH, body);
         assert_eq!(
             source_before(PATH, body.clone()).replacen(BEFORE, AFTER, 1),
             body
@@ -61,6 +62,7 @@ mod tests {
     #[test]
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         let body = current(PATH);
+        let body = super::super::integrated_source::source_before(PATH, body);
         for mutated in [
             body.replacen(AFTER, "", 1),
             format!("{body}{AFTER}"),

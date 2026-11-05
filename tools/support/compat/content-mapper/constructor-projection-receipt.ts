@@ -66,6 +66,8 @@ export function writeConstructorProjectionReceipt(
         "constructor-projection-receipt.ts",
         "projection-byte-relocation.ts",
         "owned-emit-overload-transition.ts",
+        "component-constructor-transition.ts",
+        "component-export-transition.ts",
         "canonical-helper-transition.ts",
         "producer-unmapped-ignores.ts",
       ].map((file) => [file, digest(readFileSync(path.join(path.dirname(comparatorPath), file)))]),

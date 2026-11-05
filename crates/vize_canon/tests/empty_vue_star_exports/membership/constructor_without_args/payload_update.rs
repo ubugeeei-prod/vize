@@ -12,6 +12,7 @@ mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;
 mod input_channels;
+mod integrated_source;
 mod jsx_exact_keys;
 mod loose_emit_sdk;
 mod private_emit_sdk;
@@ -173,6 +174,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     loose_emit_sdk::retain_provenance(manifest);
     private_emit_sdk::retain_provenance(manifest);
     generic_event_specialization::retain_provenance(manifest);
+    integrated_source::retain_provenance(manifest);
 }
 
 #[cfg(test)]

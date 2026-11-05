@@ -43,6 +43,8 @@ on:
       - "tools/support/compat/content-mapper/constructor-projection-receipt.ts"
       - "tools/support/compat/content-mapper/projection-byte-relocation.ts"
       - "tools/support/compat/content-mapper/owned-emit-overload-transition.ts"
+      - "tools/support/compat/content-mapper/component-constructor-transition.ts"
+      - "tools/support/compat/content-mapper/component-export-transition.ts"
       - "tools/support/compat/content-mapper/canonical-helper-transition.ts"
       - "tools/support/compat/content-mapper/producer-unmapped-ignores.ts"
       - "tools/support/release/computed_event_names.ts"

@@ -1,10 +1,7 @@
 {
   "version": 1,
   "pullRequest": 11964,
-  "sourcePullRequests": [
-    11919,
-    11951
-  ],
+  "sourcePullRequests": [11919, 11951],
   "predecessors": {
     "main": {
       "path": "successor-owned-constructor-20261105/projection-record.txt",

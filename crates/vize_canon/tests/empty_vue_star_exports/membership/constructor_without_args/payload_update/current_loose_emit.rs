@@ -26,6 +26,7 @@ fn load() -> Value {
     for (entry, path) in record["files"].as_array().unwrap().iter().zip(PATHS) {
         assert_eq!(entry["path"], path);
         let current = fs::read_to_string(support::repository().join(path)).unwrap();
+        let current = super::integrated_source::source_before(path, current);
         authenticate(&current, &entry["after"]);
     }
     record
@@ -84,6 +85,7 @@ mod tests {
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::integrated_source::source_before(path, current);
             authenticate(&source_before(path, current.clone()), &entry["before"]);
             let before = entry["edits"][0]["before"].as_str().unwrap();
             let after = entry["edits"][0]["after"].as_str().unwrap();
@@ -96,8 +98,9 @@ mod tests {
                 assert!(std::panic::catch_unwind(|| source_before(path, mutation)).is_err());
             }
         }
-        let current = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
-        let previous = preamble_before(current);
+        let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let current = super::super::integrated_source::preamble_before(physical);
+        let previous = preamble_before(&current);
         assert_eq!(preamble_after(&previous), current);
         let edit = &record["preamble"]["edits"][0];
         let after = edit["after"].as_str().unwrap();

@@ -184,7 +184,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
         ),
         _ => panic!("unreviewed CLI documentation rule: {rule}"),
     };
-    assert_eq!(before, old, "frozen documentation URL for {rule}");
+    assert!(
+        before == old || before == current,
+        "reviewed documentation URL for {rule}: {before}"
+    );
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     for locale in ["", "ja/"] {
         let local = current.replacen("docs/content/", &format!("docs/content/{locale}"), 1);

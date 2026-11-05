@@ -7,6 +7,8 @@ import { slotCliPacket } from "../../tools/benchmarks/scripts/canon-slot-provide
 import {
   AUTHENTICATED_PREAMBLE_BYTES,
   AUTHENTICATED_PREAMBLE_SHA256,
+  applyCurrentOverloadPreamble,
+  applyPreviousOverloadPreamble,
   applySourceOwnedPreambleTransitions,
   applyCurrentEmitPreamble,
 } from "../../tools/benchmarks/scripts/canon-slot-provider-preamble.ts";
@@ -46,7 +48,7 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     .split("\n")[1];
   assert.ok(oldAlias !== undefined && currentAlias !== undefined);
   const previousPreamble = applySourceOwnedPreambleTransitions(
-    historical.replace(oldAlias, currentAlias),
+    applyPreviousOverloadPreamble(historical),
   );
   assert.notEqual(previousPreamble, historical);
   assert.equal(Buffer.byteLength(previousPreamble), AUTHENTICATED_PREAMBLE_BYTES);
@@ -113,6 +115,8 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     beforeGenericEventPreamble((file) => fs.readFileSync(file, "utf8"), successorPreamble),
     currentPreamble,
   );
+  const currentSourcePreamble = applyCurrentOverloadPreamble(successorPreamble);
+  assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
   for (const changed of [
     genericEventRecordPath,
     "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
@@ -131,13 +135,14 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     }
   }
   const stderr = Buffer.from(
-    `\n=== __vize_helpers.d.ts ===\n${successorPreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
+    `\n=== __vize_helpers.d.ts ===\n${currentSourcePreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
   );
   assert.deepEqual(slotCliPacket({ stdout, stderr, status: 0 }, project).diagnostics, []);
   for (const altered of [
-    Buffer.from(stderr.toString("utf8").replace(successorPreamble, currentPreamble)),
-    Buffer.from(stderr.toString("utf8").replace(successorPreamble, historical)),
-    Buffer.from(stderr.toString("utf8").replace(successorPreamble, previousPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, currentPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, successorPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, historical)),
+    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, previousPreamble)),
     Buffer.concat([Buffer.from("unknown warning\n"), stderr]),
     Buffer.concat([stderr, Buffer.from("unknown error\n")]),
     stderr.subarray(1),
