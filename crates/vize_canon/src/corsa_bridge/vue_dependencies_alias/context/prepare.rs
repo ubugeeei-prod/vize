@@ -81,6 +81,7 @@ impl AliasContext {
                 options,
                 environment,
             )?;
+            prepared.refresh_live_overlays = true;
             prepared.materialized_changes = environment
                 .editor_session
                 .cache()
@@ -138,6 +139,7 @@ impl AliasContext {
                 source_catalog,
                 context,
                 materialized_changes: Default::default(),
+                refresh_live_overlays: false,
             });
         }
         // A revision prepared outside the native transaction is adopted only
@@ -217,11 +219,12 @@ impl AliasContext {
                     }),
                 context,
                 materialized_changes: Default::default(),
+                refresh_live_overlays: false,
             });
         }
         let materialize_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_materialize", 1);
-        let (materialized_changes, source_catalog) =
+        let (materialized_changes, source_catalog, refresh_live_overlays) =
             super::prepare_materialize::materialize_cached_revision(
                 &mut context,
                 &mut cache,
@@ -240,6 +243,7 @@ impl AliasContext {
             context,
             materialized_changes,
             source_catalog,
+            refresh_live_overlays,
         })
     }
 }

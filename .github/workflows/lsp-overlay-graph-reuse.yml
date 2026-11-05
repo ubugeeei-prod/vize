@@ -93,7 +93,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json > "$OBSERVATION_ROOT/after-build.jsonl" 2> "$OBSERVATION_ROOT/after-build.stderr"
-          cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_dependencies_alias::context::cache:: -- --test-threads=1 > "$OBSERVATION_ROOT/cache.stdout" 2> "$OBSERVATION_ROOT/cache.stderr"
+          cargo test --locked --profile ci -p vize_canon --lib -- corsa_bridge::vue_dependencies_alias::context::cache:: corsa_bridge::vue_document::build::tests::native_union:: corsa_bridge::vue_document_package_tests::union:: corsa_bridge::vue_document_package_tests::symlink_workspace:: --test-threads=1 > "$OBSERVATION_ROOT/cache.stdout" 2> "$OBSERVATION_ROOT/cache.stderr"
           node --input-type=module -e 'import fs from "node:fs"; const rows=fs.readFileSync(process.env.OBSERVATION_ROOT+"/after-build.jsonl","utf8").trim().split("\n").map(JSON.parse); const executable=rows.findLast(row=>row.reason==="compiler-artifact" && row.target.name==="vize_canon" && row.profile.test && row.executable)?.executable; if(!executable) throw new Error("missing exact candidate test executable"); fs.writeFileSync(process.env.OBSERVATION_ROOT+"/after-executable.txt",executable);'
           executable=$(cat "$OBSERVATION_ROOT/after-executable.txt")
           sha256sum "$executable" > "$OBSERVATION_ROOT/after-executable.sha256"

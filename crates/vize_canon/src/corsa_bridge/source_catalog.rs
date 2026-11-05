@@ -109,6 +109,30 @@ impl CorsaSourceCatalog {
         }
     }
 
+    /// Preserve the outgoing open-root packet across an overlay epoch without
+    /// joining independent source graphs or copying their closed dependencies.
+    pub(in crate::corsa_bridge) fn extend_open_project_document_batch(
+        &self,
+        root: &Path,
+        overlays: &FxHashMap<PathBuf, &str>,
+        documents: &mut super::vue_document::CorsaNativeDocumentBatch,
+    ) {
+        let mut opened = documents
+            .iter()
+            .map(|(uri, _)| uri.clone())
+            .collect::<FxHashSet<_>>();
+        for source in self.native_members.iter().filter(|source| {
+            source.materialized_path.starts_with(root)
+                && overlays.contains_key(&source.source_path)
+                && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
+        }) {
+            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
+            if opened.insert(uri.clone()) {
+                documents.push((uri, source.code.clone()));
+            }
+        }
+    }
+
     pub(in crate::corsa_bridge) fn include(&self, sources: Vec<CorsaMaterializedSource>) -> Self {
         let mut retained = recover_lock(&self.sources);
         if sources.iter().any(|source| {

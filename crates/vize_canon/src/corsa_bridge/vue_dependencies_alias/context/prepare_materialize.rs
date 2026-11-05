@@ -19,9 +19,13 @@ pub(super) fn materialize_cached_revision(
     (
         crate::batch::virtual_project::MaterializedFileDelta,
         crate::corsa_bridge::CorsaSourceCatalog,
+        bool,
     ),
     super::super::super::types::CorsaBridgeError,
 > {
+    let refresh_live_overlays = context.mirror.as_ref().is_some_and(|mirror| {
+        cache.project_overlay_epoch_changed(mirror.virtual_root(), fingerprint.overlay_identity())
+    });
     let mut materialized_changes = Default::default();
     let mut source_catalog = Default::default();
     let previous = context
@@ -41,6 +45,7 @@ pub(super) fn materialize_cached_revision(
         && previous.as_ref().is_some_and(|previous| {
             context.mirror.as_ref().is_some_and(|mirror| {
                 cache.has_project_overlay_epoch(mirror.virtual_root())
+                    && cache.has_project_member(mirror.virtual_root(), &revision)
                     && mirror.fingerprint_hit_is_file_patch(previous)
             })
         });
@@ -50,7 +55,7 @@ pub(super) fn materialize_cached_revision(
         context.materialized_sources()
     };
     let Some(mirror) = context.mirror.as_mut() else {
-        return Ok((materialized_changes, source_catalog));
+        return Ok((materialized_changes, source_catalog, refresh_live_overlays));
     };
     let previous = previous.unwrap_or_default();
     mirror.restore_editor_package_links(&previous);
@@ -100,5 +105,5 @@ pub(super) fn materialize_cached_revision(
             requires_arbitrary_extensions: mirror.requires_arbitrary_extensions(),
         },
     );
-    Ok((materialized_changes, source_catalog))
+    Ok((materialized_changes, source_catalog, refresh_live_overlays))
 }

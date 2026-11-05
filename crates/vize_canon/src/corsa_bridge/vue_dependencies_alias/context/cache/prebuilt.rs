@@ -52,17 +52,18 @@ impl SessionCache {
             .source_catalog(virtual_root)
             .current_overlay_sources(overlays);
         let mut observed = crate::package_route::stamp::InputStampValidation::default();
-        let stale = if self.trust_watched_disk_inputs {
-            Default::default()
-        } else {
-            self.project_members
-                .get(virtual_root)
-                .into_iter()
-                .flat_map(|members| members.values())
-                .filter(|member| !member.fingerprint.stamps_still_valid(&mut observed))
-                .flat_map(|member| member.source_paths.iter().cloned())
-                .collect::<vize_carton::FxHashSet<_>>()
-        };
+        let stale = self
+            .project_members
+            .get(virtual_root)
+            .into_iter()
+            .flat_map(|members| members.values())
+            .filter(|member| {
+                !member.fingerprint.dependency_overlays_current(overlays)
+                    || (!self.trust_watched_disk_inputs
+                        && !member.fingerprint.stamps_still_valid(&mut observed))
+            })
+            .flat_map(|member| member.source_paths.iter().cloned())
+            .collect::<vize_carton::FxHashSet<_>>();
         sources.retain(|path| {
             path != host
                 && overlays.contains_key(path)

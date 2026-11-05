@@ -431,3 +431,103 @@ fn forgetting_a_member_retires_its_files_roots_and_complete_native_delta() {
     let cold = workspace.open(&workspace.host, HOST, &overlays, &[]);
     assert_eq!(native_documents(&cold), native);
 }
+
+#[test]
+fn reopening_a_retired_cached_host_restores_every_closed_dependency() {
+    let workspace = Workspace::new(false);
+    let mut overlays = FxHashMap::from_iter([
+        (workspace.host.clone(), HOST),
+        (workspace.other.clone(), OTHER),
+    ]);
+    let first = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    let host_path = first.mirror_virtual_path(&workspace.host).unwrap();
+    let child_path = first.mirror_virtual_path(&workspace.child).unwrap();
+    drop(first);
+    drop(workspace.open(&workspace.other, OTHER, &overlays, &[]));
+    overlays.remove(&workspace.host);
+    drop(workspace.open(&workspace.other, OTHER, &overlays, &[]));
+    assert!(!host_path.exists());
+    assert!(!child_path.exists());
+    overlays.insert(workspace.host.clone(), HOST);
+    let reopened = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    assert!(reopened.materialized_changes.created.contains(&host_path));
+    assert!(reopened.materialized_changes.created.contains(&child_path));
+    let restored = reopened.source_catalog.get(&child_path).unwrap();
+    assert_eq!(restored.source.as_str(), CHILD);
+    assert_eq!(
+        std::fs::read_to_string(&child_path).unwrap(),
+        restored.code.as_str()
+    );
+    let expected = native_documents(&reopened);
+    workspace.session.clear();
+    drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+    drop(workspace.open(&workspace.other, OTHER, &overlays, &[]));
+    let cold = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    assert_eq!(native_documents(&cold), expected);
+}
+
+#[test]
+fn an_imported_overlay_edit_refreshes_affected_open_roots_for_native_navigation() {
+    const CONTRACT: &str = "<script lang='ts'>export interface Contract { n: number }</script><script setup lang='ts'>const token = 1;</script><template>{{ token }}</template>";
+    const BETA: &str = "import type { Contract } from './Host.vue'; export class Beta implements Contract { n = 1; }";
+    let workspace = Workspace::new(true);
+    std::fs::write(&workspace.host, CONTRACT).unwrap();
+    let beta = workspace.other.with_file_name("Beta.tsx");
+    std::fs::write(&beta, BETA).unwrap();
+    let mut overlays =
+        FxHashMap::from_iter([(workspace.host.clone(), CONTRACT), (beta.clone(), BETA)]);
+    drop(workspace.open(&workspace.host, CONTRACT, &overlays, &[]));
+    let implementation = workspace.open(&beta, BETA, &overlays, &[]);
+    let beta_path = implementation.mirror_virtual_path(&beta).unwrap();
+    drop(implementation);
+    let changed = CONTRACT.replace("token = 1", "token = 2");
+    overlays.insert(workspace.host.clone(), &changed);
+    let current = workspace.open(&workspace.host, &changed, &overlays, &[]);
+    assert_eq!(
+        current
+            .source_catalog
+            .get(&beta_path)
+            .unwrap()
+            .source
+            .as_str(),
+        BETA
+    );
+    assert!(beta_path.exists());
+    let expected = native_documents(&current);
+    assert!(
+        expected
+            .iter()
+            .any(|(uri, _)| uri == &crate::file_uri::path_to_file_uri(&beta_path))
+    );
+    workspace.session.clear();
+    drop(workspace.open(&workspace.host, &changed, &overlays, &[]));
+    drop(workspace.open(&beta, BETA, &overlays, &[]));
+    let cold = workspace.open(&workspace.host, &changed, &overlays, &[]);
+    assert_eq!(native_documents(&cold), expected);
+}
+
+#[test]
+fn a_new_overlay_at_a_failed_resolution_probe_invalidates_the_graph() {
+    let workspace = Workspace::new(false);
+    let missing = workspace.child.with_file_name("Missing.vue");
+    let host = HOST.replace("./Child.vue", "./Missing.vue");
+    let mut overlays = FxHashMap::from_iter([(workspace.host.clone(), host.as_str())]);
+    let old = workspace.open(&workspace.host, &host, &overlays, &[]);
+    overlays.insert(missing, CHILD);
+    let updated = workspace.open(&workspace.host, &host, &overlays, &[]);
+    assert!(!Arc::ptr_eq(&old.context, &updated.context));
+    let expected = updated
+        .mirror
+        .as_ref()
+        .unwrap()
+        .preparation_import_facts_snapshot();
+    workspace.session.clear();
+    let cold = workspace.open(&workspace.host, &host, &overlays, &[]);
+    assert_eq!(
+        cold.mirror
+            .as_ref()
+            .unwrap()
+            .preparation_import_facts_snapshot(),
+        expected
+    );
+}

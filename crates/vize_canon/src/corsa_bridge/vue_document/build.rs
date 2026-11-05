@@ -73,11 +73,18 @@ pub(super) fn build_vue_virtual_workspace_project(
     // Other hosts can extend the live catalog without replacing this context.
     // Retain the catalog captured by this exact preparation, not the first open.
     host.source_catalog = alias_context.source_catalog.clone();
+    let mut documents = CorsaNativeDocumentBatch::shared(surface.documents.clone());
+    if alias_context.refresh_live_overlays
+        && let Some(root) = host.session_project_root.as_deref()
+    {
+        host.source_catalog
+            .extend_open_project_document_batch(root, &overlays, &mut documents);
+    }
     project_phase.finish();
     Ok(CorsaVueVirtualProject {
         session_project_root: host.session_project_root.clone(),
         host,
-        documents: CorsaNativeDocumentBatch::shared(surface.documents.clone()),
+        documents,
         session_config_path: surface.session_config_path.clone(),
         materialized_changes: alias_context.materialized_changes.clone(),
     })

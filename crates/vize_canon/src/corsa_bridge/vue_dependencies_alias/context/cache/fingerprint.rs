@@ -56,9 +56,7 @@ impl ContextFingerprint {
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
-            let mut input = vize_l0::micro_default_hasher!("canon.context.overlay_input");
-            text.hash(&mut input);
-            overlay_inputs.insert(path.clone(), input.finish());
+            overlay_inputs.insert(path.clone(), overlay_content_identity(text));
         }
         let generation_options =
             editor_namespace_identity(options, virtual_ts_options, project_root, tsconfig_path);
@@ -182,13 +180,38 @@ impl ContextFingerprint {
             return true;
         }
         if previous.stamps.is_empty() {
-            return self.overlays == previous.overlays;
+            return false;
         }
-        previous.stamps.iter().all(|stamp| {
-            stamp.path() == previous.host_path
-                || self.overlay_inputs.get(stamp.path())
-                    == previous.overlay_inputs.get(stamp.path())
-        })
+        self.overlay_inputs
+            .keys()
+            .chain(previous.overlay_inputs.keys())
+            .all(|path| {
+                self.overlay_inputs.get(path) == previous.overlay_inputs.get(path)
+                    || !previous.reads_dependency_overlay(path)
+            })
+    }
+
+    fn reads_dependency_overlay(&self, path: &Path) -> bool {
+        path != self.host_path
+            && self
+                .stamps
+                .binary_search_by(|stamp| stamp.path().cmp(path))
+                .is_ok()
+    }
+
+    /// Source text equality does not make a live root current when one of its
+    /// imported open buffers changed. Keep that dependent root in the rebuild.
+    pub(super) fn dependency_overlays_current(&self, overlays: &FxHashMap<PathBuf, &str>) -> bool {
+        overlays
+            .keys()
+            .chain(self.overlay_inputs.keys())
+            .all(|path| {
+                !self.reads_dependency_overlay(path)
+                    || overlays
+                        .get(path)
+                        .map(|text| overlay_content_identity(text))
+                        == self.overlay_inputs.get(path).copied()
+            })
     }
 
     pub(super) fn matches_revision(&self, previous: &Self) -> bool {
@@ -216,13 +239,15 @@ impl ContextFingerprint {
     }
 
     pub(in super::super) fn compact_overlay_inputs(&mut self) {
-        let inputs = self
-            .stamps
-            .iter()
-            .map(|stamp| stamp.path())
-            .collect::<vize_carton::FxHashSet<_>>();
-        self.overlay_inputs
-            .retain(|path, _| path == &self.host_path || inputs.contains(path.as_path()));
+        // stamp_inner sorts and de-duplicates paths. Search only actual open
+        // overlays instead of allocating a second index of the whole graph.
+        let stamps = &self.stamps;
+        self.overlay_inputs.retain(|path, _| {
+            path == &self.host_path
+                || stamps
+                    .binary_search_by(|stamp| stamp.path().cmp(path))
+                    .is_ok()
+        });
         self.overlay_inputs.shrink_to_fit();
     }
 
@@ -268,6 +293,13 @@ impl ContextFingerprint {
             .hash(&mut hash);
         hash.finish()
     }
+}
+
+fn overlay_content_identity(text: &str) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut input = vize_l0::micro_default_hasher!("canon.context.overlay_input");
+    text.hash(&mut input);
+    input.finish()
 }
 
 #[cfg(test)]

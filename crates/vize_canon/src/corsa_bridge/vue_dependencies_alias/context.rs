@@ -24,6 +24,9 @@ mod routes;
 #[expect(clippy::disallowed_types, reason = "shared across threads")]
 pub(in crate::corsa_bridge) struct PreparedAliasContext {
     context: std::sync::Arc<AliasContext>,
+    /// An overlay epoch transition also synchronizes admitted open roots in
+    /// the outgoing packet, independently of this host's immutable graph.
+    pub(in crate::corsa_bridge) refresh_live_overlays: bool,
     pub(in crate::corsa_bridge) materialized_changes:
         crate::batch::virtual_project::MaterializedFileDelta,
     pub(in crate::corsa_bridge) source_catalog: crate::corsa_bridge::CorsaSourceCatalog,

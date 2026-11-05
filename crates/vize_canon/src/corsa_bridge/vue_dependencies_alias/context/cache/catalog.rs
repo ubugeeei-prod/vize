@@ -6,6 +6,24 @@ use super::SessionCache;
 use crate::corsa_bridge::{CorsaMaterializedSource, CorsaSourceCatalog};
 
 impl SessionCache {
+    pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn has_project_member(
+        &self,
+        root: &Path,
+        key: &super::RevisionKey,
+    ) -> bool {
+        self.project_members
+            .get(root)
+            .is_some_and(|members| members.contains_key(key))
+    }
+
+    pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn project_overlay_epoch_changed(
+        &self,
+        root: &Path,
+        identity: u64,
+    ) -> bool {
+        self.project_overlay_identities.get(root) != Some(&identity)
+    }
+
     pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn has_project_overlay_epoch(
         &self,
         root: &Path,
