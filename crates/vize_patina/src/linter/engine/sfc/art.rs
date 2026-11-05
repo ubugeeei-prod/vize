@@ -232,12 +232,15 @@ mod tests {
         let source = "<art><variant name='One'><div/></variant></art>";
         let descriptor =
             crate::linter::script_rules::parse_sfc_for_lint(source, "Gallery.art.vue").unwrap();
+        let allocator = oxc_allocator::Allocator::default();
+        let scripts = crate::linter::sfc_scripts::lint_scripts(&allocator, &descriptor);
         let original = descriptor.source.as_ref();
         let start = original.find("<div/>").unwrap();
         let fragment = &original[start..start + "<div/>".len()];
         let linter = Linter::with_registry(RuleRegistry::new());
         let clean = empty_lint_result("Gallery.art.vue");
-        let actual = linter.lint_art_variant(fragment, "Gallery.art.vue", &descriptor, None);
+        let actual =
+            linter.lint_art_variant(fragment, "Gallery.art.vue", &descriptor, &scripts, None);
         assert_eq!(format!("{actual:#?}"), format!("{clean:#?}"));
         let foreign = fragment.to_owned();
         assert_eq!(foreign, fragment);
@@ -249,7 +252,8 @@ mod tests {
             0,
         ));
         refused.error_count = 1;
-        let actual = linter.lint_art_variant(&foreign, "Gallery.art.vue", &descriptor, None);
+        let actual =
+            linter.lint_art_variant(&foreign, "Gallery.art.vue", &descriptor, &scripts, None);
         assert_eq!(format!("{actual:#?}"), format!("{refused:#?}"));
     }
 }
