@@ -11,18 +11,42 @@ mod tests {
     #[test]
     fn directly_embedded_jsx_controls_associate_their_label() {
         for (source, has_control) in [
-            ("const A = () => <label>{<input />}</label>;", true),
+            (
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/linter/a11y-embedded-jsx-controls-11714/direct-input.jsx.txt"
+                )),
+                true,
+            ),
             ("const A = () => <label>{<select />}</label>;", true),
             ("const A = () => <label>{<textarea />}</label>;", true),
-            ("const A = () => <label>{<><input /></>}</label>;", true),
+            (
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/linter/a11y-embedded-jsx-controls-11714/direct-fragment.tsx.txt"
+                )),
+                true,
+            ),
             (
                 "const A = () => <label>{<><span /><textarea /></>}</label>;",
                 true,
             ),
-            ("const A = () => <label>{<span />}</label>;", false),
+            (
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/linter/a11y-embedded-jsx-controls-11714/span-negative.jsx.txt"
+                )),
+                false,
+            ),
             ("const A = () => <label>{<><span /></>}</label>;", false),
             ("const A = () => <label>{<Input />}</label>;", false),
-            ("const A = () => <label>{render(<input />)}</label>;", false),
+            (
+                include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/differential/linter/a11y-embedded-jsx-controls-11714/call-negative.tsx.txt"
+                )),
+                false,
+            ),
             ("const A = () => <label>{cond && <input />}</label>;", true),
             ("const A = () => <label>{cond && <span />}</label>;", false),
             (
