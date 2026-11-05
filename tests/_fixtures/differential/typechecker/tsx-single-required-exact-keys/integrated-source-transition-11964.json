@@ -24,8 +24,8 @@
       "sha256": "3371eb7d3919662cbfde16a142a58c3a36739aefa127daa706307ce578808cab"
     },
     "after": {
-      "bytes": 5819,
-      "sha256": "5a2b00dd75e8e6ade9a79db43b84b20532d3125514f0d1a4c5c6314f97591d76"
+      "bytes": 5849,
+      "sha256": "f7b9a5948077a80b50a9753691b6ff046b4184008e0bde21396ae4c34ccf373b"
     },
     "edits": [
       {
@@ -35,8 +35,12 @@
       {
         "before": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\n",
         "after": "type $AuthoredKeyWitness<T> = { [K in keyof T]: unknown };\n// Constructor arguments (templates, `new`) bind `Authored`; TSX binds `Jsx` through `$props` (#11629).\ntype $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;\ntype $IsUnknown<T> = unknown extends T ? [keyof T] extends [never] ? true : false : false;\n"
+      },
+      {
+        "before": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;",
+        "after": "type $ComponentInstanceFor<I, T, Declared, Authored, Jsx> = $IsAny<Authored> extends true ? I : $IsUnknown<Authored> extends true ? $UsePublicInstance<Jsx> extends true ? I : $ReplaceComponentProps<I, Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & (T extends unknown ? keyof $ComponentInputProps<T, Declared> : never)> & $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Jsx>> : $ReplaceComponentProps<I, $ComponentInputProps<T, Declared> & $ComponentMissingInputGuard<T, Authored>>;"
       }
     ]
   },
-  "scope": "Finite join of current main with the reviewed constructor and TSX input-channel heads. The exact source is reconstructed in both directions and grants no native TypeScript consumer acceptance credit."
+  "scope": "Finite join of current main with the reviewed constructor and TSX input-channel heads, followed by the distributive union-key repair. The exact source is reconstructed in both directions and grants no native TypeScript consumer acceptance credit."
 }

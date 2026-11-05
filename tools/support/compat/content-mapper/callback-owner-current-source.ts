@@ -91,7 +91,7 @@ export function currentCallbackSourceEdits(
   const digest = (text: string) => createHash("sha256").update(text).digest("hex");
   assert.equal(
     digest(transitionRaw),
-    "b5a575101d75212826bef5930fb83f4bc5a2895451d09d9a8defe123fe72c6e2",
+    "f7cf79ee7e8a233d7ba3df8a35e9144aea62c2850fa017512a11c7a5b4318503",
     "certified integrated component helper transition",
   );
   const transition = JSON.parse(transitionRaw) as {
@@ -107,7 +107,7 @@ export function currentCallbackSourceEdits(
   assert.equal(Buffer.byteLength(currentHelper), transition.file.after.bytes);
   assert.equal(digest(currentHelper), transition.file.after.sha256);
   let previousHelper = currentHelper;
-  for (const edit of transition.file.edits) {
+  for (const edit of [...transition.file.edits].reverse()) {
     assert.equal(previousHelper.split(edit.after).length, 2);
     previousHelper = previousHelper.replace(edit.after, edit.before);
   }

@@ -417,11 +417,11 @@ mod tests {
                 &declaration,
             );
             // The broad row round-trips after the native rows.
-            let mut expected_generic = vec![(103, 3), (129, 44)];
+            let mut expected_generic = vec![(105, 3), (131, 44)];
             if name.len() < "update:".len() {
-                expected_generic.push((169, 28));
+                expected_generic.push((171, 28));
             }
-            expected_generic.extend([(169, 35), binding_position, script_position]);
+            expected_generic.extend([(171, 35), binding_position, script_position]);
             expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(

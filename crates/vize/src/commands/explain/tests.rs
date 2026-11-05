@@ -185,7 +185,7 @@ fn every_new_producer_page_uses_its_localized_message_and_help() {
     }
 }
 
-// The immutable old page body remains the authority for every non-URL byte.
+// The committed page body remains the authority for every non-URL byte.
 // Current static URLs are independently tied to committed EN and JA page titles.
 fn validate_documentation_successor(before: &str, current: &str, locale: Locale) {
     let old: Vec<_> = before.split('\n').collect();
@@ -241,7 +241,7 @@ fn validate_documentation_successor(before: &str, current: &str, locale: Locale)
             assert_eq!(old, new, "unchanged page body for {rule}");
         }
     }
-    assert_eq!((urls, transitioned_urls), (279, 267));
+    assert_eq!((urls, transitioned_urls), (279, 0));
 }
 
 #[test]

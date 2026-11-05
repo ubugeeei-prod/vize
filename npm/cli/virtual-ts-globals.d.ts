@@ -258,7 +258,10 @@ declare global {
           ? I
           : $ReplaceComponentProps<
               I,
-              Pick<$AuthoredKeyWitness<Jsx>, keyof Jsx & keyof $ComponentInputProps<T, Declared>> &
+              Pick<
+                $AuthoredKeyWitness<Jsx>,
+                keyof Jsx & (T extends unknown ? keyof $ComponentInputProps<T, Declared> : never)
+              > &
                 $ComponentInputProps<T, Declared> &
                 $ComponentMissingInputGuard<T, Jsx>
             >

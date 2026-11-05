@@ -67,12 +67,12 @@ function historicalProducer(
 ): string {
   if (
     path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
-    sha256(current) === "5a2b00dd75e8e6ade9a79db43b84b20532d3125514f0d1a4c5c6314f97591d76"
+    sha256(current) === "f7b9a5948077a80b50a9753691b6ff046b4184008e0bde21396ae4c34ccf373b"
   ) {
     const raw = read(integratedSourceTransition);
     assert.equal(
       sha256(raw),
-      "b5a575101d75212826bef5930fb83f4bc5a2895451d09d9a8defe123fe72c6e2",
+      "f7cf79ee7e8a233d7ba3df8a35e9144aea62c2850fa017512a11c7a5b4318503",
       "selected integrated component helper transition",
     );
     const transition = JSON.parse(raw) as {
@@ -86,7 +86,7 @@ function historicalProducer(
     assert.equal(transition.file.path, path);
     assert.equal(Buffer.byteLength(current), transition.file.after.bytes);
     assert.equal(sha256(current), transition.file.after.sha256);
-    for (const edit of transition.file.edits) {
+    for (const edit of [...transition.file.edits].reverse()) {
       assert.equal(current.split(edit.after).length, 2);
       current = current.replace(edit.after, edit.before);
     }

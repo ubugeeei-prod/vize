@@ -132,19 +132,23 @@ test("only the complete reviewed JSX witness source transition can change canoni
     readFileSync(
       path.join(
         root,
-        "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
+        "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",
       ),
       "utf8",
     ),
   );
-  const record = image.files.find((entry: { path: string }) => entry.path === file);
-  assert.ok(record);
+  const record = image.file;
+  assert.equal(record.path, file);
   const after = readFileSync(path.join(root, file));
-  const edit = record.edits[0];
-  const before = Buffer.from(after.toString().replace(edit.after, edit.before));
+  let previous = after.toString();
+  for (const edit of [...record.edits].reverse())
+    previous = previous.replace(edit.after, edit.before);
+  const before = Buffer.from(previous);
+  const edit = record.edits.at(-1);
+  assert.ok(edit);
   const proof = certifyJsxWitnessChange(file, before, after);
-  assert.equal(proof.beforeSha256, record.beforeSha256);
-  assert.equal(proof.afterSha256, record.afterSha256);
+  assert.equal(proof.beforeSha256, record.before.sha256);
+  assert.equal(proof.afterSha256, record.after.sha256);
   assert.equal(proof.nativeAcceptanceCredit, false);
   for (const mutated of [
     Buffer.from(after.toString().replace(edit.after, "")),

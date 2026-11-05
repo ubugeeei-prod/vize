@@ -219,7 +219,7 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             FOO,
             tsx.into(),
             MIXED_CONFIG,
-            vec![(3, 23, 2322)],
+            vec![(3, 35, 2322)],
         ),
     ];
     for (id, foo, probe, config, expected) in cases {

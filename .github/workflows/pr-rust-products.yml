@@ -167,6 +167,7 @@ jobs:
         with:
           name: pending-canon-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            crates/vize/**/*.snap.new
             crates/vize_canon/**/*.snap.new
             crates/vize_canon/src/virtual_ts/snapshots/computed-event-capture.json
           if-no-files-found: ignore

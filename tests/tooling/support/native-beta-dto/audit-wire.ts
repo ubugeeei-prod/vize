@@ -304,9 +304,11 @@ for (const [index, process] of native.entries()) {
 }
 assert.equal(source.attached.rows.length, 4);
 assert.equal(
-  stableRegistrationBaseline ? registrationRefusals <= 1 : registrationRefusals === 0,
+  stableRegistrationBaseline
+    ? receipts.every((receipt) => receipt.registrationRefusals <= 1)
+    : registrationRefusals === 0,
   true,
-  "Only the exact historical stable watcher registration request may race shutdown",
+  "Only one exact historical stable watcher registration request per native owner may race shutdown",
 );
 assert.equal(receipts[0].apiAttached, true, "The explicit owned scope must retain its API wire");
 if (source.role === "after")
