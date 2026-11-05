@@ -274,11 +274,10 @@ impl TypeCheckService {
 
         // Check with Corsa
         if !virtual_ts_output.code.is_empty() {
-            let virtual_uri = cstr!("vize-virtual://{filename}.ts");
-
             // Open virtual document
-            self.bridge
-                .open_virtual_document(&virtual_uri, &virtual_ts_output.code)
+            let virtual_uri = self
+                .bridge
+                .open_virtual_document(&cstr!("{filename}.ts"), &virtual_ts_output.code)
                 .await?;
 
             // Get diagnostics

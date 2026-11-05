@@ -1,1 +1,1 @@
-<template><div id="a"class="b">{{ missing }}</div></template>
+<script setup>const known = "ok"</script><template><div id="a"class="b">{{ known }} {{ missing }}</div></template>

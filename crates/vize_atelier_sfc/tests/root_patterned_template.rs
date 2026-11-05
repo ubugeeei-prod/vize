@@ -337,7 +337,7 @@ fn root_header_sfc_selection_preserves_the_base_whitespace_contract() {
     };
 
     let allocator = Allocator::default();
-    let source = r#"<template v-match="result"foo="ok"><p v-when="_"/></template>"#;
+    let source = r#"<template v-match="result"foo="ok"><p v-when="_"></p></template>"#;
     for syntax in [TemplateSyntaxMode::Standard, TemplateSyntaxMode::Strict] {
         let (base, diagnostics) = parse_with_options_and_template_syntax(
             &allocator,

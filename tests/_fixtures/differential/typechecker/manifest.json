@@ -9637,7 +9637,7 @@
       "inputs": [
         {
           "path": "sfc-entry-grammar-11869/Adjacent.vue.txt",
-          "sha256": "73d71e73444c1637bb21f3eeb37fecfb2ff7b1d48d6fae3e9bece542ee23fc04",
+          "sha256": "7c2121f09734d15209abd8ae31ac5ccdcc86dea106fb9a1a04c5941a81015364",
           "role": "regression-reproduction"
         },
         {
