@@ -276,7 +276,11 @@ impl<'a> GenerateContext<'a> {
             self.out.push_str(INDENT);
             levels -= INDENT.len() / 2;
         }
-        self.out.push_str(&INDENT[..levels * 2]);
+        self.out.push_str(
+            INDENT
+                .get(..levels * 2)
+                .expect("remaining indentation fits the ASCII chunk"),
+        );
     }
 
     pub(crate) fn indent(&mut self) {
