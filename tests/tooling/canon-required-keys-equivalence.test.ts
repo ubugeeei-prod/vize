@@ -162,6 +162,69 @@ void test("the oracle rejects a short-circuit that drops required keys", () => {
   assert.ok(diagnostics(equalities(broken), false).some((text) => / TS2344 /u.test(text)));
 });
 
+function requiredFieldUses(file: string, text: string): string[] {
+  const code: string[] = [];
+  // Debug snapshots retain complete generated programs as quoted `code`
+  // fields. Inspect their actual newlines and preserve the surrounding packet
+  // as a separate source, so a use outside a code field is still checked.
+  const packet = file.endsWith(".snap")
+    ? text.replace(
+        /^(\s*code: )("(?:[^"\\]|\\.)*")(,\s*)$/gmu,
+        (_whole, prefix: string, literal: string, suffix: string) => {
+          const decoded: unknown = JSON.parse(literal);
+          assert.equal(typeof decoded, "string", `${file}: a complete generated code string`);
+          code.push(decoded as string);
+          return `${prefix}""${suffix}`;
+        },
+      )
+    : text;
+  const uses: string[] = [];
+  const name = "$EmitRequiredFields<";
+  for (const source of [packet, ...code]) {
+    for (let at = source.indexOf(name); at >= 0; at = source.indexOf(name, at + name.length)) {
+      const before = source.slice(Math.max(0, at - 40), at).trimEnd();
+      uses.push(`${file}: ${before.slice(before.search(/\S+$/u))}`);
+    }
+  }
+  return uses;
+}
+
+function requireIntersectionUses(uses: readonly string[]): void {
+  assert.ok(uses.length > 0);
+  for (const use of uses) {
+    assert.match(
+      use,
+      /: (?:(?:r#)?"?type|&)$/u,
+      `only definitions and intersection members: ${use}`,
+    );
+  }
+}
+
+void test("complete Debug code packets preserve definitions and intersection checks", () => {
+  const source = "type $EmitRequiredFields<T> = T;\ntype Child<T> = T & $EmitRequiredFields<T>;\n";
+  const packet = `[\n    VirtualTsOutput {\n        code: ${JSON.stringify(source)},\n    },\n    VirtualTsOutput {\n        code: ${JSON.stringify(source)},\n    },\n]\n`;
+  const uses = requiredFieldUses("complete.snap", packet);
+  assert.deepEqual(uses, [
+    "complete.snap: type",
+    "complete.snap: &",
+    "complete.snap: type",
+    "complete.snap: &",
+  ]);
+  requireIntersectionUses(uses);
+});
+
+void test("the source oracle rejects direct key reads inside or outside Debug code fields", () => {
+  const forbidden = "type Wrong<T> = keyof $EmitRequiredFields<T>;\n";
+  for (const source of [
+    `VirtualTsOutput {\n    code: ${JSON.stringify(forbidden)},\n}\n`,
+    `VirtualTsOutput {\n    code: "",\n}\n${forbidden}`,
+  ]) {
+    const uses = requiredFieldUses("forbidden.snap", source);
+    assert.deepEqual(uses, ["forbidden.snap: keyof"]);
+    assert.throws(() => requireIntersectionUses(uses), { code: "ERR_ASSERTION" });
+  }
+});
+
 void test("generated code and helpers only intersect $EmitRequiredFields, never read its keys", () => {
   // The short-circuit changes `keyof` of a still-deferred `$EmitRequiredFields<T>`
   // (see above). Every consumer must stay an intersection member so nothing
@@ -179,20 +242,9 @@ void test("generated code and helpers only intersect $EmitRequiredFields, never 
     .split("\0")
     .filter((file) => /\.(?:rs|txt|ts|mts|cts|snap)$/u.test(file));
   const uses: string[] = [];
-  const name = "$EmitRequiredFields<";
   for (const file of tracked) {
     const text = fs.readFileSync(`${root}${file}`, "utf8");
-    for (let at = text.indexOf(name); at >= 0; at = text.indexOf(name, at + name.length)) {
-      const before = text.slice(Math.max(0, at - 40), at).trimEnd();
-      uses.push(`${file}: ${before.slice(before.search(/\S+$/u))}`);
-    }
+    uses.push(...requiredFieldUses(file, text));
   }
-  assert.ok(uses.length > 0);
-  for (const use of uses) {
-    assert.match(
-      use,
-      /: (?:(?:r#)?"?type|&)$/u,
-      `only definitions and intersection members: ${use}`,
-    );
-  }
+  requireIntersectionUses(uses);
 });
