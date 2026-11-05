@@ -7,6 +7,10 @@ use crate::virtual_ts::{
 use vize_carton::cstr;
 
 #[test]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta records complete slot projections and every mapping field"
+)]
 fn repeated_slot_contract_is_emitted_once() {
     let script = "import KeyPad from './KeyPad.vue'\nconst kind = 'k0'\nconst a0 = 'a0'\nconst b0 = 'b0'\nconst a1 = 'a1'\nconst b1 = 'b1'\nconst onPress = (key: string) => key\n";
     let template = "<div><template v-if=\"kind === 'k0'\"><KeyPad :label=\"a0\" @press=\"onPress\" /><KeyPad :label=\"b0\" @press=\"onPress\" /></template><template v-else-if=\"kind === 'k1'\"><KeyPad :label=\"a1\" @press=\"onPress\" /><KeyPad :label=\"b1\" @press=\"onPress\" /></template></div>";
@@ -14,6 +18,7 @@ fn repeated_slot_contract_is_emitted_once() {
     let name_ranges = label_name_ranges(template);
     let mut tag_anchors = Vec::new();
     let mut prop_anchors = Vec::new();
+    let mut outputs = Vec::new();
     for hoist in [false, true] {
         let output = generated(script, template, hoist);
         assert_eq!(
@@ -38,22 +43,24 @@ fn repeated_slot_contract_is_emitted_once() {
         );
         for idx in 0..4 {
             let alias = cstr!("type $SlotContract_{idx} = __KeyPad_slot_contract;");
-            assert!(
-                output.code.contains(alias.as_str()),
+            assert_eq!(
+                output
+                    .code
+                    .lines()
+                    .filter(|line| line.trim() == alias.as_str())
+                    .count(),
+                1,
                 "use {idx} aliases the first slot contract; hoist={hoist}: {}",
                 output.code
             );
-            let required = if hoist {
-                cstr!(
-                    "const __vize_required_slots_{idx}: import(\"vize:virtual-ts\").$RequiredSlots<$SlotContract_{idx}, {{}}> = {{}};"
-                )
-            } else {
-                cstr!(
-                    "const __vize_required_slots_{idx}: $RequiredSlots<$SlotContract_{idx}, {{}}> = {{}};"
-                )
-            };
-            assert!(
-                output.code.contains(required.as_str()),
+            let required = required_slot_declaration(idx, hoist);
+            assert_eq!(
+                output
+                    .code
+                    .lines()
+                    .filter(|line| line.trim() == required.as_str())
+                    .count(),
+                1,
                 "use {idx} keeps its required-slots const; hoist={hoist}: {}",
                 output.code
             );
@@ -64,20 +71,20 @@ fn repeated_slot_contract_is_emitted_once() {
             "each use still checks its own slots; hoist={hoist}: {}",
             output.code
         );
-        assert!(
-            output.code.contains("kind === 'k0'") && output.code.contains("kind === 'k1'"),
-            "both branch conditions stay; hoist={hoist}"
-        );
         let mut found_tags = Vec::new();
         for (idx, tag_range) in tag_ranges.iter().enumerate() {
-            let check = cstr!("__vize_required_slots_{idx}");
+            let required = required_slot_declaration(idx, hoist);
+            let used = cstr!("void __vize_required_slots_{idx};");
             let mapping = output
                 .mapping
                 .spans()
                 .iter()
                 .find(|mapping| {
                     mapping.src_range == *tag_range
-                        && output.code[mapping.gen_range.clone()].contains(check.as_str())
+                        && output.code[mapping.gen_range.clone()]
+                            .lines()
+                            .map(str::trim)
+                            .eq([required.as_str(), used.as_str()])
                 })
                 .expect("slot diagnostic anchors at the component tag");
             found_tags.push(mapping.src_range.clone());
@@ -111,7 +118,20 @@ fn repeated_slot_contract_is_emitted_once() {
                 "hoisting must not move prop diagnostic anchors"
             );
         }
+        // Keep both complete guarded branch bodies and all ordered mapping
+        // rows, including the per-use required-slot checks above.
+        outputs.push((hoist, output));
     }
+    insta::assert_debug_snapshot!("repeated_slot_contract_projection", outputs);
+}
+
+fn required_slot_declaration(idx: usize, hoist: bool) -> vize_carton::String {
+    let helper = if hoist {
+        "import(\"vize:virtual-ts\").$RequiredSlots"
+    } else {
+        "$RequiredSlots"
+    };
+    cstr!("const __vize_required_slots_{idx}: {helper}<$SlotContract_{idx}, {{}}> = {{}};")
 }
 
 fn keypad_ranges(template: &str) -> Vec<std::ops::Range<usize>> {
