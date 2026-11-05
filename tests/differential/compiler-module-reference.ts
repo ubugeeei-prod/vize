@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 
-// These three archived references were formatted after compilation. Keep
+// These three archived references use a formatted module representation. Keep
 // those bytes and bind their raw native-emitter successors independently.
 // Candidate output never passes through this reader or the AST comparison.
 const successors = new Map([
@@ -130,6 +130,11 @@ export function currentCompilerModuleReference(
 ): Buffer {
   const next = successors.get(fixture.id);
   if (!next) return archived;
+  // The generic project loader also accepts independent manifests whose case
+  // IDs match a registered example. A transition belongs to the exact archived
+  // reference, not to every fixture that happens to reuse its human-readable ID.
+  assert.equal(digest(archived), fixture.reference.sha256, "whole declared archived reference");
+  if (fixture.reference.sha256 !== next.before) return archived;
   assert.equal(
     digest(JSON.stringify(fixture.inputs)),
     next.inputs,

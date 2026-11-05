@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -57,4 +58,16 @@ test("independent AST checks reject semantic changes while retaining property id
     ["const item = 1;", "let item = 1;"],
   ])
     assert.throws(() => assertEquivalentCompilerModule(before, after), { code: "ERR_ASSERTION" });
+});
+
+test("a synthetic manifest with the same case ID keeps its complete independent reference", () => {
+  const archived = Buffer.from("export const fixture = true;\n");
+  for (const id of ids) {
+    const synthetic = {
+      id,
+      inputs: { root: "independent-protocol-fixture", files: [] },
+      reference: { sha256: createHash("sha256").update(archived).digest("hex") },
+    };
+    assert.equal(currentCompilerModuleReference(root, synthetic, archived), archived);
+  }
 });
