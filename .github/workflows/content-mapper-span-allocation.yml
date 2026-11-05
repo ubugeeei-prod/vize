@@ -2,6 +2,7 @@ name: Content mapper span allocation
 on:
   pull_request:
     paths:
+      - crates/vize_canon/src/batch/virtual_project/content_mapper/publish.rs
       - crates/vize_canon/src/batch/virtual_project/content_mapper/span_normalize.rs
       - tools/benchmarks/crates/vize/tests/content_mapper_span_profile.rs
       - tools/benchmarks/scripts/content-mapper-span-profile.mjs

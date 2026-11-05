@@ -13,6 +13,7 @@ const roles = ["base", "head"],
   rounds = [1, 2, 3, 4, 5];
 const observer = "tools/benchmarks/crates/vize/tests/content_mapper_span_profile.rs";
 const core = "crates/vize_canon/src/batch/virtual_project/content_mapper/span_normalize.rs";
+const publication = "crates/vize_canon/src/batch/virtual_project/content_mapper/publish.rs";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const read = (file) => JSON.parse(readFileSync(file, "utf8"));
 const write = (file, value) => writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
@@ -162,23 +163,28 @@ function build(directory) {
       "",
     );
     copyFileSync(join(cwd, core), join(directory, role + "-span_normalize.rs"));
-    run(
-      "cargo",
-      [
-        "test",
-        "--locked",
-        "--profile",
-        "ci-opt",
-        "-p",
-        "vize_canon",
-        "--lib",
-        "span_normalize::tests",
-        "--",
-        "--nocapture",
-      ],
-      { cwd, env },
-      join(directory, role + "-normalization-tests"),
-    );
+    copyFileSync(join(cwd, publication), join(directory, role + "-publish.rs"));
+    for (const [label, filter] of [
+      ["normalization", "span_normalize::tests"],
+      ["publication", "content_mapper::publish::tests"],
+    ])
+      run(
+        "cargo",
+        [
+          "test",
+          "--locked",
+          "--profile",
+          "ci-opt",
+          "-p",
+          "vize_canon",
+          "--lib",
+          filter,
+          "--",
+          "--nocapture",
+        ],
+        { cwd, env },
+        join(directory, role + "-" + label + "-tests"),
+      );
     const output = run(
       "cargo",
       [
@@ -218,6 +224,7 @@ function build(directory) {
       bytes: bytes.length,
       artifact,
       coreSha256: hash(readFileSync(join(cwd, core))),
+      publicationSha256: hash(readFileSync(join(cwd, publication))),
     };
   }
   assert.notEqual(binaries.base.sha256, binaries.head.sha256);
