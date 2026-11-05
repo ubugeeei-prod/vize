@@ -27,7 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
-use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::croquis::ElementIdKind;
 use vize_l0::FxHashSet;
@@ -60,6 +60,10 @@ pub struct NoReferToNonExistentId;
 impl MarkupRule for NoReferToNonExistentId {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
     }
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {

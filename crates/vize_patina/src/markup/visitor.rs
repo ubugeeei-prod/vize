@@ -8,7 +8,9 @@ use super::loc_to_range;
 use super::node::{MarkupNode, MarkupText};
 use super::relief_scopes::{BranchKind, ReliefChain, branch_of, list_of};
 use super::scope::{MarkupConditional, MarkupList};
-use super::{MarkupContext, MarkupDocument, MarkupDocumentInner, MarkupRule, jsx_roots};
+use super::{
+    MarkupContext, MarkupDocument, MarkupDocumentInner, MarkupRule, MarkupTraversal, jsx_roots,
+};
 use oxc_ast::ast::{JSXChild, JSXElement, JSXFragment, Program};
 use oxc_ast_visit::{Visit, walk::walk_program};
 use vize_l0::profile;
@@ -25,6 +27,7 @@ pub struct MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R: ?Sized> {
     rule: &'rule R,
     /// The rule's name, read once: every hook re-stamps it on the context.
     name: &'static str,
+    traversal: MarkupTraversal,
     ctx: &'ctx mut MarkupContext<'mc, 'a>,
 }
 
@@ -33,6 +36,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         Self {
             rule,
             name: rule.name(),
+            traversal: rule.traversal(),
             ctx,
         }
     }
@@ -45,6 +49,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     pub(super) fn run(&mut self, document: &MarkupDocument<'a>) {
         self.set_rule();
         self.rule.enter_document(self.ctx, document);
+        if self.traversal == MarkupTraversal::Document {
+            return;
+        }
 
         profile!("patina.markup.visit", {
             match document.inner {
@@ -58,23 +65,31 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn text(&mut self, text: MarkupText<'a>) {
-        self.set_rule();
-        self.rule.enter_text(self.ctx, &text);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.enter_text(self.ctx, &text);
+        }
     }
 
     fn interpolation(&mut self, range: crate::ir::ByteRange) {
-        self.set_rule();
-        self.rule.enter_interpolation(self.ctx, range);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.enter_interpolation(self.ctx, range);
+        }
     }
 
     fn conditional(&mut self, conditional: MarkupConditional<'a>) {
-        self.set_rule();
-        self.rule.enter_conditional(self.ctx, &conditional);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.enter_conditional(self.ctx, &conditional);
+        }
     }
 
     fn list(&mut self, list: MarkupList<'a>) {
-        self.set_rule();
-        self.rule.enter_list(self.ctx, &list);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.enter_list(self.ctx, &list);
+        }
     }
 
     /// A Relief sibling list. Raw directive chains are grouped into scopes
@@ -132,13 +147,19 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     };
                     self.visit_element(MarkupElement::from_l2(element, doc));
                 }
-                Op::Text(text) => self.text(children::text_node(doc, text)),
+                Op::Text(text) => {
+                    if self.traversal == MarkupTraversal::Full {
+                        self.text(children::text_node(doc, text));
+                    }
+                }
                 Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
-                    children::walk_interpolation(doc, interpolation, &mut |node| match node {
-                        MarkupNode::Text(text) => self.text(text),
-                        MarkupNode::Interpolation(range) => self.interpolation(range),
-                        _ => {}
-                    });
+                    if self.traversal == MarkupTraversal::Full {
+                        children::walk_interpolation(doc, interpolation, &mut |node| match node {
+                            MarkupNode::Text(text) => self.text(text),
+                            MarkupNode::Interpolation(range) => self.interpolation(range),
+                            _ => {}
+                        });
+                    }
                 }
                 Op::Comment(_) => {}
                 Op::If(if_op) => {
@@ -177,17 +198,19 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 
         self.set_rule();
         self.rule.enter_element(self.ctx, &element);
-        self.set_rule();
-        self.rule.enter_attributes(self.ctx, &element);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.enter_attributes(self.ctx, &element);
 
-        element.walk_bindings(&mut |binding| {
-            self.ctx.lint.current_rule = self.name;
-            self.rule.enter_binding(self.ctx, &element, &binding);
-        });
-        element.walk_directives(&mut |directive| {
-            self.ctx.lint.current_rule = self.name;
-            self.rule.enter_directive(self.ctx, &element, &directive);
-        });
+            element.walk_bindings(&mut |binding| {
+                self.ctx.lint.current_rule = self.name;
+                self.rule.enter_binding(self.ctx, &element, &binding);
+            });
+            element.walk_directives(&mut |directive| {
+                self.ctx.lint.current_rule = self.name;
+                self.rule.enter_directive(self.ctx, &element, &directive);
+            });
+        }
 
         match element.inner {
             MarkupElementInner::Authored { .. } => {
@@ -214,8 +237,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             }
         }
 
-        self.set_rule();
-        self.rule.exit_element(self.ctx, &element);
+        if self.traversal == MarkupTraversal::Full {
+            self.set_rule();
+            self.rule.exit_element(self.ctx, &element);
+        }
 
         let popped = self.ctx.pop_element();
         debug_assert!(

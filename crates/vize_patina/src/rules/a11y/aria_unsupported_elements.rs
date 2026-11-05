@@ -12,7 +12,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule,
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupRule, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, SourceLocation};
@@ -34,6 +34,10 @@ pub struct AriaUnsupportedElements;
 impl MarkupRule for AriaUnsupportedElements {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
