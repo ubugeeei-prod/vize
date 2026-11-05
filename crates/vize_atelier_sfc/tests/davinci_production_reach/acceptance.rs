@@ -31,6 +31,19 @@ pub fn report(scope: &str, sweep: &Sweep) {
     );
     for (shape, tally) in sweep.tallies.values() {
         eprintln!("{}", tally.line(*shape));
+        for (name, errors) in &tally.prebackend_rejections {
+            eprintln!(
+                "davinci production reach prebackend rejection: scope={scope} shape={} file={name:?} errors={errors:?}",
+                shape.id()
+            );
+        }
+        if tally.unrecorded != 0 {
+            eprintln!(
+                "davinci production reach unrecorded inputs: scope={scope} shape={} files={:?}",
+                shape.id(),
+                tally.unrecorded_samples
+            );
+        }
         for line in tally.refusals.lines(scope, shape.id()) {
             eprintln!("{line}");
         }
