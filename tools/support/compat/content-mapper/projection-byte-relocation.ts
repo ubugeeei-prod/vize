@@ -33,6 +33,20 @@ export function range(start: number, length: number, edits: Edit[], limit: numbe
   const relocated = point(start, edits);
   return [relocated, point(start + length, edits) - relocated];
 }
+export function rangeIncludingInsertions(
+  start: number,
+  length: number,
+  edits: Edit[],
+  limit: number,
+) {
+  bounds(start, length, limit);
+  assert.ok(
+    edits.every((edit) => edit.start === edit.end || !overlaps(start, length, edit)),
+    "diagnostic projection enters a certified replacement",
+  );
+  const relocated = point(start, edits);
+  return [relocated, point(start + length, edits) - relocated];
+}
 export function bufferOccurrences(text: Buffer, needle: Buffer) {
   let count = 0;
   for (let offset = text.indexOf(needle); offset >= 0; offset = text.indexOf(needle, offset + 1))

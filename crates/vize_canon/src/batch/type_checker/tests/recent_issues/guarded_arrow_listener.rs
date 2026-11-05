@@ -66,10 +66,8 @@ fn guarded_arrow_without_fallback_keeps_possible_undefined_diagnostic() {
     assert_eq!(actual.len(), 1, "{actual:#?}");
     assert_eq!(actual[0].0, "src/Probe.vue");
     assert_eq!(actual[0].1, Some(2722));
-    assert!(
-        actual[0]
-            .2
-            .contains("Cannot invoke an object which is possibly 'undefined'."),
-        "{actual:#?}"
+    assert_eq!(
+        actual[0].2,
+        "8:109:error Cannot invoke an object which is possibly 'undefined'."
     );
 }

@@ -448,6 +448,8 @@ export function auditCallbackOwners(directory: string) {
       "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
       "../../../../crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
       "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
+      "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
       "../../../../crates/vize_canon/src/virtual_ts/generator/component_export.rs",
       "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/emit_overload_window.rs",
       "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/integrated-source-transition-11964.json",

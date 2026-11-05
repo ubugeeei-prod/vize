@@ -25,6 +25,8 @@ const comparatorInputs = [
   "tests/_fixtures/tooling/static-listener-prop-update-11815.json",
   "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/generic-event-specialization-update-11815.json",
   "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+  "crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
+  "crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
   "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
   "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
   "tests/tooling/public-emit-overload-package.test.ts",

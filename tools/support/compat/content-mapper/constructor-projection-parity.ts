@@ -29,12 +29,16 @@ import {
   bounds,
   point,
   range,
+  rangeIncludingInsertions,
   bufferOccurrences,
   comments,
   type Edit,
 } from "./projection-byte-relocation.ts";
 import { certifyEmitOverloadInventory } from "./owned-emit-overload-transition.ts";
-import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
+import {
+  certifyComponentConstructorTransition,
+  certifyGenericComponentContextTransition,
+} from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { writeConstructorProjectionReceipt } from "./constructor-projection-receipt.ts";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
@@ -167,6 +171,8 @@ function relocationEdits(
   if (emitTransition) certifiedEdits.push(emitTransition);
   const componentConstructorTransition = certifyComponentConstructorTransition(before, after);
   if (componentConstructorTransition) certifiedEdits.push(componentConstructorTransition);
+  const genericComponentContextTransition = certifyGenericComponentContextTransition(before, after);
+  if (genericComponentContextTransition) certifiedEdits.push(genericComponentContextTransition);
   const componentExportTransition = certifyComponentExportTransition(before, after);
   if (componentExportTransition) certifiedEdits.push(...componentExportTransition.edits);
   const originalComments = comments(before.toString(), baseGeneratedRanges);
@@ -312,7 +318,12 @@ export function relocatePacket(
   if (expected.diagnosticDirectives)
     expected.diagnosticDirectives.directives = expected.diagnosticDirectives.directives.map(
       (tuple) => {
-        const [g, length] = range(tuple[2], tuple[3] - tuple[2], edits, before.length);
+        const [g, length] = rangeIncludingInsertions(
+          tuple[2],
+          tuple[3] - tuple[2],
+          edits,
+          before.length,
+        );
         return [tuple[0], tuple[1], g, g + length, ...tuple.slice(4)];
       },
     );
