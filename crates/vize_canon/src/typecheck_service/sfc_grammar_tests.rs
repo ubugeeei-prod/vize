@@ -46,11 +46,18 @@ fn adjacent_quoted_attributes_reach_the_native_service_with_identical_output() {
         .parent()
         .and_then(std::path::Path::parent)
         .unwrap();
-    std::os::unix::fs::symlink(
-        workspace.join("node_modules"),
-        root.path().join("node_modules"),
-    )
-    .unwrap();
+    let node_modules = root.path().join("node_modules");
+    std::fs::create_dir(&node_modules).unwrap();
+    for (name, source) in [
+        ("vue", workspace.join("tests/node_modules/vue")),
+        ("vite", workspace.join("node_modules/vite")),
+    ] {
+        std::os::unix::fs::symlink(
+            std::fs::canonicalize(source).unwrap(),
+            node_modules.join(name),
+        )
+        .unwrap();
+    }
     std::fs::write(
         root.path().join("tsconfig.json"),
         r#"{"compilerOptions":{"strict":true,"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","types":[]},"include":["SfcGrammar.vue.ts"]}"#,
