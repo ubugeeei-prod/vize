@@ -64,6 +64,7 @@ impl<'a> TemplateRuleEnv<'a> {
     const fn relief(dialect: VueDialect) -> Self {
         Self {
             sfc_descriptor: None,
+            sfc_scripts: None,
             art_script_analysis: None,
             dialect,
             facade_rules: &[],
