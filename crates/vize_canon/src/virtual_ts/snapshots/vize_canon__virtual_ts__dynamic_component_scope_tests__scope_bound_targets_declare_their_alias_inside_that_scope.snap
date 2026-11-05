@@ -335,7 +335,7 @@ expression: template
   void Panel;
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void (null as unknown as keyof typeof Panel); void (null as unknown as keyof typeof Picker); void foo; void items; void map; void take;
+  void (null as unknown as keyof typeof Picker); void foo; void items; void map; void take;
   })();
 }
 
