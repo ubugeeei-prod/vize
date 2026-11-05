@@ -120,6 +120,11 @@ impl CorsaNativeDocumentBatch {
     }
 
     #[cfg(test)]
+    pub(crate) fn push(&mut self, document: (String, String)) {
+        self.push_shared(std::sync::Arc::new(document));
+    }
+
+    #[cfg(test)]
     pub(crate) fn shared_additions_for_test(&self) -> &[std::sync::Arc<(String, String)>] {
         &self.additions
     }
