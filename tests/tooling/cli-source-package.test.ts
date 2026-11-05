@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { npmArgv } from "../../tools/support/config/windows_consumer/common.ts";
+import { findNpmCli } from "../../tools/support/release/computed_event_names.ts";
 
 const cli = fileURLToPath(new URL("../../npm/cli/", import.meta.url));
 const privateShims = [
@@ -17,7 +17,8 @@ const privateShims = [
 type PackedFile = { path: string; size: number; mode: number };
 
 function packlist(directory: string): PackedFile[] {
-  const [command, ...args] = npmArgv(
+  const args = [
+    findNpmCli(),
     "pack",
     "--ignore-scripts",
     "--dry-run",
@@ -27,8 +28,8 @@ function packlist(directory: string): PackedFile[] {
     path.join(directory, ".test-cache"),
     "--userconfig",
     path.join(directory, ".test-npmrc"),
-  );
-  const result = spawnSync(command, args, {
+  ];
+  const result = spawnSync(process.execPath, args, {
     cwd: directory,
     encoding: "utf8",
     timeout: 30_000,
