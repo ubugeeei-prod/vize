@@ -116,6 +116,7 @@ fn profile_unrelated_overlays() {
         }
         let mut rows = Vec::new();
         let mut last_native = Vec::new();
+        let mut last_sibling = serde_json::Value::Null;
         let edits = (1..=8).map(|cycle| cstr!("<script setup lang='ts'>const label = {cycle};</script><template>{{{{ label }}}}</template>")).collect::<Vec<_>>();
         for (index, changed) in edits.iter().enumerate() {
             let cycle = index + 1;
@@ -168,12 +169,13 @@ fn profile_unrelated_overlays() {
                 "residency": residency(),
             }));
             last_native = native;
+            last_sibling = source_packet(&current_b);
             overlays.remove(&b);
         }
         scenarios.push(serde_json::json!({
             "mode":if direct {"query-unchanged-host-first"} else {"query-edited-sibling-first"},
             "files":302,"cold_ms":cold_ms,"warm_ms":warm_ms,"edits":rows,
-            "complete_unchanged_sources":expected,"complete_final_native_documents":last_native,
+            "complete_unchanged_sources":expected,"complete_final_native_documents":last_native,"complete_final_sibling":last_sibling,
         }));
     }
     let output = std::env::var_os("VIZE_OVERLAY_PROFILE_OUTPUT").expect("explicit artifact path");

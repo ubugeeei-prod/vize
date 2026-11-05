@@ -39,10 +39,10 @@ pub(super) fn materialize_cached_revision(
     let narrow = graph_hit
         && !union.retired_members
         && previous.as_ref().is_some_and(|previous| {
-            context
-                .mirror
-                .as_ref()
-                .is_some_and(|mirror| mirror.fingerprint_hit_is_file_patch(previous))
+            context.mirror.as_ref().is_some_and(|mirror| {
+                cache.has_project_overlay_epoch(mirror.virtual_root())
+                    && mirror.fingerprint_hit_is_file_patch(previous)
+            })
         });
     let sources = if narrow {
         context.materialized_sources_for_candidates()

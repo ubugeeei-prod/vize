@@ -133,6 +133,22 @@ jobs:
               }
             }
           }
+          const normalize = scenario => {
+            const hosts = scenario.complete_unchanged_sources.filter(([,packet]) => path.basename(packet.source_path) === "A.vue");
+            assert.equal(hosts.length, 1);
+            const authored = path.dirname(hosts[0][1].source_path);
+            const mirror = path.dirname(hosts[0][1].materialized_path);
+            const visit = value => typeof value === "string" ? value.split(mirror).join("<mirror>").split(authored).join("<authored>")
+              : Array.isArray(value) ? value.map(visit)
+              : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key,value]) => [key,visit(value)])) : value;
+            assert.equal(path.basename(scenario.complete_final_sibling.source_path), "B.vue");
+            return visit({sources:scenario.complete_unchanged_sources,sibling:scenario.complete_final_sibling,native:scenario.complete_final_native_documents});
+          };
+          for (const mode of ["query-edited-sibling-first", "query-unchanged-host-first"]) {
+            const sameInput = records.filter(row => row.mode === mode);
+            const reference = normalize(sameInput[0]);
+            for (const observation of sameInput) assert.deepEqual(normalize(observation), reference, `complete parent/candidate code, mappings and native batch: ${mode}/${observation.variant}/${observation.round}`);
+          }
           const median = values => { const sorted = values.toSorted((a,b) => a-b); return sorted[Math.floor(sorted.length/2)]; };
           const summaries = [];
           for (const mode of ["query-edited-sibling-first", "query-unchanged-host-first"]) {

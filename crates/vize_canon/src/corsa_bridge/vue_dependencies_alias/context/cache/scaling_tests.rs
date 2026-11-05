@@ -256,7 +256,7 @@ fn epoch_changes_rebuild_exact_live_sources_and_close_rename_remove_old_artifact
             .as_ref()
             .unwrap()
             .registered_original_paths_sorted(),
-        vec![renamed.clone()]
+        vec![hosts[1].clone(), renamed.clone()]
     );
     assert!(!queries[2].exists());
     mapped_token(&rename_context, &renamed, VUE);

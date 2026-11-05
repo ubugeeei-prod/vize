@@ -363,3 +363,71 @@ fn shape_changing_host_edits_retire_old_workspace_artifacts_and_keep_old_query_m
         assert_eq!(native_documents(&cold), expected);
     }
 }
+
+#[test]
+fn sibling_shape_changes_retire_old_workspace_suffixes_for_warm_and_cold_callers() {
+    for cold_caller in [false, true] {
+        let workspace = Workspace::new(false);
+        let third = workspace.other.with_file_name("Third.vue");
+        let old_third = OTHER.replace("lang='ts'", "lang='tsx'");
+        std::fs::write(&third, &old_third).unwrap();
+        let mut overlays = FxHashMap::from_iter([
+            (workspace.host.clone(), HOST),
+            (workspace.other.clone(), OTHER),
+            (third.clone(), old_third.as_str()),
+        ]);
+        if !cold_caller {
+            drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+        }
+        drop(workspace.open(&workspace.other, OTHER, &overlays, &[]));
+        let requested = [(workspace.other.clone(), OTHER)];
+        let old_workspace = workspace.open(&third, &old_third, &overlays, &requested);
+        let obsolete = old_workspace.mirror_virtual_path(&third).unwrap();
+        let old_catalog = old_workspace.source_catalog.clone();
+        let old_source = old_catalog.get(&obsolete).unwrap();
+        drop(old_workspace);
+        let edited_b = OTHER.replace("日本語", "a changed B prefix");
+        overlays.insert(workspace.other.clone(), &edited_b);
+        overlays.insert(third.clone(), OTHER);
+        let current = workspace.open(&workspace.host, HOST, &overlays, &[]);
+        assert!(!obsolete.exists());
+        assert!(current.source_catalog.get(&obsolete).is_none());
+        assert_eq!(
+            old_catalog.get(&obsolete).unwrap().source,
+            old_source.source
+        );
+        let native = native_documents(&current);
+        workspace.session.clear();
+        drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+        drop(workspace.open(&workspace.other, &edited_b, &overlays, &[]));
+        drop(workspace.open(&third, OTHER, &overlays, &requested));
+        let cold = workspace.open(&workspace.host, HOST, &overlays, &[]);
+        assert_eq!(native_documents(&cold), native);
+    }
+}
+
+#[test]
+fn forgetting_a_member_retires_its_files_roots_and_complete_native_delta() {
+    let workspace = Workspace::new(true);
+    let mut overlays = FxHashMap::from_iter([
+        (workspace.host.clone(), HOST),
+        (workspace.other.clone(), OTHER),
+    ]);
+    drop(workspace.open(&workspace.host, HOST, &overlays, &[]));
+    let sibling = workspace.open(&workspace.other, OTHER, &overlays, &[]);
+    let obsolete = sibling.mirror_virtual_path(&workspace.other).unwrap();
+    let old_catalog = sibling.source_catalog.clone();
+    drop(sibling);
+    AliasContext::forget_cached_sources(&workspace.session, &[workspace.other.clone()]);
+    overlays.remove(&workspace.other);
+    let current = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    assert!(!obsolete.exists());
+    assert!(current.source_catalog.get(&obsolete).is_none());
+    assert_eq!(current.materialized_changes.deleted, vec![obsolete.clone()]);
+    assert!(current.materialized_changes.has_topology_changes());
+    assert_eq!(old_catalog.get(&obsolete).unwrap().source.as_str(), OTHER);
+    let native = native_documents(&current);
+    workspace.session.clear();
+    let cold = workspace.open(&workspace.host, HOST, &overlays, &[]);
+    assert_eq!(native_documents(&cold), native);
+}

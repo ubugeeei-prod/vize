@@ -196,9 +196,17 @@ impl ContextFingerprint {
     /// the other revision still owns unchanged dependency files. A close, or a
     /// changed dependency buffer, does retire the member.
     pub(super) fn preserves_member(&self, previous: &Self) -> bool {
-        (self.host_path != previous.host_path
-            || self.host_content == previous.host_content
-            || (self.host_graph.is_some() && self.host_graph == previous.host_graph))
+        let host_is_preserved = if self.host_path == previous.host_path {
+            self.host_content == previous.host_content
+                || (self.host_graph.is_some() && self.host_graph == previous.host_graph)
+        } else {
+            // A refreshed sibling's old topology is not this host's graph.
+            // Retire its old revision rather than preserve obsolete suffixes,
+            // roots or package routes on the strength of our own host facts.
+            self.overlay_inputs.get(&previous.host_path)
+                == previous.overlay_inputs.get(&previous.host_path)
+        };
+        host_is_preserved
             && self.overlay_inputs.contains_key(&previous.host_path)
                 == previous.overlay_inputs.contains_key(&previous.host_path)
             && self.dependency_overlays_match(previous)
@@ -234,6 +242,7 @@ impl ContextFingerprint {
             .all(|stamp| observed.is_current(stamp, None))
     }
 
+    #[cfg(test)]
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {
         self.stamps.clone()
     }

@@ -6,6 +6,13 @@ use super::SessionCache;
 use crate::corsa_bridge::{CorsaMaterializedSource, CorsaSourceCatalog};
 
 impl SessionCache {
+    pub(in crate::corsa_bridge::vue_dependencies_alias::context) fn has_project_overlay_epoch(
+        &self,
+        root: &Path,
+    ) -> bool {
+        self.project_overlay_identities.contains_key(root)
+    }
+
     pub(super) fn project_revision_is_current(&self, root: &Path, overlay_identity: u64) -> bool {
         self.project_revision_is_current_with_cache(root, overlay_identity, &mut Default::default())
     }
