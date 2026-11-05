@@ -153,12 +153,12 @@ pub enum ProjectionSpanKind {
     SlotBinding,
     /// Component tag reference.
     ComponentRef,
-    /// The component's default export, whose authored counterpart is the SFC
-    /// itself: an empty range at its start.
-    ComponentExport,
     /// A template expression whose producer does not distinguish the
     /// interpolation and directive cases.
     TemplateExpression,
+    /// The component's default export, whose authored counterpart is the SFC
+    /// itself: an empty range at its start.
+    ComponentExport,
 }
 
 /// Per-row metadata of a [`super::ProjectionMapping`].
