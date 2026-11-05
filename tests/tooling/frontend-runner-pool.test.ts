@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts";
+import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 
 type Step = { name?: string; if?: string; [key: string]: unknown };
 type Job = { "runs-on"?: string; if?: string; steps?: Step[]; [key: string]: unknown };
@@ -79,24 +80,6 @@ const providerArtifact = {
     "retention-days": 14,
   },
 };
-
-const helperAbiStep = {
-  name: "Check content mapper helper ABI",
-  if: "${{ needs.iteration-plan.outputs.engines == 'true' }}",
-  run: "node npm/cli/scripts/content-mapper-helper-abi.ts --check",
-};
-
-function restoreContentMapperHelperAbi(job: Job) {
-  const steps = job.steps;
-  assert(steps);
-  const matches = steps.flatMap((step, index) => (step.name === helperAbiStep.name ? [index] : []));
-  assert.equal(matches.length, 1, "exactly one reviewed helper ABI step is required");
-  const index = matches[0];
-  assert.deepEqual(steps[index], helperAbiStep);
-  assert.equal(steps[index - 1]?.name, "Check package engine matrix");
-  assert.equal(steps[index + 1]?.name, "Report unchanged inputs");
-  steps.splice(index, 1);
-}
 
 function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
   const steps = job.steps;
