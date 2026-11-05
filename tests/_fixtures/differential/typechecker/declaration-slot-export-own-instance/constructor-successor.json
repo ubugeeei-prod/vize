@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "kind": "exact-cli-declaration-owned-constructor-successor",
+  "qualificationCredit": false,
+  "reason": "The constructor remaps its four owned members before intersecting the unchanged public base (#11699). Preserve the complete pre-existing slot-export snapshot and every older helper successor.",
+  "source": {
+    "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+    "revision": "41751a1c43fa80bb830c4c74bbb89590966063cf",
+    "sha256": "3f5eec2c812921ff2bf555bdde2315fe3871f3a8af9fbba2ed488f54acb02138",
+    "bytes": 10967
+  },
+  "output": {
+    "path": "crates/vize/tests/snapshots/integration__check_cli__check_can_emit_declarations_slot_reexport.snap",
+    "updatedInCommit": "8c83f43291eeec881a47e42ffcc34c85faf5e050",
+    "before": {
+      "sha256": "b1eb8763fb67d0f93aaa092ff8348fcdc52e1483d7db1cdf68987ffdc4cb5cee",
+      "bytes": 14780
+    },
+    "after": {
+      "sha256": "86708c150ccc61876f7ac0ed5a002c65c0dfc2fa21ea392f4a36fd0be532c634",
+      "bytes": 14914
+    }
+  },
+  "edit": {
+    "before": "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<$ComponentInstance, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>>;\n",
+    "after": "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{\n    $props: Props;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<Props, {}> & $ComponentInputGuard<Props, {}, $AuthoredProps>> & $ComponentPublicBase;\n"
+  }
+}
