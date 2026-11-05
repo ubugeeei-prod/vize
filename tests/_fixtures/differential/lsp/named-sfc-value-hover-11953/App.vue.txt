@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child, { childValue, default as DirectChild } from './Child.vue';
+import { childValue as barrelValue, Child as BarrelChild } from './barrel';
+const marker = 'é😀'; const observedValue = childValue;
+const observedBarrel = barrelValue;
+const requiredNumber: number = childValue;
+const wrongBoolean: boolean = observedValue;
+</script>
+<template><Child /><DirectChild /><BarrelChild />{{ observedValue }}{{ observedBarrel }}{{ marker }}{{ requiredNumber }}{{ wrongBoolean }}</template>

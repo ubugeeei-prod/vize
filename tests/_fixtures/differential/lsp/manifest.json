@@ -3868,6 +3868,63 @@
           }
         ]
       }
+    },
+    {
+      "id": "lsp/regression/named-sfc-value-hover-11953",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "named-sfc-value-hover-11953",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "75ab07da190600b1f41503b4eb3d4ab211b00836e1b4ae43aecbe3ae7939540f"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "8c0ee9c2acecd6cce015aa8d168194d38f73cbaf55b1440caeffca886688e902"
+          },
+          {
+            "path": "barrel.ts.txt",
+            "sha256": "7c108cedc7ce27ca9e09072f7c3b971006d1ab90b4e4d7268f2721b7265395f0"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "bdab00197d266636066d5774e704a14145d2b97042f1f176ebea60b3250737cb"
+          },
+          {
+            "path": "vize.config.json.txt",
+            "sha256": "9ac01c9581a6b8f25dcabf2b56251afd94e6b7ee030ef5b5a9c422337e329980"
+          }
+        ]
+      },
+      "case": {
+        "path": "named-sfc-value-hover-11953/case.json",
+        "sha256": "f52ac8591b53e0478ca953723475ab3585ab9f9cf4608eab5d6500883752b36a"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

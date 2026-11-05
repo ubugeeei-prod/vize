@@ -1,0 +1,52 @@
+{
+  "schema": "vize.named-sfc-value-hover.reference.v1",
+  "issue": 11953,
+  "publicRelease": "v0.691.0",
+  "publicBinarySha256": "06e68e45966521968705a52afea7576fa8b2c34a8e120c83b65b3367808062a8",
+  "runtime": {
+    "name": "@typescript/typescript-darwin-arm64",
+    "version": "7.0.2",
+    "license": "Apache-2.0",
+    "author": "Microsoft Corp.",
+    "homepage": "https://www.typescriptlang.org/",
+    "description": "TypeScript is a language for application scale JavaScript development",
+    "keywords": ["TypeScript", "Microsoft", "compiler", "language", "javascript"],
+    "bugs": {
+      "url": "https://github.com/microsoft/TypeScript/issues"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/microsoft/TypeScript.git"
+    },
+    "type": "module",
+    "preferUnplugged": true,
+    "engines": {
+      "node": ">=16.20.0"
+    },
+    "files": ["lib", "NOTICE.txt"],
+    "exports": {
+      "./package.json": "./package.json"
+    },
+    "gitHead": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+    "publishConfig": {
+      "access": "public",
+      "tag": "latest"
+    },
+    "os": ["darwin"],
+    "cpu": ["arm64"]
+  },
+  "runtimeBinarySha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "normalization": "Normalize every authored workspace file URI to file:///workspace/ and sort complete references as an unordered protocol set; preserve duplicate rows and all fields. Raw original reports are retained by the delivery evidence alongside these normalized complete copies.",
+  "inputs": {
+    "App.vue": "<script setup lang=\"ts\">\nimport Child, { childValue, default as DirectChild } from './Child.vue';\nimport { childValue as barrelValue, Child as BarrelChild } from './barrel';\nconst marker = 'é😀'; const observedValue = childValue;\nconst observedBarrel = barrelValue;\nconst requiredNumber: number = childValue;\nconst wrongBoolean: boolean = observedValue;\n</script>\n<template><Child /><DirectChild /><BarrelChild />{{ observedValue }}{{ observedBarrel }}{{ marker }}{{ requiredNumber }}{{ wrongBoolean }}</template>\n",
+    "Child.vue": "<script lang=\"ts\">\nexport const childValue: number = 1;\n</script>\n<script setup lang=\"ts\">\nconst local = \"child\";\n</script>\n<template><button>{{ local }}</button></template>\n",
+    "barrel.ts": "export { default as Child, childValue } from './Child.vue';\n"
+  },
+  "authority": "Direct import is the original failing path; the unchanged barrel re-export resolves the same numeric/string value through native TypeScript. Expected direct/local-alias hovers use the complete native barrel-control replies at identical authored ranges. All remaining packets retain the direct-path native replies.",
+  "files": {
+    "public-691-direct.json.txt": "99347ef1cabcd128763993e543571e98715b80233fa30b3197f509d3d143319b",
+    "public-691-barrel.json.txt": "5ff037224facb42f22ccfcf3317bf7bc0d0effba0e1df1e0971e8f4cfbf02847",
+    "expected.json.txt": "0a70bda9c58712ae40e1a3ddd1a803c9bec925ad4296ab48c0cb0575c9a146e2"
+  },
+  "publicArchiveSha256": "46d305dfb0120b2bdf9a03f5c0fe6c142c9cc51a7ba59cefa543d3cbdc61cbf7"
+}

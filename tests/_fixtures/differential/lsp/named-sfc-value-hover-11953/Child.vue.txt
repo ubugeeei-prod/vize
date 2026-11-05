@@ -1,0 +1,7 @@
+<script lang="ts">
+export const childValue: number = 1;
+</script>
+<script setup lang="ts">
+const local = "child";
+</script>
+<template><button>{{ local }}</button></template>

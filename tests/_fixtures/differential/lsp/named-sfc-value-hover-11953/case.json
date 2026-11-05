@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "id": "lsp/regression/named-sfc-value-hover-11953",
+  "provenance": {
+    "fixCommit": "a457757babe287fe60a95fc895fc1853b70bde7c",
+    "issue": 11953,
+    "inputOrigin": "Original direct named SFC value import with a local inferred alias and Unicode prefix; the complete three-phase source/native witness is retained beside this case.",
+    "contractOrigin": "Direct import is the original failing path; the unchanged barrel re-export resolves the same numeric/string value through native TypeScript. Expected direct/local-alias hovers use the complete native barrel-control replies at identical authored ranges. All remaining packets retain the direct-path native replies.",
+    "witness": {
+      "path": "reference.json",
+      "sha256": "f431da3c493c4f2b8723ff661460a101b6b34e12906a8de5e88b6759e9aae87e"
+    }
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "75ab07da190600b1f41503b4eb3d4ab211b00836e1b4ae43aecbe3ae7939540f"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "8c0ee9c2acecd6cce015aa8d168194d38f73cbaf55b1440caeffca886688e902"
+    },
+    {
+      "source": "barrel.ts.txt",
+      "runtimePath": "barrel.ts",
+      "sha256": "7c108cedc7ce27ca9e09072f7c3b971006d1ab90b4e4d7268f2721b7265395f0"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "bdab00197d266636066d5774e704a14145d2b97042f1f176ebea60b3250737cb"
+    },
+    {
+      "source": "vize.config.json.txt",
+      "runtimePath": "vize.config.json",
+      "sha256": "9ac01c9581a6b8f25dcabf2b56251afd94e6b7ee030ef5b5a9c422337e329980"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "f5f61f47da1fa20f5363c8a6d304798a846aa1c80e0a3df58474648beaccfa14"
+  },
+  "method": "textDocument/hover",
+  "scope": "Whole native-backed value and local-alias hovers; the mandatory source session separately compares all 27 replies and all three diagnostic publications, including unsaved edit and repair."
+}

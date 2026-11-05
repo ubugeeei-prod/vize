@@ -19,6 +19,8 @@ use crate::ide::markup;
 mod alias_tests;
 mod fallback;
 mod keys;
+#[cfg(test)]
+mod named_value_tests;
 mod presentation;
 pub(super) use fallback::vue_component_import_hover;
 use keys::field_name as key;
