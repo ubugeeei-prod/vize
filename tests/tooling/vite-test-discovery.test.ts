@@ -7,7 +7,9 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const manifest = JSON.parse(fs.readFileSync(path.join(root, "npm/builder/vite/package.json")));
+const manifest = JSON.parse(
+  fs.readFileSync(path.join(root, "npm/builder/vite/package.json"), "utf8"),
+) as { scripts: Record<string, string> };
 
 void test("the actual Vite package command discovers new tests and preserves failures", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-test-discovery-"));
@@ -33,7 +35,7 @@ fs.appendFileSync(process.env.VIZE_DISCOVERY_RECORDS, JSON.stringify({phase:'pre
 process.exit(Number(process.env.VIZE_DISCOVERY_PREPARE_STATUS || 0));
 `,
     );
-    const writeTest = (file, fails = false) => {
+    const writeTest = (file: string, fails = false) => {
       const target = path.join(directory, file);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(
@@ -69,13 +71,20 @@ test(${JSON.stringify(file)}, () => {
       });
       assert.equal(result.error, undefined, result.error?.message);
       assert.equal(result.signal, null);
-      const observed = fs.readFileSync(records, "utf8").trim().split("\n").map(JSON.parse);
+      const observed = fs
+        .readFileSync(records, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line) as { phase: string; file?: string });
       assert.deepEqual(observed[0], { phase: "prepared" });
       return { result, observed };
     };
-    const expectFiles = (observed, files) => {
+    const expectFiles = (
+      observed: Array<{ phase: string; file?: string }>,
+      files: readonly string[],
+    ) => {
       assert.deepEqual(
-        observed.slice(1).sort((left, right) => left.file.localeCompare(right.file)),
+        observed.slice(1).sort((left, right) => (left.file ?? "").localeCompare(right.file ?? "")),
         [...files]
           .sort((left, right) => left.localeCompare(right))
           .map((file) => ({ phase: "test", file })),
@@ -97,7 +106,7 @@ test(${JSON.stringify(file)}, () => {
     assert.equal(after.result.status, 0, `${after.result.stdout}\n${after.result.stderr}`);
     expectFiles(after.observed, [...initial, ...added]);
 
-    writeTest(added[1], true);
+    writeTest(added[1]!, true);
     const failedTest = run();
     assert.equal(
       failedTest.result.status,
