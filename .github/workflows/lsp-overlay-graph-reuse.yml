@@ -35,7 +35,7 @@ jobs:
       NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.compare_ref }}
-      OBSERVATION_ROOT: ${{ runner.temp }}/overlay-graphs
+      OBSERVATION_ROOT: ${{ github.workspace }}/target/differential/overlay-graphs
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -118,7 +118,7 @@ jobs:
         with:
           name: overlay-graphs-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
-            ${{ runner.temp }}/overlay-graphs/
+            target/differential/overlay-graphs/
             target/differential/lsp-overlay-graph-reuse/
             target/differential/lsp-sessions/
             target/ci/vize.differential-build.json
