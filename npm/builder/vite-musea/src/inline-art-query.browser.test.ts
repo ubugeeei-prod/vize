@@ -30,7 +30,7 @@ void test(
 <art title="Registered inline" status="ready"><variant name="Default" default><Self label="Preview component" /></variant></art>`,
     );
     await writeFile(
-      path.join(root, "index.html"),
+      path.join(root, "app.html"),
       '<!doctype html><html><body><div id="app"></div><script type="module" src="/src/main.js"></script></body></html>',
     );
     await writeFile(
@@ -87,7 +87,7 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
         await server.listen();
         const address = server.httpServer!.address();
         assert.ok(address && typeof address !== "string");
-        await runtime(`http://127.0.0.1:${address.port}/`, "development");
+        await runtime(`http://127.0.0.1:${address.port}/app.html`, "development");
       } finally {
         await server.close();
       }
@@ -96,7 +96,7 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
         build: {
           outDir: "dist",
           emptyOutDir: true,
-          rollupOptions: { input: path.join(root, "index.html") },
+          rollupOptions: { input: path.join(root, "app.html") },
         },
       });
       const manifest = JSON.parse(
@@ -128,7 +128,7 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
         const address = host.httpServer.address();
         assert.ok(address && typeof address !== "string");
         const origin = `http://127.0.0.1:${address.port}`;
-        await runtime(`${origin}/`, "production");
+        await runtime(`${origin}/app.html`, "production");
         const art = manifest.arts[0]!;
         await page.goto(new URL(manifest.previews[art.path]!["Default"]!, origin).href);
         await page.locator("#host").waitFor();
