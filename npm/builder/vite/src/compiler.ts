@@ -19,6 +19,7 @@ import {
   type CompileBatchOptions,
   type CompileFileOptions,
 } from "./compile-options.ts";
+import { normalizeCustomBlocks } from "./custom-blocks.ts";
 import { generateScopeId, prependInlineStyleInjection } from "./utils/index.ts";
 import type { CompileJsxFn } from "./types.ts";
 
@@ -43,6 +44,13 @@ export function formatCompileErrorMessage(
 ): string {
   const details = diagnostics.map((diagnostic) => `  - ${diagnostic}`).join("\n");
   return `[vize] Compilation failed in ${filePath}:\n${details}`;
+}
+
+function customBlockFields(
+  blocks: Parameters<typeof normalizeCustomBlocks>[0],
+): { customBlocks: ReturnType<typeof normalizeCustomBlocks> } | Record<string, never> {
+  const customBlocks = normalizeCustomBlocks(blocks);
+  return customBlocks.length > 0 ? { customBlocks } : {};
 }
 
 function normalizeStyleBlocks(
@@ -111,6 +119,7 @@ export function compileFile(
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
     styles: normalizeStyleBlocks(result.styles, resolved),
+    ...customBlockFields(result.customBlocks),
     // `src` blocks, then what the compile itself read (pug includes).
     dependencies: [...resolved.dependencies, ...(result.dependencies ?? [])],
     // The emitted module's shape, so its output is never parsed again (#3425).
@@ -283,6 +292,7 @@ export function compileBatch(
         scriptHash: fileResult.scriptHash,
         macroArtifacts: fileResult.macroArtifacts ?? [],
         styles: normalizeStyleBlocks(fileResult.styles, inlinedByPath.get(fileResult.path)),
+        ...customBlockFields(fileResult.customBlocks),
         dependencies: [
           ...(inlinedByPath.get(fileResult.path)?.dependencies ?? []),
           ...(fileResult.dependencies ?? []),

@@ -64,6 +64,25 @@ export interface NativeStyleBlockInfo {
   index: number;
 }
 
+/** Native custom block. The tag name is `blockType`, not `type`. */
+export interface NativeCustomBlockInfo {
+  blockType: string;
+  content: string;
+  src?: string | null;
+  attrs?: Array<{ name: string; value?: string | null }> | null;
+  index: number;
+}
+
+/** Custom block handed to Vite. `type` is the native `blockType`. */
+export interface CustomBlockInfo {
+  type: string;
+  content: string;
+  src?: string | null;
+  /** Non-boolean attributes keep their value; boolean attributes are `true`. */
+  attrs: Record<string, string | true>;
+  index: number;
+}
+
 export interface SfcCompileResultNapi {
   typeProject?: TypeProjectContext;
   code: string;
@@ -81,6 +100,8 @@ export interface SfcCompileResultNapi {
   scriptHash?: string;
   hasScoped: boolean;
   styles: NativeStyleBlockInfo[];
+  /** Absent when an older binding did not return custom blocks. */
+  customBlocks?: NativeCustomBlockInfo[];
   macroArtifacts?: MacroArtifact[];
   moduleShape?: ModuleOutputInfo;
 }
@@ -131,6 +152,11 @@ export interface CompiledModule {
   macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
+  /**
+   * Custom blocks. Absent on old cache entries and hand-built fixtures;
+   * absence means the module emits no custom-block imports.
+   */
+  customBlocks?: CustomBlockInfo[];
   /** Files loaded through SFC `src` imports */
   dependencies?: string[];
   /**

@@ -310,7 +310,10 @@ export function vize(
     },
 
     load(id, loadOptions) {
-      return loadHook(state, id, { ssr: resolveHookSsr(this, loadOptions) });
+      return loadHook(state, id, {
+        ssr: resolveHookSsr(this, loadOptions),
+        addWatchFile: (file) => this.addWatchFile(file),
+      });
     },
 
     async transform(code, id, transformOptions) {

@@ -47,7 +47,9 @@ export type {
 export type {
   CompileSfcFn,
   CompiledModule,
+  CustomBlockInfo,
   MacroArtifact,
+  NativeCustomBlockInfo,
   NativeStyleBlockInfo,
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
