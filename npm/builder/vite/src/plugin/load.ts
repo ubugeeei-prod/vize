@@ -23,12 +23,13 @@ import {
   getVirtualStyleContent,
   normalizeStyleVirtualId,
 } from "./load-style.ts";
+import { loadCustomBlock } from "./custom-block-load.ts";
 import { getSfcModuleRequest, loadSfcModuleSource } from "./sfc-module.ts";
 
 export { normalizeVueServerRendererImport };
 export { getBoundaryPlaceholderCode } from "./sfc-module.ts";
 
-type LoadOptions = { ssr?: boolean };
+type LoadOptions = { ssr?: boolean; addWatchFile?: (file: string) => void };
 
 function findMacroArtifactModule(
   state: VizePluginState,
@@ -101,6 +102,10 @@ export function loadHook(
     }
     return allCss;
   }
+
+  // A custom-block query returns the raw block, not the compiled component.
+  const customBlock = loadCustomBlock(state, id, loadOptions);
+  if (customBlock) return customBlock;
 
   // Strip the \0 prefix and the appended extension suffix for style virtual IDs.
   const styleId = normalizeStyleVirtualId(id);

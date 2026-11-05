@@ -124,9 +124,9 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     experimentalStrictSlotChildren: options.experimentalStrictSlotChildren ?? false,
     experimentalServerScript: options.experimentalServerScript ?? false,
     // Opt into exactly the optional payloads the bundler pipeline consumes:
-    // per-block style metadata, macro artifacts, and HMR content hashes.
-    // Custom blocks are not used in the batch path, so they stay omitted.
+    // per-block style metadata, custom blocks, macro artifacts, and HMR hashes.
     includeStyles: true,
+    includeCustomBlocks: true,
     includeMacroArtifacts: true,
     includeHashes: true,
     // Also part of the pre-compile cache key, so a run that wants maps cannot

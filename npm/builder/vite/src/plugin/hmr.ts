@@ -6,7 +6,14 @@ import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
 import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
-import { detectHmrUpdateType, hasHmrChanges, hasStyleChanges, type HmrUpdateType } from "../hmr.ts";
+import {
+  detectHmrUpdateType,
+  hasCustomBlockChanges,
+  hasHmrChanges,
+  hasStyleChanges,
+  type HmrUpdateType,
+} from "../hmr.ts";
+import { collectCustomBlockModules } from "./custom-block-hmr.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { resolveCssImports } from "../utils/css.ts";
 import {
@@ -228,16 +235,23 @@ export async function handleHotUpdateHook(
       if (modules.size > 0) {
         state.pendingHmrUpdateTypes.set(file, updateType);
         invalidateModules(server, modules);
+        const affected = new Set(modules);
         // A save that changes the template (or script) together with a style
         // reports a non-style update type, but the style modules are separate
         // Vite modules and keep their cached CSS unless they are invalidated
-        // here as well (#7742).
+        // here as well (#7742). Custom-block modules are the same kind of edge:
+        // the user plugin only re-runs when that module is invalidated.
         if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
           const styleModules = await collectStyleModules(server, file, newCompiled);
           invalidateModules(server, styleModules);
-          return [...new Set([...modules, ...styleModules])];
+          for (const module of styleModules) affected.add(module);
         }
-        return [...modules];
+        if (hasCustomBlockChanges(prevCompiled, newCompiled)) {
+          const blockModules = await collectCustomBlockModules(server, file, newCompiled);
+          invalidateModules(server, blockModules);
+          for (const module of blockModules) affected.add(module);
+        }
+        return [...affected];
       }
 
       state.pendingHmrUpdateTypes.delete(file);
