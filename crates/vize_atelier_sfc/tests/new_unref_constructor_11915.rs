@@ -5,7 +5,7 @@ use std::{
     io::Write,
     process::{Command, Stdio},
 };
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
     parse_sfc,
@@ -38,7 +38,7 @@ fn inline_unref_constructors_execute_like_vue_with_ordinary_call_controls() {
         options.template.is_prod = true;
         let result = compile_sfc_for_adapter(
             &descriptor,
-            options,
+            options.clone(),
             TemplateSyntaxMode::Standard,
             Default::default(),
             Default::default(),
@@ -52,7 +52,22 @@ fn inline_unref_constructors_execute_like_vue_with_ordinary_call_controls() {
             case["id"],
             result.errors
         );
-        captured.push(json!({"id":case["id"], "source":source, "result":result}));
+        let mapped = compile_sfc_for_adapter(
+            &descriptor,
+            options,
+            TemplateSyntaxMode::Standard,
+            Default::default(),
+            CodegenOptions {
+                source_map: true,
+                ..Default::default()
+            },
+            SfcScriptOutputMode::InlineTemplate,
+        )
+        .expect("mapped production inline component");
+        assert_eq!(mapped.code, result.code, "mapped bytes: {}", case["id"]);
+        let map = mapped.map.as_ref().expect("complete inline source map");
+        assert_eq!(map["sourcesContent"], json!([source]), "{}", case["id"]);
+        captured.push(json!({"id":case["id"], "source":source, "result":result, "mapped":mapped}));
     }
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")

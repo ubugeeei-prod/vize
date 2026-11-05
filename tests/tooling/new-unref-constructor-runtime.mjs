@@ -52,6 +52,12 @@ if (provider) {
     id,
     source,
     result: compileSfc(source, { filename: "Cam.vue", isProd: true, inlineTemplate: true }),
+    mapped: compileSfc(source, {
+      filename: "Cam.vue",
+      isProd: true,
+      inlineTemplate: true,
+      sourceMap: true,
+    }),
   }));
 } else {
   let input = "";
@@ -75,6 +81,7 @@ for (const row of captured) {
   for (const [name, code] of [
     ["vue", reference.content],
     ["vize", row.result.code],
+    ...(row.mapped ? [["vize-mapped", row.mapped.code]] : []),
   ]) {
     const loadable = code
       .replaceAll('from "vue"', `from ${JSON.stringify(vueUrl)}`)
@@ -94,6 +101,7 @@ for (const row of captured) {
     source: row.source,
     code: row.result.code,
     referenceCode: reference.content,
+    sourceMap: row.mapped?.map,
     renders,
   });
 }
