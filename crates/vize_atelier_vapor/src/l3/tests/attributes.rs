@@ -171,6 +171,89 @@ fn static_and_bound_styles_merge_in_authored_order() {
     }
 }
 
+/// Official Vapor binds a bare attribute as `""`. Style keeps authored order
+/// on the native lane; class, and every retained merge, stays static-first.
+#[test]
+fn valueless_static_class_and_style_merge_as_empty_strings() {
+    for (source, native_effect, retained_effect, equal) in [
+        (
+            r#"<div style :style="s"></div>"#,
+            r#"_setStyle(n0, ["", _ctx.s])"#,
+            r#"_setStyle(n0, ["", _ctx.s])"#,
+            true,
+        ),
+        (
+            r#"<div :style="s" style></div>"#,
+            r#"_setStyle(n0, [_ctx.s, ""])"#,
+            r#"_setStyle(n0, ["", _ctx.s])"#,
+            false,
+        ),
+        (
+            r#"<div class :class="c"></div>"#,
+            r#"_setClass(n0, ["", _ctx.c])"#,
+            r#"_setClass(n0, ["", _ctx.c])"#,
+            true,
+        ),
+        (
+            r#"<div :class="c" class></div>"#,
+            r#"_setClass(n0, ["", _ctx.c])"#,
+            r#"_setClass(n0, ["", _ctx.c])"#,
+            true,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporL3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+            };
+            let native = compile(false);
+            let retained = compile(true);
+            assert!(
+                native.error_messages.is_empty() && retained.error_messages.is_empty(),
+                "{source}: {:?} {:?}",
+                native.error_messages,
+                retained.error_messages
+            );
+            // The generator prefixes free identifiers even when the option is
+            // off, so both settings spell the binding as `_ctx`.
+            assert!(
+                native.code.contains(native_effect),
+                "{source}: {}",
+                native.code
+            );
+            assert!(
+                retained.code.contains(retained_effect),
+                "{source}: {}",
+                retained.code
+            );
+            assert!(
+                native.code.contains("_template(\"<div></div>\", true)"),
+                "{source}: {}",
+                native.code
+            );
+            if equal {
+                assert_eq!(native.code, retained.code, "{source}");
+                assert_eq!(native.templates, retained.templates, "{source}");
+            } else {
+                assert_ne!(native.code, retained.code, "{source}");
+            }
+        }
+    }
+}
+
 #[test]
 fn cloak_is_a_native_one_shot_directive_in_static_and_branch_regions() {
     for source in [
@@ -234,8 +317,6 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
     for (source, reason) in [
         (r#"<div v-html="markup"><b>child</b></div>"#, Structure),
         (r#"<div v-text="label">child</div>"#, Structure),
-        (r#"<div style :style="s"></div>"#, Binding),
-        (r#"<div class :class="c"></div>"#, Binding),
         (r#"<div :class="a" :class="b"></div>"#, Binding),
         (r#"<input :type="kind" v-model="value">"#, Binding),
         (r#"<div v-focus="value"></div>"#, Operation),

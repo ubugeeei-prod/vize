@@ -411,7 +411,8 @@ fn clone_expression<'a>(
     })
 }
 
-/// Keep the static class or style before its dynamic binding.
+/// Keep the static class or style before its dynamic binding. A valueless
+/// attribute is `""`, matching official Vapor. Order stays static-first.
 fn merge_static_binding<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
@@ -421,9 +422,11 @@ fn merge_static_binding<'a>(
     let static_value = el.props.iter().find_map(|p| {
         if let PropNode::Attribute(attr) = p
             && attr.name == name
-            && let Some(ref value) = attr.value
         {
-            return Some(value.content);
+            return Some(match &attr.value {
+                Some(value) => value.content,
+                None => "",
+            });
         }
         None
     });
