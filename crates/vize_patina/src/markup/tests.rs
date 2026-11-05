@@ -18,6 +18,7 @@ mod iframe_has_title_tests;
 mod input_dialect;
 mod interactive_supports_focus_jsx_tests;
 mod interactive_supports_focus_tests;
+mod label_has_for_jsx_tests;
 mod media_has_caption_tests;
 mod mouse_events_have_key_events_tests;
 mod no_aria_hidden_on_focusable_jsx_tests;

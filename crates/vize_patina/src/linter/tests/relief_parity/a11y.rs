@@ -33,6 +33,12 @@ const TEMPLATES: &[&str] = &[
     "<table><td v-pre><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></td></table>",
     "<li v-pre><li><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></li></li>",
     "<dt v-pre><dd><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></dd></dt>",
+    // Truncated and unbalanced input, as an editor sends while typing.
+    r#"<div @click="f""#,
+    r#"<label for="x"><div role="checkbox""#,
+    r#"<a href="/"><span>"#,
+    r#"<div></span><img src="a"></p><label>x"#,
+    "<img alt=",
     // alt-text
     r#"<img src="a"><img alt="x"><img :alt="x"><img :[alt]="x"><IMG src="a"></IMG>"#,
     r#"<area href="/"><area aria-label="x"><area :aria-labelledby="x"><Comp is="img"/>"#,
@@ -96,6 +102,8 @@ const JSX: &[&str] = &[
     r#"const A = () => <div><div aria-hidden="true" onClick={f} /><div role="presentation" onClick={f} /><my-el onClick={f} /><Comp onClick={f} /></div>;"#,
     r#"const A = () => <div><label>Name</label><label htmlFor="x">Name</label><label for="x" /><label {...props}>Name</label></div>;"#,
     r#"const A = () => <div><label><input /></label><label>{cond && <input />}</label><label>{items.map((i) => <input />)}</label><label><span><select /></span></label></div>;"#,
+    r#"const A = () => <div><label>{<input />}</label><label>{<select />}</label><label>{<textarea />}</label><label>{<><input /></>}</label></div>;"#,
+    r#"const A = () => <div><label>{<span />}</label><label>{<><span /></>}</label><label>{<Input />}</label></div>;"#,
     r#"const A = () => <div><label>{cond && <span />}</label><label>{cond ? <input /> : <span />}</label><label>{a && (b ? <select /> : null)}</label><label>{rows.map((r) => <div><textarea /></div>)}</label></div>;"#,
     r#"const A = () => <div><label htmlFor="missing">x</label><div aria-labelledby="a b" /><span id="a" /></div>;"#,
     r#"const A = () => <div><span onMouseDown={f} /><div role={r} onClick={f} /><dialog onClick={f} /><div role="toolbar" onClick={f} /></div>;"#,

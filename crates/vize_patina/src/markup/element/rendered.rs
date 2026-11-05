@@ -6,7 +6,7 @@ use crate::markup::jsx_roots::walk_expression_container_roots;
 use crate::markup::l2::L2Markup;
 use crate::markup::l2::children::walk_nodes;
 use crate::markup::node::MarkupNode;
-use oxc_ast::ast::JSXChild;
+use oxc_ast::ast::{JSXChild, JSXExpression};
 use vize_l2::op::Op;
 use vize_relief::TemplateChildNode;
 
@@ -64,9 +64,20 @@ fn l2<'a>(doc: &'a L2Markup<'a>, ops: &'a [Op<'a>], visitor: &mut dyn FnMut(Mark
     }
 }
 
-/// A conditional or list expression yields the JSX roots inside it.
+/// Direct JSX, conditional and list expressions yield their rendered roots.
 fn jsx<'a>(children: &'a [JSXChild<'a>], offset: u32, visitor: &mut impl FnMut(MarkupNode<'a>)) {
     for child in children {
+        if let JSXChild::ExpressionContainer(container) = child
+            && matches!(
+                &container.expression,
+                JSXExpression::JSXElement(_) | JSXExpression::JSXFragment(_)
+            )
+        {
+            walk_expression_container_roots(container, offset, &mut |element| {
+                visitor(MarkupNode::Element(element));
+            });
+            continue;
+        }
         match MarkupNode::from_jsx_child(child, offset) {
             MarkupNode::If(_) | MarkupNode::For(_) => {
                 if let JSXChild::ExpressionContainer(container) = child {
