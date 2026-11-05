@@ -58,7 +58,7 @@ test("the actual mapper caller installs a byte-identical JS consumer runtime wit
     provider,
     workspace,
     {
-      id: "published679",
+      id: "candidate",
       package: packageRoot,
     },
     capture,
