@@ -30,6 +30,7 @@ impl RuleRegistry {
         ));
         registry.register(Box::new(crate::rules::vue::ComponentDefinitionNameCasing));
         registry.register(Box::new(crate::rules::vue::HtmlQuotes::default()));
+        registry.register(Box::new(crate::rules::vue::HtmlEndTags));
         registry.register(Box::new(
             crate::rules::vue::MustacheInterpolationSpacing::default(),
         ));
