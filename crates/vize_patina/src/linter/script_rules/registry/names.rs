@@ -106,6 +106,7 @@ pub(crate) const RULE_NO_REF_OBJECT_REACTIVITY_LOSS: &str = "vue/no-ref-object-r
 pub(crate) const RULE_NO_SETUP_PROPS_REACTIVITY_LOSS: &str = "vue/no-setup-props-reactivity-loss";
 pub(crate) const RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER: &str = "vue/no-this-in-before-route-enter";
 pub(crate) const RULE_REQUIRE_EXPOSE: &str = "vue/require-expose";
+pub(crate) const RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST: &str = "vue/prefer-prop-type-boolean-first";
 
 pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
@@ -196,6 +197,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
     RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
     RULE_REQUIRE_EXPOSE,
+    RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
 ];
 
 #[cfg(test)]
@@ -286,4 +288,5 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
     RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
     RULE_REQUIRE_EXPOSE,
+    RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
 ];
