@@ -41,6 +41,7 @@ pub use super::no_reserved_keys::NoReservedKeys;
 pub use super::no_restricted_globals::NoRestrictedGlobals;
 pub(crate) use super::no_restricted_globals::RestrictedGlobals;
 pub use super::no_restricted_members::NoRestrictedMembers;
+pub use super::no_setup_props_reactivity_loss::NoSetupPropsReactivityLoss;
 pub use super::no_side_effects_in_computed::NoSideEffectsInComputed;
 pub use super::no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use super::no_unstable_nested_components::NoUnstableNestedComponents;
