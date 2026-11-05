@@ -85,13 +85,21 @@ await test("the canonical call path and every local action it uses select the co
 const importPattern =
   /(?:\bfrom\s*|\bimport\s*\(\s*|\bnew URL\(\s*)["'](\.{1,2}\/[^"']+\.(?:mjs|cjs|js|ts))["']/g;
 // Repository-root paths, also when reached through `../` from a crate.
-const literalPattern = /(?:^|[^\w.-])((?:tests\/_fixtures|docs)\/[\w@.+-]+(?:\/[\w@.+-]+)*)/g;
+const literalPattern = /(?:^|[^\w.-])((?:tests\/_fixtures|docs)\/[\w@.+#-]+(?:\/[\w@.+#-]+)*)/g;
 
 function literalReads(text: string): string[] {
   return [...text.matchAll(literalPattern)]
     .map((match) => (match[1] as string).replace(/\/+$/, ""))
     .filter((path) => tracked(path).length > 0);
 }
+
+await test("literal fixture reads retain complete issue-number path segments", () => {
+  const directory = "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2514";
+  for (const file of ["main.vue", "tsconfig.json"]) {
+    const fixture = `${directory}/${file}`;
+    assert.deepEqual(literalReads(`include_str!("../../../../${fixture}")`), [fixture]);
+  }
+});
 
 // Path constants of other tools that share a module with a corpus helper;
 // the canonical jobs never read them.
