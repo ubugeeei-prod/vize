@@ -1,3 +1,7 @@
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -72,9 +76,10 @@ await test("source CLI preserves whole compound global ownership and refusal rep
         fs.writeFileSync(path.join(directory, row.filename), row.source);
         writeVueConfigFixture(directory, config);
         const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
+        const currentExpected = currentRuleDocumentationPacket(row.expectedCli);
         for (let pass = 0; pass < 3; pass++) {
-          const raw = run(row, `${id}-json-${pass}`, args, config, row.expectedCli);
-          assert.deepEqual(JSON.parse(raw.stdout), row.expectedCli, row.id);
+          const raw = run(row, `${id}-json-${pass}`, args, config, currentExpected);
+          assert.deepEqual(JSON.parse(raw.stdout), currentExpected, row.id);
         }
         const plainArgs = [
           "lint",
@@ -87,8 +92,14 @@ await test("source CLI preserves whole compound global ownership and refusal rep
           row.filename,
         ];
         assert.equal(
-          run(row, id + "-plain", plainArgs, config, row.expectedPlain).stdout,
-          row.expectedPlain,
+          run(
+            row,
+            id + "-plain",
+            plainArgs,
+            config,
+            currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
+          ).stdout,
+          currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
           row.id,
         );
         const offConfig = JSON.parse(config);

@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -110,7 +111,7 @@ await test("source CLI preserves the original static non-focusable controls and 
       const source = bytes.toString("utf8");
       fs.writeFileSync(path.join(directory, filename), bytes);
       if (input === "MySelectCRLF.vue.txt") assert.equal(source, original.replaceAll("\n", "\r\n"));
-      const oracle = expected(source, filename, targets);
+      const oracle = currentRuleDocumentationPacket(expected(source, filename, targets));
       const row = {
         input,
         filename,

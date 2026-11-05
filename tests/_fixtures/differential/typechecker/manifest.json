@@ -12522,6 +12522,50 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-helper-abi-11809",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "direct-child-props-11809/PropsChild.vue.txt",
+          "sha256": "16d7b729d60501cc53a1fbea01a86be97a57971c6a935b4ae2c65789a46bd3c1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/PropsParent.vue.txt",
+          "sha256": "3378e19998e3834e265d0cee20899da34edff77b55522331a8252fec363b1525",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "direct-child-props-11809/tsconfig.vize-no-shim.json.txt",
+          "sha256": "8b8353611a3f97c7e2bac9ba216501d0cf283463acca93f8b8d651967cd252f3",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-helper-abi-11809/cases.json",
+          "sha256": "a83fc34aff24e2bad14029a0f58f46e1b219dfe4740f1e2dd0764e91582790a1",
+          "role": "sdk-abi-contrasts"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "direct-child-helper-abi-11809.ts consumes the pinned eight-case SDK mutation plan and the original two SFC inputs under both installed native hosts. Exact TS2322 and empty stderr are required in all sixteen cases, with declaration bytes restored after each contrast. Source acceptance is pending Actions; no original reporter installation cause or native parity credit is claimed."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/declaration-fallthrough-attrs-11454",
       "state": "active",
       "targets": [

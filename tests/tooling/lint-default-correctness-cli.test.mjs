@@ -1,3 +1,4 @@
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -103,7 +104,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: withoutHelp(wholeJson(entry, cliOrder(findings))),
+        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, cliOrder(findings)))),
         expectedStderr: "",
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };

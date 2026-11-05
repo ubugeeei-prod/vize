@@ -1,3 +1,4 @@
+import { currentRuleDocumentationMessages } from "./support/current-rule-documentation.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -234,7 +235,7 @@ await test("source-built lint preserves complete original P0 findings with nativ
         const expected = [
           {
             file: input.path,
-            messages: entry.messages,
+            messages: currentRuleDocumentationMessages(entry.messages),
             errorCount: 0,
             warningCount: entry.messages.length,
           },

@@ -1,3 +1,4 @@
+import { assertSourceAndPublishedAdmission } from "./support/helper-abi-source-admission-11809.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -29,7 +30,6 @@ import {
 import {
   assertErrorMappings,
   assertCheckedReadOwnership,
-  assertProtocolAdmission,
   assertWholeTransform,
   assertTransformEnvelope,
   fullPacketMutations,
@@ -467,11 +467,7 @@ await test(
         responses.map(({ jsonrpc, id: responseId, error }) => [jsonrpc, responseId, error ?? null]),
         Array.from({ length: id - 1 }, (_, index) => ["2.0", index + 1, null]),
       );
-      assertProtocolAdmission(responses, path.join(source, "tsconfig.json"));
-      assertProtocolAdmission(
-        decodeFrames(publicWire.stdout),
-        path.join(published, "tsconfig.json"),
-      );
+      assertSourceAndPublishedAdmission(responses, publicWire.stdout, source, published);
       for (const row of sourceCases) {
         const response = responses.find((packet) => packet.id === row.id)!;
         assertTransformEnvelope(response, row.id);

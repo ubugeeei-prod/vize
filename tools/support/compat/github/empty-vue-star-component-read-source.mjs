@@ -13,6 +13,7 @@ import {
 import {
   listStarCounterpartFiles,
   provisionStarSourceCounterpart,
+  registerWithOwnedTemporaryDirectory,
 } from "./source-counterpart-snapshot.mjs";
 
 import { ensureHostedLiteralSource } from "../../../../tests/performance/support/warm-type-backed-git-reader-literal-source.ts";
@@ -195,25 +196,36 @@ export async function runRetainedComponentReadStarCustody(root) {
   const current = prepareRootComponentReadHistory(root);
   const names = listStarCounterpartFiles(root, source, componentReadSourcePaths);
   const snapshot = provisionStarSourceCounterpart(root, source, names);
+  let temporary;
   let registered = false;
   try {
     const runner = await import(
       pathToFileURL(path.join(snapshot.root, directory + "empty-vue-star-custody-runner.mjs")).href
     );
-    const retained = await runner.runRetainedEmptyVueStarCustody(snapshot.root);
+    temporary = await registerWithOwnedTemporaryDirectory(root, () =>
+      runner.runRetainedEmptyVueStarCustody(snapshot.root),
+    );
+    const retained = temporary.value;
     assert.equal(retained.registeredOriginalTests, 8);
     assert.equal(retained.currentBodies, 322);
     after(() => {
       try {
         assert.equal(authenticateStarComponentReadSource(root).head, current.head);
       } finally {
-        snapshot.cleanup();
+        try {
+          snapshot.cleanup();
+        } finally {
+          temporary.cleanup();
+        }
       }
     });
     registered = true;
     return Object.freeze({ ...current, currentBodies: 322, registeredOriginalTests: 8 });
   } finally {
-    if (!registered) snapshot.cleanup();
+    if (!registered) {
+      snapshot.cleanup();
+      temporary?.cleanup();
+    }
   }
 }
 export async function runRetainedComponentReadStarLaws(root) {

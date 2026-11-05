@@ -1,3 +1,7 @@
+import {
+  currentRuleDocumentationPacket,
+  currentRuleDocumentationPlain,
+} from "./support/current-rule-documentation.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -68,8 +72,18 @@ await test("source CLI preserves foreign and potentially local global ownership 
       writeVueConfigFixture(directory, config);
       const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
       for (let pass = 0; pass < 3; pass++) {
-        const raw = run(row, `${row.id}-json-${pass}`, args, config, row.expectedCli);
-        assert.deepEqual(JSON.parse(raw.stdout), row.expectedCli, row.id);
+        const raw = run(
+          row,
+          `${row.id}-json-${pass}`,
+          args,
+          config,
+          currentRuleDocumentationPacket(row.expectedCli),
+        );
+        assert.deepEqual(
+          JSON.parse(raw.stdout),
+          currentRuleDocumentationPacket(row.expectedCli),
+          row.id,
+        );
       }
       const plainArgs = [
         "lint",
@@ -82,8 +96,14 @@ await test("source CLI preserves foreign and potentially local global ownership 
         row.filename,
       ];
       assert.equal(
-        run(row, row.id + "-plain", plainArgs, config, row.expectedPlain).stdout,
-        row.expectedPlain,
+        run(
+          row,
+          row.id + "-plain",
+          plainArgs,
+          config,
+          currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
+        ).stdout,
+        currentRuleDocumentationPlain(row.expectedPlain, "css/no-display-none"),
         row.id,
       );
       const off = JSON.stringify({

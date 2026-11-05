@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "consumers": [
+    "$CallableProp",
+    "$ComponentEvents",
+    "$ComponentNavigationProps",
+    "$ComponentRawProps",
+    "$ComponentRefCallback",
+    "$EmitListeners",
+    "$EmitOwnedKeys",
+    "$EmitPropsFactory",
+    "$FallthroughSpreadChecker",
+    "$FallthroughValue",
+    "$IsLibraryGenericExport",
+    "$NavigationSlots",
+    "$PropChecker",
+    "$PropValue",
+    "$PropsResolver",
+    "$PropsSelector",
+    "$ProvidedSlotChildren",
+    "$RegisteredSlotProvider",
+    "$RequiredFallthroughProps",
+    "$RequiredSlots",
+    "$ResolvedContextProps",
+    "$ResolvedProp",
+    "$SlotChildren",
+    "$SlotConstructor",
+    "$SlotConstructorArgs",
+    "$SlotConstructorInstance",
+    "$SlotConstructorWithArguments",
+    "$SlotConstructorWithoutArguments",
+    "$SlotHostSelector",
+    "$SlotHostSlots",
+    "$SlotPayload",
+    "$SlotsFactory",
+    "$StructuralSlots",
+    "IsAny",
+    "__EmitProps"
+  ],
+  "modules": [
+    {
+      "subpath": "./content-mapper-helpers",
+      "exports": {
+        "import": {
+          "types": "./content-mapper-helpers.d.mts"
+        },
+        "require": {
+          "types": "./content-mapper-helpers.d.cts"
+        },
+        "types": "./content-mapper-helpers.d.ts"
+      },
+      "files": [
+        {
+          "path": "content-mapper-helpers.d.cts",
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.mts",
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "content-mapper-helpers.d.ts",
+          "sha256": "561fd0ad08013b3d2e80eb8255e7a55bfea529ec3f9e4c460b8fd5cbbcec24b0"
+        },
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "sha256": "1acd0abc0a47eeea5d3a6bbe6a43ace358d394c29620d8230bb1cdc01cf701f1"
+        }
+      ]
+    },
+    {
+      "subpath": "./virtual-ts",
+      "exports": {
+        "import": {
+          "types": "./virtual-ts.d.mts"
+        },
+        "require": {
+          "types": "./virtual-ts.d.cts"
+        },
+        "types": "./virtual-ts.d.ts"
+      },
+      "files": [
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "sha256": "1acd0abc0a47eeea5d3a6bbe6a43ace358d394c29620d8230bb1cdc01cf701f1"
+        },
+        {
+          "path": "virtual-ts-globals.d.ts",
+          "sha256": "1077ed40b76672245658ad66ded95531ccfbe41405b713b44126c1704f6c1cd2"
+        },
+        {
+          "path": "virtual-ts-patterns.d.ts",
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        },
+        {
+          "path": "virtual-ts-slots.d.ts",
+          "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
+        },
+        {
+          "path": "virtual-ts.d.cts",
+          "sha256": "363aa2912d43f63c940a6af5f0eae6bc75dabac8cd97752fda1031b84c409f5e"
+        },
+        {
+          "path": "virtual-ts.d.mts",
+          "sha256": "363aa2912d43f63c940a6af5f0eae6bc75dabac8cd97752fda1031b84c409f5e"
+        },
+        {
+          "path": "virtual-ts.d.ts",
+          "sha256": "363aa2912d43f63c940a6af5f0eae6bc75dabac8cd97752fda1031b84c409f5e"
+        }
+      ]
+    },
+    {
+      "subpath": "./virtual-ts-checker",
+      "exports": {
+        "types": "./virtual-ts-checker.d.ts"
+      },
+      "files": [
+        {
+          "path": "generated/content-mapper-types.d.ts",
+          "sha256": "1acd0abc0a47eeea5d3a6bbe6a43ace358d394c29620d8230bb1cdc01cf701f1"
+        },
+        {
+          "path": "virtual-ts-checker.d.ts",
+          "sha256": "bdf4ed246fbe4ad9894115ed72043dbda29bc56e9f053cbd7c4d68ba7eb81e78"
+        },
+        {
+          "path": "virtual-ts-globals.d.ts",
+          "sha256": "1077ed40b76672245658ad66ded95531ccfbe41405b713b44126c1704f6c1cd2"
+        },
+        {
+          "path": "virtual-ts-patterns.d.ts",
+          "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
+        },
+        {
+          "path": "virtual-ts-slots.d.ts",
+          "sha256": "3b2f3387f8e720bdffd4ed864b74af6fa19895a89ba6f2f64151fd8dd98bdf9f"
+        },
+        {
+          "path": "virtual-ts.d.ts",
+          "sha256": "363aa2912d43f63c940a6af5f0eae6bc75dabac8cd97752fda1031b84c409f5e"
+        }
+      ]
+    }
+  ]
+}

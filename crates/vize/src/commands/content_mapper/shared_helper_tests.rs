@@ -1,170 +1,67 @@
 use serde_json::{Value, json};
+use vize_l0::cstr;
 
-use super::test_support::{
-    exchange, frames, initialize_request, open_project_request, transform_request,
-};
+use super::helper_abi_fixture::{InstalledSdk, Mode};
 
 #[test]
-fn installed_vize_package_enables_shared_component_attribute_helpers() {
-    let directory = tempfile::tempdir().unwrap();
-    let project = directory.path().join("app");
-    std::fs::create_dir_all(&project).unwrap();
-    let config = project.join("tsconfig.json");
-    std::fs::write(&config, "{}").unwrap();
-    let package = directory.path().join("node_modules/vize");
-    std::fs::create_dir_all(&package).unwrap();
-    std::fs::write(package.join("content-mapper-helpers.d.ts"), "export {};").unwrap();
-    let vue = directory.path().join("node_modules/vue");
-    std::fs::create_dir_all(&vue).unwrap();
-    std::fs::write(vue.join("package.json"), "{}").unwrap();
-
-    let mut open = open_project_request(2, Value::Null, json!({}));
-    open["params"]["configFileName"] = json!(config);
-    let responses = exchange(&frames(&[
-        initialize_request(),
-        open,
-        transform_request(3, "<template><main data-test-id=\"shared\" /></template>"),
-    ]));
-    let text = responses[2]["result"]["text"].as_str().unwrap();
-    assert_eq!(
-        text.matches("from \"vize/content-mapper-helpers\";")
-            .count(),
-        1,
-        "{text}"
-    );
-    assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =").count(),
-        0,
-        "{text}"
-    );
+fn qualified_vize_package_enables_shared_component_attribute_helpers() {
+    let sdk = InstalledSdk::new();
+    std::fs::remove_file(sdk.package.join("virtual-ts-checker.d.ts")).unwrap();
+    sdk.assert_projection(Mode::Core);
 }
 
 #[test]
 fn mismatched_project_and_helper_vue_packages_keep_transforms_self_contained() {
-    let directory = tempfile::tempdir().unwrap();
-    let project = directory.path().join("app");
-    std::fs::create_dir_all(&project).unwrap();
-    let config = project.join("tsconfig.json");
-    std::fs::write(&config, "{}").unwrap();
-    let package = directory.path().join("node_modules/vize");
-    std::fs::create_dir_all(&package).unwrap();
-    std::fs::write(package.join("content-mapper-helpers.d.ts"), "export {};").unwrap();
-    for vue in [
-        directory.path().join("node_modules/vue"),
-        project.join("node_modules/vue"),
-    ] {
-        std::fs::create_dir_all(&vue).unwrap();
-        std::fs::write(vue.join("package.json"), "{}").unwrap();
-    }
+    let sdk = InstalledSdk::new();
+    let vue = sdk.config.parent().unwrap().join("node_modules/vue");
+    std::fs::create_dir_all(&vue).unwrap();
+    std::fs::write(vue.join("package.json"), "{}").unwrap();
+    sdk.assert_projection(Mode::Inline);
+}
 
-    let mut open = open_project_request(2, Value::Null, json!({}));
-    open["params"]["configFileName"] = json!(config);
-    let responses = exchange(&frames(&[
-        initialize_request(),
-        open,
-        transform_request(3, "<template><main data-test-id=\"inline\" /></template>"),
-    ]));
-    let text = responses[2]["result"]["text"].as_str().unwrap();
-    assert_eq!(
-        text.matches("from \"vize/content-mapper-helpers\";")
-            .count(),
-        0,
-        "{text}"
-    );
-    assert_eq!(
-        text.matches("type $ComponentNativeAttrNames =").count(),
-        1,
-        "{text}"
+#[test]
+fn core_sharing_survives_without_the_optional_program_module() {
+    let sdk = InstalledSdk::new();
+    std::fs::remove_file(sdk.package.join("virtual-ts-checker.d.ts")).unwrap();
+    sdk.assert_projection_of(
+        "<template><main data-test-id=\"shared\" /></template>",
+        Mode::Core,
+        json!({}),
     );
 }
 
 #[test]
-fn core_sharing_requires_the_installed_package_export_and_declaration() {
-    let directory = tempfile::tempdir().unwrap();
-    let project = directory.path().join("app");
-    std::fs::create_dir_all(&project).unwrap();
-    let config = project.join("tsconfig.json");
-    std::fs::write(&config, "{}").unwrap();
-    let package = directory.path().join("node_modules/vize");
-    std::fs::create_dir_all(package.join("generated")).unwrap();
-    let vue = directory.path().join("node_modules/vue");
-    std::fs::create_dir_all(&vue).unwrap();
-    std::fs::write(vue.join("package.json"), "{}").unwrap();
-    let package_source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/cli");
-    let helper = package.join("content-mapper-helpers.d.ts");
-    std::fs::write(&helper, "export {};").unwrap();
+fn legacy_or_incomplete_helper_packages_use_embedded_types() {
     for stage in 0..3 {
-        if stage == 1 {
-            std::fs::copy(
-                package_source.join("generated/content-mapper-types.d.ts"),
-                package.join("generated/content-mapper-types.d.ts"),
-            )
-            .unwrap();
-        } else if stage == 2 {
-            std::fs::copy(package_source.join("content-mapper-helpers.d.ts"), &helper).unwrap();
+        let sdk = InstalledSdk::new();
+        if stage < 2 {
+            for extension in ["ts", "mts", "cts"] {
+                std::fs::write(
+                    sdk.package
+                        .join(cstr!("content-mapper-helpers.d.{extension}").as_str()),
+                    "export {};\n",
+                )
+                .unwrap();
+            }
         }
-        let mut open = open_project_request(2, Value::Null, json!({}));
-        open["params"]["configFileName"] = json!(config);
-        let responses = exchange(&frames(&[
-            initialize_request(),
-            open,
-            transform_request(3, "<template><main /></template>"),
-        ]));
-        let text = responses[2]["result"]["text"].as_str().unwrap();
-        assert_eq!(
-            text.matches("from \"vize/content-mapper-helpers\";")
-                .count(),
-            if stage == 2 { 2 } else { 1 }
-        );
-        assert_eq!(
-            text.matches("type $ComponentInput<").count(),
-            usize::from(stage != 2)
-        );
+        if stage == 0 {
+            std::fs::remove_file(sdk.package.join("generated/content-mapper-types.d.ts")).unwrap();
+        } else if stage == 2 {
+            let manifest = sdk.package.join("package.json");
+            let mut value: Value =
+                serde_json::from_slice(&std::fs::read(&manifest).unwrap()).unwrap();
+            value["exports"]
+                .as_object_mut()
+                .unwrap()
+                .remove("./content-mapper-helpers");
+            std::fs::write(manifest, serde_json::to_vec(&value).unwrap()).unwrap();
+        }
+        sdk.assert_projection(Mode::Inline);
     }
 }
 
 #[test]
 fn installed_virtual_module_points_helpers_at_the_package() {
-    let directory = tempfile::tempdir().unwrap();
-    let project = directory.path().join("app");
-    std::fs::create_dir_all(&project).unwrap();
-    let config = project.join("tsconfig.json");
-    std::fs::write(&config, "{}").unwrap();
-    let package = directory.path().join("node_modules/vize");
-    std::fs::create_dir_all(package.join("generated")).unwrap();
-    let vue = directory.path().join("node_modules/vue");
-    std::fs::create_dir_all(&vue).unwrap();
-    std::fs::write(vue.join("package.json"), "{}").unwrap();
-    let package_source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../npm/cli");
-    for (source, target) in [
-        ("content-mapper-helpers.d.ts", "content-mapper-helpers.d.ts"),
-        (
-            "generated/content-mapper-types.d.ts",
-            "generated/content-mapper-types.d.ts",
-        ),
-        ("virtual-ts-checker.d.ts", "virtual-ts-checker.d.ts"),
-        ("virtual-ts-globals.d.ts", "virtual-ts-globals.d.ts"),
-        ("virtual-ts-patterns.d.ts", "virtual-ts-patterns.d.ts"),
-        ("virtual-ts-slots.d.ts", "virtual-ts-slots.d.ts"),
-        ("virtual-ts.d.ts", "virtual-ts.d.ts"),
-    ] {
-        std::fs::copy(package_source.join(source), package.join(target)).unwrap();
-    }
-
-    let mut open = open_project_request(2, Value::Null, json!({}));
-    open["params"]["configFileName"] = json!(config);
-    let responses = exchange(&frames(&[
-        initialize_request(),
-        open,
-        transform_request(3, "<template><main /></template>"),
-    ]));
-    let text = responses[2]["result"]["text"].as_str().unwrap();
-    assert_eq!(
-        text.matches("import type {} from \"vize/virtual-ts-checker\";")
-            .count(),
-        1,
-        "{text}"
-    );
-    assert_eq!(text.matches("vize:virtual-ts").count(), 0, "{text}");
-    assert_eq!(text.matches("type __EmitFn<").count(), 0, "{text}");
+    let sdk = InstalledSdk::new();
+    sdk.assert_projection_of("<template><main /></template>", Mode::Shared, json!({}));
 }
