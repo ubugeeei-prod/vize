@@ -49,6 +49,7 @@ pub(super) fn emit_scope_closures(
     options: (ScopeGenerationOptions<'_, '_>, bool),
 ) {
     let (options, pack_root_owners) = options;
+    super::component_events::reset_emit_resolvers();
     let check_options = options.check_options;
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
@@ -437,4 +438,5 @@ pub(super) fn emit_scope_closures(
         record.push((super::REFS_RETURN_KEY, refs));
     }
     slot_outlets.emit_root_result(ts, summary, &record);
+    super::component_events::flush_emit_resolvers(ts);
 }

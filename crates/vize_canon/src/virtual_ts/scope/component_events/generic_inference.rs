@@ -173,10 +173,23 @@ pub(super) fn generate_inferred_emit_args(
     // A vue-tsc library export is called itself, so the bound props
     // instantiate its generics and its `__ctx` carries the listener props.
     if first_listener && !gated {
-        append!(
-            *ts,
-            "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
-        );
+        let share = super::emit_resolver_share::ResolverShare {
+            component_type_name: ctx.component_type_name,
+            component_ref,
+            factory: emit_props_factory,
+            dynamic: dynamic_component,
+            parent_scope: ctx.scope.parent().map(|parent| parent.as_u32()),
+            block: super::super::open_chained_vif_guard_block(),
+        };
+        if let Some(canonical) = super::emit_resolver_share::alias_target(&share) {
+            append!(*ts, "{indent}type {resolver_type} = {canonical};\n");
+        } else {
+            append!(
+                *ts,
+                "{indent}type {resolver_type} = {library} extends true ? (component: typeof {component_ref}) => typeof {component_ref} : {emit_props_factory}<typeof {component_ref}>;\n",
+            );
+            super::emit_resolver_share::record_inline(&share, resolver_type.as_str());
+        }
     }
     if first_listener && let Some(guard) = guard.as_deref() {
         let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
