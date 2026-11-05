@@ -204,7 +204,7 @@ impl ContextFingerprint {
             && self.dependency_overlays_match(previous)
     }
 
-    pub(super) fn compact_overlay_inputs(&mut self) {
+    pub(in super::super) fn compact_overlay_inputs(&mut self) {
         let inputs = self
             .stamps
             .iter()
