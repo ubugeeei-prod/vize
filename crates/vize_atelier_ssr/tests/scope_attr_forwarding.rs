@@ -68,10 +68,18 @@ fn compile(name: &str, source: &str, ssr: bool) -> Value {
     .expect("compile complete reported SFC");
     assert!(result.errors.is_empty(), "{name}: {:?}", result.errors);
     assert!(result.warnings.is_empty(), "{name}: {:?}", result.warnings);
-    assert!(
+    // The public module map traces script-bearing SFCs; these scriptless
+    // template roots currently report no module map. Pin that disposition
+    // explicitly and compare the complete available maps across SSR routes.
+    assert_eq!(
         result.map.is_some(),
-        "retain complete source map for {name}"
+        matches!(name, "App" | "Panel"),
+        "{name}: exact public module-map disposition"
     );
+    if let Some(map) = &result.map {
+        assert_eq!(map["sources"], json!([cstr!("{name}.vue")]));
+        assert_eq!(map["sourcesContent"], json!([source]));
+    }
     serde_json::to_value(result).expect("retain every public compiler field")
 }
 
