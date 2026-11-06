@@ -27,29 +27,8 @@ impl HoverService {
             return None;
         }
 
-        if let Some(hover) = Self::hover_component_tag(ctx)
-            .or_else(|| super::component_prop::hover_attribute(ctx))
-            .or_else(|| super::component_prop::hover_event(ctx))
-        {
-            return Some(hover);
-        }
-
-        if let Some(hover) = Self::hover_directive(&word) {
-            return Some(hover);
-        }
-
-        #[cfg(feature = "native")]
-        if let Some(hover) = Self::hover_native_dom_attribute(ctx) {
-            return Some(hover);
-        }
-
-        #[cfg(feature = "native")]
-        if let Some(hover) = Self::hover_native_dom_tag(ctx) {
-            return Some(hover);
-        }
-
         let in_expression = crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
-        if !in_expression && let Some(hover) = Self::hover_template_directive_attribute(ctx) {
+        if let Some(hover) = Self::hover_template_markup(ctx, &word, in_expression) {
             return Some(hover);
         }
 
@@ -116,6 +95,75 @@ impl HoverService {
                 .description("Expression evaluated against the component template scope.")
                 .build(),
         )
+    }
+
+    /// Shared resident fallback, including metadata-based component contracts.
+    pub(super) fn hover_template_markup(
+        ctx: &IdeContext<'_>,
+        word: &str,
+        in_expression: bool,
+    ) -> Option<Hover> {
+        if let Some(hover) = Self::hover_component_tag(ctx)
+            .or_else(|| super::component_prop::hover_attribute(ctx))
+            .or_else(|| super::component_prop::hover_event(ctx))
+        {
+            return Some(hover);
+        }
+
+        Self::hover_project_independent_template_markup(ctx, word, in_expression)
+    }
+
+    /// Markup that can safely win over project-aware component typing.
+    pub(super) fn hover_project_independent_template_markup(
+        ctx: &IdeContext<'_>,
+        word: &str,
+        in_expression: bool,
+    ) -> Option<Hover> {
+        let typed_component_directive = Self::component_directive_requires_type_project(ctx);
+        if !typed_component_directive && let Some(hover) = Self::hover_directive(word) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_attribute(ctx) {
+            return Some(hover);
+        }
+
+        #[cfg(feature = "native")]
+        if let Some(hover) = Self::hover_native_dom_tag(ctx) {
+            return Some(hover);
+        }
+
+        if !in_expression
+            && !typed_component_directive
+            && let Some(hover) = Self::hover_template_directive_attribute(ctx)
+        {
+            return Some(hover);
+        }
+        None
+    }
+
+    fn component_directive_requires_type_project(ctx: &IdeContext<'_>) -> bool {
+        let Some(attribute) =
+            crate::ide::definition::helpers::raw_attribute_with_source_span_at_offset(ctx)
+        else {
+            return false;
+        };
+        if !crate::ide::is_component_tag(&attribute.tag_name) {
+            return false;
+        }
+
+        let name = attribute.raw_name.as_str();
+        name.starts_with([':', '.', '@', '#'])
+            || name == "v-bind"
+            || name.starts_with("v-bind:")
+            || name == "v-on"
+            || name.starts_with("v-on:")
+            || name == "v-model"
+            || name.starts_with("v-model:")
+            || name.starts_with("v-model.")
+            || name == "v-slot"
+            || name.starts_with("v-slot:")
     }
 
     /// Get hover for TypeScript binding using croquis analysis.

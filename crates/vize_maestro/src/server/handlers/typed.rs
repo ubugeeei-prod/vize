@@ -102,6 +102,8 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let mut hover_result: Option<Hover> = if ctx.is_in_style() {
             HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
+        } else if let Some(hover) = HoverService::hover_resident_markup(&ctx) {
+            Some(hover)
         } else {
             let stamp = self.state.corsa_request_stamp();
             let (corsa_bridge, initial) = self

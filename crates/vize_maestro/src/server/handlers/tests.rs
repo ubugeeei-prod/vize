@@ -14,6 +14,8 @@ mod initial_diagnostics;
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod lifecycle;
 #[cfg(feature = "native")]
+mod markup_hover;
+#[cfg(feature = "native")]
 mod open_buffer_alias;
 mod requests;
 

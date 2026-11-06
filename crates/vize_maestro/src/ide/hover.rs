@@ -57,6 +57,34 @@ impl HoverService {
         }
     }
 
+    /// Answer markup without constructing a TypeScript project.
+    ///
+    /// Native tags, native attributes, Vue directives, and component contracts
+    /// resolved from resident SFC metadata do not need Corsa. Keeping this gate
+    /// separate lets the server answer them before starting a large workspace's
+    /// type project while typed template expressions continue through Corsa.
+    #[cfg(feature = "native")]
+    pub(crate) fn hover_resident_markup(ctx: &IdeContext<'_>) -> Option<Hover> {
+        match ctx.block_type? {
+            BlockType::Template => {
+                let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+                if word.is_empty() {
+                    return None;
+                }
+                let in_expression =
+                    crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
+                let mut hover = Self::hover_component_tag(ctx).or_else(|| {
+                    Self::hover_project_independent_template_markup(ctx, &word, in_expression)
+                })?;
+                if hover.range.is_none() {
+                    hover.range = corsa::authored_hover_token_range(ctx);
+                }
+                Some(hover)
+            }
+            _ => None,
+        }
+    }
+
     /// Get hover information with Corsa support (async version).
     ///
     /// This method first tries to get type information from Corsa,

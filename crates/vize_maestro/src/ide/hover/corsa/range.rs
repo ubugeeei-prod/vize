@@ -2,7 +2,7 @@ use tower_lsp::lsp_types::{Position, Range};
 
 use crate::ide::{HoverService, IdeContext};
 
-pub(super) fn authored_hover_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
+pub(in crate::ide::hover) fn authored_hover_token_range(ctx: &IdeContext<'_>) -> Option<Range> {
     if let Some((start, end)) = super::super::v_model::argument_token_span(&ctx.content, ctx.offset)
     {
         let (start_line, start_character) = crate::ide::offset_to_position(&ctx.content, start);
