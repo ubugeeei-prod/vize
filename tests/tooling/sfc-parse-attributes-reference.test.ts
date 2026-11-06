@@ -126,7 +126,9 @@ await test("only the original empty compile packet advances by the authenticated
     assert.deepEqual(attributesPacketReference(before, "", mode), before);
   for (const source of [" ", "<!--comment-->", "<style/>", "<docs/>", "<template/>", "<script/>"])
     assert.deepEqual(
-      JSON.parse(String(attributesPacketReference(before, source, "compile").json)),
+      JSON.parse(
+        String(attributesPacketReference(before, source, "compile", undefined, parse).json),
+      ),
       withModuleFacts(JSON.parse(String(before.json)) as Record<string, unknown>),
     );
   for (const field of ["code", "errors", "warnings", "styles", "moduleShape", "unknown"]) {
