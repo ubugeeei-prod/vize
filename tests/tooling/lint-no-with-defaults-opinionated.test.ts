@@ -172,7 +172,12 @@ await test("opinionated activates the existing withDefaults warning through the 
         assert.equal(run.error, null, JSON.stringify(run));
         assert.equal(run.signal, null, JSON.stringify(run));
         assert.equal(run.status, overWarningLimit ? 1 : 0, JSON.stringify(run));
-        assert.equal(run.stderr, overWarningLimit ? "\nToo many warnings (1 > max 0)\n" : "");
+        assert.equal(
+          run.stderr,
+          overWarningLimit
+            ? `\nToo many warnings (${oracle[0]!.warningCount} > max ${entry.maxWarnings})\n`
+            : "",
+        );
         assert.deepEqual(JSON.parse(run.stdout), oracle, entry.id);
         assert.equal(sha256(fs.readFileSync(destination)), pin.sha256);
         evidence.cliQualified++;

@@ -22,6 +22,15 @@ expression: diagnostics
         ),
     ),
     (
+        "script/define-props-destructuring",
+        "Prefer destructuring the return value of defineProps().",
+        51,
+        71,
+        Some(
+            "Use `const { prop = defaultValue } = defineProps<Props>()`; Vue 3.5+ preserves reactivity.",
+        ),
+    ),
+    (
         "script/require-prop-types",
         "Prop 'msg' should define a type.",
         64,

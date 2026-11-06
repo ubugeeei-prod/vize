@@ -200,7 +200,7 @@
     "rule": "script/custom-event-name-casing",
     "vue_version": "3",
     "vapor": null,
-    "diagnostics": 1,
+    "diagnostics": 0,
     "fixes": 0
   },
   {

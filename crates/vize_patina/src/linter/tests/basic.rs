@@ -448,8 +448,7 @@ fn test_lint_sfc_additional_opt_in_script_rule_preserves_preset_rules() {
         Linter::with_ecosystem().with_additional_rules(vec!["script/no-async-in-computed".into()]);
     let sfc = r#"<script setup>
 router.push('/settings')
-const data = computed(async () => await fetch('/api'))
-void data
+const data = computed(async () => await fetch('/api')); void data
 </script>
 "#;
     let result = linter.lint_sfc(sfc, "test.vue");

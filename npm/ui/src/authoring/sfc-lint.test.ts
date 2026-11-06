@@ -73,6 +73,7 @@ test("package lint:sfc stays wired to the shared Vize SFC gate", async () => {
   assert.match(lintScript, /import \{ lintPatinaSfc \} from "@vizejs\/native";/);
   assert.match(lintScript, /const lintCoreSfc: SfcLintFunction = \(source, options\) =>/);
   assert.match(lintScript, /customEventNameCasing: "camelCase"/);
+  assert.match(lintScript, /legacyPropsStyleRule = "script\/define-props-destructuring"/);
   assert.match(lintScript, /corsaPath: workspaceCorsaPath/);
   assert.match(lintScript, /lintFiles\(lintCoreSfc, sourceRoots\)/);
   assert.match(

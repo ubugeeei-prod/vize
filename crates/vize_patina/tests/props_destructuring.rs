@@ -95,7 +95,7 @@ fn reactive_defaults_pass_both_props_style_rules() {
 
 #[test]
 fn happy_path_requires_bare_typed_props_destructuring_by_default() {
-    let bare = "<script setup lang=\"ts\">defineProps<{ size?: string }>()</script><template><span>badge</span></template>";
+    let bare = "<script setup lang=\"ts\">defineProps<{ size?: string }>()</script><template><span>{{ size }}</span></template>";
     let result = Linter::with_preset(LintPreset::HappyPath).lint_sfc(bare, "Badge.vue");
     assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
     assert_eq!(

@@ -55,6 +55,7 @@ vize_patina	script/no-top-level-ref-in-script	1
 vize_patina	script/no-use-computed-property-like-method	1
 vize_patina	script/no-watch-after-await	1
 vize_patina	script/require-default-prop	1
+vize_patina	script/require-define-component	1
 vize_patina	script/require-prop-type-constructor	1
 vize_patina	script/require-prop-types	1
 vize_patina	script/require-render-return	1

@@ -48,7 +48,10 @@ fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
             LintPreset::Ecosystem,
         ] {
             let result = Linter::with_preset(preset)
-                .with_disabled_rules(vec!["vue/no-unused-setup-bindings".into()])
+                .with_disabled_rules(vec![
+                    "script/define-props-destructuring".into(),
+                    "vue/no-unused-setup-bindings".into(),
+                ])
                 .with_help_level(HelpLevel::None)
                 .lint_sfc(source, filename);
             assert_eq!(
@@ -65,8 +68,11 @@ fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
             );
         }
         for linter in [
-            Linter::new()
-                .with_disabled_rules(vec![rule.into(), "vue/no-unused-setup-bindings".into()]),
+            Linter::new().with_disabled_rules(vec![
+                rule.into(),
+                "script/define-props-destructuring".into(),
+                "vue/no-unused-setup-bindings".into(),
+            ]),
             Linter::with_preset(LintPreset::Incremental),
         ] {
             assert_eq!(

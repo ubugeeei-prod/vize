@@ -95,7 +95,7 @@ test("public declarations, schema and Pkl retain strings plus only the documente
     );
     assert.match(
       source,
-      /`vue\/v-on-event-hyphenation`: \(HyphenationStyle\|VOnEventHyphenationOptions\)\? = null/u,
+      /`vue\/v-on-event-hyphenation`: \(HyphenationStyle \| VOnEventHyphenationOptions\)\? = null/u,
     );
   }
 });

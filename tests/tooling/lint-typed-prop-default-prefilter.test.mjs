@@ -23,6 +23,11 @@ await test("typed prop defaults reach the whole default CLI packet without polic
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
+  const focusedRules = {
+    "script/define-props-destructuring": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
+  const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   assert.equal(corpus.cases.length, 8);
   assert.deepEqual(
     corpus.cases.filter((entry) => entry.diagnostics.length > 0).map((entry) => entry.id),
@@ -53,20 +58,27 @@ await test("typed prop defaults reach the whole default CLI packet without polic
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
         entry,
         preset,
-        config: null,
+        config: focusedConfig,
         findings: entry.diagnostics,
       })),
-      { entry, preset: "incremental", config: null, findings: [] },
+      { entry, preset: "incremental", config: focusedConfig, findings: [] },
       {
         entry,
         preset: null,
-        config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
+        config:
+          JSON.stringify({ linter: { rules: { ...focusedRules, [corpus.rule]: "off" } } }) + "\n",
         findings: [],
       },
       {
         entry,
         preset: null,
-        config: JSON.stringify({ linter: projection.linter }) + "\n",
+        config:
+          JSON.stringify({
+            linter: {
+              ...projection.linter,
+              rules: { ...projection.linter.rules, ...focusedRules },
+            },
+          }) + "\n",
         findings: [],
       },
     ]);

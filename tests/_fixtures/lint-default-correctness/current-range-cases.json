@@ -529,6 +529,16 @@
           "help": null,
           "labels": [],
           "fix": null
+        },
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 59,
+          "end": 91,
+          "help": null,
+          "labels": [],
+          "fix": null
         }
       ],
       "lspDiagnostics": [
@@ -550,6 +560,25 @@
           },
           "source": "vize/lint",
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>\n\nHelp: Remove the macro from the import statement. Compiler macros are auto-imported."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
         }
       ],
       "baselineDiagnostics": [
@@ -559,6 +588,16 @@
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
+          "help": null,
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 59,
+          "end": 91,
           "help": null,
           "labels": [],
           "fix": null
@@ -583,6 +622,25 @@
           },
           "source": "vize/lint",
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>\n\nHelp: Remove the macro from the import statement. Compiler macros are auto-imported."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
         }
       ]
     },
@@ -591,20 +649,144 @@
       "filename": "macro-valid.vue",
       "kind": "vue",
       "source": "<script setup lang=\"ts\">\ndefineProps<{ title: string }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
-      "diagnostics": [],
-      "lspDiagnostics": [],
-      "baselineDiagnostics": [],
-      "baselineLspDiagnostics": []
+      "diagnostics": [
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 25,
+          "end": 57,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 0
+            },
+            "end": {
+              "line": 1,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+        }
+      ],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 25,
+          "end": 57,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 0
+            },
+            "end": {
+              "line": 1,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+        }
+      ]
     },
     {
       "id": "macro-comment",
       "filename": "macro-comment.vue",
       "kind": "vue",
       "source": "<script setup lang=\"ts\">\n// import { defineProps } from 'vue'\ndefineProps<{ title: string }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
-      "diagnostics": [],
-      "lspDiagnostics": [],
-      "baselineDiagnostics": [],
-      "baselineLspDiagnostics": []
+      "diagnostics": [
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 62,
+          "end": 94,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+        }
+      ],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 62,
+          "end": 94,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 32
+            }
+          },
+          "severity": 2,
+          "code": "script/define-props-destructuring",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/define-props-destructuring.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer destructuring the return value of defineProps().\n\nHelp: Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity."
+        }
+      ]
     },
     {
       "id": "petite-removed",

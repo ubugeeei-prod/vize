@@ -1876,7 +1876,7 @@ script/define-props-destructuring · lint ルール
 ドキュメント: docs/content/rules/reference/script-define-props-destructuring.md
 
 不正な例:
-  const props = defineProps<{ foo: string }>()
+  defineProps<{ foo: string }>()
 
 正しい例:
   const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()

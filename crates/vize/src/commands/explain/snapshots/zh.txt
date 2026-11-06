@@ -1938,7 +1938,7 @@ script/define-props-destructuring · lint 规则
 文档: docs/content/rules/reference/script-define-props-destructuring.md
 
 错误示例:
-  const props = defineProps<{ foo: string }>()
+  defineProps<{ foo: string }>()
 
 正确示例:
   const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()

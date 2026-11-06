@@ -1783,12 +1783,12 @@ script/custom-event-name-casing · lint ルール
 ドキュメント: docs/content/rules/reference/script-custom-event-name-casing.md
 
 不正な例:
-  const emit = defineEmits(['transitionStart'])
-  emit('transitionStart')         // camelCase → report
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
 
 正しい例:
-  const emit = defineEmits(['transitionstart'])
-  emit('transitionstart')
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
 === script/define-emits-declaration
 script/define-emits-declaration · lint ルール
 defineEmits にはランタイム・配列形式ではなく型ベースの defineEmits<{}>() 形式を強制する
@@ -3147,37 +3147,6 @@ Boolean 以外の省略可能な props にデフォルト値を必須にする
       id: { type: Number, required: true },
     }
   }
-=== script/require-define-component
-script/require-define-component · lint ルール
-TypeScript SFC のデフォルト export に defineComponent() を必須にする
-
-精度: exact
-対象: the syntax of <script> and <script setup> programs, without type information
-重大度: エラー
-カテゴリー: script
-自動修正: なし
-ドキュメント: docs/content/rules/reference/script-require-define-component.md
-
-不正な例:
-  <script lang="ts">
-  export default {
-    props: { count: Number },
-    mounted() {
-      console.log(this.count)
-    }
-  }
-  </script>
-
-正しい例:
-  <script lang="ts">
-  import { defineComponent } from 'vue'
-  export default defineComponent({
-    props: { count: Number },
-    mounted() {
-      console.log(this.count)
-    }
-  })
-  </script>
 === script/require-explicit-emits
 script/require-explicit-emits · lint ルール
 発行するイベントを defineEmits か emits オプションで宣言することを必須にする
