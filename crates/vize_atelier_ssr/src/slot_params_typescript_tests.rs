@@ -126,11 +126,17 @@ fn slot_param_defaults_keep_outer_template_locals_and_authored_strings() {
             false,
             lane,
         );
-        assert!(
-            output.contains("{ item = row, text = '_ctx.row' }"),
+        let signature = output
+            .lines()
+            .find(|line| line.trim_start().starts_with("default: _withCtx(("))
+            .map(str::trim);
+        assert_eq!(
+            signature,
+            Some(
+                "default: _withCtx(({ item = row, text = '_ctx.row' }, _push, _parent, _scopeId) => {"
+            ),
             "{lane:?}: {output}"
         );
-        assert!(!output.contains("item = _ctx.row"), "{lane:?}: {output}");
     }
 }
 
