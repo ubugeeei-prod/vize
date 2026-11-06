@@ -12,8 +12,8 @@ const constructorSources = [
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
-    6111,
-    "03495714bf27a42979433d45320839e155869f48ca240755df157ea4d1f1094c",
+    6061,
+    "a1af302ef9618d480ca56966d845ede4fdf5af5d0b569616f887ef4ca14e4d0a",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
@@ -31,10 +31,11 @@ for (const [file, bytes, sha256] of constructorSources) {
   );
 }
 
-export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
-export const currentGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
-const genericComponentContextInsertion =
+export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+export const currentGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+const previousGenericComponentFallback =
   " | { attrs: any; emit: (...args: any[]) => any; slots: any }";
+const currentGenericComponentFallback = " | { attrs: any }";
 
 export function certifyGenericComponentContextTransition(before: Buffer, after: Buffer) {
   const transition = certifiedTransition(
@@ -45,21 +46,21 @@ export function certifyGenericComponentContextTransition(before: Buffer, after: 
     "generic component public context",
   );
   if (!transition) return;
-  const insertion = previousGenericComponentContext.indexOf(", expose?:");
-  assert.ok(insertion > 0, "generic component context insertion boundary");
+  const start = previousGenericComponentContext.indexOf(previousGenericComponentFallback);
+  assert.ok(start > 0, "generic component context replacement boundary");
   assert.equal(
-    previousGenericComponentContext.slice(0, insertion) +
-      genericComponentContextInsertion +
-      previousGenericComponentContext.slice(insertion),
+    previousGenericComponentContext.slice(0, start) +
+      currentGenericComponentFallback +
+      previousGenericComponentContext.slice(start + previousGenericComponentFallback.length),
     currentGenericComponentContext,
-    "generic component context must be one exact insertion",
+    "generic component context must be one exact replacement",
   );
-  const start =
-    transition.start + Buffer.byteLength(previousGenericComponentContext.slice(0, insertion));
+  const absoluteStart =
+    transition.start + Buffer.byteLength(previousGenericComponentContext.slice(0, start));
   return {
-    start,
-    end: start,
-    replacement: Buffer.from(genericComponentContextInsertion),
+    start: absoluteStart,
+    end: absoluteStart + Buffer.byteLength(previousGenericComponentFallback),
+    replacement: Buffer.from(currentGenericComponentFallback),
     label: transition.label,
   };
 }

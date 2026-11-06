@@ -64,7 +64,7 @@ test("generic component context transition retains the complete reviewed signatu
   assert.equal(certifyGenericComponentContextTransition(after, after), undefined);
   for (const mutated of [
     Buffer.from(currentGenericComponentContext.replace("attrs: any", "attrs: unknown")),
-    Buffer.from(currentGenericComponentContext.replace("slots: any", "slots: unknown")),
+    Buffer.from(currentGenericComponentContext.replace("'slots'", "'changed'")),
   ])
     assert.throws(
       () => certifyGenericComponentContextTransition(before, mutated),
