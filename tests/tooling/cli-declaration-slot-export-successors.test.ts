@@ -12,6 +12,7 @@ import {
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
 import {
   constructorSourceTransition,
+  elidedBuildOutputTransition,
   elidedCheckOutputTransition,
   elidedSourceTransition,
   ownSplitSourceTransition,
@@ -294,14 +295,21 @@ test("the build declaration constructor adds a reversible receipt without changi
   );
   const current = fs.readFileSync(path.join(repoRoot, output.path));
   const integratedEnvelope = overloadOutputTransition(current, "inverse");
-  const ownedEnvelope = buildIntegratedOutputTransition(integratedEnvelope, "inverse");
+  const aliasedEnvelope = elidedBuildOutputTransition(integratedEnvelope, "inverse");
+  const ownedEnvelope = buildIntegratedOutputTransition(aliasedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse", buildConstructorSuccessor);
   assert.deepEqual(
     constructorTransition(previous, "forward", buildConstructorSuccessor),
     ownedEnvelope,
   );
   assert.deepEqual(
-    overloadOutputTransition(buildIntegratedOutputTransition(ownedEnvelope, "forward"), "forward"),
+    overloadOutputTransition(
+      elidedBuildOutputTransition(
+        buildIntegratedOutputTransition(ownedEnvelope, "forward"),
+        "forward",
+      ),
+      "forward",
+    ),
     current,
   );
   for (const [bytes, direction, from, to] of [
@@ -421,7 +429,10 @@ for (const [name, digest, successorDigest] of originals) {
         : discriminatedEnvelope;
     const ownedEnvelope =
       constructor === buildConstructorSuccessor
-        ? buildIntegratedOutputTransition(currentEnvelope, "inverse")
+        ? buildIntegratedOutputTransition(
+            elidedBuildOutputTransition(currentEnvelope, "inverse"),
+            "inverse",
+          )
         : currentEnvelope;
     const predecessorSlot = constructor
       ? overloadOutputTransition(

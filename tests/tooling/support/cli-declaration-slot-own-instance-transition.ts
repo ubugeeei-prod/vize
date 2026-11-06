@@ -261,3 +261,32 @@ export function elidedCheckOutputTransition(current: Buffer, direction: Directio
   assert.deepEqual(identity(changed), toIdentity);
   return changed;
 }
+
+const aliasedBuildOutput: Identity = {
+  bytes: 15308,
+  sha256: "eaa98dbe1bd335c1d447c86a419b2053beab3aef7e0d617433dee5077bae2263",
+};
+const elidedBuildOutput: Identity = {
+  bytes: 15261,
+  sha256: "9d55e4e6128818e9dc320599819f63af90e31aea99982e534810de8ca0c2848d",
+};
+const aliasedBuildInstance =
+  'type $ComponentInstance = {\n    $props: Props & import("./__vize_helpers.js").__EmitProps<Emits>;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n} & $ComponentPublicBase;\ntype $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps, $JsxProps>;\n';
+const elidedBuildInstance =
+  'type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{\n    $props: Props & import("./__vize_helpers.js").__EmitProps<Emits>;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps, $JsxProps> & $ComponentPublicBase;\n';
+
+export function elidedBuildOutputTransition(current: Buffer, direction: Direction): Buffer {
+  const [fromIdentity, toIdentity, from, to] =
+    direction === "inverse"
+      ? [elidedBuildOutput, aliasedBuildOutput, elidedBuildInstance, aliasedBuildInstance]
+      : [aliasedBuildOutput, elidedBuildOutput, aliasedBuildInstance, elidedBuildInstance];
+  assert.deepEqual(identity(current), fromIdentity);
+  const text = current.toString("utf8");
+  const encodedFrom = encoded(from);
+  const encodedTo = encoded(to);
+  assert.equal(text.split(encodedFrom).length - 1, 1);
+  assert.equal(text.split(encodedTo).length - 1, 0);
+  const changed = Buffer.from(text.replace(encodedFrom, encodedTo));
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
