@@ -4,6 +4,8 @@ import { test } from "node:test";
 import {
   attributesPacketReference,
   exposureReferenceCustody,
+  rawEmitterCompileReference,
+  rawEmitterCompileReferences,
 } from "../native/sfc-parse-attributes-reference.ts";
 import {
   emptyCompileReference,
@@ -14,6 +16,7 @@ import {
   emptyCompileSourcesForReference,
   emptyProjectContextSupportingBlobs,
 } from "../native/sfc-empty-project-context-source.ts";
+import type { ExposurePacket } from "./support/script-setup-default-expose.ts";
 
 const captured = JSON.parse(
   readFileSync(
@@ -66,6 +69,38 @@ test("the attribute adapter still rejects unrelated whole-packet changes", () =>
         assert.deepEqual({ kind: "return", json: JSON.stringify(changed) }, reference),
       );
     }
+  }
+});
+
+test("only the exact formatted compile packets advance to raw emitter references", () => {
+  assert.equal(
+    exposureReferenceCustody.rawEmitterSource,
+    "8a90268d4cd202e577406cf152b173524f8fa064",
+  );
+  assert.equal(exposureReferenceCustody.rawEmitterEvidenceRun, 42168437970);
+  assert.equal(rawEmitterCompileReferences.length, 2);
+  for (const reference of rawEmitterCompileReferences) {
+    const retained = structuredClone(reference.before);
+    assert.deepEqual(
+      rawEmitterCompileReference(reference.before, reference.source),
+      reference.after,
+    );
+    assert.deepEqual(reference.before, retained);
+    assert.deepEqual(
+      rawEmitterCompileReference(reference.before, `${reference.source} `),
+      reference.before,
+    );
+    for (const field of ["code", "map", "moduleShape", "errors", "macroArtifacts"]) {
+      const changed = structuredClone(reference.before) as ExposurePacket;
+      changed[field] = field === "code" ? `${String(changed[field])}\nvoid 1;` : "unexpected";
+      assert.throws(() => rawEmitterCompileReference(changed, reference.source));
+    }
+    const changedAfter = structuredClone(reference.after) as ExposurePacket;
+    changedAfter.code = `${String(changedAfter.code)}\nvoid 1;`;
+    assert.notDeepEqual(
+      changedAfter,
+      rawEmitterCompileReference(reference.before, reference.source),
+    );
   }
 });
 
