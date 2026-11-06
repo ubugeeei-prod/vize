@@ -3,7 +3,7 @@ import type { InspectorDiff } from "../../wasm/types/inspector";
 import { dumpTokens } from "./dumpLines";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
-defineProps<{
+const { diff, before, after } = defineProps<{
   diff: InspectorDiff;
   /** The page compared against, e.g. `Lowered` or `v-slot`. */
   before: string;

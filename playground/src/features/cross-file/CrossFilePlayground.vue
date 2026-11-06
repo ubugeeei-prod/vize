@@ -13,7 +13,7 @@ import { useFileManagement } from "./useFileManagement";
 import { useCrossFileAnalysis, type CrossFileAnalyzerOptions } from "./useCrossFileAnalysis";
 import { getFileIcon, getSeverityIcon, getTypeLabel, getTypeColor } from "./displayHelpers";
 
-defineProps<{
+const { compiler: _compiler } = defineProps<{
   compiler: WasmModule | null;
 }>();
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");

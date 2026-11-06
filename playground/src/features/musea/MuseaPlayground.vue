@@ -8,7 +8,7 @@ import { ART_PRESET } from "../../shared/presets/musea";
 import { mdiPalette, mdiDiamond } from "@mdi/js";
 import { useArtParsing } from "./useArtParsing";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: WasmModule | null;
 }>();
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
@@ -28,7 +28,7 @@ const {
   otherTokens,
   variantCount,
   compile,
-} = useArtParsing(source, () => props.compiler ?? getWasm());
+} = useArtParsing(source, () => compilerProp ?? getWasm());
 
 type TabType = "parsed" | "csf" | "variants";
 const validTabs: TabType[] = ["parsed", "csf", "variants"];

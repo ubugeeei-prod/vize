@@ -29,7 +29,7 @@ import type {
   InspectorTarget,
 } from "./types";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: Awaited<ReturnType<typeof loadWasm>> | null;
 }>();
 
@@ -161,7 +161,7 @@ function applyPayload(nextPayload: InspectorPayload) {
 }
 
 async function compile() {
-  const compiler = props.compiler ?? getWasm();
+  const compiler = compilerProp ?? getWasm();
   if (!compiler) return;
 
   isCompiling.value = true;
@@ -224,15 +224,15 @@ function updateDiffHighlights() {
 watch(
   [source, target, options, selectedFileIndex],
   () => {
-    if (props.compiler ?? getWasm()) scheduleCompile();
+    if (compilerProp ?? getWasm()) scheduleCompile();
   },
   { deep: true },
 );
 
 watch(
-  () => props.compiler,
+  () => compilerProp,
   () => {
-    if (props.compiler) void compile();
+    if (compilerProp) void compile();
   },
   { immediate: true },
 );

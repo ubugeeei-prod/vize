@@ -17,7 +17,7 @@ import {
 import { getBindingIcon, getBindingLabel } from "./bindingHelpers";
 import { type loadWasm, getWasm } from "../../wasm/index";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: Awaited<ReturnType<typeof loadWasm>> | null;
 }>();
 
@@ -53,7 +53,7 @@ const {
   groupedBindings,
   compile,
   handlePresetChange,
-} = useAtelierCompiler(() => props.compiler ?? getWasm());
+} = useAtelierCompiler(() => compilerProp ?? getWasm());
 
 const { lexicalTokens, tokensByType, tokenStats } = useTokenAnalysis(source);
 
@@ -70,9 +70,9 @@ const activeCodeHighlightKey = computed(
 );
 
 watch(
-  () => props.compiler,
+  () => compilerProp,
   () => {
-    if (props.compiler) compile();
+    if (compilerProp) compile();
   },
   { immediate: true },
 );

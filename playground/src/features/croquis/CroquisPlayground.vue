@@ -10,7 +10,7 @@ import { getSourceLabel, getSourceClass } from "./bindingHelpers";
 import { getScopeColorClass } from "./scopeColors";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: WasmModule | null;
 }>();
 
@@ -38,7 +38,7 @@ const {
   monacoDiagnostics,
   bindingsBySource,
   virLines,
-} = useCroquisAnalysis(() => props.compiler ?? getWasm());
+} = useCroquisAnalysis(() => compilerProp ?? getWasm());
 </script>
 
 <template>

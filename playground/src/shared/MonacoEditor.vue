@@ -31,7 +31,7 @@ export interface EditorHighlight {
   reveal?: boolean;
 }
 
-const props = defineProps<{
+const { modelValue, language, diagnostics, scopes, highlights, readOnly, theme } = defineProps<{
   modelValue: string;
   language: string;
   diagnostics?: Diagnostic[];
@@ -50,7 +50,7 @@ const emit = defineEmits<{
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");
 const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme", undefined as any);
-const resolvedTheme = () => _injectedTheme?.value ?? props.theme ?? "light";
+const resolvedTheme = () => _injectedTheme?.value ?? theme ?? "light";
 
 let scopeDecorationIds: string[] = [];
 let highlightDecorationIds: string[] = [];
@@ -151,8 +151,8 @@ function mountEditor(container: HTMLDivElement) {
   configureMonaco();
 
   const editor = monaco.editor.create(container, {
-    value: props.modelValue,
-    language: props.language,
+    value: modelValue,
+    language,
     theme: resolvedTheme() === "light" ? "vue-light" : "vue-dark",
     fontSize: 14,
     fontFamily: "'JetBrains Mono', monospace",
@@ -161,10 +161,10 @@ function mountEditor(container: HTMLDivElement) {
     scrollBeyondLastLine: false,
     padding: { top: 16 },
     automaticLayout: true,
-    quickSuggestions: !props.readOnly,
-    suggestOnTriggerCharacters: !props.readOnly,
-    readOnly: props.readOnly ?? false,
-    domReadOnly: props.readOnly ?? false,
+    quickSuggestions: !readOnly,
+    suggestOnTriggerCharacters: !readOnly,
+    readOnly: readOnly ?? false,
+    domReadOnly: readOnly ?? false,
   });
   editorInstance.value = editor;
 
@@ -181,20 +181,20 @@ function mountEditor(container: HTMLDivElement) {
     if (model) emit("cursor", model.getOffsetAt(event.position));
   });
 
-  if (props.language === "vue") {
+  if (language === "vue") {
     addVueCommentAction(editor);
   }
 
-  if (props.scopes && props.scopes.length > 0) {
-    applyScopeDecorations(props.scopes);
+  if (scopes && scopes.length > 0) {
+    applyScopeDecorations(scopes);
   }
 
-  if (props.diagnostics && props.diagnostics.length > 0) {
-    applyDiagnostics(props.diagnostics);
+  if (diagnostics && diagnostics.length > 0) {
+    applyDiagnostics(diagnostics);
   }
 
-  if (props.highlights && props.highlights.length > 0) {
-    applyHighlights(props.highlights);
+  if (highlights && highlights.length > 0) {
+    applyHighlights(highlights);
   }
 }
 
@@ -213,7 +213,7 @@ onUnmounted(() => {
 });
 
 watch(
-  () => props.modelValue,
+  () => modelValue,
   (newValue) => {
     if (editorInstance.value && editorInstance.value.getValue() !== newValue) {
       editorInstance.value.setValue(newValue);
@@ -222,7 +222,7 @@ watch(
 );
 
 watch(
-  () => _injectedTheme?.value ?? props.theme,
+  () => _injectedTheme?.value ?? theme,
   (newTheme) => {
     if (editorInstance.value) {
       monaco.editor.setTheme(newTheme === "light" ? "vue-light" : "vue-dark");
@@ -231,7 +231,7 @@ watch(
 );
 
 watch(
-  () => props.language,
+  () => language,
   (newLanguage) => {
     if (editorInstance.value) {
       const model = editorInstance.value.getModel();
@@ -243,7 +243,7 @@ watch(
 );
 
 watch(
-  () => props.diagnostics,
+  () => diagnostics,
   (diagnostics) => {
     applyDiagnostics(diagnostics);
   },
@@ -251,7 +251,7 @@ watch(
 );
 
 watch(
-  () => props.scopes,
+  () => scopes,
   (scopes) => {
     applyScopeDecorations(scopes);
   },
@@ -259,7 +259,7 @@ watch(
 );
 
 watch(
-  () => props.highlights,
+  () => highlights,
   (highlights) => {
     applyHighlights(highlights);
   },

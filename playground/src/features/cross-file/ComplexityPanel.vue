@@ -3,7 +3,7 @@ import "./ComplexityPanel.css";
 import { computed } from "vue";
 import type { CrossFileComplexityDimensions, CrossFileComplexityReport } from "../../wasm/index";
 
-const props = defineProps<{
+const { report } = defineProps<{
   report: CrossFileComplexityReport | null;
 }>();
 
@@ -25,21 +25,21 @@ const BAND_LABELS: Record<CrossFileComplexityReport["band"], string> = {
 };
 
 const dimensions = computed(() => {
-  if (!props.report) return [];
-  const maxScore = Math.max(1, ...DIMENSION_LABELS.map(([key]) => props.report!.dimensions[key]));
+  if (!report) return [];
+  const maxScore = Math.max(1, ...DIMENSION_LABELS.map(([key]) => report!.dimensions[key]));
   return DIMENSION_LABELS.map(([key, label]) => {
-    const value = props.report!.dimensions[key];
+    const value = report!.dimensions[key];
     return { key, label, value, percent: Math.round((value / maxScore) * 100) };
   });
 });
 
 const signals = computed(() => {
-  if (!props.report) return [];
-  const input = props.report.input;
+  if (!report) return [];
+  const input = report.input;
   return [
     ["Components", input.componentCount],
-    ["Cyclomatic", props.report.cyclomaticScore],
-    ["Cognitive", props.report.cognitiveScore],
+    ["Cyclomatic", report.cyclomaticScore],
+    ["Cognitive", report.cognitiveScore],
     ["Deepest nesting", input.templateMaxNesting],
     ["Scoped slots", input.templateScopedSlotCount],
     ["Unanalyzed expressions", input.templateUnknown],
@@ -50,10 +50,10 @@ const signals = computed(() => {
 });
 
 const bandLabel = computed(() => {
-  return props.report ? BAND_LABELS[props.report.band] : "Waiting";
+  return report ? BAND_LABELS[report.band] : "Waiting";
 });
 
-const bandClass = computed(() => props.report?.band ?? "waiting");
+const bandClass = computed(() => report?.band ?? "waiting");
 </script>
 
 <template>
@@ -61,12 +61,12 @@ const bandClass = computed(() => props.report?.band ?? "waiting");
     <div class="complexity-summary">
       <div class="complexity-score">
         <span class="complexity-label">Complexity</span>
-        <strong>{{ props.report?.totalScore ?? 0 }}</strong>
+        <strong>{{ report?.totalScore ?? 0 }}</strong>
       </div>
       <span :class="['complexity-band', bandClass]">{{ bandLabel }}</span>
     </div>
 
-    <div v-if="props.report" class="complexity-bars">
+    <div v-if="report" class="complexity-bars">
       <div v-for="item in dimensions" :key="item.key" class="complexity-dimension">
         <div class="dimension-row">
           <span>{{ item.label }}</span>

@@ -3,7 +3,7 @@ import { nextTick, useTemplateRef, watch } from "vue";
 import type { DumpLine, PageKind } from "./dumpLines";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
-const props = defineProps<{
+const { lines, kind, selected, linked, marks } = defineProps<{
   lines: DumpLine[];
   kind: PageKind;
   selected: number | null;
@@ -21,7 +21,7 @@ const emit = defineEmits<{
 const root = useTemplateRef<HTMLDivElement>("root");
 
 watch(
-  () => props.linked[0],
+  () => linked[0],
   async (index) => {
     if (index === undefined) return;
     await nextTick();
@@ -34,7 +34,7 @@ function spanTitle(line: DumpLine): string | undefined {
 }
 
 function toggle(index: number) {
-  emit("select", props.selected === index ? null : index);
+  emit("select", selected === index ? null : index);
 }
 </script>
 

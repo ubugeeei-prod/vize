@@ -6,7 +6,11 @@ import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
 import type { ExperimentalOptions } from "../../shared/experimentalFeatures";
 import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
 
-defineProps<{ theme: "dark" | "light"; scopes: ScopeDecoration[]; diagnostics: Diagnostic[] }>();
+const { theme, scopes, diagnostics } = defineProps<{
+  theme: "dark" | "light";
+  scopes: ScopeDecoration[];
+  diagnostics: Diagnostic[];
+}>();
 
 const emit = defineEmits<{ example: [key: string] }>();
 
