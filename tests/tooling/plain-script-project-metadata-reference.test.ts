@@ -144,6 +144,25 @@ test("the old whole-packet comparison rejects the recorded project metadata addi
   }
 });
 
+test("module-shape reference retains only named default declaration locals", () => {
+  const shape = {
+    imports: [],
+    hasSideEffectImport: false,
+    hasReexport: false,
+    hasDynamicImport: false,
+    defaultExportLocal: "stale",
+  };
+  for (const [code, expected] of [
+    ["export default function Render() {}", "Render"],
+    ["export default class Component {}", "Component"],
+    ["export default function () {}", undefined],
+    ["export default class {}", undefined],
+  ] as const) {
+    const packet = moduleShapeFactsReference({ code, moduleShape: shape }, parse);
+    assert.equal(packet.moduleShape?.defaultExportLocal, expected);
+  }
+});
+
 test("metadata never conceals packet fields or arbitrary project metadata drift", () => {
   for (const [index, prior] of before.entries()) {
     if (prior.case !== "constant-controls" || prior.filename !== "src/App.vue") continue;

@@ -142,8 +142,16 @@ function moduleFacts(parsed: BabelFile): Record<string, unknown> {
     }
     if (node.type === "ExportDefaultDeclaration") {
       const declaration = node.declaration as BabelNode;
+      let name: unknown;
       if (declaration.type === "Identifier") {
-        const name = declaration.name;
+        name = declaration.name;
+      } else if (
+        declaration.type === "FunctionDeclaration" ||
+        declaration.type === "ClassDeclaration"
+      ) {
+        name = (declaration.id as { name?: unknown } | null | undefined)?.name;
+      }
+      if (name !== undefined) {
         assert(typeof name === "string");
         defaultExportLocal = name;
       }
