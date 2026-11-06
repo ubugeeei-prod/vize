@@ -11,6 +11,7 @@ import {
 } from "./historical-post-ack-root-warning.ts";
 import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { observeRegisteredUnavailableRootWarning } from "./historical-registered-unavailable-root-warning.ts";
 export { historicalRootWarning } from "./historical-post-ack-root-warning.ts";
 
 const one = <T>(rows: readonly T[]) => {
@@ -188,6 +189,20 @@ export function observeAcknowledgedRootWarning(...args: Args) {
 
 /** Existing canceled/unobserved historical paths retain their original implementation. */
 export function observeRootWatchWarning(...args: Args) {
+  if (
+    args[5].unknownWrites.length === 1 &&
+    args[1].some(
+      (packet) =>
+        packet &&
+        typeof packet === "object" &&
+        (packet as Record<string, unknown>).method === "window/logMessage" &&
+        String(
+          ((packet as Record<string, unknown>).params as Record<string, unknown> | undefined)
+            ?.message,
+        ).startsWith("Added new watch: root files for "),
+    )
+  )
+    return observeRegisteredUnavailableRootWarning(...args);
   const bytes = Buffer.concat(
     args[3]
       .filter((row) => row.op === "write" && row.fd === 2)

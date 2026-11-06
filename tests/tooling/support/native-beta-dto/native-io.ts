@@ -4,6 +4,24 @@ import path from "node:path";
 import { createInterface } from "node:readline";
 import type { Syscall } from "./audit-wire-types.ts";
 import { ExecveHandoffs } from "./execve-handoff.ts";
+import {
+  deriveMergedTrace,
+  type MergedTraceAuthority,
+  type MergedTracePoint,
+} from "./merged-trace.ts";
+import {
+  registerMergedCompletion,
+  registerMergedPoint,
+  type NativeCompletion,
+  type NativeTimedObservation,
+} from "./native-completion-order.ts";
+export {
+  compareNativeCompletionOrder,
+  requireCompletedBefore,
+  requireObservedEntryBefore,
+  type NativeCompletion,
+  type NativeTimedObservation,
+} from "./native-completion-order.ts";
 
 interface NativeIoPayload {
   at: string;
@@ -37,35 +55,6 @@ export type ParsedNativeIo = NativeIoPayload &
       }
     | { outcome: "failed"; returnedBytes: number }
   );
-export type NativeCompletion = {
-  returnedAt: string | null;
-  returnedBy: {
-    at: string;
-    line: number;
-    basis: "explicit-resume" | "next-same-thread-event";
-  } | null;
-};
-export type NativeTimedObservation = {
-  at: string;
-  tid: number;
-  line: number;
-  startedLine?: number;
-  completion?: NativeCompletion;
-};
-export function requireCompletedBefore(
-  earlier: NativeTimedObservation,
-  later: NativeTimedObservation,
-) {
-  assert.ok(earlier.completion, "known completed syscall required");
-  if (earlier.tid === later.tid && earlier.line < (later.startedLine ?? later.line)) return;
-  const bound = earlier.completion?.returnedAt ?? earlier.completion?.returnedBy?.at;
-  assert.ok(bound, "observed completion order required");
-  const time = (at: string) => {
-    assert.match(at, /^[0-9]+\.[0-9]{6}$/u);
-    return BigInt(at.replace(".", ""));
-  };
-  assert.ok(time(bound) < time(later.at), "completion must precede later syscall entry");
-}
 type NativeIoProvenance = NativeTimedObservation & { file: string };
 export type UnknownNativeWrite = Extract<ParsedNativeIo, { outcome: "unknown" }> &
   NativeIoProvenance;
@@ -89,6 +78,7 @@ export interface NativeThreadExit {
   at: string;
   code: number;
   line?: number;
+  mergedEntry?: MergedTracePoint;
 }
 export interface NativeExitGroup {
   tid: number;
@@ -96,6 +86,7 @@ export interface NativeExitGroup {
   code: number;
   line?: number;
   rawResult?: string | null;
+  mergedEntry?: MergedTracePoint;
 }
 export interface NativeUnfinishedOperation {
   tid: number;
@@ -242,11 +233,23 @@ export function parseNativeIo(line: string): ParsedNativeIo | null {
   }
 }
 
-export async function readNativeTrace(root: string, executable: string) {
+export async function readNativeTrace(
+  root: string,
+  executable: string,
+  mergedAuthority?: MergedTraceAuthority,
+) {
+  const hasMergedTrace = fs.existsSync(path.join(root, "syscalls.merged"));
+  assert.equal(
+    hasMergedTrace,
+    mergedAuthority !== undefined,
+    "merged trace and exact source authority must be provided together",
+  );
+  const merged = mergedAuthority ? await deriveMergedTrace(root, mergedAuthority) : null;
+  const traceRoot = merged?.directory ?? root;
   const handoffs = new ExecveHandoffs(),
     lastLines = new Map<number, number>();
   const files = fs
-    .readdirSync(root)
+    .readdirSync(traceRoot)
     .filter((file) => /^syscalls\.[0-9]+$/u.test(file))
     .sort();
   assert.ok(files.length, "Actual native syscalls required");
@@ -255,7 +258,9 @@ export async function readNativeTrace(root: string, executable: string) {
   const threadExits: NativeThreadExit[] = [],
     exitGroups: NativeExitGroup[] = [];
   const leaders: Array<{ pid: number; argvObservation: string; lsp: boolean }> = [];
-  const records: Array<Syscall & { startedLine: number; completion: NativeCompletion }> = [],
+  const records: Array<
+      Syscall & NativeTimedObservation & { startedLine: number; completion: NativeCompletion }
+    > = [],
     unknownWrites: UnknownNativeWrite[] = [],
     failedWrites: FailedNativeWrite[] = [];
   const eofReads: Array<NativeTimedObservation & { fd: number; completion: NativeCompletion }> = [];
@@ -269,11 +274,13 @@ export async function readNativeTrace(root: string, executable: string) {
     let unbounded: NativeCompletion | undefined;
     let lineNumber = 0;
     for await (const original of createInterface({
-      input: fs.createReadStream(path.join(root, file)),
+      input: fs.createReadStream(path.join(traceRoot, file)),
       crlfDelay: Infinity,
     })) {
       lineNumber++;
       const observedAt = /^([0-9]+\.[0-9]+) /u.exec(original)?.[1];
+      const currentMerged = merged?.point(tid, lineNumber);
+      if (currentMerged) registerMergedPoint(currentMerged);
       if (unbounded && observedAt) {
         unbounded.returnedBy = {
           at: observedAt,
@@ -298,10 +305,18 @@ export async function readNativeTrace(root: string, executable: string) {
         line = pending.text + line.slice(line.indexOf("resumed>") + "resumed>".length);
         pending = undefined;
       }
+      const mergedEntry = merged?.point(tid, startedLine);
+      if (mergedEntry) registerMergedPoint(mergedEntry);
       const exit = /^([0-9]+\.[0-9]+) \+\+\+ exited with ([0-9]+) \+\+\+/u.exec(line);
       if (exit) {
         exits.set(tid, Number(exit[2]));
-        threadExits.push({ tid, at: exit[1]!, code: Number(exit[2]), line: lineNumber });
+        threadExits.push({
+          tid,
+          at: exit[1]!,
+          code: Number(exit[2]),
+          line: lineNumber,
+          ...(mergedEntry && { mergedEntry }),
+        });
       }
       const group = /^([0-9]+\.[0-9]+) exit_group\(([0-9]+)\)/u.exec(line);
       if (group)
@@ -311,6 +326,7 @@ export async function readNativeTrace(root: string, executable: string) {
           code: Number(group[2]),
           line: lineNumber,
           rawResult: /\)\s+=\s+(.+)$/u.exec(line)?.[1] ?? null,
+          ...(mergedEntry && { mergedEntry }),
         });
       if (line.includes("execve(") && line.endsWith("= 0")) {
         const decoded = line.replace(/(?:\\x[0-9a-f]{2})+/gu, (value) =>
@@ -328,24 +344,65 @@ export async function readNativeTrace(root: string, executable: string) {
         returnedAt: resumed ? observedAt : null,
         returnedBy: resumed ? { at: observedAt, line: lineNumber, basis: "explicit-resume" } : null,
       };
+      if (call.outcome !== "unknown" && mergedEntry && currentMerged) {
+        completion.merged = Object.freeze({
+          captureSha256: mergedEntry.captureSha256,
+          entryLine: mergedEntry.line,
+          completionLine: currentMerged.line,
+        });
+        registerMergedCompletion(completion.merged);
+      }
+      const provenance = mergedEntry ? { mergedEntry } : {};
       if (call.outcome !== "unknown" && !resumed) unbounded = completion;
       if (call.outcome !== "completed") {
         if (call.op === "write") {
           if (call.outcome === "unknown")
-            unknownWrites.push({ ...call, tid, file, line: lineNumber, startedLine });
+            unknownWrites.push({
+              ...call,
+              ...provenance,
+              tid,
+              file,
+              line: lineNumber,
+              startedLine,
+            });
           else {
-            failedWrites.push({ ...call, completion, tid, file, line: lineNumber, startedLine });
+            failedWrites.push({
+              ...call,
+              ...provenance,
+              completion,
+              tid,
+              file,
+              line: lineNumber,
+              startedLine,
+            });
           }
         }
         continue;
       }
       if (call.returnedBytes === 0 && call.op === "read" && call.requestedBytes > 0)
-        eofReads.push({ tid, fd: call.fd, at: call.at, line: lineNumber, startedLine, completion });
+        eofReads.push({
+          ...provenance,
+          tid,
+          fd: call.fd,
+          at: call.at,
+          line: lineNumber,
+          startedLine,
+          completion,
+        });
       if (call.op === "read" && call.requestedBytes === 0)
-        zeroCapacityReads.push({ ...call, completion, tid, file, line: lineNumber, startedLine });
+        zeroCapacityReads.push({
+          ...call,
+          ...provenance,
+          completion,
+          tid,
+          file,
+          line: lineNumber,
+          startedLine,
+        });
       if (call.returnedBytes)
         records.push({
           at: call.at,
+          ...provenance,
           completion,
           startedLine,
           op: call.op,
@@ -398,6 +455,7 @@ export async function readNativeTrace(root: string, executable: string) {
     exitGroups,
     unfinishedOperations,
     execveHandoffs,
+    mergedTrace: merged?.receipt ?? null,
   };
 }
 

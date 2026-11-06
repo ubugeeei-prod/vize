@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "0816bbb5638e9f649cdc24810fd11fb01a9a42e8d0ba540cc8a7567830e37b10";
+const currentAuthoritySha256 = "200b2409b873098ce4d06a07abe5b3ee08f62932271386aff3d3e9990844d2ca";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -204,6 +204,26 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
         ],
         [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
         [
+          watcherSuccessor.completionOrderPath,
+          watcherSuccessor.completionOrderSha256,
+          watcherSuccessor.completionOrderRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.nativeFramesPath,
+          watcherSuccessor.nativeFramesSha256,
+          watcherSuccessor.nativeFramesRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.sourceExecutionPath,
+          watcherSuccessor.sourceExecutionSha256,
+          watcherSuccessor.sourceExecutionRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.mergedTracePath,
+          watcherSuccessor.mergedTraceSha256,
+          watcherSuccessor.mergedTraceRuntimeSha256,
+        ],
+        [
           watcherSuccessor.handoffPath,
           watcherSuccessor.handoffSha256,
           watcherSuccessor.handoffRuntimeSha256,
@@ -259,6 +279,20 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           `${fixtureRoot}native-beta-diagnostic-dto-10731/stable-post-shutdown-41099824102/${name}`,
           hash,
         );
+    } else if (index === 4) {
+      require(currentPath ===
+        watcherSuccessor.collectorPath, "current syscall collector path differs");
+      require(sha(current) ===
+        watcherSuccessor.collectorSha256, "unregistered syscall collector source");
+      require(sha(Buffer.from(runtime(current))) ===
+        watcherSuccessor.collectorRuntimeSha256, "unregistered syscall collector runtime");
+      const mergedTrace = pinned(
+        read,
+        watcherSuccessor.mergedTracePath,
+        watcherSuccessor.mergedTraceSha256,
+      );
+      require(sha(Buffer.from(runtime(mergedTrace))) ===
+        watcherSuccessor.mergedTraceRuntimeSha256, "unregistered merged trace dependency runtime");
     } else {
       require(runtime(current) ===
         runtime(original), `typed producer executable changed: ${currentPath}`);

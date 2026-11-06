@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import type { NativeTimedObservation } from "./native-io.ts";
+import { compareNativeCompletionOrder, type NativeTimedObservation } from "./native-io.ts";
 type Packet = Record<string, unknown>;
 const object = (value: unknown): Packet => {
   assert.ok(
@@ -20,7 +20,7 @@ export const micros = (value: string) => {
 export function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: number) {
   const chunks = io
     .filter((row) => row.op === op && row.fd === fd)
-    .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line);
+    .sort(compareNativeCompletionOrder);
   const raw = Buffer.concat(chunks.map((row) => Buffer.from(row.data)));
   let offset = 0;
   const packets: Array<{ packet: Packet; at: string; parts: NativeTimedObservation[] }> = [];
@@ -40,12 +40,13 @@ export function timedPackets(io: readonly WatcherTimedIo[], op: string, fd: numb
     packets.push({
       packet: object(JSON.parse(raw.subarray(marker + 4, end).toString("utf8"))),
       at: parts.at(-1)!.at,
-      parts: parts.map(({ at, tid, line, startedLine, completion }) => ({
+      parts: parts.map(({ at, tid, line, startedLine, completion, mergedEntry }) => ({
         at,
         tid,
         line,
         startedLine,
         completion,
+        mergedEntry,
       })),
     });
     offset = end;

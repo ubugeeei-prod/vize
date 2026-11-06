@@ -4,6 +4,40 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 
+const MAX_TRACE_BYTES = 1024 * 1024 * 1024;
+
+function resolveExecutable(name: string): string {
+  for (const directory of process.env.PATH?.split(path.delimiter) ?? []) {
+    if (!directory) continue;
+    const candidate = path.join(directory, name);
+    try {
+      fs.accessSync(candidate, fs.constants.X_OK);
+      return fs.realpathSync(candidate);
+    } catch {}
+  }
+  throw new Error(`missing executable: ${name}`);
+}
+
+function hashBoundedFile(file: string): { file: "syscalls.merged"; bytes: number; sha256: string } {
+  const descriptor = fs.openSync(file, "r");
+  const hash = createHash("sha256");
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  let bytes = 0;
+  try {
+    for (;;) {
+      const count = fs.readSync(descriptor, buffer, 0, buffer.length, null);
+      if (count === 0) break;
+      bytes += count;
+      assert.ok(bytes <= MAX_TRACE_BYTES, "bounded merged trace required");
+      hash.update(buffer.subarray(0, count));
+    }
+  } finally {
+    fs.closeSync(descriptor);
+  }
+  assert.ok(bytes > 0, "actual merged native trace required");
+  return { file: "syscalls.merged", bytes, sha256: hash.digest("hex") };
+}
+
 type BuildArtifact = {
   reason: string;
   target: { name: string };
@@ -28,8 +62,18 @@ const artifacts = fs
 assert.equal(artifacts.length, 1, "exactly one actual source test executable required");
 const executable = artifacts[0].executable;
 const hash = createHash("sha256").update(fs.readFileSync(executable)).digest("hex");
+const strace = resolveExecutable("strace");
+const straceHash = createHash("sha256").update(fs.readFileSync(strace)).digest("hex");
+const straceVersion = spawnSync(strace, ["--version"], {
+  encoding: "utf8",
+  maxBuffer: 64 * 1024,
+});
+assert.equal(straceVersion.error, undefined);
+assert.equal(straceVersion.signal, null);
+assert.equal(straceVersion.status, 0);
+const tracePath = path.join(capture, "syscalls.merged");
 const args = [
-  "-ff",
+  "-f",
   "-ttt",
   "-s",
   "16777216",
@@ -37,7 +81,7 @@ const args = [
   "-e",
   "trace=read,write,readv,writev,process",
   "-o",
-  path.join(capture, "syscalls"),
+  tracePath,
   executable,
   selector,
   "--ignored",
@@ -48,7 +92,7 @@ const stdout = fs.openSync(path.join(capture, "test.stdout"), "w");
 const stderr = fs.openSync(path.join(capture, "test.stderr"), "w");
 let result: SpawnSyncReturns<Buffer>;
 try {
-  result = spawnSync("strace", args, {
+  result = spawnSync(strace, args, {
     cwd: process.env.VIZE_NATIVE_DTO_SOURCE_ROOT,
     env: process.env,
     stdio: ["ignore", stdout, stderr],
@@ -58,6 +102,7 @@ try {
   fs.closeSync(stdout);
   fs.closeSync(stderr);
 }
+const trace = fs.existsSync(tracePath) ? hashBoundedFile(tracePath) : null;
 fs.writeFileSync(
   path.join(capture, "source-execution.json"),
   JSON.stringify(
@@ -65,8 +110,11 @@ fs.writeFileSync(
       source: process.env.VIZE_NATIVE_DTO_SOURCE_SHA,
       executable,
       executableSha256: hash,
-      command: "strace",
+      command: strace,
+      commandSha256: straceHash,
+      commandVersion: straceVersion.stdout.trim(),
       args,
+      trace,
       status: result.status,
       roleKind:
         process.env.VIZE_NATIVE_DTO_ROLE === "before" &&

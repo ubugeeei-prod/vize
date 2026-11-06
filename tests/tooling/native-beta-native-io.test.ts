@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -11,6 +12,7 @@ import {
   requireNoUnknownNativeWrites,
   requireSingleTerminalStderrRole,
   requireCompletedBefore,
+  requireObservedEntryBefore,
 } from "./support/native-beta-dto/native-io.ts";
 
 test("returned, partial, failed and unknown writes retain distinct byte outcomes", () => {
@@ -299,6 +301,62 @@ test("ordinary syscall entry supplies a bracket, never an exact return clock", a
     requireCompletedBefore(eof, { at: "1.000004", tid: 102, line: 1 });
     requireCompletedBefore(eof, trace.records[0]!);
     assert.throws(() => requireCompletedBefore({ at: "1.000000", tid: 101, line: 0 }, eof));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("authenticated merged output proves cross-thread completion without inventing a clock", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "native-io-merged-unit-"));
+  try {
+    const raw = Buffer.from(
+      [
+        '101 1.000001 read(0, "", 4096) = 0',
+        '102 1.000002 write(2, "\\x61", 1) = 1',
+        "101 1.000004 +++ exited with 0 +++",
+        "102 1.000005 +++ exited with 0 +++",
+        "",
+      ].join("\n"),
+    );
+    fs.writeFileSync(path.join(root, "syscalls.merged"), raw);
+    const authority = {
+      file: "syscalls.merged" as const,
+      bytes: raw.length,
+      sha256: createHash("sha256").update(raw).digest("hex"),
+    };
+    const trace = await readNativeTrace(root, "/sdk/tsc", authority);
+    const eof = trace.eofReads[0]!;
+    const write = trace.records[0]!;
+    assert.equal(eof.completion.returnedAt, null);
+    assert.equal(eof.completion.returnedBy!.at, "1.000004");
+    requireCompletedBefore(eof, write);
+    requireObservedEntryBefore(eof, write);
+    assert.throws(() => requireObservedEntryBefore(write, eof), /earlier observed entry/u);
+    assert.deepEqual(eof.completion.merged, {
+      captureSha256: authority.sha256,
+      entryLine: 1,
+      completionLine: 1,
+    });
+    assert.equal(write.mergedEntry!.line, 2);
+    assert.equal(trace.mergedTrace!.source.lines, 4);
+    for (const derived of trace.mergedTrace!.derived) {
+      const bytes = fs.readFileSync(path.join(root, "native-trace-derived", derived.file));
+      const lineMap = fs.readFileSync(path.join(root, "native-trace-derived", derived.lineMapFile));
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), derived.sha256);
+      assert.equal(createHash("sha256").update(lineMap).digest("hex"), derived.lineMapSha256);
+    }
+    const copied = {
+      ...eof,
+      completion: {
+        ...eof.completion,
+        merged: { ...eof.completion.merged! },
+      },
+    };
+    assert.throws(() => requireCompletedBefore(copied, write), /raw-derived merged provenance/u);
+    assert.throws(
+      () => requireObservedEntryBefore({ ...eof, mergedEntry: { ...eof.mergedEntry! } }, write),
+      /raw-derived merged entry/u,
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
