@@ -139,5 +139,5 @@ fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
     assert_eq!(template.matches(outer_declaration.as_str()).count(), 2);
     assert_eq!(template.matches(inner_capture.as_str()).count(), 2);
     assert_eq!(template.matches(inner_declaration.as_str()).count(), 2);
-    assert!(!template.contains("((visible)) ? (map[kind])"));
+    assert_eq!(template.matches("((visible)) ? (map[kind])").count(), 0);
 }
