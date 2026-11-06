@@ -132,6 +132,12 @@ fn has_reserved_name_candidate(
     let bytes = expression.as_bytes();
     let mut cursor = 0;
     while let Some(&byte) = bytes.get(cursor) {
+        if byte == b'\\' && bytes.get(cursor + 1) == Some(&b'u') {
+            // OXC normalizes Unicode escapes before semantic lookup. The raw
+            // scanner cannot prove that an escaped identifier is not one of
+            // the reserved bindings, so let the existing semantic owner decide.
+            return true;
+        }
         if !is_identifier_start(byte) {
             cursor += 1;
             continue;
@@ -417,6 +423,40 @@ mod tests {
         let names = props(&["as"]);
         assert!(!has_reserved_name_candidate("{ value: bag.count }", &names));
         assert_eq!(rewrite("{ value: bag.count }", &names), None);
+    }
+
+    #[test]
+    fn escaped_reserved_identifier_reaches_semantic_rewriting() {
+        for (expression, expected) in [
+            (r"fr\u006fm", r#"props["fr\u006fm"]"#),
+            (r"fr\u{6f}m", r#"props["fr\u{6f}m"]"#),
+        ] {
+            let rewritten = rewrite(expression, &props(&["from"]))
+                .expect("escaped reserved read should be rewritten");
+            assert_eq!(rewritten.code, expected);
+            let authored = rewritten
+                .segments
+                .iter()
+                .find(|segment| segment.source == (0..expression.len()))
+                .expect("escaped read should keep its authored mapping");
+            assert_eq!(
+                rewritten.code.get(authored.generated.clone()),
+                Some(expression)
+            );
+        }
+    }
+
+    #[test]
+    fn escaped_identifier_roles_stay_owned_by_semantics() {
+        let names = props(&["from"]);
+        for expression in [
+            r"item.fr\u006fm",
+            r"{ fr\u006fm: 1 }",
+            r"value as fr\u006fm",
+            r"((fr\u006fm) => fr\u006fm)(1)",
+        ] {
+            assert_eq!(rewrite(expression, &names), None, "{expression}");
+        }
     }
 
     #[test]
