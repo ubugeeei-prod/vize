@@ -279,6 +279,7 @@ jobs:
           release-version: ${{ steps.version.outputs.version }}
           cross-compile: "true"
           upload-artifacts: "false"
+      - uses: ./.github/actions/setup-rust-script
       - name: Install packed runtime dependencies
         shell: bash
         run: |

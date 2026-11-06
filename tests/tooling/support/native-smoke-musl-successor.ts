@@ -18,7 +18,7 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
   const predecessor = packedSmokeTimingSuccessor(historical);
   assert.equal(
     createHash("sha256").update(current).digest("hex"),
-    "d963d25c95bbb324bdb65b103ae4461b4b17a092fb3a2dcdbe1254ea14102ece",
+    "168b9494f95ef11a9ac310e248740ef8b22ef867b757c595ff5ad8e14712385d",
     "the complete musl smoke successor stays sealed",
   );
   assert.equal(current.split(muslJob).length, 2, "one musl smoke job");

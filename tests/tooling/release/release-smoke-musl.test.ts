@@ -26,6 +26,14 @@ test("the musl fresh install smoke cross-builds and runs the packed matrix in Al
     "cross-compile": "true",
     "upload-artifacts": "false",
   });
+  const buildIndex = steps.indexOf(build ?? {});
+  const rustScriptIndex = steps.findIndex(
+    (step) => step.uses === "./.github/actions/setup-rust-script",
+  );
+  assert.ok(
+    rustScriptIndex > buildIndex,
+    "the musl lane must provision rust-script before building packed CLI dependencies",
+  );
 
   const prepare = steps.find((step) =>
     step.run?.includes("cp vize-vitrine.linux-x64-musl.node npm/linux-x64-musl/"),
