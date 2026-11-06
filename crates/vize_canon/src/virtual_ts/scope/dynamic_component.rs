@@ -9,7 +9,10 @@
 //! which is how `vue-tsc` checks the same element.
 
 use vize_carton::{FxHashMap, FxHashSet, String, append};
-use vize_croquis::{Croquis, ScopeKind, drawer::is_dynamic_component_alias};
+use vize_croquis::{
+    Croquis, ScopeId, ScopeKind, TemplateExpression, TemplateExpressionKind,
+    drawer::is_dynamic_component_alias,
+};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 mod generic_index;
@@ -69,9 +72,17 @@ pub(crate) fn is_owned_dynamic_component_alias(
 /// component-props pass; the template root declares the rest.
 #[derive(Default)]
 pub(crate) struct DynamicComponentAliases {
+    root_guards: Vec<GuardDeclaration>,
+    scoped_guards: FxHashMap<u32, Vec<GuardDeclaration>>,
+    guard_starts: FxHashSet<u32>,
     root: Vec<AliasDeclaration>,
     scoped: FxHashMap<u32, Vec<AliasDeclaration>>,
     scoped_starts: FxHashSet<u32>,
+}
+
+struct GuardDeclaration {
+    start: u32,
+    expression: String,
 }
 
 struct AliasDeclaration {
@@ -107,7 +118,12 @@ impl DynamicComponentAliases {
             // Only a generic setup can defer an indexed entry type.
             let boxed = generic.then(|| generic_index::value(root, usage)).flatten();
             let expression = boxed.as_deref().unwrap_or(expression).trim();
-            let declaration = match &usage.vif_guard {
+            let guard = usage.vif_guard.as_ref().map(|guard| {
+                aliases
+                    .guard_reference(summary, usage, guard.as_str())
+                    .unwrap_or_else(|| String::from(guard.as_str()))
+            });
+            let declaration = match guard {
                 Some(guard) => AliasDeclaration {
                     start: usage.start,
                     comment: "// @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.",
@@ -153,6 +169,9 @@ impl DynamicComponentAliases {
     }
 
     pub(super) fn emit_root(&self, ts: &mut String) {
+        for declaration in &self.root_guards {
+            declaration.push(ts, "  ");
+        }
         for declaration in &self.root {
             declaration.push(ts, "  ");
         }
@@ -167,10 +186,91 @@ impl DynamicComponentAliases {
         indent: &str,
         mut then: impl FnMut(&mut String, u32),
     ) {
+        for declaration in self.scoped_guards.get(&scope).into_iter().flatten() {
+            declaration.push(ts, indent);
+        }
         for declaration in self.scoped.get(&scope).into_iter().flatten() {
             declaration.push(ts, indent);
             then(ts, declaration.start);
         }
+    }
+
+    /// Capture a joined guard in the lexical scope where its final authored
+    /// condition is evaluated. An alias may be declared after a slot or loop
+    /// has rebound one of the guard's names; referring to this capture keeps
+    /// the original binding identity instead of reparsing the same text there.
+    fn guard_reference(
+        &mut self,
+        summary: &Croquis,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        guard: &str,
+    ) -> Option<String> {
+        let expression = summary
+            .template_expressions
+            .iter()
+            .filter(|expression| expression.kind == TemplateExpressionKind::VIf)
+            .filter(|expression| expression.start < usage.end)
+            .filter(|expression| expression.vif_guard.as_deref() == Some(guard))
+            .filter(|expression| {
+                is_lexical_ancestor(&summary.scopes, expression.scope_id, usage.scope_id)
+            })
+            .max_by_key(|expression| expression.start)?;
+        if !guard_chain_crosses_scope(summary, expression, usage.scope_id) {
+            return None;
+        }
+        Some(self.collect_guard(summary, expression))
+    }
+
+    fn collect_guard(&mut self, summary: &Croquis, expression: &TemplateExpression) -> String {
+        let name = vize_carton::cstr!("__vize_dynamic_guard_{}", expression.start);
+        if !self.guard_starts.insert(expression.start) {
+            return name;
+        }
+
+        let Some(guard) = expression.vif_guard.as_deref() else {
+            return name;
+        };
+        let captured = match guard_predecessor(summary, expression) {
+            Some((predecessor, suffix)) => {
+                let predecessor = self.collect_guard(summary, predecessor);
+                vize_carton::cstr!("{predecessor} && {suffix}")
+            }
+            None => String::from(guard),
+        };
+        let declaration = GuardDeclaration {
+            start: expression.start,
+            expression: captured,
+        };
+        let scope = summary
+            .scopes
+            .get_scope(expression.scope_id)
+            .filter(|scope| {
+                matches!(
+                    scope.kind,
+                    ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+                )
+            })
+            .map(|scope| scope.id.as_u32());
+        match scope {
+            Some(scope) => self
+                .scoped_guards
+                .entry(scope)
+                .or_default()
+                .push(declaration),
+            None => self.root_guards.push(declaration),
+        }
+        name
+    }
+}
+
+impl GuardDeclaration {
+    fn push(&self, ts: &mut String, indent: &str) {
+        append!(
+            *ts,
+            "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const __vize_dynamic_guard_{} = ({});\n",
+            self.start,
+            self.expression
+        );
     }
 }
 
@@ -183,6 +283,58 @@ impl AliasDeclaration {
             self.statement
         );
     }
+}
+
+fn is_lexical_ancestor(
+    scopes: &vize_croquis::ScopeChain,
+    ancestor: ScopeId,
+    mut descendant: ScopeId,
+) -> bool {
+    loop {
+        if ancestor == descendant {
+            return true;
+        }
+        let Some(parent) = scopes
+            .get_scope(descendant)
+            .and_then(|scope| scope.parent())
+        else {
+            return false;
+        };
+        descendant = parent;
+    }
+}
+
+fn guard_chain_crosses_scope(
+    summary: &Croquis,
+    expression: &TemplateExpression,
+    usage_scope: ScopeId,
+) -> bool {
+    expression.scope_id != usage_scope
+        || guard_predecessor(summary, expression).is_some_and(|(predecessor, _)| {
+            guard_chain_crosses_scope(summary, predecessor, usage_scope)
+        })
+}
+
+fn guard_predecessor<'a>(
+    summary: &'a Croquis,
+    expression: &'a TemplateExpression,
+) -> Option<(&'a TemplateExpression, &'a str)> {
+    let guard = expression.vif_guard.as_deref()?;
+    summary
+        .template_expressions
+        .iter()
+        .filter(|candidate| candidate.kind == TemplateExpressionKind::VIf)
+        .filter(|candidate| candidate.start < expression.start)
+        .filter(|candidate| {
+            is_lexical_ancestor(&summary.scopes, candidate.scope_id, expression.scope_id)
+        })
+        .filter_map(|candidate| {
+            let prefix = candidate.vif_guard.as_deref()?;
+            let suffix = guard.strip_prefix(prefix)?.strip_prefix(" && ")?;
+            Some((candidate, suffix, prefix.len()))
+        })
+        .max_by_key(|(_, _, prefix_len)| *prefix_len)
+        .map(|(candidate, suffix, _)| (candidate, suffix))
 }
 
 /// The `:is` expression of the `<component>` element starting at `start`.

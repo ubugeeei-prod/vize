@@ -18,16 +18,16 @@ const TEMPLATE: &str = concat!(
     r#"<component :is="map[foo]" @pick="(v) => take(v)"></component>"#,
 );
 
-fn generate() -> String {
+fn generate_source(script: &str, template: &str) -> String {
     let allocator = vize_carton::Allocator::new();
-    let (root, errors) = vize_armature::parse(&allocator, TEMPLATE);
+    let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(errors.is_empty(), "template errors: {errors:?}");
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(SCRIPT);
+    analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
     generate_virtual_ts_with_offsets(
         &analyzer.finish(),
-        Some(SCRIPT),
+        Some(script),
         Some(&root),
         0,
         0,
@@ -36,13 +36,21 @@ fn generate() -> String {
     .code
 }
 
-fn alias(nth: usize) -> String {
-    let start = TEMPLATE
+fn generate() -> String {
+    generate_source(SCRIPT, TEMPLATE)
+}
+
+fn alias_for(template: &str, nth: usize) -> String {
+    let start = template
         .match_indices("<component")
         .nth(nth)
         .map(|(start, _)| start)
         .expect("authored component");
     cstr!("__vize_dynamic_is_{start}")
+}
+
+fn alias(nth: usize) -> String {
+    alias_for(TEMPLATE, nth)
 }
 
 #[test]
@@ -88,4 +96,45 @@ fn scope_bound_targets_declare_their_alias_inside_that_scope() {
         1
     );
     insta::assert_snapshot!(template);
+}
+
+#[test]
+fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
+    const SCRIPT: &str = "import Picker from './Picker.vue'\nimport Panel from './Panel.vue'\nconst map = { a: Picker }\nconst visible = true\n";
+    const TEMPLATE: &str = concat!(
+        r#"<Panel v-if="visible" v-slot:default="{ kind, open, visible }">"#,
+        r#"<component :is="map[kind]"></component>"#,
+        r#"<component v-if="open" :is="map[kind]"></component>"#,
+        r#"</Panel>"#,
+    );
+    let code = generate_source(SCRIPT, TEMPLATE);
+    let template = &code[code
+        .find(";(function __template()")
+        .expect("template scope")..];
+    let guard_start = TEMPLATE.find("v-if=\"visible\"").expect("outer guard") + "v-if=\"".len();
+    let guard = cstr!("__vize_dynamic_guard_{guard_start}");
+    let outer_alias = alias_for(TEMPLATE, 0);
+    let inner_guard_start = TEMPLATE.find("v-if=\"open\"").expect("inner guard") + "v-if=\"".len();
+    let inner_guard = cstr!("__vize_dynamic_guard_{inner_guard_start}");
+    let inner_alias = alias_for(TEMPLATE, 1);
+    let capture = cstr!("const {guard} = ((visible));");
+    let outer_declaration =
+        cstr!("const {outer_alias} = ({guard}) ? (map[kind]) : (undefined as never);");
+    let inner_capture = cstr!("const {inner_guard} = ({guard} && (open));");
+    let inner_declaration =
+        cstr!("const {inner_alias} = ({inner_guard}) ? (map[kind]) : (undefined as never);");
+    let slot_start = template
+        .find("function _slot_default_")
+        .expect("slot scope");
+    let capture_start = template.find(capture.as_str()).expect("guard capture");
+    let alias_start = template
+        .find(outer_declaration.as_str())
+        .expect("captured alias declaration");
+
+    assert!(capture_start < slot_start && slot_start < alias_start);
+    assert_eq!(template.matches(capture.as_str()).count(), 1);
+    assert_eq!(template.matches(outer_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(inner_capture.as_str()).count(), 2);
+    assert_eq!(template.matches(inner_declaration.as_str()).count(), 2);
+    assert!(!template.contains("((visible)) ? (map[kind])"));
 }
