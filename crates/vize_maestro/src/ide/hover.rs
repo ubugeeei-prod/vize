@@ -78,7 +78,7 @@ impl HoverService {
                         ctx,
                         &word,
                         in_expression,
-                        !ctx.state.has_corsa_bridge(),
+                        !ctx.state.has_cached_corsa_bridge_for_document(ctx.uri),
                     )
                 })?;
                 if hover.range.is_none() {
