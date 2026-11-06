@@ -10,9 +10,7 @@ import {
   hasCompletePacketQualification,
   selectPacketGoldens,
 } from "./support/content-mapper-instance-globals-packets-10617.ts";
-
 import { assertProfileComparatorNegatives } from "./support/content-mapper-instance-globals-profiles-10617.ts";
-
 test(
   "profile controls reject hidden parsing, cache scope collapse and truncated evidence",
   assertProfileComparatorNegatives,
