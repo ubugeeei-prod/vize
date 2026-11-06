@@ -13,29 +13,15 @@ fn guarded_component_listener_keeps_nested_callback_context() {
         &[
             (
                 "src/Child.vue",
-                r#"<script setup lang="ts">
-defineEmits<{ change: [value: { id: string }[]] }>();
-</script>
-
-<template><div /></template>
-"#,
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/guarded-listener-nested-callback-11977/Child.vue.txt"
+                ),
             ),
             (
                 "src/Parent.vue",
-                r#"<script setup lang="ts">
-import { ref } from 'vue';
-import Child from './Child.vue';
-
-const ready = ref(true);
-const ids = ref<string[]>([]);
-</script>
-
-<template>
-  <div v-if="ready">
-    <Child @change="v => ids = v.map(x => x.id)" />
-  </div>
-</template>
-"#,
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/guarded-listener-nested-callback-11977/Parent.vue.txt"
+                ),
             ),
         ],
     );

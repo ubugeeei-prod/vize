@@ -14382,6 +14382,50 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-guarded-listener-nested-callback-11977",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "guarded-listener-nested-callback-11977/Child.vue.txt",
+          "sha256": "98af3421181995dbc4972fd9ac0088cdc3975a3ed34486c55578c58df815bb20",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "guarded-listener-nested-callback-11977/Parent.vue.txt",
+          "sha256": "5236727c770171863523e9c88b5bfd0c86e13d2fbc1f214aea24e166607f6c93",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "guarded-listener-nested-callback-11977/package.json.txt",
+          "sha256": "3bb6e7afbf2b68b4aeef9186583499ee3540d84f2f08851ee0a00db2ed676173",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "guarded-listener-nested-callback-11977/tsconfig.json.txt",
+          "sha256": "a1fb3b50c337aad2a7378df3f9701b8e41798eb4b0c4ce539a9d16c4dc3f87e6",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::guarded_listener_nested_callback::guarded_component_listener_keeps_nested_callback_context; exact #11977 package, config and SFC report inputs are pinned, and the real-project regression test physically consumes both reported SFCs. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-model-props-11359",
       "state": "active",
       "targets": [
