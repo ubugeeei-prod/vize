@@ -111,18 +111,21 @@ fn verify_oracle_update(
         .map_err(|_| "complete original qualification graph reconstruction")
 }
 
-#[allow(clippy::too_many_arguments)]
+struct QualificationGraph<'a> {
+    lock: &'a [u8],
+    package: &'a [u8],
+    workspace: &'a [u8],
+    tests_package: &'a [u8],
+    oracle: &'a [u8],
+    support_script: &'a [u8],
+}
+
 fn verify_lockfile_update(
     previous: &Value,
     predecessor: &Value,
     predecessor_bytes: &[u8],
     update: &Value,
-    lock: &[u8],
-    package: &[u8],
-    workspace: &[u8],
-    tests_package: &[u8],
-    oracle: &[u8],
-    support_script: &[u8],
+    graph: &QualificationGraph<'_>,
 ) -> Checked<()> {
     if predecessor["previousProviderRecord"]["sha256"] != PREVIOUS_PROVIDER
         || update["previousQualificationLock"] != predecessor["finalQualificationLock"]
@@ -136,19 +139,23 @@ fn verify_lockfile_update(
         return Err("exact frozen qualification successor");
     }
     for (binding, path, body) in [
-        (&update["finalQualificationLock"], "pnpm-lock.yaml", lock),
+        (
+            &update["finalQualificationLock"],
+            "pnpm-lock.yaml",
+            graph.lock,
+        ),
         (
             &update["finalQualificationPackage"],
             "package.json",
-            package,
+            graph.package,
         ),
-        (&update["workspaceManifest"], WORKSPACE, workspace),
-        (&update["testsManifest"], TESTS_PACKAGE, tests_package),
-        (&update["oracleManifest"], SETUP_AWAIT_ORACLE, oracle),
+        (&update["workspaceManifest"], WORKSPACE, graph.workspace),
+        (&update["testsManifest"], TESTS_PACKAGE, graph.tests_package),
+        (&update["oracleManifest"], SETUP_AWAIT_ORACLE, graph.oracle),
         (
             &update["setupAwaitSupport"],
             SETUP_AWAIT_SUPPORT,
-            support_script,
+            graph.support_script,
         ),
     ] {
         if !bound(binding, path, body) {
@@ -162,7 +169,7 @@ fn verify_lockfile_update(
         return Err("exact resolver fixed point");
     }
 
-    let workspace = std::str::from_utf8(workspace).map_err(|_| "UTF-8 workspace manifest")?;
+    let workspace = std::str::from_utf8(graph.workspace).map_err(|_| "UTF-8 workspace manifest")?;
     if workspace
         .matches("  - \"tests/tooling/vue-setup-await-oracle\"")
         .count()
@@ -173,12 +180,12 @@ fn verify_lockfile_update(
         return Err("only the declared workspace and Unhead boundary");
     }
     let tests_package: Value =
-        serde_json::from_slice(tests_package).map_err(|_| "complete tests manifest")?;
+        serde_json::from_slice(graph.tests_package).map_err(|_| "complete tests manifest")?;
     if tests_package["devDependencies"]["vue-setup-await-oracle"] != Value::Null {
         return Err("no shared setup-await oracle alias");
     }
     let oracle: Value =
-        serde_json::from_slice(oracle).map_err(|_| "complete setup-await oracle manifest")?;
+        serde_json::from_slice(graph.oracle).map_err(|_| "complete setup-await oracle manifest")?;
     let dependencies = oracle["devDependencies"]
         .as_object()
         .ok_or("two exact setup-await dependencies")?;
@@ -188,7 +195,7 @@ fn verify_lockfile_update(
     {
         return Err("two exact setup-await dependencies");
     }
-    let lock = std::str::from_utf8(lock).map_err(|_| "UTF-8 qualification lock")?;
+    let lock = std::str::from_utf8(graph.lock).map_err(|_| "UTF-8 qualification lock")?;
     if !lock.contains("  '@unhead/vue': 3.4.3")
         || lock.matches(SETUP_AWAIT_IMPORTER).count() != 1
         || lock.contains("      vue-setup-await-oracle:\n        specifier: npm:vue@3.5.38")
@@ -220,18 +227,15 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         .map_err(|_| "complete setup-await oracle manifest")?;
     let support_script = fs::read(support::repository().join(SETUP_AWAIT_SUPPORT))
         .map_err(|_| "complete setup-await support script")?;
-    verify_lockfile_update(
-        previous,
-        &predecessor,
-        &predecessor_bytes,
-        &update,
+    let graph = QualificationGraph {
         lock,
         package,
-        &workspace,
-        &tests_package,
-        &oracle,
-        &support_script,
-    )?;
+        workspace: &workspace,
+        tests_package: &tests_package,
+        oracle: &oracle,
+        support_script: &support_script,
+    };
+    verify_lockfile_update(previous, &predecessor, &predecessor_bytes, &update, &graph)?;
     Ok(Some(update))
 }
 
@@ -267,18 +271,27 @@ mod tests {
         }
     }
 
+    impl Inputs {
+        fn graph<'a>(&'a self, lock: &'a [u8]) -> QualificationGraph<'a> {
+            QualificationGraph {
+                lock,
+                package: &self.package,
+                workspace: &self.workspace,
+                tests_package: &self.tests_package,
+                oracle: &self.oracle,
+                support_script: &self.support_script,
+            }
+        }
+    }
+
     fn verify(input: &Inputs, update: &Value, lock: &[u8]) -> Checked<()> {
+        let graph = input.graph(lock);
         verify_lockfile_update(
             &input.previous,
             &input.predecessor,
             &input.predecessor_bytes,
             update,
-            lock,
-            &input.package,
-            &input.workspace,
-            &input.tests_package,
-            &input.oracle,
-            &input.support_script,
+            &graph,
         )
     }
 
@@ -321,18 +334,14 @@ mod tests {
 
         let mut predecessor = input.predecessor.clone();
         predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
+        let graph = input.graph(&input.lock);
         assert_eq!(
             verify_lockfile_update(
                 &input.previous,
                 &predecessor,
                 &input.predecessor_bytes,
                 &input.update,
-                &input.lock,
-                &input.package,
-                &input.workspace,
-                &input.tests_package,
-                &input.oracle,
-                &input.support_script,
+                &graph,
             ),
             Err("exact frozen qualification successor")
         );
