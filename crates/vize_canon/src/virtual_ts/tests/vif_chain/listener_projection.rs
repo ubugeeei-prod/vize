@@ -55,8 +55,8 @@ fn hoisted_listeners_use_the_program_argument_relation() {
         },
     );
     assert_eq!(
-        output.code.matches("_listener_args<").count(),
-        0,
+        output.code.matches("_listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never>").count(),
+        1,
         "{}",
         output.code
     );
@@ -71,8 +71,17 @@ fn hoisted_listeners_use_the_program_argument_relation() {
             .code
             .matches("import(\"vize:virtual-ts\").$ListenerArgs<")
             .count(),
-        4,
+        1,
         "{}",
+        output.code
+    );
+    assert_eq!(
+        output
+            .code
+            .matches("[Extract<NonNullable<__H>, (...args: any) => any>] extends [never]")
+            .count(),
+        0,
+        "the implementation must remain in the shared SDK: {}",
         output.code
     );
     for (prefix, generic) in [
