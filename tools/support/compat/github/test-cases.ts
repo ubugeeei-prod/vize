@@ -247,12 +247,86 @@ export function nextestCases(junit: string, crates: ReadonlyMap<string, string>)
   return cases;
 }
 
+const PLAYWRIGHT_OUTCOMES: Readonly<Record<string, Outcome>> = {
+  passed: "passed",
+  failed: "failed",
+  timedOut: "failed",
+  interrupted: "failed",
+  skipped: "skipped",
+};
+
+/** Cases from Playwright's JSON reporter, using the final retry as the outcome. */
+export function playwrightCases(report: unknown, root: string): TestCase[] {
+  const cases: TestCase[] = [];
+  const visit = (suite: unknown, ancestors: readonly string[], label: string) => {
+    const record = asRecord(suite, label);
+    const title = typeof record.title === "string" ? record.title.trim() : "";
+    const titles = title ? [...ancestors, title] : ancestors;
+    for (const [index, entry] of asArray(record.specs ?? [], `${label}.specs`).entries()) {
+      const specLabel = `${label}.specs[${index}]`;
+      const spec = asRecord(entry, specLabel);
+      const reported = asString(spec.file, `${specLabel}.file`).split("\\").join("/");
+      const file = path.isAbsolute(reported)
+        ? ownedPath(reported, root)
+        : reported.startsWith("playground/")
+          ? ownedPath(path.join(root, reported), root)
+          : ownedPath(path.join(root, "playground", reported), root);
+      const specTitle = asString(spec.title, `${specLabel}.title`).trim();
+      for (const [testIndex, testEntry] of asArray(spec.tests, `${specLabel}.tests`).entries()) {
+        const testLabel = `${specLabel}.tests[${testIndex}]`;
+        const testRecord = asRecord(testEntry, testLabel);
+        const results = asArray(testRecord.results, `${testLabel}.results`);
+        const final = results.length
+          ? asRecord(results.at(-1), `${testLabel}.results[${results.length - 1}]`)
+          : null;
+        const status = final?.status ?? testRecord.expectedStatus;
+        const outcome = typeof status === "string" ? PLAYWRIGHT_OUTCOMES[status] : undefined;
+        if (!outcome) throw new Error(`${testLabel} has no final Playwright outcome`);
+        const project = asString(testRecord.projectName, `${testLabel}.projectName`).trim();
+        const parts = [...titles, specTitle, project].filter(
+          (part) => part && part !== reported && part !== path.posix.basename(reported),
+        );
+        cases.push({ path: file, name: `${file} › ${parts.join(" › ")}`, outcome });
+      }
+    }
+    for (const [index, child] of asArray(record.suites ?? [], `${label}.suites`).entries())
+      visit(child, titles, `${label}.suites[${index}]`);
+  };
+  const record = asRecord(report, "playwright report");
+  for (const [index, suite] of asArray(record.suites, "playwright report.suites").entries())
+    visit(suite, [], `playwright report.suites[${index}]`);
+  return cases;
+}
+
+/** Combine partial packets produced by multiple runners in one Actions job. */
+export function mergePackets(packets: readonly TestCasePacket[]): TestCasePacket {
+  const [first, ...rest] = packets;
+  if (!first) throw new Error("At least one test case packet is required");
+  for (const current of rest) {
+    if (current.job !== first.job || current.attempt !== first.attempt)
+      throw new Error("Merged test case packets must have the same job and attempt");
+  }
+  return { ...first, cases: packets.flatMap((current) => current.cases) };
+}
+
 const entrypoint = process.argv[1]
   ? fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
   : false;
 if (entrypoint) {
-  const [mode, report, out, ...rest] = process.argv.slice(2);
-  const usage = "Usage: test-cases.ts <nextest|vitest|node> <report> <packet.json>";
+  const [mode, ...args] = process.argv.slice(2);
+  const usage =
+    "Usage: test-cases.ts <nextest|vitest|node|playwright> <report> <packet.json> | merge <packet.json> <partial...>";
+  if (mode === "merge") {
+    const [out, ...reports] = args;
+    if (!out || reports.length === 0) throw new Error(usage);
+    const merged = mergePackets(
+      reports.map((file) => parsePacket(parseJson(readFileSync(file, "utf8")), file)),
+    );
+    writeFileSync(out, `${JSON.stringify(merged)}\n`);
+    console.log(`Merged ${merged.cases.length} test cases into ${out}`);
+    process.exit(0);
+  }
+  const [report, out, ...rest] = args;
   if (!report || !out || rest.length) throw new Error(usage);
   const root = fileURLToPath(new URL("../../../../", import.meta.url));
   const cases =
@@ -268,7 +342,9 @@ if (entrypoint) {
                 .map((line) => parseJson(line) as NodeTestEvent),
               root,
             )
-          : null;
+          : mode === "playwright"
+            ? playwrightCases(parseJson(readFileSync(report, "utf8")), root)
+            : null;
   if (!cases) throw new Error(usage);
   writeFileSync(out, `${JSON.stringify(packet(process.env, cases))}\n`);
   console.log(`Recorded ${cases.length} test cases in ${out}`);

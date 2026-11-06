@@ -404,13 +404,44 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' && steps.cache-playwright.outputs.cache-hit != 'true' }}
         uses: ./.github/actions/install-playwright-browsers
       - name: Run playground tests
+        id: browser-cases
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        run: vp run --filter './playground' test:browser
+        env:
+          TEST_CASES_JOB: "PR playground browser tests"
+          VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-playground-browser.json
+        run: >-
+          node tools/support/compat/github/js-test-cases.ts capture --
+          vp run --filter './playground' test:browser
       - name: Run VRT
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
+        env: { VIZE_PLAYWRIGHT_CASES: "${{ runner.temp }}/test-cases-playground-vrt-report.json" }
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
+      - name: Collect playground test cases
+        id: cases
+        if: ${{ !cancelled() && env.RUN_PLAYGROUND == 'true' }}
+        env:
+          TEST_CASES_JOB: "PR playground browser tests"
+          RUN_VRT: ${{ github.event_name == 'merge_group' }}
+        run: |
+          packets=("$RUNNER_TEMP/test-cases-playground-browser.json")
+          if [[ "$RUN_VRT" == true ]]; then
+            node tools/support/compat/github/test-cases.ts playwright \
+              "$RUNNER_TEMP/test-cases-playground-vrt-report.json" \
+              "$RUNNER_TEMP/test-cases-playground-vrt.json"
+            packets+=("$RUNNER_TEMP/test-cases-playground-vrt.json")
+          fi
+          node tools/support/compat/github/test-cases.ts merge \
+            "$RUNNER_TEMP/test-cases-playground.json" "${packets[@]}"
+      - name: Upload playground test cases
+        if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-playground-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-playground.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload VRT report
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

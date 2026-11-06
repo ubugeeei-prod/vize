@@ -11,7 +11,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readPackets } from "../../tools/support/compat/github/test-cases.ts";
+import {
+  mergePackets,
+  playwrightCases,
+  readPackets,
+} from "../../tools/support/compat/github/test-cases.ts";
 import { withPreparedNative } from "../../npm/native/scripts/test-preparation.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
@@ -297,6 +301,76 @@ test("each test job names its case packet after itself and the report downloads 
     "Test CI selection when its inputs change",
     "test-cases-ci-selection.json",
     "test-cases-ci-selection-${{ github.run_attempt }}",
+  );
+
+  const playground = workflow("pr-source-checks.yml").jobs["pr-playground-test"];
+  const browser = playground.steps.find((step) => step.name === "Run playground tests");
+  assert.equal(browser?.env?.TEST_CASES_JOB, playground.name);
+  assert.ok(browser?.run?.includes("js-test-cases.ts capture"));
+  const collect = playground.steps.find((step) => step.name === "Collect playground test cases");
+  assert.equal(collect?.id, "cases");
+  assert.equal(collect?.env?.TEST_CASES_JOB, playground.name);
+  assert.ok(collect?.run?.includes("test-cases.ts playwright"));
+  assert.ok(collect?.run?.includes("test-cases.ts merge"));
+  const playgroundUpload = playground.steps[playground.steps.indexOf(collect ?? {}) + 1];
+  assert.equal(playgroundUpload.with?.name, "test-cases-playground-${{ github.run_attempt }}");
+  assert.equal(playgroundUpload.with?.["if-no-files-found"], "error");
+});
+
+test("Playwright retries and projects become mergeable playground cases", () => {
+  const report = {
+    suites: [
+      {
+        title: "editor",
+        specs: [
+          {
+            file: "e2e/vrt/editor.spec.ts",
+            title: "renders",
+            tests: [
+              {
+                projectName: "chromium",
+                expectedStatus: "passed",
+                results: [{ status: "failed" }, { status: "passed" }],
+              },
+              {
+                projectName: "webkit",
+                expectedStatus: "skipped",
+                results: [{ status: "skipped" }],
+              },
+            ],
+          },
+        ],
+        suites: [],
+      },
+    ],
+  };
+  const cases = playwrightCases(report, root);
+  assert.deepEqual(cases, [
+    {
+      path: "playground/e2e/vrt/editor.spec.ts",
+      name: "playground/e2e/vrt/editor.spec.ts › editor › renders › chromium",
+      outcome: "passed",
+    },
+    {
+      path: "playground/e2e/vrt/editor.spec.ts",
+      name: "playground/e2e/vrt/editor.spec.ts › editor › renders › webkit",
+      outcome: "skipped",
+    },
+  ]);
+  assert.deepEqual(
+    mergePackets([
+      { version: 1, job: "PR playground browser tests", attempt: 3, cases: [cases[0]] },
+      { version: 1, job: "PR playground browser tests", attempt: 3, cases: [cases[1]] },
+    ]),
+    { version: 1, job: "PR playground browser tests", attempt: 3, cases },
+  );
+  assert.throws(
+    () =>
+      mergePackets([
+        { version: 1, job: "one", attempt: 1, cases: [] },
+        { version: 1, job: "two", attempt: 1, cases: [] },
+      ]),
+    /same job and attempt/,
   );
 });
 
