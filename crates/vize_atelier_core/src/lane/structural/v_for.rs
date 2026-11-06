@@ -74,7 +74,7 @@ pub(in crate::lane) fn transform_for_scope<'a>(
 
     // Process source expression with binding-aware identifier prefixing
     // This ensures imports and refs are correctly handled (e.g., _unref(PRESETS) instead of _ctx.PRESETS)
-    if ctx.options.prefix_identifiers || ctx.options.is_ts {
+    if ctx.options.prefix_identifiers || ctx.options.is_ts || ctx.options.vapor {
         use crate::steps::process_expression;
         // Process the source expression through the binding-aware transform
         let processed = process_expression(ctx, &source, false);

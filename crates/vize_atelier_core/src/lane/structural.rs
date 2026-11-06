@@ -182,7 +182,7 @@ fn condition_expression<'a>(
         &ctx.allocator,
     ));
     // Process expression to add $setup. prefix
-    if ctx.options.prefix_identifiers || ctx.options.is_ts {
+    if ctx.options.prefix_identifiers || ctx.options.is_ts || ctx.options.vapor {
         crate::steps::expression::process_expression(ctx, &raw_exp, false)
     } else {
         raw_exp

@@ -4586,6 +4586,63 @@
       }
     },
     {
+      "id": "compiler/sfc/vapor-invalid-expression-control-11622",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "vapor-invalid-expression-control-11622",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "1043ce47dc967a0841e0f0adeabfc1c69837b4fd7e7a50a2e7a76947594c1f08",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-invalid-expression-control-11622/module.expected.txt",
+        "sha256": "237de792e2ec09fa45e0818f4538525c498f983a40c220883fad62de763bee30",
+        "source": "vize 0.692.0 public Darwin arm64 CLI; canonical SSR argv; valid-expression control for the Vapor rejected-expression regression in #11622"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); the exact malformed Vapor expression remains pinned by the SFC regression test."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11622",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/vue2-preserve-boundaries-9886",
       "state": "active",
       "targets": [
