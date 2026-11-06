@@ -20,7 +20,7 @@ use super::message::strip_corsa_overlay_paths;
 
 /// One virtual document synced to Corsa, ready for assembly.
 pub(super) struct CorsaDocument {
-    pub(super) code: String,
+    pub(super) code: vize_l0::String,
     pub(super) mapping: ProjectionMapping,
     pub(super) import_source_map: ImportSourceMap,
 }

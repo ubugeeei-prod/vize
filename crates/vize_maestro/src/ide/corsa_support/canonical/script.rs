@@ -56,7 +56,7 @@ pub(crate) async fn open_canonical_script_document(
         source_uri: ctx.uri.clone(),
         request_uri: opened.request_uri,
         virtual_result: VirtualTsResult {
-            code: opened.code.to_string(),
+            code: opened.code,
             source_mappings: opened.mappings,
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

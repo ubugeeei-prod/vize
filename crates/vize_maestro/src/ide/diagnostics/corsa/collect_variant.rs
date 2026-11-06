@@ -41,7 +41,7 @@ pub(super) async fn collect_virtual_result_diagnostics(
         virtual_result.semantic_links,
         &opened.import_source_map,
     );
-    virtual_result.code = opened.code.to_string();
+    virtual_result.code = opened.code;
     virtual_result.import_source_map = opened.import_source_map;
     let document = CorsaDocument::from_result(virtual_result);
     let finished =

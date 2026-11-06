@@ -100,11 +100,7 @@ impl DiagnosticService {
 
                 results.push((
                     current_variant_index,
-                    VirtualTsResult::from_projection(
-                        code.to_string(),
-                        output.mapping,
-                        Default::default(),
-                    ),
+                    VirtualTsResult::from_projection(code, output.mapping, Default::default()),
                 ));
             }
         }
