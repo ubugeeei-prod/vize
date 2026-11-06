@@ -114,6 +114,58 @@ export function packedRedirects(context, manager, shape) {
   return redirects;
 }
 
+/**
+ * Proves that a fresh project loaded the platform binding selected by its host.
+ *
+ * A packed-install receipt only proves that the expected optional package is
+ * present on disk. Requiring through `vize` first and then comparing the exact
+ * exports object with the platform package proves which native image the
+ * umbrella package actually loaded.
+ */
+export function assertExpectedNativeBinding(
+  projectRoot,
+  expectedPackage = process.env.VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE,
+  runCommand = run,
+) {
+  if (!expectedPackage) return;
+
+  const output = runCommand(
+    process.execPath,
+    [
+      "-e",
+      [
+        'const assert = require("node:assert/strict");',
+        'const { createRequire } = require("node:module");',
+        "const expectedPackage = process.argv[1];",
+        'const fromVize = createRequire(require.resolve("vize"));',
+        'const native = fromVize("@vizejs/native");',
+        'const fromNative = createRequire(fromVize.resolve("@vizejs/native"));',
+        "const selected = fromNative(expectedPackage);",
+        "assert.strictEqual(native, selected, `${expectedPackage} was installed but not loaded`);",
+        "const token = native.getNativeBuildToken();",
+        'assert.match(token, /^[0-9a-f]{32}$/u, "loaded native image has no build token");',
+        'assert.equal(selected.getNativeBuildToken(), token, "loaded native build token differs");',
+        "console.log(JSON.stringify({",
+        '  schema: "vize.loadedNativeBinding",',
+        "  version: 1,",
+        "  package: expectedPackage,",
+        "  token,",
+        "}));",
+      ].join("\n"),
+      expectedPackage,
+    ],
+    { cwd: projectRoot, env: projectEnv() },
+  ).trim();
+  const evidence = JSON.parse(output);
+  assert.deepEqual(
+    { schema: evidence.schema, version: evidence.version, package: evidence.package },
+    { schema: "vize.loadedNativeBinding", version: 1, package: expectedPackage },
+    "native binding probe returned malformed evidence",
+  );
+  assert.match(evidence.token, /^[0-9a-f]{32}$/u, "native binding evidence has no build token");
+  console.log(output);
+}
+
 function installPlannedDependencies(context, projectRoot, manager, shape) {
   const manifestPath = path.join(projectRoot, "package.json");
   const manifest = readJson(manifestPath);
@@ -187,6 +239,7 @@ function runFreshProjectCell(context, cell) {
     projectShape: shape.id,
     packageManager: manager.id,
   });
+  assertExpectedNativeBinding(projectRoot);
   assert.deepEqual(
     Object.keys(readJson(path.join(projectRoot, "package.json")).devDependencies).sort(byCodeUnit),
     shape.expectedDevDependencies,
