@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ from: string }>()
+const needsNumber = (value: number) => value
+const holder = { from: 1 }
+</script>
+<template>
+  <p>{{ needsNumber(fr\u006fm.length) }}</p>
+  <p>{{ needsNumber(holder.fr\u006fm) }}</p>
+  <p>{{ ((fr\u006fm: number) => needsNumber(fr\u006fm))(1) }}</p>
+</template>
