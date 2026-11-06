@@ -234,7 +234,9 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             retained::Retained::collect(allocator, &s2.root)
         );
         if retained.has_parse_rejected() {
-            return VaporL3BridgeStatus::Legacy(LegacyReason::ExpressionOrEncoding);
+            return VaporL3BridgeStatus::Rejected(std::vec![String::from(
+                "Error parsing JavaScript expression: invalid expression",
+            )]);
         }
         // Template carriers keep their wrapper facts in L2 side tables.
         let loops = match bridge_profile!(

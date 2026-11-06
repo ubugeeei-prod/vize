@@ -172,7 +172,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
     // drops the retained AST, so it folds literal styles itself; otherwise
     // the loop below finds the candidate.
     let prefixed = ctx.options.prefix_identifiers || ctx.options.is_ts;
-    if prefixed || ctx.options.vapor {
+    if prefixed {
         process_directive_expressions(ctx, el, runtime_only.is_some());
     }
     let fold_style = runtime_only.is_some() && !prefixed;
@@ -566,7 +566,7 @@ pub fn transform_interpolation<'a>(
     ctx.helper(RuntimeHelper::ToDisplayString);
 
     // Process the expression to add _ctx. prefix and/or strip TypeScript if needed
-    if ctx.options.prefix_identifiers || ctx.options.is_ts || ctx.options.vapor {
+    if ctx.options.prefix_identifiers || ctx.options.is_ts {
         use crate::steps::expression::process_expression;
         let processed = process_expression(ctx, &interp.content, false);
         interp.content = processed;

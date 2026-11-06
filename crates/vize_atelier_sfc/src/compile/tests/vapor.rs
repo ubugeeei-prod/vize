@@ -55,50 +55,57 @@ const doubled = computed(() => count.value * 2)
 
 #[test]
 fn test_vapor_sfc_rejects_unparseable_template_expressions() {
-    for is_ts in [false, true] {
-        let lang = if is_ts { r#" lang="ts""# } else { "" };
-        let source = format!(
-            r#"<script setup{lang}>
+    for invalid in ["count as", "const x = 1"] {
+        for is_ts in [false, true] {
+            let lang = if is_ts { r#" lang="ts""# } else { "" };
+            let source = format!(
+                r#"<script setup{lang}>
 const count = 1
 </script>
-<template><div>{{{{ count as }}}}</div></template>"#
-        );
-        let descriptor =
-            parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
-        let result = compile_sfc(
-            &descriptor,
-            SfcCompileOptions {
-                vapor: true,
-                script: ScriptCompileOptions {
-                    is_ts,
+<template><div>{{{{ {invalid} }}}}</div></template>"#
+            );
+            let descriptor =
+                parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
+            let result = compile_sfc(
+                &descriptor,
+                SfcCompileOptions {
+                    vapor: true,
+                    script: ScriptCompileOptions {
+                        is_ts,
+                        ..Default::default()
+                    },
+                    template: TemplateCompileOptions {
+                        is_ts,
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
-                template: TemplateCompileOptions {
-                    is_ts,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        )
-        .expect("compile_sfc returns a diagnostic result");
+            )
+            .expect("compile_sfc returns a diagnostic result");
 
-        assert_eq!(result.errors.len(), 1, "is_ts={is_ts}: {:?}", result.errors);
-        assert_eq!(
-            result.errors[0].code.as_deref(),
-            Some("VAPOR_TEMPLATE_ERROR")
-        );
-        assert!(
-            result.errors[0]
-                .message
-                .contains("Error parsing JavaScript expression"),
-            "is_ts={is_ts}: {}",
-            result.errors[0].message
-        );
-        assert!(
-            !result.code.contains("_toDisplayString(count as)"),
-            "is_ts={is_ts}: {}",
-            result.code
-        );
+            assert_eq!(
+                result.errors.len(),
+                1,
+                "invalid={invalid:?}, is_ts={is_ts}: {:?}",
+                result.errors
+            );
+            assert_eq!(
+                result.errors[0].code.as_deref(),
+                Some("VAPOR_TEMPLATE_ERROR")
+            );
+            assert!(
+                result.errors[0]
+                    .message
+                    .contains("Error parsing JavaScript expression"),
+                "invalid={invalid:?}, is_ts={is_ts}: {}",
+                result.errors[0].message
+            );
+            assert!(
+                !result.code.contains(invalid),
+                "invalid={invalid:?}, is_ts={is_ts}: {}",
+                result.code
+            );
+        }
     }
 }
 

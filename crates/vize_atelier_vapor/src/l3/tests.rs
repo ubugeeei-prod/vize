@@ -34,6 +34,25 @@ pub(super) fn options() -> VaporL3BridgeOptions {
 const SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
 
+#[test]
+fn parse_rejected_expressions_are_compiler_errors() {
+    for expression in ["count as", "const x = 1"] {
+        let allocator = Allocator::new();
+        let source = vize_carton::cstr!("<div>{{{{ {expression} }}}}</div>");
+        let VaporL3BridgeStatus::Rejected(errors) =
+            lower_source_for_vapor(&allocator, &source, options())
+        else {
+            panic!("expected {expression:?} to be rejected");
+        };
+        assert_eq!(errors.len(), 1, "{expression}");
+        assert!(
+            errors[0].contains("Error parsing JavaScript expression"),
+            "{expression}: {:?}",
+            errors
+        );
+    }
+}
+
 pub(super) fn generated(
     status: VaporL3BridgeStatus<'_>,
     allocator: &Allocator,

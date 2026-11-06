@@ -40,7 +40,7 @@ pub(super) fn process_user_key<'a>(
 ) {
     if let TemplateChildNode::Element(el) = node
         && let Some(PropNode::Directive(dir)) = user_key
-        && (ctx.options.prefix_identifiers || ctx.options.is_ts || ctx.options.vapor)
+        && (ctx.options.prefix_identifiers || ctx.options.is_ts)
         && let Some(exp) = &dir.exp
     {
         let arm_scope = arm_binding_scope(el);

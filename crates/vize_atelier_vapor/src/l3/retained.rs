@@ -126,8 +126,8 @@ impl<'s, 'a> Retained<'s, 'a> {
         }
     }
 
-    /// Rejected authored syntax needs the retained transform lane, which owns
-    /// `InvalidExpression` diagnostics. Other opaque classes are intentional.
+    /// Rejected authored syntax is a compiler error. Other opaque classes are
+    /// intentional and may still select the retained legacy lane later.
     pub(crate) const fn has_parse_rejected(&self) -> bool {
         self.parse_rejected
     }
