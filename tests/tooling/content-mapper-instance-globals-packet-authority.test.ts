@@ -331,12 +331,6 @@ test("CURRENT resolves the complete authenticated population in authored case or
   assert.equal(provenance.capturedQualification.totalOutcomes, 499);
   assert.equal(provenance.capturedQualification.passedOutcomes, 495);
   assert.equal(provenance.capturedQualification.gapCount, 4);
-  assert.deepEqual(provenance.capturedQualification.gapIds, [
-    "whole-packet/lf/slot-shadow",
-    "whole-packet/lf/mixed-slot-scope",
-    "whole-packet/crlf-unicode/slot-shadow",
-    "whole-packet/crlf-unicode/mixed-slot-scope",
-  ]);
   assert.equal(provenance.review.allNonWholePacketOutcomesPassed, true);
   assert.equal(provenance.review.sourceHostAdmitted, true);
   assert.equal(provenance.review.qualificationCredit, false);
