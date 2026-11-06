@@ -75,8 +75,11 @@ fn editor_projects_materialize_one_shared_helper_program() {
 
     for path in [&first, &second] {
         let generated = &project.find_by_original(path).unwrap().content;
-        assert!(generated.contains("Shared preamble hoisted"));
-        assert!(!generated.contains("type $IsUnion<"));
+        assert_eq!(generated.matches("Shared preamble hoisted").count(), 1);
+        assert_eq!(generated.matches("type $IsUnion<").count(), 0);
+        assert_eq!(generated.matches("type $ComponentInstanceFor<").count(), 1);
+        assert_eq!(generated.matches("type $ComponentInputProps<").count(), 1);
+        assert_eq!(generated.matches("type $ReplaceComponentProps<").count(), 1);
     }
 
     project.materialize().unwrap();

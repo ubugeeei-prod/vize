@@ -7,6 +7,13 @@ use crate::virtual_ts::{
     types::{ComponentHelperModule, VirtualTsGenerationOptions},
 };
 
+const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS: &str = concat!(
+    include_str!("../helpers/declarations/core-types.d.ts.txt"),
+    include_str!("../helpers/declarations/vue3-types.d.ts.txt"),
+    include_str!("../helpers/declarations/prop-keys.d.ts.txt"),
+    include_str!("../component_prop_helpers.txt")
+);
+
 /// Keep helpers outside setup so public component aliases can refer to them.
 pub(super) fn emit_module_preamble(
     ts: &mut String,
@@ -26,6 +33,17 @@ pub(super) fn emit_module_preamble(
             // Program helpers and global augmentation are shared once per project.
             ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
         }
+        // TypeScript resolves property references through mapped-type
+        // declarations. Sharing this alias bundle makes unrelated SFCs appear
+        // to own the same prop symbol, so retain only this small owner boundary
+        // in each generated module.
+        ts.push_str("// Keep public prop owners module-local for references and rename.\n");
+        crate::virtual_ts::helpers::hygiene::emit_type_helpers(
+            ts,
+            summary,
+            OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS,
+            false,
+        );
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);
         ts.push('\n');
