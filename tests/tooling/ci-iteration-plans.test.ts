@@ -313,6 +313,10 @@ if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
     };
     delete env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS;
     delete env.VIZE_VUE_RUNTIME_PRODUCTION;
+    // This fixture exercises the original command environment, not the outer
+    // tooling job's Rust case reporter destination.
+    delete env.VIZE_TEST_CASES;
+    delete env.TEST_CASES_JOB;
     const expectedCalls: unknown[] = [];
     for (const lane of rustDifferentialLanes.filter((lane) => !lane.navigation)) {
       writeFileSync(log, "");

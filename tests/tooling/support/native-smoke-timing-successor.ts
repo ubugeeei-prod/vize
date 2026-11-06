@@ -22,8 +22,8 @@ const retainedTiming = [
 ].join("\n");
 const selectedProducer = "\n  selected-host-native-producer:\n";
 
-/** Admit only the two timing environments and one retained sidecar over a sealed workflow. */
-export function assertPackedSmokeTimingSuccessor(historical: string, current: string): void {
+/** Build the exact timing-only successor over the sealed Babel workflow. */
+export function packedSmokeTimingSuccessor(historical: string): string {
   assert.equal(
     createHash("sha256").update(historical).digest("hex"),
     "cb090990a287cd13949c5e38ed22d3a2619b3b64c7415b6593f171c02c02574a",
@@ -36,9 +36,14 @@ export function assertPackedSmokeTimingSuccessor(historical: string, current: st
   }
   assert.equal(expected.split(selectedProducer).length, 2, "one selected producer boundary");
   expected = expected.replace(selectedProducer, retainedTiming + selectedProducer);
+  return expected;
+}
+
+/** Admit only the two timing environments and one retained sidecar over a sealed workflow. */
+export function assertPackedSmokeTimingSuccessor(historical: string, current: string): void {
   assert.equal(
     current,
-    expected,
+    packedSmokeTimingSuccessor(historical),
     "all workflow bytes outside the exact timing observer stay sealed",
   );
 }

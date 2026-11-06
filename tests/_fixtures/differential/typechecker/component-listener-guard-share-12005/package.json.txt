@@ -1,0 +1,1 @@
+{ "private": true, "devDependencies": { "tsrs": "0.20.1-ts7.1.0-beta", "typescript": "6.0.2", "vize": "0.697.0", "vue": "3.5.44", "vue-tsc": "3.3.11" } }

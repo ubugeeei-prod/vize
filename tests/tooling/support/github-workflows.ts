@@ -178,11 +178,13 @@ export function hostedOrBlacksmithExact(hostedLabel: string): RegExp {
 }
 
 export type DailySourceStep = {
+  id?: string;
   name?: string;
   if?: string;
   run?: string;
   uses?: string;
   with?: Record<string, string | boolean>;
+  env?: Record<string, string>;
   "continue-on-error"?: boolean;
 };
 type DailySourceJob = {
@@ -234,12 +236,17 @@ export function requireDailySourceContracts(
   assert.ok(contracts >= 0);
   assert.equal(steps[contracts].if, "${{ matrix.lane == 'contracts' }}");
   assert.equal(steps[contracts]["continue-on-error"], undefined);
+  assert.equal(steps[contracts].id, "contract-cases");
   assert.equal(
     steps[contracts].run,
     [
       "node",
       "--test",
       "--test-concurrency=1",
+      "--test-reporter=spec",
+      "--test-reporter-destination=stdout",
+      "--test-reporter=./tools/support/compat/github/test-case-reporter.ts",
+      '--test-reporter-destination="$VIZE_TEST_CASES"',
       "tests/tooling/davinci-assertion-lint.test.ts",
       "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
       "tests/tooling/docs-reviewed-translations.test.ts",

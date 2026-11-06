@@ -14164,6 +14164,50 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-component-listener-guard-share-12005",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-guard-share-12005/Child.vue.txt",
+          "sha256": "4cf7df979364c5b605fce1ffa899cae7f56b0366d762b55a7bddb4954ae181b9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-guard-share-12005/Probe.vue.txt",
+          "sha256": "4184af510fedc3ac30b4c85b053b5ec65772cd70493c79d6b360e802a9f47d1c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-guard-share-12005/package.json.txt",
+          "sha256": "d1188feade5e3d6b01be676594440ea89d427c90b51dd9a069e10d93f2ae46ba",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-guard-share-12005/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_listener_guard_share::guarded_call_listener_does_not_hide_later_arrow_context; exact #12005 package, config and SFC report inputs are pinned and physically consumed. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
       "state": "active",
       "targets": [
@@ -14392,6 +14436,50 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::reported_expression_duplicates_11374::authored_errors_survive_without_synthetic_expression_echoes; physically consumes exact cached #11374 six-file input at b89beb46605e7c3dad05045b6fa5932509349320; seven original/individual-repair/all-repair/independent-error/restoration states preserve the three authored TS2532 diagnostics exactly once. Input-only registration; no diagnostic pack, native admission or original reported macOS/provider qualification. The sibling receiver_contracts::receiver_echoes_preserve_contextual_contracts physically consumes four separately labeled synthetic contextual wrong/repair states at a661d9437cfe6dd94c60fd48ef950e642f586cba; no original-input expansion. The retained optional fallthrough probes are explicitly UNQUALIFIED data: the unchanged actual85 producer also accepts their wrong values; desired TS2322 outcomes remain intact outside this admitted regression role."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/reported-generic-component-mount-slots-12006",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-component-mount-slots-12006/List.vue.txt",
+          "sha256": "0be53565b56d0083da99ffa05f0244cb99bfb054526159675134fccaa1a78e9c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-component-mount-slots-12006/package.json.txt",
+          "sha256": "0dc7daba180e09ee329ed1c64e3bce1a64a0036b0c80c7ce14eabfd6dc97ae20",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-component-mount-slots-12006/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-component-mount-slots-12006/use.ts.txt",
+          "sha256": "11aa3cb7f99f1d910282e2e4f0bf9c0ae1f8cbb85031b13911685f48d34629ea",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::generic_component_mount_slots::generic_component_with_emits_accepts_typed_mount_slot; exact #12006 package, config, SFC and mount consumer inputs are pinned and physically consumed with the test-utils ComponentSlots extraction contract. Input-only registration, no differential diagnostic pack."
           }
         ]
       }

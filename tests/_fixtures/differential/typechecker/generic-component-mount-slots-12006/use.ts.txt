@@ -1,0 +1,8 @@
+import { h } from 'vue';
+import { mount } from '@vue/test-utils';
+import List from './List.vue';
+
+export const wrapper = mount(List, {
+  props: { rows: [{ id: 1 }] },
+  slots: { row: ({ row }: { row: unknown }) => h('span', String(row)) },
+});

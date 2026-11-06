@@ -33,7 +33,7 @@ pub enum DocumentHtmlRefusal {
     Lexical(DocumentLexicalRefusal),
     ExplicitEnvelope,
     UnsupportedElement(Span),
-    /// Content outside the bounded native select/option/optgroup subset.
+    /// A select descendant whose native content contract is unavailable.
     UnsupportedSelectContent(Span),
     VueSyntax,
     NonHtmlToken,
@@ -79,8 +79,9 @@ pub enum DocumentHtmlRefusal {
 /// Every authored start tag has at most 64 attributes (including duplicates)
 /// and 16 KiB of original opening bytes. Larger tags explicitly refuse.
 ///
-/// Select content is bounded to options, groups, `hr`, text and comments;
-/// other nested elements refuse instead of borrowing obsolete HTML rules.
+/// Select content retains the admitted ordinary HTML descendants used by
+/// customizable selects. Nested select/input recovery still refuses rather
+/// than claiming the browser's parse-error transition.
 /// Foreign content, other raw-text elements, formatting, templates, Vue
 /// directive/interpolation syntax and implicit envelopes refuse this provider.
 /// Direct supported-subtree child nodes retain original text/comment callbacks;

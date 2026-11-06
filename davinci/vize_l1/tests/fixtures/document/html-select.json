@@ -90,11 +90,44 @@
     "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 44], "div"], ["open", [46, 54], "optgroup"], ["open", [56, 62], "option"], ["open", [65, 73], "optgroup"], ["open", [75, 81], "option"], ["close", [85, 93], "optgroup"], ["close", [96, 99], "div"], ["close", [102, 106], "body"], ["close", [109, 113], "html"]]
   },
   {
-    "name": "modern select children are unsupported rather than ignored",
-    "source": "<!DOCTYPE html><html><head></head><body><select><div>x</div></select></body></html>",
-    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["div", 3, []]],
-    "nodes": [["body", [[1, "select"]]], ["select", [[1, "div"]]], ["div", [[3, "x"]]]],
-    "refusal": {"kind": "UnsupportedSelectContent", "span": [49, 52]}
+    "name": "modern select children retain nested phrasing and options",
+    "source": "<!DOCTYPE html><html><head></head><body><select><div class=x><span>A&amp;</span><option value=o>O</option></div></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["div", 3, [["class", "x"]]], ["span", 4, []], ["option", 4, [["value", "o"]]]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "div"]]], ["div", [[1, "span"], [1, "option"]]], ["span", [[3, "A&"]]], ["option", [[3, "O"]]]],
+    "legacy": true,
+    "frames": [["html", [15, 21], [128, 135], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [121, 128], false], ["select", [40, 48], [112, 121], false], ["div", [48, 61], [106, 112], false], ["span", [61, 67], [73, 80], false], ["option", [80, 96], [97, 106], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 52], "div"], ["open", [62, 66], "span"], ["close", [75, 79], "span"], ["open", [81, 87], "option"], ["close", [99, 105], "option"], ["close", [108, 111], "div"], ["close", [114, 120], "select"], ["close", [123, 127], "body"], ["close", [130, 134], "html"]]
+  },
+  {
+    "name": "modern select children retain semantic lists",
+    "source": "<!DOCTYPE html><html><head></head><body><select><article><ul><li>a</li><li>b</li></ul></article></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["article", 3, []], ["ul", 4, []], ["li", 5, []], ["li", 5, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "article"]]], ["article", [[1, "ul"]]], ["ul", [[1, "li"], [1, "li"]]], ["li", [[3, "a"]]], ["li", [[3, "b"]]]],
+    "legacy": true,
+    "frames": [["html", [15, 21], [112, 119], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [105, 112], false], ["select", [40, 48], [96, 105], false], ["article", [48, 57], [86, 96], false], ["ul", [57, 61], [81, 86], false], ["li", [61, 65], [66, 71], false], ["li", [71, 75], [76, 81], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 56], "article"], ["open", [58, 60], "ul"], ["open", [62, 64], "li"], ["close", [68, 70], "li"], ["open", [72, 74], "li"], ["close", [78, 80], "li"], ["close", [83, 85], "ul"], ["close", [88, 95], "article"], ["close", [98, 104], "select"], ["close", [107, 111], "body"], ["close", [114, 118], "html"]]
+  },
+  {
+    "name": "modern select children retain an explicit table subtree",
+    "source": "<!DOCTYPE html><html><head></head><body><select><table><tbody><tr><td>x</td></tr></tbody></table></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["table", 3, []], ["tbody", 4, []], ["tr", 5, []], ["td", 6, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "table"]]], ["table", [[1, "tbody"]]], ["tbody", [[1, "tr"]]], ["tr", [[1, "td"]]], ["td", [[3, "x"]]]],
+    "legacy": true,
+    "frames": [["html", [15, 21], [113, 120], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [106, 113], false], ["select", [40, 48], [97, 106], false], ["table", [48, 55], [89, 97], false], ["tbody", [55, 62], [81, 89], false], ["tr", [62, 66], [76, 81], false], ["td", [66, 70], [71, 76], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 54], "table"], ["open", [56, 61], "tbody"], ["open", [63, 65], "tr"], ["open", [67, 69], "td"], ["close", [73, 75], "td"], ["close", [78, 80], "tr"], ["close", [83, 88], "tbody"], ["close", [91, 96], "table"], ["close", [99, 105], "select"], ["close", [108, 112], "body"], ["close", [115, 119], "html"]]
+  },
+  {
+    "name": "modern select children retain special text elements",
+    "source": "<!DOCTYPE html><html><head></head><body><select><textarea>A&amp;</textarea><title>T&amp;</title></select></body></html>",
+    "elements": [["html", null, []], ["head", 0, []], ["body", 0, []], ["select", 2, []], ["textarea", 3, []], ["title", 3, []]],
+    "nodes": [["body", [[1, "select"]]], ["select", [[1, "textarea"], [1, "title"]]], ["textarea", [[3, "A&"]]], ["title", [[3, "T&"]]]],
+    "legacy": true,
+    "frames": [["html", [15, 21], [112, 119], false], ["head", [21, 27], [27, 34], false], ["body", [34, 40], [105, 112], false], ["select", [40, 48], [96, 105], false], ["textarea", [48, 58], [64, 75], false], ["title", [75, 82], [88, 96], false]],
+    "implied": [],
+    "tags": [["open", [16, 20], "html"], ["open", [22, 26], "head"], ["close", [29, 33], "head"], ["open", [35, 39], "body"], ["open", [41, 47], "select"], ["open", [49, 57], "textarea"], ["close", [66, 74], "textarea"], ["open", [76, 81], "title"], ["close", [90, 95], "title"], ["close", [98, 104], "select"], ["close", [107, 111], "body"], ["close", [114, 118], "html"]]
   },
   {
     "name": "nested select token closes the original select",

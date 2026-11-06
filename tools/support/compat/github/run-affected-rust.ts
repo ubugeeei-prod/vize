@@ -33,12 +33,24 @@ export function rustCommand(plan: RustPlan, command: readonly string[]) {
   return command.flatMap((argument) => (argument === "@packages@" ? cargoArgs : [argument]));
 }
 
-export function main(argv = process.argv.slice(2)) {
+export async function main(argv = process.argv.slice(2)) {
   const [planPath, ...command] = argv;
-  const [executable, ...args] = rustCommand(JSON.parse(readFileSync(planPath, "utf8")), command);
+  const plan = JSON.parse(readFileSync(planPath, "utf8")) as RustPlan;
+  const [executable, ...args] = rustCommand(plan, command);
+  if (process.env.VIZE_TEST_CASES) {
+    const { runRustCaseCommand } = await import("./rust-test-cases.ts");
+    process.exitCode = await runRustCaseCommand({
+      command: [executable, ...args],
+      packages: plan.packages,
+      label: process.env.VIZE_RUST_CASE_LABEL ?? `${executable} ${args.join(" ")}`,
+      output: process.env.VIZE_TEST_CASES,
+    });
+    return;
+  }
   const result = spawnSync(executable, args, { stdio: "inherit", shell: false });
   if (result.error) throw result.error;
   process.exitCode = result.status ?? 1;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href)
+  await main();
