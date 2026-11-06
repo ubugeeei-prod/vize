@@ -162,20 +162,23 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         packages: ["vize_l0"],
         cargoArgs: ["--package", "vize_l0"],
       };
+      const environment = {
+        ...process.env,
+        PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
+        RUNNER_TEMP: directory,
+        RUST_PLAN_JSON: JSON.stringify(plan),
+        NEXTEST_PROFILE: "pr",
+        NEXTEST_FILTER: "package(=vize_l0)",
+        COHORT: "compiler",
+        ARGS_FILE: argsFile,
+        VIZE_TEST_DISABLE_TSGO: "1",
+      };
+      delete environment.VIZE_TEST_CASES;
+      delete environment.TEST_CASES_JOB;
       const result = spawnSync("bash", ["-e", "-c", step.run], {
         cwd: directory,
         encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
-          RUNNER_TEMP: directory,
-          RUST_PLAN_JSON: JSON.stringify(plan),
-          NEXTEST_PROFILE: "pr",
-          NEXTEST_FILTER: "package(=vize_l0)",
-          COHORT: "compiler",
-          ARGS_FILE: argsFile,
-          VIZE_TEST_DISABLE_TSGO: "1",
-        },
+        env: environment,
       });
       assert.equal(result.status, exit, result.stderr);
       const args = readFileSync(argsFile, "utf8").trim().split("\n");
