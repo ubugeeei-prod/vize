@@ -1,4 +1,5 @@
-use super::super::{LintPreset, Linter};
+use super::super::Linter;
+use crate::LintPreset;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rules::script::{
     NoRequiredPropWithDefault, ScriptLintResult, ScriptLinter, ScriptRule, ScriptRuleMeta,
