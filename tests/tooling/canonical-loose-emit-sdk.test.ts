@@ -22,6 +22,7 @@ void test("all public emit factories exactly follow the canonical producer", asy
     assert.equal(source, read(file));
     if (file === leaf) continue;
     assert.equal(source.match(/^export type \$EmitPropsFactory</gmu)?.length, 1);
+    assert.equal(source.match(/^export type \$ConstructorEmitPropsFactory</gmu)?.length, 1);
     for (const helper of ["$LooseEmitProps", "$LooseEmitPropsFactory", "$EmitIsWide"]) {
       assert.equal(source.includes(`type ${helper}`), false);
     }
@@ -36,6 +37,10 @@ void test("unknown, partial, duplicate, foreign, and newly exported families are
   const file = files[0]!;
   const original = read(file);
   const mutations = [
+    original.replace(
+      "export type $ConstructorEmitPropsFactory",
+      "type $ConstructorEmitPropsFactory",
+    ),
     original.replace("__vizeEmitTypes.$NativeEmitPropsFactory<C>", "C"),
     original.replace("./virtual-ts-emits.js", "./unknown-emits.js"),
     original + "\nexport type $EmitPropsFactory<C> = C;\n",
