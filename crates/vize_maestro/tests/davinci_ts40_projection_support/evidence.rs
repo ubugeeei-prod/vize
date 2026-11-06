@@ -1,5 +1,6 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 
+mod owned_instance_successors;
 mod receipt;
 
 use super::{capture_fixture, load_matrix, normalize::sha256};
@@ -209,30 +210,8 @@ fn public_instance_slot_packets_remain_authenticated() {
         integrated_successor,
         discriminated_jsx_union_successor,
     );
-    let owned_instance_successor = include_str!(
-        "fixtures/public-instance-options-api-slots/successor-owned-instance-11984/projection-record.txt"
-    );
-    authenticate_successor_receipt(
-        include_str!(
-            "fixtures/public-instance-options-api-slots/successor-owned-instance-11984/receipt.json"
-        ),
-        "67aab9c65deb2bac25a7698ee25091d1fc1abb2d32180a65c47b4f789a900743",
-        11984,
-        discriminated_jsx_union_successor,
-        owned_instance_successor,
-    );
-    let elided_instance_successor = include_str!(
-        "fixtures/public-instance-options-api-slots/successor-elided-instance-11984/projection-record.txt"
-    );
-    authenticate_successor_receipt(
-        include_str!(
-            "fixtures/public-instance-options-api-slots/successor-elided-instance-11984/receipt.json"
-        ),
-        "589f73df3491aba730bd15a6f206c87076bdf4707473097efcec5ded4160332b",
-        11984,
-        owned_instance_successor,
-        elided_instance_successor,
-    );
+    let elided_instance_successor =
+        owned_instance_successors::options_api(discriminated_jsx_union_successor);
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -430,30 +409,8 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             integrated_successor,
             discriminated_jsx_union_successor,
         );
-        let owned_instance_successor = include_str!(
-            "fixtures/public-instance-mixed-vue2/successor-owned-instance-11984/projection-record.txt"
-        );
-        authenticate_successor_receipt(
-            include_str!(
-                "fixtures/public-instance-mixed-vue2/successor-owned-instance-11984/receipt.json"
-            ),
-            "5aba53760a798a8ae3d55fc78272781401fe8d380f8c2a65ccb5e5fe19b269db",
-            11984,
-            discriminated_jsx_union_successor,
-            owned_instance_successor,
-        );
-        let elided_instance_successor = include_str!(
-            "fixtures/public-instance-mixed-vue2/successor-elided-instance-11984/projection-record.txt"
-        );
-        authenticate_successor_receipt(
-            include_str!(
-                "fixtures/public-instance-mixed-vue2/successor-elided-instance-11984/receipt.json"
-            ),
-            "8ec79ed5636f31a3d0d787f4b9577de01b15fab7efaa50e32b33a5fbe145a29c",
-            11984,
-            owned_instance_successor,
-            elided_instance_successor,
-        );
+        let elided_instance_successor =
+            owned_instance_successors::mixed_vue2(discriminated_jsx_union_successor);
         let non_text_fields = |record: &str| {
             record
                 .lines()
