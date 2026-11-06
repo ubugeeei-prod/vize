@@ -132,3 +132,10 @@ cell/foreign-integration placements. Native L1, the shipped parser and Chromium
 compare the same whole namespace/parent/attribute/direct-node trees. Nested
 form/button/heading recovery remains typed refusal; preformatted first-newline
 removal is compared directly across the same three implementations.
+
+`html-disclosure-elements.json` retains five complete packets for `details`,
+`summary`, `dialog` and `slot`. Native L1, the shipped parser and Chromium
+compare the same whole namespace/parent/attribute/direct-node trees, including
+mixed-case names, table cells and SVG integration points. Browser
+paragraph closing differs from the shipped parser and remains a typed fallback
+boundary. Raw-text elements and template-specific policies remain separate.

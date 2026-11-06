@@ -1,0 +1,136 @@
+[
+  {
+    "name": "basic disclosure",
+    "source": "<!DOCTYPE html><html><head></head><body><details open><summary>Open</summary><div>Panel</div></details></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["details", "html", 2, [["open", ""]]],
+      ["summary", "html", 3, []],
+      ["div", "html", 3, []]
+    ],
+    "nodes": [
+      ["body", [[1, "details"]]],
+      [
+        "details",
+        [
+          [1, "summary"],
+          [1, "div"]
+        ]
+      ],
+      ["summary", [[3, "Open"]]],
+      ["div", [[3, "Panel"]]]
+    ]
+  },
+  {
+    "name": "dialog slot fallback",
+    "source": "<!DOCTYPE html><html><head></head><body><dialog open id=modal><slot name=content>Fallback</slot></dialog></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      [
+        "dialog",
+        "html",
+        2,
+        [
+          ["open", ""],
+          ["id", "modal"]
+        ]
+      ],
+      ["slot", "html", 3, [["name", "content"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "dialog"]]],
+      ["dialog", [[1, "slot"]]],
+      ["slot", [[3, "Fallback"]]]
+    ]
+  },
+  {
+    "name": "mixed case names",
+    "source": "<!DOCTYPE html><html><head></head><body><DeTaIlS open><SuMmArY>Open</SuMmArY><DiAlOg open><SlOt name=body>Fallback</SlOt></DiAlOg></DeTaIlS></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["details", "html", 2, [["open", ""]]],
+      ["summary", "html", 3, []],
+      ["dialog", "html", 3, [["open", ""]]],
+      ["slot", "html", 5, [["name", "body"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "details"]]],
+      [
+        "details",
+        [
+          [1, "summary"],
+          [1, "dialog"]
+        ]
+      ],
+      ["summary", [[3, "Open"]]],
+      ["dialog", [[1, "slot"]]],
+      ["slot", [[3, "Fallback"]]]
+    ]
+  },
+  {
+    "name": "table cell disclosure",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><details><summary>Cell</summary><slot>Value</slot></details></td></tr></tbody></table></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["table", "html", 2, []],
+      ["tbody", "html", 3, []],
+      ["tr", "html", 4, []],
+      ["td", "html", 5, []],
+      ["details", "html", 6, []],
+      ["summary", "html", 7, []],
+      ["slot", "html", 7, []]
+    ],
+    "nodes": [
+      ["body", [[1, "table"]]],
+      ["table", [[1, "tbody"]]],
+      ["tbody", [[1, "tr"]]],
+      ["tr", [[1, "td"]]],
+      ["td", [[1, "details"]]],
+      [
+        "details",
+        [
+          [1, "summary"],
+          [1, "slot"]
+        ]
+      ],
+      ["summary", [[3, "Cell"]]],
+      ["slot", [[3, "Value"]]]
+    ]
+  },
+  {
+    "name": "foreign object disclosure",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><details><summary>Vector</summary><dialog>Panel</dialog></details></foreignObject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["details", "html", 4, []],
+      ["summary", "html", 5, []],
+      ["dialog", "html", 5, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      ["foreignObject", [[1, "details"]]],
+      [
+        "details",
+        [
+          [1, "summary"],
+          [1, "dialog"]
+        ]
+      ],
+      ["summary", [[3, "Vector"]]],
+      ["dialog", [[3, "Panel"]]]
+    ]
+  }
+]
