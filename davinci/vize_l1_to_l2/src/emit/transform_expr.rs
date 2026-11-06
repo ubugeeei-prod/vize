@@ -198,7 +198,8 @@ impl<'b> TransformExpressions<'b> {
         if self.scope.prefixes_identifiers() {
             return prefix::prefix_slot_defaults(params, &self.scope)
                 .as_str()
-                .to_owned();
+                .to_owned()
+                .into();
         }
         self.scope
             .is_ts()
