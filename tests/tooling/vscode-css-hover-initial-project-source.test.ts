@@ -81,10 +81,14 @@ await test("resident markup source restores the exact initial project and comple
 });
 
 await test("resident markup composition binds its row and every prior source layer", () => {
-  const result = composeForegroundPreparationCheckout([before, other], [resident, other], (name) => {
-    assert.equal(name, typedSourcePath);
-    return residentSource;
-  });
+  const result = composeForegroundPreparationCheckout(
+    [before, other],
+    [resident, other],
+    (name) => {
+      assert.equal(name, typedSourcePath);
+      return residentSource;
+    },
+  );
   assert.deepEqual(result.entries, [resident, other]);
   assert.deepEqual(result.layer, {
     name: "resident-markup-first-hover",
