@@ -281,10 +281,9 @@ pub(super) struct EventHandlerExprContext<'a> {
     /// the expression's type where `@click="(() => 1);"` yields `void`,
     /// exactly as an authored inline handler does under `vue-tsc`.
     pub(super) return_single_expression: bool,
-    /// Guard already active around the generated listener declaration. The
-    /// callback only needs the positive terms repeated to restore captured
-    /// property narrowing; the cumulative v-else exclusions stay in the
-    /// surrounding linear branch chain.
+    /// Guard already active around the generated listener declaration. Bare
+    /// listener values may keep their render branch; callbacks receive only
+    /// terms that narrow immutable `v-for` aliases across the closure boundary.
     pub(super) enclosing_vif_guard: Option<&'a str>,
     pub(super) template_binding_access: &'a TemplateBindingAccess<'a>,
     pub(super) template_offset: u32,

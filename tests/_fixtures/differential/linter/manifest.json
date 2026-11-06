@@ -2774,6 +2774,38 @@
       }
     },
     {
+      "id": "linter/current-type-documentation-11978",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "current-type-documentation-11978",
+        "files": [
+          {
+            "path": "UnsafeAnyBinding.vue.txt",
+            "role": "current-type-diagnostic-documentation-reproduction",
+            "sha256": "31f57db62ddf61d8b4fb9be1774a14860fc7930c6e136c85d0c6dc6917465d41"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/define-expose-last-6097",
       "state": "active",
       "targets": [

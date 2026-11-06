@@ -5,17 +5,18 @@ use super::event_scope::generate_event_handler_scope;
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{
-    append_ignored_vif_guard_open, callback_vif_guard, common_vif_guard_prefix_outside_v_for_scope,
+    append_ignored_vif_guard_open, callback_vif_guard, callback_vif_guard_for_v_for_aliases,
+    common_vif_guard_prefix_outside_v_for_scope,
 };
 use crate::virtual_ts::expressions::{
     ExpressionListEmitContext, generate_expressions, generate_expressions_in_enclosing_guard,
-    rewrite_reserved_template_binding,
+    guarded_callback_reads, rewrite_reserved_template_binding,
 };
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{String, append, cstr, profile};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
-use vize_croquis::{Scope, ScopeData};
+use vize_croquis::{Scope, ScopeData, ScopeKind};
 
 pub(super) fn generate_scope_node(
     ts: &mut String,
@@ -172,36 +173,51 @@ pub(super) fn generate_scope_node(
                 .slot_outlets
                 .covers_event_handler_scope(scope.span.start, scope.span.end) => {}
         ScopeData::EventHandler(data) if ctx.check_options.check_event_handlers() => {
-            // Callback bodies execute after the render branch has finished and
-            // must not inherit its narrowing. Vue's checker likewise reports a
-            // possibly-undefined capture inside `(event) => handler(event)`.
-            // Bare listener values still retain the render guard (#11965).
-            let has_deferred_callback =
-                ctx.expressions_by_scope
-                    .get(&scope_id)
-                    .is_some_and(|expressions| {
-                        expressions.iter().any(|expression| {
-                            matches!(
-                                classify_event_handler(expression.content.as_str()),
-                                EventHandlerExpression::Callback { .. }
-                            )
-                        })
-                    });
-            let enclosing_guard = (!has_deferred_callback)
-                .then_some(data.target_component.as_ref())
-                .flatten()
-                .and_then(|_| {
-                    ctx.expressions_by_scope
-                        .get(&scope_id)
-                        .and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs))
-                        .map(|guard| {
-                            rewrite_reserved_template_binding(
-                                guard.as_str(),
-                                ctx.template_binding_access,
-                            )
-                            .unwrap_or(guard)
-                        })
+            // Callback bodies execute after the render branch has finished, so
+            // mutable captures must not inherit its narrowing. Immutable
+            // `v-for` aliases are the exception: TypeScript preserves their
+            // narrowing across closures. Bare listener values retain the full
+            // render guard (#11965, #11973).
+            let expressions = ctx.expressions_by_scope.get(&scope_id);
+            let has_deferred_callback = expressions.is_some_and(|expressions| {
+                expressions.iter().any(|expression| {
+                    matches!(
+                        classify_event_handler(expression.content.as_str()),
+                        EventHandlerExpression::Callback { .. }
+                    )
+                })
+            });
+            let common_guard =
+                expressions.and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs));
+            let enclosing_guard = if has_deferred_callback {
+                let v_for_aliases: Vec<_> = ctx
+                    .summary
+                    .scopes
+                    .bindings_visible_from(scope.id)
+                    .into_iter()
+                    .filter_map(|(name, _, kind)| (kind == ScopeKind::VFor).then_some(name))
+                    .collect();
+                let reads_v_for_alias = expressions.is_some_and(|expressions| {
+                    expressions.iter().any(|expression| {
+                        guarded_callback_reads(expression)
+                            .iter()
+                            .any(|read| v_for_aliases.contains(&read.as_str()))
+                    })
                 });
+                reads_v_for_alias
+                    .then_some(common_guard.as_deref())
+                    .flatten()
+                    .and_then(|guard| callback_vif_guard_for_v_for_aliases(guard, &v_for_aliases))
+            } else {
+                data.target_component
+                    .as_ref()
+                    .and(common_guard.as_deref())
+                    .map(String::from)
+            }
+            .map(|guard| {
+                rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
+                    .unwrap_or(guard)
+            });
             let handler_indent = if let Some(guard) = enclosing_guard.as_deref() {
                 super::append_chained_vif_guard_open(ts, indent, guard, "Listener branch guard");
                 inner_indent.clone()
