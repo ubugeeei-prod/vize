@@ -132,7 +132,7 @@ void test("typed producers retain historical bytes and only the exact registered
   assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-42309976393");
   assert.equal(
     current.currentUnavailableTerminalRegistration,
-    "before-stable-unavailable-terminal-stderr-41208964081",
+    "before-stable-unavailable-terminal-stderr-42311681980",
   );
   assert(
     custody
