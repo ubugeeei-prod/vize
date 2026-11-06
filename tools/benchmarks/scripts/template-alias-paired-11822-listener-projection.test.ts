@@ -39,6 +39,8 @@ void test("mapper campaign admission isolates listener and dispatcher production
     "crates/vize_canon/src/virtual_ts/scope/component_events/listener_relations.rs",
     "crates/vize_canon/src/virtual_ts/generator.rs",
     "crates/vize_canon/snapshots/vize_canon__virtual_ts__loose_is_listener_tests__sample.snap",
+    "crates/vize_canon/tests/empty_vue_star_exports/main.rs",
+    "crates/vize_canon/tests/snapshots/listener_projection.snap",
     "npm/cli/virtual-ts-listeners.d.ts",
     "tests/tooling/listener.test.ts",
     "tools/benchmarks/scripts/template-alias-paired-11822-public.ts",

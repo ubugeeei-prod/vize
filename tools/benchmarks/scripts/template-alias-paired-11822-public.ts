@@ -138,6 +138,8 @@ export function mapperCampaign(changed: string[]) {
         path.startsWith(".github/") ||
         path.startsWith("tests/") ||
         path.startsWith("tools/") ||
+        path.startsWith("crates/vize_canon/tests/") ||
+        path.startsWith("crates/vize_canon/snapshots/") ||
         (dispatcher &&
           [
             "crates/vize/src/commands/content_mapper/dispatch.rs",
@@ -145,9 +147,6 @@ export function mapperCampaign(changed: string[]) {
           ].includes(path)) ||
         (listenerRelations &&
           (listenerProduction.has(path) ||
-            path.startsWith(
-              "crates/vize_canon/snapshots/vize_canon__virtual_ts__loose_is_listener_tests__",
-            ) ||
             (path.startsWith("crates/vize_canon/src/virtual_ts/") &&
               (path.includes("/snapshots/") ||
                 path.includes("/tests/") ||
