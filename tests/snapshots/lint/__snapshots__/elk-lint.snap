@@ -10,7 +10,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 30,
@@ -28,7 +28,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 14,
@@ -94,7 +94,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <label> only permits phrasing content",
         "line": 217,
@@ -105,7 +105,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <label> only permits phrasing content",
         "line": 226,
@@ -116,7 +116,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 273,
@@ -164,7 +164,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 60,
@@ -188,7 +188,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 33,
@@ -254,7 +254,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 16,
@@ -265,7 +265,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 16,
@@ -289,7 +289,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <label> only permits phrasing content",
         "line": 189,
@@ -300,7 +300,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <label> only permits phrasing content",
         "line": 191,
@@ -324,7 +324,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 22,
@@ -348,7 +348,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 14,
@@ -359,7 +359,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 14,
@@ -370,7 +370,7 @@
       },
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 17,
@@ -381,7 +381,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 38,
@@ -405,7 +405,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 15,
@@ -423,7 +423,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 75,
@@ -434,7 +434,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-label-has-for.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 75,
@@ -445,7 +445,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 75,
@@ -456,7 +456,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-alt-text.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 83,
@@ -486,7 +486,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 125,
@@ -504,7 +504,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 16,
@@ -522,7 +522,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 11,
@@ -533,7 +533,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 11,
@@ -544,7 +544,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 30,
@@ -574,7 +574,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 14,
@@ -616,7 +616,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 25,
@@ -634,7 +634,7 @@
     "messages": [
       {
         "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-require-typed-emits.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 17,
@@ -645,7 +645,7 @@
       },
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 53,
@@ -663,7 +663,7 @@
     "messages": [
       {
         "ruleId": "vue/no-v-html",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-v-html.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 25,
@@ -705,7 +705,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 30,
@@ -723,7 +723,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 28,
@@ -734,7 +734,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 33,
@@ -745,7 +745,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 38,
@@ -756,7 +756,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 44,
@@ -786,7 +786,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 126,
@@ -810,7 +810,7 @@
     "messages": [
       {
         "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-require-typed-emits.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 2,
@@ -821,7 +821,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 136,
@@ -832,7 +832,7 @@
       },
       {
         "ruleId": "html/no-duplicate-class",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-no-duplicate-class.md",
         "severity": 1,
         "message": "[vize:html/no-duplicate-class] Duplicate class name 'lg:px2'",
         "line": 163,
@@ -850,7 +850,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'noOverflowHidden' is defined but never used",
         "line": 11,
@@ -861,7 +861,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 59,
@@ -891,7 +891,7 @@
     "messages": [
       {
         "ruleId": "a11y/label-has-for",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-label-has-for.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 62,
@@ -902,7 +902,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 65,
@@ -913,7 +913,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'confirm' is a browser-only global and is not available in SSR",
         "line": 79,
@@ -937,7 +937,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 148,
@@ -948,7 +948,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 148,
@@ -966,7 +966,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 27,
@@ -984,7 +984,7 @@
     "messages": [
       {
         "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-require-typed-emits.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 2,
@@ -995,7 +995,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
         "line": 4,
@@ -1006,7 +1006,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 40,
@@ -1017,7 +1017,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 40,
@@ -1028,7 +1028,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 46,
@@ -1039,7 +1039,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 53,
@@ -1050,7 +1050,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 77,
@@ -1086,7 +1086,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 41,
@@ -1097,7 +1097,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 57,
@@ -1108,7 +1108,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 68,
@@ -1119,7 +1119,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 90,
@@ -1130,7 +1130,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 94,
@@ -1166,7 +1166,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 44,
@@ -1292,7 +1292,7 @@
     "messages": [
       {
         "ruleId": "type/require-typed-emits",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/type-require-typed-emits.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 10,
@@ -1303,7 +1303,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'NotificationEnablePushNotification.client' should be PascalCase or kebab-case",
         "line": 21,
@@ -1321,7 +1321,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 65,
@@ -1332,7 +1332,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 65,
@@ -1343,7 +1343,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 85,
@@ -1354,7 +1354,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 85,
@@ -1384,7 +1384,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'NotificationPreferences.client' should be PascalCase or kebab-case",
         "line": 114,
@@ -1395,7 +1395,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-refer-to-non-existent-id.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"pn-s\" which does not exist in the template",
         "line": 115,
@@ -1413,7 +1413,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 39,
@@ -1424,7 +1424,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 46,
@@ -1442,7 +1442,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'alt' is defined but never used",
         "line": 6,
@@ -1453,7 +1453,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 32,
@@ -1464,7 +1464,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 32,
@@ -1475,7 +1475,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 59,
@@ -1499,7 +1499,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 16,
@@ -1510,7 +1510,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 27,
@@ -1521,7 +1521,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 37,
@@ -1532,7 +1532,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 47,
@@ -1550,7 +1550,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'PublishEmojiPicker.client' should be PascalCase or kebab-case",
         "line": 57,
@@ -1568,7 +1568,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 48,
@@ -1592,7 +1592,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 40,
@@ -1603,7 +1603,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 41,
@@ -1627,7 +1627,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'inReplyToVisibility' is defined but never used",
         "line": 22,
@@ -1638,7 +1638,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 428,
@@ -1649,7 +1649,7 @@
       },
       {
         "ruleId": "html/id-duplication",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-id-duplication.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"publish-failed\" found in template",
         "line": 457,
@@ -1660,7 +1660,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 487,
@@ -1671,7 +1671,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 553,
@@ -1682,7 +1682,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 565,
@@ -1693,7 +1693,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 586,
@@ -1704,7 +1704,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 607,
@@ -1715,7 +1715,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 615,
@@ -1726,7 +1726,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 625,
@@ -1737,7 +1737,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 634,
@@ -1748,7 +1748,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 640,
@@ -1759,7 +1759,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 641,
@@ -1770,7 +1770,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 666,
@@ -1781,7 +1781,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 667,
@@ -1792,7 +1792,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 686,
@@ -1803,7 +1803,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 690,
@@ -1814,7 +1814,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 708,
@@ -1825,7 +1825,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 709,
@@ -1836,7 +1836,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 720,
@@ -1847,7 +1847,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 721,
@@ -1858,7 +1858,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 731,
@@ -1869,7 +1869,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 732,
@@ -1880,7 +1880,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 743,
@@ -1891,7 +1891,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 744,
@@ -1902,7 +1902,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 760,
@@ -1913,7 +1913,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 779,
@@ -1924,7 +1924,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <span> only permits phrasing content",
         "line": 782,
@@ -1942,7 +1942,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'PublishWidgetFull.client' should be PascalCase or kebab-case",
         "line": 41,
@@ -1953,7 +1953,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 47,
@@ -1971,7 +1971,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 35,
@@ -1989,7 +1989,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaBadge.client' should be PascalCase or kebab-case",
         "line": 1,
@@ -2000,7 +2000,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 8,
@@ -2011,7 +2011,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <h2> is not phrasing content, but <button> only permits phrasing content",
         "line": 9,
@@ -2029,7 +2029,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaInstallPrompt.client' should be PascalCase or kebab-case",
         "line": 1,
@@ -2040,7 +2040,7 @@
       },
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 7,
@@ -2058,7 +2058,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'PwaPrompt.client' should be PascalCase or kebab-case",
         "line": 1,
@@ -2076,7 +2076,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 101,
@@ -2087,7 +2087,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 160,
@@ -2098,7 +2098,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 253,
@@ -2122,7 +2122,7 @@
     "messages": [
       {
         "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-alt-text.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 14,
@@ -2158,7 +2158,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 69,
@@ -2188,7 +2188,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 57,
@@ -2212,7 +2212,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 11,
@@ -2230,7 +2230,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 45,
@@ -2241,7 +2241,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 57,
@@ -2252,7 +2252,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 64,
@@ -2263,7 +2263,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 70,
@@ -2281,7 +2281,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 3,
@@ -2292,7 +2292,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 13,
@@ -2322,7 +2322,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 48,
@@ -2364,7 +2364,7 @@
     "messages": [
       {
         "ruleId": "a11y/media-has-caption",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-media-has-caption.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 132,
@@ -2375,7 +2375,7 @@
       },
       {
         "ruleId": "a11y/media-has-caption",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-media-has-caption.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 172,
@@ -2386,7 +2386,7 @@
       },
       {
         "ruleId": "a11y/media-has-caption",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-media-has-caption.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <audio> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 204,
@@ -2397,7 +2397,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 267,
@@ -2408,7 +2408,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 300,
@@ -2426,7 +2426,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 68,
@@ -2444,7 +2444,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 164,
@@ -2468,7 +2468,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'inNotification' is defined but never used",
         "line": 9,
@@ -2492,7 +2492,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 35,
@@ -2503,7 +2503,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 100,
@@ -2527,7 +2527,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 38,
@@ -2545,7 +2545,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 36,
@@ -2563,7 +2563,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 24,
@@ -2581,7 +2581,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 69,
@@ -2592,7 +2592,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <form> is a static element and should not have interactive event handlers",
         "line": 69,
@@ -2603,7 +2603,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 113,
@@ -2639,7 +2639,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 120,
@@ -2663,7 +2663,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 102,
@@ -2674,7 +2674,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 108,
@@ -2685,7 +2685,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 119,
@@ -2696,7 +2696,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-alt-text.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 120,
@@ -2707,7 +2707,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-alt-text.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 127,
@@ -2737,7 +2737,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 67,
@@ -2748,7 +2748,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 67,
@@ -2772,7 +2772,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 66,
@@ -2790,7 +2790,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 39,
@@ -2801,7 +2801,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 40,
@@ -2819,7 +2819,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 42,
@@ -2873,7 +2873,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 32,
@@ -2921,7 +2921,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 16,
@@ -2932,7 +2932,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 16,
@@ -2974,7 +2974,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 52,
@@ -3016,7 +3016,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 56,
@@ -3040,7 +3040,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 40,
@@ -3076,7 +3076,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 8,
@@ -3100,7 +3100,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 113,
@@ -3111,7 +3111,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 162,
@@ -3135,7 +3135,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 34,
@@ -3146,7 +3146,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 34,
@@ -3157,7 +3157,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 43,
@@ -3168,7 +3168,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 44,
@@ -3318,7 +3318,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 88,
@@ -3348,7 +3348,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 92,
@@ -3522,7 +3522,7 @@
     "messages": [
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 35,
@@ -3564,7 +3564,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> is not phrasing content, but <label> only permits phrasing content",
         "line": 169,
@@ -3575,7 +3575,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> is not phrasing content, but <label> only permits phrasing content",
         "line": 177,
@@ -3586,7 +3586,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> is not phrasing content, but <button> only permits phrasing content",
         "line": 196,

@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
 
+import { admitAppE2eRefresh } from "./lint-snapshot-app-e2e-refresh.ts";
+
 type Packet = Record<string, any> & { file: string; messages: Record<string, any>[] };
 type Changes = Record<string, number>;
 
@@ -29,7 +31,7 @@ export interface LintSnapshotAlignment {
   };
 }
 
-const hash = (value: string) => createHash("sha256").update(value).digest("hex");
+const hash = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 
 function canonical(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
@@ -40,6 +42,49 @@ function canonical(value: unknown): string {
       .join(",")}}`;
   }
   return JSON.stringify(value);
+}
+
+export function createLintSnapshotAlignment(
+  snapshotPath: string,
+  previousRaw: string,
+  currentRaw: string,
+): LintSnapshotAlignment {
+  const before = JSON.parse(previousRaw) as Packet[];
+  const after = JSON.parse(currentRaw) as Packet[];
+  assert.equal(after.length, before.length);
+  assert.deepEqual(
+    before.map((packet) => packet.file),
+    after.map((packet) => packet.file),
+  );
+  const aggregate = new Map<string, number>();
+  const packetReviews = before.flatMap((beforePacket, index) => {
+    const afterPacket = after[index];
+    if (canonical(beforePacket) === canonical(afterPacket)) return [];
+    const changes = classify(beforePacket, afterPacket);
+    for (const [name, amount] of Object.entries(changes))
+      aggregate.set(name, (aggregate.get(name) ?? 0) + amount);
+    return [
+      {
+        file: beforePacket.file,
+        beforeSha256: hash(canonical(beforePacket)),
+        afterSha256: hash(canonical(afterPacket)),
+        changes,
+      },
+    ];
+  });
+  return {
+    path: snapshotPath,
+    previousSha256: hash(previousRaw),
+    currentSha256: hash(currentRaw),
+    packetCount: after.length,
+    beforeMessages: before.reduce((total, packet) => total + packet.messages.length, 0),
+    afterMessages: after.reduce((total, packet) => total + packet.messages.length, 0),
+    changedPackets: packetReviews.length,
+    aggregateChanges: Object.fromEntries(
+      [...aggregate].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+    ),
+    packetReviews,
+  };
 }
 
 function classify(before: Packet, after: Packet): Changes {
@@ -156,6 +201,11 @@ export function loadLintSnapshotAlignments(root: string): Map<string, LintSnapsh
   assert.equal(payload.entries.length, 7);
   const alignments = new Map(payload.entries.map((entry) => [entry.path, entry]));
   admitSnapshotSuccessors(root, alignments);
+  admitAppE2eRefresh(root, alignments, {
+    canonical,
+    hash,
+    verify: verifyLintSnapshotAlignment,
+  });
   return alignments;
 }
 
