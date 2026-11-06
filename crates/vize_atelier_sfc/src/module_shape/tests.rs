@@ -158,6 +158,27 @@ fn hmr_import_facts_exclude_types_and_preserve_runtime_binding_kinds() {
 }
 
 #[test]
+fn preserved_typescript_hmr_facts_follow_runtime_type_erasure() {
+    use super::finalize_module_output;
+
+    let source = "import { BadgeType } from './types';\n\
+                  import { value } from './runtime';\n\
+                  interface Props { badges: BadgeType[] }\n\
+                  const props: Props = { badges: [] };\n\
+                  export default { props, value };\n";
+    let (code, shape) = finalize_module_output(source.into(), true);
+    assert_eq!(code, source);
+    assert_eq!(
+        shape.unwrap().imports,
+        [super::SfcModuleImport {
+            source: "./runtime".into(),
+            local: "value".into(),
+            namespace: false,
+        }]
+    );
+}
+
+#[test]
 fn hmr_import_facts_refuse_bare_imports_and_runtime_reexports() {
     let runtime =
         shape("import './effect'; export * from './all'; export { value } from './named';\n");

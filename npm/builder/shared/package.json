@@ -12,6 +12,7 @@
   "dependencies": {
     "diff": "8.0.4",
     "oxc-parser": "catalog:oxc",
+    "oxc-transform": "catalog:oxc",
     "webpack-sources": "3.5.1"
   }
 }

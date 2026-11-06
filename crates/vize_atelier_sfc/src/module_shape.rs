@@ -154,7 +154,7 @@ fn finalize(
     map: Option<serde_json::Value>,
 ) -> Finalized {
     if preserve_typescript {
-        let shape = analyze_module_shape(&code);
+        let shape = analyze_preserved_typescript_shape(&code);
         return (code, shape, map);
     }
 
@@ -187,6 +187,32 @@ fn finalize(
     });
     let shape = analyze_module_shape(&stripped);
     (stripped, shape, map)
+}
+
+/// Keep splice offsets in the preserved TypeScript bytes while deriving HMR
+/// dependency facts from the JavaScript that the host transformer will run.
+/// This is the native equivalent of the old JS-side type-erasure pass: an
+/// ordinary import used only in a type position must not become a live HMR
+/// reference after SWC removes it from the module.
+fn analyze_preserved_typescript_shape(code: &str) -> Option<SfcModuleShape> {
+    let mut shape = analyze_module_shape(code)?;
+    let Some((runtime_code, _)) =
+        crate::compile_script::typescript::strip_typescript_for_emitter_traced(code, false)
+    else {
+        // Geometry remains safe, but an unproved runtime import set must make
+        // the HMR consumer refuse its snapshot.
+        shape.has_side_effect_import = true;
+        return Some(shape);
+    };
+    let Some(runtime) = analyze_module_shape(&runtime_code) else {
+        shape.has_side_effect_import = true;
+        return Some(shape);
+    };
+    shape.imports = runtime.imports;
+    shape.has_side_effect_import = runtime.has_side_effect_import;
+    shape.has_reexport = runtime.has_reexport;
+    shape.has_dynamic_import = runtime.has_dynamic_import;
+    Some(shape)
 }
 
 fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShape> {
