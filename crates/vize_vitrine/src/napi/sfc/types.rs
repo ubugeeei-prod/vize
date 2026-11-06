@@ -110,10 +110,29 @@ pub struct SfcCompileOptionsNapi {
     pub scope_id: Option<String>,
 }
 
+/// One runtime import binding in the emitted module.
+#[napi(object)]
+#[derive(Default)]
+pub struct ModuleImportNapi {
+    pub source: String,
+    pub local: String,
+    pub namespace: bool,
+}
+
+impl From<vize_atelier_sfc::module_shape::SfcModuleImport> for ModuleImportNapi {
+    fn from(import: vize_atelier_sfc::module_shape::SfcModuleImport) -> Self {
+        Self {
+            source: import.source,
+            local: import.local,
+            namespace: import.namespace,
+        }
+    }
+}
+
 /// The emitted module's shape, so the JS plugins do not re-parse it (#3425).
 ///
-/// Absent when the module did not parse, in which case the consumer falls back
-/// to its own analysis — the behaviour before this field existed.
+/// Absent when the module did not parse, in which case consumers retain their
+/// established fallback or fail closed.
 #[napi(object)]
 #[derive(Default)]
 pub struct ModuleShapeNapi {
@@ -125,6 +144,11 @@ pub struct ModuleShapeNapi {
     pub default_export_keyword_end: Option<u32>,
     pub default_export_end: Option<u32>,
     pub default_export_is_sfc_main: bool,
+    pub default_export_local: Option<String>,
+    pub imports: Vec<ModuleImportNapi>,
+    pub has_side_effect_import: bool,
+    pub has_reexport: bool,
+    pub has_dynamic_import: bool,
 }
 
 impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
@@ -138,6 +162,11 @@ impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
             default_export_keyword_end: shape.default_export_keyword_end,
             default_export_end: shape.default_export_end,
             default_export_is_sfc_main: shape.default_export_is_sfc_main,
+            default_export_local: shape.default_export_local,
+            imports: shape.imports.into_iter().map(Into::into).collect(),
+            has_side_effect_import: shape.has_side_effect_import,
+            has_reexport: shape.has_reexport,
+            has_dynamic_import: shape.has_dynamic_import,
         }
     }
 }

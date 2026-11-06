@@ -676,9 +676,6 @@ importers:
       magic-string:
         specifier: 0.30.21
         version: 0.30.21
-      oxc-parser:
-        specifier: catalog:oxc
-        version: 0.144.0
     devDependencies:
       '@parcel/config-default':
         specifier: 2.16.4
@@ -791,9 +788,6 @@ importers:
         specifier: 8.0.4
         version: 8.0.4
       oxc-parser:
-        specifier: catalog:oxc
-        version: 0.144.0
-      oxc-transform:
         specifier: catalog:oxc
         version: 0.144.0
       webpack-sources:

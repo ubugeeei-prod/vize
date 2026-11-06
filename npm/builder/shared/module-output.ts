@@ -1,5 +1,4 @@
 import { parseSync } from "oxc-parser";
-import { transformSync } from "oxc-transform";
 
 const OUTPUT_PARSE_ID = "vize-rspack-output.tsx";
 
@@ -12,10 +11,6 @@ type AstNode = {
 
 function isNode(value: unknown): value is AstNode {
   return value != null && typeof value === "object" && typeof (value as AstNode).type === "string";
-}
-
-function getNodeName(node: AstNode | null | undefined): string | null {
-  return isNode(node) && typeof node.name === "string" ? node.name : null;
 }
 
 function parseProgram(code: string): AstNode | null {
@@ -71,45 +66,33 @@ export function createGeneratedNameAllocator(code: string, onSemanticParse?: () 
   };
 }
 
-function getProgramBody(program: AstNode | null): AstNode[] {
-  if (!program || !Array.isArray(program.body)) {
-    return [];
-  }
+export type ModuleImportInfo = {
+  source: string;
+  local: string;
+  namespace: boolean;
+};
 
-  return program.body.filter(isNode);
-}
+export type HmrModuleShape = {
+  imports?: ModuleImportInfo[];
+  hasSideEffectImport?: boolean;
+};
 
-/** Snapshot imported values, not live namespace objects, before a hot replacement. */
-export function hmrImportSnapshot(code: string): string | null {
-  // Analyze a type-erased copy only. Injecting references to a type-only import
-  // would otherwise turn it into a runtime dependency in the downstream SWC pass.
-  // The actual emitted code and its source map are left untouched.
-  const transformed = transformSync(OUTPUT_PARSE_ID, code, { target: "esnext", jsx: "preserve" });
-  if (transformed.errors.length) return null;
-  const program = parseProgram(transformed.code);
-  if (!program) return null;
+/** Snapshot native-reported imported values before a hot replacement. */
+export function hmrImportSnapshot(
+  shape: HmrModuleShape | undefined,
+  hostImports: readonly ModuleImportInfo[] = [],
+): string | null {
+  if (!shape?.imports || shape.hasSideEffectImport) return null;
   const entries: string[] = [];
-  for (const statement of getProgramBody(program)) {
-    if (statement.type !== "ImportDeclaration") continue;
-    const source = isNode(statement.source) ? statement.source.value : null;
-    if (typeof source !== "string") return null;
+  for (const { source, local, namespace } of [...shape.imports, ...hostImports]) {
     // Vue helpers can change with the template. CSS has its own HMR boundary.
     if (source === "vue" || source.includes("?vue&type=style&")) continue;
-    const specifiers = Array.isArray(statement.specifiers)
-      ? statement.specifiers.filter(isNode)
-      : [];
-    // Side-effect imports cannot be compared safely.
-    if (specifiers.length === 0) return null;
-    for (const specifier of specifiers) {
-      const local = isNode(specifier.local) ? getNodeName(specifier.local) : null;
-      if (!local) return null;
-      const key = JSON.stringify(`${source}:${local}`);
-      entries.push(
-        specifier.type === "ImportNamespaceSpecifier"
-          ? `...Object.keys(${local}).sort().map(key => [${key} + ':' + key, ${local}[key]])`
-          : `[${key}, ${local}]`,
-      );
-    }
+    const key = JSON.stringify(`${source}:${local}`);
+    entries.push(
+      namespace
+        ? `...Object.keys(${local}).sort().map(key => [${key} + ':' + key, ${local}[key]])`
+        : `[${key}, ${local}]`,
+    );
   }
   return `[${entries.join(", ")}]`;
 }
