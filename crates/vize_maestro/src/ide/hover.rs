@@ -59,16 +59,32 @@ impl HoverService {
 
     /// Answer markup without constructing a TypeScript project.
     ///
-    /// Native tags, native attributes, Vue directives, and component contracts
-    /// resolved from resident SFC metadata do not need Corsa. Keeping this gate
-    /// separate lets the server answer them before starting a large workspace's
-    /// type project while typed template expressions continue through Corsa.
+    /// Vue directives, component contracts, and native markup in sessions that
+    /// disabled typechecking do not need Corsa. Keeping this gate separate lets
+    /// the server answer them before starting a large workspace's type project,
+    /// while typecheck sessions retain exact DOM types from their live backend.
     #[cfg(feature = "native")]
     pub(crate) fn hover_resident_markup(ctx: &IdeContext<'_>) -> Option<Hover> {
         match ctx.block_type? {
             BlockType::Template => {
                 let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
                 if word.is_empty() {
+                    return None;
+                }
+                if ctx.state.is_lsp_typecheck_enabled()
+                    && (crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)
+                        .is_some_and(|(attribute, tag)| {
+                            crate::ide::corsa_support::native_dom_attribute_info(&tag, &attribute)
+                                .is_some()
+                        })
+                        || crate::ide::definition::helpers::get_tag_at_offset(
+                            &ctx.content,
+                            ctx.offset,
+                        )
+                        .is_some_and(|tag| {
+                            crate::ide::corsa_support::native_dom_tag_info(&tag).is_some()
+                        }))
+                {
                     return None;
                 }
                 let in_expression =
@@ -78,7 +94,7 @@ impl HoverService {
                         ctx,
                         &word,
                         in_expression,
-                        !ctx.state.has_cached_corsa_bridge_for_document(ctx.uri),
+                        !ctx.state.is_lsp_typecheck_enabled(),
                     )
                 })?;
                 if hover.range.is_none() {

@@ -446,7 +446,6 @@ impl ServerState {
     }
 }
 
-mod cached_corsa;
 mod closed;
 mod root_discovery;
 use root_discovery::{document_root, is_config_marker};

@@ -11,6 +11,33 @@ use tower_lsp::{
 use super::super::MaestroServer;
 
 #[test]
+fn typecheck_sessions_keep_native_markup_under_the_live_backend() {
+    let project = crate::test_support::tempdir().unwrap();
+    let state = crate::server::ServerState::new();
+    let source = "<template><label :for=\"id\" @click=\"save\">Name</label></template>";
+    let uri = Url::from_file_path(project.path().join("Typed.vue")).unwrap();
+    std::fs::write(uri.to_file_path().unwrap(), source).unwrap();
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+    state.update_virtual_docs(&uri, source);
+    assert!(state.is_lsp_typecheck_enabled());
+
+    for needle in ["label", "for"] {
+        let offset = source.find(needle).unwrap() + 1;
+        let ctx = crate::ide::IdeContext::new(&state, &uri, offset).unwrap();
+        assert!(
+            crate::ide::HoverService::hover_resident_markup(&ctx).is_none(),
+            "{needle} must retain the exact DOM-library type"
+        );
+    }
+
+    let offset = source.find("@click").unwrap() + 2;
+    let ctx = crate::ide::IdeContext::new(&state, &uri, offset).unwrap();
+    assert!(crate::ide::HoverService::hover_resident_markup(&ctx).is_some());
+}
+
+#[test]
 fn native_markup_hovers_are_rich_without_entering_corsa_routing() {
     crate::runtime::block_on(async {
         let project = crate::test_support::tempdir().unwrap();

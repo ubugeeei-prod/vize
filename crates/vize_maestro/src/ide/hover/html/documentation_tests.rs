@@ -23,6 +23,34 @@ const DESCRIPTION: &str =
     "\n\nProvides an interactive button that can trigger an action or submit a form.";
 
 #[test]
+fn typed_native_attribute_keeps_the_backend_type_and_adds_template_context() {
+    let original = Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: "```typescript\n(property) HTMLLabelElement.htmlFor: string\n```\n\nDOM library docs.".into(),
+        }),
+        range: Some(Range::new(Position::new(2, 10), Position::new(2, 13))),
+    };
+    let actual = documentation::enrich_native_attribute(original, "label", "for");
+    let HoverContents::Markup(contents) = actual.contents else {
+        panic!("typed native hover stays Markdown");
+    };
+    assert!(
+        contents
+            .value
+            .starts_with("```typescript\n(property) HTMLLabelElement.htmlFor: string\n```")
+    );
+    assert!(contents.value.contains("**Vue template runtime**"));
+    assert!(contents.value.contains("DOM reflected attribute"));
+    assert!(contents.value.contains("<label for=\"...\">...</label>"));
+    assert!(contents.value.contains("/Reference/Attributes/for)"));
+    assert_eq!(
+        actual.range,
+        Some(Range::new(Position::new(2, 10), Position::new(2, 13)))
+    );
+}
+
+#[test]
 fn native_void_documentation_keeps_the_complete_type_text_and_range() {
     let original = Hover {
         contents: HoverContents::Markup(MarkupContent {
