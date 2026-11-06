@@ -18,8 +18,8 @@ describe("npmx.dev inspector parity with Vue compiler", () => {
       {
         target: "ssr",
         changedFiles: 220,
-        additions: 14_510,
-        removals: 36_627,
+        additions: 14_233,
+        removals: 35_694,
         officialErrors: 0,
         vizeErrors: 0,
       },

@@ -4,6 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
 
+import { admitAppE2eRefresh } from "./lint-snapshot-app-e2e-refresh.ts";
+
 type Packet = Record<string, any> & { file: string; messages: Record<string, any>[] };
 type Changes = Record<string, number>;
 
@@ -199,124 +201,12 @@ export function loadLintSnapshotAlignments(root: string): Map<string, LintSnapsh
   assert.equal(payload.entries.length, 7);
   const alignments = new Map(payload.entries.map((entry) => [entry.path, entry]));
   admitSnapshotSuccessors(root, alignments);
-  admitAppE2eRefresh(root, alignments);
+  admitAppE2eRefresh(root, alignments, {
+    canonical,
+    hash,
+    verify: verifyLintSnapshotAlignment,
+  });
   return alignments;
-}
-
-function withoutKeys(value: Record<string, any>, keys: string[]) {
-  return Object.fromEntries(Object.entries(value).filter(([key]) => !keys.includes(key)));
-}
-
-function verifyAppE2eRefreshPolicy(project: string, previousRaw: string, currentRaw: string) {
-  const before = JSON.parse(previousRaw) as Packet[];
-  const after = JSON.parse(currentRaw) as Packet[];
-  const semanticChanges = new Map<string, number>();
-  const count = (name: string) => semanticChanges.set(name, (semanticChanges.get(name) ?? 0) + 1);
-  for (const [packetIndex, beforePacket] of before.entries()) {
-    const afterPacket = after[packetIndex];
-    assert.equal(afterPacket.file, beforePacket.file);
-    const remaining = [...afterPacket.messages];
-    let added = 0;
-    let removed = 0;
-    for (const message of beforePacket.messages) {
-      const exact = remaining.findIndex((candidate) => canonical(candidate) === canonical(message));
-      if (exact !== -1) {
-        remaining.splice(exact, 1);
-        continue;
-      }
-      const presentation = remaining.findIndex(
-        (candidate) =>
-          canonical(withoutKeys(candidate, ["ruleDocsPath"])) ===
-          canonical(withoutKeys(message, ["ruleDocsPath"])),
-      );
-      if (presentation !== -1) {
-        const candidate = remaining.splice(presentation, 1)[0];
-        assert.match(
-          message.ruleDocsPath,
-          /^docs\/content\/rules\/(?:accessibility|html|ssr|type-and-script|vue)\.md$/,
-        );
-        assert.equal(
-          candidate.ruleDocsPath,
-          `docs/content/rules/reference/${String(message.ruleId).replace("/", "-")}.md`,
-        );
-        continue;
-      }
-      count(`removed:${message.ruleId}`);
-      removed++;
-    }
-    for (const message of remaining) {
-      count(`added:${message.ruleId}`);
-      added++;
-    }
-    assert.deepEqual(
-      withoutKeys(afterPacket, ["messages", "warningCount"]),
-      withoutKeys(beforePacket, ["messages", "warningCount"]),
-      "the refresh changes only reviewed diagnostics and rule documentation paths",
-    );
-    assert.equal(afterPacket.warningCount, beforePacket.warningCount + added - removed);
-  }
-  const actual = Object.fromEntries(
-    [...semanticChanges].sort(([left], [right]) => left.localeCompare(right)),
-  );
-  const expected: Record<string, Changes> = {
-    "ant-design-vue": {
-      "added:script/require-explicit-emits": 1,
-      "added:vue/v-on-event-hyphenation": 40,
-    },
-    elk: {},
-    misskey: {
-      "added:vue/no-template-shadow": 11,
-      "removed:vue/no-invalid-html-attribute": 1,
-    },
-    "npmx.dev": { "added:vue/no-template-shadow": 3 },
-    "nuxt-ui": { "removed:a11y/no-static-element-interactions": 1 },
-    "reka-ui": {
-      "added:script/require-explicit-emits": 2,
-      "removed:a11y/interactive-supports-focus": 2,
-    },
-    "vuefes-2025": {},
-  };
-  assert.deepEqual(actual, expected[project]);
-}
-
-function admitAppE2eRefresh(root: string, alignments: Map<string, LintSnapshotAlignment>) {
-  const directory = path.join(
-    root,
-    "tests/_fixtures/_projects/lint-review/2026-11-06-app-e2e-refresh",
-  );
-  const inventory = JSON.parse(fs.readFileSync(path.join(directory, "inventory.json"), "utf8"));
-  assert.deepEqual(
-    inventory.map((entry: { path: string }) => entry.path),
-    ["snapshots.json.gz"],
-  );
-  const bytes = fs.readFileSync(path.join(directory, "snapshots.json.gz"));
-  assert.equal(bytes.length, inventory[0].bytes);
-  assert.equal(hash(bytes), inventory[0].sha256);
-  const archive = JSON.parse(gunzipSync(bytes).toString());
-  assert.equal(archive.schema, "vize-lint-snapshot-successor-v2");
-  assert.equal(archive.predecessorCommit, "698cc668042616b43dfb7027f741a5a99fb38adc");
-  assert.equal(archive.snapshotCommit, "9dc1c1f81b43b1b585d65068aa27800c1247f29f");
-  assert.equal(archive.entries.length, 7);
-  for (const entry of archive.entries) {
-    const rootReview = alignments.get(entry.path);
-    assert.ok(rootReview);
-    let tail = rootReview;
-    while (tail.successor) tail = tail.successor.review;
-    assert.equal(hash(entry.previousRaw), tail.currentSha256);
-    assert.equal(hash(entry.currentRaw), entry.alignment.currentSha256);
-    assert.equal(
-      hash(fs.readFileSync(path.join(root, entry.path), "utf8")),
-      entry.alignment.currentSha256,
-    );
-    assert.equal(entry.alignment.previousSha256, tail.currentSha256);
-    verifyLintSnapshotAlignment(entry.previousRaw, entry.currentRaw, entry.alignment);
-    verifyAppE2eRefreshPolicy(entry.project, entry.previousRaw, entry.currentRaw);
-    tail.successor = {
-      previousRaw: entry.previousRaw,
-      fixturePin: entry.fixturePin,
-      review: entry.alignment,
-    };
-  }
 }
 
 interface SourceWitness {

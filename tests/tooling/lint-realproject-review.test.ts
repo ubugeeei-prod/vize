@@ -33,11 +33,12 @@ test("successor reviews retain historical hashes and all 395 sources at unchange
   let changedPackets = 0;
   let successors = 0;
   for (const [snapshot, alignment] of alignments) {
-    if (!alignment.successor?.review.successor) continue;
-    const { successor } = alignment;
+    const successor = alignment.successor;
+    const refreshed = successor?.review.successor;
+    if (!successor || !refreshed) continue;
     assert.equal(sha256(successor.previousRaw), alignment.currentSha256);
     assert.equal(successor.review.previousSha256, alignment.currentSha256);
-    assert.equal(sha256(successor.review.successor.previousRaw), successor.review.currentSha256);
+    assert.equal(sha256(refreshed.previousRaw), successor.review.currentSha256);
     const project = path.basename(snapshot, "-lint.snap");
     const gitlink = execFileSync("git", ["ls-tree", "HEAD", `tests/_fixtures/_git/${project}`], {
       cwd: root,

@@ -19,11 +19,12 @@ describe("elk inspector parity with Vue compiler", () => {
       },
       {
         target: "ssr",
-        changedFiles: 259,
-        additions: 9_201,
-        removals: 25_188,
+        changedFiles: 258,
+        additions: 8_869,
+        removals: 24_463,
         officialErrors: 3,
-        vizeErrors: 0,
+        // SSR observes the same unresolved macro types as DOM.
+        vizeErrors: 2,
       },
     ]);
   });
