@@ -263,7 +263,10 @@ void test("cross-file directives share authored ranges, actual suppression, unus
     const base = withPromotedDefaults(stale.afterPacket, stale.files);
     const ordinary = withPromotedDefaults(stale.beforePacket, stale.files);
     // Preserve the unrelated ordinary prop warning, including every range/help field.
-    assert.equal(ordinary[0].messages[0].ruleId, "vue/no-unused-properties");
+    assert.deepEqual(
+      ordinary[0].messages.find((message: any) => message.ruleId === "vue/no-unused-properties"),
+      stale.beforePacket[0].messages[0],
+    );
     const withoutUnused = (file: string) => {
       const packet = clone(base);
       const added = stale.wholeChanges.find(
