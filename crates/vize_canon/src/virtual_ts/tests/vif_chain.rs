@@ -334,7 +334,7 @@ const rows = [[1, 2]]
 }
 
 #[test]
-fn component_listeners_share_linear_v_else_if_branch_guards() {
+fn component_listener_references_keep_inference_outside_linear_branch_guards() {
     let script = r#"import { reactive } from 'vue'
 import KeyPad from './KeyPad.vue'
 type Kind = 'k0' | 'k1' | 'k2' | 'k3'
@@ -421,13 +421,13 @@ const onSubmit = (value: number) => value
         listeners
             .matches("// @ts-ignore Listener branch guard")
             .count(),
-        3,
-        "the three else-if continuations must share the listener branch chain: {listeners}"
+        0,
+        "bare listener references must keep shared inference declarations outside listener branch chains: {listeners}"
     );
 }
 
 #[test]
-fn guarded_sibling_listeners_own_their_lexical_contracts() {
+fn guarded_sibling_listener_references_share_visible_lexical_contracts() {
     let script = r#"import { ref } from 'vue'
 import MyButton from './MyButton.vue'
 import MyMenu from './MyMenu.vue'
@@ -454,15 +454,15 @@ const save = () => undefined
     for alias in ["__library = typeof MyButton ", "_click_prop_args = "] {
         assert_eq!(
             output.code.matches(alias).count(),
-            2,
-            "each sibling generated guard must declare the {alias} contract it references: {}",
+            1,
+            "sibling bare references must share the visible {alias} contract: {}",
             output.code
         );
     }
     assert_eq!(
         output.code.matches("_click_prop_arrays =").count(),
-        2,
-        "array-listener aliases must stay inside their generated guard: {}",
+        1,
+        "array-listener aliases must remain visible to sibling bare references: {}",
         output.code
     );
 }
