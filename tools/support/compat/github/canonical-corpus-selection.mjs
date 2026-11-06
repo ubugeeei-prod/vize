@@ -29,7 +29,7 @@ const inputs = [
   /^tests\/_fixtures\/differential\/lsp\/template-expression-globals-8015\/globals\.expected\.json$/,
   /^tests\/_fixtures\/differential\/compiler\/(?:ssr-builtins-7891|typed-slot-handler-scope-8142|n8n-if-key-regression|maybe-ref-authored-handlers-10164|real-project-dom-reductions)\//,
   /^tests\/_fixtures\/(?:vue-ecosystem-fixtures|davinci-baseline)\.json$/,
-  /^docs\/davinci\/plan\/(?:reach-budgets\.toml|corpus-baseline-notes\.md|corpus-baseline-unstable\.json)$/,
+  /^docs\/davinci\/plan\/(?:phase-3\.md|reach-budgets\.toml|corpus-baseline-notes\.md|corpus-baseline-unstable\.json)$/,
   /^tests\/davinci_test_support\//,
   /^tests\/tooling\/(?:davinci-dom-corpus|davinci-canonical-corpus|fixture-)/,
   /^tests\/tooling\/fixtures\/canonical-observer-logs\//,

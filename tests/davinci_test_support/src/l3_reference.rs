@@ -10,18 +10,33 @@
     reason = "the reference reports with std strings"
 )]
 
+pub mod behavior;
 pub mod checker;
 pub mod checker_corpus;
+pub mod expression;
 pub mod folio;
+pub mod incremental;
+pub mod iteration;
+pub mod json;
+pub mod lattice;
+pub mod matrix;
+pub mod model;
+pub mod model_behavior;
+mod model_events;
+pub mod observation;
 pub mod program;
 pub mod schedule;
 pub mod schedule_fixture;
 pub mod trace;
+pub mod validate;
+pub mod values;
+pub mod view;
+pub mod witness;
 
 use std::path::{Path, PathBuf};
 
 /// The committed reference fixtures.
 #[must_use]
 pub fn fixtures() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../formal/impeto/fixtures")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../fixtures/l3-reference")
 }

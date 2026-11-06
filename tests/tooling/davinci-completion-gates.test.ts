@@ -107,6 +107,30 @@ void test("measured gates fail on a legacy edge and pass once it is gone", () =>
   assert.equal(products([])?.pass, true);
 });
 
+void test("the Rust-only gate matches Lean workflow tokens without substring false positives", () => {
+  const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
+  assert.ok(formal);
+  assert.equal(
+    formal(
+      memory({
+        ".github/workflows/cleanup-obsolete-merge-groups.yml": "",
+        ".github/workflows/patina-boolean-public.yml": "",
+        ".github/workflows/patina-native-boolean-protocol.yml": "",
+      }),
+    ).pass,
+    true,
+  );
+  const lean = formal(
+    memory({
+      ".github/workflows/davinci-lean.yml": "",
+      "tests/formal/reference/lakefile.lean": "",
+      "tests/formal/reference/Reference.lean": "",
+    }),
+  );
+  assert.equal(lean.pass, false);
+  assert.equal(lean.detail, "3 Lean files or workflows");
+});
+
 void test("issue gates are unknown offline and fail while an issue is open", () => {
   const states = new Map<number, "OPEN" | "CLOSED">(
     gates.flatMap((gate) => gate.issues).map((n) => [n, "CLOSED"]),
