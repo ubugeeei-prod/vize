@@ -1,12 +1,10 @@
 //! Builtin memo dependencies remain authored reads and checked expressions.
-use super::{
-    TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text,
-    workspace_root,
-};
+use super::{TSGO_ENV, check_project, install_vue_package, output_text, workspace_root};
 use serde_json::json;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 const MEMO_TSGO_ENV: &str = "VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO";
+const RECEIPT_DIR_ENV: &str = "VIZE_TEST_MEMO_PROCESS_RECEIPT_DIR";
 
 /// A missing host is an unexecuted cohort. `VIZE_TEST_REQUIRE_TSGO` makes that a failure.
 fn memo_host() -> Option<PathBuf> {
@@ -37,6 +35,95 @@ fn select_memo_host(
     );
     eprintln!("memo cohort provider={} require={required}", host.display());
     Some(host)
+}
+
+fn install_observed_mapper_manifest(project: &Path, receipt: &Path) {
+    let package = project.join("node_modules/vize");
+    std::fs::create_dir_all(&package).unwrap();
+    let node = std::env::var_os("VIZE_TEST_NODE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("node"));
+    let proxy = workspace_root().join("tools/support/compat/content-mapper/process-receipt.mjs");
+    assert!(
+        proxy.is_file(),
+        "missing mapper process proxy: {}",
+        proxy.display()
+    );
+    let manifest = json!({
+        "name": "vize",
+        "private": true,
+        "typescript": {
+            "contentMapper": {
+                "exec": [node, proxy, receipt, env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
+                "dynamicConfig": true,
+            },
+        },
+    });
+    std::fs::write(
+        package.join("package.json"),
+        serde_json::to_vec_pretty(&manifest).unwrap(),
+    )
+    .unwrap();
+}
+
+fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output) {
+    let bytes = std::fs::read(receipt).unwrap_or_else(|error| {
+        panic!(
+            "missing mapper process receipt {}: {error}\n{}",
+            receipt.display(),
+            output_text(output)
+        )
+    });
+    let packet: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    let context = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&bytes),
+        output_text(output)
+    );
+    assert_eq!(
+        packet["schema"], "vize.contentMapperProcessReceipt.v1",
+        "{context}"
+    );
+    assert_eq!(
+        packet["command"]["file"],
+        env!("CARGO_BIN_EXE_vize"),
+        "{context}"
+    );
+    assert_eq!(
+        packet["command"]["args"],
+        json!(["content-mapper"]),
+        "{context}"
+    );
+    assert_eq!(packet["spawnError"], serde_json::Value::Null, "{context}");
+    assert_eq!(packet["exit"]["code"], 0, "{context}");
+    assert_eq!(
+        packet["exit"]["signal"],
+        serde_json::Value::Null,
+        "{context}"
+    );
+    for name in ["stdin", "stdout", "stderr"] {
+        let stream = &packet["streams"][name];
+        assert_eq!(stream["complete"], true, "{name}: {context}");
+        assert_eq!(
+            stream["capturedBytes"], stream["bytes"],
+            "{name}: {context}"
+        );
+        assert_eq!(
+            stream["sha256"].as_str().map(str::len),
+            Some(64),
+            "{name}: {context}"
+        );
+    }
+    assert!(
+        packet["streams"]["stdin"]["bytes"].as_u64().unwrap_or(0) > 0,
+        "{context}"
+    );
+    assert!(
+        packet["streams"]["stdout"]["bytes"].as_u64().unwrap_or(0) > 0,
+        "{context}"
+    );
+    assert_eq!(packet["streams"]["stderr"]["bytes"], 0, "{context}");
 }
 
 #[test]
@@ -92,10 +179,21 @@ fn memo_dependencies_check_members_and_preserve_unused_controls() {
     };
     let fixture =
         workspace_root().join("tests/_fixtures/differential/typechecker/memo-expression-11733");
+    let retained_receipts = std::env::var_os(RECEIPT_DIR_ENV).map(PathBuf::from);
+    if let Some(directory) = &retained_receipts {
+        std::fs::create_dir_all(directory).unwrap();
+    }
+    let mut cell = 0;
     for no_unused in [false, true] {
         for newline in ["\n", "\r\n"] {
             let project = tempfile::tempdir().unwrap();
-            install_mapper_manifest(project.path());
+            let newline_name = if newline == "\n" { "lf" } else { "crlf" };
+            let receipt_name = format!("cell-{cell}-{newline_name}-unused-{no_unused}.json");
+            let receipt = retained_receipts.as_ref().map_or_else(
+                || project.path().join(&receipt_name),
+                |root| root.join(&receipt_name),
+            );
+            install_observed_mapper_manifest(project.path(), &receipt);
             install_vue_package(project.path());
             std::fs::create_dir(project.path().join("src")).unwrap();
             for name in ["Memo.vue", "Missing.vue", "Unused.vue", "util.ts"] {
@@ -119,6 +217,7 @@ fn memo_dependencies_check_members_and_preserve_unused_controls() {
             )
             .unwrap();
             let output = check_project(&host, project.path(), "tsconfig.json");
+            assert_complete_mapper_receipt(&receipt, &output);
             eprintln!(
                 "memo cell newline={} noUnusedLocals={} status={} provider={}",
                 if newline == "\n" { "lf" } else { "crlf" },
@@ -147,6 +246,7 @@ fn memo_dependencies_check_members_and_preserve_unused_controls() {
             assert_eq!(actual, expected, "{}", output_text(&output));
             assert!(output.stderr.is_empty(), "{}", output_text(&output));
             assert!(!output.status.success());
+            cell += 1;
         }
     }
 }
