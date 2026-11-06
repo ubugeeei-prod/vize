@@ -20,6 +20,7 @@ mod parse_diagnostics;
 mod rule_sets;
 mod script;
 mod sfc;
+mod standalone;
 mod tag_scan;
 mod template;
 mod template_extract;
@@ -36,7 +37,7 @@ use vize_croquis::Croquis;
 use vize_l0::Allocator;
 use vize_l0::String;
 use vize_l0::ToCompactString;
-use vize_l0::dialect::{VueDialect, standalone_html_dialect};
+use vize_l0::dialect::VueDialect;
 use vize_l0::profile;
 use vize_relief::RootNode;
 
@@ -76,6 +77,7 @@ impl<'a> TemplateRuleEnv<'a> {
             sfc_descriptor: None,
             sfc_scripts: None,
             art_script_analysis: None,
+            petite_document: None,
             defer_exact_suppressions: false,
             dialect,
             facade_rules: &[],
@@ -460,37 +462,5 @@ impl Linter {
 
         summary.file_count = files.len();
         (results, summary)
-    }
-
-    /// Lint a standalone HTML document that may use Vue from a CDN.
-    #[inline]
-    pub fn lint_standalone_html(&self, source: &str, filename: &str) -> LintResult {
-        let capacity = (source.len() * 4).max(self.initial_capacity);
-        let allocator = Allocator::with_capacity(capacity);
-        // Resolve the document dialect so dialect-specific rules (e.g.
-        // require-v-for-key, which petite-vue does not require) can gate
-        // themselves on petite-vue documents.
-        let dialect = standalone_html_dialect(None, source);
-        let mut result = self.lint_template_with_allocator_config(
-            &allocator,
-            source,
-            filename,
-            false,
-            false,
-            TemplateRuleEnv::relief(dialect),
-        );
-
-        if super::script_rules::has_active_builtin_script_rules(self) {
-            super::script_rules::append_builtin_script_diagnostics_from_html(
-                self,
-                source,
-                &mut result,
-            );
-            result
-                .diagnostics
-                .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
-        }
-
-        self.apply_diagnostic_policy(result)
     }
 }

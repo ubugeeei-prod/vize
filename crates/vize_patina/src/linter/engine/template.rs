@@ -40,6 +40,7 @@ impl Linter {
         ctx.set_help_level(self.help_level);
         ctx.set_custom_elements(&self.custom_elements);
         ctx.set_dialect(env.dialect);
+        ctx.set_petite_document(env.petite_document);
         ctx.art_script_analysis = env.art_script_analysis;
         if env.defer_exact_suppressions {
             ctx.defer_exact_suppressions();

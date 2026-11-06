@@ -98,6 +98,8 @@ pub struct LintContext<'a> {
     ssr_mode: SsrMode,
     /// Vue dialect of the document being linted (gates dialect-specific rules).
     dialect: VueDialect,
+    /// Owner-bound Davinci meaning for an admitted standalone petite document.
+    petite_document: Option<&'a vize_l2::dialect::petite::PetiteDocument<'a, 'a>>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
     /// Lines where `@vize:expected` expects an error on the next line.
@@ -163,6 +165,7 @@ impl<'a> LintContext<'a> {
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
+            petite_document: None,
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
@@ -216,6 +219,7 @@ impl<'a> LintContext<'a> {
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             dialect: VueDialect::default(),
+            petite_document: None,
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
             severity_overrides: FxHashMap::default(),
@@ -287,6 +291,24 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn is_petite_vue(&self) -> bool {
         self.dialect.is_petite_vue()
+    }
+
+    /// Attach the completed Davinci petite-vue view for this standalone document.
+    #[inline]
+    pub(crate) fn set_petite_document(
+        &mut self,
+        document: Option<&'a vize_l2::dialect::petite::PetiteDocument<'a, 'a>>,
+    ) {
+        self.petite_document = document;
+    }
+
+    /// Find the Davinci meaning that owns one legacy traversal callback.
+    pub(crate) fn petite_directive(
+        &self,
+        kind: vize_l2::dialect::petite::PetiteDirectiveKind,
+        span: vize_l0::Span,
+    ) -> Option<&vize_l2::dialect::petite::PetiteDirective<'a>> {
+        self.petite_document?.directive_at(kind, span)
     }
 
     /// Set help display level.

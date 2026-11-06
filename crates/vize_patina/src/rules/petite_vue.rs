@@ -26,3 +26,79 @@ fn register_if_missing(registry: &mut RuleRegistry, rule: Box<dyn Rule>) {
         registry.register(rule);
     }
 }
+
+#[cfg(test)]
+mod davinci_parity_tests {
+    use super::{ValidVEffect, ValidVScope};
+    use crate::linter::Linter;
+    use crate::rule::RuleRegistry;
+
+    fn linter() -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(ValidVEffect));
+        registry.register(Box::new(ValidVScope));
+        Linter::with_registry(registry)
+    }
+
+    fn document(markup: &str) -> String {
+        format!(
+            concat!(
+                "<!DOCTYPE html><html><body>{markup}",
+                "<script src=\"https://unpkg.com/petite-vue\" init></script>",
+                "</body></html>"
+            ),
+            markup = markup
+        )
+    }
+
+    #[test]
+    fn admitted_davinci_diagnostics_match_the_shipped_relief_route() {
+        let linter = linter();
+        let mut observed = 0;
+        for markup in [
+            r#"<div v-scope="count" v-effect></div>"#,
+            r#"<div v-scope="{ label: '&amp;' }" v-effect="label = '&amp;'"></div>"#,
+            r#"<div v-scope="{ value: }" v-effect="   "></div>"#,
+            r#"<main v-scope><button v-effect=""></button></main>"#,
+            r#"<div v-scope:state.deep="items" v-effect.once="items++"></div>"#,
+            r#"<section V-SCOPE="ignored" V-EFFECT></section>"#,
+        ] {
+            let source = document(markup);
+            let davinci = linter.lint_standalone_html(&source, "index.html");
+            let relief = linter.lint_standalone_html_relief_for_test(&source, "index.html");
+            observed += davinci.diagnostics.len();
+            assert_eq!(
+                format!("{davinci:#?}"),
+                format!("{relief:#?}"),
+                "route mismatch for {markup}"
+            );
+        }
+        assert!(
+            observed > 0,
+            "the differential corpus must exercise reports"
+        );
+    }
+
+    #[test]
+    fn refused_davinci_document_preserves_the_relief_fallback() {
+        let source = concat!(
+            "<!DOCTYPE html><html><body>",
+            "<script src=\"https://unpkg.com/petite-vue\" init></script>",
+            "<div v-scope=\"count"
+        );
+        let allocator = vize_l0::Allocator::default();
+        let owner = vize_l1::markup::document::NativeDocument::lex_in(
+            &allocator,
+            vize_l0::SourceRoot::new(source).unwrap(),
+        );
+        assert!(
+            vize_l2::dialect::petite::PetiteDocument::lower_in(&allocator, &owner).is_err(),
+            "the fallback witness must be refused by the whole native document"
+        );
+
+        let linter = linter();
+        let davinci = linter.lint_standalone_html(source, "index.html");
+        let relief = linter.lint_standalone_html_relief_for_test(source, "index.html");
+        assert_eq!(format!("{davinci:#?}"), format!("{relief:#?}"));
+    }
+}

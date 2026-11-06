@@ -35,12 +35,14 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::cstr;
+use vize_l2::dialect::petite::{PetiteDirectiveKind, PetiteScopeShape};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -75,6 +77,26 @@ impl Rule for ValidVScope {
             return;
         }
 
+        if let Some(native) = ctx.petite_directive(PetiteDirectiveKind::Scope, directive.loc.span) {
+            let shape = native
+                .scope()
+                .map_or(PetiteScopeShape::Other, |scope| scope.shape());
+            let range = native.value().map(|value| {
+                let span = value.authored_span();
+                ByteRange::new(span.start, span.end)
+            });
+            if shape == PetiteScopeShape::Other
+                && let Some(range) = range
+            {
+                ctx.error_at_with_help(
+                    ctx.t("petite-vue/valid-v-scope.message"),
+                    range,
+                    ctx.t("petite-vue/valid-v-scope.help"),
+                );
+            }
+            return;
+        }
+
         // A bare `v-scope` (no value) is a valid scope root; nothing to check.
         let Some(ExpressionNode::Simple(exp)) = directive.exp.as_ref() else {
             return;
@@ -96,11 +118,10 @@ impl Rule for ValidVScope {
     }
 }
 
-/// Whether `expr` parses to a (possibly parenthesized) object literal.
+/// Legacy-refusal fallback for a (possibly parenthesized) object literal.
 ///
-/// Mirrors croquis' v-scope parsing: wrap the expression as the initializer of
-/// a declaration so a leading `{` parses as an object literal rather than a
-/// block statement, then inspect the parsed initializer.
+/// Davinci owns the admitted document path. This preserves shipped behavior
+/// only when the whole original Document cannot mint its L2 view.
 fn is_object_literal(expr: &str) -> bool {
     // Wrap as the initializer of a declaration so the object literal parses as
     // an expression (a bare leading `{` would otherwise be a block statement).

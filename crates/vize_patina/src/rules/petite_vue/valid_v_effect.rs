@@ -29,7 +29,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l2::dialect::petite::PetiteDirectiveKind;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -61,6 +63,20 @@ impl Rule for ValidVEffect {
         }
 
         if directive.name != "effect" {
+            return;
+        }
+
+        if let Some(native) = ctx.petite_directive(PetiteDirectiveKind::Effect, directive.loc.span)
+        {
+            let is_empty = native.effect().is_none_or(|effect| effect.is_empty());
+            let span = native.span();
+            if is_empty {
+                ctx.error_at_with_help(
+                    ctx.t("petite-vue/valid-v-effect.message"),
+                    ByteRange::new(span.start, span.end),
+                    ctx.t("petite-vue/valid-v-effect.help"),
+                );
+            }
             return;
         }
 
