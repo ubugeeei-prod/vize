@@ -448,6 +448,7 @@ fn void(name: &str) -> bool {
             | "hr"
             | "img"
             | "input"
+            | "param"
             | "area"
             | "embed"
             | "source"
