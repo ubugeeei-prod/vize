@@ -463,5 +463,4 @@ fn emit_expression_statement(
 }
 
 #[cfg(test)]
-#[path = "statements_tests.rs"]
 mod tests;
