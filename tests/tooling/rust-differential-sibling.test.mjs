@@ -172,6 +172,8 @@ exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"
       }),
     };
     delete env.VIZE_TEST_DISABLE_TSGO;
+    delete env.TEST_CASES_JOB;
+    delete env.VIZE_TEST_CASES;
     return spawnSync("/bin/bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", script], {
       cwd,
       encoding: "utf8",

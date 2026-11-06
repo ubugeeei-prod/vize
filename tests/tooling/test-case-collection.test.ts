@@ -12,6 +12,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { readPackets } from "../../tools/support/compat/github/test-cases.ts";
+import { rustOutputCases } from "../../tools/support/compat/github/rust-test-cases.ts";
 import { withPreparedNative } from "../../npm/native/scripts/test-preparation.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
@@ -297,6 +298,76 @@ test("each test job names its case packet after itself and the report downloads 
     "Test CI selection when its inputs change",
     "test-cases-ci-selection.json",
     "test-cases-ci-selection-${{ github.run_attempt }}",
+  );
+
+  const rustSource = workflow("pr-rust-checks.yml").jobs["pr-rust-build"];
+  assert.equal(rustSource.env?.VIZE_TEST_CASES, "test-cases-rust-source-${{ matrix.lane }}.json");
+  const rustSourceUpload = rustSource.steps.find(
+    (step) => step.name === "Upload Rust source test cases",
+  );
+  assert.equal(
+    rustSourceUpload?.with?.name,
+    "test-cases-rust-source-${{ matrix.lane }}-${{ github.run_attempt }}",
+  );
+  assert.equal(rustSourceUpload?.with?.["if-no-files-found"], "error");
+
+  const differential = workflow("pr-rust-differential.yml").jobs.differential;
+  assert.equal(
+    differential.env?.VIZE_TEST_CASES,
+    "test-cases-rust-differential-${{ matrix.lane }}.json",
+  );
+  const differentialUpload = differential.steps.find(
+    (step) => step.name === "Upload Rust differential test cases",
+  );
+  assert.equal(
+    differentialUpload?.with?.name,
+    "test-cases-rust-differential-${{ matrix.lane }}-${{ github.run_attempt }}",
+  );
+  assert.equal(differentialUpload?.with?.["if-no-files-found"], "error");
+});
+
+test("stable Rust output records libtest cases and command fallbacks", () => {
+  const crates = new Map([
+    ["vize_alpha", "crates/vize_alpha"],
+    ["vize_beta", "crates/vize_beta"],
+  ]);
+  assert.deepEqual(
+    rustOutputCases(
+      [
+        "running 3 tests",
+        "test unit::passes ... ok",
+        "test unit::ignored ... ignored",
+        "test crates/vize_alpha/src/lib.rs - docs::fails (line 9) ... FAILED",
+      ].join("\n"),
+      ["vize_alpha"],
+      "feature corpus",
+      101,
+      crates,
+    ),
+    [
+      {
+        path: "crates/vize_alpha",
+        name: "feature corpus › unit::passes",
+        outcome: "passed",
+      },
+      {
+        path: "crates/vize_alpha",
+        name: "feature corpus › unit::ignored",
+        outcome: "skipped",
+      },
+      {
+        path: "crates/vize_alpha",
+        name: "feature corpus › crates/vize_alpha/src/lib.rs - docs::fails (line 9)",
+        outcome: "failed",
+      },
+    ],
+  );
+  assert.deepEqual(
+    rustOutputCases("clippy finished", ["vize_alpha", "vize_beta"], "Clippy", 0, crates),
+    [
+      { path: "crates/vize_alpha", name: "Clippy › crates/vize_alpha", outcome: "passed" },
+      { path: "crates/vize_beta", name: "Clippy › crates/vize_beta", outcome: "passed" },
+    ],
   );
 });
 

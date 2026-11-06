@@ -207,6 +207,8 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
         );
       delete environment.VIZE_TEST_DISABLE_TSGO;
       delete environment.VIZE_TEST_REQUIRE_TSGO;
+      delete environment.VIZE_TEST_CASES;
+      delete environment.TEST_CASES_JOB;
       const result = spawnSync(
         "/bin/bash",
         [
