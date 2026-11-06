@@ -63,6 +63,8 @@ fn unguarded_v_for_alias_keeps_the_payload_error() {
     assert_eq!(actual.len(), 1, "{actual:#?}");
     assert_eq!(actual[0].0, "src/App.vue");
     assert_eq!(actual[0].1, Some(2345));
-    assert!(actual[0].2.contains("Entry"), "{actual:#?}");
-    assert!(actual[0].2.contains("Item"), "{actual:#?}");
+    assert_eq!(
+        actual[0].2,
+        "10:60:error Argument of type 'Entry' is not assignable to parameter of type 'Item'.\nType 'Folder' is not assignable to type 'Item'.\nTypes of property 'kind' are incompatible.\nType '\"folder\"' is not assignable to type '\"item\"'."
+    );
 }
