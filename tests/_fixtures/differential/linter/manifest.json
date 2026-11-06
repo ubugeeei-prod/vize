@@ -760,6 +760,38 @@
       }
     },
     {
+      "id": "linter/cross-file-blanket-usage-12040",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "cross-file-directives-10912",
+        "files": [
+          {
+            "path": "source-cases.json",
+            "role": "whole-packet-script-blanket-usage-regression-corpus",
+            "sha256": "23b173983a1a2d03fe31b3397fed8f129706a5e189a9cc50a6bb64d65e5717a1"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/cross-file-directives-10912",
       "state": "active",
       "targets": [
