@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ title: string }>();
+defineEmits<{
+  (e: 'close'): void;
+  (e: 'set-mode', mode: string): void;
+}>();
+</script>
+
+<template><div>{{ title }}</div></template>

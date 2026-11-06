@@ -177,9 +177,10 @@ pub(super) fn generate_scope_node(
             // mutable captures must not inherit its narrowing. Immutable
             // `v-for` aliases are the exception: TypeScript preserves their
             // narrowing across closures. Bare listener values retain the full
-            // render guard; inline statements carry it inside their generated
-            // handler so their shared inference declarations stay visible to
-            // sibling listeners (#11965, #11973, #12005).
+            // render guard inside their generated handler. Only deferred
+            // callbacks need the outer block: wrapping a bare reference also
+            // hides shared inference declarations from sibling listeners
+            // (#11965, #11973, #12005, #12017).
             let expressions = ctx.expressions_by_scope.get(&scope_id);
             let has_deferred_callback = expressions.is_some_and(|expressions| {
                 expressions.iter().any(|expression| {
@@ -230,7 +231,10 @@ pub(super) fn generate_scope_node(
                 rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)
                     .unwrap_or(guard)
             });
-            let handler_indent = if let Some(guard) = enclosing_guard.as_deref() {
+            let outer_guard = has_deferred_callback
+                .then_some(enclosing_guard.as_deref())
+                .flatten();
+            let handler_indent = if let Some(guard) = outer_guard {
                 super::append_chained_vif_guard_open(ts, indent, guard, "Listener branch guard");
                 inner_indent.clone()
             } else {
@@ -246,7 +250,7 @@ pub(super) fn generate_scope_node(
                 enclosing_guard.as_deref(),
                 (handler_indent.as_str(), handler_inner_indent.as_str()),
             );
-            if enclosing_guard.is_some() {
+            if outer_guard.is_some() {
                 super::append_chained_vif_guard_close(ts, indent);
             }
         }
