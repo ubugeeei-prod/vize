@@ -258,6 +258,12 @@ const PLAYWRIGHT_OUTCOMES: Readonly<Record<string, Outcome>> = {
 /** Cases from Playwright's JSON reporter, using the final retry as the outcome. */
 export function playwrightCases(report: unknown, root: string): TestCase[] {
   const cases: TestCase[] = [];
+  const reportRecord = asRecord(report, "playwright report");
+  const config = asRecord(reportRecord.config, "playwright report.config");
+  const configuredRoot = asString(config.rootDir, "playwright report.config.rootDir");
+  const reporterRoot = path.isAbsolute(configuredRoot)
+    ? configuredRoot
+    : path.resolve(root, configuredRoot);
   const visit = (suite: unknown, ancestors: readonly string[], label: string) => {
     const record = asRecord(suite, label);
     const title = typeof record.title === "string" ? record.title.trim() : "";
@@ -266,16 +272,16 @@ export function playwrightCases(report: unknown, root: string): TestCase[] {
       const specLabel = `${label}.specs[${index}]`;
       const spec = asRecord(entry, specLabel);
       const reported = asString(spec.file, `${specLabel}.file`).split("\\").join("/");
-      const file = path.isAbsolute(reported)
-        ? ownedPath(reported, root)
-        : reported.startsWith("playground/")
-          ? ownedPath(path.join(root, reported), root)
-          : ownedPath(path.join(root, "playground", reported), root);
+      const file = ownedPath(
+        path.isAbsolute(reported) ? reported : path.resolve(reporterRoot, reported),
+        root,
+      );
       const specTitle = asString(spec.title, `${specLabel}.title`).trim();
       for (const [testIndex, testEntry] of asArray(spec.tests, `${specLabel}.tests`).entries()) {
         const testLabel = `${specLabel}.tests[${testIndex}]`;
         const testRecord = asRecord(testEntry, testLabel);
         const results = asArray(testRecord.results, `${testLabel}.results`);
+        if (results.length === 0 && testRecord.expectedStatus !== "skipped") continue;
         const final = results.length
           ? asRecord(results.at(-1), `${testLabel}.results[${results.length - 1}]`)
           : null;
@@ -292,8 +298,7 @@ export function playwrightCases(report: unknown, root: string): TestCase[] {
     for (const [index, child] of asArray(record.suites ?? [], `${label}.suites`).entries())
       visit(child, titles, `${label}.suites[${index}]`);
   };
-  const record = asRecord(report, "playwright report");
-  for (const [index, suite] of asArray(record.suites, "playwright report.suites").entries())
+  for (const [index, suite] of asArray(reportRecord.suites, "playwright report.suites").entries())
     visit(suite, [], `playwright report.suites[${index}]`);
   return cases;
 }

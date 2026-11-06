@@ -310,6 +310,8 @@ test("each test job names its case packet after itself and the report downloads 
   const collect = playground.steps.find((step) => step.name === "Collect playground test cases");
   assert.equal(collect?.id, "cases");
   assert.equal(collect?.env?.TEST_CASES_JOB, playground.name);
+  assert.equal(collect?.env?.VRT_OUTCOME, "${{ steps.vrt.outcome }}");
+  assert.match(collect?.run ?? "", /VRT_OUTCOME.*success.*-s/u);
   assert.ok(collect?.run?.includes("test-cases.ts playwright"));
   assert.ok(collect?.run?.includes("test-cases.ts merge"));
   const playgroundUpload = playground.steps[playground.steps.indexOf(collect ?? {}) + 1];
@@ -319,12 +321,13 @@ test("each test job names its case packet after itself and the report downloads 
 
 test("Playwright retries and projects become mergeable playground cases", () => {
   const report = {
+    config: { rootDir: path.join(root, "playground", "e2e", "vrt") },
     suites: [
       {
         title: "editor",
         specs: [
           {
-            file: "e2e/vrt/editor.spec.ts",
+            file: "editor.spec.ts",
             title: "renders",
             tests: [
               {
@@ -335,7 +338,12 @@ test("Playwright retries and projects become mergeable playground cases", () => 
               {
                 projectName: "webkit",
                 expectedStatus: "skipped",
-                results: [{ status: "skipped" }],
+                results: [],
+              },
+              {
+                projectName: "firefox",
+                expectedStatus: "passed",
+                results: [],
               },
             ],
           },

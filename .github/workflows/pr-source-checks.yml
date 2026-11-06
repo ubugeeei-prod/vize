@@ -424,9 +424,10 @@ jobs:
         env:
           TEST_CASES_JOB: "PR playground browser tests"
           RUN_VRT: ${{ github.event_name == 'merge_group' }}
+          VRT_OUTCOME: ${{ steps.vrt.outcome }}
         run: |
           packets=("$RUNNER_TEMP/test-cases-playground-browser.json")
-          if [[ "$RUN_VRT" == true ]]; then
+          if [[ "$RUN_VRT" == true && ( "$VRT_OUTCOME" == success || -s "$RUNNER_TEMP/test-cases-playground-vrt-report.json" ) ]]; then
             node tools/support/compat/github/test-cases.ts playwright \
               "$RUNNER_TEMP/test-cases-playground-vrt-report.json" \
               "$RUNNER_TEMP/test-cases-playground-vrt.json"

@@ -39,6 +39,12 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
   assert.equal(collect?.name, "Collect playground test cases");
   assert.equal(collect?.id, "cases");
   assert.equal(collect?.if, "${{ !cancelled() && env.RUN_PLAYGROUND == 'true' }}");
+  assert.deepEqual(collect?.env, {
+    TEST_CASES_JOB: "PR playground browser tests",
+    RUN_VRT: "${{ github.event_name == 'merge_group' }}",
+    VRT_OUTCOME: "${{ steps.vrt.outcome }}",
+  });
+  assert.match(String(collect?.run), /VRT_OUTCOME.*success.*-s/u);
   assert.match(String(collect?.run), /test-cases\.ts playwright/);
   assert.match(String(collect?.run), /test-cases\.ts merge/);
   assert.deepEqual(upload, {
