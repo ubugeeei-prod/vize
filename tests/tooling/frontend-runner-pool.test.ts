@@ -5,6 +5,11 @@ import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts";
+import {
+  restoreCheckJsCasePacket,
+  restoreHistoryToolchainSelection,
+  restoreNodeEngineCasePacket,
+} from "./support/frontend-case-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 
 type Step = { name?: string; if?: string; [key: string]: unknown };
@@ -102,39 +107,6 @@ function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
     assert.equal(steps[index + 1]?.name, after);
     steps.splice(index, 1);
   }
-}
-
-function restoreHistoryToolchainSelection(job: Job, original: Job) {
-  // The separately merged #11268 adds this one reviewed control. Keep the
-  // archived workflow intact and invert only its exact current step.
-  assert.equal(
-    createHash("sha256")
-      .update(fs.readFileSync(new URL("./native-history-toolchain.test.ts", import.meta.url)))
-      .digest("hex"),
-    "da230fd0bc5a8d51005578d8c2d1c437fc3b0bd85216c6c6cdc952928bc8c3c0",
-  );
-  function selection(target: Job) {
-    const matches = target.steps?.filter(
-      (step) => step.name === "Test CI selection when its inputs change",
-    );
-    assert(matches);
-    assert.equal(matches.length, 1);
-    const step = matches[0];
-    assert(step);
-    return step;
-  }
-  const previous = selection(original);
-  assert.equal(typeof previous.run, "string");
-  const command = previous.run as string;
-  const marker = "tests/tooling/native-history-profile.test.ts";
-  assert.equal(command.split(marker).length, 2);
-  const reviewed = command.replace(
-    marker,
-    marker + " tests/tooling/native-history-toolchain.test.ts",
-  );
-  const current = selection(job);
-  assert.deepEqual(current, { ...previous, run: reviewed });
-  current.run = command;
 }
 
 function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
@@ -235,6 +207,11 @@ test("the seven runner selectors and exact runtime steps preserve every original
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
       restoreTestReportComment(restored, before);
+      restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
+      restoreNodeEngineCasePacket(
+        restored.jobs["node-engine-compat"],
+        before.jobs["node-engine-compat"],
+      );
       restoreContentMapperHelperAbi(restored.jobs["node-engine-compat"]);
     }
     if (specification.name === "pr-source-checks") {
@@ -377,8 +354,14 @@ test("all existing frontend job and step truth tables stay identical", () => {
       const original = before.jobs[id],
         updated = structuredClone(after.jobs[id]);
       assert(original && updated, id);
-      if (specification.name === "check" && id === "node-engine-compat")
+      if (specification.name === "check" && id === "check-js")
+        restoreCheckJsCasePacket(updated, original);
+      if (specification.name === "check" && id === "node-engine-compat") {
+        restoreNodeEngineCasePacket(updated, original);
         restoreContentMapperHelperAbi(updated);
+      }
+      if (specification.name === "pr-source-checks" && id === "ci-selection-tests")
+        restoreHistoryToolchainSelection(updated, original);
       const predicates = [{ before: original.if ?? "true", after: updated.if ?? "true" }];
       for (const [index, step] of (original.steps ?? []).entries()) {
         const counterpart = updated.steps?.[index];
