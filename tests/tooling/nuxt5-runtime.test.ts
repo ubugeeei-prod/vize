@@ -148,6 +148,7 @@ void test("Nuxt 5 failures remain failures while the original and additional raw
     paths,
     [
       "nuxt3-module-proof",
+      "nuxt-component-modes-proof",
       "nuxt-prefetch-proof",
       "nuxt-lint-config-proof",
       "nuxt-compiler-defaults-proof",
