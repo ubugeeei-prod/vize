@@ -106,7 +106,11 @@ fn rewrite_line_comments(content: &str) -> (String, bool) {
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
                 let end = skip_identifier(bytes, i + 1);
                 result.push_str(text(i, end));
-                can_start_regex = keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
+                let follows_member_access = content
+                    .get(..i)
+                    .is_some_and(|before| before.trim_end().ends_with('.'));
+                can_start_regex = !follows_member_access
+                    && keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
                 i = end;
             }
             b'0'..=b'9' => {
@@ -132,8 +136,12 @@ fn rewrite_line_comments(content: &str) -> (String, bool) {
                     .unwrap_or('\u{FFFD}');
                 result.push(ch);
                 i += ch.len_utf8();
-                if !ch.is_ascii_whitespace() {
-                    can_start_regex = true;
+                if !ch.is_whitespace() {
+                    // JavaScript operators and delimiters are ASCII. A
+                    // non-ASCII token here can only continue an identifier
+                    // (or be rejected when the rewritten source is parsed),
+                    // so a following slash is division rather than a regex.
+                    can_start_regex = ch.is_ascii();
                 }
             }
         }
@@ -143,7 +151,7 @@ fn rewrite_line_comments(content: &str) -> (String, bool) {
 
 #[cfg(test)]
 mod tests {
-    use super::convert_line_comments_to_block;
+    use super::{convert_line_comments_to_block, line_comment_source_as_block};
 
     #[test]
     fn preserves_regex_strings_and_blocks_while_rewriting_line_comments() {
@@ -155,5 +163,15 @@ mod tests {
             convert_line_comments_to_block("x /* // */ + y // */"),
             "x /* // */ + y /*  * / */"
         );
+    }
+
+    #[test]
+    fn recognizes_division_after_unicode_and_keyword_members() {
+        for source in ["state.雪 / 2 // note\n", "state.obj.return / 2 // note\n"] {
+            assert!(
+                line_comment_source_as_block(source, 0).is_some(),
+                "{source:?}"
+            );
+        }
     }
 }

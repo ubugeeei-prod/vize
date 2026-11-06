@@ -303,7 +303,7 @@ export function render(_ctx) {{
     }
     // Invalid expressions are fatal in both routes. Prefix-free native
     // compilation reports the retained L2 rejection instead of emitting it.
-    for expression in ["(", "x +", "[x +", "{value: x +}"] {
+    for expression in ["x +", "{value: x +}"] {
         let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
         let allocator = Allocator::new();
         let rejected = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
@@ -315,7 +315,7 @@ export function render(_ctx) {{
             "{expression}"
         );
         assert_eq!(rejected.code, "", "{expression}");
-        let (strict, diagnostics) = compile_vapor_with_diagnostics(
+        let (strict, _diagnostics) = compile_vapor_with_diagnostics(
             &allocator,
             &source,
             VaporCompilerOptions {
@@ -323,8 +323,32 @@ export function render(_ctx) {{
                 ..Default::default()
             },
         );
-        assert!(!diagnostics.is_empty(), "{expression}");
-        assert!(!strict.error_messages.is_empty(), "{expression}");
+        assert_eq!(
+            strict.error_messages,
+            std::vec![vize_carton::String::from(
+                "Error parsing JavaScript expression: invalid expression"
+            )],
+            "{expression}"
+        );
         assert!(strict.code.is_empty(), "{expression}");
+    }
+    // The shared nesting guard refuses unbalanced text before parsing. Keep
+    // that historical tolerant route distinct from an actual parse rejection.
+    for expression in ["(", "[x +"] {
+        let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
+        let allocator = Allocator::new();
+        let tolerant = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
+        let expected = vize_carton::cstr!(
+            r#"import {{ setProp as _setProp, renderEffect as _renderEffect, template as _template }} from 'vue';
+const t0 = _template("<button></button>", true)
+
+export function render(_ctx) {{
+  const n0 = t0()
+  _renderEffect(() => _setProp(n0, "disabled", {expression}))
+  return n0
+}}
+"#
+        );
+        assert_eq!(tolerant.code, expected, "{expression}");
     }
 }
