@@ -3603,13 +3603,13 @@
         "files": [
           {
             "path": "input.json",
-            "sha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9"
+            "sha256": "172d196ae0239dc816535cad59237a9ae01d75c905995746c4552586dac986d5"
           }
         ]
       },
       "case": {
         "path": "reported-model-binding-rename-11383/case.json",
-        "sha256": "804f9b94903e3a33e2a9b7c66b5344f0c8a806a1609f4f818d5f3918a1aae524"
+        "sha256": "03e5e3084b818a82792019eee42631432291c830b6438ba0bf199ccb82dca683"
       },
       "requestCount": 0,
       "initializationOptions": {
@@ -3880,7 +3880,7 @@
       },
       "case": {
         "path": "setup-export-diagnostic-11497/case.json",
-        "sha256": "07cbcd6910c7a3cdd79202ae6732e998d297c2eec3e6636776357597d7b769ef"
+        "sha256": "18bfeca72dd03e26e9a6440167f24fb025d719620ae3b4f3dbb43dc49c0c5f86"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -3899,7 +3899,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies; exact authored TS1184 source mapping in the typecheck-enabled LSP publication."
+            "selector": "LSP manifest pinned authored sources"
           }
         ]
       }

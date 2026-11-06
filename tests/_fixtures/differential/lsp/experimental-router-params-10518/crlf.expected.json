@@ -53,7 +53,7 @@
                 "data": {
                   "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
                   "name": "at",
-                  "position": 11479
+                  "position": 11348
                 },
                 "kind": 5,
                 "label": "at",
@@ -75,7 +75,7 @@
                 "data": {
                   "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
                   "name": "heading",
-                  "position": 11479
+                  "position": 11348
                 },
                 "kind": 5,
                 "label": "heading",
@@ -97,7 +97,7 @@
                 "data": {
                   "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
                   "name": "id",
-                  "position": 11479
+                  "position": 11348
                 },
                 "kind": 5,
                 "label": "id",
@@ -119,7 +119,7 @@
                 "data": {
                   "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
                   "name": "page",
-                  "position": 11479
+                  "position": 11348
                 },
                 "kind": 5,
                 "label": "page",
@@ -141,7 +141,7 @@
                 "data": {
                   "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
                   "name": "tags",
-                  "position": 11479
+                  "position": 11348
                 },
                 "kind": 5,
                 "label": "tags",
@@ -248,7 +248,7 @@
             "data": {
               "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
               "name": "at",
-              "position": 11479
+              "position": 11348
             },
             "kind": 5,
             "label": "at",
@@ -275,7 +275,7 @@
             "data": {
               "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
               "name": "heading",
-              "position": 11479
+              "position": 11348
             },
             "kind": 5,
             "label": "heading",
@@ -302,7 +302,7 @@
             "data": {
               "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
               "name": "id",
-              "position": 11479
+              "position": 11348
             },
             "kind": 5,
             "label": "id",
@@ -329,7 +329,7 @@
             "data": {
               "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
               "name": "page",
-              "position": 11479
+              "position": 11348
             },
             "kind": 5,
             "label": "page",
@@ -356,7 +356,7 @@
             "data": {
               "fileName": "$VIRTUAL/src/pages/products/[id=int].vue.ts",
               "name": "tags",
-              "position": 11479
+              "position": 11348
             },
             "kind": 5,
             "label": "tags",
@@ -448,11 +448,11 @@
   "generated": {
     "valid": {
       "file": "crlf.valid.virtual.ts.txt",
-      "sha256": "e558a1b4df32344c06f96ee964e293a70df18e56fc0289bbe6ee8149635877f0"
+      "sha256": "01f028ca218b8f7627a130f8feb70518524402641865bab1dcce82a1465d33ac"
     },
     "invalid": {
       "file": "crlf.invalid.virtual.ts.txt",
-      "sha256": "f2aaf555a82f2968e56bb21e0f09a9a090d30dd278a6d846bc41ea73287d8b65"
+      "sha256": "5c18d31b2d77cc0d9ecc50209117ad9b8e08f5d8e6aaa03d6e86d8c9df0fa558"
     }
   }
 }

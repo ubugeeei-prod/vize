@@ -46,10 +46,10 @@
       "message": "Modifiers cannot appear here."
     }
   ],
-  "method": "textDocument/documentColor",
+  "method": "textDocument/foldingRange",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    "sha256": "fdaf0a1e745726e4002c7025a8e06e15cc7c7d45ec31c8336379f74a130a5374"
   },
-  "scope": "The exact authored TS1184 publication is the regression contract; the empty color result is only a completed-request barrier."
+  "scope": "The exact authored TS1184 publication is the regression contract; folding is only a completed-request barrier."
 }

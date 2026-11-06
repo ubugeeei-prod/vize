@@ -96,7 +96,25 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   );
   assert.ok(currentTransition);
   assert.equal(currentTransition.previousSha256, transition.currentSha256);
-  assert.equal(currentTransition.currentSha256, entry.sha256);
+  const strictExtraReceipt = fs.readFileSync(path.join(custody, "strict-extra-keys-20261107.json"));
+  assert.equal(
+    createHash("sha256").update(strictExtraReceipt).digest("hex"),
+    "0122a13467baad68f8f6415ab8eccedfce9e17c33217bb7c73c7fc3b93695347",
+  );
+  const strictExtra = JSON.parse(strictExtraReceipt.toString("utf8"));
+  assert.equal(strictExtra.schema, "vize.experimental-router-strict-extra-keys-transition.v1");
+  assert.equal(strictExtra.qualificationCredit, false);
+  assert.equal(strictExtra.previous.path, "shared-helper-preamble-20261106.json");
+  assert.equal(
+    strictExtra.previous.sha256,
+    createHash("sha256").update(sharedHelperReceipt).digest("hex"),
+  );
+  const strictTransition = strictExtra.entries.find(
+    (row: { file: string }) => row.file === entry.file,
+  );
+  assert.ok(strictTransition);
+  assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
+  assert.equal(strictTransition.currentSha256, entry.sha256);
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),
@@ -114,6 +132,8 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     successor.integratedSource.sha256,
   );
   const current = bytes.toString("utf8");
+  assert.equal(current.includes(strictExtra.edit.before), false);
+  assert.equal(current.split(strictExtra.edit.after).length, 2);
   assert.equal(current.includes(successor.currentEdit.before), false);
   assert.equal(current.split(successor.currentEdit.after).length, 2);
   return current;

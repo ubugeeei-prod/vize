@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "startLine": 0,
+    "endLine": 6,
+    "kind": "region",
+    "collapsedText": "script setup"
+  }
+]
