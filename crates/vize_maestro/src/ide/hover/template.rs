@@ -120,6 +120,9 @@ impl HoverService {
         in_expression: bool,
         include_native_dom: bool,
     ) -> Option<Hover> {
+        #[cfg(not(feature = "native"))]
+        let _ = include_native_dom;
+
         let typed_component_directive = Self::component_directive_requires_type_project(ctx);
         if !typed_component_directive && let Some(hover) = Self::hover_directive(word) {
             return Some(hover);
