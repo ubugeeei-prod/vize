@@ -14,6 +14,8 @@
 
 use std::path::{Path, PathBuf};
 
+use sha2::{Digest, Sha256};
+
 use super::super::{
     BatchTypeChecker, DeclarationEmitOptions, create_project_case, relative_path,
     resolve_test_tsgo_binary, with_workspace_node_modules_override,
@@ -178,6 +180,14 @@ fn write_downstream(project_root: &Path, source: &str) -> PathBuf {
     downstream
 }
 
+fn declaration_identity(source: &str) -> (usize, String) {
+    let sha256 = Sha256::digest(source.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    (source.len(), sha256)
+}
+
 #[test]
 fn options_api_declarations_expose_the_authored_public_instance() {
     let Some(tsgo) = resolve_test_tsgo_binary() else {
@@ -214,15 +224,13 @@ fn options_api_declarations_expose_the_authored_public_instance() {
     );
 
     let options_dts = std::fs::read_to_string(out_dir.join("Options.vue.d.ts")).unwrap();
-    assert!(
-        options_dts.contains(
-            "type $AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];"
-        ) && options_dts.contains(
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>"
-        ) && options_dts.contains(
-            "}, Props, {}, $AuthoredProps, $JsxProps> & Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase;"
-        ) && options_dts.contains("count: number;"),
-        "the emitted instance must keep the authored Options API members:\n{options_dts}"
+    assert_eq!(
+        declaration_identity(&options_dts),
+        (
+            2076,
+            "d5d28badedf8af28be14347863552435fc53a31ab622dc8e0070830dff2dd9b8".to_string(),
+        ),
+        "the complete Options API declaration identity must stay stable"
     );
 
     let downstream = write_downstream(&project_root, fixtures::DOWNSTREAM);
@@ -266,11 +274,13 @@ fn options_api_setting_moves_template_participation_only() {
         enabled, disabled,
         "the Options API setting must not change the emitted declaration shape"
     );
-    assert!(
-        enabled.contains("count: number;")
-            && enabled.contains("doubled(): number;")
-            && enabled.contains("add(step: number): number;"),
-        "the emitted declaration must keep data/computed/methods in both modes:\n{enabled}"
+    assert_eq!(
+        declaration_identity(&enabled),
+        (
+            2148,
+            "f4185d81d5fa6a4d242b720a6a48f74bdfbe038d816db00d348000fb241d1153".to_string(),
+        ),
+        "the complete data/computed/methods declaration identity must stay stable"
     );
     let _ = std::fs::remove_dir_all(&enabled_root);
     let _ = std::fs::remove_dir_all(&disabled_root);
@@ -320,16 +330,19 @@ fn vue2_options_api_declarations_expose_the_authored_public_instance() {
     write_tsconfig(&project_root);
 
     let out_dir = project_root.join("types");
-    assert!(
-        emit_declarations(&project_root, &out_dir, true, true)
-            .contains(&"Legacy.vue.d.ts".to_string()),
+    assert_eq!(
+        emit_declarations(&project_root, &out_dir, true, true),
+        ["Legacy.vue.d.ts", "__vize_helpers.d.ts"],
         "the Vue 2.7 lane must emit a declaration for the authored component"
     );
     let legacy_dts = std::fs::read_to_string(out_dir.join("Legacy.vue.d.ts")).unwrap();
-    assert!(
-        legacy_dts.contains("type $ComponentInstance = $AuthoredInstance & {")
-            && legacy_dts.contains("count: number;"),
-        "the Vue 2.7 instance must keep the authored Options API members:\n{legacy_dts}"
+    assert_eq!(
+        declaration_identity(&legacy_dts),
+        (
+            4576,
+            "d061819d6269a1ed8e976a8b2ca7ac6097b204f7a442b01b2a6d040ea4146e1c".to_string(),
+        ),
+        "the complete Vue 2.7 declaration identity must stay stable"
     );
 
     let downstream = write_downstream(&project_root, VUE2_DOWNSTREAM);
