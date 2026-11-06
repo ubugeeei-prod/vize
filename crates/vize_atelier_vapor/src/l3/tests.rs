@@ -44,11 +44,12 @@ fn parse_rejected_expressions_are_compiler_errors() {
         else {
             panic!("expected {expression:?} to be rejected");
         };
-        assert_eq!(errors.len(), 1, "{expression}");
-        assert!(
-            errors[0].contains("Error parsing JavaScript expression"),
-            "{expression}: {:?}",
-            errors
+        assert_eq!(
+            errors,
+            std::vec![vize_carton::String::from(
+                "Error parsing JavaScript expression: invalid expression"
+            )],
+            "{expression}"
         );
     }
 }

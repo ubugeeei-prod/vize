@@ -93,15 +93,15 @@ const count = 1
                 result.errors[0].code.as_deref(),
                 Some("VAPOR_TEMPLATE_ERROR")
             );
-            assert!(
-                result.errors[0]
-                    .message
-                    .contains("Error parsing JavaScript expression"),
+            assert_eq!(
+                result.errors[0].message.as_str(),
+                r#"Vapor template compilation errors: ["Error parsing JavaScript expression: invalid expression"]"#,
                 "invalid={invalid:?}, is_ts={is_ts}: {}",
                 result.errors[0].message
             );
-            assert!(
-                !result.code.contains(invalid),
+            assert_eq!(
+                result.code.find(invalid),
+                None,
                 "invalid={invalid:?}, is_ts={is_ts}: {}",
                 result.code
             );
