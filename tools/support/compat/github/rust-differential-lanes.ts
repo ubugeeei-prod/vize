@@ -195,14 +195,30 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   }
   if (!steps.length) throw new Error("selected differential lane has no affected package");
   for (const step of steps) {
+    const env = {
+      ...process.env,
+      ...(step.workspaceCorpus ? { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: process.cwd() } : {}),
+      ...step.env,
+    };
+    if (process.env.VIZE_TEST_CASES) {
+      const { runRustCaseCommand } = await import("./rust-test-cases.ts");
+      const status = await runRustCaseCommand({
+        command: ["cargo", ...step.args],
+        packages: [step.package],
+        label: `Rust differential ${args[0]} › ${step.package} ${step.args[0]}`,
+        output: process.env.VIZE_TEST_CASES,
+        env,
+      });
+      if (status !== 0) {
+        process.exitCode = status;
+        break;
+      }
+      continue;
+    }
     const result = spawnSync("cargo", step.args, {
       stdio: "inherit",
       shell: false,
-      env: {
-        ...process.env,
-        ...(step.workspaceCorpus ? { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: process.cwd() } : {}),
-        ...step.env,
-      },
+      env,
     });
     if (result.error) throw result.error;
     if (result.status !== 0) {
