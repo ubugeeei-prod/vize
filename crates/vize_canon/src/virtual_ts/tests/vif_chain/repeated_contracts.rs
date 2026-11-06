@@ -372,14 +372,14 @@ fn repeated_emit_resolver_is_emitted_once() {
         assert_eq!(
             output
                 .code
-                .matches("type __KeyPad_emit_resolver = ")
+                .matches("type __KeyPad_0_emit_resolver = ")
                 .count(),
             1,
-            "the shared resolver is declared once; hoist={hoist}: {}",
+            "the first visible resolver is declared once; hoist={hoist}: {}",
             output.code
         );
-        for idx in 0..4 {
-            let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_emit_resolver;");
+        for idx in 1..4 {
+            let alias = cstr!("type __KeyPad_{idx}_emit_resolver = __KeyPad_0_emit_resolver;");
             assert_eq!(
                 output
                     .code
@@ -387,7 +387,7 @@ fn repeated_emit_resolver_is_emitted_once() {
                     .filter(|line| line.trim() == alias.as_str())
                     .count(),
                 1,
-                "use {idx} aliases the first resolver; hoist={hoist}: {}",
+                "later use {idx} aliases the first visible resolver; hoist={hoist}: {}",
                 output.code
             );
         }
