@@ -21,6 +21,7 @@ vize_patina	petite-vue/no-unsupported-directive	1
 vize_patina	petite-vue/valid-v-effect	1
 vize_patina	petite-vue/valid-v-scope	1
 vize_patina	script/component-options-name-casing	1
+vize_patina	script/consistent-props-emits-key-quotes	1
 vize_patina	script/custom-event-name-casing	1
 vize_patina	script/no-arrow-functions-in-watch	1
 vize_patina	script/no-async-in-computed	1
