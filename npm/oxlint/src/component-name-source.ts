@@ -1,4 +1,4 @@
-/** Original casing consumer custody and its one reviewed documentation successor. */
+/** Original casing consumer custody and its reviewed finite successors. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -12,7 +12,7 @@ import {
 } from "../../../tools/support/json-value.ts";
 
 export const componentNameSuccessorPath = "npm/oxlint/src/component-name-source-successor.json";
-const successorSha256 = "22fc3907d1fe680e9436fd9518e9620a11c72b8af9646f15e822f4c8cff79a37";
+const successorSha256 = "e0f7eef40664e4c0fa048ac0328469ad430d1b8dd105f67c8ba6ce29dd9c1b92";
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
 export function componentNameSource(
@@ -30,15 +30,12 @@ export function componentNameSource(
   assert.equal(hash(descriptorBytes), descriptor.sha256);
   const historicalIdentity = asRecord(successor.historical);
   const historical = read(asString(historicalIdentity.snapshot));
-  const current = read(asString(successor.path));
+  const latest = read(asString(successor.path));
   assert.equal(
     asRecord(asRecord(parseJson(descriptorBytes.toString("utf8"))).source).originalConsumerSha256,
     hash(historical),
   );
-  for (const [kind, bytes] of [
-    ["historical", historical],
-    ["current", current],
-  ] as const) {
+  for (const [kind, bytes] of [["historical", historical]] as const) {
     const identity = asRecord(successor[kind]);
     assert.equal(bytes.length, identity.bytes, kind);
     assert.equal(hash(bytes), identity.sha256, kind);
@@ -54,10 +51,29 @@ export function componentNameSource(
     assert.equal(projected.split(asString(change.before)).length - 1, change.occurrences);
     projected = projected.replace(asString(change.before), asString(change.after));
   }
+  const current = Buffer.from(projected);
+  for (const [kind, bytes] of [
+    ["current", current],
+    ["latest", latest],
+  ] as const) {
+    const identity = asRecord(successor[kind]);
+    assert.equal(bytes.length, identity.bytes, kind);
+    assert.equal(hash(bytes), identity.sha256, kind);
+    assert.equal(
+      createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex"),
+      identity.gitBlob,
+      kind,
+    );
+  }
+  for (const raw of asArray(successor.latestChanges)) {
+    const change = asRecord(raw);
+    assert.equal(projected.split(asString(change.before)).length - 1, change.occurrences);
+    projected = projected.replace(asString(change.before), asString(change.after));
+  }
   assert.equal(
-    current.toString("utf8"),
+    latest.toString("utf8"),
     projected,
-    "only the two reviewed documentation literals may change",
+    "only the reviewed finite successor literals may change",
   );
-  return { historical, current, successor };
+  return { historical, current: latest, successor };
 }

@@ -191,14 +191,11 @@ fn allows_nested_reads_and_non_vue_objects() {
 }
 
 #[test]
-fn belongs_to_the_default_presets() {
+fn stays_opt_in_until_root_scope_prop_reads_are_precise() {
     let meta = crate::linter::script_rules::builtin_script_rules()
         .into_iter()
         .find(|rule| rule.name == RULE)
         .expect(RULE);
     assert_eq!(meta.default_severity, Severity::Warning);
-    assert_eq!(
-        meta.presets,
-        ["happy-path", "ecosystem", "nuxt", "opinionated"]
-    );
+    assert!(meta.presets.is_empty());
 }

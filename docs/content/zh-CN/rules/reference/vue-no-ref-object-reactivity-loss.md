@@ -9,7 +9,7 @@ description: "禁止在同一作用域中复制 ref 的值而丢失后续响应�
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | 不支持 | 无 |
+| `warning` | 无 | 不支持 | 无 |
 
 适用范围：Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式。
 

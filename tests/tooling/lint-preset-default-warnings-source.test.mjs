@@ -75,12 +75,8 @@ function inverseLatestDefaultExpansion(name, body) {
         "",
       ],
       [
-        `    BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_ref_object_reactivity_loss", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_setup_props_reactivity_loss", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },`,
-        `    BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_ref_object_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_setup_props_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },`,
+        `    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },`,
+        `    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },`,
       ],
     ];
     for (const [after, before] of replacements) {
@@ -91,11 +87,7 @@ function inverseLatestDefaultExpansion(name, body) {
   }
   if (name === "tests/_fixtures/patina-eslint-vue-rule-map.json") {
     const value = canonical(body);
-    for (const rule of [
-      "vue/no-ref-object-reactivity-loss",
-      "vue/no-setup-props-reactivity-loss",
-      "vue/no-this-in-before-route-enter",
-    ]) {
+    for (const rule of ["vue/no-this-in-before-route-enter"]) {
       assert.deepEqual(value.entries[rule].patinaPresets, [
         "ecosystem",
         "general-recommended",
@@ -117,8 +109,6 @@ function inverseLatestDefaultExpansion(name, body) {
     const promoted = [
       "vue/no-undefined-refs",
       "vue/no-unused-setup-bindings",
-      "vue/no-ref-object-reactivity-loss",
-      "vue/no-setup-props-reactivity-loss",
       "vue/no-this-in-before-route-enter",
     ];
     for (const preset of broad)

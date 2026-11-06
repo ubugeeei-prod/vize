@@ -116,3 +116,29 @@ mod valid_v_slot_dynamic_modifiers;
 mod valid_v_slot_parameter_bindings;
 mod valid_v_slot_regression;
 mod with_defaults_macro_ownership;
+
+use vize_patina::{LintPreset, Linter};
+
+// Exact-packet corpora predate the latest default-preset expansion. The new
+// rules have independent membership and behavior coverage, so historical rule
+// packets explicitly replay the earlier default boundary.
+const LATEST_DEFAULT_RULES: &[&str] = &[
+    "script/require-define-component",
+    "vue/no-undefined-refs",
+    "vue/no-unused-setup-bindings",
+    "vue/no-this-in-before-route-enter",
+];
+
+fn historical_linter(preset: LintPreset) -> Linter {
+    historical_linter_with_disabled(preset, &[])
+}
+
+fn historical_linter_with_disabled(preset: LintPreset, disabled: &[&str]) -> Linter {
+    Linter::with_preset(preset).with_disabled_rules(
+        LATEST_DEFAULT_RULES
+            .iter()
+            .chain(disabled)
+            .map(|rule| (*rule).into())
+            .collect(),
+    )
+}

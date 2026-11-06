@@ -6,23 +6,14 @@ import ComplexityPanel from "./ComplexityPanel.vue";
 import type { Diagnostic } from "../../shared/MonacoEditor.vue";
 import type { CrossFileComplexityReport, WasmModule } from "../../wasm/index";
 import { getWasm } from "../../wasm/index";
-import {
-  mdiClose,
-  mdiInformation,
-  mdiCheck,
-  mdiLightbulbOn,
-  mdiAlert,
-  mdiRefresh,
-  mdiArrowRight,
-  mdiPlus,
-} from "@mdi/js";
+import { mdiClose, mdiCheck, mdiRefresh, mdiArrowRight, mdiPlus } from "@mdi/js";
 import { PRESETS } from "../../shared/presets/crossfile";
 import { useResizablePanel } from "./useResizablePanel";
 import { useFileManagement } from "./useFileManagement";
 import { useCrossFileAnalysis, type CrossFileAnalyzerOptions } from "./useCrossFileAnalysis";
 import { getFileIcon, getSeverityIcon, getTypeLabel, getTypeColor } from "./displayHelpers";
 
-const props = defineProps<{
+defineProps<{
   compiler: WasmModule | null;
 }>();
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");

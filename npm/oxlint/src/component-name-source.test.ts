@@ -9,10 +9,10 @@ import { componentNameSource, componentNameSuccessorPath } from "./component-nam
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const read = (path: string) => readFileSync(join(root, path));
 
-void test("the casing source keeps the complete original and its exact two-URL current successor", () => {
+void test("the casing source keeps the complete original and its exact finite successors", () => {
   const source = componentNameSource(root);
   assert.equal(source.historical.length, 16768);
-  assert.equal(source.current.length, 16838);
+  assert.equal(source.current.length, 16846);
   assert.deepEqual(asArray(source.successor.changes), [
     {
       ruleId: "vue/component-name-in-template-casing",
@@ -24,6 +24,14 @@ void test("the casing source keeps the complete original and its exact two-URL c
       ruleId: "script/custom-event-name-casing",
       before: "docs/content/rules/type-and-script.md",
       after: "docs/content/rules/reference/script-custom-event-name-casing.md",
+      occurrences: 1,
+    },
+  ]);
+  assert.deepEqual(asArray(source.successor.latestChanges), [
+    {
+      ruleId: "script/custom-event-name-casing",
+      before: "Rename this emitted event to kebab-case (e.g. my-event).",
+      after: "Rename this emitted event to kebab-case (e.g. transition-start).",
       occurrences: 1,
     },
   ]);

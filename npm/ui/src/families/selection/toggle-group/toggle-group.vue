@@ -278,7 +278,7 @@ function setActiveValue(itemValue: string): void {
   if (!disabledState.value) activeValue.value = itemValue;
 }
 
-const context = toggleGroupContext.provide({
+toggleGroupContext.provide({
   activeValue,
   disabled: disabledState,
   getItemState,

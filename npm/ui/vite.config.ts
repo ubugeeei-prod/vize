@@ -187,6 +187,11 @@ export default defineConfig({
   lint: {
     ignorePatterns: ["dist/**"],
     options: { typeAware: true },
+    rules: {
+      // This package's public event API predates the separator-free lowercase
+      // default, so retain it as an explicit compatibility policy.
+      "vize/script/custom-event-name-casing": ["error", { casing: "camelCase" }],
+    },
   },
   fmt: { ignorePatterns: ["dist/**"] },
   pack: {

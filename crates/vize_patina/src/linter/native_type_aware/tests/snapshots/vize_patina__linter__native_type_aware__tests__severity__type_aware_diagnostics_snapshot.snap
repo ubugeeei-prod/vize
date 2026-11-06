@@ -1,6 +1,5 @@
 ---
 source: crates/vize_patina/src/linter/native_type_aware/tests/severity.rs
-assertion_line: 49
 expression: diagnostics
 ---
 [
@@ -102,13 +101,6 @@ expression: diagnostics
         Some(
             "A '<button>' defaults to type=\"submit\", which submits the enclosing form. Set an explicit type=\"button\", \"submit\", or \"reset\".",
         ),
-    ),
-    (
-        "vue/no-ref-object-reactivity-loss",
-        "Getting a value from the ref object in the same scope will cause the value to lose reactivity.",
-        206,
-        214,
-        None,
     ),
     (
         "vue/no-unused-properties",

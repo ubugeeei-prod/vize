@@ -13,22 +13,60 @@ Case {
         "3",
     ),
     vapor: None,
-    diagnostics: 0,
+    diagnostics: 1,
     fixes: 0,
 }
 Observation {
     initial: LintResult {
         filename: "App.ts",
-        diagnostics: [],
-        error_count: 0,
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/custom-event-name-casing",
+                severity: Error,
+                message: "Custom event name 'itemSelect' is not lowercase.",
+                start: 46,
+                end: 58,
+                help: Some(
+                    "Use a separator-free lowercase event name (e.g. `transitionstart`).",
+                ),
+                labels: [
+                    Label {
+                        message: "expected lowercase",
+                        start: 46,
+                        end: 58,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
         warning_count: 0,
     },
     applications: [],
     unchanged_requery: Some(
         LintResult {
             filename: "App.ts",
-            diagnostics: [],
-            error_count: 0,
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/custom-event-name-casing",
+                    severity: Error,
+                    message: "Custom event name 'itemSelect' is not lowercase.",
+                    start: 46,
+                    end: 58,
+                    help: Some(
+                        "Use a separator-free lowercase event name (e.g. `transitionstart`).",
+                    ),
+                    labels: [
+                        Label {
+                            message: "expected lowercase",
+                            start: 46,
+                            end: 58,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
             warning_count: 0,
         },
     ),

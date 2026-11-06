@@ -171,8 +171,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-render-return",
     "vue/jsx-uses-vars",
     "script/require-slots-as-functions",
-    "vue/no-ref-object-reactivity-loss",
-    "vue/no-setup-props-reactivity-loss",
     "vue/no-this-in-before-route-enter"
   ],
   "essential": [
@@ -430,8 +428,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-render-return",
     "vue/jsx-uses-vars",
     "script/require-slots-as-functions",
-    "vue/no-ref-object-reactivity-loss",
-    "vue/no-setup-props-reactivity-loss",
     "vue/no-this-in-before-route-enter"
   ],
   "incremental": [],
@@ -653,8 +649,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-slots-as-functions",
     "script/one-component-per-file",
     "script/order-in-components",
-    "vue/no-ref-object-reactivity-loss",
-    "vue/no-setup-props-reactivity-loss",
     "vue/no-this-in-before-route-enter",
     "css/no-important",
     "css/no-id-selectors",
@@ -885,8 +879,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/require-slots-as-functions",
     "script/one-component-per-file",
     "script/order-in-components",
-    "vue/no-ref-object-reactivity-loss",
-    "vue/no-setup-props-reactivity-loss",
     "vue/no-this-in-before-route-enter",
     "css/no-important",
     "css/no-id-selectors",

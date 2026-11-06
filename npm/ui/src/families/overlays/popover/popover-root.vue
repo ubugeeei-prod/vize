@@ -123,7 +123,7 @@ watch(disabledState, (next, previousDisabled) => {
   }
 });
 
-const context = popoverContext.provide({
+popoverContext.provide({
   id: baseId,
   triggerId,
   contentId,

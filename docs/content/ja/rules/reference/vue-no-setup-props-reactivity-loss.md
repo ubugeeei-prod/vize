@@ -9,7 +9,7 @@ setup の props をコピーし、更新に追従しなくなる箇所を検出�
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし |
+| `warning` | なし | なし | なし |
 
 適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 

@@ -9,7 +9,7 @@ Proíbe cópias dos valores das props de setup que perdem as atualizações reat
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | Nenhuma | Não | Nenhuma |
 
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
 

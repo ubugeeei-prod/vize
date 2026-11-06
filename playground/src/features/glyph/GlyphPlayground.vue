@@ -8,7 +8,7 @@ import { getWasm } from "../../wasm/index";
 import { GLYPH_PRESET } from "../../shared/presets/glyph";
 import { mdiFileEdit, mdiAutoFix, mdiCheck } from "@mdi/js";
 
-const props = defineProps<{
+defineProps<{
   compiler: WasmModule | null;
 }>();
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");

@@ -166,7 +166,7 @@ watch(disabledState, (next, previousDisabled) => {
 
 onUnmounted(cancelOpen);
 
-const context = tooltipContext.provide({
+tooltipContext.provide({
   id: baseId,
   triggerId,
   contentId,

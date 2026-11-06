@@ -55,8 +55,18 @@ const config = join(app, "vite.config.ts");
 const original = readFileSync(config, "utf8");
 assert.ok(original.includes("import { defineConfig } from 'vite-plus'"));
 assert.ok(original.includes("export default defineConfig({"));
+const configured = original.replace(
+  "export default defineConfig({",
+  `export default defineConfig({
+  lint: {
+    rules: {
+      "vize/script/custom-event-name-casing": ["error", { casing: "camelCase" }],
+    },
+  },`,
+);
 mkdirSync(join(record.root, "inputs"), { recursive: true });
 writeFileSync(join(record.root, "inputs/original-vite.config.ts.txt"), original);
+writeFileSync(join(record.root, "inputs/configured-vite.config.ts.txt"), configured);
 cpSync(join(app, "src"), join(record.root, "inputs/original-src"), { recursive: true });
 copyFileSync(
   join(app, "package.json"),
@@ -238,6 +248,7 @@ assert.equal(
   probeVersion.stdout.trim(),
   "vize " + (phase === "candidate" ? asString(authority.sourceVersion) : version),
 );
+writeFileSync(config, configured);
 function lint(label: string, args: string[]): Packet {
   const trace = join(record.root, "trace-" + label);
   mkdirSync(trace, { recursive: true });
@@ -340,7 +351,7 @@ writeFileSync(
 writeFileSync(
   config,
   "import { vuePolicy } from './.vize-10988-policy.ts'\n" +
-    original.replace(
+    configured.replace(
       "export default defineConfig({",
       "export default defineConfig({\n  vue: vuePolicy,",
     ),

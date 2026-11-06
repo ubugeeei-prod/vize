@@ -13,43 +13,12 @@
   },
   "lint": {
     "baselineDiagnostics": 2,
-    "seededDiagnostics": 6
+    "seededDiagnostics": 9
   },
   "classA": {
     "expected": 3,
-    "detected": 0,
-    "misses": [
-      {
-        "path": "BaselineDrift.vue",
-        "ruleId": "vue/no-undefined-refs",
-        "severity": 1,
-        "line": 7,
-        "column": 24,
-        "endLine": 7,
-        "endColumn": 31,
-        "identifier": "message"
-      },
-      {
-        "path": "HelloCounter.vue",
-        "ruleId": "vue/no-undefined-refs",
-        "severity": 1,
-        "line": 14,
-        "column": 60,
-        "endLine": 14,
-        "endColumn": 65,
-        "identifier": "count"
-      },
-      {
-        "path": "SuppressedSpaces.vue",
-        "ruleId": "vue/no-undefined-refs",
-        "severity": 1,
-        "line": 11,
-        "column": 29,
-        "endLine": 11,
-        "endColumn": 36,
-        "identifier": "spacing"
-      }
-    ]
+    "detected": 3,
+    "misses": []
   },
   "classB": {
     "expected": 4,
@@ -63,5 +32,5 @@
     "unmappable": []
   },
   "unexpected": [],
-  "verdict": "fail"
+  "verdict": "pass"
 }

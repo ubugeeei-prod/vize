@@ -318,8 +318,20 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     );
     assert!(happy_path_script.contains(&"script/require-explicit-emits"));
     assert!(!essential_script.contains(&"script/require-explicit-emits"));
-    assert!(happy_path_script.contains(&"script/no-export-in-script-setup"));
-    assert!(essential_script.contains(&"script/no-export-in-script-setup"));
+    assert_eq!(
+        happy_path_script
+            .iter()
+            .filter(|name| **name == "script/no-export-in-script-setup")
+            .count(),
+        1,
+    );
+    assert_eq!(
+        essential_script
+            .iter()
+            .filter(|name| **name == "script/no-export-in-script-setup")
+            .count(),
+        1,
+    );
     assert!(
         super::builtin_script_rule_names(LintPreset::Opinionated)
             .contains(&"script/no-options-api")

@@ -20,7 +20,7 @@ fn lint(source: &str, report: bool) -> Vec<(&'static str, String, String)> {
 
 fn template(body: &str) -> String {
     [
-        "<script setup>\nconst html = '';\n</script>\n<template>\n",
+        "<script setup>\nconst html = '';\nvoid html;\n</script>\n<template>\n",
         body,
         "\n</template>\n",
     ]

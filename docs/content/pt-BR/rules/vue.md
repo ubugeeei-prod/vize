@@ -69,7 +69,7 @@ Regras de correção da predefinição `essential`.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Exigir diretivas `v-slot` válidas. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Exigir diretivas `v-text` válidas. |  |
 
-## Padrão (29)
+## Padrão (27)
 
 Adicionadas por `happy-path`, a predefinição padrão.
 
@@ -84,8 +84,6 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | <span id="vue-no-invalid-html-attribute"></span>[`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | Proibir valores estáticos inválidos para atributos HTML. |  |
 | <span id="vue-no-lone-template"></span>[`vue/no-lone-template`](./reference/vue-no-lone-template.md) | Proibir elementos `<template>` desnecessários. |  |
 | <span id="vue-no-multi-spaces"></span>[`vue/no-multi-spaces`](./reference/vue-no-multi-spaces.md) | Proibir vários espaços consecutivos. | ✓ |
-| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Proíbe copiar o valor de um ref no mesmo escopo e perder suas atualizações reativas. |  |
-| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Proíbe cópias dos valores das props de setup que perdem as atualizações reativas. |  |
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | Proibir nomes de variáveis que ocultam variáveis de um escopo externo. |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | Proibir target="_blank" sem rel="noopener noreferrer". |  |
 | <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Proíbe acessar com `this` uma instância ainda não criada em `beforeRouteEnter`. |  |
@@ -139,7 +137,7 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Opcionais (11)
+## Opcionais (13)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `vue.linter.rules`.
 
@@ -151,6 +149,8 @@ Não fazem parte de nenhuma predefinição. Ative pelo nome em `vue.linter.rules
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | Proibir texto legível por pessoas diretamente no template quando ele deve ser internacionalizado. |  |
 | <span id="vue-no-custom-modifiers-on-v-model"></span>[`vue/no-custom-modifiers-on-v-model`](./reference/vue-no-custom-modifiers-on-v-model.md) | Proíbe modificadores personalizados no `v-model` de componentes para manter compatibilidade com Vue 2. |  |
 | <span id="vue-no-multiple-template-root"></span>[`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | Proibir vários nós raiz em um template. |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Proíbe copiar o valor de um ref no mesmo escopo e perder suas atualizações reativas. |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Proíbe cópias dos valores das props de setup que perdem as atualizações reativas. |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Proibir atributos estáticos de estilo inline. |  |
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige que a key de `template v-for` fique em um filho real para manter compatibilidade com Vue 2. |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. |  |

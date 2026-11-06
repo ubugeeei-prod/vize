@@ -10,8 +10,6 @@ use std::collections::BTreeSet;
 const LATER_DEFAULT_RULES: &[&str] = &[
     "vue/no-undefined-refs",
     "vue/no-unused-setup-bindings",
-    "vue/no-ref-object-reactivity-loss",
-    "vue/no-setup-props-reactivity-loss",
     "vue/no-this-in-before-route-enter",
 ];
 

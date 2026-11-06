@@ -24,7 +24,16 @@ if (process.argv.includes("--list-files")) {
   console.log(`Checking ${files.length} authored source files with the current vize CLI`);
   const lint = spawnSync(
     process.env.VIZE_BIN ?? "vize",
-    ["lint", "--no-config", "--preset", "opinionated", "--max-warnings", "0", ...files],
+    [
+      "lint",
+      "--config",
+      "tools/commands/ci/opinionated-source-lint.config.ts",
+      "--preset",
+      "opinionated",
+      "--max-warnings",
+      "0",
+      ...files,
+    ],
     { stdio: "inherit" },
   );
   if (lint.error) {

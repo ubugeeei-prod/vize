@@ -18,6 +18,12 @@
     "sha256": "bad0adb1aa50fe79125f97ae1646997a18bd2726c1edc97eecbd53d7e7934d6e",
     "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
   },
+  "latest": {
+    "source": "ecad76f316952ec1835d1b7ff77f63d8b6e92377",
+    "bytes": 16846,
+    "sha256": "c662486192a1c68b754064d8b329c13d3984c80e0b2e74f61054ca409f5b103e",
+    "gitBlob": "4b68c65aea83b9694b2ae94395d4b5d10528342a"
+  },
   "changes": [
     {
       "ruleId": "vue/component-name-in-template-casing",
@@ -29,6 +35,14 @@
       "ruleId": "script/custom-event-name-casing",
       "before": "docs/content/rules/type-and-script.md",
       "after": "docs/content/rules/reference/script-custom-event-name-casing.md",
+      "occurrences": 1
+    }
+  ],
+  "latestChanges": [
+    {
+      "ruleId": "script/custom-event-name-casing",
+      "before": "Rename this emitted event to kebab-case (e.g. my-event).",
+      "after": "Rename this emitted event to kebab-case (e.g. transition-start).",
       "occurrences": 1
     }
   ]

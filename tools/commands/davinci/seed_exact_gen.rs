@@ -282,7 +282,10 @@ fn lint(repo_root: &Path, cwd: &Path) -> Result<Vec<DiagnosticRow>, String> {
         &config,
         &format!(
             "export default {};\n",
-            serde_json::json!({"vue": {"linter": {"rules": {"vue/no-unused-setup-bindings": "warn"}}}})
+            serde_json::json!({"vue": {"linter": {"rules": {
+                "vue/no-undefined-refs": "off",
+                "vue/no-unused-setup-bindings": "warn"
+            }}}})
         ),
     )?;
     let output = Command::new(&cli.command)

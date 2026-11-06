@@ -267,7 +267,7 @@ watch(
   { flush: "post" },
 );
 
-const context = stepperContext.provide({
+stepperContext.provide({
   completedValues,
   currentIndex,
   dir: dirState,

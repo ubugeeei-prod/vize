@@ -9,7 +9,7 @@ Interdit de copier la valeur d'une ref dans la même portée en perdant ses mise
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Non | Aucune |
+| `warning` | Aucune | Non | Aucune |
 
 Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup.
 
