@@ -134,6 +134,18 @@ fn slot_param_defaults_prefix_free_identifiers_on_both_lanes() {
             card("default", "{ ok = _ctx.done!==1 }", "ok"),
             "is_ts: {is_ts}"
         );
+        assert_eq!(
+            both_lanes(
+                r#"<Card #default="{ ok = function f(n) { return n ? f(n - 1) : done } }">{{ ok }}</Card>"#,
+                is_ts
+            ),
+            card(
+                "default",
+                "{ ok = function f(n) { return n ? f(n - 1) : _ctx.done } }",
+                "ok"
+            ),
+            "named function default (is_ts: {is_ts})"
+        );
     }
 
     assert_eq!(

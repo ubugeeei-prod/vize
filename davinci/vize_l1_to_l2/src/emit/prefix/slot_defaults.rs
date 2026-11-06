@@ -184,6 +184,11 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
         flags: oxc_syntax::scope::ScopeFlags,
     ) {
         self.push_scope();
+        if let Some(id) = &func.id
+            && let Some(scope) = self.local_scopes.last_mut()
+        {
+            scope.push(id.name.as_str().into());
+        }
         self.collect_function_params(&func.params);
         walk_function(self, func, flags);
         self.pop_scope();
@@ -273,6 +278,10 @@ mod tests {
         assert_eq!(
             prefix_slot_defaults("{ a = { b } }").as_str(),
             "{ a = { b: _ctx.b } }"
+        );
+        assert_eq!(
+            prefix_slot_defaults("{ ok = function f(n) { return n ? f(n - 1) : done } }").as_str(),
+            "{ ok = function f(n) { return n ? f(n - 1) : _ctx.done } }"
         );
     }
 }
