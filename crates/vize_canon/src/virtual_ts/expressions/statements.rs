@@ -11,7 +11,9 @@ use super::directive_values::generate_directive_value_statement;
 use super::native_props::generate_native_prop_statement;
 use super::reserved_props::{map_rewritten_binding_source, rewrite_reserved_template_binding};
 use super::statement_guard::generate_vif_guard_expression;
-use super::ts_suppression_comments::expression_source_for_typecheck;
+use super::ts_suppression_comments::{
+    expression_source_for_typecheck, inference_callback_parameters_on_ignored_lines,
+};
 use super::value_checks::TemplateValueChecks;
 use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
 use crate::virtual_ts::scope::{
@@ -401,17 +403,21 @@ fn emit_expression_statement(
             classify_event_handler(expr.content.as_str()),
             EventHandlerExpression::Callback { .. }
         );
-    let gen_expr_start = if projected_listener_callback {
+    let gen_expr_range = if projected_listener_callback {
         // This render-time copy owns only listener construction and usage.
         // This copy keeps render-time reads live for inference and narrowing,
         // but it must not own diagnostics. The typed event-scope primary still
         // checks every parameter and callback-body diagnostic (#11965, #11977).
+        let inference_expression =
+            inference_callback_parameters_on_ignored_lines(generated_expression);
+        let inference_expression = inference_expression
+            .as_ref()
+            .map_or(generated_expression, String::as_str);
         append!(
             *ts,
             "{indent}// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics.\n{indent}void (("
         );
-        let start = ts.len() + mapped_bounds.0;
-        ts.push_str(generated_expression);
+        ts.push_str(inference_expression);
         append!(
             *ts,
             ") as ((...__vize_args: any[]) => unknown)); // {}\n",
@@ -432,20 +438,27 @@ fn emit_expression_statement(
                 "{indent}void ({capture}); // Listener capture liveness\n"
             );
         }
-        start
+        // Keep the whole projection unmapped, including later callback-body
+        // lines that a single TypeScript suppression directive cannot cover.
+        // The typed event-scope copy below is the sole navigation and
+        // diagnostic owner for the authored listener.
+        None
     } else {
         append!(
             *ts,
             "{indent}void ({generated_expression}); // {}\n",
             expr.kind.as_str()
         );
-        gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0
+        let start = gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0;
+        Some(start..start + mapped_bounds.1)
     };
-    mappings.push(VizeMapping {
-        gen_range: gen_expr_start..gen_expr_start + mapped_bounds.1,
-        src_range: src_start..src_end,
-        sub_spans: Vec::new(),
-    });
+    if let Some(gen_range) = gen_expr_range {
+        mappings.push(VizeMapping {
+            gen_range,
+            src_range: src_start..src_end,
+            sub_spans: Vec::new(),
+        });
+    }
     append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
 }
 
@@ -490,7 +503,11 @@ mod tests {
     fn guarded_listener_projection_does_not_own_nested_parameter_diagnostics() {
         let script =
             "import Child from './Child.vue';\nconst ready = true;\nlet ids: string[] = [];";
-        let template = r#"<div v-if="ready"><Child @change="v => ids = v.map(x => x.id)" /></div>"#;
+        let template = r#"<div v-if="ready"><Child @change="
+          v => ids = v.map(
+            x => x.id
+          )
+        " /></div>"#;
         let allocator = vize_l0::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template);
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -508,6 +525,29 @@ mod tests {
                 .count(),
             1,
             "the render-time copy must not report nested implicit-any diagnostics:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .mapping
+                .spans()
+                .iter()
+                .filter(|mapping| output
+                    .code
+                    .get(mapping.gen_range.clone())
+                    .is_some_and(|mapped| mapped.contains("ids = v.map")))
+                .count(),
+            1,
+            "only the typed event scope may map the authored listener:\n{}",
+            output.code
+        );
+        assert_eq!(
+            output
+                .code
+                .matches("// @ts-ignore Inference-only nested callback parameter.")
+                .count(),
+            1,
+            "a later-line nested callback parameter needs its own suppression:\n{}",
             output.code
         );
     }
