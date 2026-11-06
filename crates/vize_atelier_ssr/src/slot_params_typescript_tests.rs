@@ -92,6 +92,48 @@ fn javascript_slot_params_keep_their_bytes() {
     }
 }
 
+#[test]
+fn slot_param_defaults_prefix_free_identifiers_on_both_lanes() {
+    for is_ts in [false, true] {
+        assert_eq!(
+            both_lanes(
+                r#"<Card #default="{ ok = done!==1 }">{{ ok }}</Card>"#,
+                is_ts
+            ),
+            card("default", "{ ok = _ctx.done!==1 }", "ok"),
+            "is_ts: {is_ts}"
+        );
+    }
+
+    assert_eq!(
+        both_lanes(
+            r#"<Card #default="{ row = fallback, active = row.active, n = Math.max(seed, 1), map = item => item.id, config = { value } }: SlotProps">{{ row }}</Card>"#,
+            true
+        ),
+        card(
+            "default",
+            "{ row = _ctx.fallback, active = row.active, n = Math.max(_ctx.seed, 1), map = item => item.id, config = { value: _ctx.value } }",
+            "row"
+        )
+    );
+}
+
+#[test]
+fn slot_param_defaults_keep_outer_template_locals_and_authored_strings() {
+    for lane in [SsrLane::Selected, SsrLane::LegacyOnly] {
+        let output = compile(
+            r#"<Card v-for="row in rows" #default="{ item = row, text = '_ctx.row' }">{{ item }}</Card>"#,
+            false,
+            lane,
+        );
+        assert!(
+            output.contains("{ item = row, text = '_ctx.row' }"),
+            "{lane:?}: {output}"
+        );
+        assert!(!output.contains("item = _ctx.row"), "{lane:?}: {output}");
+    }
+}
+
 /// Erasure is decided by the parse, never by the text scan. The scan fires
 /// on these string keys, and the old strip, run whatever `is_ts` was,
 /// reprinted the JavaScript (`{ "x as y": z }`).

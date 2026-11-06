@@ -19,16 +19,31 @@ pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
 }
 
 impl crate::codegen::SsrCodegenContext<'_> {
-    /// The authored `v-slot` props pattern; under `is_ts`, the parameter-list
-    /// erasure the expression lane uses.
+    /// The `v-slot` props pattern after the shared expression lane prefixes
+    /// free names in defaults and erases TypeScript syntax when requested.
     pub(in crate::codegen) fn slot_props_pattern(&self, dir: &DirectiveNode<'_>) -> Option<String> {
         let source = dir.exp.as_ref()?.loc().span.slice(self.source);
-        let pattern = self
+        let table = self
             .options
-            .is_ts
-            .then(|| vize_atelier_core::steps::erase_typescript_params(source))
-            .flatten()
-            .unwrap_or_else(|| String::new(source));
+            .binding_metadata
+            .as_ref()
+            .map(crate::bindings::binding_table);
+        let mut expressions = if self.jsx_closure {
+            vize_l1_to_l2::TransformExpressions::unprefixed(self.source, self.options.is_ts)
+        } else {
+            vize_l1_to_l2::TransformExpressions::new(
+                self.source,
+                table.as_ref(),
+                self.options.is_ts,
+                self.options.inline,
+            )
+        };
+        for params in &self.scoped_params {
+            for name in params {
+                let _ = expressions.enter_slot(name);
+            }
+        }
+        let pattern = expressions.params(source);
         (!pattern.trim().is_empty()).then_some(pattern)
     }
 }

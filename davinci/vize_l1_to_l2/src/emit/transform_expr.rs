@@ -190,10 +190,13 @@ impl<'b> TransformExpressions<'b> {
             .map_err(|_| TransformRefusal::InvalidExpression)
     }
 
-    /// A parameter list (slot props) as render code spells it: type-erased
-    /// under `is_ts`, the authored text otherwise.
+    /// A parameter list (slot props) as render code spells it: free names in
+    /// defaults are prefixed, and TypeScript syntax is erased under `is_ts`.
     #[must_use]
     pub fn params(&self, params: &str) -> String {
+        if self.scope.prefixes_identifiers() {
+            return String::from(prefix::prefix_slot_defaults(params, &self.scope).as_str());
+        }
         self.scope
             .is_ts()
             .then(|| prefix::erase_typescript_params(params))

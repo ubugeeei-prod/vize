@@ -114,7 +114,10 @@ impl SlotDefaultPrefixVisitor<'_, '_> {
     }
 
     fn should_prefix(&self, name: &str) -> bool {
-        !self.is_local(name) && !is_global_allowed(name) && !self.scope.reads_constant_binding(name)
+        !self.is_local(name)
+            && !self.scope.is_in_transform_scope(name)
+            && !is_global_allowed(name)
+            && !self.scope.reads_constant_binding(name)
     }
 
     fn collect_function_params(&mut self, params: &oxc_ast::ast::FormalParameters<'_>) {
