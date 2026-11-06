@@ -7,7 +7,9 @@
     {
       "id": "lsp/fix-history/code-action-utf16-original",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "code-action-utf16-original",
         "files": [
@@ -34,7 +36,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -43,7 +48,9 @@
     {
       "id": "lsp/fix-history/document-link-module-resolution-original",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "document-link-module-resolution-original",
         "files": [
@@ -81,7 +88,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -90,7 +101,9 @@
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -116,7 +129,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -125,7 +141,9 @@
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -151,7 +169,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -160,7 +181,9 @@
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -186,7 +209,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -195,7 +222,9 @@
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -221,7 +250,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -230,7 +263,9 @@
     {
       "id": "lsp/fix-history/folding-nested-elements",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-nested-elements",
         "files": [
@@ -256,7 +291,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -265,7 +303,9 @@
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -291,7 +331,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -300,7 +343,9 @@
     {
       "id": "lsp/fix-history/folding-script-markup",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-script-markup",
         "files": [
@@ -326,7 +371,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -335,7 +384,9 @@
     {
       "id": "lsp/fix-history/folding-unclosed-element",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-unclosed-element",
         "files": [
@@ -361,7 +412,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -370,7 +424,9 @@
     {
       "id": "lsp/fix-history/folding-unopened",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-unopened",
         "files": [
@@ -396,7 +452,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -405,7 +465,9 @@
     {
       "id": "lsp/fix-history/highlight-original-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-crlf",
         "files": [
@@ -431,7 +493,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -440,7 +505,9 @@
     {
       "id": "lsp/fix-history/highlight-original-empty",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-empty",
         "files": [
@@ -466,7 +533,9 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc"],
+            "dialects": [
+              "vue3-sfc"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -475,7 +544,9 @@
     {
       "id": "lsp/fix-history/highlight-original-pair",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-pair",
         "files": [
@@ -501,7 +572,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -510,7 +585,9 @@
     {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-rw",
         "files": [
@@ -536,7 +613,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -545,7 +626,9 @@
     {
       "id": "lsp/fix-history/highlight-original-tag",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-tag",
         "files": [
@@ -571,7 +654,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -580,7 +667,9 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -618,7 +707,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -627,7 +720,9 @@
     {
       "id": "lsp/fix-history/nuxt-builtins-9866",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "nuxt-builtins-9866",
         "files": [
@@ -653,7 +748,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -662,7 +760,9 @@
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -689,7 +789,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -698,7 +802,9 @@
     {
       "id": "lsp/fix-history/rename-utf16-original",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "rename-utf16-original",
         "files": [
@@ -724,7 +830,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -733,7 +843,9 @@
     {
       "id": "lsp/fix-history/workspace-symbol-qualification-11153",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "workspace-symbol-qualification-11153",
         "files": [
@@ -760,7 +872,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -769,7 +884,9 @@
     {
       "id": "lsp/regression/art-generic-attribute-11575",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "art-generic-attribute-11575",
         "files": [
@@ -799,7 +916,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -808,7 +928,9 @@
     {
       "id": "lsp/regression/art-range-formatting-6098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "art-range-formatting-6098/case.json",
         "sha256": "728bf840a16ac5349e903e8d9f361f9518346538096b9eed337e7efe2c0f8e70"
@@ -839,7 +961,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -848,7 +974,9 @@
     {
       "id": "lsp/regression/art-script-navigation-10593",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "art-script-navigation-10593",
         "files": [
@@ -882,7 +1010,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -891,7 +1022,9 @@
     {
       "id": "lsp/regression/art-shared-references-10459",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "art-shared-references-10459",
         "files": [
@@ -929,7 +1062,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -938,7 +1075,9 @@
     {
       "id": "lsp/regression/art-variant-scopes-10451",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "art-variant-scopes-10451",
         "files": [
@@ -972,7 +1111,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -981,7 +1124,9 @@
     {
       "id": "lsp/regression/auto-import-quoted-symlink-3952",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "auto-import-quoted-symlink-3952",
         "files": [
@@ -1012,7 +1157,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1021,7 +1170,9 @@
     {
       "id": "lsp/regression/binding-occurrences-original",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "binding-occurrences-original",
         "files": [
@@ -1051,7 +1202,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1060,7 +1215,9 @@
     {
       "id": "lsp/regression/broken-overlay-isolation-10201",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "broken-overlay-isolation-10201/case.json",
         "sha256": "30dc112bd507de46c73675b29ec641a4338e9720d13a66b59f4448f46f21f474"
@@ -1098,7 +1255,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1107,7 +1268,9 @@
     {
       "id": "lsp/regression/component-alias-hover-10787",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "component-alias-hover-10787",
         "files": [
@@ -1137,7 +1300,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1146,7 +1313,9 @@
     {
       "id": "lsp/regression/component-hover-readability",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "component-hover-readability",
         "files": [
@@ -1180,7 +1349,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1189,7 +1362,9 @@
     {
       "id": "lsp/regression/content-mapper-nuxt-emit-10195",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "content-mapper-nuxt-emit-10195",
         "files": [
@@ -1227,7 +1402,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1236,7 +1415,9 @@
     {
       "id": "lsp/regression/css-color-declaration-admission-10562-css",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "css-color-declaration-admission-10562-css",
         "files": [
@@ -1263,7 +1444,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1272,7 +1456,9 @@
     {
       "id": "lsp/regression/css-color-declaration-admission-10562-stylus",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "css-color-declaration-admission-10562-stylus",
         "files": [
@@ -1299,7 +1485,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1308,7 +1497,9 @@
     {
       "id": "lsp/regression/css-concrete-color-hover-10556",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "css-concrete-color-hover-10556",
         "files": [
@@ -1335,7 +1526,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1344,7 +1538,9 @@
     {
       "id": "lsp/regression/css-hover-stylesheet-examples-10572",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "css-hover-stylesheet-examples-10572",
         "files": [
@@ -1371,7 +1567,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1380,7 +1579,9 @@
     {
       "id": "lsp/regression/default-log-installation-custody-11145",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "default-log-installation-custody-11145",
         "files": [
@@ -1407,7 +1608,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1416,7 +1621,9 @@
     {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "document-symbol-outline-original",
         "files": [
@@ -1454,7 +1661,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1463,7 +1674,9 @@
     {
       "id": "lsp/regression/document-symbol-outline-parent",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "document-symbol-outline-original",
         "files": [
@@ -1501,7 +1714,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1510,7 +1727,9 @@
     {
       "id": "lsp/regression/dynamic-slot-expression-completion-10182",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "dynamic-slot-expression-completion-10182",
         "files": [
@@ -1536,7 +1755,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1545,7 +1768,9 @@
     {
       "id": "lsp/regression/editor-import-sorting-6098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "editor-import-sorting-6098/case.json",
         "sha256": "b5d3cfc395fc92e1ca4c2d6a32bbaad16166b5c8322bbac6c1f409a689d77918"
@@ -1576,7 +1801,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1585,7 +1815,9 @@
     {
       "id": "lsp/regression/experimental-router-params-10518",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "experimental-router-params-10518",
         "files": [
@@ -1618,7 +1850,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1627,7 +1863,9 @@
     {
       "id": "lsp/regression/experimental-router-params-integrated-11964",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "experimental-router-params-10518",
         "files": [
@@ -1660,7 +1898,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1669,7 +1911,9 @@
     {
       "id": "lsp/regression/formatter-bind-style-policy-6098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "formatter-bind-style-policy-6098",
         "files": [
@@ -1700,7 +1944,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1709,7 +1957,9 @@
     {
       "id": "lsp/regression/formatter-on-style-policy-6098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "formatter-on-style-policy-6098",
         "files": [
@@ -1740,7 +1990,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1749,7 +2003,9 @@
     {
       "id": "lsp/regression/formatter-slot-style-policy-6098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "formatter-slot-style-policy-6098",
         "files": [
@@ -1780,7 +2036,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1789,7 +2049,9 @@
     {
       "id": "lsp/regression/formatter-warning-capture-11815",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "formatter-warning-capture-11815",
         "files": [
@@ -1824,7 +2086,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1833,7 +2099,9 @@
     {
       "id": "lsp/regression/formatter-whitespace-entries-10031",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "formatter-whitespace-entries-10031/case.json",
         "sha256": "763bc1e02f27e2ee056056036fe960a60a14434bdeb78dfe839ea4b467828ebf"
@@ -1864,7 +2132,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1873,7 +2145,9 @@
     {
       "id": "lsp/regression/generated-project-import-extensions-9890",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "generated-project-import-extensions-9890/case.json",
         "sha256": "be2b9d4a68d52bdf25ee759be40e378efc44e707b0c7f74afae6d5de04d827cb"
@@ -1915,7 +2189,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "ts", "jsx", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "ts",
+              "jsx",
+              "tsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1924,7 +2203,9 @@
     {
       "id": "lsp/regression/generic-attribute-hover-11502",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "generic-attribute-hover-11502",
         "files": [
@@ -1954,7 +2235,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -1963,7 +2248,9 @@
     {
       "id": "lsp/regression/generic-attribute-references-11503",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "generic-attribute-references-11503",
         "files": [
@@ -1997,7 +2284,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2006,7 +2297,9 @@
     {
       "id": "lsp/regression/generic-attribute-rename-11515",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "generic-attribute-rename-11515",
         "files": [
@@ -2040,7 +2333,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2049,7 +2346,9 @@
     {
       "id": "lsp/regression/html-element-hover-documentation",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "html-element-hover-documentation",
         "files": [
@@ -2075,7 +2374,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2084,7 +2386,9 @@
     {
       "id": "lsp/regression/html-void-hover-examples",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "html-void-hover-examples",
         "files": [
@@ -2114,7 +2418,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2123,7 +2430,9 @@
     {
       "id": "lsp/regression/import-specifier-hover-9858",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "import-specifier-hover-9858",
         "files": [
@@ -2157,7 +2466,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2166,7 +2479,9 @@
     {
       "id": "lsp/regression/imported-sfc-parse-recovery-10027",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "imported-sfc-parse-recovery-10027/case.json",
         "sha256": "f85bc8e9bcf3fec56fbb765f817f764db4bfe04e8fc524759a9ed1f3f0f1f281"
@@ -2200,7 +2515,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2209,7 +2528,9 @@
     {
       "id": "lsp/regression/inferred-project-tsconfig-9718",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "inferred-project-tsconfig-9718",
         "files": [
@@ -2243,7 +2564,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2252,7 +2577,9 @@
     {
       "id": "lsp/regression/jsx-intrinsic-hover-10521-jsx",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "jsx-intrinsic-hover-10521-jsx",
         "files": [
@@ -2291,7 +2618,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "js", "ts", "jsx"],
+            "dialects": [
+              "vue3-sfc",
+              "js",
+              "ts",
+              "jsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2300,7 +2632,9 @@
     {
       "id": "lsp/regression/jsx-intrinsic-hover-10521-tsx",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "jsx-intrinsic-hover-10521-tsx",
         "files": [
@@ -2339,7 +2673,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "js", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "js",
+              "ts",
+              "tsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2348,7 +2687,9 @@
     {
       "id": "lsp/regression/jsx-prop-token-ranges-10494-jsx",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "jsx-prop-token-ranges-10494-jsx",
         "files": [
@@ -2386,7 +2727,13 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts", "jsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts",
+              "jsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2395,7 +2742,9 @@
     {
       "id": "lsp/regression/jsx-prop-token-ranges-10494-tsx",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "jsx-prop-token-ranges-10494-tsx",
         "files": [
@@ -2433,7 +2782,13 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts", "tsx"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts",
+              "tsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2442,7 +2797,9 @@
     {
       "id": "lsp/regression/jsx-rewritten-import-diagnostic",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "jsx-rewritten-import-diagnostic",
         "files": [
@@ -2480,7 +2837,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["ts", "jsx", "tsx"],
+            "dialects": [
+              "ts",
+              "jsx",
+              "tsx"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2489,7 +2850,9 @@
     {
       "id": "lsp/regression/named-sfc-value-hover-11953",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "named-sfc-value-hover-11953",
         "files": [
@@ -2531,7 +2894,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2540,7 +2907,9 @@
     {
       "id": "lsp/regression/native-diagnostic-warmup-10604",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "native-diagnostic-warmup-10604",
         "files": [
@@ -2574,7 +2943,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2583,7 +2957,9 @@
     {
       "id": "lsp/regression/native-document-identity-11586",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "native-document-identity-11586",
         "files": [
@@ -2613,7 +2989,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2622,7 +3002,9 @@
     {
       "id": "lsp/regression/native-html-tag-range-10449",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "native-html-tag-range-10449",
         "files": [
@@ -2652,7 +3034,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2661,7 +3046,9 @@
     {
       "id": "lsp/regression/nested-vite-project-9856",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "nested-vite-project-9856",
         "files": [
@@ -2703,7 +3090,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2712,7 +3103,9 @@
     {
       "id": "lsp/regression/optional-prop-definition-9857",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "optional-prop-definition-9857",
         "files": [
@@ -2742,7 +3135,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2751,7 +3148,9 @@
     {
       "id": "lsp/regression/owned-outer-shutdown-10760",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "owned-outer-shutdown-10760",
         "files": [
@@ -2790,7 +3189,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2799,7 +3203,9 @@
     {
       "id": "lsp/regression/private-setup-references-10785-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "private-setup-references-10785-crlf",
         "files": [
@@ -2827,7 +3233,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2836,7 +3246,9 @@
     {
       "id": "lsp/regression/private-setup-references-10785-lf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "private-setup-references-10785-lf",
         "files": [
@@ -2864,7 +3276,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2873,7 +3289,9 @@
     {
       "id": "lsp/regression/project-native-runtime-authority-10694",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "project-native-runtime-authority-10694",
         "files": [
@@ -2903,7 +3321,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2912,7 +3333,9 @@
     {
       "id": "lsp/regression/pug-attribute-navigation-8908",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "pug-attribute-navigation-8908/case.json",
         "sha256": "c87fe34e5586bf7860648f97d42dd50ce45e799512b01240aece92d85305eb0e"
@@ -2942,7 +3365,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2951,7 +3378,9 @@
     {
       "id": "lsp/regression/pug-authored-scopes-10481",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "pug-authored-scopes-10481",
         "files": [
@@ -2981,7 +3410,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -2990,7 +3423,9 @@
     {
       "id": "lsp/regression/pug-multiline-attributes-8908",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "pug-multiline-attributes-8908/case.json",
         "sha256": "568e4bb81c181fe86a3087c4e442b8bc96cdc964aaa4c23dccb6d9ada4e37fb3"
@@ -3016,7 +3451,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3025,7 +3464,9 @@
     {
       "id": "lsp/regression/qualification-20261105",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "qualification-20261105",
         "files": [
@@ -3051,7 +3492,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3060,7 +3505,9 @@
     {
       "id": "lsp/regression/queued-edit-publication-10098",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "case": {
         "path": "queued-edit-publication-10098/case.json",
         "sha256": "be901ed1f4365fd0a0961efc36eb59f160ac09e48757576b917f47ddc4539a29"
@@ -3090,7 +3537,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3099,7 +3550,9 @@
     {
       "id": "lsp/regression/registered-lowercase-component-alias",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "registered-lowercase-component-alias",
         "files": [
@@ -3129,7 +3582,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3138,7 +3595,9 @@
     {
       "id": "lsp/regression/reported-model-binding-rename-11383",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "reported-model-binding-rename-11383",
         "files": [
@@ -3163,7 +3622,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3172,7 +3635,9 @@
     {
       "id": "lsp/regression/required-default-props-11148",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "required-default-props-11148",
         "files": [
@@ -3210,7 +3675,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3219,7 +3688,9 @@
     {
       "id": "lsp/regression/script-lint-code-actions-9909",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "script-lint-code-actions-9909",
         "files": [
@@ -3250,7 +3721,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3259,7 +3735,9 @@
     {
       "id": "lsp/regression/script-setup-completion-dedupe-9908",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "script-setup-completion-dedupe-9908",
         "files": [
@@ -3285,7 +3763,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3294,7 +3776,9 @@
     {
       "id": "lsp/regression/script-syntax-carried-native-11816",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "script-syntax-carried-native-11816",
         "files": [
@@ -3324,7 +3808,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3333,7 +3821,9 @@
     {
       "id": "lsp/regression/script-syntax-prompt-11626",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "script-syntax-prompt-11626",
         "files": [
@@ -3359,7 +3849,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3368,7 +3862,9 @@
     {
       "id": "lsp/regression/stylus-colors-10442",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "stylus-colors-10442",
         "files": [
@@ -3402,7 +3898,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "pug-template", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "pug-template",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3411,7 +3911,9 @@
     {
       "id": "lsp/regression/template-slot-completion-9907",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "template-slot-completion-9907",
         "files": [
@@ -3441,7 +3943,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3450,7 +3956,9 @@
     {
       "id": "lsp/regression/type-aware-slot-outlet-9834",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "type-aware-slot-outlet-9834",
         "files": [
@@ -3476,7 +3984,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3485,7 +3997,9 @@
     {
       "id": "lsp/regression/type-diagnostic-retention-11519",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "type-diagnostic-retention-11519",
         "files": [
@@ -3511,7 +4025,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3520,7 +4038,9 @@
     {
       "id": "lsp/regression/unused-disable-config-10930",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "unused-disable-config-10930",
         "files": [
@@ -3551,7 +4071,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3560,7 +4084,9 @@
     {
       "id": "lsp/regression/versioned-auto-import-6876",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "versioned-auto-import-6876",
         "files": [
@@ -3591,7 +4117,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3600,7 +4130,9 @@
     {
       "id": "lsp/regression/versioned-template-lint-edits-6876",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "versioned-template-lint-edits-6876",
         "files": [
@@ -3627,7 +4159,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3636,7 +4171,9 @@
     {
       "id": "lsp/regression/versioned-template-suppression-6876",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "versioned-template-suppression-6876",
         "files": [
@@ -3667,7 +4204,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3676,7 +4216,9 @@
     {
       "id": "lsp/regression/watched-created-module-11508",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "watched-created-module-11508",
         "files": [
@@ -3707,7 +4249,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3716,7 +4262,9 @@
     {
       "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "workspace-tsconfig-inheritance-9842",
         "files": [
@@ -3758,7 +4306,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3767,7 +4319,9 @@
     {
       "id": "lsp/source-session/local-completion-resolve-10592",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "local-completion-resolve-10592",
         "files": [
@@ -3848,7 +4402,12 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "js", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
@@ -3857,7 +4416,9 @@
     {
       "id": "lsp/source-session/native-diagnostic-capacity-11008",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "native-diagnostic-capacity-11008",
         "files": [
@@ -3940,7 +4501,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "ts"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
             "selector": "LSP manifest pinned authored sources"
           }
         ]
