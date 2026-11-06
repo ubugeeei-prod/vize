@@ -13093,6 +13093,40 @@
       }
     },
     {
+      "id": "typechecker/regression/escaped-reserved-binding-11769",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "escaped-reserved-binding-11769/Probe.vue.txt",
+          "sha256": "cc550c989dd7e1975f36a16400f218f1f1e060ae97725fd4a9d5aa2d4fa6c4a6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "escaped-reserved-binding-11769/tsconfig.json.txt",
+          "sha256": "30193c77dc8923abbd03bbe9d2de233b7978d880f46961a9d57c095fd75af47b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::template_expression_syntax::reserved_template_substitutions::escaped_reserved_binding_preserves_semantic_roles_and_authored_diagnostic; consumes escaped prop, member and local-shadow roles under LF and CRLF, with exact TS2345 authorship plus clean repair. Input-only registration; no native admission or published-host claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/expect-element-coverage-11486",
       "state": "active",
       "targets": [
