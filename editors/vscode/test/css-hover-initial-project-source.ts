@@ -12,6 +12,14 @@ export const initialProjectTypedEntry: SourceTreeEntry = Object.freeze({
   type: "blob",
   oid: "80ba6f52a001082d23f117172e5045acb99dcaa8",
 });
+export const residentMarkupTypedSourceSha256 =
+  "584b9454b4f846de7515281df783974e6f96754f2f3d1c0481aadff0890421e8";
+export const residentMarkupTypedEntry: SourceTreeEntry = Object.freeze({
+  path: "crates/vize_maestro/src/server/handlers/typed.rs",
+  mode: "100644",
+  type: "blob",
+  oid: "f5fdd7878687c044e9f6d948de3d874ebbeae431",
+});
 const foregroundBlob = "a4b1e81960029f488921f917e46589f1d7655da9";
 const hash = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 const blob = (bytes: Uint8Array): string =>
@@ -27,6 +35,9 @@ const nativeVue = `            let stamp = self.state.corsa_request_stamp();
             ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
 `;
 const oldNativeVue = "            let corsa_bridge = self.state.get_corsa_bridge().await;\n";
+const residentMarkupDispatch = `        } else if let Some(hover) = HoverService::hover_resident_markup(&ctx) {
+            Some(hover)
+`;
 
 function replaceExactly(source: string, selected: string, replacement: string): string {
   const pieces = source.split(selected);
@@ -50,5 +61,23 @@ export function invertInitialProjectSource(bytes: unknown): Buffer {
     "whole initial-project inverse differs",
   );
   assert.equal(blob(restored), foregroundBlob, "whole foreground typed blob differs");
+  return restored;
+}
+
+// Authenticate the complete resident-markup dispatch body before removing only
+// its early return. The result must be the complete reviewed initial-project body.
+export function invertResidentMarkupSource(bytes: unknown): Buffer {
+  assert.ok(Buffer.isBuffer(bytes), "complete committed resident-markup bytes required");
+  assert.equal(hash(bytes), residentMarkupTypedSourceSha256, "unreviewed resident-markup bytes");
+  assert.equal(blob(bytes), residentMarkupTypedEntry.oid, "unreviewed resident-markup blob");
+  const pieces = bytes.toString("utf8").split(residentMarkupDispatch);
+  assert.equal(pieces.length, 2, "foreign resident-markup source structure");
+  const restored = Buffer.from(pieces.join(""));
+  assert.equal(
+    hash(restored),
+    initialProjectTypedSourceSha256,
+    "whole resident-markup inverse differs",
+  );
+  assert.equal(blob(restored), initialProjectTypedEntry.oid, "whole initial-project blob differs");
   return restored;
 }

@@ -39,31 +39,65 @@ fn native_markup_hovers_are_rich_without_entering_corsa_routing() {
         for (needle, expected) in [
             (
                 "button",
-                [
-                    "**<button>**",
-                    "_HTML element_",
-                    "HTMLElementTagNameMap[\"button\"]",
-                    "Provides an interactive button",
-                    "**Editor behavior**",
-                    "**Example**",
-                    "MDN reference",
-                    "HTML Living Standard",
-                ]
-                .as_slice(),
+                r#"**<button>**
+
+_HTML element_
+
+```typescript
+const element: HTMLElementTagNameMap["button"]
+```
+
+Provides an interactive button that can trigger an action or submit a form.
+
+**Editor behavior**
+- Go-to-definition uses TypeScript DOM lib data when the type service is available.
+- Component resolution is skipped for this tag because it is part of the platform DOM surface.
+
+**Example**
+
+```vue
+<template>
+  <button>...</button>
+</template>
+```
+
+**Docs**
+
+[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)
+
+[HTML Living Standard](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element)"#,
             ),
             (
                 "disabled",
-                [
-                    "**disabled on <button>**",
-                    "_HTML attribute_",
-                    "HTMLElementTagNameMap[\"button\"][\"disabled\"]",
-                    "**Runtime surface**",
-                    "Boolean HTML attribute",
-                    "**Editor behavior**",
-                    "**Example**",
-                    "MDN reference",
-                ]
-                .as_slice(),
+                r#"**disabled on <button>**
+
+_HTML attribute_
+
+```typescript
+disabled: HTMLElementTagNameMap["button"]["disabled"]
+```
+
+Native DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.
+
+**Runtime surface**
+
+Boolean HTML attribute
+
+**Editor behavior**
+- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.
+- Component prop lookup is skipped because the enclosing tag is a native element.
+
+**Example**
+
+```vue
+<template>
+  <button disabled>...</button>
+</template>
+```
+
+**Docs**
+
+[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/disabled)"#,
             ),
         ] {
             let offset = source.find(needle).unwrap() + 1;
@@ -87,13 +121,7 @@ fn native_markup_hovers_are_rich_without_entering_corsa_routing() {
             let (_, end_character) =
                 crate::ide::offset_to_position(source, source.find(needle).unwrap() + needle.len());
             assert_eq!(range.end, Position::new(line, end_character));
-            for part in expected {
-                assert!(
-                    markup.value.contains(part),
-                    "missing {part:?}: {}",
-                    markup.value
-                );
-            }
+            assert_eq!(markup.value, expected);
         }
 
         let offset = source.find("@click").unwrap() + 2;
@@ -112,18 +140,28 @@ fn native_markup_hovers_are_rich_without_entering_corsa_routing() {
         let HoverContents::Markup(markup) = hover.contents else {
             panic!("directive hover must stay rich Markdown");
         };
-        for part in [
-            "**@click**",
-            "_Vue event listener_",
-            "**Template behavior**",
-            "Vue Event Handling",
-        ] {
-            assert!(
-                markup.value.contains(part),
-                "missing {part:?}: {}",
-                markup.value
-            );
-        }
+        assert_eq!(
+            markup.value,
+            r#"**@click**
+
+_Vue event listener_
+
+**Example**
+
+```vue
+@click="handler"
+```
+
+Attaches a DOM or component event listener. The handler expression is evaluated in component scope.
+
+**Template behavior**
+- `$event` is available inside inline handler expressions.
+- Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.
+
+**Docs**
+
+[Vue Event Handling](https://vuejs.org/guide/essentials/event-handling.html)"#
+        );
 
         assert_eq!(routed.state.canonical_bridge_request_count(), 0);
         assert_eq!(routed.state.corsa_init_failure(), None);

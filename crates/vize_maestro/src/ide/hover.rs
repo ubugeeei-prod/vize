@@ -74,7 +74,12 @@ impl HoverService {
                 let in_expression =
                     crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
                 let mut hover = Self::hover_component_tag(ctx).or_else(|| {
-                    Self::hover_project_independent_template_markup(ctx, &word, in_expression)
+                    Self::hover_project_independent_template_markup(
+                        ctx,
+                        &word,
+                        in_expression,
+                        !ctx.state.has_corsa_bridge(),
+                    )
                 })?;
                 if hover.range.is_none() {
                     hover.range = corsa::authored_hover_token_range(ctx);

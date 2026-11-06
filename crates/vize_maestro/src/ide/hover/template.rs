@@ -110,7 +110,7 @@ impl HoverService {
             return Some(hover);
         }
 
-        Self::hover_project_independent_template_markup(ctx, word, in_expression)
+        Self::hover_project_independent_template_markup(ctx, word, in_expression, true)
     }
 
     /// Markup that can safely win over project-aware component typing.
@@ -118,6 +118,7 @@ impl HoverService {
         ctx: &IdeContext<'_>,
         word: &str,
         in_expression: bool,
+        include_native_dom: bool,
     ) -> Option<Hover> {
         let typed_component_directive = Self::component_directive_requires_type_project(ctx);
         if !typed_component_directive && let Some(hover) = Self::hover_directive(word) {
@@ -125,12 +126,12 @@ impl HoverService {
         }
 
         #[cfg(feature = "native")]
-        if let Some(hover) = Self::hover_native_dom_attribute(ctx) {
+        if include_native_dom && let Some(hover) = Self::hover_native_dom_attribute(ctx) {
             return Some(hover);
         }
 
         #[cfg(feature = "native")]
-        if let Some(hover) = Self::hover_native_dom_tag(ctx) {
+        if include_native_dom && let Some(hover) = Self::hover_native_dom_tag(ctx) {
             return Some(hover);
         }
 
