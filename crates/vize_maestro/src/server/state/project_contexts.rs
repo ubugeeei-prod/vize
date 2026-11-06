@@ -266,8 +266,12 @@ impl ServerState {
 
     fn document_context_root(&self, path: &Path) -> Option<PathBuf> {
         let roots = self.workspace_root_paths();
-        paths::cached_document_context_root(path, &roots, &self.project_contexts.root_discovery)
-            .or_else(|| self.project_contexts.boundary.read().clone())
+        let root = if self.trusts_project_marker_notifications() {
+            paths::cached_document_context_root(path, &roots, &self.project_contexts.root_discovery)
+        } else {
+            paths::document_context_root(path, &roots)
+        };
+        root.or_else(|| self.project_contexts.boundary.read().clone())
     }
 
     fn new_project_state(

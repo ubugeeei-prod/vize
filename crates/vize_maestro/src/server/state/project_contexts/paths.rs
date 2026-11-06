@@ -184,6 +184,7 @@ mod tests {
         std::fs::write(package.join("package.json"), "{}").unwrap();
         let owner = Arc::new(ServerState::new());
         owner.set_workspace_root(root.to_path_buf());
+        owner.set_corsa_disk_watcher_registered();
 
         assert_eq!(
             owner.document_context_root(&source.join("A.vue")),

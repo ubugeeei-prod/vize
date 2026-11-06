@@ -219,6 +219,12 @@ impl ServerState {
         }
     }
 
+    /// Cached filesystem ownership is sound only when every marker mutation
+    /// reaches this server through the registered watcher.
+    pub(super) fn trusts_project_marker_notifications(&self) -> bool {
+        self.corsa_disk_watcher_registered.load(Ordering::Acquire)
+    }
+
     async fn flush_corsa_disk_state_if_dirty(&self, bridge: &Arc<CorsaBridge>) -> bool {
         match bridge.flush_disk_project_state_if_dirty().await {
             Ok(()) => true,
