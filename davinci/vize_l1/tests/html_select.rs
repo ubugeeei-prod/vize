@@ -15,7 +15,7 @@ fn span(value: Span) -> [u32; 2] {
 #[test]
 fn select_packets_retain_complete_original_tags_frames_attributes_and_child_nodes() {
     let cases: Vec<Value> = serde_json::from_str(CORPUS).unwrap();
-    assert_eq!(cases.len(), 13);
+    assert_eq!(cases.len(), 16);
     for case in &cases {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
