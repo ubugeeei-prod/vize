@@ -40,7 +40,7 @@ void test("injection replaces literal resolveComponent() but not a dynamic argum
   const literal = injectNuxtComponentImports(`const c = resolveComponent("Foo");`, resolve);
   assert.match(
     literal,
-    /import __nuxt_component_0 from "\/virtual\/Foo\.vue";/,
+    /import __vize_nuxt_component_0 from "\/virtual\/Foo\.vue";/,
     "literal-string resolveComponent should become a direct import binding",
   );
   assert.equal(
@@ -48,7 +48,11 @@ void test("injection replaces literal resolveComponent() but not a dynamic argum
     false,
     "the resolveComponent() call should be replaced by the bound variable",
   );
-  assert.match(literal, /const c = __nuxt_component_0;/, "the call site should use the binding");
+  assert.match(
+    literal,
+    /const c = __vize_nuxt_component_0;/,
+    "the call site should use the binding",
+  );
 
   // A non-literal argument cannot be statically resolved, so it is left intact.
   const dynamicSource = `const c = resolveComponent(dynamicVar);`;
@@ -69,7 +73,7 @@ void test("injection resolves _resolveComponent and a second-argument call", () 
   const underscored = injectNuxtComponentImports(`const c = _resolveComponent("Foo");`, resolve);
   assert.match(
     underscored,
-    /import __nuxt_component_0 from "\/virtual\/Foo\.vue";/,
+    /import __vize_nuxt_component_0 from "\/virtual\/Foo\.vue";/,
     "_resolveComponent should be rewritten the same as resolveComponent",
   );
 
@@ -80,7 +84,7 @@ void test("injection resolves _resolveComponent and a second-argument call", () 
   );
   assert.match(
     withSecondArg,
-    /import __nuxt_component_0 from "\/virtual\/Foo\.vue";/,
+    /import __vize_nuxt_component_0 from "\/virtual\/Foo\.vue";/,
     "resolveComponent() with a trailing argument should still be rewritten",
   );
   assert.equal(
@@ -98,7 +102,7 @@ void test("injection resolves a named (non-default) export via aliased import", 
   const transformed = injectNuxtComponentImports(`const c = resolveComponent("Named");`, resolve);
   assert.match(
     transformed,
-    /import \{ MyNamed as __nuxt_component_0 \} from "\/virtual\/Named\.js";/,
+    /import \{ MyNamed as __vize_nuxt_component_0 \} from "\/virtual\/Named\.js";/,
     "a non-default exportName should be imported as a named binding aliased to the component var",
   );
 });
@@ -116,12 +120,12 @@ void test("injection dedupes repeated resolveComponent() of the same component",
   );
 
   assert.equal(
-    transformed.match(/import __nuxt_component_0 from "\/virtual\/AppHeader\.vue";/g)?.length,
+    transformed.match(/import __vize_nuxt_component_0 from "\/virtual\/AppHeader\.vue";/g)?.length,
     1,
     "a reused component should emit exactly one import statement",
   );
   assert.equal(
-    transformed.match(/__nuxt_component_0\b/g)?.length,
+    transformed.match(/__vize_nuxt_component_0\b/g)?.length,
     4,
     "the shared binding name appears once in the single import plus at each of the three call sites",
   );
@@ -145,12 +149,12 @@ void test("injection wraps a .client component with createClientOnly", () => {
   );
   assert.match(
     transformed,
-    /import __nuxt_component_0_raw from "\/virtual\/Widget\.client\.vue";/,
+    /import __vize_nuxt_component_0_raw from "\/virtual\/Widget\.client\.vue";/,
     "the raw default export should be imported under a _raw binding",
   );
   assert.match(
     transformed,
-    /const __nuxt_component_0 = __nuxt_create_client_only\(__nuxt_component_0_raw\);/,
+    /const __vize_nuxt_component_0 = __nuxt_create_client_only\(__vize_nuxt_component_0_raw\);/,
     "the bound component variable should be the wrapped client-only component",
   );
 });
@@ -173,7 +177,7 @@ void test("injection does NOT wrap a NuxtRouteAnnouncer-style .js client compone
 
   assert.match(
     transformed,
-    /import __nuxt_component_0 from ".*nuxt-route-announcer\.js";/,
+    /import __vize_nuxt_component_0 from ".*nuxt-route-announcer\.js";/,
     "NuxtRouteAnnouncer should be imported directly",
   );
   assert.equal(
@@ -197,7 +201,7 @@ void test("injection wraps a lazy component with defineAsyncComponent", () => {
   );
   assert.match(
     transformed,
-    /const __nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\("\/virtual\/Lazy\.vue"\)\.then\(\(module\) => module\.default\)\);/,
+    /const __vize_nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\("\/virtual\/Lazy\.vue"\)\.then\(\(module\) => module\.default\)\);/,
     "lazy resolution should defer the import and read the default export from the module",
   );
   assert.equal(
@@ -234,7 +238,7 @@ void test("injection wraps a lazy client component with both async and client he
   );
   assert.match(
     transformed,
-    /const __nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\("\/virtual\/Widget\.client\.vue"\)\.then\(\(module\) => __nuxt_create_client_only\(module\.default\)\)\);/,
+    /const __vize_nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\("\/virtual\/Widget\.client\.vue"\)\.then\(\(module\) => __nuxt_create_client_only\(module\.default\)\)\);/,
     "the async payload should be wrapped with createClientOnly inside the .then()",
   );
 });

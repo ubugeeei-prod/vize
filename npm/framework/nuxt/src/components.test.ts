@@ -223,7 +223,7 @@ export default {
 
     assert.match(
       transformed,
-      /import __nuxt_component_0 from .*NuxtPwaAssets\.js";/,
+      /import __vize_nuxt_component_0 from .*NuxtPwaAssets\.js";/,
       "resolved components should become direct imports",
     );
     assert.equal(
@@ -265,7 +265,7 @@ export default {
     );
     assert.match(
       clientOnlyTransformed,
-      /import __nuxt_component_0_raw from ".*ScrollToTop\.client\.vue";\s*const __nuxt_component_0 = __nuxt_create_client_only\(__nuxt_component_0_raw\);/s,
+      /import __vize_nuxt_component_0_raw from ".*ScrollToTop\.client\.vue";\s*const __vize_nuxt_component_0 = __nuxt_create_client_only\(__vize_nuxt_component_0_raw\);/s,
       "client-only components should be wrapped before use",
     );
   } finally {
@@ -320,7 +320,7 @@ export default {
 
     assert.match(
       transformed,
-      /import __nuxt_component_0 from ".*nuxt-route-announcer\.js";/,
+      /import __vize_nuxt_component_0 from ".*nuxt-route-announcer\.js";/,
       "NuxtRouteAnnouncer should be imported directly before use",
     );
     assert.equal(
@@ -394,12 +394,12 @@ export default {
   );
 
   assert.equal(
-    deduped.match(/import __nuxt_component_0 from "\/virtual\/AppHeader\.vue";/g)?.length,
+    deduped.match(/import __vize_nuxt_component_0 from "\/virtual\/AppHeader\.vue";/g)?.length,
     1,
     "reused components should emit a single import",
   );
   assert.equal(
-    deduped.match(/__nuxt_component_0/g)?.length,
+    deduped.match(/__vize_nuxt_component_0/g)?.length,
     3,
     "reused components should share the same imported binding",
   );
@@ -435,12 +435,12 @@ export default {
     );
     assert.match(
       lazyTransformed,
-      /const __nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\(".*CommonPreviewPrompt\.vue"\)\.then\(\(module\) => module\.default\)\);/,
+      /const __vize_nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\(".*CommonPreviewPrompt\.vue"\)\.then\(\(module\) => module\.default\)\);/,
       "lazy component resolution should preserve async loading",
     );
     assert.match(
       lazyTransformed,
-      /import __nuxt_component_1 from ".*page\.js";/,
+      /import __vize_nuxt_component_1 from ".*page\.js";/,
       "non-lazy components should remain direct imports",
     );
 
@@ -460,7 +460,7 @@ export default {
 
     assert.match(
       lazyClientOnlyTransformed,
-      /const __nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\(".*ScrollToTop\.client\.vue"\)\.then\(\(module\) => __nuxt_create_client_only\(module\.default\)\)\);/,
+      /const __vize_nuxt_component_0 = __nuxt_define_async_component\(\(\) => import\(".*ScrollToTop\.client\.vue"\)\.then\(\(module\) => __nuxt_create_client_only\(module\.default\)\)\);/,
       "lazy client-only components should wrap their async payload with createClientOnly",
     );
   } finally {
@@ -535,7 +535,7 @@ export default {
 
     assert.match(
       transformed,
-      /import __nuxt_component_0 from "primevue\/button";/,
+      /import __vize_nuxt_component_0 from "primevue\/button";/,
       "package-specifier components must emit imports against the original specifier",
     );
     assert.equal(

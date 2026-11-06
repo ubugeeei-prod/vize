@@ -11,7 +11,7 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
       - tools/support/compat/nuxt/fixtures/nuxt-component-modes/**
-      - tools/support/compat/nuxt/nuxt-component-modes.ts
+      - tools/support/compat/nuxt/nuxt-component-modes*
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts
@@ -60,7 +60,7 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
       - tools/support/compat/nuxt/fixtures/nuxt-component-modes/**
-      - tools/support/compat/nuxt/nuxt-component-modes.ts
+      - tools/support/compat/nuxt/nuxt-component-modes*
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts

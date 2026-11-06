@@ -57,10 +57,10 @@ void test("explicit aliases and leftover types retain their position; implicit b
   );
   assert.equal(
     transformed,
-    'import __nuxt_component_0 from "/nuxt/nuxt-layout.js";\n' +
+    'import __vize_nuxt_component_0 from "/nuxt/nuxt-layout.js";\n' +
       'import "main.css";\nimport Bar from "/components/Foo.vue";\n' +
       'import { type Shape, Unknown } from "#components";\n' +
-      "const layout = __nuxt_component_0;\nconst use = [Bar, Unknown];\n",
+      "const layout = __vize_nuxt_component_0;\nconst use = [Bar, Unknown];\n",
   );
 });
 
@@ -90,11 +90,11 @@ void test("explicit client and lazy bindings keep their helpers and initialize b
   );
   assert(
     transformed.indexOf('import "main.css";') <
-      transformed.indexOf("import { named as __nuxt_import_component_0_raw }"),
+      transformed.indexOf("import { named as __vize_nuxt_import_component_0_raw }"),
   );
   assert.match(
     transformed,
-    /const Client = __nuxt_create_client_only\(__nuxt_import_component_0_raw\);/,
+    /const Client = __nuxt_create_client_only\(__vize_nuxt_import_component_0_raw\);/,
   );
   assert.match(
     transformed,
