@@ -52,7 +52,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: ListboxValue];
 
   /** Fired after user selection requests a distinct Listbox value. */
-  change: [value: ListboxValue, previous: ListboxValue, nativeEvent: Event];
+  "change": [value: ListboxValue, previous: ListboxValue, nativeEvent: Event];
 }>();
 
 defineSlots<{

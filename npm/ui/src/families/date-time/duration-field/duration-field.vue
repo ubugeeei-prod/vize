@@ -54,7 +54,11 @@ const emit = defineEmits<{
   /** Fired when segments request a new controlled duration or `null` while incomplete. */
   "update:modelValue": [value: DurationValue | null];
   /** Fired after a distinct committed duration with the previous value and triggering event. */
-  change: [value: DurationValue | null, previous: DurationValue | null, nativeEvent: Event | null];
+  "change": [
+    value: DurationValue | null,
+    previous: DurationValue | null,
+    nativeEvent: Event | null,
+  ];
 }>();
 
 defineSlots<{

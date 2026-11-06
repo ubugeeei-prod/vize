@@ -181,7 +181,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: number];
 
   /** Fired once a change is committed (key press, pointer release, wheel, or API). */
-  change: [value: number, source: KnobChangeSource];
+  "change": [value: number, source: KnobChangeSource];
 }>();
 
 defineSlots<{

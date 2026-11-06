@@ -61,19 +61,19 @@ const emit = defineEmits<{
   "update:modelValue": [text: string];
 
   /** Fired after an item is inserted for the active token, with the item and its trigger. */
-  select: [item: T, trigger: MentionTrigger];
+  "select": [item: T, trigger: MentionTrigger];
 
   /** Fired when the active query changes; `""` when no token is active. */
   "update:query": [query: string];
 
   /** Fired when the active token changes, with its query and trigger or `null` for both when it ends. */
-  queryChange: [query: string | null, trigger: MentionTrigger | null];
+  "queryChange": [query: string | null, trigger: MentionTrigger | null];
 
   /** Fired when the popup requests a controlled open value. */
   "update:open": [open: boolean];
 
   /** Fired after any distinct open-state request with next state, previous state, and event. */
-  openChange: [open: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [open: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

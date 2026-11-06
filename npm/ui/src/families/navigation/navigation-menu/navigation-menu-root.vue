@@ -110,7 +110,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: NavigationMenuValue];
 
   /** Fired after a distinct open-value change with the input that caused it. */
-  change: [
+  "change": [
     value: NavigationMenuValue,
     previous: NavigationMenuValue,
     reason: NavigationMenuChangeReason,

@@ -59,7 +59,7 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled year. */
   "update:modelValue": [value: number | null];
   /** Fired after a distinct selection with the previous year and triggering event. */
-  change: [value: number | null, previous: number | null, nativeEvent: Event | null];
+  "change": [value: number | null, previous: number | null, nativeEvent: Event | null];
   /** Fired when keyboard or navigation moves the focused year. */
   "update:focusedYear": [value: number];
 }>();

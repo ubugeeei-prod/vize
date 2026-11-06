@@ -76,11 +76,11 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled date. */
   "update:modelValue": [value: PlainDate | null];
   /** Fired after a distinct committed date with the previous date and triggering event. */
-  change: [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
+  "change": [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
   /** Fired when the picker requests a new controlled open state. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

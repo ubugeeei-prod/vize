@@ -76,11 +76,11 @@ const emit = defineEmits<{
   /** Fired when the calendar requests a new controlled range. */
   "update:modelValue": [value: DateRange | null];
   /** Fired after a distinct committed range with the previous range and triggering event. */
-  change: [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
+  "change": [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
   /** Fired for every completed range selection, even when the range is unchanged. */
-  select: [value: DateRange, nativeEvent: Event];
+  "select": [value: DateRange, nativeEvent: Event];
   /** Fired when the first endpoint of a new range is picked, or `null` when cancelled or completed. */
-  anchorChange: [anchor: PlainDate | null];
+  "anchorChange": [anchor: PlainDate | null];
   /** Fired when keyboard or navigation moves the focus date. */
   "update:focusedDate": [date: PlainDate];
 }>();

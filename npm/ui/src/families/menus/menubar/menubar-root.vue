@@ -76,7 +76,7 @@ const emit = defineEmits<{
   /** Fired with the requested open-menu value (supports `v-model`). */
   "update:modelValue": [value: string | null];
   /** Fired after a distinct open-menu change with the previous value and native event. */
-  valueChange: [value: string | null, previous: string | null, nativeEvent: Event | null];
+  "valueChange": [value: string | null, previous: string | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

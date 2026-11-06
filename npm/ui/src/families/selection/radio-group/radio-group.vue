@@ -118,7 +118,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: RadioGroupValue];
 
   /** Fired after user selection requests a distinct radio value. */
-  change: [value: string, previous: RadioGroupValue, nativeEvent: Event];
+  "change": [value: string, previous: RadioGroupValue, nativeEvent: Event];
 }>();
 
 defineSlots<{

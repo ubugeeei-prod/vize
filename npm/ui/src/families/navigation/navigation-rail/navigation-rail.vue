@@ -79,7 +79,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: Value];
 
   /** Fired after an item is activated, with its value and the native click. */
-  select: [value: Value, nativeEvent: MouseEvent];
+  "select": [value: Value, nativeEvent: MouseEvent];
 
   /** Fired with the requested expanded value (supports `v-model:expanded`). */
   "update:expanded": [value: boolean];

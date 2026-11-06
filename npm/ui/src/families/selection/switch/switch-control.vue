@@ -122,7 +122,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: boolean];
 
   /** Fired after user activation requests the next checked value. */
-  change: [value: boolean, nativeEvent: MouseEvent];
+  "change": [value: boolean, nativeEvent: MouseEvent];
 }>();
 
 defineSlots<{

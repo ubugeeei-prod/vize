@@ -130,7 +130,7 @@ const emit = defineEmits<{
   "update:playing": [playing: boolean];
 
   /** Fired after every distinct animation-state transition. */
-  stateChange: [state: MarqueeState, reason: MarqueePauseReason | null];
+  "stateChange": [state: MarqueeState, reason: MarqueePauseReason | null];
 }>();
 
 defineSlots<{

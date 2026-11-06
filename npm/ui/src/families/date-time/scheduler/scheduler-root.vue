@@ -66,15 +66,15 @@ const emit = defineEmits<{
   /** Fired when navigation requests a new anchor date. */
   "update:date": [date: PlainDate];
   /** Fired when an event is clicked or activated with Enter/Space. */
-  eventActivate: [event: SchedulerEvent<Data>, nativeEvent: Event];
+  "eventActivate": [event: SchedulerEvent<Data>, nativeEvent: Event];
   /** Fired when a time-grid slot is clicked or activated. */
-  slotActivate: [range: SchedulerSlotRange, nativeEvent: Event];
+  "slotActivate": [range: SchedulerSlotRange, nativeEvent: Event];
   /** Fired when a month-view day is clicked or activated. */
-  dayActivate: [date: PlainDate, nativeEvent: Event];
+  "dayActivate": [date: PlainDate, nativeEvent: Event];
   /** Fired when a drag or Alt+Arrow requests a new start (duration preserved). */
-  eventMove: [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
+  "eventMove": [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
   /** Fired when a resize drag or Alt+Shift+Arrow requests a new end. */
-  eventResize: [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
+  "eventResize": [change: SchedulerEventChange<Data>, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

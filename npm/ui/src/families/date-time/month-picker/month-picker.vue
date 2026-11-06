@@ -63,7 +63,7 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled month. */
   "update:modelValue": [value: PlainYearMonth | null];
   /** Fired after a distinct selection with the previous month and triggering event. */
-  change: [
+  "change": [
     value: PlainYearMonth | null,
     previous: PlainYearMonth | null,
     nativeEvent: Event | null,

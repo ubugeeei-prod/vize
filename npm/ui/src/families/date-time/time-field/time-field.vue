@@ -65,7 +65,7 @@ const emit = defineEmits<{
   /** Fired when segments request a new controlled time or `null` while incomplete. */
   "update:modelValue": [value: PlainTime | null];
   /** Fired after a distinct committed time with the previous time and triggering event. */
-  change: [value: PlainTime | null, previous: PlainTime | null, nativeEvent: Event | null];
+  "change": [value: PlainTime | null, previous: PlainTime | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

@@ -94,7 +94,7 @@ const emit = defineEmits<{
   /** Fired with the new document after every change (supports `v-model`). */
   "update:modelValue": [value: RichTextDoc<Schema>];
   /** Fired for every transaction, including selection-only changes. */
-  transaction: [transaction: RichTextTransaction];
+  "transaction": [transaction: RichTextTransaction];
 }>();
 
 defineSlots<{

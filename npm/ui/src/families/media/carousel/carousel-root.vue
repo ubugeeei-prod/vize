@@ -178,7 +178,7 @@ const emit = defineEmits<{
   "update:modelValue": [index: number];
 
   /** Fired after any distinct active-slide request, with its cause. */
-  change: [index: number, previous: number, reason: CarouselChangeReason];
+  "change": [index: number, previous: number, reason: CarouselChangeReason];
 
   /** Fired when rotation intent requests a new controlled value. */
   "update:playing": [playing: boolean];

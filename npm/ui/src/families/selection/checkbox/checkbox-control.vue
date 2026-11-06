@@ -53,7 +53,7 @@ const emit = defineEmits<{
   /** Fired when user interaction emits the next mixed-state boolean. */
   "update:indeterminate": [value: boolean];
   /** Fired after the native checkbox change event is processed with the next checked boolean and native `Event`. */
-  change: [value: boolean, nativeEvent: Event];
+  "change": [value: boolean, nativeEvent: Event];
 }>();
 
 const element = useTemplateRef<HTMLInputElement>("element");

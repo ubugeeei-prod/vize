@@ -45,7 +45,7 @@ const emit = defineEmits<{
   "update:history": [history: readonly T[]];
 
   /** Fired when the user submits: the typed text and the chosen suggestion, if any. */
-  submit: [text: string, value: T | null];
+  "submit": [text: string, value: T | null];
 }>();
 
 defineSlots<{

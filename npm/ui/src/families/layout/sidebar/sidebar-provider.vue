@@ -152,7 +152,7 @@ const emit = defineEmits<{
   "update:openMobile": [value: boolean];
 
   /** Fired after any distinct desktop open request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

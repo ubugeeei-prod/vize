@@ -143,7 +143,7 @@ const emit = defineEmits<{
   "update:country": [code: Code];
 
   /** Fired when the national number fills the country pattern. */
-  complete: [e164: string, country: PhoneCountry<Code>];
+  "complete": [e164: string, country: PhoneCountry<Code>];
 }>();
 
 defineSlots<{

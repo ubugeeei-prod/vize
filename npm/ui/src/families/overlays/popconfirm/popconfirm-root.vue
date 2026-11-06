@@ -66,16 +66,16 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired after the confirmation handler succeeded and the popover closed. */
-  confirmed: [nativeEvent: Event | null];
+  "confirmed": [nativeEvent: Event | null];
 
   /** Fired when the confirmation closed without confirming. */
-  cancel: [reason: PopconfirmCancelReason, nativeEvent: Event | null];
+  "cancel": [reason: PopconfirmCancelReason, nativeEvent: Event | null];
 
   /** Fired when the confirmation handler threw or rejected; the popover stays open. */
-  error: [reason: unknown];
+  "error": [reason: unknown];
 }>();
 
 defineSlots<{

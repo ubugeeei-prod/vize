@@ -95,13 +95,13 @@ const emit = defineEmits<{
   "update:layout": [layout: SplitterLayout];
 
   /** Fired after a distinct layout change with the input that caused it. */
-  resize: [layout: SplitterLayout, reason: SplitterResizeReason];
+  "resize": [layout: SplitterLayout, reason: SplitterResizeReason];
 
   /** Fired when a pointer drag starts on a handle. */
-  resizeStart: [handleIndex: number];
+  "resizeStart": [handleIndex: number];
 
   /** Fired when a pointer drag ends. */
-  resizeEnd: [layout: SplitterLayout];
+  "resizeEnd": [layout: SplitterLayout];
 }>();
 
 defineSlots<{

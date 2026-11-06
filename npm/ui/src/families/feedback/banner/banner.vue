@@ -38,7 +38,7 @@ const emit = defineEmits<{
   "update:open": [open: boolean];
 
   /** Fired after the dismiss control is activated. */
-  dismiss: [nativeEvent: MouseEvent];
+  "dismiss": [nativeEvent: MouseEvent];
 }>();
 
 const slots = defineSlots<{

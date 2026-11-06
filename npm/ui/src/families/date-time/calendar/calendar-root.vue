@@ -71,9 +71,9 @@ const emit = defineEmits<{
   /** Fired when the calendar requests a new controlled value. */
   "update:modelValue": [value: PlainDate | null];
   /** Fired after a distinct selection with the previous value and triggering event. */
-  change: [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
+  "change": [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
   /** Fired for every user activation of a selectable date, even when the value is unchanged. */
-  select: [value: PlainDate, nativeEvent: Event];
+  "select": [value: PlainDate, nativeEvent: Event];
   /** Fired when keyboard or navigation moves the focus date. */
   "update:focusedDate": [date: PlainDate];
 }>();

@@ -62,7 +62,7 @@ const emit = defineEmits<{
   /** Fired when segments request a new controlled date or `null` while incomplete. */
   "update:modelValue": [value: PlainDate | null];
   /** Fired after a distinct committed date with the previous date and triggering event. */
-  change: [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
+  "change": [value: PlainDate | null, previous: PlainDate | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

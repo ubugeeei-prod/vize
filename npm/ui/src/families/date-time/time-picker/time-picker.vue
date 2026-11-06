@@ -52,7 +52,7 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled time. */
   "update:modelValue": [value: PlainTime | null];
   /** Fired after a distinct selection with the previous time and triggering event. */
-  change: [value: PlainTime | null, previous: PlainTime | null, nativeEvent: Event | null];
+  "change": [value: PlainTime | null, previous: PlainTime | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

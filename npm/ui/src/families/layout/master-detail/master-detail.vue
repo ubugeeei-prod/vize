@@ -83,7 +83,7 @@ const emit = defineEmits<{
   /** Fired with the next selection (`null` when going back). */
   "update:selected": [selected: Key | null];
   /** Fired when the layout switches between split and stacked, including the post-mount switch away from the SSR layout. */
-  layoutChange: [layout: MasterDetailLayout];
+  "layoutChange": [layout: MasterDetailLayout];
 }>();
 
 defineSlots<{

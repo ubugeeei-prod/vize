@@ -169,13 +169,13 @@ const emit = defineEmits<{
   "update:editing": [editing: boolean];
 
   /** Fired when edit mode starts. */
-  edit: [];
+  "edit": [];
 
   /** Fired after a submit with the committed value and the previous value. */
-  submit: [value: string, previous: string];
+  "submit": [value: string, previous: string];
 
   /** Fired after a cancel with the restored value and the discarded draft. */
-  cancel: [value: string, discarded: string];
+  "cancel": [value: string, discarded: string];
 }>();
 
 defineSlots<{

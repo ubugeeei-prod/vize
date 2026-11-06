@@ -44,7 +44,7 @@ const { modelValue, language, diagnostics, scopes, highlights, readOnly, theme }
 const emit = defineEmits<{
   "update:modelValue": [string];
   /** The primary cursor moved; payload is its UTF-16 model offset. */
-  cursor: [number];
+  "cursor": [number];
 }>();
 
 const containerRef = useTemplateRef<HTMLDivElement>("containerRef");

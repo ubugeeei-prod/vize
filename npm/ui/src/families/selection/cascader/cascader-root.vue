@@ -64,7 +64,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: CascaderModelValue<T, Multiple>];
 
   /** Fired after a user interaction changes the selection: next value, previous value, native event. */
-  change: [
+  "change": [
     value: CascaderModelValue<T, Multiple>,
     previous: CascaderModelValue<T, Multiple>,
     nativeEvent: Event | null,
@@ -77,7 +77,7 @@ const emit = defineEmits<{
   "update:search": [query: string];
 
   /** Fired when `loadChildren` rejects for a branch, with the error. */
-  loadError: [node: T, error: unknown];
+  "loadError": [node: T, error: unknown];
 }>();
 
 defineSlots<{

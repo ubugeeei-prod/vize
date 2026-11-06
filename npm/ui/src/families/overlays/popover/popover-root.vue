@@ -57,7 +57,7 @@ const emit = defineEmits<{
   /** Fired when the Popover requests a controlled open value. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

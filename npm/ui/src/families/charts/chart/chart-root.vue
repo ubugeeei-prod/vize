@@ -104,7 +104,7 @@ const emit = defineEmits<{
   "update:hiddenSeries": [names: readonly string[]];
 
   /** Fired when keyboard focus or pointer hover changes the active data point. */
-  activeChange: [point: ChartActivePoint | null, reason: ChartActiveReason];
+  "activeChange": [point: ChartActivePoint | null, reason: ChartActiveReason];
 }>();
 
 defineSlots<{

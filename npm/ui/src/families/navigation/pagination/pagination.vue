@@ -50,7 +50,7 @@ const emit = defineEmits<{
   "update:modelValue": [page: number];
 
   /** Fired after any distinct current-page request. */
-  change: [page: number, previous: number, nativeEvent: Event | null];
+  "change": [page: number, previous: number, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

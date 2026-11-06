@@ -237,16 +237,16 @@ const emit = defineEmits<{
   "update:modelValue": [value: readonly T[]];
 
   /** Fired after a tag is accepted, with its index and input source. */
-  add: [tag: T, index: number, source: TagsInputAddSource];
+  "add": [tag: T, index: number, source: TagsInputAddSource];
 
   /** Fired after a tag is removed, with its former index and input source. */
-  remove: [tag: T, index: number, source: TagsInputRemoveSource];
+  "remove": [tag: T, index: number, source: TagsInputRemoveSource];
 
   /** Fired after an inline edit replaces a tag. */
-  edit: [tag: T, previous: T, index: number];
+  "edit": [tag: T, previous: T, index: number];
 
   /** Fired when a candidate tag is rejected by parsing, duplicates, max, or validation. */
-  invalid: [event: TagsInputInvalidEvent<T>];
+  "invalid": [event: TagsInputInvalidEvent<T>];
 }>();
 
 defineSlots<{

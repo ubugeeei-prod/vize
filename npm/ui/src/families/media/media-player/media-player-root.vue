@@ -181,15 +181,15 @@ const emit = defineEmits<{
   /** Fired on every native `timeupdate` and seek with the current position. */
   "update:currentTime": [time: number];
   /** Fired after playback starts. */
-  play: [];
+  "play": [];
   /** Fired after playback pauses. */
-  pause: [];
+  "pause": [];
   /** Fired after playback reaches the end. */
-  ended: [];
+  "ended": [];
   /** Fired when `play()` is rejected, e.g. by an autoplay policy. */
-  playRejected: [reason: unknown];
+  "playRejected": [reason: unknown];
   /** Fired when the media element reports an error (`MediaError.code`). */
-  error: [code: number | null];
+  "error": [code: number | null];
 }>();
 
 defineSlots<{

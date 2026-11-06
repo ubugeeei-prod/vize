@@ -49,9 +49,9 @@ const emit = defineEmits<{
   /** Fired when the Dialog requests a controlled open value. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
   /** Fired once when an open dialog has fully closed, including without exit motion. */
-  exitComplete: [];
+  "exitComplete": [];
 }>();
 
 defineSlots<{

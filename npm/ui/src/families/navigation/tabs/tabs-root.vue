@@ -98,7 +98,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: TabsValue];
 
   /** Fired after any distinct selected-value request. */
-  change: [value: TabsValue, previous: TabsValue, nativeEvent: Event | null];
+  "change": [value: TabsValue, previous: TabsValue, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

@@ -47,7 +47,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: StepperValue];
 
   /** Fired after any distinct current-step request. */
-  change: [value: StepperValue, previous: StepperValue, nativeEvent: Event | null];
+  "change": [value: StepperValue, previous: StepperValue, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
