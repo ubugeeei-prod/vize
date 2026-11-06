@@ -7,6 +7,7 @@
 //! same byte-proven `process_expression` port the DOM lane uses and returns
 //! the rewritten text unconsumed ([`prefix::Site::Raw`]).
 
+use alloc::borrow::ToOwned;
 use vize_l0::{String, cstr};
 use vize_l2::expr::ExprRef;
 
@@ -190,10 +191,16 @@ impl<'b> TransformExpressions<'b> {
             .map_err(|_| TransformRefusal::InvalidExpression)
     }
 
-    /// A parameter list (slot props) as render code spells it: type-erased
-    /// under `is_ts`, the authored text otherwise.
+    /// A parameter list (slot props) as render code spells it: free names in
+    /// defaults are prefixed, and TypeScript syntax is erased under `is_ts`.
     #[must_use]
     pub fn params(&self, params: &str) -> String {
+        if self.scope.prefixes_identifiers() {
+            return prefix::prefix_slot_defaults_with_render_prefixes(params, &self.scope)
+                .as_str()
+                .to_owned()
+                .into();
+        }
         self.scope
             .is_ts()
             .then(|| prefix::erase_typescript_params(params))

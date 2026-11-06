@@ -1,8 +1,9 @@
 //! `codegen::slots::params::prefix_slot_defaults`, ported: default
-//! values inside a slot-props destructuring pattern get `_ctx.` on their
-//! free identifiers (`{ item = defaultItem }` →
-//! `{ item = _ctx.defaultItem }`). Inline immutable setup bindings use the
-//! existing scope context; all other binding/default policies stay unchanged.
+//! values inside a slot-props destructuring pattern get their binding-specific
+//! render prefix (`{ item = defaultItem }` →
+//! `{ item = $setup.defaultItem }` for a setup binding). Inline immutable setup
+//! bindings use the existing scope context; all other binding/default policies
+//! stay unchanged.
 
 use alloc::vec::Vec as StdVec;
 
@@ -27,21 +28,42 @@ pub(in crate::emit) fn prefix_slot_defaults<'source>(
     source: &'source str,
     scope: &PrefixScope<'_>,
 ) -> RawJs<'source> {
+    prefix_slot_defaults_with_mode(source, scope, false)
+}
+
+/// SSR render functions expose binding metadata through `$setup`, `$props`,
+/// `$data`, and `$options`. Other emitters retain the shared `_ctx` contract.
+pub(in crate::emit) fn prefix_slot_defaults_with_render_prefixes<'source>(
+    source: &'source str,
+    scope: &PrefixScope<'_>,
+) -> RawJs<'source> {
+    prefix_slot_defaults_with_mode(source, scope, true)
+}
+
+fn prefix_slot_defaults_with_mode<'source>(
+    source: &'source str,
+    scope: &PrefixScope<'_>,
+    render_prefixes: bool,
+) -> RawJs<'source> {
     let Some(js) = scope
         .is_ts()
         .then(|| super::erase_typescript_params(source))
         .flatten()
     else {
-        return prefix_defaults(source, scope);
+        return prefix_defaults(source, scope, render_prefixes);
     };
-    let prefixed = match prefix_defaults(js.as_str(), scope) {
+    let prefixed = match prefix_defaults(js.as_str(), scope, render_prefixes) {
         RawJs::Borrowed(_) => None,
         RawJs::Owned(text) | RawJs::TrailingLineComment(text) => Some(text),
     };
     RawJs::Owned(prefixed.unwrap_or(js))
 }
 
-fn prefix_defaults<'source>(source: &'source str, scope: &PrefixScope<'_>) -> RawJs<'source> {
+fn prefix_defaults<'source>(
+    source: &'source str,
+    scope: &PrefixScope<'_>,
+    render_prefixes: bool,
+) -> RawJs<'source> {
     if !source.contains('=') || !expression_is_safe_to_parse(source) {
         return RawJs::Borrowed(source);
     }
@@ -69,6 +91,7 @@ fn prefix_defaults<'source>(source: &'source str, scope: &PrefixScope<'_>) -> Ra
         local_scopes: alloc::vec![slot_params],
         offset: 1,
         insertions: StdVec::new(),
+        render_prefixes,
     };
     for param in &arrow.params.items {
         collect_default_rewrites(&param.pattern, &mut visitor);
@@ -95,6 +118,7 @@ struct SlotDefaultPrefixVisitor<'scope, 'bindings> {
     local_scopes: StdVec<StdVec<String>>,
     offset: u32,
     insertions: StdVec<(usize, String)>,
+    render_prefixes: bool,
 }
 
 impl SlotDefaultPrefixVisitor<'_, '_> {
@@ -113,8 +137,20 @@ impl SlotDefaultPrefixVisitor<'_, '_> {
             .any(|scope| scope.iter().any(|local| local.as_str() == name))
     }
 
-    fn should_prefix(&self, name: &str) -> bool {
-        !self.is_local(name) && !is_global_allowed(name) && !self.scope.reads_constant_binding(name)
+    fn identifier_prefix(&self, name: &str) -> Option<&'static str> {
+        if self.is_local(name)
+            || self.scope.is_in_transform_scope(name)
+            || is_global_allowed(name)
+            || self.scope.reads_constant_binding(name)
+        {
+            return None;
+        }
+        if self.render_prefixes {
+            let prefix = self.scope.codegen_prefix(name);
+            (!prefix.is_empty()).then_some(prefix)
+        } else {
+            Some("_ctx.")
+        }
     }
 
     fn collect_function_params(&mut self, params: &oxc_ast::ast::FormalParameters<'_>) {
@@ -128,17 +164,17 @@ impl SlotDefaultPrefixVisitor<'_, '_> {
         }
     }
 
-    fn push_prefix(&mut self, span_start: u32) {
+    fn push_prefix(&mut self, span_start: u32, prefix: &str) {
         let pos = span_start.saturating_sub(self.offset) as usize;
-        self.insertions.push((pos, String::from("_ctx.")));
+        self.insertions.push((pos, String::from(prefix)));
     }
 }
 
 impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
         let name = ident.name.as_str();
-        if self.should_prefix(name) {
-            self.push_prefix(ident.span.start);
+        if let Some(prefix) = self.identifier_prefix(name) {
+            self.push_prefix(ident.span.start, prefix);
         }
     }
 
@@ -147,10 +183,11 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
             && let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.should_prefix(name) {
+            if let Some(prefix) = self.identifier_prefix(name) {
                 let pos = ident.span.end.saturating_sub(self.offset) as usize;
-                let mut suffix = String::with_capacity(name.len() + 8);
-                suffix.push_str(": _ctx.");
+                let mut suffix = String::with_capacity(name.len() + prefix.len() + 2);
+                suffix.push_str(": ");
+                suffix.push_str(prefix);
                 suffix.push_str(name);
                 self.insertions.push((pos, suffix));
                 return;
@@ -175,6 +212,11 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
         flags: oxc_syntax::scope::ScopeFlags,
     ) {
         self.push_scope();
+        if let Some(id) = &func.id
+            && let Some(scope) = self.local_scopes.last_mut()
+        {
+            scope.push(id.name.as_str().into());
+        }
         self.collect_function_params(&func.params);
         walk_function(self, func, flags);
         self.pop_scope();
@@ -264,6 +306,10 @@ mod tests {
         assert_eq!(
             prefix_slot_defaults("{ a = { b } }").as_str(),
             "{ a = { b: _ctx.b } }"
+        );
+        assert_eq!(
+            prefix_slot_defaults("{ ok = function f(n) { return n ? f(n - 1) : done } }").as_str(),
+            "{ ok = function f(n) { return n ? f(n - 1) : _ctx.done } }"
         );
     }
 }

@@ -1,0 +1,1 @@
+<template><Card #default="{ ok = done!==1 }">{{ ok }}</Card></template>

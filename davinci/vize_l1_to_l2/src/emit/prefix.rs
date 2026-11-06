@@ -36,7 +36,7 @@ mod var_bindings;
 pub(super) use globals::{is_constant_global, is_global_allowed, is_simple_identifier};
 pub(super) use rewrite::slot_params_syntax_valid;
 pub(super) use scope::{PrefixScope, ScopeMark};
-pub(super) use slot_defaults::prefix_slot_defaults;
+pub(super) use slot_defaults::{prefix_slot_defaults, prefix_slot_defaults_with_render_prefixes};
 #[cfg(feature = "typescript")]
 pub(in crate::emit) use typescript::{erase_typescript, erase_typescript_params};
 
