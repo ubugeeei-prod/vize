@@ -20,7 +20,7 @@ pub(super) fn map_location(
         return None;
     }
     let result = VirtualTsResult::from_projection(
-        source.code.to_string(),
+        source.code.clone(),
         source.mapping.clone(),
         source.import_source_map.clone(),
     );
@@ -92,7 +92,7 @@ mod tests {
             source_uri: uri,
             request_uri: host.request_uri,
             virtual_result: VirtualTsResult::from_projection(
-                host.code.to_string(),
+                host.code,
                 vize_canon::virtual_ts::ProjectionMapping::from_spans(host.mappings),
                 host.import_source_map,
             ),

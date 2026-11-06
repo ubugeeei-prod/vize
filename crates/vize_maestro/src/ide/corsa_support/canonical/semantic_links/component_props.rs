@@ -283,7 +283,7 @@ mod tests {
 
     fn empty_result() -> VirtualTsResult {
         VirtualTsResult {
-            code: "".to_owned(),
+            code: "".into(),
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

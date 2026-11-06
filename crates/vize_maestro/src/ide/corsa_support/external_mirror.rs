@@ -83,7 +83,7 @@ fn map_range(
         source_uri: source_uri.clone(),
         request_uri: cstr!("{}{}", source_uri.path(), generated.virtual_suffix),
         virtual_result: VirtualTsResult::from_projection(
-            generated.code.to_string(),
+            generated.code,
             generated.mapping,
             generated.import_source_map,
         ),

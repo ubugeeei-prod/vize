@@ -190,7 +190,7 @@ mod semantic_position_tests {
 
     fn identity_result(code: &str) -> VirtualTsResult {
         VirtualTsResult {
-            code: code.to_owned(),
+            code: code.into(),
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

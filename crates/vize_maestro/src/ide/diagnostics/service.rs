@@ -9,7 +9,10 @@ use super::{LineIndex, Severity};
 
 #[cfg(feature = "native")]
 pub(in crate::ide) struct VirtualTsResult {
-    pub(in crate::ide) code: String,
+    /// Canon already owns generated code as a compact string. Retaining that
+    /// allocation avoids copying the complete virtual document again on every
+    /// warm editor query.
+    pub(in crate::ide) code: vize_l0::String,
     /// Authored editor-operation owners; inference-only copies are separate.
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
     pub(in crate::ide) diagnostic_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,

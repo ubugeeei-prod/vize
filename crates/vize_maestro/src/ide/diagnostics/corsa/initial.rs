@@ -61,7 +61,7 @@ impl PreparedInitialApiDiagnostics {
         diagnostics: Vec<vize_canon::corsa_bridge::PhasedLspDiagnostic>,
     ) -> CombinedDiagnostics {
         let document = CorsaDocument {
-            code: String::from(self.opened.code.as_str()),
+            code: self.opened.code.clone(),
             mapping: self.opened.mapping.clone(),
             import_source_map: self.opened.import_source_map.clone(),
         };

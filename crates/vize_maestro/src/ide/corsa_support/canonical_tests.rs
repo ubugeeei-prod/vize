@@ -258,7 +258,7 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
         source: "export const alpha = 1;\n".into(),
         request_uri: shadow_uri.to_string().into(),
         virtual_result: crate::ide::diagnostics::VirtualTsResult {
-            code: "export const alpha = 1;\n".to_string(),
+            code: "export const alpha = 1;\n".into(),
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

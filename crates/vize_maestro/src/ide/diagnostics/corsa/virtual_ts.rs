@@ -14,11 +14,7 @@ impl DiagnosticService {
     ) -> (std::string::String, VirtualTsResult) {
         (
             opened.request_uri.to_string(),
-            VirtualTsResult::from_projection(
-                opened.code.to_string(),
-                opened.mapping,
-                opened.import_source_map,
-            ),
+            VirtualTsResult::from_projection(opened.code, opened.mapping, opened.import_source_map),
         )
     }
 
@@ -60,7 +56,7 @@ impl DiagnosticService {
         // CorsaBridge syncs for editor sessions; this helper keeps the mapping
         // metadata available to tests without owning dependency synchronization.
         Some(VirtualTsResult::from_projection(
-            generated.code.to_string(),
+            generated.code,
             generated.mapping,
             generated.import_source_map,
         ))
@@ -71,7 +67,7 @@ impl VirtualTsResult {
     /// A synced document from Canon's projection: span links stay in
     /// pre-rewrite coordinates, semantic links move into the rewritten code.
     pub(in crate::ide) fn from_projection(
-        code: std::string::String,
+        code: vize_l0::String,
         mapping: vize_canon::virtual_ts::ProjectionMapping,
         import_source_map: ImportSourceMap,
     ) -> Self {
@@ -135,4 +131,22 @@ fn rewrite_range(
 ) -> std::ops::Range<usize> {
     import_source_map.get_virtual_offset(range.start as u32) as usize
         ..import_source_map.get_virtual_offset(range.end as u32) as usize
+}
+
+#[cfg(test)]
+mod tests {
+    use super::VirtualTsResult;
+
+    #[test]
+    fn projection_result_retains_the_generated_code_allocation() {
+        let code: vize_l0::String = "generated".repeat(4_096).into();
+        let allocation = code.as_ptr();
+        let result = VirtualTsResult::from_projection(
+            code,
+            vize_canon::virtual_ts::ProjectionMapping::default(),
+            vize_canon::ImportSourceMap::empty(),
+        );
+
+        assert_eq!(result.code.as_ptr(), allocation);
+    }
 }
