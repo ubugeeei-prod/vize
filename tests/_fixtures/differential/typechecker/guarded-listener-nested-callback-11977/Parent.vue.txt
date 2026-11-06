@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import Child from './Child.vue';
+
+const ready = ref(true);
+const ids = ref<string[]>([]);
+</script>
+
+<template>
+  <div v-if="ready">
+    <Child @change="v => ids = v.map(x => x.id)" />
+  </div>
+</template>

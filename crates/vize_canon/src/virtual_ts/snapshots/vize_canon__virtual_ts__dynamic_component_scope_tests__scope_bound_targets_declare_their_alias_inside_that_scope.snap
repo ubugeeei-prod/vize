@@ -41,6 +41,7 @@ expression: template
       // @vize-map: expr -> 121:125
       void (map[foo]); // VBind
       // @vize-map: expr -> 132:140
+      // @ts-ignore Inference-only listener value; the typed event scope owns diagnostics.
       void (((v) => take(v)) as ((...__vize_args: any[]) => unknown)); // VOn
       // @vize-map: expr -> 149:163
     }
