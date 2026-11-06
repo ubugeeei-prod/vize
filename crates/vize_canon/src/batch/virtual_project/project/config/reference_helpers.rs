@@ -80,6 +80,12 @@ fn editor_projects_materialize_one_shared_helper_program() {
         assert_eq!(generated.matches("type $ComponentInstanceFor<").count(), 1);
         assert_eq!(generated.matches("type $ComponentInputProps<").count(), 1);
         assert_eq!(generated.matches("type $ReplaceComponentProps<").count(), 1);
+        assert_eq!(
+            generated
+                .matches("export type { __RuntimePropShape, __LooseRequired")
+                .count(),
+            1
+        );
     }
 
     project.materialize().unwrap();
