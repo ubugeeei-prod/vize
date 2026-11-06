@@ -9,13 +9,19 @@ import {
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
+const foreignContentBrowser = "tests/tooling/davinci-document-foreign-content.test.ts";
 const selectBrowser = "tests/tooling/davinci-document-select.test.ts";
 const specialTextBrowser = "tests/tooling/davinci-document-special-text.test.ts";
 const others = Array.from({ length: 40 }, (_, index) => `tests/tooling/${index}.test.mjs`);
 const files = [...others.slice(0, 3), browser];
 
 await test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
-  for (const selectedBrowser of [browser, selectBrowser, specialTextBrowser]) {
+  for (const selectedBrowser of [
+    browser,
+    foreignContentBrowser,
+    selectBrowser,
+    specialTextBrowser,
+  ]) {
     for (const tier of ["pr", "merge"]) {
       const tests = [...others, selectedBrowser];
       const plan = { version: 1, tier, tests };

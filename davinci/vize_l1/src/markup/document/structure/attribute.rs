@@ -1,6 +1,6 @@
 //! Static HTML attribute readback from the original private start-tag events.
 
-use vize_l0::Span;
+use vize_l0::{Namespace, Span};
 
 use super::{DocumentHtmlElement, DocumentHtmlStructure, Element};
 use crate::markup::{QuoteType, document::DocumentTokenKind as Kind, entity::DecodedEntity};
@@ -41,8 +41,11 @@ impl<'s, 'o, 'a> Iterator for DocumentHtmlAttributes<'s, 'o, 'a> {
                 .iter()
                 .filter(|event| event.kind() == Kind::AttributeName)
                 .any(|event| {
-                    name_characters(event.span.slice(self.tree.owner.source()))
-                        .eq(attribute.name_characters())
+                    name_characters(
+                        self.element.namespace,
+                        event.span.slice(self.tree.owner.source()),
+                    )
+                    .eq(attribute.name_characters())
                 });
             if !duplicate {
                 return Some(attribute);
@@ -97,9 +100,10 @@ impl<'s, 'o, 'a> DocumentHtmlAttribute<'s, 'o, 'a> {
         self.name
     }
 
-    /// Actual HTML name scalars: ASCII uppercase folds; authored NUL replaces.
+    /// Actual DOM name scalars: HTML folding plus SVG/MathML adjustments;
+    /// authored NUL replaces.
     pub fn name_characters(&self) -> impl Iterator<Item = char> + 'a {
-        name_characters(self.authored_name())
+        name_characters(self.element.namespace, self.authored_name())
     }
 
     #[must_use]
@@ -142,14 +146,105 @@ impl<'s, 'o, 'a> DocumentHtmlAttribute<'s, 'o, 'a> {
     }
 }
 
-fn name_characters(raw: &str) -> impl Iterator<Item = char> + '_ {
-    raw.chars().map(|ch| {
-        if ch == '\0' {
-            '\u{fffd}'
-        } else {
-            ch.to_ascii_lowercase()
+fn name_characters(namespace: Namespace, raw: &str) -> AttributeNameCharacters<'_> {
+    if let Some(adjusted) = adjusted_attribute_name(namespace, raw) {
+        AttributeNameCharacters::Adjusted(adjusted.chars())
+    } else {
+        AttributeNameCharacters::Normalized(raw.chars())
+    }
+}
+
+enum AttributeNameCharacters<'a> {
+    Adjusted(core::str::Chars<'static>),
+    Normalized(core::str::Chars<'a>),
+}
+
+impl Iterator for AttributeNameCharacters<'_> {
+    type Item = char;
+
+    fn next(&mut self) -> Option<char> {
+        match self {
+            Self::Adjusted(value) => value.next(),
+            Self::Normalized(value) => value.next().map(|ch| {
+                if ch == '\0' {
+                    '\u{fffd}'
+                } else {
+                    ch.to_ascii_lowercase()
+                }
+            }),
         }
-    })
+    }
+}
+
+fn adjusted_attribute_name(namespace: Namespace, raw: &str) -> Option<&'static str> {
+    let names: &[&str] = match namespace {
+        Namespace::Html => return None,
+        Namespace::MathMl => &["definitionURL"],
+        Namespace::Svg => &[
+            "attributeName",
+            "attributeType",
+            "baseFrequency",
+            "baseProfile",
+            "calcMode",
+            "clipPathUnits",
+            "diffuseConstant",
+            "edgeMode",
+            "filterUnits",
+            "glyphRef",
+            "gradientTransform",
+            "gradientUnits",
+            "kernelMatrix",
+            "kernelUnitLength",
+            "keyPoints",
+            "keySplines",
+            "keyTimes",
+            "lengthAdjust",
+            "limitingConeAngle",
+            "markerHeight",
+            "markerUnits",
+            "markerWidth",
+            "maskContentUnits",
+            "maskUnits",
+            "numOctaves",
+            "pathLength",
+            "patternContentUnits",
+            "patternTransform",
+            "patternUnits",
+            "pointsAtX",
+            "pointsAtY",
+            "pointsAtZ",
+            "preserveAlpha",
+            "preserveAspectRatio",
+            "primitiveUnits",
+            "refX",
+            "refY",
+            "repeatCount",
+            "repeatDur",
+            "requiredExtensions",
+            "requiredFeatures",
+            "specularConstant",
+            "specularExponent",
+            "spreadMethod",
+            "startOffset",
+            "stdDeviation",
+            "stitchTiles",
+            "surfaceScale",
+            "systemLanguage",
+            "tableValues",
+            "targetX",
+            "targetY",
+            "textLength",
+            "viewBox",
+            "viewTarget",
+            "xChannelSelector",
+            "yChannelSelector",
+            "zoomAndPan",
+        ],
+    };
+    names
+        .iter()
+        .copied()
+        .find(|name| raw.eq_ignore_ascii_case(name))
 }
 
 #[derive(Debug)]

@@ -4,17 +4,20 @@
 //! tags, select rules and the table content model branch on associated constants.
 //! `html_structure` builds with `Document`; tests also build with `Component`.
 
-use vize_l0::{Span, Vec};
+use vize_l0::{Namespace, Span, Vec};
 
 use super::{DocumentHtmlRefusal as Refusal, DocumentHtmlStructure, Element};
 use crate::markup::document::{DocumentTokenKind as Kind, NativeDocument};
 use crate::markup::{Document, Profile};
 
 mod head_text;
+mod identity;
 mod insertion;
 mod select;
 mod table;
 mod text;
+
+use identity::{math_html_integration, svg_html_integration};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Mode {
@@ -38,6 +41,7 @@ enum Mode {
 #[derive(Clone)]
 struct Tag {
     name: &'static str,
+    namespace: Namespace,
     span: Span,
     opening: Span,
     slash: bool,
@@ -174,8 +178,9 @@ impl<P: Profile> Builder<'_, '_, P> {
         attributes: core::ops::Range<usize>,
         event: usize,
     ) -> Result<Tag, Refusal> {
-        let name =
-            name::<P>(self.source(name_span)?).ok_or(Refusal::UnsupportedElement(name_span))?;
+        let (name, namespace) = self
+            .start_identity(self.source(name_span)?)
+            .ok_or(Refusal::UnsupportedElement(name_span))?;
         let start = name_span
             .start
             .checked_sub(1)
@@ -192,6 +197,7 @@ impl<P: Profile> Builder<'_, '_, P> {
         }
         Ok(Tag {
             name,
+            namespace,
             span: name_span,
             opening: Span::new(start, gt + 1),
             slash,
@@ -201,15 +207,45 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 
     fn start(&mut self, tag: Tag) -> Result<(), Refusal> {
+        if tag.namespace != Namespace::Html
+            && !P::SELF_CLOSING_ANY_ELEMENT
+            && (svg_html_integration(tag.name)
+                || matches!(tag.name, "mi" | "mo" | "mn" | "ms" | "mtext"))
+            && self.source(tag.span)? != tag.name
+        {
+            // The browser adjusts integration-point case; the shipped parser
+            // compares the authored spelling. Only their shared spelling is
+            // admitted by the replacement view.
+            return Err(Refusal::UnsupportedElement(tag.span));
+        }
+        if tag.namespace == Namespace::Html
+            && tag.slash
+            && !void(tag.name)
+            && !P::SELF_CLOSING_ANY_ELEMENT
+            && self.current_element().is_some_and(|parent| {
+                matches!(parent.namespace, Namespace::Svg | Namespace::MathMl)
+                    && (svg_html_integration(parent.name)
+                        || math_html_integration(parent.name, tag.name))
+            })
+        {
+            // Chromium ignores the slash after crossing an integration point;
+            // the shipped parser closes this element. Keep the disagreement
+            // explicit instead of manufacturing either oracle's tree.
+            return Err(Refusal::UnsupportedElement(tag.span));
+        }
         let next = match (self.mode, tag.name) {
             (Mode::Html, "html") => Mode::Head,
             (Mode::Head, "head") => Mode::InHead,
             (Mode::Body, "body") => Mode::InBody,
-            (Mode::InHead, "base" | "link" | "meta") => Mode::InHead,
-            (Mode::InHead, "title" | "style" | "script") => {
+            (Mode::InHead, "base" | "link" | "meta") if tag.namespace == Namespace::Html => {
+                Mode::InHead
+            }
+            (Mode::InHead, "title" | "style" | "script") if tag.namespace == Namespace::Html => {
                 return self.head_text_start(tag);
             }
-            (Mode::InBody, "title" | "style" | "script" | "textarea") => {
+            (Mode::InBody, "title" | "style" | "script" | "textarea")
+                if tag.namespace == Namespace::Html =>
+            {
                 if tag.slash {
                     return Err(Refusal::UnsupportedElement(tag.span));
                 }
@@ -236,8 +272,9 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 
     fn close(&mut self, name_span: Span, event: usize) -> Result<(), Refusal> {
-        let name =
-            name::<P>(self.source(name_span)?).ok_or(Refusal::UnsupportedElement(name_span))?;
+        let (name, namespace) = self
+            .end_identity(self.source(name_span)?)
+            .ok_or(Refusal::UnsupportedElement(name_span))?;
         let start = name_span
             .start
             .checked_sub(2)
@@ -257,12 +294,15 @@ impl<P: Profile> Builder<'_, '_, P> {
         let closing = Span::new(start, (name_span.end as usize + gap + 1) as u32);
         let end = End {
             name,
+            namespace,
             span: name_span,
             closing,
             event,
         };
         match (self.mode, name) {
-            (Mode::InHead, "title" | "style" | "script") => self.pop_matching(&end),
+            (Mode::InHead, "title" | "style" | "script") if end.namespace == Namespace::Html => {
+                self.pop_matching(&end)
+            }
             (Mode::InHead, "head") => {
                 self.pop_matching(&end)?;
                 self.mode = Mode::Body;
@@ -290,12 +330,14 @@ impl<P: Profile> Builder<'_, '_, P> {
     /// Insert at the current node. Void elements, and under a profile that
     /// self-closes any element a slashed tag, never become the current node.
     fn insert(&mut self, tag: Tag) -> Result<(), Refusal> {
-        let closed = void(tag.name) || (tag.slash && P::SELF_CLOSING_ANY_ELEMENT);
+        let closed = (tag.namespace == Namespace::Html && void(tag.name))
+            || (tag.slash && (tag.namespace != Namespace::Html || P::SELF_CLOSING_ANY_ELEMENT));
         let parent = self.stack.last().copied();
         let index = self.elements.len();
         let content_end = tag.attributes.end + 1;
         self.elements.push(Element {
             name: tag.name,
+            namespace: tag.namespace,
             authored_name: tag.span,
             opening: tag.opening,
             closing: None,
@@ -328,9 +370,23 @@ impl<P: Profile> Builder<'_, '_, P> {
         self.name_at(self.stack.len().checked_sub(1)?)
     }
 
+    fn current_namespace(&self) -> Option<Namespace> {
+        self.namespace_at(self.stack.len().checked_sub(1)?)
+    }
+
     fn name_at(&self, depth: usize) -> Option<&'static str> {
         let index = *self.stack.get(depth)?;
         self.elements.get(index).map(|element| element.name)
+    }
+
+    fn namespace_at(&self, depth: usize) -> Option<Namespace> {
+        let index = *self.stack.get(depth)?;
+        self.elements.get(index).map(|element| element.namespace)
+    }
+
+    fn current_element(&self) -> Option<&Element> {
+        let index = *self.stack.last()?;
+        self.elements.get(index)
     }
 
     /// Pop the current node, closed by `closing` or implied at `event`.
@@ -347,7 +403,7 @@ impl<P: Profile> Builder<'_, '_, P> {
 
     /// Pop the current node with this authored end tag, which must name it.
     fn pop_matching(&mut self, end: &End) -> Result<(), Refusal> {
-        if self.current() != Some(end.name) {
+        if self.current() != Some(end.name) || self.current_namespace() != Some(end.namespace) {
             return Err(Refusal::ImpliedEnd(end.span));
         }
         self.pop(Some(end.closing), end.event)
@@ -375,84 +431,11 @@ impl<P: Profile> Builder<'_, '_, P> {
 /// One authored end tag, checked against its original frame.
 struct End {
     name: &'static str,
+    namespace: Namespace,
     span: Span,
     closing: Span,
     /// The `CloseTagName` event; implied closes end their content here.
     event: usize,
-}
-
-const NAMES: [&str; 60] = [
-    "html",
-    "head",
-    "body",
-    "base",
-    "link",
-    "meta",
-    "title",
-    "style",
-    "script",
-    "textarea",
-    "div",
-    "span",
-    "br",
-    "hr",
-    "img",
-    "input",
-    "area",
-    "embed",
-    "source",
-    "track",
-    "wbr",
-    "article",
-    "aside",
-    "footer",
-    "header",
-    "main",
-    "nav",
-    "section",
-    "address",
-    "blockquote",
-    "figure",
-    "figcaption",
-    "hgroup",
-    "search",
-    "p",
-    "ul",
-    "ol",
-    "menu",
-    "li",
-    "dl",
-    "dt",
-    "dd",
-    "ruby",
-    "rb",
-    "rt",
-    "rtc",
-    "rp",
-    "option",
-    "optgroup",
-    "select",
-    "table",
-    "caption",
-    "colgroup",
-    "col",
-    "tbody",
-    "thead",
-    "tfoot",
-    "tr",
-    "td",
-    "th",
-];
-
-/// The admitted local name, compared without ASCII case under a folding profile.
-fn name<P: Profile>(raw: &str) -> Option<&'static str> {
-    NAMES.into_iter().find(|name| {
-        if P::FOLD_NAME_CASE {
-            raw.eq_ignore_ascii_case(name)
-        } else {
-            raw == *name
-        }
-    })
 }
 
 fn void(name: &str) -> bool {
