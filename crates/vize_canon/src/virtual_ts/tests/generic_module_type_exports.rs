@@ -132,7 +132,7 @@ void emit;
         "emit: $PublicEmit<Emits<T>>",
         "ShallowUnwrapRef<Exposed<T>>",
         "__EmitProps<Emits<T>>",
-        "type $GenericComponent = <T extends string = 'fallback'>",
+        "type $GenericComponent = (<T extends string = 'fallback'>",
     ] {
         assert!(
             virtual_ts.contains(expected),
