@@ -7,6 +7,9 @@ export interface WorkspaceServerDiscovery {
   reason?: string;
 }
 
+export const RESTRICTED_MODE_WORKSPACE_SERVER_REASON =
+  "Workspace servers skipped in Restricted Mode.";
+
 /** Resolve package manifests by filename; npm's exports may hide package.json. */
 export function discoverWorkspaceServers(
   folders: readonly string[],
@@ -14,7 +17,7 @@ export function discoverWorkspaceServers(
   platform: NodeJS.Platform = process.platform,
 ): WorkspaceServerDiscovery {
   if (!isTrusted) {
-    return { candidates: [], reason: "Workspace servers skipped in Restricted Mode." };
+    return { candidates: [], reason: RESTRICTED_MODE_WORKSPACE_SERVER_REASON };
   }
   const servers = new Map<string, ServerCandidate>();
   try {
