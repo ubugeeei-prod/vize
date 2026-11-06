@@ -12,6 +12,7 @@ import {
   setupComponentBracketReference,
 } from "./support/setup-component-bracket-reference.ts";
 import {
+  moduleShapeFactsReference,
   type ParseModule,
   typescriptErasureReference,
 } from "./support/typescript-erasure-reference.ts";
@@ -213,6 +214,10 @@ test("per-piece erasure advances spelling and byte offsets with authored anchors
       defaultExportStart: 17,
       defaultExportKeywordEnd: 31,
       defaultExportEnd: 56,
+      imports: [],
+      hasSideEffectImport: false,
+      hasReexport: false,
+      hasDynamicImport: false,
     },
   };
   const untouched = structuredClone(preserved);
@@ -242,6 +247,30 @@ test("per-piece erasure advances spelling and byte offsets with authored anchors
       { code: "ERR_ASSERTION" },
     );
   }
+});
+
+test("module fact references cover every native HMR branch", () => {
+  const packet = {
+    code: [
+      'import defaultValue, * as namespace from "package";',
+      'import "effect";',
+      'export { named } from "reexport";',
+      'const load = () => import("lazy");',
+      "export default defaultValue;",
+    ].join("\n"),
+    moduleShape: { hasDefaultExport: true },
+  };
+  assert.deepEqual(moduleShapeFactsReference(packet, parse).moduleShape, {
+    hasDefaultExport: true,
+    imports: [
+      { source: "package", local: "defaultValue", namespace: false },
+      { source: "package", local: "namespace", namespace: true },
+    ],
+    hasSideEffectImport: true,
+    hasReexport: true,
+    hasDynamicImport: true,
+    defaultExportLocal: "defaultValue",
+  });
 });
 
 test("per-piece erasure keeps bundler effect annotations", () => {

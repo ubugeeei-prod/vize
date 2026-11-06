@@ -10,6 +10,7 @@ import {
 } from "./support/plain-script-project-metadata-reference.ts";
 import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
 import {
+  moduleShapeFactsReference,
   typescriptErasureReference,
   type ParseModule,
 } from "./support/typescript-erasure-reference.ts";
@@ -65,9 +66,17 @@ function comparePackets(priorPackets: PlainScriptPacket[], nextPackets: PlainScr
       unqualifiedRows.push([prior.case, prior.filename, prior.options]);
       continue;
     }
-    const erased = typescriptErasureReference(preserved, next.native, parse);
+    const shape = next.native.moduleShape;
+    const nextNative =
+      shape &&
+      typeof shape === "object" &&
+      !Array.isArray(shape) &&
+      !Object.hasOwn(shape, "imports")
+        ? moduleShapeFactsReference(next.native, parse)
+        : next.native;
+    const erased = typescriptErasureReference(preserved, nextNative, parse);
     const expected = plainScriptProjectMetadataReference(prior, erased, manifest.workspaceRoot);
-    assert.deepEqual(expected, next.native);
+    assert.deepEqual(expected, nextNative);
     if (prior.case === "constant-controls" && prior.filename === "src/App.vue")
       metadataRows.push(prior.options);
   }

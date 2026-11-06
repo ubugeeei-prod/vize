@@ -40,11 +40,11 @@ export function typescriptErasureReference<T extends ErasedPacket>(
   );
   out.code = erased.code;
   if (preserved.moduleShape) {
-    out.moduleShape = {
-      ...preserved.moduleShape,
-      ...moduleFacts(parsed),
-      ...defaultExportOffsets(erased.code, parsed),
-    };
+    out.moduleShape = completeModuleShape(
+      preserved.moduleShape,
+      moduleFacts(parsed),
+      defaultExportOffsets(erased.code, parsed),
+    );
   }
   if (preserved.map != null) {
     assert.equal(typeof preserved.map, "string", "maps are serialized");
@@ -70,9 +70,43 @@ export function moduleShapeFactsReference<T extends ErasedPacket>(
 ): T {
   const out = structuredClone(packet);
   if (out.moduleShape) {
-    out.moduleShape = { ...out.moduleShape, ...moduleFacts(parseModule(out.code, parse)) };
+    out.moduleShape = completeModuleShape(
+      out.moduleShape,
+      moduleFacts(parseModule(out.code, parse)),
+    );
   }
   return out;
+}
+
+function completeModuleShape(
+  shape: Record<string, unknown>,
+  facts: Record<string, unknown>,
+  offsets: Record<string, number> = {},
+): Record<string, unknown> {
+  const {
+    imports: _imports,
+    hasSideEffectImport: _hasSideEffectImport,
+    hasReexport: _hasReexport,
+    hasDynamicImport: _hasDynamicImport,
+    defaultExportStart,
+    defaultExportKeywordEnd,
+    defaultExportEnd,
+    defaultExportLocal: _defaultExportLocal,
+    ...geometry
+  } = shape;
+  const { defaultExportLocal, ...hmrFacts } = facts;
+  const positions = {
+    ...(defaultExportStart === undefined ? {} : { defaultExportStart }),
+    ...(defaultExportKeywordEnd === undefined ? {} : { defaultExportKeywordEnd }),
+    ...(defaultExportEnd === undefined ? {} : { defaultExportEnd }),
+    ...offsets,
+  };
+  return {
+    ...geometry,
+    ...hmrFacts,
+    ...positions,
+    ...(defaultExportLocal === undefined ? {} : { defaultExportLocal }),
+  };
 }
 
 function parseModule(code: string, parse: ParseModule): BabelFile {
