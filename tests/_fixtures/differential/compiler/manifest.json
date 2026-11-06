@@ -3819,6 +3819,62 @@
       }
     },
     {
+      "id": "compiler/sfc/template-handler-javascript-body-11708",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "template-handler-javascript-body-11708",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "b73373345d9a9f7738c69d0bcd4dc2f7c652c4820422423245843e08057a20f6",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "template-handler-javascript-body-11708/module.expected.txt",
+        "sha256": "4ca4d099cb23627f19683e98743282deeb599167963b57619b1e28e8305d6354",
+        "source": "crates/vize_atelier_sfc/tests/template_handler_typescript.rs:javascript_handler_bodies_keep_their_bytes"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row keeps a JavaScript handler as the positive admission control for the exhaustive gate."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11708"
+      }
+    },
+    {
       "id": "compiler/sfc/template-handler-typescript-declaration",
       "state": "active",
       "targets": [
