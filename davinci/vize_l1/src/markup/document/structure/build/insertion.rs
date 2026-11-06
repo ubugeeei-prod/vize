@@ -26,6 +26,16 @@ impl<P: Profile> Builder<'_, '_, P> {
         {
             return Err(Refusal::ImpliedEnd(tag.span));
         }
+        if P::IMPLIED_END_TAGS
+            && tag.namespace == Namespace::Html
+            && matches!(tag.name, "details" | "dialog" | "summary")
+            && self.in_scope(&["p"], &["button"])
+        {
+            // Chromium closes the paragraph, while the shipped document parser
+            // retains these elements below it. Preserve public behavior through
+            // fallback until that historical boundary can be changed as a unit.
+            return Err(Refusal::ImpliedEnd(tag.span));
+        }
         if P::SELECT_CONTENT_MODEL {
             self.select_start(&tag)?;
         }
@@ -270,6 +280,7 @@ fn special(name: &str) -> bool {
             | "datalist"
             | "del"
             | "dfn"
+            | "dialog"
             | "em"
             | "font"
             | "i"
@@ -285,6 +296,7 @@ fn special(name: &str) -> bool {
             | "s"
             | "samp"
             | "small"
+            | "slot"
             | "span"
             | "strike"
             | "strong"
