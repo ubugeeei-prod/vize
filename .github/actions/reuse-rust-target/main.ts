@@ -15,17 +15,16 @@ try {
   console.log(`Pruned ${removed.length} run output(s) from the reused Rust target.`);
   for (const path of removed.slice(0, 20)) console.log(`  ${path}`);
   const result = restoreSourceMtimes({ target, secondary, record });
+  if (!result.applied) throw new Error(result.reason);
   // The post step records the final tree only for the run that may commit it.
-  if (record && result.applied && process.env.GITHUB_STATE)
+  if (record && process.env.GITHUB_STATE)
     appendFileSync(process.env.GITHUB_STATE, `target=${target}\n`);
   const elapsed = Math.round(performance.now() - started);
   console.log(
-    result.applied
-      ? `Rust source mtimes (${result.reason}): ${result.restored} restored, ${result.changed} newer than ${result.floor} in ${elapsed} ms.`
-      : `Rust source mtimes left as checked out: ${result.reason}.`,
+    `Rust source mtimes (${result.reason}): ${result.restored} restored, ${result.changed} newer than ${result.floor} in ${elapsed} ms.`,
   );
 } catch (error) {
-  // Checked-out mtimes are always safe; only a stale record could be harmful.
   if (record && target) rmSync(join(target, manifestName), { force: true });
-  console.log(`::warning::Reused Rust target left as mounted: ${String(error)}`);
+  console.log(`::error::Reused Rust target has no source custody: ${String(error)}`);
+  process.exitCode = 1;
 }
