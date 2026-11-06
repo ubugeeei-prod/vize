@@ -87,7 +87,7 @@ fn emitted_generic_slots_keep_vue_component_context_overlap() {
                 vue_component_context: true,
             }
         ),
-        "type $GenericComponent = <R extends { id: string }>(props: $GenericContext<R>['props'], ctx?: Pick<$GenericContext<R>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<R>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<R> };\n"
+        "type $GenericComponent = (<R extends { id: string }>(props: $GenericContext<R>['props'], ctx?: { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<R>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<R> }) & (<R extends { id: string }>(props: $GenericContext<R>['props'], ctx?: Pick<$GenericContext<R>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<R>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<R> });\n"
     );
 }
 

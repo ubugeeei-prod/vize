@@ -165,24 +165,21 @@ impl fmt::Display for GenericSignature<'_> {
         } = self;
         let context = names::declared("$GenericContext");
         let pick = names::lib("Pick");
-        write!(
-            formatter,
-            "type {name} = {parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>"
-        )?;
         if *vue_component_context {
             // Vue's generic SFC function overlaps `Component` when emitted
-            // listeners are present. Required Vize metadata makes TypeScript
-            // compare the function branch more strictly, so preserve that
-            // public overlap without widening the retained slot context used
-            // for inference (#11966).
-            write!(
+            // listeners are present. Keep its loose compatibility signature
+            // first and the precise public signature last: conditional helpers
+            // such as `ComponentEmit` and `ComponentSlots` infer from the last
+            // overload, while the first one preserves the cast overlap
+            // required by Vue's `Component` union (#11966).
+            return writeln!(
                 formatter,
-                " | {{ attrs: any; emit: (...args: any[]) => any; slots: any }}"
-            )?;
+                "type {name} = ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {{ attrs: any; emit: (...args: any[]) => any; slots: any }}, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }}) & ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }});"
+            );
         }
         writeln!(
             formatter,
-            ", expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }};"
+            "type {name} = {parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }};"
         )
     }
 }

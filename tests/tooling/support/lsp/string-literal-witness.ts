@@ -95,7 +95,7 @@ export function witness(
       noUncheckedSideEffectImports: false,
     },
     exclude: [],
-    include: ["Page.vue.ts", "__vize_vue_modules.d.ts", "messages.ts"],
+    include: ["Page.vue.ts", "__vize_helpers.d.ts", "__vize_vue_modules.d.ts", "messages.ts"],
   });
   const code = generated[0].source;
   assert.equal(source.split(token).length - 1, 1, "unique authored whole literal");
