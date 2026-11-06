@@ -13,8 +13,8 @@
         "tabWidth": 4
       },
       "historicalCliSha256": "d3814edf480f3699237bb14a3da74f2ae046d9b2ef80b249a92ff45a824c4c83",
-      "currentExpected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        background-color var(--duration, 0.2s) var(--ease, ease),\n        color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
-      "currentExpectedSha256": "8cd3c2f22571d8ba964be25fa65dd874a1e0bf429bd2189e131a677db4221d3b"
+      "currentExpected": "<template>\n    <button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        background-color var(--duration, 0.2s) var(--ease, ease),\n        color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "currentExpectedSha256": "f6f835473330422b6036b7359816638312fc869463cec5e6f08d55d6f8f552af"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -26,8 +26,8 @@
         "useTabs": true
       },
       "historicalCliSha256": "d3814edf480f3699237bb14a3da74f2ae046d9b2ef80b249a92ff45a824c4c83",
-      "currentExpected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
-      "currentExpectedSha256": "40c72e57b4b1522f8b25856decc54ee9361509c4bace5ef2b5275a3c06a30f82"
+      "currentExpected": "<template>\n\t<button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "currentExpectedSha256": "1068d552e322b0df8f085cdac7bcbdf389172c9e4036c865d472f7e6ac6e98ce"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -40,8 +40,8 @@
         "tabWidth": 4
       },
       "historicalCliSha256": "d3814edf480f3699237bb14a3da74f2ae046d9b2ef80b249a92ff45a824c4c83",
-      "currentExpected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
-      "currentExpectedSha256": "40c72e57b4b1522f8b25856decc54ee9361509c4bace5ef2b5275a3c06a30f82"
+      "currentExpected": "<template>\n\t<button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "currentExpectedSha256": "1068d552e322b0df8f085cdac7bcbdf389172c9e4036c865d472f7e6ac6e98ce"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -51,8 +51,8 @@
       "historicalExpectedSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
       "options": {},
       "historicalCliSha256": "60b5fa9fd607b113fdfa8da48c9589899d3160320b94ecfbbe779a797f5025f2",
-      "currentExpected": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition:\n    background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
-      "currentExpectedSha256": "6095cd036eb495cb4a24772d234c5d34fe8e1a31a263c62ad885d9d5de52b50f",
+      "currentExpected": "<template>\n  <button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition:\n    background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "currentExpectedSha256": "7460dc49d0939679804108be80d9d20932e302cc37dade46df33251d192feaab",
       "currentInitialCli": [
         {
           "mode": "--check",
@@ -79,8 +79,8 @@
         "endOfLine": "crlf"
       },
       "historicalCliSha256": "d3814edf480f3699237bb14a3da74f2ae046d9b2ef80b249a92ff45a824c4c83",
-      "currentExpected": "<template>\r\n    <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n    transition:\r\n        background-color var(--duration, 0.2s) var(--ease, ease),\r\n        color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
-      "currentExpectedSha256": "13c42a429ab0a13f91a465ddf9eb8eab3a10585b4d62d0da542f81a70a8f3448"
+      "currentExpected": "<template>\r\n    <button type=\"button\" class=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n    transition:\r\n        background-color var(--duration, 0.2s) var(--ease, ease),\r\n        color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "currentExpectedSha256": "f63b881ffad7fa4d8b954527fc55e7c65bfd58479764599ef78298e0a29d2204"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -93,8 +93,8 @@
         "endOfLine": "crlf"
       },
       "historicalCliSha256": "d3814edf480f3699237bb14a3da74f2ae046d9b2ef80b249a92ff45a824c4c83",
-      "currentExpected": "<template>\r\n\t<button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n\ttransition:\r\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\r\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
-      "currentExpectedSha256": "e288a82e785e293247ff4b493d6a323c2218f026e0db345999a06f079ebcfa81"
+      "currentExpected": "<template>\r\n\t<button type=\"button\" class=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n\ttransition:\r\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\r\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "currentExpectedSha256": "1475b21dfad65fc65d546cd5f90079e1ca4ce6f9537a323581255aeecf57e71d"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -106,8 +106,8 @@
         "tabWidth": 4
       },
       "historicalCliSha256": "e1e7ed0e92f2400887307c5855b614e0e53b0e073c59d863bdc6fb23aaa6bc26",
-      "currentExpected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        color 0.2s ease,\n        background-color 0.2s ease;\n}\n</style>\n",
-      "currentExpectedSha256": "af38b7a7d05a4589580a86597b5e4e14ac63061ffaa307ccf3b657a77f2434ce"
+      "currentExpected": "<template>\n    <button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        color 0.2s ease,\n        background-color 0.2s ease;\n}\n</style>\n",
+      "currentExpectedSha256": "e616261c3be91143f047bb7f1d8239f2650b5f15571cb614dc5ec9e8d880739f"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -119,8 +119,8 @@
         "useTabs": true
       },
       "historicalCliSha256": "16fe40183c6e025d18a89771de715bb57ea667bf3dff5f323f4cbdd613237db4",
-      "currentExpected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tcolor 0.2s ease,\n\t\tbackground-color 0.2s ease;\n}\n</style>\n",
-      "currentExpectedSha256": "0fb47985b07728d831fe7c4feadd9dbe0329f9281becd47d432f41bc0213a5ff"
+      "currentExpected": "<template>\n\t<button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tcolor 0.2s ease,\n\t\tbackground-color 0.2s ease;\n}\n</style>\n",
+      "currentExpectedSha256": "4e4b12bbc00199183210760316127fab6dfcbc4ce0d778dd838f197f2d02e469"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -132,8 +132,8 @@
         "tabWidth": 4
       },
       "historicalCliSha256": "d34f6dccd7abc297a2400dc99e13ff8dbde51dfcdc853032b77c944e6ec3cbe2",
-      "currentExpected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n    .button {\n        transition:\n            color var(--duration),\n            background-color var(--duration);\n    }\n}\n</style>\n",
-      "currentExpectedSha256": "443e5fff5310621d90057cdd3155ac68b55f664be81e043b3ef1b7f52cae2106"
+      "currentExpected": "<template>\n    <button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n    .button {\n        transition:\n            color var(--duration),\n            background-color var(--duration);\n    }\n}\n</style>\n",
+      "currentExpectedSha256": "3e3788e22130e376bab04225dc9fceb2f744c0abcf6a75f691eeb6947f3b8ac7"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -145,8 +145,8 @@
         "useTabs": true
       },
       "historicalCliSha256": "74f64af0ffff240337499edb8865a5ec5f8df4ba9cafffcd42f16d5fb92cfb2a",
-      "currentExpected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n\t.button {\n\t\ttransition:\n\t\t\tcolor var(--duration),\n\t\t\tbackground-color var(--duration);\n\t}\n}\n</style>\n",
-      "currentExpectedSha256": "8fe965f1fcc749681817b7140361098bc35f5bd8dd43baa53ce0a867a7856d3d"
+      "currentExpected": "<template>\n\t<button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n\t.button {\n\t\ttransition:\n\t\t\tcolor var(--duration),\n\t\t\tbackground-color var(--duration);\n\t}\n}\n</style>\n",
+      "currentExpectedSha256": "6a79627e69dd932d9d8ab587d2ef2529c3cc244d8e9e4c187282bbf418b3acd6"
     },
     {
       "owner": "css-continuation-indent-7915",
@@ -158,8 +158,21 @@
         "tabWidth": 4
       },
       "historicalCliSha256": "7769ca175994af0934e03c8ec81a4229fc511517919822e58a90726d5ad3cd19",
-      "currentExpected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    --label: \"first\\\n    second\";\n    transition:\n        color var(--duration),\n        background-color var(--duration);\n}\n</style>\n",
-      "currentExpectedSha256": "17ffa79fac9d2c7ee8bc8096f93ca8cae070da7844527164594bbb419c32f484"
+      "currentExpected": "<template>\n    <button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    --label: \"first\\\n    second\";\n    transition:\n        color var(--duration),\n        background-color var(--duration);\n}\n</style>\n",
+      "currentExpectedSha256": "af6b473d8c39fdb9f6dfb874445ce45b10efe8726938c26329629f9b04b5ffe8"
+    },
+    {
+      "owner": "css-continuation-indent-7915",
+      "id": "selector-colons-and-value-parens",
+      "corpusSha256": "9ed2e9de93d6ad5a02847463d8e2b3c8382aa810909bc25e7d0f72e29211f670",
+      "inputSha256": "1018655723e1577e32e385275f7a3b267c754cd07a3aa478ab92380735f7c157",
+      "historicalExpectedSha256": "cf9d6df82d78fcec137c50873b0fcc42862460b38de665fb6ad94b3f430368c3",
+      "options": {
+        "useTabs": true
+      },
+      "historicalCliSha256": "09d89bd25ec049b32fcde76a9a43997513f1a3fc381c5f143398d675bb7ea910",
+      "currentExpected": "<template>\n\t<button type=\"button\" class=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n\t--色: var(--one, var(--two));\n}\n</style>\n",
+      "currentExpectedSha256": "38765d532df9b6f42c2d746df76b71a0ca80dce69d11eeafde0d01e24eb44db9"
     },
     {
       "owner": "css-rule-layout-7926-7966",

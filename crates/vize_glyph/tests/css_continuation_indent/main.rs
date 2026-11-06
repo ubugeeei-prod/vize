@@ -53,5 +53,5 @@ fn css_declaration_continuations_keep_the_configured_unit_on_every_pass() {
             current = actual.code;
         }
     }
-    assert_eq!(qualified, 11);
+    assert_eq!(qualified, 12);
 }

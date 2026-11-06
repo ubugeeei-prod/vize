@@ -61,7 +61,7 @@ historical mismatch never becomes an original match. Five complete current
 outputs equal the separate pre-existing stock Prettier records. Pure authority/
 input/options/history/CLI forgery controls execute locally; hosted current
 runtime qualification remains required. Authority SHA256:
-`8e53853840d474c0d9cd6a29eaa0ab061a8e3e46df7f1c45fd82d705e0a6220c`.
+`1c31a5485303348ffe2bd62ee7f86d1ab752c1db1e9ff1d0a95873ea5a7acbea`.
 
 The new value state helper and parsed custom-brace refusal law move to a private
 `style/values.rs` in a separate refactor commit with identical behavior. The

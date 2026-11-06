@@ -535,6 +535,134 @@
       ]
     },
     {
+      "id": "formatter/sfc/button-type-semantic-order-12030",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-button-type-semantic-order-12030",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "13eef35ae7d728586f2f4c558d7d7284c2ce044e27d037ea0021544c04aa6749",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          12030
+        ],
+        "commits": [
+          {
+            "sha": "ab81c571613a88f7e59ebe2b7369391bec17d7e8",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/attributes.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 12030,
+            "path": "crates/vize_glyph/src/template/tests.rs",
+            "symbol": "test_native_button_type_precedes_ordinary_attributes"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/tests.rs",
+          "symbol": "test_native_button_type_precedes_ordinary_attributes",
+          "executor": "rust-test",
+          "asserts": [
+            "native-button-semantic-order",
+            "component-prop-order",
+            "dynamic-binding-barrier",
+            "idempotence"
+          ],
+          "limitations": [
+            "The initial semantic table covers static type on native button elements."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "native-html-button",
+              "vue-component-props",
+              "dynamic-bindings"
+            ],
+            "selector": "template tag identity and static type attribute"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-button-type-semantic-order-12030/reference.expected.txt",
+              "sha256": "7d6d0d87d4920a5cfc789f170246d88457ebb56b7c3abeea351f01c45b3d2dee",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 12030,
+                "path": "crates/vize_glyph/src/template/semantic_attribute_order_tests.rs",
+                "symbol": "native_button_type_precedes_ordinary_attributes",
+                "assertion": "Native button type precedes ordinary attributes while component props and dynamic barriers retain their contracts."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured FormatResult.changed is covered by the Rust convergence witness"
+          ],
+          "referenceState": "issue-12030-authored-complete-output; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/canonical-directive-layout",
       "state": "active",
       "targets": [

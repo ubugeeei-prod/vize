@@ -30,7 +30,7 @@ pub fn current_reference(
 ) -> Option<std::string::String> {
     assert_eq!(
         digest(AUTHORITY.as_bytes()),
-        "8e53853840d474c0d9cd6a29eaa0ab061a8e3e46df7f1c45fd82d705e0a6220c",
+        "1c31a5485303348ffe2bd62ee7f86d1ab752c1db1e9ff1d0a95873ea5a7acbea",
         "reviewed complete current authority changed"
     );
     let authority: Value = serde_json::from_str(AUTHORITY).expect("reviewed current authority");
@@ -41,7 +41,7 @@ pub fn current_reference(
     assert_eq!(authority["version"], 1);
     assert_eq!(authority["issue"], 7968);
     let rows = authority["cases"].as_array().expect("current rows");
-    assert_eq!(rows.len(), 12);
+    assert_eq!(rows.len(), 13);
     let owner_row = rows
         .iter()
         .find(|row| row["owner"] == owner)
