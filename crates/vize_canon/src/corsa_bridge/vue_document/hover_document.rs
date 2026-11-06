@@ -1,4 +1,8 @@
 //! Shared projection view for the latency-sensitive hover path.
+#![expect(
+    clippy::disallowed_types,
+    reason = "warm hover shares one immutable projection across repeated requests"
+)]
 
 use std::sync::Arc;
 

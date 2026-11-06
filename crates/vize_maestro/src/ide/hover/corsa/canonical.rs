@@ -33,7 +33,7 @@ pub(super) enum Answer {
 }
 
 enum HoverDocument {
-    Owned(corsa_support::CanonicalVirtualDocument),
+    Owned(Box<corsa_support::CanonicalVirtualDocument>),
     Shared(CorsaVueHoverDocument),
 }
 
@@ -87,7 +87,7 @@ pub(super) async fn hover(
     let opened = if ctx.has_initial_canonical_document(bridge) {
         corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
             .await
-            .map(|document| document.map(HoverDocument::Owned))
+            .map(|document| document.map(|document| HoverDocument::Owned(Box::new(document))))
     } else {
         corsa_support::open_canonical_hover_document_strict(ctx, bridge)
             .await

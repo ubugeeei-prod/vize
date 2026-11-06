@@ -1,4 +1,8 @@
 //! Construct one exact editor query surface from a validated alias revision.
+#![expect(
+    clippy::disallowed_types,
+    reason = "warm hover shares one immutable projection across repeated requests"
+)]
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -17,10 +21,6 @@ pub(in crate::corsa_bridge) use host_edit::retarget_host;
 
 /// Immutable query data belongs to the same bounded, self-validating alias revision.
 /// Native session synchronization is intentionally performed on every open.
-#[expect(
-    clippy::disallowed_types,
-    reason = "one immutable native payload per alias revision"
-)]
 pub(in crate::corsa_bridge) struct QuerySurface {
     host: Arc<CorsaVueVirtualDocument>,
     documents: std::sync::Arc<Vec<(String, String)>>,

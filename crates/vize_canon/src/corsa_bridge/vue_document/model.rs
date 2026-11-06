@@ -1,4 +1,8 @@
 //! Data transferred from one Canon project snapshot to Corsa consumers.
+#![expect(
+    clippy::disallowed_types,
+    reason = "warm hover shares one immutable projection across repeated requests"
+)]
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;

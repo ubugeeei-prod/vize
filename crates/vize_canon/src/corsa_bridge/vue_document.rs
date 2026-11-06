@@ -1,4 +1,8 @@
 //! Vue virtual-document synchronization for editor Corsa sessions.
+#![expect(
+    clippy::disallowed_types,
+    reason = "warm hover shares one immutable projection across repeated requests"
+)]
 
 use std::path::{Path, PathBuf};
 
@@ -179,10 +183,6 @@ impl CorsaBridge {
         Ok(CorsaVueHoverDocument::new(host))
     }
 
-    #[expect(
-        clippy::too_many_arguments,
-        reason = "the private boundary retains the public borrowed workspace inputs"
-    )]
     async fn open_vue_virtual_workspace_project(
         &self,
         source_path: &Path,
