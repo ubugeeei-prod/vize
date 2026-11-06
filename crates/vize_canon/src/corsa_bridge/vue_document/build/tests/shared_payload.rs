@@ -49,11 +49,9 @@ fn actual_repeated_preparation_shares_base_bytes_and_keeps_the_complete_native_v
     let mut shared = current.documents.clone();
     let root = current.session_project_root.as_deref().unwrap();
     current
-        .host
         .source_catalog
         .extend_native_project_documents(root, &mut old_vec);
     current
-        .host
         .source_catalog
         .extend_native_project_document_batch(root, &mut shared);
     assert_eq!(
@@ -124,7 +122,6 @@ fn detached_payload() -> (
     let project = prepare(&session, &a, HOST, &[(a.clone(), HOST), (b, CHILD)], &[]);
     let member = project.host.materialized_sources.first().unwrap();
     let leaf = project
-        .host
         .source_catalog
         .get(&member.materialized_path)
         .unwrap();

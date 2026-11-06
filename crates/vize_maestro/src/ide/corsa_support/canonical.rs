@@ -32,7 +32,10 @@ use mapping::source_offset_to_virtual_generated_offset;
 pub(crate) use mapping::{canonical_source_offset_to_position, map_canonical_lsp_range};
 pub(super) use mapping::{map_lsp_range_to_source, map_virtual_result_lsp_range_to_source};
 pub(crate) use model_links::{model_declaration_ranges, model_linked_semantic_positions};
-pub(crate) use open::{open_canonical_virtual_document, open_canonical_virtual_document_strict};
+pub(crate) use open::{
+    open_canonical_hover_document_strict, open_canonical_virtual_document,
+    open_canonical_virtual_document_strict,
+};
 pub(crate) use project::{
     CanonicalProjectOpenError, open_canonical_virtual_project_document,
     open_canonical_virtual_workspace_document,

@@ -27,12 +27,12 @@ pub(in crate::corsa_bridge) fn retarget_host(
 ) {
     let mut replacements = FxHashMap::default();
     let code = generated.code.clone();
-    replacements.insert(surface.host.request_uri.clone(), code.clone());
+    let host = Arc::make_mut(&mut surface.host);
+    replacements.insert(host.request_uri.clone(), code.clone());
     replacements.insert(path_to_file_uri(materialized_path), code.clone());
     if let Some(fresh) = fresh {
         let uri = path_to_file_uri(&fresh.materialized_path);
-        if let Some(current) = surface
-            .host
+        if let Some(current) = host
             .materialized_sources
             .iter_mut()
             .find(|source| source.materialized_path == fresh.materialized_path)
@@ -41,14 +41,14 @@ pub(in crate::corsa_bridge) fn retarget_host(
             replacements.insert(uri, current.code.clone());
         }
     }
+    host.request_uri = path_to_file_uri(materialized_path);
+    host.code = generated.code;
+    host.pre_rewrite_code = generated.pre_rewrite_code;
+    host.mapping = generated.mapping;
+    host.import_source_map = generated.import_source_map;
+    host.source_type = generated.source_type;
+    host.virtual_suffix = generated.virtual_suffix;
     replace_document_texts(&mut surface.documents, &replacements);
-    surface.host.request_uri = path_to_file_uri(materialized_path);
-    surface.host.code = generated.code;
-    surface.host.pre_rewrite_code = generated.pre_rewrite_code;
-    surface.host.mapping = generated.mapping;
-    surface.host.import_source_map = generated.import_source_map;
-    surface.host.source_type = generated.source_type;
-    surface.host.virtual_suffix = generated.virtual_suffix;
 }
 
 /// Dissociate weak batch receipts without copying a uniquely owned dependency

@@ -1,6 +1,7 @@
 //! Construct one exact editor query surface from a validated alias revision.
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use vize_carton::{FxHashMap, String};
 
@@ -21,7 +22,7 @@ pub(in crate::corsa_bridge) use host_edit::retarget_host;
     reason = "one immutable native payload per alias revision"
 )]
 pub(in crate::corsa_bridge) struct QuerySurface {
-    host: CorsaVueVirtualDocument,
+    host: Arc<CorsaVueVirtualDocument>,
     documents: std::sync::Arc<Vec<(String, String)>>,
     session_config_path: Option<PathBuf>,
 }
@@ -69,21 +70,21 @@ pub(super) fn build_vue_virtual_workspace_project(
         // alias revision includes exact host/options/overlay/request membership.
         alias_context.query_surface.get_or_init(|| surface)
     };
-    let mut host = surface.host.clone();
+    let host = Arc::clone(&surface.host);
     // Other hosts can extend the live catalog without replacing this context.
     // Retain the catalog captured by this exact preparation, not the first open.
-    host.source_catalog = alias_context.source_catalog.clone();
+    let source_catalog = alias_context.source_catalog.clone();
     let mut documents = CorsaNativeDocumentBatch::shared(surface.documents.clone());
     if alias_context.refresh_live_overlays
         && let Some(root) = host.session_project_root.as_deref()
     {
-        host.source_catalog
-            .extend_open_project_document_batch(root, &overlays, &mut documents);
+        source_catalog.extend_open_project_document_batch(root, &overlays, &mut documents);
     }
     project_phase.finish();
     Ok(CorsaVueVirtualProject {
         session_project_root: host.session_project_root.clone(),
         host,
+        source_catalog,
         documents,
         session_config_path: surface.session_config_path.clone(),
         materialized_changes: alias_context.materialized_changes.clone(),
@@ -156,7 +157,7 @@ fn build_surface(
     let session_project_root = alias_context.mirror_project_root_for_source(source_path);
     surface_phase.finish();
     Ok(QuerySurface {
-        host: CorsaVueVirtualDocument {
+        host: Arc::new(CorsaVueVirtualDocument {
             request_uri: host.virtual_uri,
             code: generated.code,
             pre_rewrite_code: generated.pre_rewrite_code,
@@ -169,7 +170,7 @@ fn build_surface(
             materialized_sources,
             source_catalog: Default::default(),
             session_project_root: session_project_root.clone(),
-        },
+        }),
         documents: documents.into(),
         session_config_path: alias_context.mirror_project_config_path(),
     })

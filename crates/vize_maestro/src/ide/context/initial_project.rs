@@ -37,6 +37,16 @@ impl<T> InitialCanonicalDocument<T> {
     }
 
     fn take(&self, ctx: &IdeContext<'_>, bridge: &CorsaBridge) -> Option<T> {
+        if !self.is_current(ctx, bridge) {
+            return None;
+        }
+        self.receipt
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .take()
+    }
+
+    fn is_current(&self, ctx: &IdeContext<'_>, bridge: &CorsaBridge) -> bool {
         if !std::ptr::eq(self.bridge.as_ptr(), bridge)
             || self.uri != *ctx.uri
             || !Arc::ptr_eq(&self.source, &ctx.content)
@@ -47,12 +57,12 @@ impl<T> InitialCanonicalDocument<T> {
                 .text_snapshot(ctx.uri)
                 .is_some_and(|source| Arc::ptr_eq(&source, &self.source))
         {
-            return None;
+            return false;
         }
         self.receipt
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .take()
+            .is_some()
     }
 }
 
@@ -75,6 +85,12 @@ impl IdeContext<'_> {
         bridge: &CorsaBridge,
     ) -> Option<CorsaInitialVueDocument> {
         self.initial_canonical_document.as_ref()?.take(self, bridge)
+    }
+
+    pub(crate) fn has_initial_canonical_document(&self, bridge: &CorsaBridge) -> bool {
+        self.initial_canonical_document
+            .as_ref()
+            .is_some_and(|initial| initial.is_current(self, bridge))
     }
 }
 

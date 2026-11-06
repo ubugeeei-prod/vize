@@ -14,8 +14,10 @@ use crate::virtual_ts::VirtualTsOptions;
 pub(in crate::corsa_bridge) mod build;
 pub(super) mod materialized_documents;
 use build::build_vue_virtual_workspace_project;
+mod hover_document;
 mod initial_project;
 mod model;
+pub use hover_document::CorsaVueHoverDocument;
 pub use initial_project::{CorsaInitialVueDocument, CorsaInitialVueProject};
 mod prepare;
 pub(super) use model::GeneratedVueDocument;
@@ -139,6 +141,63 @@ impl CorsaBridge {
         virtual_ts_options: &VirtualTsOptions,
         requested_sources: &[(PathBuf, &str)],
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let (host, source_catalog) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                overlays,
+                virtual_ts_options,
+                requested_sources,
+            )
+            .await?;
+        let mut host = (*host).clone();
+        host.source_catalog = source_catalog;
+        Ok(host)
+    }
+
+    /// Synchronize one local hover projection without copying its immutable
+    /// generated text, mappings, dependencies, or materialized sources.
+    pub async fn open_vue_hover_document_with_borrowed_overlays_and_options(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, &str)],
+        virtual_ts_options: &VirtualTsOptions,
+    ) -> Result<CorsaVueHoverDocument, CorsaBridgeError> {
+        let (host, _) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                overlays,
+                virtual_ts_options,
+                &[],
+            )
+            .await?;
+        Ok(CorsaVueHoverDocument::new(host))
+    }
+
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "the private boundary retains the public borrowed workspace inputs"
+    )]
+    async fn open_vue_virtual_workspace_project(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &[(PathBuf, &str)],
+        virtual_ts_options: &VirtualTsOptions,
+        requested_sources: &[(PathBuf, &str)],
+    ) -> Result<
+        (
+            std::sync::Arc<CorsaVueVirtualDocument>,
+            super::CorsaSourceCatalog,
+        ),
+        CorsaBridgeError,
+    > {
         let project = build_vue_virtual_workspace_project(
             source_path,
             content,
@@ -155,14 +214,14 @@ impl CorsaBridge {
         )?;
         let CorsaVueVirtualProject {
             host,
+            source_catalog,
             mut documents,
             session_project_root,
             session_config_path,
             materialized_changes,
         } = project;
         if let Some(project_root) = session_project_root.as_deref() {
-            host.source_catalog
-                .extend_native_project_document_batch(project_root, &mut documents);
+            source_catalog.extend_native_project_document_batch(project_root, &mut documents);
         }
         self.open_canon_project_documents(
             documents,
@@ -171,7 +230,7 @@ impl CorsaBridge {
             materialized_changes,
         )
         .await?;
-        Ok(host)
+        Ok((host, source_catalog))
     }
 
     pub(super) async fn open_canon_project_documents(

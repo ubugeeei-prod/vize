@@ -58,7 +58,6 @@ impl CorsaBridge {
             return Ok(None);
         };
         project
-            .host
             .source_catalog
             .extend_native_project_document_batch(root, &mut project.documents);
         // This guard is pure UTF-8/URI validation. The factory repeats it
@@ -107,6 +106,7 @@ impl CorsaBridge {
                 }
                 let CorsaVueVirtualProject {
                     host,
+                    source_catalog,
                     documents,
                     session_project_root,
                     session_config_path,
@@ -143,6 +143,7 @@ impl CorsaBridge {
                         CorsaInitialVueDocument {
                             project: CorsaVueVirtualProject {
                                 host,
+                                source_catalog,
                                 documents,
                                 session_project_root: Some(root),
                                 session_config_path: Some(config_path),
@@ -201,7 +202,6 @@ impl CorsaBridge {
         )?;
         if let Some(root) = project.session_project_root.as_deref() {
             project
-                .host
                 .source_catalog
                 .extend_native_project_document_batch(root, &mut project.documents);
         }
@@ -226,6 +226,7 @@ impl CorsaBridge {
         };
         let CorsaVueVirtualProject {
             host,
+            source_catalog,
             documents,
             session_project_root,
             session_config_path,
@@ -240,6 +241,8 @@ impl CorsaBridge {
             )
             .await?;
         }
+        let mut host = (*host).clone();
+        host.source_catalog = source_catalog;
         Ok(host)
     }
 
@@ -292,9 +295,8 @@ impl CorsaInitialVueDocument {
             && self.project.documents == project.documents
             && self
                 .project
-                .host
                 .source_catalog
-                .shares_revision_with(&project.host.source_catalog)
+                .shares_revision_with(&project.source_catalog)
             && ((!project.materialized_changes.has_topology_changes()
                 && project.materialized_changes.is_empty())
                 || self.project.materialized_changes == project.materialized_changes)

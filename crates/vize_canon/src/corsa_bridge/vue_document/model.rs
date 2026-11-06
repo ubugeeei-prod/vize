@@ -1,6 +1,7 @@
 //! Data transferred from one Canon project snapshot to Corsa consumers.
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use oxc_span::SourceType;
 use vize_carton::String;
@@ -84,7 +85,8 @@ pub struct CorsaVueVirtualDependency {
 pub(crate) use crate::lsp_client::CorsaNativeDocumentBatch;
 
 pub(crate) struct CorsaVueVirtualProject {
-    pub(crate) host: CorsaVueVirtualDocument,
+    pub(crate) host: Arc<CorsaVueVirtualDocument>,
+    pub(crate) source_catalog: crate::corsa_bridge::CorsaSourceCatalog,
     pub(crate) documents: CorsaNativeDocumentBatch,
     pub(crate) session_project_root: Option<PathBuf>,
     pub(crate) session_config_path: Option<PathBuf>,

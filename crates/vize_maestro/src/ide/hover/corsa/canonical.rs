@@ -1,8 +1,8 @@
 //! Hover presentation from the current canonical native document.
 
 use std::sync::Arc;
-use tower_lsp::lsp_types::Hover;
-use vize_canon::{CorsaBridge, LspHover, LspHoverContents};
+use tower_lsp::lsp_types::{Hover, Range};
+use vize_canon::{CorsaBridge, CorsaVueHoverDocument, LspHover, LspHoverContents, LspRange};
 
 use super::{HoverService, range::authored_hover_token_range};
 use crate::ide::{IdeContext, corsa_support};
@@ -32,6 +32,47 @@ pub(super) enum Answer {
     Hover(Hover),
 }
 
+enum HoverDocument {
+    Owned(corsa_support::CanonicalVirtualDocument),
+    Shared(CorsaVueHoverDocument),
+}
+
+impl HoverDocument {
+    fn request_uri(&self) -> &str {
+        match self {
+            Self::Owned(document) => &document.request_uri,
+            Self::Shared(document) => document.request_uri(),
+        }
+    }
+
+    fn source_offset_to_position(&self, source_offset: usize) -> Option<(u32, u32)> {
+        match self {
+            Self::Owned(document) => {
+                corsa_support::canonical_source_offset_to_position(document, source_offset)
+            }
+            Self::Shared(document) => document.source_offset_to_position(source_offset),
+        }
+    }
+
+    fn map_range(&self, ctx: &IdeContext<'_>, range: &LspRange) -> Option<Range> {
+        match self {
+            Self::Owned(document) => corsa_support::map_canonical_lsp_range(ctx, document, range),
+            Self::Shared(document) => {
+                let (start, end) = document.range_to_source_offsets(range)?;
+                let start = start.min(ctx.content.len());
+                let end = end.max(start).min(ctx.content.len());
+                let (start_line, start_character) =
+                    crate::ide::offset_to_position(&ctx.content, start);
+                let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, end);
+                Some(Range::new(
+                    tower_lsp::lsp_types::Position::new(start_line, start_character),
+                    tower_lsp::lsp_types::Position::new(end_line, end_character),
+                ))
+            }
+        }
+    }
+}
+
 pub(super) async fn hover(
     ctx: &IdeContext<'_>,
     bridge: Option<&Arc<CorsaBridge>>,
@@ -43,7 +84,16 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, "typed hover skipped: no initialized Corsa bridge");
         return None;
     };
-    let document = match corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await {
+    let opened = if ctx.has_initial_canonical_document(bridge) {
+        corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
+            .await
+            .map(|document| document.map(HoverDocument::Owned))
+    } else {
+        corsa_support::open_canonical_hover_document_strict(ctx, bridge)
+            .await
+            .map(|document| document.map(HoverDocument::Shared))
+    };
+    let document = match opened {
         Ok(Some(document)) => document,
         Ok(None) => {
             tracing::warn!(uri = %ctx.uri, "typed hover skipped: no canonical document for this URI");
@@ -54,19 +104,17 @@ pub(super) async fn hover(
             return None;
         }
     };
-    let Some((line, character)) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
-    else {
+    let Some((line, character)) = document.source_offset_to_position(ctx.offset) else {
         tracing::info!(uri = %ctx.uri, offset = ctx.offset, "typed hover skipped: offset has no generated position");
         return None;
     };
-    let mut hover = match bridge.hover(&document.request_uri, line, character).await {
+    let mut hover = match bridge.hover(document.request_uri(), line, character).await {
         Ok(Some(hover)) => hover,
         Ok(None) => return Some(Answer::Empty),
         Err(error) => {
             tracing::warn!(
                 uri = %ctx.uri,
-                request_uri = %document.request_uri,
+                request_uri = %document.request_uri(),
                 %error,
                 "typed hover failed in Corsa"
             );
@@ -79,7 +127,7 @@ pub(super) async fn hover(
     if follow_declaration
         && documentation(&hover).is_none()
         && let Ok(definitions) = bridge
-            .definition(&document.request_uri, line, character)
+            .definition(document.request_uri(), line, character)
             .await
     {
         for definition in definitions.into_iter().take(8) {
@@ -105,7 +153,7 @@ pub(super) async fn hover(
     let mapped_range = hover
         .range
         .as_ref()
-        .and_then(|range| corsa_support::map_canonical_lsp_range(ctx, &document, range));
+        .and_then(|range| document.map_range(ctx, range));
     let mut converted = HoverService::convert_lsp_hover(hover);
     converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
     Some(Answer::Hover(converted))
