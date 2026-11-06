@@ -166,8 +166,8 @@ function hashObjects(root: string, paths: string[]): string[] {
 }
 
 /**
- * Restores recorded mtimes before Cargo runs. A missing or stale manifest is
- * not an error, because the conservative result is simply a newer mtime.
+ * Restores recorded mtimes before Cargo runs. When a manifest cannot authorize
+ * reuse, every tracked source moves past the newest reused fingerprint.
  */
 export function restoreSourceMtimes({
   target,
@@ -189,12 +189,11 @@ export function restoreSourceMtimes({
     return { applied: false, reason };
   };
   if (!root) return skip("target is outside a Git work tree");
-  if (secondary && workTree(dirname(resolve(secondary))) === root)
-    return skip("another target directory shares this work tree");
-
-  const { manifest, reason } = readManifest(file, root);
-  // Without a record every checked-out mtime is already the conservative one.
-  if (!manifest && !record) return { applied: false, reason };
+  const secondaryPath = secondary ? resolve(secondary) : "";
+  const sharedSecondary = secondaryPath && workTree(dirname(secondaryPath)) === root;
+  const { manifest, reason } = sharedSecondary
+    ? { manifest: null, reason: "another target directory shares this work tree" }
+    : readManifest(file, root);
   const recorded = manifest?.files ?? {};
   // Whole seconds keep restored values exact; the fingerprint and manifest
   // bounds, not the clock, keep a changed file newer than every artifact.
@@ -202,6 +201,7 @@ export function restoreSourceMtimes({
     Math.floor(now / 1000),
     (manifest?.updatedAt ?? 0) + 1,
     newestFingerprint(targetPath) + 1,
+    sharedSecondary ? newestFingerprint(secondaryPath) + 1 : 0,
   );
   // Content edited before this step does not match its index blob.
   const modified = new Set(git(root, ["ls-files", "-m", "-z"]).split("\0").filter(Boolean));

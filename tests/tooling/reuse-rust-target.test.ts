@@ -9,6 +9,7 @@ import {
   readFileSync,
   renameSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -113,13 +114,14 @@ await test("files rewritten during a trusted run never keep the record of their 
     work = repo.checkout();
     restoreSourceMtimes({ target: join(work, "target"), record: true });
     // Only a run that finished may be trusted later.
-    assert.equal(
-      restoreSourceMtimes({ target: join(work, "target"), record: false }).reason,
-      "unfinished manifest",
+    const unfinished = applied(
+      restoreSourceMtimes({ target: join(work, "target"), record: false }),
     );
+    assert.equal(unfinished.reason, "unfinished manifest");
+    assert.equal(unfinished.changed, 2);
     writeFileSync(join(work, "a.rs"), "generated during the run\n");
     const result = recordSourceMtimes({ target: join(work, "target") });
-    assert.equal(result.rewritten, 1);
+    assert.equal(result.rewritten, 2);
     repo.park({ keep: true });
 
     nextSecond();
@@ -149,23 +151,30 @@ await test("edits before the step, foreign roots and shared secondary targets st
     assert.deepEqual([restored.restored, restored.changed], [1, 1]);
     assert.ok(mtime(join(work, "b.rs")) >= before);
 
+    const secondaryFingerprint = join(work, "other-target/ci/.fingerprint/probe");
+    mkdirSync(dirname(secondaryFingerprint), { recursive: true });
+    writeFileSync(secondaryFingerprint, "fingerprint");
+    const future = new Date(Date.now() + 60_000);
+    utimesSync(secondaryFingerprint, future, future);
     const shared = restoreSourceMtimes({
       target: join(work, "target"),
       secondary: join(work, "other-target"),
       record: true,
     });
-    assert.equal(shared.applied, false);
-    assert.equal(existsSync(join(work, "target", manifestName)), false);
+    assert.equal(shared.applied, true);
+    assert.equal(shared.reason, "another target directory shares this work tree");
+    assert.equal(existsSync(join(work, "target", manifestName)), true);
+    assert.ok(shared.floor > Math.ceil(future.getTime() / 1000));
+    assert.equal(mtime(join(work, "a.rs")), BigInt(shared.floor));
 
     const manifest = join(work, "target", manifestName);
     restoreSourceMtimes({ target: join(work, "target"), record: true });
     recordSourceMtimes({ target: join(work, "target") });
     const moved = JSON.parse(readFileSync(manifest, "utf8")) as Record<string, unknown>;
     writeFileSync(manifest, JSON.stringify({ ...moved, root: "/elsewhere" }));
-    assert.equal(
-      restoreSourceMtimes({ target: join(work, "target"), record: false }).reason,
-      "incompatible manifest",
-    );
+    const foreign = applied(restoreSourceMtimes({ target: join(work, "target"), record: false }));
+    assert.equal(foreign.reason, "incompatible manifest");
+    assert.equal(foreign.changed, 2);
   } finally {
     rmSync(repo.root, { recursive: true, force: true });
   }
@@ -256,8 +265,84 @@ await test("a trusted run commits its target without run outputs", () => {
   }
 });
 
+await test("the action refuses a reused target without worktree custody", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-reuse-rust-target-refusal-"));
+  const target = join(root, "target");
+  mkdirSync(target);
+  try {
+    const main = new URL("../../.github/actions/reuse-rust-target/main.ts", import.meta.url);
+    const result = spawnSync(process.execPath, [main.pathname], {
+      cwd: root,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        "INPUT_TARGET-PATH": target,
+        INPUT_RECORD: "false",
+      },
+    });
+    assert.equal(result.status, 1, result.stderr);
+    assert.match(result.stdout, /::error::Reused Rust target has no source custody/u);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // Probe outside this checkout so its pinned toolchain file does not apply.
 const cargo = spawnSync("cargo", ["--version"], { cwd: tmpdir(), encoding: "utf8" });
+
+await test(
+  "foreign worktree sources move past a shared Cargo fingerprint",
+  {
+    skip: cargo.status !== 0 && "cargo is unavailable",
+  },
+  () => {
+    const root = mkdtempSync(join(tmpdir(), "vize-cargo-worktree-custody-"));
+    const project = (name: string, marker: string) => {
+      const directory = join(root, name);
+      mkdirSync(join(directory, "src"), { recursive: true });
+      writeFileSync(
+        join(directory, "Cargo.toml"),
+        '[package]\nname = "cargo_source_custody_probe"\nversion = "0.0.0"\nedition = "2021"\n',
+      );
+      writeFileSync(join(directory, "src/main.rs"), `fn main() { println!("${marker}"); }\n`);
+      git(directory, "init", "-q");
+      git(directory, "add", "-A");
+      git(
+        directory,
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.test",
+        "commit",
+        "-qm",
+        marker,
+      );
+      const old = new Date("2020-01-01T00:00:00Z");
+      utimesSync(join(directory, "Cargo.toml"), old, old);
+      utimesSync(join(directory, "src/main.rs"), old, old);
+      return directory;
+    };
+    try {
+      const first = project("first", "first");
+      const second = project("second", "second");
+      const target = join(second, "target");
+      const run = (cwd: string) =>
+        execFileSync("cargo", ["run", "--quiet", "--target-dir", target], {
+          cwd,
+          encoding: "utf8",
+        }).trim();
+
+      assert.equal(run(first), "first");
+      assert.equal(run(second), "first", "the controlled stale-artifact boundary must reproduce");
+      const restored = applied(restoreSourceMtimes({ target, record: false }));
+      assert.equal(restored.reason, "no manifest");
+      assert.equal(restored.changed, 2);
+      assert.equal(run(second), "second");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  },
+);
 
 await test(
   "Cargo rebuilds exactly what a persistent checkout would rebuild",
