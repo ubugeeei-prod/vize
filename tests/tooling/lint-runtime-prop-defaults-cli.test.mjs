@@ -29,7 +29,7 @@ await test("runtime props preserve whole scoped original packets and full minima
   const withFocusedRules = (config = "{}\n") => {
     const parsed = JSON.parse(config);
     parsed.linter ??= {};
-    parsed.linter.rules = { ...(parsed.linter.rules ?? {}), ...focusedRules };
+    parsed.linter.rules = { ...parsed.linter.rules, ...focusedRules };
     return JSON.stringify(parsed) + "\n";
   };
   assert.equal(corpus.cases.length, 18);

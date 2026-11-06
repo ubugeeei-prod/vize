@@ -170,5 +170,4 @@ fn report(span: Span, offset: usize, result: &mut ScriptLintResult) {
 }
 
 #[cfg(test)]
-#[path = "require_define_component_tests.rs"]
 mod tests;

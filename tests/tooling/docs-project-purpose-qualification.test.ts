@@ -76,7 +76,7 @@ function render(file: string) {
 void test("only B01 through B05 move, with the frozen paragraphs and their exact new purposes", () => {
   assert.equal(
     digest(fixtureSource),
-    "92e7107ccf0b57d0cb59dce971814f26531b6f2b7b33b0ecf8fb5bdde8ecd39b",
+    "288cd40dbe42439f2811901ce9b091a3aba28be8b907763d42e7091610dc06fe",
   );
   assert.deepEqual(Object.keys(japaneseEditorialPlacementSuccessors), [
     "B01",

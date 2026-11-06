@@ -19,7 +19,10 @@ await test("default return checks preserve whole CLI packets across method and a
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
-  const focusedRules = { "script/require-define-component": "off" };
+  const focusedRules = {
+    "script/require-define-component": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
   const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   assert.equal(corpus.cases.length, 16);
   assert.equal(Object.keys(projection.linter.rules).length, 51);

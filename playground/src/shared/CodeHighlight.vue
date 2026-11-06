@@ -7,7 +7,12 @@ import {
 } from "./codeHighlighting";
 import { createCodeHighlighter } from "./codeHighlightingClient";
 
-const { code, language, showLineNumbers } = defineProps<{
+const {
+  code,
+  language,
+  showLineNumbers,
+  theme: _theme,
+} = defineProps<{
   code: string;
   language: CodeHighlightLanguage;
   showLineNumbers?: boolean;
