@@ -115,6 +115,7 @@ pub(super) struct ProjectContexts {
     retry_triggers: AtomicU64,
     unobservable_retries: Mutex<FxHashMap<ProjectContextKey, u64>>,
     routes: DashMap<Url, ProjectContextKey>,
+    pub(super) root_discovery: root_discovery::ProjectRootCache,
     initialization_options: RwLock<Option<serde_json::Value>>,
     client_capabilities: RwLock<ClientCapabilities>,
 }
@@ -265,7 +266,7 @@ impl ServerState {
 
     fn document_context_root(&self, path: &Path) -> Option<PathBuf> {
         let roots = self.workspace_root_paths();
-        paths::document_context_root(path, &roots)
+        paths::cached_document_context_root(path, &roots, &self.project_contexts.root_discovery)
             .or_else(|| self.project_contexts.boundary.read().clone())
     }
 
@@ -373,6 +374,7 @@ impl ServerState {
     pub(crate) fn refresh_project_routes(&self) {
         let _change = self.project_routing_change();
         self.project_contexts.routes.clear();
+        self.project_contexts.root_discovery.clear();
         let roots = self.workspace_root_paths();
         self.project_contexts
             .pending_config_reloads
@@ -410,6 +412,7 @@ impl ServerState {
             context.retire();
         }
         self.project_contexts.routes.clear();
+        self.project_contexts.root_discovery.clear();
         self.project_contexts.configuration_attempts.lock().clear();
     }
 

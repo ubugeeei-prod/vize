@@ -99,6 +99,7 @@ impl ServerState {
             self.retarget_type_checker_project(&path);
         }
         self.lint_hover_cache.clear();
+        self.project_contexts.root_discovery.clear();
         self.package_route_resolver.lock().clear();
         self.global_component_references.invalidate();
         // Invalidate batch cache when workspace changes

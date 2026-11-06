@@ -6,9 +6,84 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use dashmap::DashMap;
+
+/// Reuse the project boundary for sibling files in one directory.
+///
+/// Large workspaces commonly open hundreds of files from the same source
+/// directories. Their ownership depends on directory markers, not the file
+/// name, so rescanning every ancestor for each file only repeats filesystem
+/// work. Watched marker changes clear this cache before routing again.
+#[derive(Default)]
+pub(in crate::server::state) struct ProjectRootCache {
+    workspaces: DashMap<PathBuf, DashMap<PathBuf, PathBuf>>,
+}
+
+impl ProjectRootCache {
+    fn get(&self, directory: &Path, workspace: &Path) -> Option<PathBuf> {
+        self.workspaces
+            .get(workspace)?
+            .get(directory)
+            .map(|root| root.clone())
+    }
+
+    fn insert(&self, directory: &Path, workspace: &Path, root: PathBuf) -> PathBuf {
+        self.workspaces
+            .entry(workspace.to_path_buf())
+            .or_default()
+            .entry(directory.to_path_buf())
+            .or_insert(root)
+            .clone()
+    }
+
+    pub(in crate::server::state) fn clear(&self) {
+        self.workspaces.clear();
+    }
+
+    #[cfg(test)]
+    pub(super) fn len(&self) -> usize {
+        self.workspaces
+            .iter()
+            .map(|workspace| workspace.value().len())
+            .sum()
+    }
+}
+
+fn retain_root(
+    cache: Option<&ProjectRootCache>,
+    source_directory: &Path,
+    workspace: &Path,
+    root: PathBuf,
+) -> PathBuf {
+    match cache {
+        Some(cache) => cache.insert(source_directory, workspace, root),
+        None => root,
+    }
+}
+
 pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
+    document_root_with_cache(path, workspace, None)
+}
+
+pub(super) fn cached_document_root(
+    path: &Path,
+    workspace: &Path,
+    cache: &ProjectRootCache,
+) -> PathBuf {
+    document_root_with_cache(path, workspace, Some(cache))
+}
+
+fn document_root_with_cache(
+    path: &Path,
+    workspace: &Path,
+    cache: Option<&ProjectRootCache>,
+) -> PathBuf {
     vize_l0::micro_span!("maestro.project.document_root", {
-        let mut directory = path.parent().unwrap_or(workspace);
+        let source_directory = path.parent().unwrap_or(workspace);
+        if let Some(cached) = cache.and_then(|cache| cache.get(source_directory, workspace)) {
+            return cached;
+        }
+        let mut directory = source_directory;
         let mut package_root = None;
         let mut vite_root: Option<PathBuf> = None;
         while directory.starts_with(workspace) {
@@ -18,9 +93,10 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
                 if package_root.is_some()
                     && let Some(vite_root) = vite_root.as_ref()
                 {
-                    return vite_root.clone();
+                    return retain_root(cache, source_directory, workspace, vite_root.clone());
                 }
-                return directory.to_path_buf();
+                let root = directory.to_path_buf();
+                return retain_root(cache, source_directory, workspace, root);
             }
             if vite_root.is_none() && package_root.is_none() && markers.vite {
                 vite_root = Some(directory.to_path_buf());
@@ -36,9 +112,10 @@ pub(super) fn document_root(path: &Path, workspace: &Path) -> PathBuf {
             };
             directory = parent;
         }
-        vite_root
+        let root = vite_root
             .or(package_root)
-            .unwrap_or_else(|| workspace.to_path_buf())
+            .unwrap_or_else(|| workspace.to_path_buf());
+        retain_root(cache, source_directory, workspace, root)
     })
 }
 

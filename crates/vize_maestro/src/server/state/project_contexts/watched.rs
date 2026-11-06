@@ -205,6 +205,9 @@ impl ServerState {
         scope: ConfigEventScope,
     ) -> ProjectConfigChanges {
         let mut result = ProjectConfigChanges::default();
+        if !scope.marker_paths.is_empty() {
+            self.project_contexts.root_discovery.clear();
+        }
         if scope.affected.is_empty() || self.project_routing_shutting_down() {
             return result;
         }
