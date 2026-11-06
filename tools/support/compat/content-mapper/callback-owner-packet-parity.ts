@@ -180,7 +180,7 @@ function scaffoldEdits(text: string, markerTransition: boolean, nativeTransition
 function propertyKeyValue(key: string): string {
   if (key.startsWith('"')) {
     const value: unknown = JSON.parse(key);
-    assert.equal(typeof value, "string", "listener keys are string literals");
+    assert.ok(typeof value === "string", "listener keys are string literals");
     return value;
   }
   return key;
