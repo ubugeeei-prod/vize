@@ -20,7 +20,8 @@ import {
   requireSingleTerminalStderrRole,
   compareNativeCompletionOrder,
 } from "./native-io.ts";
-import type { MergedTraceAuthority } from "./merged-trace.ts";
+import { nativeFrames } from "./native-frames.ts";
+import { verifySourceExecution } from "./source-execution-authority.ts";
 import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.ts";
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 import {
@@ -40,45 +41,7 @@ assert.equal(source.sdkVersion, provider.version);
 assert.equal(source.sdkSha256, provider.executableSha256);
 assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
-const sourceExecution = load("source-execution.json") as {
-  source: string;
-  executable: string;
-  executableSha256: string;
-  command: string;
-  commandSha256: string;
-  commandVersion: string;
-  args: string[];
-  trace: MergedTraceAuthority;
-  status: number | null;
-  signal: NodeJS.Signals | null;
-  error: string | null;
-};
-assert.equal(sourceExecution.source, source.source);
-assert.equal(sourceExecution.status, 0);
-assert.equal(sourceExecution.signal, null);
-assert.equal(sourceExecution.error, null);
-assert.equal(hash(fs.readFileSync(sourceExecution.executable)), sourceExecution.executableSha256);
-assert.equal(fs.realpathSync(sourceExecution.command), sourceExecution.command);
-assert.equal(hash(fs.readFileSync(sourceExecution.command)), sourceExecution.commandSha256);
-assert.match(sourceExecution.commandVersion, /^strace -- version [0-9]/u);
-const selector =
-  "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete";
-assert.deepEqual(sourceExecution.args, [
-  "-f",
-  "-ttt",
-  "-s",
-  "16777216",
-  "-xx",
-  "-e",
-  "trace=read,write,readv,writev,process",
-  "-o",
-  path.join(root, "syscalls.merged"),
-  sourceExecution.executable,
-  selector,
-  "--ignored",
-  "--exact",
-  "--nocapture",
-]);
+const sourceExecution = verifySourceExecution(load("source-execution.json"), root, source.source);
 const prepared = load("source-role.json") as Record<string, unknown>;
 verifyObserverDependencies(
   source.observerDependencies,
@@ -110,27 +73,6 @@ function owner(value: number): number {
     value = threads.get(value)!;
   }
   return value;
-}
-function frames(data: Buffer): Packet[] {
-  let offset = 0;
-  const packets: Packet[] = [];
-  while (offset < data.length) {
-    const marker = data.indexOf("\r\n\r\n", offset);
-    assert(marker >= 0, "Unclosed native header");
-    const header = data.subarray(offset, marker).toString("ascii");
-    const lengths = [...header.matchAll(/^Content-Length: ([0-9]+)$/gim)];
-    assert.equal(lengths.length, 1, header);
-    const size = Number(lengths[0][1]);
-    assert(size <= 16 * 1024 * 1024);
-    const end = marker + 4 + size;
-    assert(end <= data.length, "Truncated native body");
-    const packet = JSON.parse(data.subarray(marker + 4, end).toString("utf8")) as Packet;
-    assert.equal(packet.jsonrpc, "2.0");
-    packets.push(packet);
-    offset = end;
-  }
-  assert.equal(offset, data.length);
-  return packets;
 }
 const key = (value: unknown) => {
   assert(
@@ -238,7 +180,7 @@ for (const [index, process] of native.entries()) {
       const start = raw.indexOf("Content-Length:");
       if (start < 0) continue;
       const payload = raw.subarray(start);
-      const packets = frames(payload);
+      const packets = nativeFrames(payload);
       const file = `raw-streams/owner-${leader}-fd-${fd}.${direction}.bin`;
       fs.writeFileSync(path.join(root, file), payload);
       pair[direction] = {

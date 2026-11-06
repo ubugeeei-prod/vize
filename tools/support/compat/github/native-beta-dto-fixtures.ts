@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { stripTypeScriptTypes } from "node:module";
 import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "69ac5c3f616003cb713c69681c704a664c65e13d682caf33bc311560994a8170";
+const currentAuthoritySha256 = "8418acc185be201df02d533094bed86e9275f79f9e393127c515d98a7e176208";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";
@@ -203,6 +203,21 @@ export function nativeBetaDtoProducerCustody(read: ReadFile) {
           watcherSuccessor.mixedRuntimeSha256,
         ],
         [watcherSuccessor.ioPath, watcherSuccessor.ioSha256, watcherSuccessor.ioRuntimeSha256],
+        [
+          watcherSuccessor.completionOrderPath,
+          watcherSuccessor.completionOrderSha256,
+          watcherSuccessor.completionOrderRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.nativeFramesPath,
+          watcherSuccessor.nativeFramesSha256,
+          watcherSuccessor.nativeFramesRuntimeSha256,
+        ],
+        [
+          watcherSuccessor.sourceExecutionPath,
+          watcherSuccessor.sourceExecutionSha256,
+          watcherSuccessor.sourceExecutionRuntimeSha256,
+        ],
         [
           watcherSuccessor.mergedTracePath,
           watcherSuccessor.mergedTraceSha256,

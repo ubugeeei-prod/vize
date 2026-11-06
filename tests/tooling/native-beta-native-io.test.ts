@@ -12,6 +12,7 @@ import {
   requireNoUnknownNativeWrites,
   requireSingleTerminalStderrRole,
   requireCompletedBefore,
+  requireObservedEntryBefore,
 } from "./support/native-beta-dto/native-io.ts";
 
 test("returned, partial, failed and unknown writes retain distinct byte outcomes", () => {
@@ -329,6 +330,8 @@ test("authenticated merged output proves cross-thread completion without inventi
     assert.equal(eof.completion.returnedAt, null);
     assert.equal(eof.completion.returnedBy!.at, "1.000004");
     requireCompletedBefore(eof, write);
+    requireObservedEntryBefore(eof, write);
+    assert.throws(() => requireObservedEntryBefore(write, eof), /earlier observed entry/u);
     assert.deepEqual(eof.completion.merged, {
       captureSha256: authority.sha256,
       entryLine: 1,
@@ -350,6 +353,10 @@ test("authenticated merged output proves cross-thread completion without inventi
       },
     };
     assert.throws(() => requireCompletedBefore(copied, write), /raw-derived merged provenance/u);
+    assert.throws(
+      () => requireObservedEntryBefore({ ...eof, mergedEntry: { ...eof.mergedEntry! } }, write),
+      /raw-derived merged entry/u,
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

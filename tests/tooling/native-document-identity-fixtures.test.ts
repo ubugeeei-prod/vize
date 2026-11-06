@@ -110,7 +110,10 @@ test("four historical inputs, all five current consumers and actual A/B producer
       "tests/tooling/support/native-beta-dto/prepare-role.ts",
       /unregistered current common-observer preparation runtime/,
     ],
-    ["tests/tooling/support/native-beta-dto/run-source.ts", /typed producer executable changed/],
+    [
+      "tests/tooling/support/native-beta-dto/run-source.ts",
+      /unregistered syscall collector source/,
+    ],
     [
       "tests/tooling/support/native-beta-dto/audit-wire.ts",
       /unregistered current watcher observer runtime/,

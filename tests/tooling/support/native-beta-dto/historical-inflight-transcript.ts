@@ -37,6 +37,7 @@ export function historicalWarningTranscript(
   serverValue: Args[1],
   context: Args[2],
   api: Args[6],
+  rootWatchLog: "absent" | "required" = "absent",
 ) {
   assert.equal(context.role, "before");
   assert.equal(context.source, historicalSource);
@@ -139,14 +140,22 @@ export function historicalWarningTranscript(
     client.filter((row) => "id" in row && !("method" in row) && id(row.id) === id(watcher.id)),
   );
   assert.deepEqual(watcherAck, { jsonrpc: "2.0", id: watcher.id, result: null });
-  assert.equal(
-    server.filter(
-      (row) =>
-        row.method === "window/logMessage" &&
-        object(row.params).message === `Added new watch: root files for ${config} watcher 6.0`,
-    ).length,
-    0,
+  const watchLogs = server.filter(
+    (row) =>
+      row.method === "window/logMessage" &&
+      object(row.params).message === `Added new watch: root files for ${config} watcher 6.0`,
   );
+  assert.equal(watchLogs.length, rootWatchLog === "required" ? 1 : 0);
+  const watchLog = watchLogs[0];
+  if (watchLog)
+    assert.deepEqual(watchLog, {
+      jsonrpc: "2.0",
+      method: "window/logMessage",
+      params: {
+        type: 3,
+        message: `Added new watch: root files for ${config} watcher 6.0`,
+      },
+    });
   return {
     clientValue,
     serverValue,
@@ -160,6 +169,7 @@ export function historicalWarningTranscript(
     projectReply,
     watcher,
     watcherAck,
+    ...(watchLog ? { watchLog } : {}),
     shutdown,
     shutdownAck,
     configuration,
