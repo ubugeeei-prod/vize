@@ -23,6 +23,17 @@ fn integrated(previous: &Value, record: &Value, entry: &Value) -> String {
     current
 }
 
+/// Require one unmodified constructor source and no already-applied successor.
+fn validate_transition(text: &str) -> Result<(), &'static str> {
+    if text.matches(BEFORE).count() != 1 {
+        return Err("one constructor transition source required");
+    }
+    if text.matches(AFTER).count() != 0 {
+        return Err("constructor transition must not be pre-applied");
+    }
+    Ok(())
+}
+
 pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
     let owned = load(
         "malformed-membership/owned-constructor-20261105.json",
@@ -53,8 +64,7 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
         .zip([(74, "project/A.vue.ts"), (75, "project/B.vue.ts")])
     {
         let historical = integrated(previous, &integrated_record, entry);
-        assert_eq!(historical.matches(BEFORE).count(), 1);
-        assert_eq!(historical.matches(AFTER).count(), 0);
+        validate_transition(&historical).unwrap();
         let successor = historical.replacen(BEFORE, AFTER, 1);
         assert_eq!(historical.len() - successor.len(), 46);
         assert_eq!(current[0], path);
@@ -77,10 +87,11 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
 
 #[test]
 fn elided_instance_transition_rejects_missing_or_duplicate_edits() {
-    for changed in [
-        AFTER.replace("$props: Props;\n", ""),
-        format!("{AFTER}\n{AFTER}"),
-    ] {
-        assert_ne!(changed.matches(AFTER).count(), 1);
+    assert_eq!(validate_transition(BEFORE), Ok(()));
+    for changed in [BEFORE.replace(BEFORE, ""), format!("{BEFORE}\n{BEFORE}")] {
+        assert_eq!(
+            validate_transition(&changed),
+            Err("one constructor transition source required")
+        );
     }
 }
