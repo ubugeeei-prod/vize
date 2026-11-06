@@ -73,12 +73,7 @@ fn exact_original_argv_and_complete_ts_js_sfc_json_vectors_are_checked() {
         );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
         let expected = crate::support::current_rule_documentation::packet(case["cli"].clone());
-        assert_eq!(
-            actual,
-            expected,
-            "{}: {output:?}",
-            case["id"]
-        );
+        assert_eq!(actual, expected, "{}: {output:?}", case["id"]);
         let error_count: u64 = actual
             .as_array()
             .unwrap()
