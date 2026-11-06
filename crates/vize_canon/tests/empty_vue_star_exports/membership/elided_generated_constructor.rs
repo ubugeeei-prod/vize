@@ -33,8 +33,16 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
         "8b744fba21c4b1c1f12865cfafd6788bc06c06b8f0c765008fa3c97db9c85cd4",
     );
     let expected = [
-        json!(["project/A.vue.ts", 3804, "ef495b4f7e3f9d2b60dceba9f52d95bf25240de7011c611569b301a0edf239a7"]),
-        json!(["project/B.vue.ts", 4024, "3bbde2cbdf1b2dc80f3140c8d080b0e0099854d0f63c7a5ce0103e857a8271a5"]),
+        json!([
+            "project/A.vue.ts",
+            3804,
+            "ef495b4f7e3f9d2b60dceba9f52d95bf25240de7011c611569b301a0edf239a7"
+        ]),
+        json!([
+            "project/B.vue.ts",
+            4024,
+            "3bbde2cbdf1b2dc80f3140c8d080b0e0099854d0f63c7a5ce0103e857a8271a5"
+        ]),
     ];
     for (((previous, entry), current), (index, path)) in owned["entries"]
         .as_array()
@@ -69,7 +77,10 @@ pub(super) fn apply(manifest: &mut Value, members: &mut [Value]) {
 
 #[test]
 fn elided_instance_transition_rejects_missing_or_duplicate_edits() {
-    for changed in [AFTER.replace("$props: Props;\n", ""), format!("{AFTER}\n{AFTER}")] {
+    for changed in [
+        AFTER.replace("$props: Props;\n", ""),
+        format!("{AFTER}\n{AFTER}"),
+    ] {
         assert_ne!(changed.matches(AFTER).count(), 1);
     }
 }
