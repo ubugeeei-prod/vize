@@ -57,9 +57,6 @@ impl VirtualProject {
             else {
                 continue;
             };
-            let Some(directory) = file.original_path.parent() else {
-                continue;
-            };
             let Some(source_type) = super::build::source_type_for_path(&file.virtual_path) else {
                 continue;
             };
@@ -70,21 +67,7 @@ impl VirtualProject {
                     .collect_all_specifier_occurrences(source, source_type),
             };
             for (specifier, _) in occurrences {
-                let resolved = if file.source_map.sfc_map.is_some() {
-                    super::dependency_scan::resolve_generated_dependency_with_inputs(
-                        &specifier,
-                        directory,
-                        &self.project_root,
-                        &aliases,
-                    )
-                } else {
-                    super::dependency_scan::resolve_dependency_with_inputs(
-                        &specifier,
-                        directory,
-                        &self.project_root,
-                        &aliases,
-                    )
-                };
+                let resolved = self.resolve_file_dependency_with_inputs(file, &specifier, &aliases);
                 inputs.extend(resolved.1);
             }
         }
@@ -168,21 +151,7 @@ impl VirtualProject {
             .filter_map(|file| {
                 let source = self.module_source(file)?;
                 let resolver = |specifier: &str, _| {
-                    let path = if file.source_map.sfc_map.is_some() {
-                        super::dependency_scan::resolve_generated_dependency(
-                            specifier,
-                            file.original_path.parent()?,
-                            &self.project_root,
-                            &aliases,
-                        )
-                    } else {
-                        super::dependency_scan::resolve_dependency(
-                            specifier,
-                            file.original_path.parent()?,
-                            &self.project_root,
-                            &aliases,
-                        )
-                    }?;
+                    let path = self.resolve_file_dependency(file, specifier, &aliases)?;
                     let target = self
                         .find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path))?;
                     if crate::batch::declaration_path::is_declaration_file(&target.virtual_path) {

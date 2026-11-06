@@ -27,7 +27,14 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
-        if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
+        let authored_vue_ts = self
+            .source_artifacts
+            .values()
+            .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty());
+        if !self.jsx_typecheck
+            && !authored_vue_ts
+            && !self.virtual_files.values().any(is_denied_javascript_sfc)
+        {
             self.finalize_declaration_imports();
             return;
         }
@@ -55,21 +62,7 @@ impl VirtualProject {
                         )
                         .0;
                     let resolver = |specifier: &str, mode| {
-                        let path = if file.source_map.sfc_map.is_some() {
-                            super::dependency_scan::resolve_generated_dependency(
-                                specifier,
-                                file.original_path.parent()?,
-                                &self.project_root,
-                                &aliases,
-                            )
-                        } else {
-                            super::dependency_scan::resolve_dependency(
-                                specifier,
-                                file.original_path.parent()?,
-                                &self.project_root,
-                                &aliases,
-                            )
-                        };
+                        let path = self.resolve_file_dependency(file, specifier, &aliases);
                         let target = path.as_ref().and_then(|path| {
                             self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(
                                 path,
@@ -86,6 +79,11 @@ impl VirtualProject {
                             return None;
                         }
                         let target = target?;
+                        if crate::batch::declaration_path::is_declaration_file(&target.virtual_path)
+                        {
+                            let path = crate::batch::declaration_module_path(&target.virtual_path);
+                            return Some(path.to_string_lossy().replace('\\', "/"));
+                        }
                         is_lowered_jsx(target)
                             .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
                     };

@@ -5,7 +5,7 @@ use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{String as CompactString, ToCompactString, cstr, profile};
+use vize_carton::{FxHashSet, String as CompactString, ToCompactString, cstr, profile};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
@@ -48,6 +48,11 @@ pub(super) struct RegisteredFile {
     /// `VirtualFile`.
     pub(super) original_content: CompactString,
     pub(super) pre_rewrite_code: Option<CompactString>,
+    /// Authored `.vue.ts` literals whose generated spelling collides with an
+    /// SFC mirror. Final graph passes must keep these on TypeScript's authored
+    /// resolution path even though the containing document is generated Vue
+    /// TypeScript.
+    pub(super) authored_vue_ts_specifiers: FxHashSet<CompactString>,
     pub(super) passthrough_files: Vec<(PathBuf, PathBuf)>,
     pub(super) diagnostics: Vec<Diagnostic>,
     /// SFC whose script block is JavaScript: TypeScript diagnostics on it are
@@ -232,6 +237,16 @@ pub(super) fn build_vue_registered_file(
                 },
             )
     );
+    let authored_vue_ts_specifiers = context
+        .rewriter
+        .collect_all_specifiers(&rewritten.code, source_type)
+        .into_iter()
+        .filter_map(|specifier| {
+            specifier
+                .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
+                .map(CompactString::from)
+        })
+        .collect();
     let star_projection = super::star_exports::StarProjection::from_rewrite(&rewritten, stars);
     let preserve_module_source = !context.allow_javascript
         && rewritten.source_map != crate::batch::import_rewriter::ImportSourceMap::empty();
@@ -277,6 +292,7 @@ pub(super) fn build_vue_registered_file(
             || context.jsx_typecheck
             || preserve_module_source)
             .then_some(code),
+        authored_vue_ts_specifiers,
         passthrough_files: collect_passthrough_modules(
             path,
             authored_content,

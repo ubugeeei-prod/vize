@@ -99,6 +99,7 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
         extra_virtual_files,
         original_content,
         pre_rewrite_code,
+        authored_vue_ts_specifiers,
         passthrough_files,
         diagnostics,
         unchecked_javascript,
@@ -112,6 +113,10 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
     assert_debug_equal(extra_virtual_files, &right.extra_virtual_files);
     assert_eq!(original_content, &right.original_content);
     assert_eq!(pre_rewrite_code, &right.pre_rewrite_code);
+    assert_eq!(
+        authored_vue_ts_specifiers,
+        &right.authored_vue_ts_specifiers
+    );
     assert_eq!(passthrough_files, &right.passthrough_files);
     assert_debug_equal(diagnostics, &right.diagnostics);
     assert_eq!(unchecked_javascript, &right.unchecked_javascript);
