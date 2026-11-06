@@ -2,9 +2,9 @@ import { describe, expect, it } from "vite-plus/test";
 import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-select.json";
 
 describe("native Document select stack rules", () => {
-  it("retains ten admitted and three refused complete browser packets", () => {
-    expect(corpus).toHaveLength(13);
-    expect(corpus.filter((case_) => "refusal" in case_)).toHaveLength(3);
+  it("retains fourteen admitted and two refused complete browser packets", () => {
+    expect(corpus).toHaveLength(16);
+    expect(corpus.filter((case_) => "refusal" in case_)).toHaveLength(2);
   });
   for (const { name, source, elements: expectedElements, nodes: expectedNodes } of corpus) {
     it(name, () => {
