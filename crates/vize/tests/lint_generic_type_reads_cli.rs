@@ -99,7 +99,7 @@ fn original_exact_argv_and_all_whole_configured_json_vectors_are_checked() {
 }
 
 #[test]
-fn unused_rule_remains_opt_in_and_original_fixture_bytes_are_literal() {
+fn unused_rule_is_enabled_by_default_and_original_fixture_bytes_are_literal() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
     fs::create_dir(root.join("src")).unwrap();
@@ -129,7 +129,20 @@ fn unused_rule_remains_opt_in_and_original_fixture_bytes_are_literal() {
     assert_eq!(
         serde_json::from_slice::<Value>(&output.stdout).unwrap(),
         json!([{
-            "file": "src/kind-picker.vue", "messages": [], "errorCount": 0, "warningCount": 0
+            "file": "src/kind-picker.vue",
+            "messages": [{
+                "ruleId": "vue/no-unused-setup-bindings",
+                "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+                "severity": 1,
+                "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'Kind' is never read",
+                "line": 2,
+                "column": 10,
+                "endLine": 2,
+                "endColumn": 14,
+                "help": "Remove the binding or prefix its name with underscore if intentionally unused"
+            }],
+            "errorCount": 0,
+            "warningCount": 1
         }])
     );
     unchanged(root, source);

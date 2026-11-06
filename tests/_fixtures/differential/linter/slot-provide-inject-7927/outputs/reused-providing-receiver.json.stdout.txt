@@ -101,6 +101,17 @@
         "help": "WARNING vize:croquis/cf/provide-without-symbol\nprovide('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow\nProblem: provide('count') uses a string key instead of Symbol/InjectionKey.\nWhy string keys are problematic:\n\n  ┌─────────────────────────────────────────────────────────┐\n  │  String Keys          │  Symbol/InjectionKey           │\n  ├───────────────────────┼────────────────────────────────┤\n  │  Name collisions    │  Guaranteed uniqueness       │\n  │  No type safety     │  Full TypeScript inference   │\n  │  Refactoring breaks │  IDE rename support          │\n  │  Hard to trace      │  Go-to-definition works      │\n  └───────────────────────┴────────────────────────────────┘\nName collision example:\n\n  // ComponentA.vue\n  provide('count', myData)\n  \n  // LibraryX (unknown to you)\n  provide('count', otherData)  // Collision!\nType-safe pattern with InjectionKey:\n\n  // injection-keys.ts\n  import type { InjectionKey, Ref } from 'vue'\n  \n  export interface UserState {\n  name: string\n  id: number\n  }\n  \n  export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')\n  \n  // Provider.vue\n  import { UserKey } from './injection-keys'\n  provide(UserKey, userData)  // Type-checked\n  \n  // Consumer.vue\n  import { UserKey } from './injection-keys'\n  const user = inject(UserKey)  // Type: Ref<UserState> | undefined\nSuggestion: Define an InjectionKey, for example const countKey: InjectionKey<...> = Symbol('count'), then use it in provide() and inject()"
       },
       {
+        "ruleId": "vue/no-unused-setup-bindings",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'upstream' is never read",
+        "line": 6,
+        "column": 7,
+        "endLine": 6,
+        "endColumn": 15,
+        "help": "Remove the binding or prefix its name with underscore if intentionally unused"
+      },
+      {
         "ruleId": "cross-file",
         "ruleDocsPath": "docs/content/rules/cross-file.md",
         "severity": 2,
@@ -124,6 +135,6 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 2
+    "warningCount": 3
   }
 ]

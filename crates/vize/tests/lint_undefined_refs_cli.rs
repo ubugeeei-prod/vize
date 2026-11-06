@@ -21,7 +21,7 @@ fn output_details(output: &std::process::Output) -> String {
 }
 
 #[test]
-fn lint_config_can_enable_undefined_template_refs() {
+fn undefined_template_refs_are_default_and_configurable() {
     let project_root = tempfile::tempdir().unwrap();
     write_file(
         project_root.path(),
@@ -96,7 +96,7 @@ const known = 1
         .unwrap();
     assert!(
         default.status.success(),
-        "default preset must stay silent: {}",
+        "default warning must keep the successful exit: {}",
         output_details(&default)
     );
     let default_json: serde_json::Value =
@@ -110,9 +110,19 @@ const known = 1
         default_json,
         serde_json::json!([{
             "file": "src/App.vue",
-            "messages": [],
+            "messages": [{
+                "ruleId": "vue/no-undefined-refs",
+                "ruleDocsPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
+                "severity": 1,
+                "message": "[vize:vue/no-undefined-refs] Variable 'missing' is not defined",
+                "line": 5,
+                "column": 21,
+                "endLine": 5,
+                "endColumn": 28,
+                "help": "Define in <script setup> or ensure it's imported"
+            }],
             "errorCount": 0,
-            "warningCount": 0
+            "warningCount": 1
         }]),
         "{}",
         output_details(&default)

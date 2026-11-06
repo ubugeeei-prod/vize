@@ -255,7 +255,10 @@ fn lint_imported_store(
     Linter::with_preset(LintPreset::Ecosystem)
         .with_disabled_rules(resolved_disabled_rules(config, pinia_available))
         .lint_sfc(IMPORTED_STORE_SFC, filename.to_string_lossy().as_ref())
-        .warning_count
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "ecosystem/pinia-prefer-store-to-refs")
+        .count()
 }
 
 #[test]

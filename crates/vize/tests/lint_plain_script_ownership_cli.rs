@@ -33,7 +33,6 @@ fn invoke(root: &Path, args: &[&str], id: &str) -> Output {
         "argv": args, "status": output.status.code(), "stdout": output.stdout,
         "stderr": output.stderr})
     );
-    assert_eq!(output.status.code(), Some(0), "{id}: {output:?}");
     assert_eq!(output.stderr, Vec::<u8>::new(), "{id}: {output:?}");
     output
 }
@@ -56,7 +55,8 @@ fn exact_original_argv_and_complete_ts_js_sfc_json_vectors_are_checked() {
     fs::write(root.join("src/config.ts"), ORIGINAL).unwrap();
     let original_args: Vec<_> = COMMAND.split_whitespace().skip(1).collect();
     assert_eq!(original_args, ["lint", "src"]);
-    invoke(root, &original_args, "whole-original-command");
+    let original = invoke(root, &original_args, "whole-original-command");
+    assert_eq!(original.status.code(), Some(0), "{original:?}");
     unchanged(root, "src/config.ts", ORIGINAL);
     fs::remove_file(root.join("src/config.ts")).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
@@ -72,9 +72,22 @@ fn exact_original_argv_and_complete_ts_js_sfc_json_vectors_are_checked() {
             case["id"].as_str().unwrap(),
         );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
+        let expected = crate::support::current_rule_documentation::packet(case["cli"].clone());
         assert_eq!(
             actual,
-            crate::support::current_rule_documentation::packet(case["cli"].clone()),
+            expected,
+            "{}: {output:?}",
+            case["id"]
+        );
+        let error_count: u64 = actual
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|report| report["errorCount"].as_u64().unwrap())
+            .sum();
+        assert_eq!(
+            output.status.code(),
+            Some(if error_count == 0 { 0 } else { 1 }),
             "{}: {output:?}",
             case["id"]
         );

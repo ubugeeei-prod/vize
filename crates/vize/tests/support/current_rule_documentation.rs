@@ -66,6 +66,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
             "docs/content/rules/type-and-script.md",
             "docs/content/rules/reference/script-no-export-in-script-setup.md",
         ),
+        "script/require-define-component" => (
+            "docs/content/rules/reference/script-require-define-component.md",
+            "docs/content/rules/reference/script-require-define-component.md",
+        ),
         "css/no-v-bind-performance" => (
             "docs/content/rules/musea-and-css.md",
             "docs/content/rules/reference/css-no-v-bind-performance.md",
@@ -77,6 +81,10 @@ fn reference(rule: &str, before: &str) -> &'static str {
         "vue/no-unused-setup-bindings" => (
             "docs/content/rules/vue.md",
             "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+        ),
+        "vue/no-undefined-refs" => (
+            "docs/content/rules/reference/vue-no-undefined-refs.md",
+            "docs/content/rules/reference/vue-no-undefined-refs.md",
         ),
         "vue/no-inline-style" => (
             "docs/content/rules/vue.md",

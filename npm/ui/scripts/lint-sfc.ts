@@ -20,6 +20,9 @@ const workspaceCorsaPath = resolveWorkspaceCorsaPath();
 const lintCoreSfc: SfcLintFunction = (source, options) =>
   lintPatinaSfc(source, {
     ...options,
+    // The published UI package already exposes camelCase event names. Keep
+    // its native SFC gate aligned with the package's explicit Vite+ policy.
+    customEventNameCasing: "camelCase",
     ...(workspaceCorsaPath == null ? {} : { corsaPath: workspaceCorsaPath }),
   });
 
