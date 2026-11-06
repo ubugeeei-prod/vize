@@ -171,4 +171,3 @@ pub(super) fn activation_tests(program: &Program, rows: &[Operand]) -> Result<()
         button_state(&program, &two_buttons, &hidden),
     )
 }
-

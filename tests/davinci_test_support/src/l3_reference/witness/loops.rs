@@ -48,9 +48,15 @@ fn negative_tests(program: &Program, rows: &[Operand], script: &Json) -> Result<
     let id = loop_op.id;
     for (label, damaged) in [
         ("missing source", keep(rows, |r| *r != source)),
-        ("duplicate source", plus(rows, std::slice::from_ref(&source))),
+        (
+            "duplicate source",
+            plus(rows, std::slice::from_ref(&source)),
+        ),
         ("missing value alias", keep(rows, |r| *r != value)),
-        ("duplicate value alias", plus(rows, std::slice::from_ref(&value))),
+        (
+            "duplicate value alias",
+            plus(rows, std::slice::from_ref(&value)),
+        ),
         (
             "same aliases",
             change(id, "for-key", &|r| r.text = value.text.clone()),

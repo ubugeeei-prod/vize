@@ -102,7 +102,7 @@ pub fn format_event(event: &TraceEvent) -> String {
         "{} op#{} {}",
         event.backend.name(),
         event.op_id,
-        event.label
+        event.label()
     );
     if let Some(effect) = event.effect {
         line.push_str(&format!(" effect#{effect}"));

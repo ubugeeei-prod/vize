@@ -25,7 +25,12 @@ pub(super) fn plus(rows: &[Operand], extra: &[Operand]) -> Vec<Operand> {
     out
 }
 
-pub(super) fn at(rows: &[Operand], id: u32, role: &'static str, f: impl Fn(&mut Operand)) -> Vec<Operand> {
+pub(super) fn at(
+    rows: &[Operand],
+    id: u32,
+    role: &'static str,
+    f: impl Fn(&mut Operand),
+) -> Vec<Operand> {
     mutate(rows, |r| r.op == id && r.role == role, f)
 }
 
@@ -87,7 +92,10 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
     title.name = Some("title".into());
     for (label, damaged) in [
         ("missing condition", keep(rows, |r| r.role != "condition")),
-        ("duplicate condition", plus(rows, std::slice::from_ref(&condition))),
+        (
+            "duplicate condition",
+            plus(rows, std::slice::from_ref(&condition)),
+        ),
         (
             "foreign branch region",
             at(rows, 1, "condition", |r| r.region = Some(4)),
@@ -112,7 +120,10 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
             }),
         ),
         ("missing slot name", keep(rows, |r| r.op != 4)),
-        ("duplicate slot name", plus(rows, std::slice::from_ref(&slot))),
+        (
+            "duplicate slot name",
+            plus(rows, std::slice::from_ref(&slot)),
+        ),
         (
             "dynamic slot",
             at(rows, 4, "name", |r| r.kind = "js".into()),
@@ -126,7 +137,10 @@ fn reference_tests(program: &Program, rows: &[Operand], script: &Json) -> Result
             "missing text value",
             keep(rows, |r| r.op != 6 || r.role != "value"),
         ),
-        ("duplicate text value", plus(rows, std::slice::from_ref(&value))),
+        (
+            "duplicate text value",
+            plus(rows, std::slice::from_ref(&value)),
+        ),
         (
             "wrong text target",
             at(rows, 6, "value", |r| r.target = Some(2)),

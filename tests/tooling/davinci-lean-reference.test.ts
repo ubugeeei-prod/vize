@@ -41,8 +41,8 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
 });
 
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
-  const bridge = readRepoFile("davinci", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs");
-  assert.match(bridge, /rust_lowered_fixtures_match_impeto_reference_inputs/u);
+  const bridge = readRepoFile("davinci", "vize_l2_to_l3", "tests", "l3_reference_fixture.rs");
+  assert.match(bridge, /rust_lowered_fixtures_match_reference_inputs/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
   assert.match(bridge, /L3Page::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
@@ -224,7 +224,7 @@ test("TS-28 command in the suite registry names the executable runner", () => {
     [
       "TS-28",
       "Lean reference differential",
-      "`cd tests/formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
+      "`cd tests/formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test l3_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
       "exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit",
       "P3-4",
     ],

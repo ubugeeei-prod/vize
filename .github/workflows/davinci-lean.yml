@@ -74,7 +74,7 @@ jobs:
       - name: Check Rust reactivity lattice fact provenance
         run: cargo test -p vize_l3 --test lattice_reference_fixture
       - name: Check Rust L3 graph and value fixture provenance
-        run: cargo test -p vize_l2_to_l3 --test lean_reference_fixture
+        run: cargo test -p vize_l2_to_l3 --test l3_reference_fixture
       - name: Run TS-28 compiled backend trace
         run: cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace
       - name: Run TS-30 mounted backend behavior

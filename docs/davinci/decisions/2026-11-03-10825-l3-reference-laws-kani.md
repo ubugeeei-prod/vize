@@ -20,7 +20,7 @@ includes them directly and the `l3-reference` job of
 `.github/workflows/davinci-kani.yml` verifies them on every change to them.
 
 Rust differentials replace the Lean ones. `cargo test -p vize_l2_to_l3
---test lean_reference_fixture` recomputes `schedule-contract.txt` from the
+--test l3_reference_fixture` recomputes `schedule-contract.txt` from the
 committed graph pages with the reference contract, next to the TS-27
 validator that writes it (`--check-schedule-fixtures`). It also runs the C-23
 checker over all 51 committed graphs and its seven damage witnesses

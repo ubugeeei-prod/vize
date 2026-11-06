@@ -4,7 +4,6 @@
     clippy::disallowed_types
 )]
 
-use std::path::Path;
 use vize_l0::Allocator;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l3::dump::Page as L3Page;
