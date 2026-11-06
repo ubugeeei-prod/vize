@@ -3275,6 +3275,63 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-slot-param-defaults-11621",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-slot-param-defaults-11621",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "16d292beb41555261856c0fa8485d6b6dfc76d6a0f52c3dd28ed94afbfa86681",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-slot-param-defaults-11621/module.expected.txt",
+        "sha256": "7e23d5f00799c30a43e9a13576937231d0c7f1a6d5896626dab2fc00c11272f6",
+        "source": "https://github.com/ubugeeei-prod/vize/issues/11621; crates/vize_atelier_ssr/src/slot_params_typescript_tests.rs:slot_param_defaults_prefix_free_identifiers_on_both_lanes"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SSR has not been qualified for this input; this row guards the legacy and L4 scoped-slot parameter default rewrite."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/11621",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
       "targets": [

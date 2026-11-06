@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "issue": 11973,
+  "sourceIssue": 11965,
+  "reportedVersion": "0.692.0",
+  "reporter": "ubugeeei",
+  "creditedReporter": "makarasty",
+  "inputs": ["types.ts", "Guarded.vue", "Unguarded.vue", "tsconfig.json"],
+  "expectedStdout": "Unguarded.vue(10,60): error TS2345: Argument of type 'Entry' is not assignable to parameter of type 'Item'.\n  Type 'Folder' is not assignable to type 'Item'.\n    Types of property 'kind' are incompatible.\n      Type '\"folder\"' is not assignable to type '\"item\"'.\n"
+}

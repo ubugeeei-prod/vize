@@ -1,0 +1,4 @@
+export type Item = { kind: "item"; id: string };
+export type Folder = { kind: "folder"; id: string; children: Item[] };
+export type Entry = Item | Folder;
+export const isItem = (value: Entry): value is Item => value.kind === "item";
