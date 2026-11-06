@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "kind": "exact-constructor-emit-export-source-inverse",
+  "issue": 11982,
+  "beforeSourceRevision": "d72892bdd96e8b418a723b33d78663d9a56866c9",
+  "nativeAcceptanceCredit": false,
+  "files": [
+    {
+      "path": "npm/cli/scripts/emit-inference-exports.ts",
+      "before": {
+        "bytes": 8786,
+        "sha256": "9d483044f6e7773cbc4e875107ed1ddf75a79de35ac6c742641237f61cf8fb1f"
+      },
+      "after": {
+        "bytes": 9387,
+        "sha256": "d95d2bf2bb69aa96aae0c4fc7c733b155c0842d1baeae18c03ca23cf63ea7a61"
+      },
+      "edits": [
+        {
+          "before": "",
+          "after": "const constructorFactory = \"$ConstructorEmitPropsFactory\";\n"
+        },
+        {
+          "before": "",
+          "after": "    const constructorFactories = actual.source.statements.filter(\n      (node): node is ts.TypeAliasDeclaration =>\n        ts.isTypeAliasDeclaration(node) && node.name.text === constructorFactory,\n    );\n    assert.equal(constructorFactories.length, 1, `${file} one constructor emit factory`);\n    assert.equal(\n      constructorFactories[0]!.modifiers?.some(\n        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,\n      ) ?? false,\n      true,\n      `${file} explicitly exports the cross-file constructor emit factory`,\n    );\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 15058,
+        "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+      },
+      "after": {
+        "bytes": 15065,
+        "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+      },
+      "edits": [
+        {
+          "before": "type $ConstructorEmitPropsFactory",
+          "after": "export type $ConstructorEmitPropsFactory"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 15058,
+        "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+      },
+      "after": {
+        "bytes": 15065,
+        "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+      },
+      "edits": [
+        {
+          "before": "type $ConstructorEmitPropsFactory",
+          "after": "export type $ConstructorEmitPropsFactory"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 15058,
+        "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+      },
+      "after": {
+        "bytes": 15065,
+        "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+      },
+      "edits": [
+        {
+          "before": "type $ConstructorEmitPropsFactory",
+          "after": "export type $ConstructorEmitPropsFactory"
+        }
+      ]
+    }
+  ]
+}

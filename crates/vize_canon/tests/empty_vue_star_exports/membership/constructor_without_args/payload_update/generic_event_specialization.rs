@@ -35,6 +35,7 @@ fn inverse(current: &str, entry: &Value) -> String {
     previous
 }
 pub(super) fn source_edits_before(path: &str, mut current: String) -> String {
+    current = super::constructor_emit_export::source_edits_before(path, current);
     let record = load();
     let Some(entry) = record["files"]
         .as_array()
@@ -63,6 +64,10 @@ pub(super) fn preamble_edits_before(mut current: String) -> String {
     current
 }
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::constructor_emit_export::source_edits_before(path, current);
+    source_before_base(path, current)
+}
+fn source_before_base(path: &str, current: String) -> String {
     let record = load();
     match record["files"]
         .as_array()
@@ -88,14 +93,15 @@ mod tests {
         let record = load();
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
-            authenticate(&source_before(path, current.clone()), &entry["before"]);
+            let actual = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::constructor_emit_export::source_before(path, actual);
+            authenticate(&source_before_base(path, current.clone()), &entry["before"]);
             for changed in [
                 format!("{current}\n"),
                 format!("{current}{current}"),
                 current.replacen(entry["edits"][0]["after"].as_str().unwrap(), "", 1),
             ] {
-                assert!(std::panic::catch_unwind(|| source_before(path, changed)).is_err());
+                assert!(std::panic::catch_unwind(|| source_before_base(path, changed)).is_err());
             }
         }
         let physical = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;

@@ -106,15 +106,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
         }
       ]
     },
@@ -154,7 +154,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "c8761ce60abafd2b898506bfa80ee5c0c9de6dff7adcf4e5cccbf09a03717597"
+          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
         }
       ]
     }

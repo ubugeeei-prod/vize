@@ -147,7 +147,7 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   assert.equal(
     hash(integratedSource),
-    "3684b377e5bd5189a5bcfa48903c329c471c30262ca815253470da8a0f6ec95b",
+    "40ec1d06ab3d9e34442d45d2f6ab1270734537e33e19e6be04308e25277cfc24",
   );
   assert.ok(integratedSource.includes(identity(repairedCurrent).sha256));
   const genericEdit = generic.preamble.edits[0]!;

@@ -134,7 +134,7 @@ type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown
 declare function __vizeConstructorEmitProps<P, E>(
   component: new (props: P, ...args: any[]) => { $emit: E },
 ): (props: P) => __EmitProps<E>;
-type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(
+export type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(
   component: new (props: P, ...args: any[]) => { $emit: E },
 ) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
 import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };

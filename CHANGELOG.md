@@ -6,6 +6,12 @@ See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
 
 ## [Unreleased]
 
+### Fixed
+
+- Export `$ConstructorEmitPropsFactory` from the published virtual TypeScript
+  declarations so declaration bundlers can link emit helpers (#11982, #11985).
+  Reported by @Q16solver.
+
 ### Changed
 
 - Make `vize_l0::ErrorCode` the explicit compiler-wide error vocabulary used

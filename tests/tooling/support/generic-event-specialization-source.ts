@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { constructorEmitExportEditsBefore } from "./constructor-emit-export-source.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Transition = {
@@ -47,6 +48,17 @@ function record(read: (path: string) => string): Record {
 }
 /** Restore only the authenticated successor; historical inputs remain unchanged. */
 export function beforeGenericEventSpecialization(
+  read: (path: string) => string,
+  path: string,
+  current: string,
+): string {
+  return beforeGenericEventSpecializationBase(
+    read,
+    path,
+    constructorEmitExportEditsBefore(read, path, current),
+  );
+}
+export function beforeGenericEventSpecializationBase(
   read: (path: string) => string,
   path: string,
   current: string,
