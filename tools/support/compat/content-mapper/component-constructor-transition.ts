@@ -12,8 +12,8 @@ const constructorSources = [
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
-    6111,
-    "03495714bf27a42979433d45320839e155869f48ca240755df157ea4d1f1094c",
+    6570,
+    "3f8ad5d6b6504792cca2fdc3791be83ef905664ef005a393639ee55d712c0c89",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
@@ -31,37 +31,17 @@ for (const [file, bytes, sha256] of constructorSources) {
   );
 }
 
-export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
-export const currentGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
-const genericComponentContextInsertion =
-  " | { attrs: any; emit: (...args: any[]) => any; slots: any }";
+export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+export const currentGenericComponentContext = `type $GenericComponent = (<T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> }) & (<T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> });\n`;
 
 export function certifyGenericComponentContextTransition(before: Buffer, after: Buffer) {
-  const transition = certifiedTransition(
+  return certifiedTransition(
     before,
     after,
     previousGenericComponentContext,
     currentGenericComponentContext,
     "generic component public context",
   );
-  if (!transition) return;
-  const insertion = previousGenericComponentContext.indexOf(", expose?:");
-  assert.ok(insertion > 0, "generic component context insertion boundary");
-  assert.equal(
-    previousGenericComponentContext.slice(0, insertion) +
-      genericComponentContextInsertion +
-      previousGenericComponentContext.slice(insertion),
-    currentGenericComponentContext,
-    "generic component context must be one exact insertion",
-  );
-  const start =
-    transition.start + Buffer.byteLength(previousGenericComponentContext.slice(0, insertion));
-  return {
-    start,
-    end: start,
-    replacement: Buffer.from(genericComponentContextInsertion),
-    label: transition.label,
-  };
 }
 
 export const componentConstructorTransitions = [
