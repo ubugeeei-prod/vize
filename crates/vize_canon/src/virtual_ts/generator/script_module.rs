@@ -26,9 +26,29 @@ pub(super) struct ScriptModulePlan {
     pub(super) bound_types: FxHashSet<CompactString>,
     pub(super) identifier_usage: IdentifierUsage,
     pub(super) tsx_arrows: Vec<tsx_arrows::ArrowComma>,
+    complete_type_bindings: bool,
 }
 
 impl ScriptModulePlan {
+    /// A relation moved into the helper module must keep the same utility types.
+    /// Reuse this projection's syntax facts; uncertain scopes retain local aliases.
+    pub(super) fn shares_listener_relations(
+        &self,
+        generic: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
+    ) -> bool {
+        self.complete_type_bindings
+            && ["Extract", "NonNullable"]
+                .iter()
+                .all(|name| !self.bound_types.contains(*name))
+            && generic.is_none_or(|generic| {
+                generic.diagnostics.is_empty()
+                    && !generic.escaped_wrapper
+                    && generic.parameters.iter().all(|parameter| {
+                        !matches!(parameter.name.as_str(), "Extract" | "NonNullable")
+                    })
+            })
+    }
+
     pub(super) fn module_spans(
         &self,
         summary: &vize_croquis::Croquis,
@@ -59,6 +79,7 @@ pub(super) fn collect(
     let mut plan = collect_script_module_plan(script, recover_lone_setup);
     if !generation_options.script_syntax_boundaries.is_empty() {
         plan.tsx_arrows.clear();
+        plan.complete_type_bindings = false;
     }
     plan
 }
@@ -77,6 +98,9 @@ pub(super) fn collect_script_module_plan(
     } else {
         Vec::new()
     };
+    // Recovery may parse only a terminated import prefix. Its facts still
+    // support existing projection, but cannot prove the full script unbound.
+    let original_parse_complete = !parsed.panicked && parsed.diagnostics.is_empty();
     let parsed = if parsed.panicked {
         let retry_source = recover_lone_setup
             .then(|| super::glued_import::terminated_lone_import_prefix(script))
@@ -93,8 +117,20 @@ pub(super) fn collect_script_module_plan(
     if parsed.panicked {
         return ScriptModulePlan::default();
     }
+    let mut complete_type_bindings = original_parse_complete && parsed.diagnostics.is_empty();
 
     for statement in &parsed.program.body {
+        // Namespace merges, import-equals and named default declarations are
+        // outside this binding set. Keep their authored utility lookup local.
+        if matches!(
+            statement,
+            Statement::TSModuleDeclaration(_)
+                | Statement::TSGlobalDeclaration(_)
+                | Statement::TSImportEqualsDeclaration(_)
+                | Statement::ExportDefaultDeclaration(_)
+        ) {
+            complete_type_bindings = false;
+        }
         match statement {
             Statement::ImportDeclaration(import) => {
                 bound_types.extend(import.specifiers.iter().flatten().map(|specifier| {
@@ -128,6 +164,16 @@ pub(super) fn collect_script_module_plan(
             _ => {}
         }
         if let Statement::ExportNamedDeclaration(export) = statement {
+            if matches!(
+                export.declaration.as_ref(),
+                Some(
+                    Declaration::TSModuleDeclaration(_)
+                        | Declaration::TSGlobalDeclaration(_)
+                        | Declaration::TSImportEqualsDeclaration(_)
+                )
+            ) {
+                complete_type_bindings = false;
+            }
             exported_types.extend(
                 export
                     .specifiers
@@ -177,6 +223,7 @@ pub(super) fn collect_script_module_plan(
         bound_types,
         identifier_usage: collect_identifier_usage(&parsed.program),
         tsx_arrows,
+        complete_type_bindings,
     }
 }
 

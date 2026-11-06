@@ -678,6 +678,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 check_options,
                 virtual_ts_options: options,
                 hoist_shared_preamble,
+                share_listener_relations: (script_content.is_none() && generic_parameters.is_none())
+                    || module_plan.shares_listener_relations(generic_parameters),
                 setup_spread_bindings: template_ref_unwraps.setup_spread_bindings(),
                 keyed_prop_bindings: &keyed_prop_bindings,
                 syntactic_type_only_imported_names: &syntactic_type_only_imported_names,
