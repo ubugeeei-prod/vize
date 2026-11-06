@@ -119,8 +119,10 @@ fn missing_vue_specifiers_keep_ts2307_reachable() {
     let source_dir = case.path().join("src");
     std::fs::create_dir_all(&source_dir).expect("source directory");
     std::fs::write(source_dir.join("Present.vue"), "<template />").expect("present SFC");
+    std::fs::write(source_dir.join("Companion.vue.ts"), "export default {};\n")
+        .expect("TypeScript companion");
 
-    let source = "import './Present.vue';\nimport './Missing.vue';\n";
+    let source = "import './Present.vue';\nimport './Companion.vue';\nimport './Missing.vue';\n";
     let rewriter = ImportRewriter::new();
 
     assert_eq!(
@@ -128,12 +130,12 @@ fn missing_vue_specifiers_keep_ts2307_reachable() {
             .rewrite(source, SourceType::ts(), Some(&source_dir))
             .code,
         format!(
-            "import './Present.vue.ts';\nimport './Missing.vue.ts{MISSING_VUE_IMPORT_SENTINEL}';\n"
+            "import './Present.vue.ts';\nimport './Companion.vue.ts';\nimport './Missing.vue.ts{MISSING_VUE_IMPORT_SENTINEL}';\n"
         )
     );
     assert_eq!(
         rewriter.rewrite(source, SourceType::ts(), None).code,
-        "import './Present.vue.ts';\nimport './Missing.vue.ts';\n"
+        "import './Present.vue.ts';\nimport './Companion.vue.ts';\nimport './Missing.vue.ts';\n"
     );
 }
 

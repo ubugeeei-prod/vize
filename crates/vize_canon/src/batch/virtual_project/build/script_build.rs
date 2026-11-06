@@ -60,6 +60,7 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         },
         extra_virtual_files: Vec::new(),
         pre_rewrite_code: None,
+        authored_vue_ts_specifiers: Default::default(),
         passthrough_files: collect_passthrough_modules(
             path,
             content,

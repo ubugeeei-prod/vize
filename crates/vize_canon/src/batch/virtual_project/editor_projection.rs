@@ -57,9 +57,6 @@ impl VirtualProject {
             else {
                 continue;
             };
-            let Some(directory) = file.original_path.parent() else {
-                continue;
-            };
             let Some(source_type) = super::build::source_type_for_path(&file.virtual_path) else {
                 continue;
             };
@@ -70,15 +67,8 @@ impl VirtualProject {
                     .collect_all_specifier_occurrences(source, source_type),
             };
             for (specifier, _) in occurrences {
-                inputs.extend(
-                    super::dependency_scan::resolve_dependency_with_inputs(
-                        &specifier,
-                        directory,
-                        &self.project_root,
-                        &aliases,
-                    )
-                    .1,
-                );
+                let resolved = self.resolve_file_dependency_with_inputs(file, &specifier, &aliases);
+                inputs.extend(resolved.1);
             }
         }
         inputs.sort();
@@ -161,18 +151,16 @@ impl VirtualProject {
             .filter_map(|file| {
                 let source = self.module_source(file)?;
                 let resolver = |specifier: &str, _| {
-                    let path = super::dependency_scan::resolve_dependency(
-                        specifier,
-                        file.original_path.parent()?,
-                        &self.project_root,
-                        &aliases,
-                    )?;
-                    let target = self
-                        .find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path))?;
-                    if crate::batch::declaration_path::is_declaration_file(&target.virtual_path) {
-                        let path = crate::batch::declaration_module_path(&target.virtual_path);
+                    let path = self.resolve_file_dependency(file, specifier, &aliases)?;
+                    let target =
+                        self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path));
+                    if crate::batch::declaration_path::is_declaration_file(&path) {
+                        let identity =
+                            target.map_or(path.as_path(), |target| target.virtual_path.as_path());
+                        let path = crate::batch::declaration_module_path(identity);
                         return Some(path.to_string_lossy().replace('\\', "/"));
                     }
+                    let target = target?;
                     Some(self.editor_module_specifier(specifier, target).into())
                 };
                 let source_type = super::build::source_type_for_path(&file.virtual_path)?;

@@ -51,6 +51,16 @@ pub(super) fn build_jsx_registered_file(
     }];
     let source_map =
         CompositeSourceMap::new_vue(SfcSourceMap::new(mappings, blocks), rewritten.source_map);
+    let authored_vue_ts_specifiers = context
+        .rewriter
+        .collect_all_specifiers(&rewritten.code, SourceType::ts())
+        .into_iter()
+        .filter_map(|specifier| {
+            specifier
+                .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
+                .map(vize_carton::String::from)
+        })
+        .collect();
     let virtual_path = virtual_jsx_path(context.project_root, context.virtual_root, path)?;
 
     Ok(RegisteredFile {
@@ -64,6 +74,7 @@ pub(super) fn build_jsx_registered_file(
         },
         extra_virtual_files: Vec::new(),
         pre_rewrite_code: Some(code),
+        authored_vue_ts_specifiers,
         passthrough_files: collect_passthrough_modules(
             path,
             content,

@@ -58,6 +58,7 @@ impl VirtualProject {
             empty_module_exports: registered.empty_module_exports,
             module_exports: registered.module_exports,
             star_projection: registered.star_projection,
+            authored_vue_ts_specifiers: registered.authored_vue_ts_specifiers,
             ..Default::default()
         };
         apply_musea_art_globals(&registered.file.original_path, &mut self.virtual_ts_options);

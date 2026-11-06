@@ -1,7 +1,8 @@
 //! Authored path-selection boundaries shared by batch and editor projections.
 #![expect(clippy::disallowed_macros, reason = "fixtures use std formatting")]
 
-use super::{resolve_dependency, resolve_dependency_with_inputs};
+use super::{resolve_dependency, resolve_dependency_with_inputs, resolve_generated_dependency};
+use crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 
 #[test]
 fn exact_alias_wins_over_longer_or_equal_scored_wildcards_in_either_order() {
@@ -145,6 +146,7 @@ fn missing_typescript_and_vue_targets_resolve_like_typescript() {
         ("./Foo.vue", Some("Foo.vue.d.ts")),
         ("./Foo.vue.ts", Some("Foo.vue.d.ts")),
         ("./Sfc.vue", Some("Sfc.vue")),
+        ("./Sfc.vue.ts", Some("Sfc.vue.d.ts")),
         ("./Missing.vue", None),
         ("./missing.ts", None),
     ] {
@@ -154,4 +156,13 @@ fn missing_typescript_and_vue_targets_resolve_like_typescript() {
             "{specifier}"
         );
     }
+    assert_eq!(
+        resolve_generated_dependency("./Sfc.vue.ts", dir, dir, &[]),
+        Some(dir.join("Sfc.vue")),
+    );
+    let authored_alias = format!("./Sfc.vue.ts{AUTHORED_VUE_TS_ALIAS_SENTINEL}");
+    assert_eq!(
+        resolve_generated_dependency(&authored_alias, dir, dir, &[]),
+        Some(dir.join("Sfc.vue.d.ts")),
+    );
 }

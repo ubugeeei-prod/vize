@@ -17,6 +17,9 @@ pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -
     }
     if let Some((stripped, extensions)) = explicit_typescript_substitution(&base, specifier) {
         if let Some(path) = first_existing_with_extensions(&stripped, extensions) {
+            if is_declaration(&path) {
+                return None;
+            }
             return Some(path);
         }
         if let Some(path) = first_existing_with_extensions(&base, TYPESCRIPT_EXTENSIONS) {
@@ -29,6 +32,14 @@ pub(super) fn resolve_relative_passthrough_module(dir: &Path, specifier: &str) -
     }
     first_existing_with_extensions(&base, PASSTHROUGH_EXTENSIONS)
         .or_else(|| first_existing_directory_module(&base, PASSTHROUGH_EXTENSIONS))
+}
+
+fn is_declaration(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 fn explicit_typescript_substitution<'a>(
@@ -129,6 +140,7 @@ mod tests {
             "Direct.vue.ts",
             "Direct.vue.tsx",
             "Direct.vue.d.ts",
+            "Typed.vue.d.ts",
             "Direct.vue.js",
             "Direct.vue.jsx",
             "Full.vue.ts.d.ts",
@@ -160,6 +172,10 @@ mod tests {
                 .to_path_buf()
         };
         assert_eq!(resolve("./Direct.vue.ts"), Path::new("Direct.vue.ts"));
+        assert_eq!(
+            resolve_relative_passthrough_module(root, "./Typed.vue.ts"),
+            None
+        );
         assert_eq!(resolve("./Full.vue.ts"), Path::new("Full.vue.ts.d.ts"));
         assert_eq!(
             resolve("./Directory.vue.ts"),

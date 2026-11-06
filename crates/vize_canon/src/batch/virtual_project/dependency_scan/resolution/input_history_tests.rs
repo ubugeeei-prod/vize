@@ -1,6 +1,8 @@
 //! Candidate histories belong to freshness tracking, not ordinary graph walks.
 
-use super::{probe_candidates_inner, resolve_dependency_inner, resolve_dependency_with_inputs};
+use super::{
+    probe_candidates_inner, resolve_dependency_inner, resolve_generated_dependency_with_inputs,
+};
 
 #[test]
 fn runtime_substitution_retains_exact_tracking_history_without_history_on_the_fast_path() {
@@ -71,11 +73,11 @@ fn alias_fallback_and_vue_fold_preserve_resolution_and_tracking_order() {
         target.clone(),
     ];
     assert_eq!(
-        resolve_dependency_with_inputs("@/Component.vue.ts", root, root, &aliases),
+        resolve_generated_dependency_with_inputs("@/Component.vue.ts", root, root, &aliases),
         (Some(target.clone()), expected_inputs)
     );
     assert_eq!(
-        resolve_dependency_inner::<false>("@/Component.vue.ts", root, root, &aliases),
+        resolve_dependency_inner::<false, true>("@/Component.vue.ts", root, root, &aliases),
         (Some(target), Vec::new())
     );
 }
