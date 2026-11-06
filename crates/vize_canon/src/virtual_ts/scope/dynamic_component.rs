@@ -9,13 +9,11 @@
 //! which is how `vue-tsc` checks the same element.
 
 use vize_carton::{FxHashMap, FxHashSet, String, append};
-use vize_croquis::{
-    Croquis, ScopeId, ScopeKind, TemplateExpression, TemplateExpressionKind,
-    drawer::is_dynamic_component_alias,
-};
+use vize_croquis::{Croquis, ScopeId, ScopeKind, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 mod generic_index;
+mod guard;
 mod homogeneous_index;
 
 /// A named value of the built-in `component`, not an authored registry tag.
@@ -83,13 +81,6 @@ pub(crate) struct DynamicComponentAliases {
 struct GuardDeclaration {
     name: String,
     expression: String,
-}
-
-struct GuardTermOrigin<'a> {
-    term: &'a str,
-    scope_id: ScopeId,
-    start: u32,
-    negated: bool,
 }
 
 struct AliasDeclaration {
@@ -205,11 +196,11 @@ impl DynamicComponentAliases {
         usage: &vize_croquis::croquis::ComponentUsage,
         guard: &str,
     ) -> Option<String> {
-        let origins = guard_term_origins(summary, usage, guard)?;
+        let origins = guard::term_origins(summary, usage, guard)?;
         let mut rewritten = Vec::with_capacity(origins.len());
         let mut captured = false;
         for origin in origins {
-            if guard_term_needs_capture(summary, &origin, usage.scope_id) {
+            if guard::term_needs_capture(summary, &origin, usage.scope_id) {
                 captured = true;
                 let name = if origin.negated {
                     vize_carton::cstr!("__vize_dynamic_guard_{}_not", origin.start)
@@ -227,7 +218,7 @@ impl DynamicComponentAliases {
                 rewritten.push(String::from(origin.term));
             }
         }
-        captured.then(|| join_guard_strings(rewritten.as_slice()))
+        captured.then(|| guard::join_strings(rewritten.as_slice()))
     }
 
     /// Record one identity-stable guard term in the scope that evaluated it.
@@ -277,25 +268,6 @@ impl AliasDeclaration {
     }
 }
 
-fn is_lexical_ancestor(
-    scopes: &vize_croquis::ScopeChain,
-    ancestor: ScopeId,
-    mut descendant: ScopeId,
-) -> bool {
-    loop {
-        if ancestor == descendant {
-            return true;
-        }
-        let Some(parent) = scopes
-            .get_scope(descendant)
-            .and_then(|scope| scope.parent())
-        else {
-            return false;
-        };
-        descendant = parent;
-    }
-}
-
 /// The emitted closure owner for a semantic scope, shared by aliases and their
 /// guard captures so the two declarations cannot drift apart.
 fn owning_scope(summary: &Croquis, id: ScopeId) -> Option<u32> {
@@ -309,118 +281,6 @@ fn owning_scope(summary: &Croquis, id: ScopeId) -> Option<u32> {
             )
         })
         .map(|scope| scope.id.as_u32())
-}
-
-/// Resolve each joined guard term to the `v-if` condition that established it.
-/// A negative term belongs to the preceding branch condition, which also gives
-/// `v-else` a concrete evaluation scope even though it has no expression node.
-fn guard_term_origins<'a>(
-    summary: &Croquis,
-    usage: &vize_croquis::croquis::ComponentUsage,
-    guard: &'a str,
-) -> Option<Vec<GuardTermOrigin<'a>>> {
-    let terms = super::vif_guard::split_guard_terms(guard);
-    let mut origins = Vec::with_capacity(terms.len());
-    for (index, term) in terms.iter().copied().enumerate() {
-        let prefix = join_guard_terms(terms.get(..=index)?);
-        let (expression, negated) = match guard_expression(summary, usage, prefix.as_str()) {
-            Some(expression) => (expression, false),
-            None => {
-                let condition = term.strip_prefix("!(")?.strip_suffix(')')?;
-                let positive = vize_carton::cstr!("({condition})");
-                let mut candidate_terms = terms.get(..index)?.to_vec();
-                candidate_terms.push(positive.as_str());
-                let candidate = join_guard_terms(candidate_terms.as_slice());
-                (guard_expression(summary, usage, candidate.as_str())?, true)
-            }
-        };
-        origins.push(GuardTermOrigin {
-            term,
-            scope_id: expression.scope_id,
-            start: expression.start,
-            negated,
-        });
-    }
-    Some(origins)
-}
-
-/// Find the latest authored condition that establishes an exact guard prefix.
-fn guard_expression<'a>(
-    summary: &'a Croquis,
-    usage: &vize_croquis::croquis::ComponentUsage,
-    guard: &str,
-) -> Option<&'a TemplateExpression> {
-    summary
-        .template_expressions
-        .iter()
-        .filter(|expression| expression.kind == TemplateExpressionKind::VIf)
-        .filter(|expression| expression.start < usage.end)
-        .filter(|expression| expression.vif_guard.as_deref() == Some(guard))
-        .filter(|expression| {
-            is_lexical_ancestor(&summary.scopes, expression.scope_id, usage.scope_id)
-        })
-        .max_by_key(|expression| expression.start)
-}
-
-/// Capture only when a descendant scope declares a name read by this term.
-/// Parser refusal stays conservative: crossing an unknown scope then captures.
-fn guard_term_needs_capture(
-    summary: &Croquis,
-    origin: &GuardTermOrigin<'_>,
-    usage_scope: ScopeId,
-) -> bool {
-    if origin.scope_id == usage_scope {
-        return false;
-    }
-    let Some(references) = vize_croquis::drawer::extract_identifier_refs_checked(origin.term)
-    else {
-        return true;
-    };
-    if references.is_empty() {
-        return false;
-    }
-
-    let mut current = usage_scope;
-    loop {
-        if current == origin.scope_id {
-            return false;
-        }
-        let Some(scope) = summary.scopes.get_scope(current) else {
-            return true;
-        };
-        if references
-            .iter()
-            .any(|reference| scope.has_binding(reference.name.as_str()))
-        {
-            return true;
-        }
-        let Some(parent) = scope.parent() else {
-            return true;
-        };
-        current = parent;
-    }
-}
-
-fn join_guard_terms(terms: &[&str]) -> String {
-    let mut joined = String::default();
-    for (index, term) in terms.iter().enumerate() {
-        if index != 0 {
-            joined.push_str(" && ");
-        }
-        joined.push_str(term);
-    }
-    joined
-}
-
-fn join_guard_strings(terms: &[String]) -> String {
-    let mut joined = String::default();
-    for (index, term) in terms.iter().enumerate() {
-        if index != 0 {
-            joined.push_str(" && ");
-        }
-        joined.push_str(term.as_str());
-    }
-    joined
 }
 
 /// The `:is` expression of the `<component>` element starting at `start`.
