@@ -210,13 +210,12 @@ type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> e
 type $StaticEmitProps = __EmitProps<Emits>;
 
 // ========== Default Export ==========
-type $ComponentInstance = {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-} & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+}, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps> & $ComponentPublicBase;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

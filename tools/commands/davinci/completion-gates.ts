@@ -197,7 +197,7 @@ const measureRustOnlyFormal = (repo: Repo): Measured => {
     (file) =>
       file.endsWith(".lean") ||
       /(^|\/)(lakefile\.(lean|toml)|lean-toolchain|lake-manifest\.json)$/.test(file) ||
-      /^\.github\/workflows\/[^/]*lean[^/]*\.ya?ml$/.test(file),
+      (file.startsWith(".github/workflows/") && /(^|[-_.])lean([-_.]|$)/.test(path.basename(file))),
   );
   return { pass: lean.length === 0, detail: `${lean.length} Lean files or workflows` };
 };

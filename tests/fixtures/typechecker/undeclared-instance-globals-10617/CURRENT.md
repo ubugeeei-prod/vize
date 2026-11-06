@@ -1,10 +1,10 @@
 # Current instance-global packet authority
 
-The active expected population is `source-packets-current-b13ee5096a47.json`: all 80 whole transform results from [source Actions 42173370773](https://github.com/ubugeeei-prod/vize/actions/runs/42173370773/job/127746578706), synthetic merge producer `b13ee5096a47944a43cd812c8ee5c6c8fbee81b6` for PR head `bca76f46fa8953e46124a0f280607b7de730113e`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+The active expected population is `source-packets-current-28fcc198bfe1.json`: all 80 whole transform results from [source Actions 42184342147](https://github.com/ubugeeei-prod/vize/actions/runs/42184342147/job/127781739992), synthetic merge producer `28fcc198bfe1ba142bdab001ce550a70566bc22f` for PR head `6f0a31207be9d22d0c9034d4672b9924c77040e1`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed; the other 76 complete results remain byte-identical. Each changed packet retains component-navigation ownership locally by replacing the imported `$ComponentNavigationProps` alias with the exact local `$IsAny` and `$ComponentNavigationProps` declarations. Every non-whole-packet outcome and all three real-host controls passed.
 
-`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-b13ee5096a47-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-28fcc198bfe1-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
 
 ## Previous authority (historical)
 

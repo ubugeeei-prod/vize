@@ -15,8 +15,8 @@
 //!
 //! The expectations below are the exact output of
 //! `vue-tsc --noEmit` (vue 3.6.0-beta.10) on the same sources; see the PR for
-//! the transcript. Only the printed type name differs, because each tool names
-//! its own generated instance type.
+//! the transcript. Vize intentionally elides its otherwise-unused public
+//! instance alias, so TypeScript prints the structurally equivalent surface.
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::super::{
@@ -69,6 +69,7 @@ fn imported_component_refs_match_the_vue_tsc_public_surface() {
     let mut files = shared_files();
     files.push(("src/invalid.ts", INVALID));
     files.push(("src/NegativeControls.vue", NEGATIVE_CONTROLS));
+    let instance = "{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<Record<string, ((...args: any[]) => any) | undefined>>; } & Omit<...> & Pick<...> & $ShallowUnwrapRef<...>";
 
     assert_eq!(
         check("issue-4150-imported-component-ref-expose", &files),
@@ -97,28 +98,28 @@ fn imported_component_refs_match_the_vue_tsc_public_surface() {
             (
                 "src/invalid.ts".into(),
                 Some(2339),
-                "Property 'absentMember' does not exist on type '$ComponentInstance'.".into(),
+                format!("Property 'absentMember' does not exist on type '{instance}'."),
                 10,
                 28,
             ),
             (
                 "src/invalid.ts".into(),
                 Some(2339),
-                "Property 'absentMember' does not exist on type '$ComponentInstance'.".into(),
+                format!("Property 'absentMember' does not exist on type '{instance}'."),
                 12,
                 33,
             ),
             (
                 "src/invalid.ts".into(),
                 Some(2339),
-                "Property 'absentMember' does not exist on type '$ComponentInstance'.".into(),
+                format!("Property 'absentMember' does not exist on type '{instance}'."),
                 14,
                 38,
             ),
             (
                 "src/invalid.ts".into(),
                 Some(2339),
-                "Property 'secret' does not exist on type '$ComponentInstance'.".into(),
+                format!("Property 'secret' does not exist on type '{instance}'."),
                 7,
                 28,
             ),

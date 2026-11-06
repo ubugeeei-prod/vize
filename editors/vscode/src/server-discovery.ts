@@ -47,6 +47,15 @@ export function createServerDiscovery(
     let workspaceFallbackReason = workspaceFailure;
     state.selectedServerCandidate = undefined;
 
+    const local =
+      !workspaceFailure && config.get<boolean>("server.preferWorkspace", true)
+        ? discoverWorkspaceServers(
+            (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
+            workspace.isTrusted,
+          )
+        : undefined;
+    workspaceFallbackReason ??= local?.reason;
+
     function select(candidate: InspectedServerCandidate): string {
       const selected = {
         ...candidate,
@@ -72,11 +81,7 @@ export function createServerDiscovery(
       state.outputChannel.appendLine(`Configured server path does not exist: ${configuredPath}`);
     }
 
-    if (!workspaceFailure && config.get<boolean>("server.preferWorkspace", true)) {
-      const local = discoverWorkspaceServers(
-        (workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath),
-        workspace.isTrusted,
-      );
+    if (local) {
       workspaceFallbackReason = local.reason;
       for (const server of local.candidates) {
         const candidate = await inspectServerCandidate(server);
@@ -92,7 +97,6 @@ export function createServerDiscovery(
         }
         if (generation !== state.configurationSyncGeneration) return undefined;
       }
-      if (workspaceFallbackReason) state.outputChannel.appendLine(workspaceFallbackReason);
     }
 
     const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
@@ -126,6 +130,7 @@ export function createServerDiscovery(
       return select(fallbackCandidate);
     }
 
+    if (workspaceFallbackReason) state.outputChannel.appendLine(workspaceFallbackReason);
     state.outputChannel.appendLine("Server not found in any location");
     return undefined;
   }
@@ -232,6 +237,9 @@ export function createServerDiscovery(
 
     if (candidate.versionError) {
       state.outputChannel.appendLine(`Could not inspect server version: ${candidate.versionError}`);
+    }
+    if (candidate.workspaceFallbackReason) {
+      state.outputChannel.appendLine(candidate.workspaceFallbackReason);
     }
   }
 

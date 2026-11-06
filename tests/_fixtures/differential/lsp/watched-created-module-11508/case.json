@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "id": "lsp/regression/watched-created-module-11508",
+  "provenance": {
+    "fixCommit": "bc89210b6997e39a610b625b87fce98393c55dc7",
+    "issue": 11508,
+    "witnessPath": "tools/support/compat/npm/smoke-release-init-workspace.ts",
+    "inputOrigin": "Packed fresh-project watcher lifecycle with an initially unresolved TypeScript import",
+    "contractOrigin": "Pinned resolved module-specifier hover after the watched file is physically created"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "1ed040ab57c29aa43e57b06a3f30f4d884f10755ec343cceec83ec1332f32c27"
+    },
+    {
+      "source": "created.ts.txt",
+      "runtimePath": "created.ts",
+      "sha256": "2db2164ef41139d9d5d118b5f8da27eb540cf46e64418c1214d7f0e865252b5a"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "034988f3127859edc20f9dbc3472c41ace8d4d5e0da8737ddc11f80ca36522f9"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Resolved post-create input paired with the packed watched-file lifecycle; the packed smoke owns create-event publication acceptance"
+}

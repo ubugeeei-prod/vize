@@ -297,13 +297,12 @@ type $Slots = {};
 export type { $Slots as Slots };
 
 // ========== Default Export ==========
-type $ComponentInstance = {
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{
   $props: Props;
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-} & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
+}, Props, {}, $AuthoredProps, $JsxProps> & $ComponentPublicBase;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

@@ -23,8 +23,9 @@ overlay, so the export stays current after it at every `-O` tier.
 
 Opaque reasons, foreign dialect identifiers and Vue filter classifications are
 preserved without interpreting them. Foreign dialect fact tables and retained
-expression ASTs are not serialized by this value-page contract. Stateful Lean
-execution and migration of the backend generation payloads remain separate work.
+expression ASTs are not serialized by this value-page contract. Stateful
+reference execution remains test-only, and migration of the backend generation
+payloads remains separate work.
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).

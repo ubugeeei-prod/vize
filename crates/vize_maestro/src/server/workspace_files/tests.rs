@@ -3,8 +3,9 @@ use tower_lsp::lsp_types::{
 };
 
 use super::{
-    ServerState, changes_invalidate_disk_project_state, record_created_files, record_deleted_files,
-    record_watcher_support, typecheck_dependency_watcher_registration, user_watched_file_events,
+    ServerState, changes_invalidate_disk_project_state, changes_require_open_document_fallback,
+    record_created_files, record_deleted_files, record_watcher_support,
+    typecheck_dependency_watcher_registration, user_watched_file_events,
 };
 
 #[test]
@@ -124,6 +125,31 @@ fn only_vue_content_changes_keep_the_cached_disk_project_state() {
     assert!(changes_invalidate_disk_project_state(
         &state,
         &[changed(vue), changed(declaration)]
+    ));
+}
+
+#[test]
+fn watched_creates_refresh_open_documents_without_a_reverse_edge() {
+    let uri = Url::parse("file:///workspace/src/missing.ts").unwrap();
+    let event = |typ| FileEvent {
+        uri: uri.clone(),
+        typ,
+    };
+
+    assert!(changes_require_open_document_fallback(
+        &[event(FileChangeType::CREATED)],
+        &[],
+        &[],
+    ));
+    assert!(!changes_require_open_document_fallback(
+        &[event(FileChangeType::CHANGED)],
+        &[],
+        &[],
+    ));
+    assert!(!changes_require_open_document_fallback(
+        &[event(FileChangeType::CREATED)],
+        &[],
+        std::slice::from_ref(&uri),
     ));
 }
 

@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { resolveCssEventSource } from "../native/css-source-map-event.mjs";
 
-type WorkflowStep = { uses?: string; name?: string };
+type WorkflowStep = { uses?: string; name?: string; run?: string };
 
 await test("older actual PR heads without CSS targets qualify only their real current-base merge candidate", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-event-source-"));
@@ -109,6 +109,10 @@ await test("the actual dedicated workflow checks event source and retains role p
     checkout = steps.find((step: WorkflowStep) => step.uses?.startsWith("actions/checkout@"));
   assert.equal(checkout.with.ref, "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}");
   assert.equal(checkout.with["fetch-depth"], 2);
+  assert.equal(
+    steps.find((step: WorkflowStep) => step.run?.startsWith("vp install "))?.run,
+    "vp install --filter './npm/native...' --filter './npm/cli...' --frozen-lockfile --prefer-offline",
+  );
   const proof = steps.find(
     (step: WorkflowStep) =>
       step.name === "Bind actual checkout to its PR merge or exact dispatch role",

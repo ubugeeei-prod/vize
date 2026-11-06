@@ -759,7 +759,7 @@ fn test_define_expose_is_part_of_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("type $ComponentInstance = {\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n} & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;"),
+        output.code.contains("=> $ComponentInstanceFor<{\n  $props: Props;\n  readonly __vizeRawProps?: Props;\n  $emit: $PublicEmit<Emits>;\n  $slots: $PublicSlots<$Slots>;\n}, Props, {}, $AuthoredProps, $JsxProps> & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;"),
         "component instance should include exposed bindings:\n{}",
         output.code
     );
