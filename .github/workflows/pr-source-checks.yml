@@ -158,9 +158,16 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Test CI selection when its inputs change
+        id: cases
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        env: { TEST_CASES_JOB: "CI selection tests" }
         run: >-
-          node --test tests/tooling/ci-iteration-plans.test.ts
+          node --test
+          --test-reporter=spec
+          --test-reporter-destination=stdout
+          --test-reporter=./tools/support/compat/github/test-case-reporter.ts
+          --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json"
+          tests/tooling/ci-iteration-plans.test.ts
           tests/tooling/pr-required-rust.test.ts
           tests/tooling/rust-test-cohorts.test.ts
           tests/tooling/rust-build-evidence.test.mjs
@@ -168,6 +175,14 @@ jobs:
           tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/native-history-toolchain.test.ts
           tests/tooling/publish-npm-package*.test.ts
           tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts
+      - name: Upload CI selection test cases
+        if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-ci-selection-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-ci-selection.json
+          if-no-files-found: error
+          retention-days: 7
   canonical-corpus:
     permissions: { contents: read, actions: read, checks: read }
     needs: pr-source-plan

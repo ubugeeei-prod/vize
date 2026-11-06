@@ -1,0 +1,49 @@
+name: Test small Node case list
+description: Run one fixed Check test list and retain its shared case packet
+inputs:
+  suite: { required: true, description: Fixed small-suite selector }
+  job: { required: true, description: Actions display name recorded in the packet }
+  packet: { required: true, description: Unique packet and artifact suffix }
+runs:
+  using: composite
+  steps:
+    - name: Run selected Node tests
+      id: cases
+      shell: bash
+      env:
+        SMALL_NODE_SUITE: ${{ inputs.suite }}
+        TEST_CASES_JOB: ${{ inputs.job }}
+        VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-${{ inputs.packet }}.json
+      run: |
+        case "$SMALL_NODE_SUITE" in
+          check-js)
+            vp run --workspace-root check:iteration
+            tests=(
+              tests/tooling/github-workflows-source-selection.test.ts
+              tests/tooling/vp-bootstrap-cache.test.mjs
+            )
+            ;;
+          node-engine)
+            tests=(
+              tests/tooling/node-engine-matrix.test.ts
+              tests/tooling/package-manifests.test.ts
+              tests/tooling/bundler-plugin-manifests.test.ts
+              tests/tooling/dependency-security-compat.test.ts
+              tests/tooling/comparison-base.test.ts
+              tests/tooling/plan-source-checks.test.ts
+              tests/tooling/plan-check-inputs.test.ts
+              tests/tooling/warning-budget.test.ts
+              tests/tooling/npm-audit-command.test.ts
+            )
+            ;;
+          *) echo "unknown small Node suite: $SMALL_NODE_SUITE" >&2; exit 2 ;;
+        esac
+        node tools/support/compat/github/js-test-cases.ts capture -- node --test "${tests[@]}"
+    - name: Upload small Node test cases
+      if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: test-cases-${{ inputs.packet }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/test-cases-${{ inputs.packet }}.json
+        if-no-files-found: error
+        retention-days: 7

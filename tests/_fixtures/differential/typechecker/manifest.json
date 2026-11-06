@@ -11813,6 +11813,45 @@
       }
     },
     {
+      "id": "typechecker/generic-component-public-context-11966",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::generic_component_cast::generic_component_helpers_keep_precise_emits_slots_and_component_overlap",
+      "inputs": [
+        {
+          "file": "src/Generic.vue",
+          "path": "generic-component-public-context-11966/Generic.vue.txt",
+          "sha256": "efe5564a9b165f6c54102d2c6064b7f9d4cc2276f485f9a37e55ea4552a0a351"
+        },
+        {
+          "file": "src/consumer.ts",
+          "path": "generic-component-public-context-11966/consumer.ts.txt",
+          "sha256": "e6dd13ed7822cc95dd7008e894389435c99ab3822aca5d485bc11e41f5ce6f1b"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "generic-component-public-context-11966/tsconfig.json.txt",
+          "sha256": "816b303d19d3156610b5fc7ca85e56a32eb92e69ab7face0f80dd03f4d8d60b3"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "Physically consumed native batch fixture; public ComponentEmit and ComponentSlots stay exact while the same generic SFC overlaps Vue Component."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/global-component-listener-11373/original-three-components",
       "state": "active",
       "targets": [
@@ -18101,7 +18140,7 @@
         {
           "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
           "selector": "an unrelated edit retains a semantic TS1xxx diagnostic in the prompt",
-          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "sha256": "3648e9d9e2bad42abaedbf1bd75300440e4c5c4d939bb6b1ea1933ba4015bda9",
           "input": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt"
         },
         {
@@ -18143,7 +18182,7 @@
         {
           "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
           "selector": "prompt filters retain the same stale diagnostic for every checker code spelling",
-          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "sha256": "3648e9d9e2bad42abaedbf1bd75300440e4c5c4d939bb6b1ea1933ba4015bda9",
           "input": null
         }
       ],

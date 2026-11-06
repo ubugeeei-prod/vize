@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T">
+defineProps<{ foo: T }>();
+defineEmits<{ (event: 'bar', value: T): void }>();
+defineSlots<{ default?: (props: T) => unknown }>();
+</script>

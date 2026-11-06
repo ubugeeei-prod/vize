@@ -379,8 +379,11 @@ await test("ordinary PR and merge-group source plans execute the complete publis
   const step = job.slice(job.indexOf("      - name: Test CI selection when its inputs change"));
   assert.match(step, /if: \$\{\{ needs.pr-source-plan.outputs.tooling == 'true' \}\}/);
   const run = step.split("run: >-\n")[1];
-  assert.ok(run?.trim().startsWith("node --test "));
-  const patterns = run.trim().split(/\s+/).slice(2);
+  assert.match(run?.trim() ?? "", /^node --test\s/);
+  const patterns = run
+    .trim()
+    .split(/\s+/)
+    .filter((argument) => argument.startsWith("tests/"));
   const suites = fs
     .readdirSync(path.join(repoRoot, "tests/tooling"))
     .filter((name) => name.startsWith("publish-npm-package") && name.endsWith(".test.ts"))

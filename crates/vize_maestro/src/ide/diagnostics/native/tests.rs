@@ -157,13 +157,41 @@ fn carried_family_keeps_fresh_script_parser_errors() {
         message: "Type 'string' is not assignable to type 'number'.".into(),
         ..Default::default()
     };
+    let stale_syntax = Diagnostic {
+        range: parser.range,
+        source: Some(sources::TYPE_CHECKER.into()),
+        code: Some(NumberOrString::Number(1134)),
+        message: "Variable declaration expected.".into(),
+        ..Default::default()
+    };
+    let semantic = Diagnostic {
+        range: parser.range,
+        source: Some(sources::TYPE_CHECKER.into()),
+        code: Some(NumberOrString::Number(1192)),
+        message: "Module has no default export.".into(),
+        ..Default::default()
+    };
+    let unknown = Diagnostic {
+        range: Range::new(Position::new(3, 0), Position::new(3, 1)),
+        source: Some(sources::TYPE_CHECKER.into()),
+        message: "Producer-owned diagnostic without a phase.".into(),
+        ..Default::default()
+    };
     let carried = super::NativeFamily {
-        diagnostics: vec![typed.clone().into()],
+        diagnostics: vec![
+            typed.clone().into(),
+            stale_syntax.into(),
+            super::NativeDiagnostic {
+                diagnostic: semantic.clone(),
+                phase: vize_canon::corsa_bridge::DiagnosticPhase::Semantic,
+            },
+            unknown.clone().into(),
+        ],
         owns_script_syntax: false,
     };
     assert_eq!(
         super::combine(vec![parser.clone()], true, Some(carried)).diagnostics,
-        vec![parser.clone(), typed.clone()]
+        vec![parser.clone(), typed.clone(), semantic, unknown]
     );
     let current = super::NativeFamily {
         diagnostics: vec![typed.clone().into()],

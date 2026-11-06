@@ -3774,6 +3774,51 @@
       }
     },
     {
+      "id": "lsp/regression/script-syntax-carried-native-11816",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "script-syntax-carried-native-11816",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "5f907d85598d3013ed3fa5ec5232e245d40c8d28946abf3f31f42eb042ded187"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "3a6c2c1bcae34be3b8df92371c4a5f472afe82dfa0f522e33e5315f04bca9e72"
+          }
+        ]
+      },
+      "case": {
+        "path": "script-syntax-carried-native-11816/case.json",
+        "sha256": "a729bfbb8fca0f1254a2be3599685ebff0d0889080aade9fd840ce400cb9e76c"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/script-syntax-prompt-11626",
       "state": "active",
       "targets": [

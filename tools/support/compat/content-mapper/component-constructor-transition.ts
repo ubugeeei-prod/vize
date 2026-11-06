@@ -12,8 +12,8 @@ const constructorSources = [
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
-    6636,
-    "8891520e26d99b718b6d87546d2f8825cd8a01048196724b745f8465bb0c53ef",
+    6061,
+    "a1af302ef9618d480ca56966d845ede4fdf5af5d0b569616f887ef4ca14e4d0a",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/generic_function.rs",
@@ -32,9 +32,10 @@ for (const [file, bytes, sha256] of constructorSources) {
 }
 
 export const previousGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
-const genericComponentIntersectionPrefix = "(";
-const genericComponentPreciseOverload = `) & (<T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> })`;
-export const currentGenericComponentContext = `type $GenericComponent = (<T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> }) & (<T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> });\n`;
+export const currentGenericComponentContext = `type $GenericComponent = <T extends { id: number; label: string } = { id: number; label: string }>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };\n`;
+const previousGenericComponentFallback =
+  " | { attrs: any; emit: (...args: any[]) => any; slots: any }";
+const currentGenericComponentFallback = " | { attrs: any }";
 
 export function certifyGenericComponentContextTransition(before: Buffer, after: Buffer) {
   const transition = certifiedTransition(
@@ -45,45 +46,22 @@ export function certifyGenericComponentContextTransition(before: Buffer, after: 
     "generic component public context",
   );
   if (!transition) return;
-  const prefixBoundary = previousGenericComponentContext.indexOf("= ") + 2;
-  const suffixBoundary = previousGenericComponentContext.lastIndexOf(";\n");
-  assert.ok(prefixBoundary > 1 && suffixBoundary > prefixBoundary);
+  const start = previousGenericComponentContext.indexOf(previousGenericComponentFallback);
+  assert.ok(start > 0, "generic component context replacement boundary");
   assert.equal(
-    previousGenericComponentContext.slice(0, prefixBoundary) +
-      genericComponentIntersectionPrefix +
-      previousGenericComponentContext.slice(prefixBoundary, suffixBoundary) +
-      genericComponentPreciseOverload +
-      previousGenericComponentContext.slice(suffixBoundary),
+    previousGenericComponentContext.slice(0, start) +
+      currentGenericComponentFallback +
+      previousGenericComponentContext.slice(start + previousGenericComponentFallback.length),
     currentGenericComponentContext,
-    "generic component overload must preserve the compatibility signature byte-for-byte",
+    "generic component context must be one exact replacement",
   );
-  const edits = [
-    {
-      start:
-        transition.start +
-        Buffer.byteLength(previousGenericComponentContext.slice(0, prefixBoundary)),
-      end:
-        transition.start +
-        Buffer.byteLength(previousGenericComponentContext.slice(0, prefixBoundary)),
-      replacement: Buffer.from(genericComponentIntersectionPrefix),
-      label: `${transition.label} prefix`,
-    },
-    {
-      start:
-        transition.start +
-        Buffer.byteLength(previousGenericComponentContext.slice(0, suffixBoundary)),
-      end:
-        transition.start +
-        Buffer.byteLength(previousGenericComponentContext.slice(0, suffixBoundary)),
-      replacement: Buffer.from(genericComponentPreciseOverload),
-      label: `${transition.label} precise overload`,
-    },
-  ];
+  const absoluteStart =
+    transition.start + Buffer.byteLength(previousGenericComponentContext.slice(0, start));
   return {
-    edits,
-    previousStart: transition.start,
-    previousEnd: transition.end,
-    preciseOverload: edits[1]!,
+    start: absoluteStart,
+    end: absoluteStart + Buffer.byteLength(previousGenericComponentFallback),
+    replacement: Buffer.from(currentGenericComponentFallback),
+    label: transition.label,
   };
 }
 

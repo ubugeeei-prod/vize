@@ -50,23 +50,21 @@ test("component constructor transitions retain the complete reviewed variants", 
 test("generic component context transition retains the complete reviewed signature", () => {
   const before = Buffer.from(previousGenericComponentContext);
   const after = Buffer.from(currentGenericComponentContext);
-  const transition = certifyGenericComponentContextTransition(before, after);
-  const certificates = transition?.edits;
-  assert.equal(certificates?.length, 2);
-  let cursor = 0;
-  const fragments = [];
-  for (const certificate of certificates ?? []) {
-    assert.equal(certificate.start, certificate.end);
-    fragments.push(before.subarray(cursor, certificate.start), certificate.replacement);
-    cursor = certificate.end;
-  }
-  fragments.push(before.subarray(cursor));
-  assert.deepEqual(Buffer.concat(fragments), after);
+  const certificate = certifyGenericComponentContextTransition(before, after);
+  assert.ok(certificate);
+  assert.deepEqual(
+    Buffer.concat([
+      before.subarray(0, certificate.start),
+      certificate.replacement,
+      before.subarray(certificate.end),
+    ]),
+    after,
+  );
   assert.equal(certifyGenericComponentContextTransition(before, before), undefined);
   assert.equal(certifyGenericComponentContextTransition(after, after), undefined);
   for (const mutated of [
     Buffer.from(currentGenericComponentContext.replace("attrs: any", "attrs: unknown")),
-    Buffer.from(currentGenericComponentContext.replace("slots: any", "slots: unknown")),
+    Buffer.from(currentGenericComponentContext.replace("'slots'", "'changed'")),
   ])
     assert.throws(
       () => certifyGenericComponentContextTransition(before, mutated),
