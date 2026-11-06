@@ -185,6 +185,30 @@ function expectedFromBefore(packets: Packet[], input: Input): Packet[] {
       message.ruleDocsPath = "docs/content/rules/reference/vue-no-multi-spaces.md";
     }
   }
+  // The precise suppression reconciliation shipped after the immutable public
+  // producer. Its current packet correctly reports this real unused setup
+  // binding, so authenticate that one bounded addition from authored bytes
+  // instead of weakening the complete-packet comparison.
+  const setupBinding = "setupCafé";
+  const setupBindingIndex = input.app.indexOf(setupBinding);
+  if (setupBindingIndex >= 0) {
+    assert.equal(input.app.indexOf(setupBinding, setupBindingIndex + setupBinding.length), -1);
+    const start = bytes(input.app.slice(0, setupBindingIndex));
+    const authored = span(input.app, start, start + bytes(setupBinding));
+    const packet = appPacket(expected);
+    assert.equal(typeof packet.warningCount, "number");
+    packet.messages.push({
+      ruleId: "vue/no-unused-setup-bindings",
+      message: "[vize:vue/no-unused-setup-bindings] Setup binding 'setupCafé' is never read",
+      line: authored.start.line,
+      column: authored.start.column,
+      endLine: authored.end.line,
+      endColumn: authored.end.column,
+      severity: 1,
+      ruleDocsPath: "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+    });
+    packet.warningCount = Number(packet.warningCount) + 1;
+  }
   for (const message of appPacket(expected).messages.filter(scriptProvide)) {
     const anchor = diagnosticAnchors(input.app, message).find(
       (entry) => JSON.stringify(entry.before) === JSON.stringify(location(message)),
@@ -343,7 +367,7 @@ test("cross-file split-script coordinates preserve complete public packets and a
           canonical(after),
           canonical(expectedFromBefore(before, input)),
           input.name +
-            ": every field except bounded script coordinates and current rule documentation stays identical",
+            ": every field except bounded script coordinates, current rule documentation and the authenticated suppression finding stays identical",
         );
         assert.deepEqual(
           JSON.parse(entry.afterDoctor.stdout),
