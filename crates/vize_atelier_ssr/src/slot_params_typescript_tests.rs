@@ -3,7 +3,9 @@
 
 use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
+use vize_atelier_core::options::{
+    BindingMetadata, BindingType, CustomElementMatcher, TemplateSyntaxMode,
+};
 use vize_l0::{Allocator, String, cstr};
 
 fn compile(source: &str, is_ts: bool, lane: SsrLane) -> String {
@@ -33,6 +35,35 @@ fn both_lanes(source: &str, is_ts: bool) -> String {
         selected,
         "{source} (is_ts: {is_ts})"
     );
+    selected
+}
+
+fn both_lanes_with_bindings(source: &str, bindings: &[(&str, BindingType)]) -> String {
+    let compile = |lane| {
+        let allocator = Allocator::new();
+        let mut metadata = BindingMetadata::default();
+        for (name, kind) in bindings {
+            metadata.bindings.insert((*name).into(), *kind);
+        }
+        metadata.is_script_setup = true;
+        let (_, errors, result) = compile_ssr_on_lane(
+            &allocator,
+            source,
+            SsrCompilerOptions {
+                binding_metadata: Some(metadata),
+                ..Default::default()
+            },
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            SsrCompilerExperimentalOptions::default(),
+            true,
+            lane,
+        );
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        cstr!("{}\n{}", result.preamble, result.code)
+    };
+    let selected = compile(SsrLane::Selected);
+    assert_eq!(compile(SsrLane::LegacyOnly), selected, "{source}");
     selected
 }
 
@@ -115,6 +146,25 @@ fn slot_param_defaults_prefix_free_identifiers_on_both_lanes() {
             "{ row = _ctx.fallback, active = row.active, n = Math.max(_ctx.seed, 1), map = (item) => item.id, config = { value: _ctx.value } }",
             "row"
         )
+    );
+}
+
+#[test]
+fn slot_param_defaults_use_binding_specific_render_prefixes() {
+    let output = both_lanes_with_bindings(
+        r#"<Card #default="{ value = setupValue, title = propValue, data = dataValue, option = optionValue, other = fallback }">{{ value }}</Card>"#,
+        &[
+            ("setupValue", BindingType::SetupConst),
+            ("propValue", BindingType::Props),
+            ("dataValue", BindingType::Data),
+            ("optionValue", BindingType::Options),
+        ],
+    );
+    assert!(
+        output.contains(
+            "{ value = $setup.setupValue, title = $props.propValue, data = $data.dataValue, option = $options.optionValue, other = _ctx.fallback }"
+        ),
+        "{output}"
     );
 }
 

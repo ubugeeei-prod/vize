@@ -195,7 +195,9 @@ impl<'b> TransformExpressions<'b> {
     #[must_use]
     pub fn params(&self, params: &str) -> String {
         if self.scope.prefixes_identifiers() {
-            return String::from(prefix::prefix_slot_defaults(params, &self.scope).as_str());
+            return prefix::prefix_slot_defaults(params, &self.scope)
+                .as_str()
+                .to_owned();
         }
         self.scope
             .is_ts()

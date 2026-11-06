@@ -1,8 +1,9 @@
 //! `codegen::slots::params::prefix_slot_defaults`, ported: default
-//! values inside a slot-props destructuring pattern get `_ctx.` on their
-//! free identifiers (`{ item = defaultItem }` →
-//! `{ item = _ctx.defaultItem }`). Inline immutable setup bindings use the
-//! existing scope context; all other binding/default policies stay unchanged.
+//! values inside a slot-props destructuring pattern get their binding-specific
+//! render prefix (`{ item = defaultItem }` →
+//! `{ item = $setup.defaultItem }` for a setup binding). Inline immutable setup
+//! bindings use the existing scope context; all other binding/default policies
+//! stay unchanged.
 
 use alloc::vec::Vec as StdVec;
 
@@ -113,11 +114,15 @@ impl SlotDefaultPrefixVisitor<'_, '_> {
             .any(|scope| scope.iter().any(|local| local.as_str() == name))
     }
 
-    fn should_prefix(&self, name: &str) -> bool {
-        !self.is_local(name)
-            && !self.scope.is_in_transform_scope(name)
-            && !is_global_allowed(name)
-            && !self.scope.reads_constant_binding(name)
+    fn identifier_prefix(&self, name: &str) -> Option<&'static str> {
+        if self.is_local(name)
+            || self.scope.is_in_transform_scope(name)
+            || is_global_allowed(name)
+            || self.scope.reads_constant_binding(name)
+        {
+            return None;
+        }
+        self.scope.identifier_prefix(name)
     }
 
     fn collect_function_params(&mut self, params: &oxc_ast::ast::FormalParameters<'_>) {
@@ -131,17 +136,17 @@ impl SlotDefaultPrefixVisitor<'_, '_> {
         }
     }
 
-    fn push_prefix(&mut self, span_start: u32) {
+    fn push_prefix(&mut self, span_start: u32, prefix: &str) {
         let pos = span_start.saturating_sub(self.offset) as usize;
-        self.insertions.push((pos, String::from("_ctx.")));
+        self.insertions.push((pos, String::from(prefix)));
     }
 }
 
 impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
         let name = ident.name.as_str();
-        if self.should_prefix(name) {
-            self.push_prefix(ident.span.start);
+        if let Some(prefix) = self.identifier_prefix(name) {
+            self.push_prefix(ident.span.start, prefix);
         }
     }
 
@@ -150,10 +155,11 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
             && let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.should_prefix(name) {
+            if let Some(prefix) = self.identifier_prefix(name) {
                 let pos = ident.span.end.saturating_sub(self.offset) as usize;
-                let mut suffix = String::with_capacity(name.len() + 8);
-                suffix.push_str(": _ctx.");
+                let mut suffix = String::with_capacity(name.len() + prefix.len() + 2);
+                suffix.push_str(": ");
+                suffix.push_str(prefix);
                 suffix.push_str(name);
                 self.insertions.push((pos, suffix));
                 return;
