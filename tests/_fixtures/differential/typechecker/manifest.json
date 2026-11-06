@@ -18101,7 +18101,7 @@
         {
           "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
           "selector": "an unrelated edit retains a semantic TS1xxx diagnostic in the prompt",
-          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "sha256": "3648e9d9e2bad42abaedbf1bd75300440e4c5c4d939bb6b1ea1933ba4015bda9",
           "input": "tests/_fixtures/differential/typechecker/semantic-diagnostic-provenance-11626/App.vue.txt"
         },
         {
@@ -18143,7 +18143,7 @@
         {
           "source": "tests/tooling/lsp-script-syntax-prompt.test.ts",
           "selector": "prompt filters retain the same stale diagnostic for every checker code spelling",
-          "sha256": "4cbf4980208d90c94d26a30cfb6317dae82e6b1dfde248c5be707d58f03d1572",
+          "sha256": "3648e9d9e2bad42abaedbf1bd75300440e4c5c4d939bb6b1ea1933ba4015bda9",
           "input": null
         }
       ],
