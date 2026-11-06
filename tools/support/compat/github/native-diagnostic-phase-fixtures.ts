@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const DIAGNOSTIC_PHASE_ID = "typechecker/protocol/native-diagnostic-phase-11626";
 const manifestPath = "tests/_fixtures/differential/typechecker/manifest.json";
-const registrationSha256 = "aa0b7795b737e1d01e5262cbbf9e8c9297d75b7d656af04e263a71a8d78f4fc5";
+const registrationSha256 = "dd6dc506413e712561da2826b5558051ea180a1f5a7be5fa2a16f097bb7d0309";
 const sources = [
   "crates/vize_canon/src/lsp_client/initial_diagnostics/native_diagnostics.rs",
   "crates/vize_canon/src/lsp_client/diagnostics/batch.rs",

@@ -225,6 +225,13 @@ void test("runner preserves literal arguments and the child process failure stat
       { mode: 0o755 },
     );
     const literal = "archive with spaces $(touch should-not-exist).tar.zst";
+    const environment = {
+      ...process.env,
+      PATH: `${cwd}:${dirname(process.execPath)}:${process.env.PATH}`,
+      ARGS_FILE: output,
+    };
+    delete environment.VIZE_TEST_CASES;
+    delete environment.TEST_CASES_JOB;
     const result = spawnSync(
       process.execPath,
       [
@@ -239,11 +246,7 @@ void test("runner preserves literal arguments and the child process failure stat
       ],
       {
         encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: `${cwd}:${dirname(process.execPath)}:${process.env.PATH}`,
-          ARGS_FILE: output,
-        },
+        env: environment,
       },
     );
     assert.equal(result.status, 37, result.stderr);

@@ -1,0 +1,9 @@
+{
+  "name": "@vize/vue-setup-await-oracle",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@vue/server-renderer": "3.5.38",
+    "vue": "3.5.38"
+  }
+}

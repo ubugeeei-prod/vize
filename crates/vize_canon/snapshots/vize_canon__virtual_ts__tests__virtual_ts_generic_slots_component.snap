@@ -229,7 +229,7 @@ type $GenericContext<T extends string = 'a'> = {
   slots: $Slots<T>;
   expose: (exposed: import('vue').ShallowUnwrapRef<{}>) => void;
 };
-type $GenericComponent = <T extends string = 'a'>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any; emit: (...args: any[]) => any; slots: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };
+type $GenericComponent = <T extends string = 'a'>(props: $GenericContext<T>['props'], ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'> | { attrs: any }, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };
 type $GenericRefResolver = <T extends string = 'a'>(props: $GenericContext<T>['props'] & Record<string, unknown>, ctx?: Pick<$GenericContext<T>, 'attrs' | 'emit' | 'slots'>, expose?: $GenericContext<T>['expose']) => import('vue').VNode & { __ctx?: $GenericContext<T> };
 type $VueComponentOptions = {
   name?: string;

@@ -33,7 +33,10 @@ for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 assert.equal(input.cases.length, 32);
 const fromTests = createRequire(new URL("../../package.json", import.meta.url));
-const vuePackagePath = fromTests.resolve("vue-setup-await-oracle/package.json");
+const fromOracle = createRequire(
+  new URL("../vue-setup-await-oracle/package.json", import.meta.url),
+);
+const vuePackagePath = fromOracle.resolve("vue/package.json");
 const fromVue = createRequire(vuePackagePath);
 const vue = fromVue("vue");
 const compiler = fromVue("vue/compiler-sfc");

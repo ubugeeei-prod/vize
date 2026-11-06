@@ -18,10 +18,12 @@ import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 // #11626: the prompt publication after an edit shows the script parser's
 // syntax error for the new text at once, beside the moved type error; it must
 // not wait for the native pass of that text.
-const SOURCE = fs.readFileSync(
-  path.join(root, "tests/_fixtures/differential/lsp/script-syntax-prompt-11626/App.vue.txt"),
-  "utf8",
+const FIXTURE = path.join(
+  root,
+  "tests/_fixtures/differential/lsp/script-syntax-carried-native-11816",
 );
+const SOURCE = fs.readFileSync(path.join(FIXTURE, "App.vue.txt"), "utf8");
+const TSCONFIG = fs.readFileSync(path.join(FIXTURE, "tsconfig.json.txt"), "utf8");
 const SYNTAX_LINE = 2;
 const BROKEN_LINE = 3;
 
@@ -100,10 +102,7 @@ test("a new script syntax error reaches the prompt publication", async (t) => {
   try {
     fs.mkdirSync(path.join(directory, "src"));
     fs.writeFileSync(filePath, SOURCE);
-    fs.writeFileSync(
-      path.join(directory, "tsconfig.json"),
-      JSON.stringify({ compilerOptions: { strict: true, noEmit: true }, include: ["src"] }),
-    );
+    fs.writeFileSync(path.join(directory, "tsconfig.json"), TSCONFIG);
     writeVueConfigFixture(directory, {
       lsp: { lint: true, typecheck: true },
       typeChecker: { corsaPath: runtime },

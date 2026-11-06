@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "id": "lsp/regression/script-syntax-carried-native-11816",
+  "provenance": {
+    "fixCommit": "0b0b703d03176e3ccfa89d1b590a88af538d25a3",
+    "issue": 11816,
+    "witnessPath": "tests/tooling/lsp-script-syntax-prompt.test.ts",
+    "witnessTest": "a new script syntax error reaches the prompt publication",
+    "inputOrigin": "published vize 0.697.0 with official TypeScript 7.1.0-beta; insert a broken declaration, edit elsewhere while it remains, then repair it",
+    "contractOrigin": "authored folding ranges of the exact SFC consumed by the native prompt witness"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "5f907d85598d3013ed3fa5ec5232e245d40c8d28946abf3f31f42eb042ded187"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "3a6c2c1bcae34be3b8df92371c4a5f472afe82dfa0f522e33e5315f04bca9e72"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "c8bb6f12ea7f48d5a0276ae2607b90609f756c87f698f24de88cb9b0082a0a9d"
+  },
+  "scope": "Folding is a structural control. The witness consumes the pinned SFC and tsconfig with type checking on; its v3 prompt must keep the current parser error and semantic diagnostics without carrying the earlier unphased TS1134 at the same range."
+}
