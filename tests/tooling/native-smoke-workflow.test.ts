@@ -10,7 +10,7 @@ import { parse } from "yaml";
 import { parse as parseToml } from "@iarna/toml";
 import { runCiBuild } from "../../npm/native/scripts/build-ci.mjs";
 import { admitBabelSmokeInventory } from "./support/native-smoke-babel-inventory.ts";
-import { assertPackedSmokeTimingSuccessor } from "./support/native-smoke-timing-successor.ts";
+import { assertMuslFreshInstallSuccessor } from "./support/native-smoke-musl-successor.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -125,7 +125,7 @@ function authenticateWorkflow(source: string) {
   const sealed = readRepoFile(
     "tests/_fixtures/differential/workflows/native-smoke-babel-inventory-10702/after.yml",
   );
-  assertPackedSmokeTimingSuccessor(sealed, source);
+  assertMuslFreshInstallSuccessor(sealed, source);
   source = admitBabelSmokeInventory(sealed);
   for (const anchor of [nodeLaws, msvcArch]) assert.equal(source.split(anchor).length, 2);
   assert.doesNotMatch(source, /setup-moonbit|moon (?:run|test)/u);

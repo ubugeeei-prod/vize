@@ -6,7 +6,7 @@ import {
   verifyBabelSmokeInventoryPair,
 } from "./support/native-smoke-babel-inventory.ts";
 
-import { assertPackedSmokeTimingSuccessor } from "./support/native-smoke-timing-successor.ts";
+import { assertMuslFreshInstallSuccessor } from "./support/native-smoke-musl-successor.ts";
 
 const directory = new URL(
   "../_fixtures/differential/workflows/native-smoke-babel-inventory-10702/",
@@ -90,7 +90,7 @@ test("source provenance, original digest and archive membership cannot be omitte
 });
 
 function assertLiveInventory(workflow: string, release: string): void {
-  assertPackedSmokeTimingSuccessor(after, workflow);
+  assertMuslFreshInstallSuccessor(after, workflow);
   const expected = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(expected);
   assert.deepEqual(
@@ -143,9 +143,9 @@ test("timing observation cannot alter commands, selectors, retention, or unrelat
     ["timeout-minutes: 45", "timeout-minutes: 46"],
   ]) {
     assert.ok(workflow.includes(from), from);
-    assert.throws(() => assertPackedSmokeTimingSuccessor(after, workflow.replace(from, to)));
+    assert.throws(() => assertMuslFreshInstallSuccessor(after, workflow.replace(from, to)));
   }
-  assert.throws(() => assertPackedSmokeTimingSuccessor(after + "# changed\n", workflow));
-  assert.throws(() => assertPackedSmokeTimingSuccessor(after, after));
-  assert.throws(() => assertPackedSmokeTimingSuccessor(after, workflow + "# unreviewed\n"));
+  assert.throws(() => assertMuslFreshInstallSuccessor(after + "# changed\n", workflow));
+  assert.throws(() => assertMuslFreshInstallSuccessor(after, after));
+  assert.throws(() => assertMuslFreshInstallSuccessor(after, workflow + "# unreviewed\n"));
 });

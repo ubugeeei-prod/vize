@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
-import { assertPackedSmokeTimingSuccessor } from "./support/native-smoke-timing-successor.ts";
+import { assertMuslFreshInstallSuccessor } from "./support/native-smoke-musl-successor.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const original = fs.readFileSync(
@@ -42,7 +42,7 @@ const sealedWorkflow = fs.readFileSync(
   ),
   "utf8",
 );
-assertPackedSmokeTimingSuccessor(sealedWorkflow, currentWorkflow);
+assertMuslFreshInstallSuccessor(sealedWorkflow, currentWorkflow);
 const after = parse(sealedWorkflow) as {
   jobs: Record<string, Job>;
   on: { schedule: unknown; workflow_dispatch: { inputs: Record<string, { default: unknown }> } };
