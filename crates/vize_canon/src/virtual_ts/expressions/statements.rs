@@ -403,10 +403,13 @@ fn emit_expression_statement(
         );
     let gen_expr_start = if projected_listener_callback {
         // This render-time copy owns only listener construction and usage.
-        // Contextual `any` prevents the inference copy from introducing
-        // TS7006; the typed event-scope primary still checks every parameter
-        // and callback-body diagnostic (#11965).
-        append!(*ts, "{indent}void ((");
+        // This copy keeps render-time reads live for inference and narrowing,
+        // but it must not own diagnostics. The typed event-scope primary still
+        // checks every parameter and callback-body diagnostic (#11965, #11977).
+        append!(
+            *ts,
+            "{indent}// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics.\n{indent}void (("
+        );
         let start = ts.len() + mapped_bounds.0;
         ts.push_str(generated_expression);
         append!(
@@ -449,8 +452,11 @@ fn emit_expression_statement(
 #[cfg(test)]
 mod tests {
     use super::guarded_callback_reads;
+    use crate::virtual_ts::generate_virtual_ts;
     use vize_carton::CompactString;
-    use vize_croquis::{ScopeId, TemplateExpression, TemplateExpressionKind};
+    use vize_croquis::{
+        Analyzer, AnalyzerOptions, ScopeId, TemplateExpression, TemplateExpressionKind,
+    };
 
     fn expression(content: &str, guard: Option<&str>) -> TemplateExpression {
         TemplateExpression {
@@ -478,5 +484,31 @@ mod tests {
         );
         assert!(guarded_callback_reads(&expression("handler", Some("handler"))).is_empty());
         assert!(guarded_callback_reads(&expression("() => handler", None)).is_empty());
+    }
+
+    #[test]
+    fn guarded_listener_projection_does_not_own_nested_parameter_diagnostics() {
+        let script =
+            "import Child from './Child.vue';\nconst ready = true;\nlet ids: string[] = [];";
+        let template = r#"<div v-if="ready"><Child @change="v => ids = v.map(x => x.id)" /></div>"#;
+        let allocator = vize_l0::Allocator::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert_eq!(
+            output
+                .code
+                .matches(
+                    "// @ts-ignore Inference-only listener value; the typed event scope owns diagnostics."
+                )
+                .count(),
+            1,
+            "the render-time copy must not report nested implicit-any diagnostics:\n{}",
+            output.code
+        );
     }
 }

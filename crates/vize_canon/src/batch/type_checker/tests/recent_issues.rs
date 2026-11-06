@@ -36,6 +36,7 @@ mod generic_constructor_slots;
 mod generic_inherit_attrs_open_tail;
 mod global_component_callbacks;
 mod guarded_arrow_listener;
+mod guarded_listener_nested_callback;
 mod import_meta;
 mod imported_component_ref_expose;
 mod imported_runtime_props;
