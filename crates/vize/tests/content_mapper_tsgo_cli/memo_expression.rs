@@ -67,6 +67,32 @@ fn install_observed_mapper_manifest(project: &Path, receipt: &Path) {
     .unwrap();
 }
 
+fn decode_mapper_protocol(bytes: &[u8], context: &str) -> Vec<serde_json::Value> {
+    let mut offset = 0;
+    let mut packets = Vec::new();
+    while offset < bytes.len() {
+        let relative_header_end = bytes[offset..]
+            .windows(4)
+            .position(|window| window == b"\r\n\r\n")
+            .unwrap_or_else(|| panic!("incomplete mapper protocol header: {context}"));
+        let header_end = offset + relative_header_end;
+        let header = std::str::from_utf8(&bytes[offset..header_end]).unwrap();
+        let length = header
+            .strip_prefix("Content-Length: ")
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or_else(|| panic!("unexpected mapper protocol header {header:?}: {context}"));
+        let body_start = header_end + 4;
+        let body_end = body_start
+            .checked_add(length)
+            .filter(|end| *end <= bytes.len())
+            .unwrap_or_else(|| panic!("incomplete mapper protocol body: {context}"));
+        packets.push(serde_json::from_slice(&bytes[body_start..body_end]).unwrap());
+        offset = body_end;
+    }
+    assert_eq!(offset, bytes.len(), "{context}");
+    packets
+}
+
 fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output) {
     let bytes = std::fs::read(receipt).unwrap_or_else(|error| {
         panic!(
@@ -132,15 +158,43 @@ fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output)
         "{context}"
     );
     assert_eq!(packet["streams"]["stderr"]["bytes"], 0, "{context}");
-    let stdin = packet["streams"]["stdin"]["utf8"].as_str().unwrap();
-    let stdout = packet["streams"]["stdout"]["utf8"].as_str().unwrap();
-    for method in ["initialize", "openProject", "transform"] {
-        assert!(
-            stdin.contains(&format!(r#""method":"{method}""#)),
-            "{context}"
-        );
+    let stdin = decode_mapper_protocol(
+        packet["streams"]["stdin"]["utf8"]
+            .as_str()
+            .unwrap()
+            .as_bytes(),
+        &context,
+    );
+    let stdout = decode_mapper_protocol(
+        packet["streams"]["stdout"]["utf8"]
+            .as_str()
+            .unwrap()
+            .as_bytes(),
+        &context,
+    );
+    assert_eq!(
+        stdin
+            .iter()
+            .map(|request| request["method"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        [
+            "initialize",
+            "openProject",
+            "transform",
+            "transform",
+            "transform",
+            "closeProject",
+        ],
+        "{context}"
+    );
+    assert_eq!(stdout.len(), stdin.len(), "{context}");
+    for (request, response) in stdin.iter().zip(&stdout) {
+        assert_eq!(request["jsonrpc"], "2.0", "{context}");
+        assert_eq!(response["jsonrpc"], "2.0", "{context}");
+        assert_eq!(response["id"], request["id"], "{context}");
+        assert!(response.get("result").is_some(), "{context}");
+        assert!(response.get("error").is_none(), "{context}");
     }
-    assert!(stdout.contains(r#""result":"#), "{context}");
 }
 
 #[test]

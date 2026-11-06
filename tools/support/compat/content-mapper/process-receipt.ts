@@ -133,7 +133,7 @@ child.on("close", (code, signal) => {
   persist();
 
   for (const [name, handler] of forward) process.removeListener(name, handler);
-  if (signal && FORWARDED_SIGNALS.includes(signal)) {
+  if (signal && (FORWARDED_SIGNALS as readonly NodeJS.Signals[]).includes(signal)) {
     process.kill(process.pid, signal);
     return;
   }
