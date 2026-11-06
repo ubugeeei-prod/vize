@@ -41,6 +41,7 @@ mod package_roots;
 mod references;
 pub(super) use references::path_references;
 mod resolution;
+mod source_resolution;
 use package_roots::PackageRoots;
 use resolution::{
     alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
@@ -55,70 +56,6 @@ type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResoluti
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
-    fn source_authored_vue_ts_specifier(&self, source: &Path, specifier: &str) -> bool {
-        let specifier = specifier
-            .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
-            .unwrap_or(specifier);
-        self.source_artifacts
-            .get(source)
-            .is_some_and(|artifacts| artifacts.authored_vue_ts_specifiers.contains(specifier))
-    }
-
-    fn resolve_source_dependency(
-        &self,
-        source: &Path,
-        generated_vue: bool,
-        specifier: &str,
-        aliases: &[(std::string::String, std::string::String)],
-    ) -> Option<PathBuf> {
-        if generated_vue && !self.source_authored_vue_ts_specifier(source, specifier) {
-            return resolve_generated_dependency(
-                specifier,
-                source.parent()?,
-                &self.project_root,
-                aliases,
-            );
-        }
-        resolve_dependency(specifier, source.parent()?, &self.project_root, aliases)
-    }
-
-    pub(super) fn resolve_file_dependency(
-        &self,
-        file: &super::VirtualFile,
-        specifier: &str,
-        aliases: &[(std::string::String, std::string::String)],
-    ) -> Option<PathBuf> {
-        self.resolve_source_dependency(
-            &file.original_path,
-            file.source_map.sfc_map.is_some(),
-            specifier,
-            aliases,
-        )
-    }
-
-    pub(super) fn resolve_file_dependency_with_inputs(
-        &self,
-        file: &super::VirtualFile,
-        specifier: &str,
-        aliases: &[(std::string::String, std::string::String)],
-    ) -> (Option<PathBuf>, Vec<PathBuf>) {
-        let authored_vue_ts = self.source_authored_vue_ts_specifier(&file.original_path, specifier);
-        if file.source_map.sfc_map.is_some() && !authored_vue_ts {
-            return resolve_generated_dependency_with_inputs(
-                specifier,
-                file.original_path.parent().unwrap_or(&file.original_path),
-                &self.project_root,
-                aliases,
-            );
-        }
-        resolve_dependency_with_inputs(
-            specifier,
-            file.original_path.parent().unwrap_or(&file.original_path),
-            &self.project_root,
-            aliases,
-        )
-    }
-
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
         vize_carton::profile!(
