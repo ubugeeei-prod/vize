@@ -1,4 +1,4 @@
-//! Body-subtree node views derived from the original private Document callbacks.
+//! Supported-subtree node views derived from the original private Document callbacks.
 
 use vize_l0::Span;
 
@@ -7,7 +7,7 @@ use crate::markup::document::{DocumentToken, DocumentTokenKind as Kind, Event, N
 
 mod scalar;
 
-/// A direct original child of a supported HTML body-subtree element.
+/// A direct original child of a supported HTML element.
 #[derive(Debug)]
 pub enum DocumentHtmlNode<'s, 'o, 'a> {
     Element(DocumentHtmlElement<'s, 'o, 'a>),
@@ -37,10 +37,7 @@ pub(super) fn children<'s, 'o, 'a>(
     tree: &'s DocumentHtmlStructure<'o, 'a>,
     parent: &'s Element,
 ) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, Refusal> {
-    if matches!(
-        parent.name,
-        "html" | "head" | "base" | "link" | "meta" | "title" | "style"
-    ) {
+    if matches!(parent.name, "html" | "head" | "base" | "link" | "meta") {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
     if let Some(span) = tree.body_tail_text
@@ -259,12 +256,22 @@ impl<'s, 'o, 'a> DocumentHtmlText<'s, 'o, 'a> {
 
     pub fn characters(&self) -> impl Iterator<Item = char> + 'o {
         let owner = self.tree.owner;
+        let skip_leading_lf =
+            self.parent.name == "textarea" && self.parts.start == self.parent.attributes.end + 1;
+        let mut first = true;
         owner
             .events
             .get(self.parts.clone())
             .into_iter()
             .flatten()
             .flat_map(move |event| scalar::text(event, owner.source()))
+            .filter(move |ch| {
+                if first {
+                    first = false;
+                    return !skip_leading_lf || *ch != '\n';
+                }
+                true
+            })
     }
 }
 

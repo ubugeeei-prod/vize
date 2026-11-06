@@ -178,12 +178,10 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
 }
 
 #[test]
-fn foreign_raw_formatting_and_template_content_are_explicit() {
+fn foreign_formatting_and_template_content_are_explicit() {
     for body in [
         "<svg></svg>",
         "<math></math>",
-        "<script></script>",
-        "<SCRIPT></SCRIPT>",
         "<b></b>",
         "<template></template>",
     ] {
@@ -245,13 +243,13 @@ fn lexical_recovery_and_pending_structure_never_become_html_completion() {
 }
 
 #[test]
-fn the_original_pinned_petite_vue_document_still_reports_unsupported_structure() {
+fn the_original_pinned_petite_vue_document_still_refuses_its_implicit_envelope() {
     let source = include_str!("../../../../tests/fixtures/document/petite-vue-svg.html");
     let allocator = Allocator::default();
     let owner = NativeDocument::lex_in(&allocator, root(source));
     assert!(owner.normal_completion().is_ok());
-    assert!(matches!(
-        owner.html_structure(),
-        Err(Refusal::UnsupportedElement(_))
-    ));
+    assert_eq!(
+        owner.html_structure().unwrap_err(),
+        Refusal::ExplicitEnvelope
+    );
 }

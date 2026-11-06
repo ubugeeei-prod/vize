@@ -152,7 +152,7 @@ fn semantic_names_preserve_wrong_mode_implied_end_and_vue_refusals() {
         ("<p><article></article></p>", "implied"),
         ("<table><article></article></table>", "table"),
         ("<svg><article></article></svg>", "element"),
-        ("<script><article></article></script>", "element"),
+        ("<script><article></article></script>", "raw"),
         ("<b><article></article></b>", "element"),
     ] {
         let source = cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
@@ -162,6 +162,7 @@ fn semantic_names_preserve_wrong_mode_implied_end_and_vue_refusals() {
             (expected, owner.html_structure()),
             ("implied", Err(DocumentHtmlRefusal::ImpliedEnd(_)))
                 | ("table", Err(DocumentHtmlRefusal::FosterParenting(_)))
+                | ("raw", Ok(_))
                 | ("element", Err(DocumentHtmlRefusal::UnsupportedElement(_)))
         ));
     }
