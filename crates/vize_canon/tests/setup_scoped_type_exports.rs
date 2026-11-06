@@ -77,12 +77,12 @@ fn setup_value_dependent_exports_are_captured_and_reexported() {
     .expect("virtual TypeScript should be generated");
 
     assert!(
-        !virtual_ts.contains("  export type ButtonNativeType"),
-        "an export modifier must not remain inside __setup:\n{virtual_ts}"
+        virtual_ts.contains("  export type ButtonNativeType"),
+        "the authored export modifier must remain for TS1184 parity:\n{virtual_ts}"
     );
     assert!(
-        !virtual_ts.contains("  export interface BadgeOptions"),
-        "an interface export modifier must not remain inside __setup:\n{virtual_ts}"
+        virtual_ts.contains("  export interface BadgeOptions"),
+        "the authored interface export modifier must remain for TS1184 parity:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains("type ButtonNativeType = typeof NATIVE_TYPES[number]"),
@@ -128,16 +128,26 @@ fn downstream_imports_accept_exact_types_and_reject_invalid_values() {
         .expect("project should type check")
         .diagnostics;
 
+    let modifier_diagnostics: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == Some(1184))
+        .collect();
+    assert_eq!(
+        modifier_diagnostics.len(),
+        2,
+        "both setup exports must retain vue-tsc's TS1184 diagnostics: {diagnostics:#?}"
+    );
+
     let structural_failures: Vec<_> = diagnostics
         .iter()
         .filter(|diagnostic| {
-            matches!(diagnostic.code, Some(1184 | 2305 | 2300 | 2614))
+            matches!(diagnostic.code, Some(2305 | 2300 | 2614))
                 || (diagnostic.file.ends_with("consumer.ts") && diagnostic.code != Some(2322))
         })
         .collect();
     assert!(
         structural_failures.is_empty(),
-        "valid public type imports must remain diagnostic-free: {structural_failures:#?}"
+        "public type imports must remain available despite authored TS1184: {structural_failures:#?}"
     );
 
     let rejected_assignments = diagnostics

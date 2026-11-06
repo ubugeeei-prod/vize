@@ -71,7 +71,7 @@ pub fn cases() -> Vec<Value> {
             .iter()
             .map(|byte| format!("{byte:02x}"))
             .collect::<String>(),
-        "dce60b59a09de699b8ba9aa928463790ff14627c8d5f6d46c8a50e23886c70b8",
+        "4f377bb40cddd9b89785306333b25baf2560288dc23a037402ad3a69c4bab669",
         "immutable pre-query authored corpus"
     );
     let authored: Value = serde_json::from_str(CONTRACTS).unwrap();

@@ -99,7 +99,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const strictExtraReceipt = fs.readFileSync(path.join(custody, "strict-extra-keys-20261107.json"));
   assert.equal(
     createHash("sha256").update(strictExtraReceipt).digest("hex"),
-    "0122a13467baad68f8f6415ab8eccedfce9e17c33217bb7c73c7fc3b93695347",
+    "2a52bfcaa54ad93b2f28d425ba9eae2c5bed288a785858f7139fb04c1b0cf84a",
   );
   const strictExtra = JSON.parse(strictExtraReceipt.toString("utf8"));
   assert.equal(strictExtra.schema, "vize.experimental-router-strict-extra-keys-transition.v1");

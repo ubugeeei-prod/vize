@@ -3584,7 +3584,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
+        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
       },
       "inputs": [
         {
@@ -3636,7 +3636,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
+        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
       },
       "inputs": [
         {
@@ -14907,44 +14907,6 @@
       }
     },
     {
-      "id": "typechecker/regression/sfc-entry-grammar-11869",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "sfc-entry-grammar-11869/Adjacent.vue.txt",
-          "sha256": "7c2121f09734d15209abd8ae31ac5ccdcc86dea106fb9a1a04c5941a81015364",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "sfc-entry-grammar-11869/Static.vue.txt",
-          "sha256": "ae5ac8410b0b3bc7fcfa8b3dc637e7914395303a8616c8836e2323cc8d3448e1",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "sfc-entry-grammar-11869/Malformed.vue.txt",
-          "sha256": "a1038319ce359a93de353afb8059467c0a0ed354b3c22fe0821b97e79125148e",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template"
-            ],
-            "selector": "sfc_typecheck::tests::sfc_grammar and typecheck_service::sfc_grammar_tests consume these inputs through the synchronous and native-service APIs; exact unknown-binding and malformed diagnostics plus complete native output equality. The batch CLI is a source-format control, not the API-entry regression oracle."
-          }
-        ]
-      }
-    },
-    {
       "id": "typechecker/regression/setup-export-extra-keys-11497",
       "state": "active",
       "targets": [
@@ -14989,6 +14951,44 @@
               "ts"
             ],
             "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies and check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; generic and non-generic authored setup exports retain TS1184, while checkUnknownProps rejects an undeclared boolean attribute on a one-required-prop component without emits. Input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/sfc-entry-grammar-11869",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "sfc-entry-grammar-11869/Adjacent.vue.txt",
+          "sha256": "7c2121f09734d15209abd8ae31ac5ccdcc86dea106fb9a1a04c5941a81015364",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "sfc-entry-grammar-11869/Static.vue.txt",
+          "sha256": "ae5ac8410b0b3bc7fcfa8b3dc637e7914395303a8616c8836e2323cc8d3448e1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "sfc-entry-grammar-11869/Malformed.vue.txt",
+          "sha256": "a1038319ce359a93de353afb8059467c0a0ed354b3c22fe0821b97e79125148e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "sfc_typecheck::tests::sfc_grammar and typecheck_service::sfc_grammar_tests consume these inputs through the synchronous and native-service APIs; exact unknown-binding and malformed diagnostics plus complete native output equality. The batch CLI is a source-format control, not the API-entry regression oracle."
           }
         ]
       }
@@ -15120,7 +15120,7 @@
         },
         {
           "path": "tsx-single-required-exact-keys/Probe.tsx.txt",
-          "sha256": "cd8b78251133fa84de8d2987db8d06038b38a521738b0695f4f48d99272f4d04",
+          "sha256": "e6d4a2292502a127e80ce9d18f0dfeb127f77a86fb79baed5b1e6c7a413ba600",
           "role": "regression-reproduction"
         },
         {

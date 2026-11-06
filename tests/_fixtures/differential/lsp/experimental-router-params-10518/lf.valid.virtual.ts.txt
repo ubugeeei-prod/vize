@@ -64,7 +64,7 @@ type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & s
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;
-export type { __RuntimePropShape, __LooseRequired, __DefineProps, __WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, $UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps };
+export type { __RuntimePropShape, __LooseRequired, __DefineProps, __WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, $UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps, $RelaxedDynamicUnionExtra };
 // ========== Module Scope (imports) ==========
 import { useRoute } from 'vue-router'
 import { definePage } from 'vue-router/experimental'
@@ -101,7 +101,7 @@ function __setup() {
   const at: Date | undefined = route.params.at
   const heading: string | undefined = route.params.heading
   
-  // @vize-map: 11133:11645 -> 0:572
+  // @vize-map: 11029:11541 -> 0:572
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

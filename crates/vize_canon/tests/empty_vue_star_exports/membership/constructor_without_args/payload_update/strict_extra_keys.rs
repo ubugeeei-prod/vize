@@ -7,7 +7,7 @@ const CANONICAL_AFTER: &str = "type $ExtraInputKeys<_T, _Declared, Authored, All
 const GENERATED_BEFORE: &str = "type $ExtraInputKeys<\n  T,\n  Declared,\n  Authored,\n  Allowed,\n  K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,\n> = K extends unknown\n  ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true\n    ? never\n    : K\n  : never;";
 const GENERATED_AFTER: &str = "type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<keyof Authored, keyof Allowed>;";
 const GLOBALS_BEFORE: &str = "  type $ExtraInputKeys<\n    T,\n    Declared,\n    Authored,\n    Allowed,\n    K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,\n  > = K extends unknown\n    ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true\n      ? never\n      : K\n    : never;";
-const GLOBALS_AFTER: &str = "  type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<\n    keyof Authored,\n    keyof Allowed\n  >;";
+const GLOBALS_AFTER: &str = "  type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<keyof Authored, keyof Allowed>;";
 
 struct File {
     path: &'static str,
@@ -41,7 +41,7 @@ const FILES: [File; 3] = [
         after: GLOBALS_AFTER,
         before_bytes: 17_176,
         before_sha: "a92231c9b924778d38ba10c25d7908d1f3a70e1516aad96f8a653fe46e11977b",
-        after_sha: "de2c7fe5b188ee5bbf4cf1cda62f6eaf1f57f200c2da3d817c83a89ee3e66207",
+        after_sha: "f9e13dfcbbb3e719055570a6b13128720b01a29c2ffe4044a8d16613acc3b4d2",
     },
 ];
 
