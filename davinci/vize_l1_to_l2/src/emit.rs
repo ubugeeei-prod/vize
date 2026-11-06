@@ -153,6 +153,8 @@ pub use self::entry::{
     emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
+#[doc(hidden)]
+pub use self::js::parse_rejected_expression_is_raw_js;
 pub use self::options::ReactiveRead;
 pub use self::options::{BindingKind, BindingTable, DomEmitMode, DomEmitOptions};
 pub use self::run::{emit_dom, emit_dom_with_options};

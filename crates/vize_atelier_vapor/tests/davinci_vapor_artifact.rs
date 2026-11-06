@@ -301,10 +301,40 @@ export function render(_ctx) {{
             );
         }
     }
-    // With prefixing disabled, the established tolerant API preserves invalid
-    // expressions. It must terminate. With prefixing enabled, core expression
-    // validation reports them and the compiler must not emit code.
-    for expression in ["(", "x +", "[x +", "{value: x +}"] {
+    // Invalid expressions are fatal in both routes. Prefix-free native
+    // compilation reports the retained L2 rejection instead of emitting it.
+    for expression in ["x +", "{value: x +}"] {
+        let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
+        let allocator = Allocator::new();
+        let rejected = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
+        assert_eq!(
+            rejected.error_messages,
+            std::vec![vize_carton::String::from(
+                "Error parsing JavaScript expression: invalid expression"
+            )],
+            "{expression}"
+        );
+        assert_eq!(rejected.code, "", "{expression}");
+        let (strict, _diagnostics) = compile_vapor_with_diagnostics(
+            &allocator,
+            &source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert_eq!(
+            strict.error_messages,
+            std::vec![vize_carton::String::from(
+                "Error parsing JavaScript expression: invalid expression"
+            )],
+            "{expression}"
+        );
+        assert!(strict.code.is_empty(), "{expression}");
+    }
+    // The shared nesting guard refuses unbalanced text before parsing. Keep
+    // that historical tolerant route distinct from an actual parse rejection.
+    for expression in ["(", "[x +"] {
         let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
         let allocator = Allocator::new();
         let tolerant = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
@@ -320,16 +350,5 @@ export function render(_ctx) {{
 "#
         );
         assert_eq!(tolerant.code, expected, "{expression}");
-        let (strict, diagnostics) = compile_vapor_with_diagnostics(
-            &allocator,
-            &source,
-            VaporCompilerOptions {
-                prefix_identifiers: true,
-                ..Default::default()
-            },
-        );
-        assert!(!diagnostics.is_empty(), "{expression}");
-        assert!(!strict.error_messages.is_empty(), "{expression}");
-        assert!(strict.code.is_empty(), "{expression}");
     }
 }

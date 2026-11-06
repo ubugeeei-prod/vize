@@ -14,7 +14,7 @@ use vize_atelier_core::{JsExpression, retained::js_module_compatible};
 use vize_atelier_core::{RetainedJsAst, RetainedJsAstKind};
 use vize_carton::{Allocator, Span, Vec};
 use vize_l2::{
-    expr::{ExprRef, JsExpr},
+    expr::{ExprRef, JsExpr, OpaqueReason},
     op::{BindingOp, DynamicName, Op, Region},
 };
 
@@ -23,6 +23,7 @@ pub(crate) struct Retained<'s, 'a> {
     // Arena tables: one compile owns them, so they never touch the heap.
     source: HashMap<'a, (u32, u32), &'s JsExpr<'s>>,
     parsed: HashMap<'a, (u32, u32), RetainedJsAst<'a>>,
+    invalid_parse_rejected: bool,
 }
 
 impl<'s, 'a> Retained<'s, 'a> {
@@ -31,6 +32,7 @@ impl<'s, 'a> Retained<'s, 'a> {
             allocator,
             source: HashMap::new_in(allocator.as_oxc()),
             parsed: HashMap::new_in(allocator.as_oxc()),
+            invalid_parse_rejected: false,
         }
     }
 
@@ -51,18 +53,18 @@ impl<'s, 'a> Retained<'s, 'a> {
                         pending.push(&element.children);
                     }
                     Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
-                        retained.insert(interpolation.expression)
+                        retained.insert(interpolation.expression, false)
                     }
                     Op::If(branches) => {
                         for branch in &branches.branches {
                             if let Some(condition) = branch.condition {
-                                retained.insert(condition);
+                                retained.insert(condition, false);
                             }
                             pending.push(&branch.region);
                         }
                     }
                     Op::For(each) => {
-                        retained.insert(each.binding.source);
+                        retained.insert(each.binding.source, false);
                         pending.push(&each.region);
                     }
                     // Original head expressions remain with their File owner.
@@ -73,7 +75,7 @@ impl<'s, 'a> Retained<'s, 'a> {
                     }
                     Op::Slot(slot) => {
                         if let DynamicName::Dynamic(name) = slot.name {
-                            retained.insert(name);
+                            retained.insert(name, true);
                         }
                         retained.bindings(&slot.bindings);
                         pending.push(&slot.fallback);
@@ -95,7 +97,7 @@ impl<'s, 'a> Retained<'s, 'a> {
                 _ => None,
             };
             if let Some(DynamicName::Dynamic(name)) = name {
-                self.insert(name);
+                self.insert(name, true);
             }
             let value = match binding {
                 BindingOp::Bind(bind) => bind.value,
@@ -107,15 +109,29 @@ impl<'s, 'a> Retained<'s, 'a> {
                 _ => None,
             };
             if let Some(value) = value {
-                self.insert(value);
+                self.insert(value, false);
             }
         }
     }
 
-    fn insert(&mut self, expression: ExprRef<'s>) {
-        if let ExprRef::Js(js) = expression {
-            self.source.insert((js.span.start, js.span.end), js);
+    fn insert(&mut self, expression: ExprRef<'s>, allow_identifier: bool) {
+        let supported_raw =
+            vize_l1_to_l2::emit::parse_rejected_expression_is_raw_js(&expression, allow_identifier);
+        match expression {
+            ExprRef::Js(js) => {
+                self.source.insert((js.span.start, js.span.end), js);
+            }
+            ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::ParseRejected => {
+                self.invalid_parse_rejected |= !supported_raw;
+            }
+            ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {}
         }
+    }
+
+    /// Rejected authored syntax is a compiler error. Other opaque classes are
+    /// intentional and may still select the retained legacy lane later.
+    pub(crate) const fn has_invalid_parse_rejection(&self) -> bool {
+        self.invalid_parse_rejected
     }
 
     /// Parse a compound text part once, with L2's admission rule.

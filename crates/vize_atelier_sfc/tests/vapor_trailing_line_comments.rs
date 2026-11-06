@@ -90,7 +90,12 @@ fn complete_vapor_modules_match_official_rendered_behavior_with_line_comments() 
                 SfcScriptOutputMode::InlineTemplate,
             )
             .unwrap();
-            assert!(result.errors.is_empty(), "{:?}", result.errors);
+            assert!(
+                result.errors.is_empty(),
+                "{}: {:?}",
+                fixture.get("name").and_then(Value::as_str).unwrap(),
+                result.errors
+            );
             assert!(result.warnings.is_empty(), "{:?}", result.warnings);
             assert!(result.css.is_none());
             assert!(result.map.is_none());
