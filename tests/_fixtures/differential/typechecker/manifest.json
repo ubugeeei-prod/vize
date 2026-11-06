@@ -13184,7 +13184,7 @@
         },
         {
           "path": "dynamic-component-shadowed-guard-11601/template.html.txt",
-          "sha256": "1711ec26ad40e3eb6704dd7bae2f01bdf797da40622b453e0dfa2d0e3490fb6f",
+          "sha256": "560297d7b7fae14a5383685e1dbe4df3624f5a7939e88dc2080a05d0ea6825cd",
           "role": "regression-reproduction"
         }
       ],
@@ -13198,7 +13198,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "virtual_ts::dynamic_component_scope_tests::outer_guard_keeps_its_binding_identity_across_a_shadowing_slot; #11601 outer v-if guard, shadowing slot prop, and nested inner guard are pinned and physically consumed. Input-only registration, no diagnostic pack."
+            "selector": "virtual_ts::dynamic_component_scope_tests::outer_guard_keeps_its_binding_identity_across_a_shadowing_slot; #11601 outer v-if and v-else guards, a shadowing slot prop, and nested inner guards are pinned and physically consumed. Input-only registration, no diagnostic pack."
           }
         ]
       }

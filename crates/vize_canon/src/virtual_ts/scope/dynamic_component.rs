@@ -74,15 +74,22 @@ pub(crate) fn is_owned_dynamic_component_alias(
 pub(crate) struct DynamicComponentAliases {
     root_guards: Vec<GuardDeclaration>,
     scoped_guards: FxHashMap<u32, Vec<GuardDeclaration>>,
-    guard_starts: FxHashSet<u32>,
+    guard_names: FxHashSet<String>,
     root: Vec<AliasDeclaration>,
     scoped: FxHashMap<u32, Vec<AliasDeclaration>>,
     scoped_starts: FxHashSet<u32>,
 }
 
 struct GuardDeclaration {
-    start: u32,
+    name: String,
     expression: String,
+}
+
+struct GuardTermOrigin<'a> {
+    term: &'a str,
+    scope_id: ScopeId,
+    start: u32,
+    negated: bool,
 }
 
 struct AliasDeclaration {
@@ -141,16 +148,7 @@ impl DynamicComponentAliases {
                     ),
                 },
             };
-            let scope = summary
-                .scopes
-                .get_scope(usage.scope_id)
-                .filter(|scope| {
-                    matches!(
-                        scope.kind,
-                        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
-                    )
-                })
-                .map(|scope| scope.id.as_u32());
+            let scope = owning_scope(summary, usage.scope_id);
             match scope {
                 Some(scope) => {
                     aliases.scoped_starts.insert(usage.start);
@@ -195,62 +193,57 @@ impl DynamicComponentAliases {
         }
     }
 
-    /// Capture a joined guard in the lexical scope where its final authored
-    /// condition is evaluated. An alias may be declared after a slot or loop
-    /// has rebound one of the guard's names; referring to this capture keeps
-    /// the original binding identity instead of reparsing the same text there.
+    /// Replace only guard terms whose referenced bindings are rebound between
+    /// their authored evaluation scope and the alias declaration.
+    ///
+    /// Terms without an intervening rebinding remain inline so TypeScript keeps
+    /// their original control-flow narrowing. Captured terms retain the binding
+    /// identity that a slot, loop, or pattern scope would otherwise shadow.
     fn guard_reference(
         &mut self,
         summary: &Croquis,
         usage: &vize_croquis::croquis::ComponentUsage,
         guard: &str,
     ) -> Option<String> {
-        let expression = summary
-            .template_expressions
-            .iter()
-            .filter(|expression| expression.kind == TemplateExpressionKind::VIf)
-            .filter(|expression| expression.start < usage.end)
-            .filter(|expression| expression.vif_guard.as_deref() == Some(guard))
-            .filter(|expression| {
-                is_lexical_ancestor(&summary.scopes, expression.scope_id, usage.scope_id)
-            })
-            .max_by_key(|expression| expression.start)?;
-        if !guard_chain_crosses_scope(summary, expression, usage.scope_id) {
-            return None;
+        let origins = guard_term_origins(summary, usage, guard)?;
+        let mut rewritten = Vec::with_capacity(origins.len());
+        let mut captured = false;
+        for origin in origins {
+            if guard_term_needs_capture(summary, &origin, usage.scope_id) {
+                captured = true;
+                let name = if origin.negated {
+                    vize_carton::cstr!("__vize_dynamic_guard_{}_not", origin.start)
+                } else {
+                    vize_carton::cstr!("__vize_dynamic_guard_{}", origin.start)
+                };
+                self.collect_guard(
+                    summary,
+                    origin.scope_id,
+                    name.clone(),
+                    String::from(origin.term),
+                );
+                rewritten.push(name);
+            } else {
+                rewritten.push(String::from(origin.term));
+            }
         }
-        Some(self.collect_guard(summary, expression))
+        captured.then(|| join_guard_strings(rewritten.as_slice()))
     }
 
-    fn collect_guard(&mut self, summary: &Croquis, expression: &TemplateExpression) -> String {
-        let name = vize_carton::cstr!("__vize_dynamic_guard_{}", expression.start);
-        if !self.guard_starts.insert(expression.start) {
-            return name;
+    /// Record one identity-stable guard term in the scope that evaluated it.
+    fn collect_guard(
+        &mut self,
+        summary: &Croquis,
+        scope_id: ScopeId,
+        name: String,
+        expression: String,
+    ) {
+        if !self.guard_names.insert(name.clone()) {
+            return;
         }
 
-        let Some(guard) = expression.vif_guard.as_deref() else {
-            return name;
-        };
-        let captured = match guard_predecessor(summary, expression) {
-            Some((predecessor, suffix)) => {
-                let predecessor = self.collect_guard(summary, predecessor);
-                vize_carton::cstr!("{predecessor} && {suffix}")
-            }
-            None => String::from(guard),
-        };
-        let declaration = GuardDeclaration {
-            start: expression.start,
-            expression: captured,
-        };
-        let scope = summary
-            .scopes
-            .get_scope(expression.scope_id)
-            .filter(|scope| {
-                matches!(
-                    scope.kind,
-                    ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
-                )
-            })
-            .map(|scope| scope.id.as_u32());
+        let declaration = GuardDeclaration { name, expression };
+        let scope = owning_scope(summary, scope_id);
         match scope {
             Some(scope) => self
                 .scoped_guards
@@ -259,7 +252,6 @@ impl DynamicComponentAliases {
                 .push(declaration),
             None => self.root_guards.push(declaration),
         }
-        name
     }
 }
 
@@ -267,8 +259,8 @@ impl GuardDeclaration {
     fn push(&self, ts: &mut String, indent: &str) {
         append!(
             *ts,
-            "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const __vize_dynamic_guard_{} = ({});\n",
-            self.start,
+            "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const {} = ({});\n",
+            self.name,
             self.expression
         );
     }
@@ -304,37 +296,131 @@ fn is_lexical_ancestor(
     }
 }
 
-fn guard_chain_crosses_scope(
-    summary: &Croquis,
-    expression: &TemplateExpression,
-    usage_scope: ScopeId,
-) -> bool {
-    expression.scope_id != usage_scope
-        || guard_predecessor(summary, expression).is_some_and(|(predecessor, _)| {
-            guard_chain_crosses_scope(summary, predecessor, usage_scope)
+/// The emitted closure owner for a semantic scope, shared by aliases and their
+/// guard captures so the two declarations cannot drift apart.
+fn owning_scope(summary: &Croquis, id: ScopeId) -> Option<u32> {
+    summary
+        .scopes
+        .get_scope(id)
+        .filter(|scope| {
+            matches!(
+                scope.kind,
+                ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+            )
         })
+        .map(|scope| scope.id.as_u32())
 }
 
-fn guard_predecessor<'a>(
+/// Resolve each joined guard term to the `v-if` condition that established it.
+/// A negative term belongs to the preceding branch condition, which also gives
+/// `v-else` a concrete evaluation scope even though it has no expression node.
+fn guard_term_origins<'a>(
+    summary: &Croquis,
+    usage: &vize_croquis::croquis::ComponentUsage,
+    guard: &'a str,
+) -> Option<Vec<GuardTermOrigin<'a>>> {
+    let terms = super::vif_guard::split_guard_terms(guard);
+    let mut origins = Vec::with_capacity(terms.len());
+    for (index, term) in terms.iter().copied().enumerate() {
+        let prefix = join_guard_terms(terms.get(..=index)?);
+        let (expression, negated) = match guard_expression(summary, usage, prefix.as_str()) {
+            Some(expression) => (expression, false),
+            None => {
+                let condition = term.strip_prefix("!(")?.strip_suffix(')')?;
+                let positive = vize_carton::cstr!("({condition})");
+                let mut candidate_terms = terms.get(..index)?.to_vec();
+                candidate_terms.push(positive.as_str());
+                let candidate = join_guard_terms(candidate_terms.as_slice());
+                (guard_expression(summary, usage, candidate.as_str())?, true)
+            }
+        };
+        origins.push(GuardTermOrigin {
+            term,
+            scope_id: expression.scope_id,
+            start: expression.start,
+            negated,
+        });
+    }
+    Some(origins)
+}
+
+/// Find the latest authored condition that establishes an exact guard prefix.
+fn guard_expression<'a>(
     summary: &'a Croquis,
-    expression: &'a TemplateExpression,
-) -> Option<(&'a TemplateExpression, &'a str)> {
-    let guard = expression.vif_guard.as_deref()?;
+    usage: &vize_croquis::croquis::ComponentUsage,
+    guard: &str,
+) -> Option<&'a TemplateExpression> {
     summary
         .template_expressions
         .iter()
-        .filter(|candidate| candidate.kind == TemplateExpressionKind::VIf)
-        .filter(|candidate| candidate.start < expression.start)
-        .filter(|candidate| {
-            is_lexical_ancestor(&summary.scopes, candidate.scope_id, expression.scope_id)
+        .filter(|expression| expression.kind == TemplateExpressionKind::VIf)
+        .filter(|expression| expression.start < usage.end)
+        .filter(|expression| expression.vif_guard.as_deref() == Some(guard))
+        .filter(|expression| {
+            is_lexical_ancestor(&summary.scopes, expression.scope_id, usage.scope_id)
         })
-        .filter_map(|candidate| {
-            let prefix = candidate.vif_guard.as_deref()?;
-            let suffix = guard.strip_prefix(prefix)?.strip_prefix(" && ")?;
-            Some((candidate, suffix, prefix.len()))
-        })
-        .max_by_key(|(_, _, prefix_len)| *prefix_len)
-        .map(|(candidate, suffix, _)| (candidate, suffix))
+        .max_by_key(|expression| expression.start)
+}
+
+/// Capture only when a descendant scope declares a name read by this term.
+/// Parser refusal stays conservative: crossing an unknown scope then captures.
+fn guard_term_needs_capture(
+    summary: &Croquis,
+    origin: &GuardTermOrigin<'_>,
+    usage_scope: ScopeId,
+) -> bool {
+    if origin.scope_id == usage_scope {
+        return false;
+    }
+    let Some(references) = vize_croquis::drawer::extract_identifier_refs_checked(origin.term)
+    else {
+        return true;
+    };
+    if references.is_empty() {
+        return false;
+    }
+
+    let mut current = usage_scope;
+    loop {
+        if current == origin.scope_id {
+            return false;
+        }
+        let Some(scope) = summary.scopes.get_scope(current) else {
+            return true;
+        };
+        if references
+            .iter()
+            .any(|reference| scope.has_binding(reference.name.as_str()))
+        {
+            return true;
+        }
+        let Some(parent) = scope.parent() else {
+            return true;
+        };
+        current = parent;
+    }
+}
+
+fn join_guard_terms(terms: &[&str]) -> String {
+    let mut joined = String::default();
+    for (index, term) in terms.iter().enumerate() {
+        if index != 0 {
+            joined.push_str(" && ");
+        }
+        joined.push_str(term);
+    }
+    joined
+}
+
+fn join_guard_strings(terms: &[String]) -> String {
+    let mut joined = String::default();
+    for (index, term) in terms.iter().enumerate() {
+        if index != 0 {
+            joined.push_str(" && ");
+        }
+        joined.push_str(term.as_str());
+    }
+    joined
 }
 
 /// The `:is` expression of the `<component>` element starting at `start`.

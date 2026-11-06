@@ -117,15 +117,21 @@ fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
     let guard_start = TEMPLATE.find("v-if=\"visible\"").expect("outer guard") + "v-if=\"".len();
     let guard = cstr!("__vize_dynamic_guard_{guard_start}");
     let outer_alias = alias_for(TEMPLATE, 0);
-    let inner_guard_start = TEMPLATE.find("v-if=\"open\"").expect("inner guard") + "v-if=\"".len();
-    let inner_guard = cstr!("__vize_dynamic_guard_{inner_guard_start}");
     let inner_alias = alias_for(TEMPLATE, 1);
+    let else_guard = cstr!("{guard}_not");
+    let else_outer_alias = alias_for(TEMPLATE, 2);
+    let else_inner_alias = alias_for(TEMPLATE, 3);
     let capture = cstr!("const {guard} = ((visible));");
     let outer_declaration =
         cstr!("const {outer_alias} = ({guard}) ? (map[kind]) : (undefined as never);");
-    let inner_capture = cstr!("const {inner_guard} = ({guard} && (open));");
     let inner_declaration =
-        cstr!("const {inner_alias} = ({inner_guard}) ? (map[kind]) : (undefined as never);");
+        cstr!("const {inner_alias} = ({guard} && (open)) ? (map[kind]) : (undefined as never);");
+    let else_capture = cstr!("const {else_guard} = (!(visible));");
+    let else_outer_declaration =
+        cstr!("const {else_outer_alias} = ({else_guard}) ? (map[kind]) : (undefined as never);");
+    let else_inner_declaration = cstr!(
+        "const {else_inner_alias} = ({else_guard} && (open)) ? (map[kind]) : (undefined as never);"
+    );
     let slot_start = template
         .find("function _slot_default_")
         .expect("slot scope");
@@ -137,7 +143,35 @@ fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
     assert!(capture_start < slot_start && slot_start < alias_start);
     assert_eq!(template.matches(capture.as_str()).count(), 1);
     assert_eq!(template.matches(outer_declaration.as_str()).count(), 2);
-    assert_eq!(template.matches(inner_capture.as_str()).count(), 2);
     assert_eq!(template.matches(inner_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(else_capture.as_str()).count(), 1);
+    assert_eq!(template.matches(else_outer_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(else_inner_declaration.as_str()).count(), 2);
     assert_eq!(template.matches("((visible)) ? (map[kind])").count(), 0);
+    assert_eq!(template.matches("(!(visible)) ? (map[kind])").count(), 0);
+}
+
+#[test]
+fn guard_without_an_intervening_rebinding_stays_inline() {
+    const SCRIPT: &str = "import Picker from './Picker.vue'\nconst state = { item: { component: Picker } as { component: typeof Picker } | undefined }\nconst rows = [1]\n";
+    const TEMPLATE: &str = concat!(
+        r#"<div v-if="state.item">"#,
+        r#"<component v-for="row in rows" :is="state.item && state.item.component"></component>"#,
+        r#"</div>"#,
+    );
+    let code = generate_source(SCRIPT, TEMPLATE);
+    let template = &code[code
+        .find(";(function __template()")
+        .expect("template scope")..];
+    let alias = alias_for(TEMPLATE, 0);
+    let declaration = cstr!(
+        "const {alias} = ((state.item)) ? (state.item && state.item.component) : (undefined as never);"
+    );
+
+    assert_eq!(
+        template.matches(declaration.as_str()).count(),
+        2,
+        "{template}"
+    );
+    assert_eq!(template.matches("const __vize_dynamic_guard_").count(), 0);
 }
