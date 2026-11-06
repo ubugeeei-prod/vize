@@ -60,6 +60,9 @@ impl ServerState {
         uri: &Url,
         source: &Arc<String>,
     ) -> (Option<Arc<CorsaBridge>>, Option<CorsaInitialVueDocument>) {
+        #[cfg(test)]
+        self.canonical_bridge_requests
+            .fetch_add(1, Ordering::Relaxed);
         let initial = InitialCanonicalSource {
             owner: self,
             uri,
@@ -72,6 +75,11 @@ impl ServerState {
             Some((bridge, receipt)) => (Some(bridge), receipt),
             None => (None, None),
         }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn canonical_bridge_request_count(&self) -> usize {
+        self.canonical_bridge_requests.load(Ordering::Relaxed)
     }
 
     pub(super) async fn spawn_initial_corsa_bridge(

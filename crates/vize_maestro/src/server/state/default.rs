@@ -46,6 +46,8 @@ impl ServerState {
             workspace_project_files: workspace_project_files::Inventory::default(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
+            #[cfg(test)]
+            canonical_bridge_requests: std::sync::atomic::AtomicUsize::new(0),
             native_diagnostic_timeout_ms: std::sync::atomic::AtomicU64::new(10_000),
             completion_documentation_resolve: AtomicBool::new(false),
             #[cfg(feature = "native")]

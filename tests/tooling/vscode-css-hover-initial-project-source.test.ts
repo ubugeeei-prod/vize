@@ -15,12 +15,28 @@ import {
   initialProjectTypedEntry,
   initialProjectTypedSourceSha256,
   invertInitialProjectSource,
+  invertResidentMarkupSource,
+  residentMarkupTypedEntry,
+  residentMarkupTypedSourceSha256,
 } from "../../editors/vscode/test/css-hover-initial-project-source.ts";
 
 const load = (name: string): Buffer =>
   fs.readFileSync(new URL(`./fixtures/css-hover-initial-project/${name}`, import.meta.url));
 const source = load("initial-project.rs.txt");
 const baseSource = load("foreground-before.rs.txt");
+const initialDispatch = `        let mut hover_result: Option<Hover> = if ctx.is_in_style() {
+            HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
+        } else {
+`;
+const residentDispatch = `        let mut hover_result: Option<Hover> = if ctx.is_in_style() {
+            HoverService::hover(&ctx).or_else(|| super::super::annotations::color_hover(&ctx))
+        } else if let Some(hover) = HoverService::hover_resident_markup(&ctx) {
+            Some(hover)
+        } else {
+`;
+const residentSource = Buffer.from(
+  source.toString("utf8").replace(initialDispatch, residentDispatch),
+);
 const before: SourceTreeEntry = {
   path: typedSourcePath,
   mode: "100644",
@@ -29,6 +45,7 @@ const before: SourceTreeEntry = {
 };
 const foreground = { ...before, oid: "a4b1e81960029f488921f917e46589f1d7655da9" };
 const current = initialProjectTypedEntry;
+const resident = residentMarkupTypedEntry;
 const other = { ...before, path: "crates/vize_maestro/src/ide/style.rs", oid: "1".repeat(40) };
 const hash = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 const blob = (bytes: Uint8Array): string =>
@@ -47,6 +64,55 @@ await test("complete new source restores both exact foreground and legacy bodies
   assert.equal(blob(legacy), before.oid);
   refuse(() => invertForegroundPreparationSource(source));
   refuse(() => invertInitialProjectSource(baseSource));
+});
+
+await test("resident markup source restores the exact initial project and complete legacy chain", () => {
+  assert.equal(hash(residentSource), residentMarkupTypedSourceSha256);
+  assert.equal(blob(residentSource), resident.oid);
+  const initial = invertResidentMarkupSource(residentSource);
+  assert.deepEqual(initial, source);
+  const foregroundSource = invertInitialProjectSource(initial);
+  assert.deepEqual(foregroundSource, baseSource);
+  const legacy = invertForegroundPreparationSource(foregroundSource);
+  assert.equal(hash(legacy), originalTypedSourceSha256);
+  assert.equal(blob(legacy), before.oid);
+  refuse(() => invertResidentMarkupSource(source));
+  refuse(() => invertResidentMarkupSource(Buffer.concat([residentSource, Buffer.from("\n")])));
+});
+
+await test("resident markup composition binds its row and every prior source layer", () => {
+  const result = composeForegroundPreparationCheckout(
+    [before, other],
+    [resident, other],
+    (name) => {
+      assert.equal(name, typedSourcePath);
+      return residentSource;
+    },
+  );
+  assert.deepEqual(result.entries, [resident, other]);
+  assert.deepEqual(result.layer, {
+    name: "resident-markup-first-hover",
+    reviewedRevision: "6c486e290eec2637bac9ce93de814b658d8bba1e",
+    sourceSha256: residentMarkupTypedSourceSha256,
+    inverseSha256: originalTypedSourceSha256,
+    intermediateSha256: initialProjectTypedSourceSha256,
+    changes: [{ path: typedSourcePath, before: current, after: resident }],
+    initialProject: {
+      name: "initial-canonical-project-bootstrap",
+      sourceSha256: initialProjectTypedSourceSha256,
+      inverseSha256: originalTypedSourceSha256,
+      intermediateSha256: foregroundTypedSourceSha256,
+      changes: [{ path: typedSourcePath, before, after: current }],
+      foregroundPreparation: {
+        name: "same-document-foreground-preparation-11347",
+        reviewedRevision: "1248e5a903c6de56f2e4630650a048744d135edf",
+        sourceSha256: foregroundTypedSourceSha256,
+        inverseSha256: originalTypedSourceSha256,
+        changes: [{ path: typedSourcePath, before, after: foreground }],
+      },
+    },
+  });
+  assertExactCssTree([resident, other], result.entries);
 });
 
 await test("current composition binds the exact row, reader, both source layers and whole tree", () => {

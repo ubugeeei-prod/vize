@@ -23,6 +23,34 @@ const DESCRIPTION: &str =
     "\n\nProvides an interactive button that can trigger an action or submit a form.";
 
 #[test]
+fn typed_native_attribute_keeps_the_backend_type_and_adds_template_context() {
+    let original = Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: "```typescript\n(property) HTMLLabelElement.htmlFor: string\n```\n\nDOM library docs.".into(),
+        }),
+        range: Some(Range::new(Position::new(2, 10), Position::new(2, 13))),
+    };
+    let actual = documentation::enrich_native_attribute(original, "label", "for");
+    let expected = Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: concat!(
+                "```typescript\n(property) HTMLLabelElement.htmlFor: string\n```\n\nDOM library docs.",
+                "\n\n**Vue template runtime**\n\nVize recognizes this as native markup. Vue patches the platform element instead of resolving a component prop.",
+                "\n\n**Runtime surface**\n\nDOM reflected attribute",
+                "\n\n**Editor behavior**\n- The type above comes from the active TypeScript DOM library.\n- Component prop lookup is skipped because the enclosing tag is a native element.",
+                "\n\n**Example**\n\n```vue\n<template>\n  <label for=\"...\">...</label>\n</template>\n```",
+                "\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/for)"
+            )
+            .into(),
+        }),
+        range: Some(Range::new(Position::new(2, 10), Position::new(2, 13))),
+    };
+    assert_eq!(actual, expected);
+}
+
+#[test]
 fn native_void_documentation_keeps_the_complete_type_text_and_range() {
     let original = Hover {
         contents: HoverContents::Markup(MarkupContent {

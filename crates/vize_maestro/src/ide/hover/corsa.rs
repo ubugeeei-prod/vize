@@ -20,7 +20,7 @@ use crate::virtual_code::ArtVariantInfo;
 mod canonical;
 mod markdown;
 mod range;
-use range::authored_hover_token_range;
+pub(super) use range::authored_hover_token_range;
 
 impl HoverService {
     /// Convert SFC offset to virtual TS template offset.

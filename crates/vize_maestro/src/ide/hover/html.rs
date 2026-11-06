@@ -133,7 +133,11 @@ impl HoverService {
         let (line, character) = crate::ide::offset_to_position(&doc.content, doc.hover_offset);
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
-        Some(Self::project_native_dom_hover(ctx, source_span, hover))
+        Some(documentation::enrich_native_attribute(
+            Self::project_native_dom_hover(ctx, source_span, hover),
+            &tag_name,
+            &attr_name,
+        ))
     }
 
     fn project_native_dom_hover(

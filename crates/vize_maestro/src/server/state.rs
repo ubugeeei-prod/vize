@@ -149,6 +149,9 @@ pub struct ServerState {
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
+    /// Test-only proof that project-independent handlers never enter Corsa routing.
+    #[cfg(test)]
+    canonical_bridge_requests: std::sync::atomic::AtomicUsize,
     /// Soft diagnostic progress threshold; native work continues after it.
     native_diagnostic_timeout_ms: std::sync::atomic::AtomicU64,
     /// Client can request documentation through the native completion resolver.

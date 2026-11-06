@@ -6,6 +6,9 @@ import {
   initialProjectTypedEntry,
   initialProjectTypedSourceSha256,
   invertInitialProjectSource,
+  invertResidentMarkupSource,
+  residentMarkupTypedEntry,
+  residentMarkupTypedSourceSha256,
 } from "./css-hover-initial-project-source.ts";
 
 export type SourceTreeEntry = Readonly<{ path: string; mode: string; type: string; oid: string }>;
@@ -24,9 +27,18 @@ type InitialProjectLayer = Readonly<{
   changes: SourceLayer["changes"];
   foregroundPreparation: SourceLayer;
 }>;
+type ResidentMarkupLayer = Readonly<{
+  name: "resident-markup-first-hover";
+  reviewedRevision: string;
+  sourceSha256: string;
+  inverseSha256: string;
+  intermediateSha256: string;
+  changes: SourceLayer["changes"];
+  initialProject: InitialProjectLayer;
+}>;
 type CheckoutComposition = Readonly<{
   entries: readonly SourceTreeEntry[];
-  layer: SourceLayer | InitialProjectLayer | null;
+  layer: SourceLayer | InitialProjectLayer | ResidentMarkupLayer | null;
 }>;
 
 export const typedSourcePath = "crates/vize_maestro/src/server/handlers/typed.rs";
@@ -136,6 +148,38 @@ export function composeForegroundPreparationCheckout(
   if (!original || !current) return { entries: expected, layer: null };
   assert.deepEqual(original, before, "foreign original typed row");
   if (isDeepStrictEqual(current, before)) return { entries: expected, layer: null };
+  if (current.oid === residentMarkupTypedEntry.oid) {
+    assert.deepEqual(current, residentMarkupTypedEntry, "foreign resident-markup typed row");
+    assert.equal(typeof readSource, "function", "complete typed source reader required");
+    const initialProject = invertResidentMarkupSource(readSource(typedSourcePath));
+    const foreground = invertInitialProjectSource(initialProject);
+    invertForegroundPreparationSource(foreground);
+    return {
+      entries: expected.map((row) => (row.path === typedSourcePath ? current : row)),
+      layer: {
+        name: "resident-markup-first-hover",
+        reviewedRevision: "6c486e290eec2637bac9ce93de814b658d8bba1e",
+        sourceSha256: residentMarkupTypedSourceSha256,
+        inverseSha256: originalTypedSourceSha256,
+        intermediateSha256: initialProjectTypedSourceSha256,
+        changes: [{ path: typedSourcePath, before: initialProjectTypedEntry, after: current }],
+        initialProject: {
+          name: "initial-canonical-project-bootstrap",
+          sourceSha256: initialProjectTypedSourceSha256,
+          inverseSha256: originalTypedSourceSha256,
+          intermediateSha256: foregroundTypedSourceSha256,
+          changes: [{ path: typedSourcePath, before, after: initialProjectTypedEntry }],
+          foregroundPreparation: {
+            name: "same-document-foreground-preparation-11347",
+            reviewedRevision: "1248e5a903c6de56f2e4630650a048744d135edf",
+            sourceSha256: reviewedTypedSourceSha256,
+            inverseSha256: originalTypedSourceSha256,
+            changes: [{ path: typedSourcePath, before, after }],
+          },
+        },
+      },
+    };
+  }
   if (current.oid === initialProjectTypedEntry.oid) {
     assert.deepEqual(current, initialProjectTypedEntry, "foreign initial-project typed row");
     assert.equal(typeof readSource, "function", "complete typed source reader required");

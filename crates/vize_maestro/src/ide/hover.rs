@@ -57,6 +57,55 @@ impl HoverService {
         }
     }
 
+    /// Answer markup without constructing a TypeScript project.
+    ///
+    /// Vue directives, component contracts, and native markup in sessions that
+    /// disabled typechecking do not need Corsa. Keeping this gate separate lets
+    /// the server answer them before starting a large workspace's type project,
+    /// while typecheck sessions retain exact DOM types from their live backend.
+    #[cfg(feature = "native")]
+    pub(crate) fn hover_resident_markup(ctx: &IdeContext<'_>) -> Option<Hover> {
+        match ctx.block_type? {
+            BlockType::Template => {
+                let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+                if word.is_empty() {
+                    return None;
+                }
+                if ctx.state.is_lsp_typecheck_enabled()
+                    && (crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)
+                        .is_some_and(|(attribute, tag)| {
+                            crate::ide::corsa_support::native_dom_attribute_info(&tag, &attribute)
+                                .is_some()
+                        })
+                        || crate::ide::definition::helpers::get_tag_at_offset(
+                            &ctx.content,
+                            ctx.offset,
+                        )
+                        .is_some_and(|tag| {
+                            crate::ide::corsa_support::native_dom_tag_info(&tag).is_some()
+                        }))
+                {
+                    return None;
+                }
+                let in_expression =
+                    crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
+                let mut hover = Self::hover_component_tag(ctx).or_else(|| {
+                    Self::hover_project_independent_template_markup(
+                        ctx,
+                        &word,
+                        in_expression,
+                        !ctx.state.is_lsp_typecheck_enabled(),
+                    )
+                })?;
+                if hover.range.is_none() {
+                    hover.range = corsa::authored_hover_token_range(ctx);
+                }
+                Some(hover)
+            }
+            _ => None,
+        }
+    }
+
     /// Get hover information with Corsa support (async version).
     ///
     /// This method first tries to get type information from Corsa,
