@@ -124,3 +124,11 @@ Well-nested active-formatting elements retain their authored ancestry across
 ordinary body, table-cell, special-text and SVG integration-point contexts.
 Nested anchors/nobrs, misnested formatting and reconstruction across a block
 remain typed refusals; no adoption-agency completion is claimed.
+
+`html-body-elements.json` retains nine complete packets for twenty-five more
+HTML body names: media and fallback containers, edits, form-associated output,
+fieldset/form/datalist structure, headings, pre, button, object/param and table
+cell/foreign-integration placements. Native L1, the shipped parser and Chromium
+compare the same whole namespace/parent/attribute/direct-node trees. Nested
+form/button/heading recovery remains typed refusal; preformatted first-newline
+removal is compared directly across the same three implementations.

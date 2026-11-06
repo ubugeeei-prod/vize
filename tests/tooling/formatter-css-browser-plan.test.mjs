@@ -9,6 +9,7 @@ import {
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
+const bodyElementsBrowser = "tests/tooling/davinci-document-body-elements.test.ts";
 const foreignContentBrowser = "tests/tooling/davinci-document-foreign-content.test.ts";
 const phrasingBrowser = "tests/tooling/davinci-document-phrasing.test.ts";
 const selectBrowser = "tests/tooling/davinci-document-select.test.ts";
@@ -19,6 +20,7 @@ const files = [...others.slice(0, 3), browser];
 await test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
   for (const selectedBrowser of [
     browser,
+    bodyElementsBrowser,
     foreignContentBrowser,
     phrasingBrowser,
     selectBrowser,

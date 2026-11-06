@@ -1,0 +1,313 @@
+[
+  {
+    "name": "media siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><audio id=\"a\">tone<source src=\"x\"><track kind=\"captions\"></audio><video id=\"v\"><source src=\"y\"></video><canvas>fallback</canvas></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["audio", "html", 2, [["id", "a"]]],
+      ["source", "html", 3, [["src", "x"]]],
+      ["track", "html", 3, [["kind", "captions"]]],
+      ["video", "html", 2, [["id", "v"]]],
+      ["source", "html", 6, [["src", "y"]]],
+      ["canvas", "html", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "audio"],
+          [1, "video"],
+          [1, "canvas"]
+        ]
+      ],
+      [
+        "audio",
+        [
+          [3, "tone"],
+          [1, "source"],
+          [1, "track"]
+        ]
+      ],
+      ["source", []],
+      ["track", []],
+      ["video", [[1, "source"]]],
+      ["source", []],
+      ["canvas", [[3, "fallback"]]]
+    ]
+  },
+  {
+    "name": "picture and image map",
+    "source": "<!DOCTYPE html><html><head></head><body><picture data-x=\"1\"><source media=\"wide\"><img src=\"a\"></picture><map name=\"m\"><area href=\"x\"><span>fallback</span></map></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["picture", "html", 2, [["data-x", "1"]]],
+      ["source", "html", 3, [["media", "wide"]]],
+      ["img", "html", 3, [["src", "a"]]],
+      ["map", "html", 2, [["name", "m"]]],
+      ["area", "html", 6, [["href", "x"]]],
+      ["span", "html", 6, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "picture"],
+          [1, "map"]
+        ]
+      ],
+      [
+        "picture",
+        [
+          [1, "source"],
+          [1, "img"]
+        ]
+      ],
+      ["source", []],
+      ["img", []],
+      [
+        "map",
+        [
+          [1, "area"],
+          [1, "span"]
+        ]
+      ],
+      ["area", []],
+      ["span", [[3, "fallback"]]]
+    ]
+  },
+  {
+    "name": "edits and form outputs",
+    "source": "<!DOCTYPE html><html><head></head><body><del cite=\"old\"><ins datetime=\"new\">edit</ins></del><label for=\"i\">Label<input id=\"i\"></label><meter min=\"0\" max=\"1\">0.5</meter><progress max=\"10\">5</progress><output name=\"o\">ok</output></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["del", "html", 2, [["cite", "old"]]],
+      ["ins", "html", 3, [["datetime", "new"]]],
+      ["label", "html", 2, [["for", "i"]]],
+      ["input", "html", 5, [["id", "i"]]],
+      [
+        "meter",
+        "html",
+        2,
+        [
+          ["min", "0"],
+          ["max", "1"]
+        ]
+      ],
+      ["progress", "html", 2, [["max", "10"]]],
+      ["output", "html", 2, [["name", "o"]]]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "del"],
+          [1, "label"],
+          [1, "meter"],
+          [1, "progress"],
+          [1, "output"]
+        ]
+      ],
+      ["del", [[1, "ins"]]],
+      ["ins", [[3, "edit"]]],
+      [
+        "label",
+        [
+          [3, "Label"],
+          [1, "input"]
+        ]
+      ],
+      ["input", []],
+      ["meter", [[3, "0.5"]]],
+      ["progress", [[3, "5"]]],
+      ["output", [[3, "ok"]]]
+    ]
+  },
+  {
+    "name": "fieldset form and datalist",
+    "source": "<!DOCTYPE html><html><head></head><body><form id=\"f\"><fieldset disabled><legend>Pick</legend><datalist id=\"d\"><option value=\"a\">A</option><option value=\"b\">B</option></datalist></fieldset></form></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["form", "html", 2, [["id", "f"]]],
+      ["fieldset", "html", 3, [["disabled", ""]]],
+      ["legend", "html", 4, []],
+      ["datalist", "html", 4, [["id", "d"]]],
+      ["option", "html", 6, [["value", "a"]]],
+      ["option", "html", 6, [["value", "b"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "form"]]],
+      ["form", [[1, "fieldset"]]],
+      [
+        "fieldset",
+        [
+          [1, "legend"],
+          [1, "datalist"]
+        ]
+      ],
+      ["legend", [[3, "Pick"]]],
+      [
+        "datalist",
+        [
+          [1, "option"],
+          [1, "option"]
+        ]
+      ],
+      ["option", [[3, "A"]]],
+      ["option", [[3, "B"]]]
+    ]
+  },
+  {
+    "name": "headings and pre",
+    "source": "<!DOCTYPE html><html><head></head><body><h1 id=\"top\">Title <small>one</small></h1><h2>Sub</h2><pre>line 1\nline 2</pre><button type=\"button\"><b>Press</b></button></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["h1", "html", 2, [["id", "top"]]],
+      ["small", "html", 3, []],
+      ["h2", "html", 2, []],
+      ["pre", "html", 2, []],
+      ["button", "html", 2, [["type", "button"]]],
+      ["b", "html", 7, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "h1"],
+          [1, "h2"],
+          [1, "pre"],
+          [1, "button"]
+        ]
+      ],
+      [
+        "h1",
+        [
+          [3, "Title "],
+          [1, "small"]
+        ]
+      ],
+      ["small", [[3, "one"]]],
+      ["h2", [[3, "Sub"]]],
+      ["pre", [[3, "line 1\nline 2"]]],
+      ["button", [[1, "b"]]],
+      ["b", [[3, "Press"]]]
+    ]
+  },
+  {
+    "name": "object fallback",
+    "source": "<!DOCTYPE html><html><head></head><body><object data=\"asset\"><param name=\"mode\" value=\"fast\"><map name=\"inside\"><span>fallback</span></map></object></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["object", "html", 2, [["data", "asset"]]],
+      [
+        "param",
+        "html",
+        3,
+        [
+          ["name", "mode"],
+          ["value", "fast"]
+        ]
+      ],
+      ["map", "html", 3, [["name", "inside"]]],
+      ["span", "html", 5, []]
+    ],
+    "nodes": [
+      ["body", [[1, "object"]]],
+      [
+        "object",
+        [
+          [1, "param"],
+          [1, "map"]
+        ]
+      ],
+      ["param", []],
+      ["map", [[1, "span"]]],
+      ["span", [[3, "fallback"]]]
+    ]
+  },
+  {
+    "name": "table cell media",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><picture><img src=\"cell\"></picture><meter value=\"1\">one</meter></td></tr></tbody></table></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["table", "html", 2, []],
+      ["tbody", "html", 3, []],
+      ["tr", "html", 4, []],
+      ["td", "html", 5, []],
+      ["picture", "html", 6, []],
+      ["img", "html", 7, [["src", "cell"]]],
+      ["meter", "html", 6, [["value", "1"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "table"]]],
+      ["table", [[1, "tbody"]]],
+      ["tbody", [[1, "tr"]]],
+      ["tr", [[1, "td"]]],
+      [
+        "td",
+        [
+          [1, "picture"],
+          [1, "meter"]
+        ]
+      ],
+      ["picture", [[1, "img"]]],
+      ["img", []],
+      ["meter", [[3, "one"]]]
+    ]
+  },
+  {
+    "name": "foreign integration media",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><canvas data-k=\"v\">fallback</canvas><video><source src=\"z\"></video></foreignObject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["canvas", "html", 4, [["data-k", "v"]]],
+      ["video", "html", 4, []],
+      ["source", "html", 6, [["src", "z"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      [
+        "foreignObject",
+        [
+          [1, "canvas"],
+          [1, "video"]
+        ]
+      ],
+      ["canvas", [[3, "fallback"]]],
+      ["video", [[1, "source"]]],
+      ["source", []]
+    ]
+  },
+  {
+    "name": "preformatted first newline",
+    "source": "<!DOCTYPE html><html><head></head><body><pre>\r\nA</pre></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["pre", "html", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "pre"]]],
+      ["pre", [[3, "A"]]]
+    ]
+  }
+]

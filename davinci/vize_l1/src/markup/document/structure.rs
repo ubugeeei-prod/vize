@@ -70,9 +70,9 @@ pub enum DocumentHtmlRefusal {
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
 /// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `title`/`style`/`script`/`textarea`,
-/// `select`/`option`/`optgroup`, table parts, bounded phrasing/formatting
-/// elements, and bounded SVG/MathML descendants. HTML names match without
-/// ASCII case, SVG local/attribute names
+/// `select`/`option`/`optgroup`, table parts, headings, preformatted and form
+/// containers, bounded phrasing/media elements, and bounded SVG/MathML
+/// descendants. HTML names match without ASCII case, SVG local/attribute names
 /// receive the HTML parser's canonical adjustments, and a slash never closes a
 /// nonvoid HTML element. A slash does close a foreign element.
 ///
