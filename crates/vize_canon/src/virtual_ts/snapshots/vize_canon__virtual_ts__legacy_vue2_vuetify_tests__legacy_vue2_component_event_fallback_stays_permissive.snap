@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 124
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -152,12 +151,14 @@ function __setup() {
   void __vize_events_nav_0.input;
 
   // @input handler
+  type __VDatePicker_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __VDatePicker_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __VDatePicker_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __VDatePicker_8__listener_missing<__P, __Raw> : __VDatePicker_8__listener_missing<__P, __Raw>;
   type __VDatePicker_8__library = typeof VDatePicker extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof VDatePicker extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __VDatePicker_8__props = typeof VDatePicker extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof VDatePicker extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __VDatePicker_8__emit_props = typeof VDatePicker extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __VDatePicker_8__fallthrough = typeof VDatePicker extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof VDatePicker as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];
-  type __VDatePicker_8_input_prop_args = __VDatePicker_8__library extends true ? unknown[] : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onInput?: (...args: infer __A) => any } ? __A : __P extends { onInput?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
-  type __VDatePicker_8_input_fallthrough_args = __VDatePicker_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__P extends { onInput?: (...args: infer __A) => any } ? __A : __P extends { onInput?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
+  type __VDatePicker_8_input_prop_args = __VDatePicker_8__library extends true ? unknown[] : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? __VDatePicker_8__listener_args<__P, "onInput", never> : unknown[] : never;
+  type __VDatePicker_8_input_fallthrough_args = __VDatePicker_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__VDatePicker_8__listener_args<__P, "onInput", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __VDatePicker_8_input_static_emit_args = __VDatePicker_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onInput?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __VDatePicker_8_input_emit_args = __VDatePicker_8_input_static_emit_args;
   type __VDatePicker_8_input_args = unknown[] extends __VDatePicker_8_input_prop_args ? (unknown[] extends __VDatePicker_8_input_emit_args ? __VDatePicker_8_input_fallthrough_args : __VDatePicker_8_input_emit_args) : __VDatePicker_8_input_prop_args;
@@ -415,10 +416,12 @@ function __setup() {
   void __vize_events_nav_0.input;
 
   // @input handler
+  type __VDatePicker_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __VDatePicker_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __VDatePicker_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __VDatePicker_8__listener_missing<__P, __Raw> : __VDatePicker_8__listener_missing<__P, __Raw>;
   type __VDatePicker_8__library = typeof VDatePicker extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof VDatePicker extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __VDatePicker_8__props = typeof VDatePicker extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof VDatePicker extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __VDatePicker_8__emit_props = typeof VDatePicker extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
-  type __VDatePicker_8_input_prop_args = __VDatePicker_8__library extends true ? unknown[] : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onInput?: (...args: infer __A) => any } ? __A : __P extends { onInput?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type __VDatePicker_8_input_prop_args = __VDatePicker_8__library extends true ? unknown[] : __VDatePicker_8__props extends infer __B ? __B extends [infer __P] ? __VDatePicker_8__listener_args<__P, "onInput", never> : unknown[] : never;
   type __VDatePicker_8_input_static_emit_args = __VDatePicker_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onInput?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __VDatePicker_8_input_emit_args = __VDatePicker_8_input_static_emit_args;
   type __VDatePicker_8_input_args = unknown[] extends __VDatePicker_8_input_prop_args ? (unknown[] extends __VDatePicker_8_input_emit_args ? unknown[] : __VDatePicker_8_input_emit_args) : __VDatePicker_8_input_prop_args;

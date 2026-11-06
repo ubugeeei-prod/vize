@@ -425,3 +425,12 @@ export type $SlotChildren<__S, __K extends PropertyKey> =
 export type $ProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only]
   ? __Only | __T
   : __T;
+
+import type * as __vizeListenerTypes from "./virtual-ts-listeners.js" with {
+  "resolution-mode": "import",
+};
+export type $ListenerArgs<
+  __P,
+  __K extends string | number | symbol,
+  __Raw extends string | number | symbol = never,
+> = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import { beforeDiscriminatedJsxUnionIn } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
@@ -86,10 +87,18 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   const record = load(),
     generic = loadGeneric(),
     decl = base + "declarations/";
-  assert.deepEqual(identity(read(record.preambleProducer.path)), {
-    bytes: record.preambleProducer.bytes,
-    sha256: record.preambleProducer.sha256,
-  });
+  assert.deepEqual(
+    identity(
+      beforeSharedListenerRelationSource(
+        record.preambleProducer.path,
+        read(record.preambleProducer.path),
+      ),
+    ),
+    {
+      bytes: record.preambleProducer.bytes,
+      sha256: record.preambleProducer.sha256,
+    },
+  );
   // This finite expansion is admitted only for the exact macro producer above.
   // Its compiled constant is checked independently by the native tests.
   const current = [
@@ -142,8 +151,11 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     bytes: 46506,
     sha256: "f3f628ff406ce57acce118f1213e000930f8a70d20afdb07fbfedc6e274b32e9",
   });
-  const integratedSource = read(
-    "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/integrated_source.rs",
+  const integratedSourcePath =
+    "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/integrated_source.rs";
+  const integratedSource = beforeSharedListenerRelationSource(
+    integratedSourcePath,
+    read(integratedSourcePath),
   );
   assert.equal(
     hash(integratedSource),

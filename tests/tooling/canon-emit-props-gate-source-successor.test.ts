@@ -24,12 +24,14 @@ void test("the current resolver source successor preserves frozen proof and refu
   for (const entry of successor.sources) {
     const source = read(entry.path);
     const hunk = entry.hunks[0];
+    const currentMarker = source.includes(hunk.after) ? hunk.after : "mod listener_relations;\n";
+    assert.equal(source.split(currentMarker).length, 2);
     for (const changed of [
       `// unrelated prefix\n${source}`,
       source + "\n",
-      source.replace(hunk.after, ""),
-      source.replace(hunk.after, hunk.after + hunk.after),
-      source.replace(hunk.after, hunk.after.replace("\n", "\n// unregistered delta\n")),
+      source.replace(currentMarker, ""),
+      source.replace(currentMarker, currentMarker + currentMarker),
+      source.replace(currentMarker, currentMarker.replace("\n", "\n// unregistered delta\n")),
     ]) {
       assert.notEqual(changed, source);
       assert.throws(

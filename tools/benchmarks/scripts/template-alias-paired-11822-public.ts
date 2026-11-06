@@ -19,6 +19,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { materializeCorpus } from "./template-alias-paired-11822-corpus.ts";
+import type { Projection } from "./template-alias-paired-11822-campaign.ts";
 import { verifiedSourcePair } from "./template-alias-paired-11822-source.ts";
 import {
   assertCampaignEnvironment,
@@ -45,6 +46,10 @@ import {
   write,
 } from "./template-alias-paired-11822-custody.ts";
 import type { DiagnosticPacket, Observation } from "./template-alias-paired-11822-types.ts";
+import {
+  certifyListenerRelationProjections,
+  mapperCampaign,
+} from "./template-alias-paired-11822-campaign.ts";
 
 export function median(values: number[]): number {
   assert.ok(values.length > 0 && values.length % 2 === 1);
@@ -142,24 +147,10 @@ export async function main() {
   };
   git(head, "merge-base", "--is-ancestor", sources.base.sha, sources.head.sha);
   const driverIdentity = pristine(driver, values["driver-sha"]!);
-  // This campaign isolates dispatcher admission. Projection/checker/SDK changes require a new qualification design.
   const changed = git(head, "diff", "--name-only", sources.base.sha, sources.head.sha)
     .split("\n")
     .filter(Boolean);
-  assert.ok(changed.includes("crates/vize/src/commands/content_mapper/dispatch.rs"));
-  assert.ok(
-    changed.every(
-      (path) =>
-        path.startsWith(".github/") ||
-        path.startsWith("tests/") ||
-        path.startsWith("tools/") ||
-        [
-          "crates/vize/src/commands/content_mapper/dispatch.rs",
-          "crates/vize/src/commands/content_mapper/dispatch/tests.rs",
-        ].includes(path),
-    ),
-    "candidate contains production changes outside dispatcher admission",
-  );
+  const { campaign, dispatcher } = mapperCampaign(changed);
   const builds = verifiedSourcePair(base, head, sources);
   mkdirSync(output);
   for (const [id, build] of Object.entries(builds)) attestSource(output, id, build);
@@ -175,7 +166,8 @@ export async function main() {
   assert.equal(json(join(provider, "node_modules/vue/package.json")).version, "3.5.44");
   const cpuBefore = runtimeCpuEvidence();
   const context = {
-    schema: "vize.public-dispatcher-campaign.v1",
+    schema: "vize.public-content-mapper-campaign.v2",
+    campaign,
     driver: driverIdentity,
     sources,
     comparisonScope: {
@@ -314,17 +306,18 @@ export async function main() {
             ) as unknown,
           };
         });
-        if (projections.has(host.name))
-          assert.deepEqual(
-            projection,
-            projections.get(host.name),
-            "whole transform text/maps/metadata changed",
-          );
-        else projections.set(host.name, projection);
+        let listenerRelationProof;
+        if (projections.has(host.name)) {
+          const previous = projections.get(host.name) as Projection[];
+          if (dispatcher)
+            assert.deepEqual(projection, previous, "whole transform text/maps/metadata changed");
+          else listenerRelationProof = certifyListenerRelationProjections(previous, projection);
+        } else projections.set(host.name, projection);
         write(join(directory, "qualified.json"), {
           timingEligible: false,
           completeTransforms: paths.length,
-          projectionEquality: true,
+          projectionEquality: dispatcher,
+          listenerRelationProof,
         });
       }
     await qualifySemantics({

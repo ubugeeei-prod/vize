@@ -12,6 +12,7 @@
     "$FallthroughSpreadChecker",
     "$FallthroughValue",
     "$IsLibraryGenericExport",
+    "$ListenerArgs",
     "$NavigationSlots",
     "$PropChecker",
     "$PropValue",
@@ -97,6 +98,10 @@
           "sha256": "a92231c9b924778d38ba10c25d7908d1f3a70e1516aad96f8a653fe46e11977b"
         },
         {
+          "path": "virtual-ts-listeners.d.ts",
+          "sha256": "643048acce2ca1f480f541b70f25fa52baa2ed452f3860cc2bd84082fb2b81ed"
+        },
+        {
           "path": "virtual-ts-patterns.d.ts",
           "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
         },
@@ -106,15 +111,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+          "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+          "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+          "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
         }
       ]
     },
@@ -145,6 +150,10 @@
           "sha256": "a92231c9b924778d38ba10c25d7908d1f3a70e1516aad96f8a653fe46e11977b"
         },
         {
+          "path": "virtual-ts-listeners.d.ts",
+          "sha256": "643048acce2ca1f480f541b70f25fa52baa2ed452f3860cc2bd84082fb2b81ed"
+        },
+        {
           "path": "virtual-ts-patterns.d.ts",
           "sha256": "e42c2c431553563663e28f75b4e68f8728d928a2867c857c76ef8cf30fe0f545"
         },
@@ -154,7 +163,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "417b4ab1f380eaffeb62676def8762ed78fba126e606972f262503b8cda04432"
+          "sha256": "d2afee78f759b85aa1b227caf4bd0b6f9fef54671e0c6e5f7c89f40c9b12cd6e"
         }
       ]
     }

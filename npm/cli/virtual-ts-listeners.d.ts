@@ -1,0 +1,20 @@
+// Generated from the canonical listener argument relations. Do not edit.
+
+type $ListenerMissing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never]
+  ? unknown[]
+  : __P extends { [__K in __Raw]?: (...args: infer __A) => any }
+    ? __A
+    : unknown[];
+export type $ListenerArgs<
+  __P,
+  __K extends string | number | symbol,
+  __Raw extends string | number | symbol = never,
+> = __P extends { [__Q in __K]?: (...args: infer __A) => any }
+  ? __A
+  : __P extends { [__Q in __K]?: infer __H }
+    ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never]
+      ? $ListenerMissing<__P, __Raw>
+      : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any
+        ? __A
+        : $ListenerMissing<__P, __Raw>
+    : $ListenerMissing<__P, __Raw>;
