@@ -46,6 +46,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }
+      - run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Verify observer bootstrap and source roles
         run: |
           node --test tests/tooling/sfc-parse-attributes-bootstrap.test.ts

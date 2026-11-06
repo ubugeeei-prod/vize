@@ -35,9 +35,8 @@ const captured = JSON.parse(
   };
 };
 const rows = [...captured.packets, ...captured.emptySetupModules.packets];
-const fromRoot = createRequire(import.meta.url);
-const fromBabel = createRequire(fromRoot.resolve("@babel/core"));
-const { parse } = fromBabel("@babel/parser") as { parse: ParseModule };
+const fromTests = createRequire(new URL("../package.json", import.meta.url));
+const { parse } = fromTests("@babel/parser") as { parse: ParseModule };
 
 function withModuleFacts(value: Record<string, unknown>): Record<string, unknown> {
   return moduleShapeFactsReference(value as { code: string; [key: string]: unknown }, parse);
