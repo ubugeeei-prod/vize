@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "lsp/regression/generic-attribute-hover-11502",
+  "provenance": {
+    "fixCommit": "b259a90a23fd27949cc527f4da7e139112924ede",
+    "issue": 11502,
+    "witnessPath": "tests/tooling/lsp-generic-attribute-navigation.test.ts",
+    "inputOrigin": "#11502 script setup generic used in the attribute, setup body and template",
+    "contractOrigin": "Authored TypeScript type-parameter quick info without canonical setup function or generated props names"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "b5a7005c7c4449dc1f6dda8945072413dd7e1737ea1eb4d7c9a647ce632cba3c"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "32b82e623d3186938792bd61ffde3ca558998b0f1dde8dd01a6f8caad461c167"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete native-backed hovers for one authored generic parameter in its declaration, setup body and template"
+}

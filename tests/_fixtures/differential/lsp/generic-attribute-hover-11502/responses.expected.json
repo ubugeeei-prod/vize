@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 0,
+      "character": 33
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(type parameter) T extends string\n```"
+      },
+      "range": {
+        "start": {
+          "line": 0,
+          "character": 33
+        },
+        "end": {
+          "line": 0,
+          "character": 34
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 4,
+      "character": 29
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(type parameter) T extends string\n```"
+      },
+      "range": {
+        "start": {
+          "line": 4,
+          "character": 29
+        },
+        "end": {
+          "line": 4,
+          "character": 30
+        }
+      }
+    }
+  }
+]
