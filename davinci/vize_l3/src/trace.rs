@@ -1,8 +1,8 @@
 //! Executable backend-observation traces for Impeto programs.
 //!
-//! The Lean reference is the normative semantics. This Rust mirror exists so
-//! generated L3 fixtures can be checked by ordinary cargo tests before the
-//! dedicated Lean lane compares the same text.
+//! The independent test-only Rust reference is the normative semantics.
+//! Generated L3 fixtures are checked against it by ordinary cargo tests, while
+//! the mounted backend lanes compare the same committed observations.
 
 use core::fmt::{self, Write};
 

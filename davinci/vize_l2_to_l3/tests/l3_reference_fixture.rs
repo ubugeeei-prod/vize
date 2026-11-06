@@ -22,7 +22,7 @@ mod l3_reference_fixture {
 const STATIC_DYNAMIC_SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
 const CONTROL_SLOTS_SOURCE: &str =
-    include_str!("../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.template.txt");
+    include_str!("../../../tests/fixtures/l3-reference/rust-lowered-control-slots.template.txt");
 
 #[test]
 fn rust_lowered_values_match_stateful_reference_input() {
@@ -30,13 +30,13 @@ fn rust_lowered_values_match_stateful_reference_input() {
         (
             STATIC_DYNAMIC_SOURCE,
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.values.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.values.folio"
             ),
         ),
         (
             CONTROL_SLOTS_SOURCE,
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.values.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.values.folio"
             ),
         ),
     ] {
@@ -60,27 +60,27 @@ fn rust_lowered_fixtures_match_reference_inputs() {
         (
             STATIC_DYNAMIC_SOURCE,
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.s3.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.s3.folio"
             ),
-            include_str!("../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.trace"),
+            include_str!("../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.trace"),
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.vdom.trace"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.vdom.trace"
             ),
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.vapor.trace"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.vapor.trace"
             ),
         ),
         (
             CONTROL_SLOTS_SOURCE,
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.s3.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.s3.folio"
             ),
-            include_str!("../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.trace"),
+            include_str!("../../../tests/fixtures/l3-reference/rust-lowered-control-slots.trace"),
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.vdom.trace"
+                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.vdom.trace"
             ),
             include_str!(
-                "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.vapor.trace"
+                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.vapor.trace"
             ),
         ),
     ];
