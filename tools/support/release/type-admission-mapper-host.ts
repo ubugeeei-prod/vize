@@ -8,28 +8,69 @@ import { asRecord as record, asString as string } from "../json-value.ts";
 
 export const MAPPER_HOST_VERSION = "7.1.0-beta";
 export const MAPPER_HOST_GIT = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
-export const MAPPER_HOST_IMAGE = {
-  bytes: 24522912,
-  sha256: "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
-};
+const MAPPER_HOST_COMMON = {
+  name: "typescript",
+  integrity:
+    "sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ==",
+  tarball: "https://registry.npmjs.org/typescript/-/typescript-7.1.0-beta.tgz",
+} as const;
+export const MAPPER_HOST_TARGETS = {
+  "linux-x64": {
+    platform: "linux",
+    arch: "x64",
+    package: {
+      name: "@typescript/typescript-linux-x64",
+      integrity:
+        "sha512-kcD51ihf+pnI5KT4uQQYG04OpwznaZYBlIQhDhl8fflFd27NktxXsUeguxZyvUMyWfum7IF2bBS6Jv7ox0AgFQ==",
+      tarball:
+        "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.1.0-beta.tgz",
+    },
+    image: {
+      bytes: 24522912,
+      sha256: "a183b1956edbe7e7d98f2249858eedf2d8a9790809cc4909db1276e202faaa70",
+    },
+  },
+  "darwin-arm64": {
+    platform: "darwin",
+    arch: "arm64",
+    package: {
+      name: "@typescript/typescript-darwin-arm64",
+      integrity:
+        "sha512-q7mxblcyX0E7hXsY4k+Q6KWKK5mGmfVq+BDesdTgRVgjodk27aIxER77Zyj9+TgSTlCje8F7+JM6f6hl2BuNdw==",
+      tarball:
+        "https://registry.npmjs.org/@typescript/typescript-darwin-arm64/-/typescript-darwin-arm64-7.1.0-beta.tgz",
+    },
+    image: {
+      bytes: 24244594,
+      sha256: "29f5eb8daa5c8cf6ef1c0cb79fbcf47c0cfdf26edabdf148bb779d0b2d56cebc",
+    },
+  },
+} as const;
+export const MAPPER_HOST_IMAGE = MAPPER_HOST_TARGETS["linux-x64"].image;
 export const MAPPER_HOST_PACKAGES = [
-  {
-    name: "typescript",
-    integrity:
-      "sha512-cjWjZAJDsmZzsNC5GwHNlW0YPM65jZa5oR0KyQcYX3KSVIfTvtBq//vewISyatKk4OLi5grZjHhIVE9fdrw1UQ==",
-    tarball: "https://registry.npmjs.org/typescript/-/typescript-7.1.0-beta.tgz",
-  },
-  {
-    name: "@typescript/typescript-linux-x64",
-    integrity:
-      "sha512-kcD51ihf+pnI5KT4uQQYG04OpwznaZYBlIQhDhl8fflFd27NktxXsUeguxZyvUMyWfum7IF2bBS6Jv7ox0AgFQ==",
-    tarball:
-      "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.1.0-beta.tgz",
-  },
+  MAPPER_HOST_COMMON,
+  MAPPER_HOST_TARGETS["linux-x64"].package,
 ] as const;
+type MapperHostPackage = {
+  readonly name: string;
+  readonly integrity: string;
+  readonly tarball: string;
+};
 
-export function validateMapperHostMetadata(value: unknown, index: number): void {
-  const expected = MAPPER_HOST_PACKAGES[index];
+export function mapperHostTarget(platform = process.platform, arch = process.arch) {
+  const target = Object.values(MAPPER_HOST_TARGETS).find(
+    (candidate) => candidate.platform === platform && candidate.arch === arch,
+  );
+  assert.ok(target, `unsupported mapper host target: ${platform}-${arch}`);
+  return target;
+}
+
+export function validateMapperHostMetadata(
+  value: unknown,
+  index: number,
+  packages: readonly MapperHostPackage[] = MAPPER_HOST_PACKAGES,
+): void {
+  const expected = packages[index];
   assert.ok(expected);
   const metadata = record(value),
     dist = record(metadata.dist);
@@ -38,11 +79,11 @@ export function validateMapperHostMetadata(value: unknown, index: number): void 
   assert.equal(metadata.gitHead, MAPPER_HOST_GIT);
   assert.equal(dist.integrity, expected.integrity);
   assert.equal(dist.tarball, expected.tarball);
-  if (index === 0)
-    assert.equal(
-      record(metadata.optionalDependencies)[MAPPER_HOST_PACKAGES[1].name],
-      MAPPER_HOST_VERSION,
-    );
+  if (index === 0) {
+    const binaryPackage = packages[1];
+    assert.ok(binaryPackage);
+    assert.equal(record(metadata.optionalDependencies)[binaryPackage.name], MAPPER_HOST_VERSION);
+  }
 }
 
 function image(file: string): { file: string; bytes: number; sha256: string } {
@@ -59,8 +100,8 @@ function json(file: string): unknown {
 }
 
 export async function bootstrapMapperHost(workspace: string, output: string): Promise<void> {
-  assert.equal(process.platform, "linux");
-  assert.equal(process.arch, "x64");
+  const target = mapperHostTarget();
+  const packages = [MAPPER_HOST_COMMON, target.package] as const;
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   for (const name of [
     "GH_TOKEN",
@@ -100,6 +141,7 @@ export async function bootstrapMapperHost(workspace: string, output: string): Pr
     runId: process.env.GITHUB_RUN_ID,
     platform: process.platform,
     arch: process.arch,
+    targetPackage: target.package.name,
     node: process.version,
     status: "preparing",
     hostedCapability: "not-run",
@@ -133,8 +175,8 @@ export async function bootstrapMapperHost(workspace: string, output: string): Pr
   };
   try {
     const metadata: unknown[] = [];
-    for (let index = 0; index < MAPPER_HOST_PACKAGES.length; index++) {
-      const expected = MAPPER_HOST_PACKAGES[index];
+    for (let index = 0; index < packages.length; index++) {
+      const expected = packages[index];
       assert.ok(expected);
       const url =
         "https://registry.npmjs.org/" +
@@ -148,7 +190,7 @@ export async function bootstrapMapperHost(workspace: string, output: string): Pr
         flag: "wx",
       });
       const value: unknown = JSON.parse(raw);
-      validateMapperHostMetadata(value, index);
+      validateMapperHostMetadata(value, index, packages);
       metadata.push({ url, metadata: value });
     }
     fs.mkdirSync(root);
@@ -175,33 +217,31 @@ export async function bootstrapMapperHost(workspace: string, output: string): Pr
     ];
     invoke("npm", ["install", "--package-lock-only", ...options]);
     const lock = record(json(path.join(root, "package-lock.json"))),
-      packages = record(lock.packages);
+      lockPackages = record(lock.packages);
     const rows: unknown[] = [];
-    for (const expected of MAPPER_HOST_PACKAGES) {
-      const row = record(packages["node_modules/" + expected.name]);
+    for (const expected of packages) {
+      const row = record(lockPackages["node_modules/" + expected.name]);
       assert.equal(row.version, MAPPER_HOST_VERSION);
       assert.equal(row.integrity, expected.integrity);
       assert.equal(row.resolved, expected.tarball);
       rows.push({ name: expected.name, lock: row });
     }
     invoke("npm", ["ci", ...options]);
-    for (const expected of MAPPER_HOST_PACKAGES)
+    for (const expected of packages)
       assert.equal(
         record(json(path.join(root, "node_modules", expected.name, "package.json"))).version,
         MAPPER_HOST_VERSION,
       );
-    const executable = image(
-      path.join(root, "node_modules/@typescript/typescript-linux-x64/lib/tsc"),
-    );
-    assert.equal(executable.bytes, MAPPER_HOST_IMAGE.bytes);
-    assert.equal(executable.sha256, MAPPER_HOST_IMAGE.sha256);
+    const executable = image(path.join(root, "node_modules", target.package.name, "lib/tsc"));
+    assert.equal(executable.bytes, target.image.bytes);
+    assert.equal(executable.sha256, target.image.sha256);
     const version = invoke(executable.file, ["--version"]);
     assert.match(version.trim(), /^Version 7\.1\.0-beta$/);
     invoke(executable.file, ["--help"]);
     receipt.registry = metadata;
     receipt.lockRows = rows;
     receipt.lock = image(path.join(root, "package-lock.json"));
-    receipt.manifests = MAPPER_HOST_PACKAGES.map((item) =>
+    receipt.manifests = packages.map((item) =>
       image(path.join(root, "node_modules", item.name, "package.json")),
     );
     receipt.executable = executable;
