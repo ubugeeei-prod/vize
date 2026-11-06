@@ -175,6 +175,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `petite-vue/valid-v-effect`
 - `petite-vue/valid-v-scope`
 - `script/component-options-name-casing`
+- `script/consistent-props-emits-key-quotes`
 - `script/define-emits-declaration`
 - `script/define-macros-order`
 - `script/define-props-declaration`
