@@ -42,6 +42,79 @@ export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffe
     let text = body.toString();
     const replacements = [
       [
+        `    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES,
+    RULE_CUSTOM_EVENT_NAME_CASING, RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER,
+    RULE_DEFINE_PROPS_DECLARATION, RULE_DEFINE_PROPS_DESTRUCTURING, RULE_JSX_USES_VARS,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_BOOLEAN_DEFAULT,
+    RULE_NO_COMPUTED_PROPERTIES_IN_DATA, RULE_NO_DEEP_DESTRUCTURE_IN_PROPS,
+    RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION, RULE_NO_DEPRECATED_DELETE_SET,
+    RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE, RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API,
+    RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API, RULE_NO_DEPRECATED_EVENTS_API,
+    RULE_NO_DEPRECATED_MODEL_DEFINITION, RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS,
+    RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES, RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE,
+    RULE_NO_EXPORT_IN_SCRIPT_SETUP, RULE_NO_EXPOSE_AFTER_AWAIT, RULE_NO_GET_CURRENT_INSTANCE,
+    RULE_NO_IMPORT_COMPILER_MACROS, RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT,
+    RULE_NO_MULTIPLE_SLOT_ARGS, RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API,
+    RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO, RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND,
+    RULE_NO_REF_OBJECT_REACTIVITY_LOSS, RULE_NO_REQUIRED_PROP_WITH_DEFAULT,
+    RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS, RULE_NO_RESERVED_PROPS,
+    RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS, RULE_NO_SETUP_PROPS_REACTIVITY_LOSS,
+    RULE_NO_SIDE_EFFECTS_IN_COMPUTED, RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER,
+    RULE_NO_TOP_LEVEL_REF_IN_SCRIPT, RULE_NO_UNSTABLE_NESTED_COMPONENTS,
+    RULE_NO_UNUSED_EMIT_DECLARATIONS, RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD,
+    RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS, RULE_NUXT_CONFIG_KEYS_ORDER,
+    RULE_NUXT_NO_CONFIG_TEST_KEY, RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES,
+    RULE_NUXT_PREFER_IMPORT_META, RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS,
+    RULE_PINIA_PREFER_STORE_TO_REFS, RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING,
+    RULE_PREFER_DEFINE_OPTIONS, RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,`,
+        `    RULE_COMPONENT_OPTIONS_NAME_CASING, RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_DEFINE_EMITS_DECLARATION, RULE_DEFINE_MACROS_ORDER, RULE_DEFINE_PROPS_DECLARATION,
+    RULE_DEFINE_PROPS_DESTRUCTURING, RULE_JSX_USES_VARS, RULE_NO_ARROW_FUNCTIONS_IN_WATCH,
+    RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_BOOLEAN_DEFAULT, RULE_NO_COMPUTED_PROPERTIES_IN_DATA,
+    RULE_NO_DEEP_DESTRUCTURE_IN_PROPS, RULE_NO_DEPRECATED_DATA_OBJECT_DECLARATION,
+    RULE_NO_DEPRECATED_DELETE_SET, RULE_NO_DEPRECATED_DESTROYED_LIFECYCLE,
+    RULE_NO_DEPRECATED_DOLLAR_LISTENERS_API, RULE_NO_DEPRECATED_DOLLAR_SCOPEDSLOTS_API,
+    RULE_NO_DEPRECATED_EVENTS_API, RULE_NO_DEPRECATED_MODEL_DEFINITION,
+    RULE_NO_DEPRECATED_PROPS_DEFAULT_THIS, RULE_NO_DEPRECATED_VUE_CONFIG_KEYCODES,
+    RULE_NO_DUPE_KEYS, RULE_NO_DUPLICATE_ATTR_INHERITANCE, RULE_NO_EXPORT_IN_SCRIPT_SETUP,
+    RULE_NO_EXPOSE_AFTER_AWAIT, RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_NO_INTERNAL_IMPORTS, RULE_NO_LIFECYCLE_AFTER_AWAIT, RULE_NO_MULTIPLE_SLOT_ARGS,
+    RULE_NO_NEXT_TICK, RULE_NO_OPTIONS_API, RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO,
+    RULE_NO_REACTIVE_DESTRUCTURE, RULE_NO_REF_AS_OPERAND, RULE_NO_REF_OBJECT_REACTIVITY_LOSS,
+    RULE_NO_REQUIRED_PROP_WITH_DEFAULT, RULE_NO_RESERVED_IDENTIFIERS, RULE_NO_RESERVED_KEYS,
+    RULE_NO_RESERVED_PROPS, RULE_NO_RESTRICTED_GLOBALS, RULE_NO_RESTRICTED_MEMBERS,
+    RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, RULE_NO_SIDE_EFFECTS_IN_COMPUTED,
+    RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, RULE_NO_TOP_LEVEL_REF_IN_SCRIPT,
+    RULE_NO_UNSTABLE_NESTED_COMPONENTS, RULE_NO_UNUSED_EMIT_DECLARATIONS,
+    RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD, RULE_NO_WATCH_AFTER_AWAIT, RULE_NO_WITH_DEFAULTS,
+    RULE_NUXT_CONFIG_KEYS_ORDER, RULE_NUXT_NO_CONFIG_TEST_KEY,
+    RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES, RULE_NUXT_PREFER_IMPORT_META,
+    RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS, RULE_PINIA_PREFER_STORE_TO_REFS,
+    RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING, RULE_PREFER_DEFINE_OPTIONS,
+    RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,`,
+      ],
+      [
+        `    ComponentOptionsNameCasing, ConsistentPropsEmitsKeyQuotes, CustomEventNameCasing,
+    DefineEmitsDeclaration, DefineMacrosOrder, DefinePropsDeclaration, DefinePropsDestructuring,
+    JsxUsesVars, NoArrowFunctionsInWatch, NoAsyncInComputed, NoBooleanDefault,
+    NoComputedPropertiesInData, NoDeepDestructureInProps, NoDeprecatedDataObjectDeclaration,
+    NoDeprecatedDeleteSet, NoDeprecatedDestroyedLifecycle, NoDeprecatedDollarListenersApi,
+    NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi, NoDeprecatedModelDefinition,
+    NoDeprecatedPropsDefaultThis, NoDeprecatedVueConfigKeycodes, NoDupeKeys,
+    NoDuplicateAttrInheritance, NoExportInScriptSetup, NoExposeAfterAwait, NoGetCurrentInstance,
+    NoImportCompilerMacros, NoInternalImports, NoLifecycleAfterAwait, NoMultipleSlotArgs,
+    NoNextTick, NoNuxtConfigTestKey, NoOptionsApi, NoPageMetaRuntimeValues,`,
+        `    ComponentOptionsNameCasing, CustomEventNameCasing, DefineEmitsDeclaration, DefineMacrosOrder,
+    DefinePropsDeclaration, DefinePropsDestructuring, JsxUsesVars, NoArrowFunctionsInWatch,
+    NoAsyncInComputed, NoBooleanDefault, NoComputedPropertiesInData, NoDeepDestructureInProps,
+    NoDeprecatedDataObjectDeclaration, NoDeprecatedDeleteSet, NoDeprecatedDestroyedLifecycle,
+    NoDeprecatedDollarListenersApi, NoDeprecatedDollarScopedSlotsApi, NoDeprecatedEventsApi,
+    NoDeprecatedModelDefinition, NoDeprecatedPropsDefaultThis, NoDeprecatedVueConfigKeycodes,
+    NoDupeKeys, NoDuplicateAttrInheritance, NoExportInScriptSetup, NoExposeAfterAwait,
+    NoGetCurrentInstance, NoImportCompilerMacros, NoInternalImports, NoLifecycleAfterAwait,
+    NoMultipleSlotArgs, NoNextTick, NoNuxtConfigTestKey, NoOptionsApi, NoPageMetaRuntimeValues,`,
+      ],
+      [
         `    RULE_REQUIRE_DEFINE_COMPONENT, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,
     RULE_REQUIRE_EXPOSE, RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
     RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
@@ -72,13 +145,16 @@ export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffe
     ValidDefineProps, ValidModelDefinition, ValidNextTick, VueRouterPreferNamedPush,
     VueTestUtilsNoHtmlSnapshot,`,
       ],
-      ["EventNameCasing::Lowercase", "EventNameCasing::CamelCase"],
       [
         `    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DESTRUCTURING, profile_name: "patina.script_rule.define_props_destructuring", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &DefinePropsDestructuring },`,
         `    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DESTRUCTURING, profile_name: "patina.script_rule.define_props_destructuring", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefinePropsDestructuring },`,
       ],
       [
         `    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_DEFINE_COMPONENT, profile_name: "patina.script_rule.require_define_component", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &RequireDefineComponent },\n`,
+        "",
+      ],
+      [
+        `    BuiltinScriptRuleEntry { rule_name: RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES, profile_name: "patina.script_rule.consistent_props_emits_key_quotes", category: "Script", fixable: false, presets: OPINIONATED_ONLY_SCRIPT_PRESETS, rule: &ConsistentPropsEmitsKeyQuotes },\n`,
         "",
       ],
       [
@@ -126,6 +202,11 @@ export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffe
       }
     for (const preset of [...broad, "opt_in"]) {
       const rule = "script/require-define-component";
+      assert.equal(table[preset].filter((name: string) => name === rule).length, 1);
+      table[preset].splice(table[preset].indexOf(rule), 1);
+    }
+    for (const preset of ["opinionated", "opt_in"]) {
+      const rule = "script/consistent-props-emits-key-quotes";
       assert.equal(table[preset].filter((name: string) => name === rule).length, 1);
       table[preset].splice(table[preset].indexOf(rule), 1);
     }

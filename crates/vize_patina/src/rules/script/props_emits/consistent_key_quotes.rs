@@ -227,14 +227,14 @@ fn check_keys(
         result.add_diagnostic(
             LintDiagnostic::error(
                 META.name,
-                format!(
+                vize_l0::cstr!(
                     "Quote every {declaration} key because this declaration contains a key that requires quotes."
                 ),
                 start,
                 end,
             )
             .with_label("quote this key for consistency", start, end)
-            .with_help(format!(
+            .with_help(vize_l0::cstr!(
                 "Wrap this key in quotes so all {declaration} keys use the same quoted form."
             )),
         );
