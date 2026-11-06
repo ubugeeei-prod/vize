@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { emitInferenceExports } from "../../npm/cli/scripts/emit-inference-exports.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
+import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const files = ["ts", "mts", "cts"].map((extension) => `npm/cli/virtual-ts.d.${extension}`);
@@ -137,7 +138,10 @@ void test("the private module repair exactly restores the authenticated SDK sync
     const current = beforeGenericEventSpecialization(
       read,
       entry.path,
-      beforeOverloadSuccessor(entry.path, read(entry.path)),
+      beforeOverloadSuccessor(
+        entry.path,
+        beforeSharedListenerRelationSource(entry.path, read(entry.path)),
+      ),
     );
     const previous = inverse(current);
     const origin = old.files.find((file) => file.path === entry.path)?.after;
@@ -157,7 +161,13 @@ void test("the private module repair exactly restores the authenticated SDK sync
   }
   for (const asset of record.newAssets) {
     assert.deepEqual(
-      identity(beforeGenericEventSpecialization(read, asset.path, read(asset.path))),
+      identity(
+        beforeGenericEventSpecialization(
+          read,
+          asset.path,
+          beforeSharedListenerRelationSource(asset.path, read(asset.path)),
+        ),
+      ),
       {
         bytes: asset.bytes,
         sha256: asset.sha256,
