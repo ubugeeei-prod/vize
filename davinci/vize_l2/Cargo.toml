@@ -24,6 +24,7 @@ harness = false
 
 [dev-dependencies]
 serde_json.workspace = true
+vize_armature.workspace = true
 
 [lints]
 workspace = true
