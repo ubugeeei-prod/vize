@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { isItem, type Entry, type Item } from "./types";
+
+defineProps<{ entries: Entry[] }>();
+defineEmits<{ pick: [item: Item] }>();
+</script>
+
+<template>
+  <div v-for="entry in entries" :key="entry.id">
+    <div v-if="isItem(entry)">
+      <button type="button" @click.stop="() => $emit('pick', entry)">pick</button>
+    </div>
+  </div>
+</template>
