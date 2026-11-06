@@ -122,8 +122,8 @@ pub struct ModuleImportNapi {
 impl From<vize_atelier_sfc::module_shape::SfcModuleImport> for ModuleImportNapi {
     fn from(import: vize_atelier_sfc::module_shape::SfcModuleImport) -> Self {
         Self {
-            source: import.source,
-            local: import.local,
+            source: import.source.to_string(),
+            local: import.local.to_string(),
             namespace: import.namespace,
         }
     }
@@ -162,7 +162,7 @@ impl From<vize_atelier_sfc::module_shape::SfcModuleShape> for ModuleShapeNapi {
             default_export_keyword_end: shape.default_export_keyword_end,
             default_export_end: shape.default_export_end,
             default_export_is_sfc_main: shape.default_export_is_sfc_main,
-            default_export_local: shape.default_export_local,
+            default_export_local: shape.default_export_local.map(|name| name.to_string()),
             imports: shape.imports.into_iter().map(Into::into).collect(),
             has_side_effect_import: shape.has_side_effect_import,
             has_reexport: shape.has_reexport,

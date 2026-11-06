@@ -56,8 +56,8 @@ const SFC_MAIN: &str = "_sfc_main";
 /// One runtime import binding in the finished emitted module.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SfcModuleImport {
-    pub source: String,
-    pub local: String,
+    pub source: vize_carton::String,
+    pub local: vize_carton::String,
     pub namespace: bool,
 }
 
@@ -82,7 +82,7 @@ pub struct SfcModuleShape {
     /// what lets the consumer insert before it rather than rewriting it.
     pub default_export_is_sfc_main: bool,
     /// Local binding exported by default, for identifiers and named declarations.
-    pub default_export_local: Option<String>,
+    pub default_export_local: Option<vize_carton::String>,
     /// Runtime import bindings after type-only imports have been excluded.
     pub imports: Vec<SfcModuleImport>,
     /// A bare runtime import cannot be compared without replaying its effects.
@@ -282,8 +282,8 @@ fn collect_import(import: &oxc_ast::ast::ImportDeclaration<'_>, shape: &mut SfcM
             }
         };
         shape.imports.push(SfcModuleImport {
-            source: source.to_owned(),
-            local: local.to_owned(),
+            source: source.into(),
+            local: local.into(),
             namespace,
         });
     }
@@ -323,19 +323,21 @@ fn exports_sfc_main(declaration: &ExportDefaultDeclarationKind<'_>) -> bool {
     )
 }
 
-fn default_export_local(declaration: &ExportDefaultDeclarationKind<'_>) -> Option<String> {
+fn default_export_local(
+    declaration: &ExportDefaultDeclarationKind<'_>,
+) -> Option<vize_carton::String> {
     match declaration {
         ExportDefaultDeclarationKind::Identifier(identifier) => {
-            Some(identifier.name.as_str().to_owned())
+            Some(identifier.name.as_str().into())
         }
         ExportDefaultDeclarationKind::FunctionDeclaration(function) => function
             .id
             .as_ref()
-            .map(|identifier| identifier.name.as_str().to_owned()),
+            .map(|identifier| identifier.name.as_str().into()),
         ExportDefaultDeclarationKind::ClassDeclaration(class) => class
             .id
             .as_ref()
-            .map(|identifier| identifier.name.as_str().to_owned()),
+            .map(|identifier| identifier.name.as_str().into()),
         _ => None,
     }
 }
