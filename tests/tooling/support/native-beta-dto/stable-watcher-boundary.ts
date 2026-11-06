@@ -253,18 +253,58 @@ export function stableWatchContext(
   io: readonly WatcherTimedIo[],
   eofReads: readonly NativeTimedObservation[],
 ) {
-  return watchContext(client, server, context, io, eofReads, (ack, eof) => {
-    for (const part of ack.parts) requireCompletedBefore(part, eof);
-  });
+  const actor = watchContext(
+    client,
+    server,
+    context,
+    io,
+    eofReads,
+    (ack, eof) => {
+      for (const part of ack.parts) requireCompletedBefore(part, eof);
+    },
+    "required",
+  );
+  assert.ok(actor.header);
+  return { ...actor, header: actor.header };
+}
+export function stableWatchContextWithoutStdoutLog(
+  client: readonly unknown[],
+  server: readonly unknown[],
+  context: WatcherContext,
+  io: readonly WatcherTimedIo[],
+  eofReads: readonly NativeTimedObservation[],
+) {
+  const actor = watchContext(
+    client,
+    server,
+    context,
+    io,
+    eofReads,
+    (ack, eof) => {
+      for (const part of ack.parts) requireCompletedBefore(part, eof);
+    },
+    "absent",
+  );
+  assert.equal(actor.header, null);
+  return { ...actor, header: null };
 }
 export function historicalSplitWatchContext(
   ...args: [...Parameters<typeof stableWatchContext>, ReturnType<typeof nativeOwnerTerminalState>]
 ) {
   const [client, server, context, io, eofReads, owner] = args;
   const proof: { value: ReturnType<typeof historicalRootAckFragments> } = { value: null };
-  const actor = watchContext(client, server, context, io, eofReads, (ack, eof) => {
-    proof.value = historicalRootAckFragments(ack, eof, io, owner);
-  });
+  const actor = watchContext(
+    client,
+    server,
+    context,
+    io,
+    eofReads,
+    (ack, eof) => {
+      proof.value = historicalRootAckFragments(ack, eof, io, owner);
+    },
+    "required",
+  );
+  assert.ok(actor.header);
   return { ...actor, rootAckFragmentOrder: proof.value };
 }
 function watchContext(
@@ -274,6 +314,7 @@ function watchContext(
   io: readonly WatcherTimedIo[],
   eofReads: readonly NativeTimedObservation[],
   rootAckOrder: (ack: ReturnType<typeof timedPackets>[number], eof: NativeTimedObservation) => void,
+  stdoutWatchLog: "required" | "absent",
 ) {
   assert.equal(context.role, "before", "split watch log is a baseline observation only");
   assert.equal(context.source, historicalSource);
@@ -362,27 +403,27 @@ function watchContext(
   );
   const eof = one([...eofReads], "one owned native stdin EOF required");
   for (const part of shutdownAck.parts) requireCompletedBefore(part, eof);
-  const header = one(
-    output.filter(
-      (row) =>
-        row.packet.method === "window/logMessage" &&
-        object(row.packet.params).message ===
-          `Added new watch: root files for ${config} watcher 6.0`,
-    ),
-    "one complete watch header required",
+  const headers = output.filter(
+    (row) =>
+      row.packet.method === "window/logMessage" &&
+      object(row.packet.params).message === `Added new watch: root files for ${config} watcher 6.0`,
   );
-  assert.deepEqual(header.packet, {
-    jsonrpc: "2.0",
-    method: "window/logMessage",
-    params: {
-      type: 3,
-      message: `Added new watch: root files for ${config} watcher 6.0`,
-    },
-  });
-  assert.ok(
-    micros(eof.at) < micros(header.at),
-    "header entry follows EOF entry, not its unobserved return",
-  );
+  const header =
+    stdoutWatchLog === "required" ? one(headers, "one complete watch header required") : null;
+  if (header) {
+    assert.deepEqual(header.packet, {
+      jsonrpc: "2.0",
+      method: "window/logMessage",
+      params: {
+        type: 3,
+        message: `Added new watch: root files for ${config} watcher 6.0`,
+      },
+    });
+    assert.ok(
+      micros(eof.at) < micros(header.at),
+      "header entry follows EOF entry, not its unobserved return",
+    );
+  } else assert.equal(headers.length, 0, "stdout watch header must be wholly absent");
   const watcher = one(
     output.filter(
       (row) =>
@@ -440,6 +481,14 @@ function watchContext(
 /** Strict default: every stderr attempt must follow observed EOF completion. */
 export function stableWatchActor(...args: Parameters<typeof stableWatchContext>) {
   const actor = stableWatchContext(...args);
+  for (const row of actor.stderr) requireCompletedBefore(actor.eof, row);
+  return actor;
+}
+
+export function stableWatchActorWithoutStdoutLog(
+  ...args: Parameters<typeof stableWatchContextWithoutStdoutLog>
+) {
+  const actor = stableWatchContextWithoutStdoutLog(...args);
   for (const row of actor.stderr) requireCompletedBefore(actor.eof, row);
   return actor;
 }

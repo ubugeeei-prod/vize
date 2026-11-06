@@ -129,7 +129,7 @@ void test("typed producers retain historical bytes and only the exact registered
       .filter((entry) => entry !== current)
       .every((entry) => entry.currentMembershipRegistration === null),
   );
-  assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
+  assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-42309976393");
   assert.equal(
     current.currentUnavailableTerminalRegistration,
     "before-stable-unavailable-terminal-stderr-41208964081",

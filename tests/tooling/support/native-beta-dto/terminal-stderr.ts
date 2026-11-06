@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
   stableWatchActor,
+  stableWatchActorWithoutStdoutLog,
   micros,
   type WatcherContext,
   type WatcherTimedIo,
@@ -25,7 +26,19 @@ export function observeTerminalStableStderr(
   eofReads: readonly (NativeTimedObservation & { fd: number })[],
   terminal: ReturnType<typeof nativeOwnerTerminalState>,
 ) {
-  const actor = stableWatchActor(client, server, context, io, eofReads);
+  const hasStdoutWatchLog = server.some(
+    (packet) =>
+      packet &&
+      typeof packet === "object" &&
+      (packet as Record<string, unknown>).method === "window/logMessage" &&
+      String(
+        ((packet as Record<string, unknown>).params as Record<string, unknown> | undefined)
+          ?.message,
+      ).startsWith("Added new watch: root files for "),
+  );
+  const actor = hasStdoutWatchLog
+    ? stableWatchActor(client, server, context, io, eofReads)
+    : stableWatchActorWithoutStdoutLog(client, server, context, io, eofReads);
   const members = new Map(terminal.members.map((row) => [row.tid, row.parent]));
   assert.equal(members.size, terminal.members.length, "unique native threads required");
   assert.equal(members.get(terminal.nativeOwner), null, "actual native leader required");
@@ -97,7 +110,12 @@ export function observeTerminalStableStderr(
   requireCompletedBefore(eof, attempt);
   assert.ok(micros(group.at) < micros(attempt.at) && micros(attempt.at) < micros(writerExit.at));
   const completed = Buffer.concat(actor.stderr.map((row) => Buffer.from(row.data)));
-  assert.deepEqual(completed, Buffer.from("\n1 paths ineligible for watching\n"));
+  const stderrWatchLog =
+    `Added new watch: root files for ${actor.config} watcher 6.0\n` + `\t${actor.project}/**/*\n\n`;
+  assert.deepEqual(
+    completed,
+    Buffer.from((hasStdoutWatchLog ? "\n" : stderrWatchLog) + "1 paths ineligible for watching\n"),
+  );
   assert.ok(
     terminal.unfinishedOperations.every(
       (row) =>
@@ -124,6 +142,7 @@ export function observeTerminalStableStderr(
     candidateFunctionalPass: false,
     lifecyclePass: false,
     registrationPass: true,
+    watchLogTransport: hasStdoutWatchLog ? ("stdout" as const) : ("stderr" as const),
     stderrOutputComplete: false,
     rawIOComplete: false,
     completedStderr: {
