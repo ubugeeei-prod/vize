@@ -8,7 +8,7 @@ import {
 const inline = "[Extract<NonNullable<__H>, (...args: any) => any>] extends [never]";
 const shared = 'import("vize:virtual-ts").$ListenerArgs<';
 
-test("listener projection certification requires the named relation rewrite", () => {
+void test("listener projection certification requires the named relation rewrite", () => {
   const before = [
     { path: "src/A.vue", text: `type A = ${inline};`, metadata: { mappings: [1] } },
     { path: "src/B.vue", text: "type B = string;", metadata: { mappings: [2] } },
@@ -33,7 +33,7 @@ test("listener projection certification requires the named relation rewrite", ()
     assert.throws(() => certifyListenerRelationProjections(before, mutation));
 });
 
-test("mapper campaign admission isolates listener and dispatcher production changes", () => {
+void test("mapper campaign admission isolates listener and dispatcher production changes", () => {
   const listener = [
     "crates/vize_canon/src/virtual_ts/scope/component_events/listener_relations.rs",
     "crates/vize_canon/src/virtual_ts/generator.rs",
