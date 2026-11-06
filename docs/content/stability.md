@@ -44,7 +44,8 @@ Native packages ship for macOS, Linux, and Windows on x64 and arm64:
 | darwin-arm64, darwin-x64         | Fresh install on hosted runners, Node 22 and 24                                                                    |
 | linux-x64-gnu, linux-arm64-gnu   | Fresh install on hosted runners, Node 22 and 24                                                                    |
 | win32-x64-msvc, win32-arm64-msvc | Fresh install on hosted runners, Node 22 and 24                                                                    |
-| linux-x64-musl, linux-arm64-musl | Built every release; install checked manually on Alpine ([#493](https://github.com/ubugeeei-prod/vize/issues/493)) |
+| linux-x64-musl | Packed fresh install, `vize init`, and clean/broken/repaired checks run in Alpine/Node 24 in weekly and manual Native Smoke |
+| linux-arm64-musl | Built every release; install checked manually on Alpine ([#493](https://github.com/ubugeeei-prod/vize/issues/493)) |
 
 Before any npm release, the packed tarballs are installed and must pass `vize --version`,
 `vize check`, loading `@vizejs/native` through both `require` and `import`, and a `vite build` with

@@ -145,10 +145,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ["22", "24"]
-        # Linux musl targets are intentionally absent here: Ubuntu runners
-        # provide GNU hosts, not native Alpine/musl hosts. Keep the
-        # known-limitation policy in docs/content/stability.md in sync when
-        # containerized musl tarball staging is added.
         platform:
           - runner: ubuntu-22.04
             target: linux-x64-gnu
@@ -261,6 +257,78 @@ jobs:
         with:
           name: packed-smoke-timing-${{ matrix.platform.target }}-node${{ matrix.node-version }}
           path: ${{ runner.temp }}/packed-smoke-timing.jsonl
+          if-no-files-found: warn
+          retention-days: 14
+
+  fresh-install-musl-smoke:
+    if: github.event_name != 'workflow_dispatch' || !inputs.host_only || inputs.target != 'darwin-arm64'
+    name: Fresh install smoke (linux-x64-musl, Node 24)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Read the package version
+        id: version
+        shell: bash
+        run: |
+          node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT"
+      - name: Cross-build the musl native binding
+        uses: ./.github/actions/build-release-native
+        with:
+          target: x86_64-unknown-linux-musl
+          release-version: ${{ steps.version.outputs.version }}
+          cross-compile: "true"
+          upload-artifacts: "false"
+      - name: Install packed runtime dependencies
+        shell: bash
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter . \
+            --filter './npm/native...' \
+            --filter './npm/cli...' \
+            --filter './npm/builder/vite...'
+      - name: Prepare the musl native platform package
+        shell: bash
+        working-directory: npm/native
+        run: |
+          vp exec napi create-npm-dirs
+          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+          test -f vize-vitrine.linux-x64-musl.node
+          cp vize-vitrine.linux-x64-musl.node npm/linux-x64-musl/
+      - name: Build packed runtime packages
+        shell: bash
+        run: |
+          vp run --filter './npm/cli' build
+          vp run --filter './npm/builder/vite' build
+      - name: Fresh install and runtime smoke in Alpine
+        shell: bash
+        run: |
+          docker run --rm \
+            --env VIZE_SMOKE_TIMING_FILE=/evidence/packed-smoke-timing.jsonl \
+            --volume "$GITHUB_WORKSPACE:/work" \
+            --volume "$RUNNER_TEMP:/evidence" \
+            --workdir /work \
+            node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 \
+            sh -euxc '
+              set -o pipefail
+              corepack enable
+              npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24
+              node tools/commands/release/npm/smoke-release-install.ts \
+                --prepare-manifests --runtime-checks \
+                npm/native npm/native/npm/linux-x64-musl \
+                npm/cli npm/builder/vite \
+                2>&1 | tee /evidence/musl-smoke.log
+              grep -F '"'"'"package":"@vizejs/native-linux-x64-musl"'"'"' \
+                /evidence/musl-smoke.log
+            '
+      - name: Retain packed musl smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packed-smoke-timing-linux-x64-musl-node24
+          path: |
+            ${{ runner.temp }}/musl-smoke.log
+            ${{ runner.temp }}/packed-smoke-timing.jsonl
           if-no-files-found: warn
           retention-days: 14
 
