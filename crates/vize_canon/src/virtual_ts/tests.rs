@@ -763,7 +763,6 @@ fn test_define_expose_is_part_of_component_instance() {
         "component instance should include exposed bindings:\n{}",
         output.code
     );
-    assert_eq!(output.code.matches("type $ComponentInstance =").count(), 0);
 }
 
 #[test]

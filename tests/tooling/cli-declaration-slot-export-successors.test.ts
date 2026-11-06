@@ -89,6 +89,10 @@ const ownSplitConstructorSource: Identity = {
   bytes: 11141,
   sha256: "48518a57f01d82dc1a07eac20951951191638d92dd94dcd978843741cf5a7dd3",
 };
+const elidedConstructorSource: Identity = {
+  bytes: 11079,
+  sha256: "c8a043b7eca7b7401ccd2f2bd3eb0b63149740f9982da9e68247fcb65ff3119e",
+};
 const ownSplitSourceEdits = [
   {
     before: ["        } else {", '            String::from("{}")', "        };"].join("\n") + "\n",
@@ -118,6 +122,78 @@ const ownSplitSourceEdits = [
       '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
     after:
       '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{own}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base};\\n"',
+  },
+] as const;
+const elidedSourceEdits = [
+  {
+    before:
+      [
+        "    if aliases.has_authored_default && legacy_component {",
+        '        append!(*ts, "type $ComponentInstance = {authored_instance} & ");',
+        "    } else if aliases.has_authored_default {",
+        "        append!(",
+        "            *ts,",
+        "            \"type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & \"",
+        "        );",
+        "    } else {",
+        '        ts.push_str("type $ComponentInstance = ");',
+        "    }",
+        "    // Keep the public instance's anonymous object unchanged for diagnostic text.",
+        "    // Reuse its four owned fields inline without a capturable utility lookup.",
+        "    let mut own = String::default();",
+        "    let fields = if legacy_component { &mut *ts } else { &mut own };",
+      ].join("\n") + "\n",
+    after:
+      [
+        "    // Vue 2 still exposes the named instance through its overload. Vue 3 maps",
+        "    // only the four owned fields inline and intersects the unmapped public",
+        "    // base, so emitting the old whole-instance alias would be dead work and a",
+        "    // `noUnusedLocals` diagnostic in editor projects.",
+        "    let mut own = String::default();",
+        "    let fields = if legacy_component {",
+        "        if aliases.has_authored_default {",
+        '            append!(*ts, "type $ComponentInstance = {authored_instance} & ");',
+        "        } else {",
+        '            ts.push_str("type $ComponentInstance = ");',
+        "        }",
+        "        &mut *ts",
+        "    } else {",
+        "        &mut own",
+        "    };",
+      ].join("\n") + "\n",
+  },
+  {
+    before:
+      [
+        "    fields.push('}');",
+        "    if !legacy_component {",
+        "        ts.push_str(&own);",
+        "    }",
+        '    ts.push_str(" & ");',
+        "    instance_base(",
+        "        ts,",
+        "        legacy_vue2,",
+        "        dialect,",
+        "        aliases.has_exposed_type,",
+        "        (aliases.has_root_el, aliases.has_refs),",
+        "    );",
+        '    ts.push_str(";\\n");',
+        "    if legacy_component {",
+      ].join("\n") + "\n",
+    after:
+      [
+        "    fields.push('}');",
+        "    if legacy_component {",
+        '        ts.push_str(" & ");',
+        "        instance_base(",
+        "            ts,",
+        "            legacy_vue2,",
+        "            dialect,",
+        "            aliases.has_exposed_type,",
+        "            (aliases.has_root_el, aliases.has_refs),",
+        "        );",
+        '        ts.push_str(";\\n");',
+      ].join("\n") + "\n",
   },
 ] as const;
 const constructorSourceEdit = {
@@ -204,6 +280,25 @@ function ownSplitSourceTransition(current: Buffer, direction: "forward" | "inver
   return changed;
 }
 
+function elidedSourceTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [fromIdentity, toIdentity] =
+    direction === "inverse"
+      ? [elidedConstructorSource, ownSplitConstructorSource]
+      : [ownSplitConstructorSource, elidedConstructorSource];
+  assert.deepEqual(identity(current), fromIdentity);
+  let text = current.toString("utf8");
+  const edits = direction === "inverse" ? [...elidedSourceEdits].reverse() : elidedSourceEdits;
+  for (const edit of edits) {
+    const [from, to] =
+      direction === "inverse" ? [edit.after, edit.before] : [edit.before, edit.after];
+    assert.equal(text.split(from).length - 1, 1);
+    text = text.replace(from, to);
+  }
+  const changed = Buffer.from(text);
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
 function constructorTransition(
   current: Buffer,
   direction: "forward" | "inverse",
@@ -230,8 +325,20 @@ const discriminatedOutput: Identity = {
   bytes: 15109,
   sha256: "4403b85ed61e9aec229ddea2b4a891950ddd2746bca69be0db4ff670679f0608",
 };
+const aliasedCheckOutput: Identity = {
+  bytes: 15761,
+  sha256: "178e1e0a0c9c5e741dc721929cd76de9d2692e16c4e8b23acad68e05e726965d",
+};
+const elidedCheckOutput: Identity = {
+  bytes: 15714,
+  sha256: "8422869d388021988ea57e3067d8900e2eef596c0f1f20b43221bd68cd0ba3d3",
+};
 const integratedConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
+const aliasedCheckInstance =
+  "type $ComponentInstance = {\n    $props: Props;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n} & $ComponentPublicBase;\ntype $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
+const elidedCheckInstance =
+  "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{\n    $props: Props;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, Props, {}, $AuthoredProps, $JsxProps> & $ComponentPublicBase;\n";
 const previousImport =
   'import type { $ComponentInputProps, $ComponentInputGuard, $ComponentInput, $AuthoredKeyWitness, $UsePublicInstance, $ReplaceComponentProps, $PublicEmit, $PublicSlots, $ComponentPublicBase } from "./__vize_helpers.js";\n';
 const integratedImport =
@@ -290,6 +397,22 @@ function discriminatedOutputTransition(current: Buffer, direction: "forward" | "
   return changed;
 }
 
+function elidedCheckOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [fromIdentity, toIdentity, from, to] =
+    direction === "inverse"
+      ? [elidedCheckOutput, aliasedCheckOutput, elidedCheckInstance, aliasedCheckInstance]
+      : [aliasedCheckOutput, elidedCheckOutput, aliasedCheckInstance, elidedCheckInstance];
+  assert.deepEqual(identity(current), fromIdentity);
+  const text = current.toString("utf8");
+  const encodedFrom = encoded(from);
+  const encodedTo = encoded(to);
+  assert.equal(text.split(encodedFrom).length - 1, 1);
+  assert.equal(text.split(encodedTo).length - 1, 0);
+  const changed = Buffer.from(text.replace(encodedFrom, encodedTo));
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
 const overloadSource = fs.readFileSync(
   path.join(
     repoRoot,
@@ -334,25 +457,33 @@ function overloadOutputTransition(current: Buffer, direction: "forward" | "inver
 test("the declaration constructor successor authenticates the whole source and both complete outputs", () => {
   const { source, output, edit } = constructorSuccessor;
   const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
-  const ownedSource = ownSplitSourceTransition(sourceBytes, "inverse");
+  const elidedSource = elidedSourceTransition(sourceBytes, "inverse");
+  const ownedSource = ownSplitSourceTransition(elidedSource, "inverse");
   const previousSource = constructorSourceTransition(ownedSource, "inverse", source);
   assert.deepEqual(
-    ownSplitSourceTransition(
-      constructorSourceTransition(previousSource, "forward", source),
+    elidedSourceTransition(
+      ownSplitSourceTransition(
+        constructorSourceTransition(previousSource, "forward", source),
+        "forward",
+      ),
       "forward",
     ),
     sourceBytes,
   );
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const integratedEnvelope = overloadOutputTransition(current, "inverse");
+  const aliasedEnvelope = elidedCheckOutputTransition(current, "inverse");
+  const integratedEnvelope = overloadOutputTransition(aliasedEnvelope, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
   const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
-    overloadOutputTransition(
-      discriminatedOutputTransition(
-        integratedOutputTransition(ownedEnvelope, "forward"),
+    elidedCheckOutputTransition(
+      overloadOutputTransition(
+        discriminatedOutputTransition(
+          integratedOutputTransition(ownedEnvelope, "forward"),
+          "forward",
+        ),
         "forward",
       ),
       "forward",
@@ -388,11 +519,15 @@ test("the declaration constructor successor authenticates the whole source and b
 test("the build declaration constructor adds a reversible receipt without changing older packets", () => {
   const { source, output, edit } = buildConstructorSuccessor;
   const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
-  const ownedSource = ownSplitSourceTransition(sourceBytes, "inverse");
+  const elidedSource = elidedSourceTransition(sourceBytes, "inverse");
+  const ownedSource = ownSplitSourceTransition(elidedSource, "inverse");
   const previousSource = constructorSourceTransition(ownedSource, "inverse", source);
   assert.deepEqual(
-    ownSplitSourceTransition(
-      constructorSourceTransition(previousSource, "forward", source),
+    elidedSourceTransition(
+      ownSplitSourceTransition(
+        constructorSourceTransition(previousSource, "forward", source),
+        "forward",
+      ),
       "forward",
     ),
     sourceBytes,
@@ -509,9 +644,13 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
+    const aliasedEnvelope =
+      constructor === constructorSuccessor
+        ? elidedCheckOutputTransition(currentSlot, "inverse")
+        : currentSlot;
     const integratedEnvelope = constructor
-      ? overloadOutputTransition(currentSlot, "inverse")
-      : currentSlot;
+      ? overloadOutputTransition(aliasedEnvelope, "inverse")
+      : aliasedEnvelope;
     const discriminatedEnvelope =
       constructor === constructorSuccessor
         ? discriminatedOutputTransition(integratedEnvelope, "inverse")

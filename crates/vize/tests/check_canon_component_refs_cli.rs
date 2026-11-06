@@ -237,7 +237,7 @@ child.value?.hide();
     // TS2339 diagnostic.
     assert_eq!(
         diagnostics_for(&report, "src/Broken.vue"),
-        ["error:7:14 [TS2339] Property 'hide' does not exist on type '$ComponentInstance'."],
+        ["error:7:14 [TS2339] Property 'hide' does not exist on type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<Record<string, ((...args: any[]) => any) | undefined>>; } & Omit<...> & Pick<...> & $ShallowUnwrapRef<...>'."],
         "{report}"
     );
 

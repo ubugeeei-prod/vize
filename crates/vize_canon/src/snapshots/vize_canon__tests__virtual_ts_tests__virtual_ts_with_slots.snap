@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 125
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -171,12 +172,6 @@ type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
 export type { $Slots as Slots };
 
 // ========== Default Export ==========
-type $ComponentInstance = {
-  $props: Props;
-  readonly __vizeRawProps?: Props;
-  $emit: $PublicEmit<Emits>;
-  $slots: $PublicSlots<$Slots>;
-} & $ComponentPublicBase;
 type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{
   $props: Props;
   readonly __vizeRawProps?: Props;

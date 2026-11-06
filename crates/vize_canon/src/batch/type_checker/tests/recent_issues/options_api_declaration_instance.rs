@@ -218,7 +218,9 @@ fn options_api_declarations_expose_the_authored_public_instance() {
         options_dts.contains(
             "type $AuthoredComponent = Awaited<ReturnType<typeof __setup>>[\"__default__\"];"
         ) && options_dts.contains(
-            "type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & {"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>"
+        ) && options_dts.contains(
+            "}, Props, {}, $AuthoredProps, $JsxProps> & Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase;"
         ) && options_dts.contains("count: number;"),
         "the emitted instance must keep the authored Options API members:\n{options_dts}"
     );

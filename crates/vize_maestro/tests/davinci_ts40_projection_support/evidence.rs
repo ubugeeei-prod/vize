@@ -221,6 +221,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         discriminated_jsx_union_successor,
         owned_instance_successor,
     );
+    let elided_instance_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-elided-instance-11984/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-elided-instance-11984/receipt.json"
+        ),
+        "589f73df3491aba730bd15a6f206c87076bdf4707473097efcec5ded4160332b",
+        11984,
+        owned_instance_successor,
+        elided_instance_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -244,7 +256,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        owned_instance_successor
+        elided_instance_successor
     );
 }
 
@@ -430,6 +442,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             discriminated_jsx_union_successor,
             owned_instance_successor,
         );
+        let elided_instance_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-elided-instance-11984/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-elided-instance-11984/receipt.json"
+            ),
+            "8ec79ed5636f31a3d0d787f4b9577de01b15fab7efaa50e32b33a5fbe145a29c",
+            11984,
+            owned_instance_successor,
+            elided_instance_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -443,7 +467,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            owned_instance_successor
+            elided_instance_successor
         );
     }
 }

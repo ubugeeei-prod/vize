@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/virtual_ts/loose_is_listener_tests.rs
+assertion_line: 38
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -179,12 +180,6 @@ type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> e
 type $StaticEmitProps = __EmitProps<Emits>;
 
 // ========== Default Export ==========
-type $ComponentInstance = {
-  $props: Props & __EmitProps<Emits>;
-  readonly __vizeRawProps?: Props;
-  $emit: $PublicEmit<Emits>;
-  $slots: $PublicSlots<$Slots>;
-} & $ComponentPublicBase;
 type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{
   $props: Props & __EmitProps<Emits>;
   readonly __vizeRawProps?: Props;
