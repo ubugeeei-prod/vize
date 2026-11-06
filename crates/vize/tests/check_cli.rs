@@ -1215,7 +1215,6 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
             ),
         ],
     );
-
     // The default helper tsconfig has no path aliases; rewrite it with the
     // `@/*` -> `src/*` mapping that drives the repro.
     std::fs::write(
@@ -1233,7 +1232,6 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
 }"#,
     )
     .unwrap();
-
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
@@ -2594,7 +2592,6 @@ const props = defineProps<PublicProps>()
         ])
         .output()
         .unwrap();
-
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let declarations = collect_declaration_snapshot(&declaration_dir);
@@ -2604,7 +2601,6 @@ const props = defineProps<PublicProps>()
         "declarations": json["declarations"],
         "files": declarations,
     });
-
     insta::with_settings!({
         snapshot_path => "snapshots"
     }, {
@@ -3201,14 +3197,12 @@ defineProps<PublicProps>()
             ),
         ],
     );
-
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
         .args(["check", ".", "--format", "json", "--declaration"])
         .output()
         .unwrap();
-
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
     assert_eq!(

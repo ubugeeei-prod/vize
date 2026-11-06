@@ -1801,7 +1801,6 @@ const props = defineProps<PublicProps>()
             ),
         ],
     );
-
     let mut checker = match BatchTypeChecker::new(&project_root) {
         Ok(checker) => checker,
         Err(_) => return,
@@ -1816,7 +1815,6 @@ const props = defineProps<PublicProps>()
         .into_iter()
         .map(|file| (relative_path(&out_dir, &file.path), file.content))
         .collect();
-
     insta::with_settings!({
         snapshot_path => "../../snapshots"
     }, {

@@ -25,6 +25,21 @@
         { "file": "v-generic/main.vue", "line": 11, "column": 13, "code": 2345 },
         { "file": "v-generic/main.vue", "line": 12, "column": 13, "code": 2345 }
       ]
+    },
+    {
+      "id": "script-setup-export-modifier-diagnostics",
+      "issue": 11497,
+      "reason": "These three frozen Vue Language Tools fixtures author exported type or interface declarations inside `<script setup>`. The pinned upstream revision kept them clean, but current vue-tsc and TypeScript diagnose each modifier as TS1184 because setup content is projected into function scope. Issue #11497 explicitly requires Vize to retain that authored diagnostic instead of deleting the export token during virtual source generation. Each row maps back to the exact modifier, so this is an intentional modern parity successor over the immutable upstream snapshot; removing or moving one would regress the reported setup-export behavior.",
+      "vizeOnly": [
+        { "file": "#3257/child.vue", "line": 2, "column": 1, "code": 1184 },
+        { "file": "#3656/child.vue", "line": 2, "column": 1, "code": 1184 },
+        {
+          "file": "components/script-setup-default-props.vue",
+          "line": 2,
+          "column": 1,
+          "code": 1184
+        }
+      ]
     }
   ]
 }

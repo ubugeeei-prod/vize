@@ -215,7 +215,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let mut ambient =
         script_blocks::AmbientProjection::plan(summary, script_content, &mut module_spans);
-
     // Re-declare SFC generics on hoisted declarations with safe defaults.
     let generic_injection = generics::generic_injection(generic_parameters);
     let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
@@ -340,7 +339,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         GlobalComponentDiagnostics::new(check_options, &mut mappings, template_offset),
     );
     ts.push('\n');
-
     let source_offset = &script_source_offset;
     let setup_props_plan = generate_setup_props(
         &mut ts,
@@ -450,8 +448,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push_str("  "); // indentation (not in source)
 
                 let mut output_line = std::borrow::Cow::Borrowed(line);
-                setup_type_exports
-                    .strip_classic_modifiers(&mut output_line, line_start as u32);
+                setup_type_exports.strip_classic_modifiers(&mut output_line, line_start as u32);
 
                 // Close the `defineComponent(` wrap right after the wrapped
                 // options object's closing brace.

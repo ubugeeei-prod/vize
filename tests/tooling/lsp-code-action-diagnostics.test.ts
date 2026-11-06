@@ -213,14 +213,30 @@ test("source LSP selects each same-range original diagnostic and preserves valid
       "  <img",
       "  <!-- @vize:forget vue/html-self-closing -->\n  <img",
     );
-    await change(2, insertedStyle, []);
+    const shiftedAlt = shifted(alt);
+    const shiftedStyle = shifted(style);
+    await change(2, insertedStyle, [shiftedAlt]);
     assert.equal(await request(uri, range, diagnostics), null);
-    assert.equal(await request(uri, shifted(alt).range as LspRange, [shifted(alt)]), null);
+    assert.deepEqual(await request(uri, shiftedAlt.range as LspRange, [shiftedAlt]), [
+      suppression(shiftedAlt, 2),
+    ]);
     await change(3, source, diagnostics);
     assert.deepEqual(await request(uri, range, diagnostics), expected);
     const insertedAlt = source.replace("  <img", "  <!-- @vize:forget a11y/alt-text -->\n  <img");
-    await change(4, insertedAlt, []);
-    assert.equal(await request(uri, shifted(style).range as LspRange, [shifted(style)]), null);
+    await change(4, insertedAlt, [shiftedStyle]);
+    const shiftedFix = {
+      ...expected[0],
+      diagnostics: [shiftedStyle],
+      edit: {
+        changes: {
+          [uri]: [{ range: shiftedStyle.range, newText: '<img src="/logo.png" />' }],
+        },
+      },
+    };
+    assert.deepEqual(await request(uri, shiftedStyle.range as LspRange, [shiftedStyle]), [
+      shiftedFix,
+      suppression(shiftedStyle, 2),
+    ]);
     await change(5, reference.fixedSource, []);
     assert.equal(await request(uri, range, diagnostics), null);
     await change(6, source, diagnostics);

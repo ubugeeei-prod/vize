@@ -40,6 +40,26 @@ export function applyStrictExtraKeysIn(previous: string): string {
   return previous.replace(before, after);
 }
 
+export function strictOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const discriminated = {
+    bytes: 15109,
+    sha256: "4403b85ed61e9aec229ddea2b4a891950ddd2746bca69be0db4ff670679f0608",
+  };
+  const strict = {
+    bytes: 14978,
+    sha256: "703a9301c927db24522d86bb1acf6f80a103281661768791310ffd5361a12b25",
+  };
+  const [fromIdentity, toIdentity] =
+    direction === "forward" ? [discriminated, strict] : [strict, discriminated];
+  assert.deepEqual(identity(current), fromIdentity);
+  const text = current.toString("utf8");
+  const changed = Buffer.from(
+    direction === "forward" ? applyStrictExtraKeysIn(text) : beforeStrictExtraKeysIn(text),
+  );
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
 export function beforeStrictExtraKeys(current: string): string {
   authenticateRecord();
   assert.deepEqual(identity(current), { bytes: 5739, sha256: strictExtraKeysAfterSha256 });

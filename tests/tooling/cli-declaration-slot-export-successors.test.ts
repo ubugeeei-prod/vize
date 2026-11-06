@@ -9,10 +9,7 @@ import {
   applyDiscriminatedJsxUnionIn,
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
-import {
-  applyStrictExtraKeysIn,
-  beforeStrictExtraKeysIn,
-} from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import { strictOutputTransition } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
 
 const originals = [
@@ -180,10 +177,6 @@ const discriminatedOutput: Identity = {
   bytes: 15109,
   sha256: "4403b85ed61e9aec229ddea2b4a891950ddd2746bca69be0db4ff670679f0608",
 };
-const strictOutput: Identity = {
-  bytes: 14978,
-  sha256: "703a9301c927db24522d86bb1acf6f80a103281661768791310ffd5361a12b25",
-};
 const integratedConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
 const previousImport =
@@ -239,20 +232,6 @@ function discriminatedOutputTransition(current: Buffer, direction: "forward" | "
     direction === "forward"
       ? applyDiscriminatedJsxUnionIn(text)
       : beforeDiscriminatedJsxUnionIn(text),
-  );
-  assert.deepEqual(identity(changed), toIdentity);
-  return changed;
-}
-
-function strictOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
-  const [fromIdentity, toIdentity] =
-    direction === "forward"
-      ? [discriminatedOutput, strictOutput]
-      : [strictOutput, discriminatedOutput];
-  assert.deepEqual(identity(current), fromIdentity);
-  const text = current.toString("utf8");
-  const changed = Buffer.from(
-    direction === "forward" ? applyStrictExtraKeysIn(text) : beforeStrictExtraKeysIn(text),
   );
   assert.deepEqual(identity(changed), toIdentity);
   return changed;
