@@ -3925,7 +3925,7 @@
       },
       "case": {
         "path": "setup-export-diagnostic-11497/case.json",
-        "sha256": "18bfeca72dd03e26e9a6440167f24fb025d719620ae3b4f3dbb43dc49c0c5f86"
+        "sha256": "3bff7394a0e790684257ad6fb8f5ddc3dec0a73f44e485c5c5831c6cd79d68ef"
       },
       "requestCount": 1,
       "initializationOptions": {

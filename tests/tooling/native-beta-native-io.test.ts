@@ -199,6 +199,36 @@ test("collector preserves unknown/unfinished writes and thread termination witho
   }
 });
 
+test("split exit_group retains its entry line as terminal provenance", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "native-io-exit-group-unit-"));
+  try {
+    fs.writeFileSync(
+      path.join(root, "syscalls.101"),
+      [
+        '1.000001 read(0, "", 4096) = 0',
+        "1.000002 exit_group(0 <unfinished ...>",
+        "1.000003 <... exit_group resumed>) = ?",
+        "1.000004 +++ exited with 0 +++",
+      ].join("\n"),
+    );
+    const trace = await readNativeTrace(root, "/sdk/tsc");
+    assert.deepEqual(trace.eofReads[0]!.completion.returnedBy, {
+      at: "1.000002",
+      line: 2,
+      basis: "next-same-thread-event",
+    });
+    assert.deepEqual(trace.exitGroups[0], {
+      tid: 101,
+      at: "1.000002",
+      code: 0,
+      line: 2,
+      rawResult: "?",
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("current qualification rejects unknown stderr even when completed output is empty", () => {
   requireNoUnknownNativeWrites([]);
   const io = parseNativeIo('1.000003 write(2, "\\x61", 1) = ?')!;

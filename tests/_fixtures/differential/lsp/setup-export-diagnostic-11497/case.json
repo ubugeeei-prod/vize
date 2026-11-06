@@ -49,7 +49,7 @@
   "method": "textDocument/foldingRange",
   "expected": {
     "source": "response.expected.json",
-    "sha256": "fdaf0a1e745726e4002c7025a8e06e15cc7c7d45ec31c8336379f74a130a5374"
+    "sha256": "2035eb18d8f1f078faa894b8c32478756fa88483847046c8a7b3293c99348919"
   },
   "scope": "The exact authored TS1184 publication is the regression contract; folding is only a completed-request barrier."
 }

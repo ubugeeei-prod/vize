@@ -318,13 +318,13 @@ export async function readNativeTrace(
           ...(mergedEntry && { mergedEntry }),
         });
       }
-      const group = /^([0-9]+\.[0-9]+) exit_group\(([0-9]+)\)/u.exec(line);
+      const group = /^([0-9]+\.[0-9]+) exit_group\(([0-9]+)\s*\)/u.exec(line);
       if (group)
         exitGroups.push({
           tid,
           at: group[1]!,
           code: Number(group[2]),
-          line: lineNumber,
+          line: startedLine,
           rawResult: /\)\s+=\s+(.+)$/u.exec(line)?.[1] ?? null,
           ...(mergedEntry && { mergedEntry }),
         });

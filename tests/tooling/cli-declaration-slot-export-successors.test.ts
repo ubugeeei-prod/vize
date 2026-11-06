@@ -9,6 +9,10 @@ import {
   applyDiscriminatedJsxUnionIn,
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import {
+  applyStrictExtraKeysIn,
+  beforeStrictExtraKeysIn,
+} from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
 
 const originals = [
@@ -176,6 +180,10 @@ const discriminatedOutput: Identity = {
   bytes: 15109,
   sha256: "4403b85ed61e9aec229ddea2b4a891950ddd2746bca69be0db4ff670679f0608",
 };
+const strictOutput: Identity = {
+  bytes: 14978,
+  sha256: "703a9301c927db24522d86bb1acf6f80a103281661768791310ffd5361a12b25",
+};
 const integratedConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
 const previousImport =
@@ -236,6 +244,20 @@ function discriminatedOutputTransition(current: Buffer, direction: "forward" | "
   return changed;
 }
 
+function strictOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [fromIdentity, toIdentity] =
+    direction === "forward"
+      ? [discriminatedOutput, strictOutput]
+      : [strictOutput, discriminatedOutput];
+  assert.deepEqual(identity(current), fromIdentity);
+  const text = current.toString("utf8");
+  const changed = Buffer.from(
+    direction === "forward" ? applyStrictExtraKeysIn(text) : beforeStrictExtraKeysIn(text),
+  );
+  assert.deepEqual(identity(changed), toIdentity);
+  return changed;
+}
+
 const overloadSource = fs.readFileSync(
   path.join(
     repoRoot,
@@ -283,15 +305,19 @@ test("the declaration constructor successor authenticates the whole source and b
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const integratedEnvelope = overloadOutputTransition(current, "inverse");
+  const strictEnvelope = overloadOutputTransition(current, "inverse");
+  const integratedEnvelope = strictOutputTransition(strictEnvelope, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
   const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
     overloadOutputTransition(
-      discriminatedOutputTransition(
-        integratedOutputTransition(ownedEnvelope, "forward"),
+      strictOutputTransition(
+        discriminatedOutputTransition(
+          integratedOutputTransition(ownedEnvelope, "forward"),
+          "forward",
+        ),
         "forward",
       ),
       "forward",
@@ -444,10 +470,14 @@ for (const [name, digest, successorDigest] of originals) {
     const integratedEnvelope = constructor
       ? overloadOutputTransition(currentSlot, "inverse")
       : currentSlot;
+    const strictEnvelope =
+      constructor === constructorSuccessor
+        ? strictOutputTransition(integratedEnvelope, "inverse")
+        : integratedEnvelope;
     const discriminatedEnvelope =
       constructor === constructorSuccessor
-        ? discriminatedOutputTransition(integratedEnvelope, "inverse")
-        : integratedEnvelope;
+        ? discriminatedOutputTransition(strictEnvelope, "inverse")
+        : strictEnvelope;
     const currentEnvelope =
       constructor === constructorSuccessor
         ? integratedOutputTransition(discriminatedEnvelope, "inverse")
