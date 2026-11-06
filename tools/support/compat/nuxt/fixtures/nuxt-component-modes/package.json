@@ -1,0 +1,11 @@
+{
+  "name": "vize-nuxt-component-modes",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vizejs/nuxt": "0.691.0",
+    "@vizejs/vite-plugin": "0.691.0",
+    "nuxt": "4.6.4",
+    "vue": "3.5.44"
+  }
+}

@@ -10,6 +10,8 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
+      - tools/support/compat/nuxt/fixtures/nuxt-component-modes/**
+      - tools/support/compat/nuxt/nuxt-component-modes.ts
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts
@@ -57,6 +59,8 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
+      - tools/support/compat/nuxt/fixtures/nuxt-component-modes/**
+      - tools/support/compat/nuxt/nuxt-component-modes.ts
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
       - tests/tooling/nuxt5-runtime.test.ts
@@ -266,6 +270,11 @@ jobs:
         with:
           node-version: "26.13.0"
           package-manager-cache: false
+      - name: Install the pinned Nuxt component-mode reproduction
+        working-directory: tools/support/compat/nuxt/fixtures/nuxt-component-modes
+        run: npm ci --no-audit --no-fund
+      - name: Verify server component selection in development and production
+        run: node tools/support/compat/nuxt/nuxt-component-modes.ts "$RUNNER_TEMP/nuxt-component-modes-proof"
       - name: Verify SSR environment ownership and original Nuxt 5 inputs
         run: node --test npm/framework/nuxt/src/ssr-runtime.test.ts tests/tooling/nuxt5-runtime.test.ts tests/tooling/nuxt-source-binding.test.mjs
       # The peer declaration and Nitro dev compatibility remain separate #11795 gates.
@@ -301,6 +310,7 @@ jobs:
           name: nuxt3-module-proof-${{ github.sha }}
           path: |
             ${{ runner.temp }}/nuxt3-module-proof
+            ${{ runner.temp }}/nuxt-component-modes-proof
             ${{ runner.temp }}/nuxt-prefetch-proof
             ${{ runner.temp }}/nuxt-lint-config-proof
             ${{ runner.temp }}/nuxt-compiler-defaults-proof

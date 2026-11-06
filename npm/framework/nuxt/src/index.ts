@@ -431,9 +431,9 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
         // 1. Component auto-imports: replace _resolveComponent("Name") with direct imports
         // Nuxt's LoaderPlugin normally does this, but skips \0-prefixed IDs.
         if (nuxtComponentResolver && bridgeFastPath.hasComponentBridgeInput(result)) {
-          const nextComponentResult = injectNuxtComponentImports(result, (name) => {
-            return nuxtComponentResolver.resolve(name);
-          });
+          const nextComponentResult = injectNuxtComponentImports(result, (name) =>
+            nuxtComponentResolver.resolve(name, isViteSsrTransform(args) ? "server" : "client"),
+          );
           if (nextComponentResult !== result) {
             result = nextComponentResult;
             changed = true;

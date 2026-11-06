@@ -24,6 +24,8 @@ export interface NuxtComponentResolverOptions {
   rootDir: string;
 }
 
+export type NuxtComponentBuildMode = "client" | "server";
+
 const COMPONENT_EXT_RE = /\.(?:[cm]?js|ts|vue)$/;
 const DTS_COMPONENT_RE =
   /^export const (\w+): (?:LazyComponent<)?typeof import\((["'])(.+?)\2\)(?:\.([A-Za-z_$][\w$]*)|\[['"]([A-Za-z_$][\w$]*)['"]\])>?/;
@@ -73,6 +75,49 @@ function addComponentAlias(
   if (!map.has(pascalName)) {
     map.set(pascalName, resolved);
   }
+}
+
+function addRegisteredComponentAlias(
+  map: Map<string, NuxtComponentImport[]>,
+  name: string | undefined,
+  resolved: NuxtComponentImport,
+): void {
+  if (!name) {
+    return;
+  }
+
+  for (const alias of new Set([name, toKebabCase(name), toPascalCase(name)])) {
+    const candidates = map.get(alias) ?? [];
+    if (candidates.some((candidate) => candidate.mode === resolved.mode)) {
+      continue;
+    }
+    candidates.push(resolved);
+    map.set(alias, candidates);
+  }
+}
+
+function selectRegisteredComponent(
+  candidates: NuxtComponentImport[] | undefined,
+  mode: NuxtComponentBuildMode | undefined,
+): NuxtComponentImport | null {
+  if (!candidates || candidates.length === 0) {
+    return null;
+  }
+  if (!mode) {
+    return candidates[0] ?? null;
+  }
+  return (
+    candidates.find((candidate) => candidate.mode === mode) ??
+    candidates.find((candidate) => candidate.mode === undefined) ??
+    null
+  );
+}
+
+function matchesBuildMode(
+  component: NuxtComponentImport | undefined,
+  mode: NuxtComponentBuildMode | undefined,
+): component is NuxtComponentImport {
+  return Boolean(component && (!mode || !component.mode || component.mode === mode));
 }
 
 function addLazyComponentAlias(
@@ -339,7 +384,7 @@ function loadRuntimeComponents(
 }
 
 export function createNuxtComponentResolver(options: NuxtComponentResolverOptions) {
-  const registered = new Map<string, NuxtComponentImport>();
+  const registered = new Map<string, NuxtComponentImport[]>();
   let dtsResolved: Map<string, NuxtComponentImport> | null = null;
   let runtimeResolved: Map<string, NuxtComponentImport> | null = null;
 
@@ -366,27 +411,39 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
           false,
           component.mode,
         );
-        addComponentAlias(registered, component.pascalName, resolved);
-        addComponentAlias(registered, component.kebabName, resolved);
-        addComponentAlias(registered, component.name, resolved);
-        addLazyComponentAlias(registered, component.pascalName, resolved);
-        addLazyComponentAlias(registered, component.kebabName, resolved);
-        addLazyComponentAlias(registered, component.name, resolved);
+        addRegisteredComponentAlias(registered, component.pascalName, resolved);
+        addRegisteredComponentAlias(registered, component.kebabName, resolved);
+        addRegisteredComponentAlias(registered, component.name, resolved);
+        for (const name of [component.pascalName, component.kebabName, component.name]) {
+          if (!name || name.startsWith("Lazy")) {
+            continue;
+          }
+          addRegisteredComponentAlias(registered, `Lazy${toPascalCase(name)}`, {
+            ...resolved,
+            lazy: true,
+          });
+        }
       }
     },
 
-    resolve(name: string): NuxtComponentImport | null {
+    resolve(name: string, mode?: NuxtComponentBuildMode): NuxtComponentImport | null {
       const normalizedName = name.trim();
-      const directResolved = registered.get(normalizedName) ?? getDtsResolved().get(normalizedName);
-      if (directResolved) {
-        return directResolved;
+      const registeredResolved = selectRegisteredComponent(registered.get(normalizedName), mode);
+      if (registeredResolved) {
+        return registeredResolved;
+      }
+
+      const dtsResolved = getDtsResolved().get(normalizedName);
+      if (matchesBuildMode(dtsResolved, mode)) {
+        return dtsResolved;
       }
 
       if (!/[A-Z]/.test(normalizedName)) {
         return null;
       }
 
-      return getRuntimeResolved().get(normalizedName) ?? null;
+      const runtimeResolved = getRuntimeResolved().get(normalizedName);
+      return matchesBuildMode(runtimeResolved, mode) ? runtimeResolved : null;
     },
   };
 }
