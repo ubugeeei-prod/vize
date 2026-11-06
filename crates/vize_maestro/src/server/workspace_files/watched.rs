@@ -112,7 +112,7 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
                 .filter(|change| change.typ == FileChangeType::DELETED)
                 .map(|change| change.uri.as_str()),
         );
-        if !deleted_paths.is_empty() {
+        if changes_require_open_document_fallback(changes, &deleted_paths) {
             dependents = include_open_typecheck_documents(&server.state, dependents);
         }
         if dependents.is_empty() && !global_components_invalidated && deleted_paths.is_empty() {
@@ -124,6 +124,20 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
+}
+
+#[cfg(feature = "native")]
+pub(super) fn changes_require_open_document_fallback(
+    changes: &[FileEvent],
+    deleted_paths: &[std::path::PathBuf],
+) -> bool {
+    // A newly created file may satisfy an unresolved import, so no reverse
+    // dependency edge exists yet. Deletions keep the existing fallback for
+    // tracked Vue sources whose edge has already disappeared.
+    changes
+        .iter()
+        .any(|change| change.typ == FileChangeType::CREATED)
+        || !deleted_paths.is_empty()
 }
 
 #[cfg(feature = "native")]
