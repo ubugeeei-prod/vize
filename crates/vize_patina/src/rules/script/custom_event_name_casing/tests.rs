@@ -20,6 +20,14 @@ fn create_kebab_linter() -> ScriptLinter {
     linter
 }
 
+fn create_lowercase_linter() -> ScriptLinter {
+    let mut linter = ScriptLinter::new();
+    linter.add_rule(Box::new(CustomEventNameCasing::new(
+        EventNameCasing::Lowercase,
+    )));
+    linter
+}
+
 /// Lint a full SFC end-to-end with only this rule enabled, exercising the
 /// engine path that supplies the parsed `<template>` AST to the rule.
 fn lint_sfc(sfc: &str) -> LintResult {
@@ -95,6 +103,25 @@ emit('my-event')
 "#;
     let result = create_kebab_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_configured_lowercase_requires_unseparated_lowercase_emit() {
+    let allowed = create_lowercase_linter().lint(
+        "const emit = defineEmits(['transitionstart']); emit('transitionstart')",
+        0,
+    );
+    assert_eq!(allowed.error_count, 0);
+
+    for name in ["transitionStart", "transition-start"] {
+        let source = format!("const emit = defineEmits(['{name}']); emit('{name}')");
+        let result = create_lowercase_linter().lint(&source, 0);
+        assert_eq!(result.error_count, 1, "{name}");
+        assert_eq!(
+            result.diagnostics[0].message.as_str(),
+            format!("Custom event name '{name}' is not lowercase.")
+        );
+    }
 }
 
 #[test]

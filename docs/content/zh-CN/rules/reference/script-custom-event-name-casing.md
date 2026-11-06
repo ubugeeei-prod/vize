@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## 正确示例
 
-声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项可以选择这两种受支持的样式。
+声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项还可以选择 `transitionstart` 这样的全小写名称。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">

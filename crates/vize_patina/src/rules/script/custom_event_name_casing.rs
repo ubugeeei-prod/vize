@@ -11,6 +11,8 @@
 //! first argument). Only string-literal event names are checked; a dynamic name
 //! (`emit(eventName)`) carries no literal to inspect and is skipped. The
 //! `update:` prefix used by `v-model` (`'update:modelValue'`) is permitted.
+//! Explicit configuration can instead require unseparated lowercase names such
+//! as `transitionstart`, or kebab-case names such as `transition-start`.
 //!
 //! ## Script call sites
 //!
@@ -69,6 +71,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 pub enum EventNameCasing {
     #[default]
     CamelCase,
+    Lowercase,
     KebabCase,
 }
 
@@ -234,6 +237,7 @@ fn report(
 ) {
     let casing_name = match casing {
         EventNameCasing::CamelCase => "camelCase",
+        EventNameCasing::Lowercase => "lowercase",
         EventNameCasing::KebabCase => "kebab-case",
     };
     let mut message = CompactString::with_capacity(value.len() + 40);
@@ -247,6 +251,9 @@ fn report(
         EventNameCasing::CamelCase => {
             "Vue 3 recommends camelCase for emitted event names; rename this event \
              to camelCase (e.g. `myEvent`)."
+        }
+        EventNameCasing::Lowercase => {
+            "Rename this emitted event to lowercase without separators (e.g. `transitionstart`)."
         }
         EventNameCasing::KebabCase => "Rename this emitted event to kebab-case (e.g. `my-event`).",
     };
@@ -268,6 +275,7 @@ fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
     }
     match casing {
         EventNameCasing::CamelCase => is_camel_case_event(value),
+        EventNameCasing::Lowercase => is_lowercase_event(value),
         EventNameCasing::KebabCase => is_kebab_case_event(value),
     }
 }
@@ -287,6 +295,19 @@ fn is_camel_case_segment(segment: &str) -> bool {
         _ => return false,
     }
     chars.all(|c| c.is_ascii_alphanumeric())
+}
+
+fn is_lowercase_event(value: &str) -> bool {
+    !value.is_empty() && value.split(':').all(is_lowercase_segment)
+}
+
+fn is_lowercase_segment(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    match chars.next() {
+        Some(first) if first.is_ascii_lowercase() => {}
+        _ => return false,
+    }
+    chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
 }
 
 fn is_kebab_case_event(value: &str) -> bool {

@@ -50,7 +50,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
   assert.deepEqual(
     loaded.manifest.cohorts.map((cohort: any) => [cohort.id, cohort.cases.sha256]),
     [
-      ["current-api", "4ae0ffe4e64510003bd1be6d71e5bd7efb66cc5eaac812d7a94dd71bc5d15a89"],
+      ["current-api", "17920a8e3275218a0f906b8c7d1b1e40e8f95355acf5713f5f341a7e94dc06b2"],
       ["next-tick", "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"],
       ["report", "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"],
       ["static-class", "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"],

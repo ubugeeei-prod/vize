@@ -286,6 +286,9 @@ fn event_name_casing(
         vize_l0::config::CustomEventNameCasing::CamelCase => {
             vize_patina::rules::script::EventNameCasing::CamelCase
         }
+        vize_l0::config::CustomEventNameCasing::Lowercase => {
+            vize_patina::rules::script::EventNameCasing::Lowercase
+        }
         vize_l0::config::CustomEventNameCasing::KebabCase => {
             vize_patina::rules::script::EventNameCasing::KebabCase
         }

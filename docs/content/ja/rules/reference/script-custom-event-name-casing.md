@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## 良い例
 
-宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションではどちらの形式も選択できます。
+宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションでは `transitionstart` のような lowercase も選択できます。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">

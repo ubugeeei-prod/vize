@@ -111,7 +111,8 @@ const env = readServerEnv();
 ## `script/custom-event-name-casing`
 
 スクリプトとテンプレートで使うカスタムイベント名の表記を揃えるための設定です。
-既定は `camelCase` です。テンプレートで使うハイフン区切りの表記に揃える場合は、`kebab-case` を指定します。
+既定は `camelCase` です。`transitionstart` のように区切りのない小文字へ揃える場合は `lowercase`、
+テンプレートで使うハイフン区切りの表記に揃える場合は `kebab-case` を指定します。
 `opinionated` プリセットは、明示的なルールオプションで上書きしない限り `kebab-case` を選びます。
 
 ```ts

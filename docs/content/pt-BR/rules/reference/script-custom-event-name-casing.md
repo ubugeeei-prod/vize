@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## Correto
 
-Tanto a declaração quanto a chamada usam `myEvent`, atendendo ao padrão global camelCase. O preset `opinionated` seleciona kebab-case, e as opções explícitas da regra permitem escolher qualquer um dos dois estilos.
+Tanto a declaração quanto a chamada usam `myEvent`, atendendo ao padrão global camelCase. O preset `opinionated` seleciona kebab-case, e as opções explícitas da regra também permitem nomes totalmente minúsculos como `transitionstart`.
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
