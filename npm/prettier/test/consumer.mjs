@@ -195,8 +195,12 @@ assert.equal(
 );
 assert.equal(fs.readFileSync(app, "utf8"), golden);
 const declarationOutput = fs.readFileSync(declarations, "utf8");
-for (const key of ['"update:modelValue"', '"close"', '"aria-label"', '"disabled"']) {
-  assert.equal(declarationOutput.includes(key), true, key);
+for (const key of ["update:modelValue", "close", "aria-label", "disabled"]) {
+  assert.equal(
+    declarationOutput.includes(`"${key}"`) || declarationOutput.includes(`'${key}'`),
+    true,
+    key,
+  );
 }
 assert.equal(fs.statSync(empty).size, 0);
 assert.deepEqual(fs.readFileSync(ignored), ignoredBytes);
