@@ -5,6 +5,57 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::String;
 
+/// Validate an authored expression that has no retained AST.
+///
+/// Retained expressions already prove that parsing succeeded. This cold path
+/// is only for opaque Vapor inputs: accept either one expression or a valid
+/// statement body, while preserving the shared depth refusal as a tolerant
+/// passthrough.
+pub(super) fn validate_unretained_expression(
+    content: &str,
+    is_ts: bool,
+) -> Result<(), Option<String>> {
+    if super::expression_exceeds_max_depth(content) {
+        return Err(None);
+    }
+    if !super::expression_has_balanced_delimiters(content) {
+        return Err(Some(String::new("mismatched expression delimiters")));
+    }
+
+    let source_type = if is_ts {
+        SourceType::ts().with_module(true)
+    } else {
+        SourceType::default().with_module(true)
+    };
+    let expression_allocator = crate::expr_parse_probe::parse_arena();
+    let mut wrapped = String::with_capacity(content.len() + 3);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push('\n');
+    wrapped.push(')');
+    let expression = Parser::new(&expression_allocator, &wrapped, source_type).parse_expression();
+    if expression.is_ok() {
+        return Ok(());
+    }
+
+    let program_allocator = crate::expr_parse_probe::parse_arena();
+    let program = Parser::new(&program_allocator, content, source_type).parse();
+    if program.diagnostics.is_empty() {
+        return Ok(());
+    }
+
+    Err(Some(
+        expression
+            .err()
+            .and_then(|errors| {
+                errors
+                    .first()
+                    .map(|error| String::new(error.message.as_ref()))
+            })
+            .unwrap_or_else(|| String::new("invalid expression")),
+    ))
+}
+
 /// Returns true when `content` parses as a TypeScript expression or program.
 ///
 /// Only consulted on the parse-failure path for `is_ts` templates: when the

@@ -14,7 +14,7 @@ use vize_atelier_core::{JsExpression, retained::js_module_compatible};
 use vize_atelier_core::{RetainedJsAst, RetainedJsAstKind};
 use vize_carton::{Allocator, Span, Vec};
 use vize_l2::{
-    expr::{ExprRef, JsExpr},
+    expr::{ExprRef, JsExpr, OpaqueReason},
     op::{BindingOp, DynamicName, Op, Region},
 };
 
@@ -23,6 +23,7 @@ pub(crate) struct Retained<'s, 'a> {
     // Arena tables: one compile owns them, so they never touch the heap.
     source: HashMap<'a, (u32, u32), &'s JsExpr<'s>>,
     parsed: HashMap<'a, (u32, u32), RetainedJsAst<'a>>,
+    parse_rejected: bool,
 }
 
 impl<'s, 'a> Retained<'s, 'a> {
@@ -31,6 +32,7 @@ impl<'s, 'a> Retained<'s, 'a> {
             allocator,
             source: HashMap::new_in(allocator.as_oxc()),
             parsed: HashMap::new_in(allocator.as_oxc()),
+            parse_rejected: false,
         }
     }
 
@@ -113,9 +115,21 @@ impl<'s, 'a> Retained<'s, 'a> {
     }
 
     fn insert(&mut self, expression: ExprRef<'s>) {
-        if let ExprRef::Js(js) = expression {
-            self.source.insert((js.span.start, js.span.end), js);
+        match expression {
+            ExprRef::Js(js) => {
+                self.source.insert((js.span.start, js.span.end), js);
+            }
+            ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::ParseRejected => {
+                self.parse_rejected = true;
+            }
+            ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {}
         }
+    }
+
+    /// Rejected authored syntax needs the retained transform lane, which owns
+    /// `InvalidExpression` diagnostics. Other opaque classes are intentional.
+    pub(crate) const fn has_parse_rejected(&self) -> bool {
+        self.parse_rejected
     }
 
     /// Parse a compound text part once, with L2's admission rule.

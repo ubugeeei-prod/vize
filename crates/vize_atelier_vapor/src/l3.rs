@@ -233,6 +233,9 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.retained_index",
             retained::Retained::collect(allocator, &s2.root)
         );
+        if retained.has_parse_rejected() {
+            return VaporL3BridgeStatus::Legacy(LegacyReason::ExpressionOrEncoding);
+        }
         // Template carriers keep their wrapper facts in L2 side tables.
         let loops = match bridge_profile!(
             "atelier.vapor.bridge.template_carriers",

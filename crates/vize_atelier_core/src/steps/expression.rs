@@ -191,7 +191,7 @@ fn process_expression_shape<'a>(
     }
 
     // If not prefixing identifiers and not TypeScript, just clone
-    if !ctx.options.prefix_identifiers && !ctx.options.is_ts {
+    if !ctx.options.prefix_identifiers && !ctx.options.is_ts && !ctx.options.vapor {
         return ExpressionNode::Simple(normalized);
     }
 
@@ -225,6 +225,29 @@ fn process_expression_shape<'a>(
             rewrite::report_invalid_expression(ctx, error.message.as_ref(), &normalized.loc);
         }
         normalized.is_ref_transformed = true;
+        return ExpressionNode::Simple(normalized);
+    }
+
+    // Vapor leaves identifier rewriting to its generator. Only the expressions
+    // without a retained AST need syntax validation here, so ordinary valid
+    // SFCs keep the parse-once hot path.
+    if ctx.options.vapor
+        && !ctx.options.prefix_identifiers
+        && normalized
+            .js_ast
+            .and_then(|js| js.as_expression())
+            .is_none()
+        && !is_simple_identifier(content)
+        && let Err(Some(detail)) =
+            parse_checks::validate_unretained_expression(content, ctx.options.is_ts)
+    {
+        rewrite::report_invalid_expression(ctx, &detail, &normalized.loc);
+    }
+
+    // Preserve the original retained carrier for JavaScript Vapor generation.
+    // The branch above only validates the opaque cold path; it must not turn
+    // every valid parse-once expression back into generator input text.
+    if !ctx.options.prefix_identifiers && !ctx.options.is_ts {
         return ExpressionNode::Simple(normalized);
     }
 
