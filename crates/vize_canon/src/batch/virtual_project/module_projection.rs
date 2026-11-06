@@ -55,12 +55,21 @@ impl VirtualProject {
                         )
                         .0;
                     let resolver = |specifier: &str, mode| {
-                        let path = super::dependency_scan::resolve_dependency(
-                            specifier,
-                            file.original_path.parent()?,
-                            &self.project_root,
-                            &aliases,
-                        );
+                        let path = if file.source_map.sfc_map.is_some() {
+                            super::dependency_scan::resolve_generated_dependency(
+                                specifier,
+                                file.original_path.parent()?,
+                                &self.project_root,
+                                &aliases,
+                            )
+                        } else {
+                            super::dependency_scan::resolve_dependency(
+                                specifier,
+                                file.original_path.parent()?,
+                                &self.project_root,
+                                &aliases,
+                            )
+                        };
                         let target = path.as_ref().and_then(|path| {
                             self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(
                                 path,

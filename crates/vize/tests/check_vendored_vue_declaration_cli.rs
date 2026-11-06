@@ -172,6 +172,53 @@ fn consumers_of_emitted_component_declarations_report_vue_tsc_diagnostics() {
     }
 }
 
+/// #11539: an explicit authored `.vue.ts` import must use TypeScript's
+/// declaration substitution even when the sibling SFC owns a generated mirror
+/// with the same spelling.
+#[test]
+fn authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror() {
+    let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(None) else {
+        return;
+    };
+    let dir = tempfile::Builder::new()
+        .prefix("authored-vue-ts-declaration-11539-")
+        .tempdir()
+        .unwrap();
+    let producer = dir.path().join("producer");
+    project(&producer, CONFIG, &[("src/Foo.vue", FOO)]);
+    let (code, emitted) = run(Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&producer)
+        .env("CORSA_PATH", &corsa)
+        .args(["check", "--declaration", "--declaration-dir", "../emitted"])
+        .arg("src/Foo.vue"));
+    assert_eq!(code, Some(0), "{emitted}");
+
+    let consumer = dir.path().join("consumer");
+    let config = CONFIG.replace(
+        "\"strict\": true,",
+        "\"strict\": true,\n    \"allowImportingTsExtensions\": true,",
+    );
+    let probe = PROBE.replace("./vendor/Foo.vue", "./Foo.vue.ts");
+    project(
+        &consumer,
+        &config,
+        &[("src/Probe.vue", probe.as_str()), ("src/Foo.vue", FOO)],
+    );
+    for entry in fs::read_dir(dir.path().join("emitted")).unwrap() {
+        let entry = entry.unwrap().path();
+        fs::copy(
+            &entry,
+            consumer.join("src").join(entry.file_name().unwrap()),
+        )
+        .unwrap();
+    }
+
+    let expected = vec![(6, 9, 2322)];
+    let [reference, checked] = diagnostics(&corsa, &consumer);
+    assert_eq!(reference, expected, "vue-tsc authored .vue.ts");
+    assert_eq!(checked, expected, "vize check authored .vue.ts");
+}
+
 /// A `.ts` spelling that TypeScript substitutes with a declaration must keep
 /// that declaration's own relative imports.
 #[test]

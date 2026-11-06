@@ -8,7 +8,7 @@ use super::AliasContext;
 use super::routes::{RouteDiscovery, package_specifiers_from_frontier};
 use crate::batch::ModuleSpecifierFactsCache;
 use crate::batch::virtual_project::VirtualProject;
-use crate::batch::virtual_project::dependency_scan::resolve_dependency;
+use crate::batch::virtual_project::dependency_scan::resolve_generated_dependency;
 use crate::corsa_bridge::types::CorsaBridgeError;
 
 pub(super) struct SourceRevision<'a> {
@@ -227,7 +227,8 @@ pub(super) fn build_with_import_facts(
             .iter()
             .filter_map(|(specifier, mode)| {
                 let importer_dir = source_path.parent().unwrap_or(source_path);
-                if resolve_dependency(specifier, importer_dir, &root, &aliases).is_some() {
+                if resolve_generated_dependency(specifier, importer_dir, &root, &aliases).is_some()
+                {
                     return None;
                 }
                 resolve_package(source_path, specifier.as_str(), *mode).then(|| specifier.clone())

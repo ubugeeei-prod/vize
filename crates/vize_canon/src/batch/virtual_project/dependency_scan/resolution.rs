@@ -67,7 +67,20 @@ pub(crate) fn resolve_dependency(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> Option<PathBuf> {
-    resolve_dependency_inner::<false>(specifier, importer_dir, project_root, aliases).0
+    resolve_dependency_inner::<false, false>(specifier, importer_dir, project_root, aliases).0
+}
+
+/// Resolve a specifier from generated Vue TypeScript, where `.vue.ts` names
+/// the mirror for an authored `.vue` file rather than an authored TypeScript
+/// module with that literal name.
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+pub(crate) fn resolve_generated_dependency(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(std::string::String, std::string::String)],
+) -> Option<PathBuf> {
+    resolve_dependency_inner::<false, true>(specifier, importer_dir, project_root, aliases).0
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -77,19 +90,33 @@ pub(crate) fn resolve_dependency_with_inputs(
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    resolve_dependency_inner::<true>(specifier, importer_dir, project_root, aliases)
+    resolve_dependency_inner::<true, false>(specifier, importer_dir, project_root, aliases)
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-fn resolve_dependency_inner<const RECORD_INPUTS: bool>(
+pub(crate) fn resolve_generated_dependency_with_inputs(
     specifier: &str,
     importer_dir: &Path,
     project_root: &Path,
     aliases: &[(std::string::String, std::string::String)],
 ) -> (Option<PathBuf>, Vec<PathBuf>) {
-    let specifier = match specifier.strip_suffix(".ts") {
-        Some(stem) if stem.ends_with(".vue") => stem,
-        _ => specifier,
+    resolve_dependency_inner::<true, true>(specifier, importer_dir, project_root, aliases)
+}
+
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
+fn resolve_dependency_inner<const RECORD_INPUTS: bool, const GENERATED_VUE: bool>(
+    specifier: &str,
+    importer_dir: &Path,
+    project_root: &Path,
+    aliases: &[(std::string::String, std::string::String)],
+) -> (Option<PathBuf>, Vec<PathBuf>) {
+    let specifier = if GENERATED_VUE {
+        match specifier.strip_suffix(".ts") {
+            Some(stem) if stem.ends_with(".vue") => stem,
+            _ => specifier,
+        }
+    } else {
+        specifier
     };
     if matches!(specifier, "." | "..")
         || specifier.starts_with("./")
@@ -162,7 +189,7 @@ fn resolve_dependency_inner<const RECORD_INPUTS: bool>(
     (None, inputs)
 }
 
-pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
+pub(crate) fn probe_candidates(base: &Path) -> Option<PathBuf> {
     probe_candidates_inner::<false>(base).0
 }
 

@@ -6,7 +6,7 @@ use oxc_span::SourceType;
 use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::VirtualProject;
-use super::dependency_scan::resolve_dependency;
+use super::dependency_scan::{resolve_dependency, resolve_generated_dependency};
 use super::package_route_reachability::{PackageRouteReachability, package_route_reaches_vue};
 
 /// Reachability scans of one registration pass and the source facts they
@@ -56,7 +56,12 @@ impl VirtualProject {
                 } else {
                     SourceType::ts()
                 };
-                Some((path.clone(), file.content.clone(), source_type))
+                Some((
+                    path.clone(),
+                    file.content.clone(),
+                    source_type,
+                    file.source_map.sfc_map.is_some(),
+                ))
             })
             .collect::<Vec<_>>();
         let aliases = self.dependency_alias_map();
@@ -70,7 +75,7 @@ impl VirtualProject {
             .package_route_resolver
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        for (importer, content, source_type) in importers {
+        for (importer, content, source_type, generated_vue) in importers {
             let importer_dir = importer.parent().unwrap_or(importer.as_path());
             for (specifier, occurrence_mode) in self
                 .rewriter
@@ -79,10 +84,19 @@ impl VirtualProject {
                 if is_vue_runtime_support_specifier(&specifier) {
                     continue;
                 }
+                let first_party = if generated_vue {
+                    resolve_generated_dependency(
+                        &specifier,
+                        importer_dir,
+                        &self.project_root,
+                        &aliases,
+                    )
+                } else {
+                    resolve_dependency(&specifier, importer_dir, &self.project_root, &aliases)
+                };
                 if specifier.starts_with('.')
                     || Path::new(specifier.as_str()).is_absolute()
-                    || resolve_dependency(&specifier, importer_dir, &self.project_root, &aliases)
-                        .is_some()
+                    || first_party.is_some()
                 {
                     continue;
                 }

@@ -70,15 +70,22 @@ impl VirtualProject {
                     .collect_all_specifier_occurrences(source, source_type),
             };
             for (specifier, _) in occurrences {
-                inputs.extend(
+                let resolved = if file.source_map.sfc_map.is_some() {
+                    super::dependency_scan::resolve_generated_dependency_with_inputs(
+                        &specifier,
+                        directory,
+                        &self.project_root,
+                        &aliases,
+                    )
+                } else {
                     super::dependency_scan::resolve_dependency_with_inputs(
                         &specifier,
                         directory,
                         &self.project_root,
                         &aliases,
                     )
-                    .1,
-                );
+                };
+                inputs.extend(resolved.1);
             }
         }
         inputs.sort();
@@ -161,12 +168,21 @@ impl VirtualProject {
             .filter_map(|file| {
                 let source = self.module_source(file)?;
                 let resolver = |specifier: &str, _| {
-                    let path = super::dependency_scan::resolve_dependency(
-                        specifier,
-                        file.original_path.parent()?,
-                        &self.project_root,
-                        &aliases,
-                    )?;
+                    let path = if file.source_map.sfc_map.is_some() {
+                        super::dependency_scan::resolve_generated_dependency(
+                            specifier,
+                            file.original_path.parent()?,
+                            &self.project_root,
+                            &aliases,
+                        )
+                    } else {
+                        super::dependency_scan::resolve_dependency(
+                            specifier,
+                            file.original_path.parent()?,
+                            &self.project_root,
+                            &aliases,
+                        )
+                    }?;
                     let target = self
                         .find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path))?;
                     if crate::batch::declaration_path::is_declaration_file(&target.virtual_path) {
