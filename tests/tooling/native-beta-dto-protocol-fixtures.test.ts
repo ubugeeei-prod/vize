@@ -104,7 +104,7 @@ void test("typed producers retain historical bytes and only the exact registered
   );
   assert.equal(
     current.currentRootWarningRegistration,
-    "before-stable-root-watch-warning-41214579457",
+    "before-stable-root-watch-warning-42307879844",
   );
   assert(
     custody
