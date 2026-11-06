@@ -111,6 +111,7 @@ export function mapperCampaign(changed: string[]) {
   );
   assert.notEqual(dispatcher, listenerRelations, "one mapper campaign production scope required");
   const listenerProduction = new Set([
+    "crates/vize/src/commands/content_mapper/helper-abi.json",
     "crates/vize_canon/src/virtual_ts/generator.rs",
     "crates/vize_canon/src/virtual_ts/generator/script_module.rs",
     "crates/vize_canon/src/virtual_ts/helpers/declarations/listener-args.d.ts.txt",

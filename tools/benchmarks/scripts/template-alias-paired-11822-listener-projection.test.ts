@@ -35,6 +35,7 @@ void test("listener projection certification requires the named relation rewrite
 
 void test("mapper campaign admission isolates listener and dispatcher production changes", () => {
   const listener = [
+    "crates/vize/src/commands/content_mapper/helper-abi.json",
     "crates/vize_canon/src/virtual_ts/scope/component_events/listener_relations.rs",
     "crates/vize_canon/src/virtual_ts/generator.rs",
     "crates/vize_canon/snapshots/vize_canon__virtual_ts__loose_is_listener_tests__sample.snap",
