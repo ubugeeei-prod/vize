@@ -78,12 +78,15 @@ impl VirtualProject {
                         if requires_explicit_extension(specifier, mode, &context) {
                             return None;
                         }
-                        let target = target?;
-                        if crate::batch::declaration_path::is_declaration_file(&target.virtual_path)
+                        if let Some(path) = path.as_deref()
+                            && crate::batch::declaration_path::is_declaration_file(path)
                         {
-                            let path = crate::batch::declaration_module_path(&target.virtual_path);
+                            let identity =
+                                target.map_or(path, |target| target.virtual_path.as_path());
+                            let path = crate::batch::declaration_module_path(identity);
                             return Some(path.to_string_lossy().replace('\\', "/"));
                         }
+                        let target = target?;
                         is_lowered_jsx(target)
                             .then(|| target.virtual_path.to_string_lossy().replace('\\', "/"))
                     };

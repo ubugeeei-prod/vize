@@ -187,6 +187,54 @@ fn a_reachable_declaration_file_is_not_registered() {
 }
 
 #[test]
+fn an_authored_vue_ts_import_keeps_an_inferred_declaration_identity() {
+    let root = case_dir("authored-vue-ts-declaration");
+    let src = root.join("src");
+    fs::create_dir_all(&src).unwrap();
+    let app = src.join("App.vue");
+    fs::write(
+        &app,
+        r#"<script setup lang="ts">
+import { typed } from "./Typed.vue.ts";
+const value: string = typed;
+</script>
+"#,
+    )
+    .unwrap();
+    let typed = src.join("Typed.vue");
+    fs::write(
+        &typed,
+        "<script setup lang=\"ts\">const count = 1</script>\n<template>{{ count }}</template>\n",
+    )
+    .unwrap();
+    let declaration = src.join("Typed.vue.d.ts");
+    fs::write(&declaration, "export declare const typed: number;\n").unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path(&app).unwrap();
+    project.register_path(&typed).unwrap();
+    project.register_reachable_dependencies().unwrap();
+    assert!(
+        !project
+            .registered_original_paths_sorted()
+            .contains(&declaration),
+        "inferred declarations must not become program roots"
+    );
+
+    project.finalize_package_routes().unwrap();
+    let generated = project.find_by_original(&app).unwrap().content.as_str();
+    let module = crate::batch::declaration_module_path(&declaration)
+        .to_string_lossy()
+        .replace('\\', "/");
+    assert!(generated.contains(&module), "{generated}");
+    assert!(
+        !generated.contains(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL),
+        "{generated}"
+    );
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn an_editor_paths_declaration_is_mirrored_but_not_a_program_root() {
     let root = case_dir("editor-paths-declaration");
     let src = root.join("src");
