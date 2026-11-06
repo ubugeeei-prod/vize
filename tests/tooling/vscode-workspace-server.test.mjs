@@ -180,7 +180,12 @@ await test("configured overrides, disabled preference and untrusted folders neve
     await discovery(f, [f.folder], true, { "server.preferWorkspace": false }).resolve(),
     bundled,
   );
-  assert.equal(await discovery(f, [f.folder], false).resolve(), bundled);
+  const untrusted = discovery(f, [f.folder], false);
+  assert.equal(await untrusted.resolve(), bundled);
+  assert.equal(
+    untrusted.state.selectedServerCandidate.workspaceFallbackReason,
+    "Workspace servers skipped in Restricted Mode.",
+  );
   assert.equal(
     f.events().some((event) => event.args[0] === "lsp"),
     false,

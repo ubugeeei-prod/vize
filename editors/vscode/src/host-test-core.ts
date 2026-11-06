@@ -24,6 +24,7 @@ export type HostTestServerInfo = {
   status: string;
   version?: string;
   versionError?: string;
+  workspaceFallbackReason?: string;
 };
 
 export type HostTestCommand = {

@@ -56,6 +56,20 @@ test("packaged VS Code host smoke installs the VSIX before launching its tests",
   assert.equal(launchArgs.includes("--disable-extensions"), true);
 });
 
+test("packaged VS Code host can retain Restricted Mode for trust acceptance", () => {
+  const launchArgs = createPackagedHostLaunchArgs({
+    extensionsPath: "/tmp/vize-extensions",
+    extensionTestsPath: "/repo/editors/vscode/test/suite/workspace-server-restricted-host.cjs",
+    installedExtensionPath: "/tmp/vize-extensions/ubugeeei.vize-0.311.0",
+    userDataPath: "/tmp/vize-user-data",
+    workspacePath: "/tmp/untrusted-workspace",
+    workspaceTrusted: false,
+  });
+
+  assert.equal(launchArgs.includes("--disable-workspace-trust"), false);
+  assert.ok(launchArgs.includes("/tmp/untrusted-workspace"));
+});
+
 test("the real-server fixture workspace turns off the built-in AI code actions", () => {
   // VS Code contributes "Fix"/"Explain" quick fixes of its own to every
   // diagnostic span. The real-server scenario asserts the COMPLETE code-action

@@ -20,13 +20,14 @@ export function createPackagedHostLaunchArgs({
   installedExtensionPath,
   userDataPath,
   workspacePath,
+  workspaceTrusted = true,
 }) {
   return [
     "--no-sandbox",
     "--disable-gpu-sandbox",
     "--disable-extensions",
     "--disable-updates",
-    "--disable-workspace-trust",
+    ...(workspaceTrusted ? ["--disable-workspace-trust"] : []),
     "--skip-welcome",
     "--skip-release-notes",
     `--extensions-dir=${extensionsPath}`,
@@ -88,6 +89,7 @@ export async function runPackagedExtensionHost(
     vscodeVersion,
     vsixPath,
     workspacePath,
+    workspaceTrusted,
   },
 ) {
   if (!fs.existsSync(vsixPath)) {
@@ -110,6 +112,7 @@ export async function runPackagedExtensionHost(
     installedExtensionPath,
     userDataPath,
     workspacePath,
+    workspaceTrusted,
   });
   onOutput(
     await runVSCodeCommandWithTimeout(runCommand, launchArgs, {

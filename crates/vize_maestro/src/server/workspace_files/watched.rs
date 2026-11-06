@@ -52,16 +52,16 @@ pub(super) async fn did_change_watched_files(
         changes: reconfigured.accepted_file_events(&server.state, &params.changes),
     };
     #[cfg(feature = "native")]
-    did_change_in_context(server, &accepted).await;
+    did_change_in_context(server, &accepted, reconfigured.configuration_event_uris()).await;
     #[cfg(not(feature = "native"))]
-    did_change_in_context(server, params).await;
+    did_change_in_context(server, params, &[]).await;
     #[cfg(feature = "native")]
     for state in server.state.cached_project_states() {
         let project = server.with_project_state(state);
         let accepted = DidChangeWatchedFilesParams {
             changes: reconfigured.accepted_file_events(&project.state, &params.changes),
         };
-        did_change_in_context(&project, &accepted).await;
+        did_change_in_context(&project, &accepted, reconfigured.configuration_event_uris()).await;
     }
     #[cfg(feature = "native")]
     for (uri, version) in reconfigured.documents {
@@ -77,7 +77,11 @@ pub(super) async fn did_change_watched_files(
     }
 }
 
-async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatchedFilesParams) {
+async fn did_change_in_context(
+    server: &MaestroServer,
+    params: &DidChangeWatchedFilesParams,
+    configuration_events: &[tower_lsp::lsp_types::Url],
+) {
     // A rejected configuration event can leave one owner with no accepted
     // changes even when the original notification was nonempty.
     if params.changes.is_empty() {
@@ -112,7 +116,7 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
                 .filter(|change| change.typ == FileChangeType::DELETED)
                 .map(|change| change.uri.as_str()),
         );
-        if !deleted_paths.is_empty() {
+        if changes_require_open_document_fallback(changes, &deleted_paths, configuration_events) {
             dependents = include_open_typecheck_documents(&server.state, dependents);
         }
         if dependents.is_empty() && !global_components_invalidated && deleted_paths.is_empty() {
@@ -123,7 +127,23 @@ async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatched
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
-    let _ = (server, params);
+    let _ = (server, params, configuration_events);
+}
+
+#[cfg(feature = "native")]
+pub(super) fn changes_require_open_document_fallback(
+    changes: &[FileEvent],
+    deleted_paths: &[std::path::PathBuf],
+    configuration_events: &[Url],
+) -> bool {
+    // A newly created source may satisfy an unresolved import, so no reverse
+    // dependency edge exists yet. Configuration creations are republished by
+    // the reload result and must not enqueue the same open document again.
+    // Deletions keep the existing fallback for tracked Vue sources whose edge
+    // has already disappeared.
+    changes.iter().any(|change| {
+        change.typ == FileChangeType::CREATED && !configuration_events.contains(&change.uri)
+    }) || !deleted_paths.is_empty()
 }
 
 #[cfg(feature = "native")]

@@ -33,7 +33,7 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-parity",
     text: "Vapor: TS-33 behavioral parity green; SSR **and VDOM**: TS-11 byte-empty (P3-7 changes patch-flag derivation, so DOM parity re-gates here)",
-    witnesses: [".github/workflows/davinci-lean.yml", "tools/commands/davinci/corpus-diff.rs"],
+    witnesses: [".github/workflows/davinci-reference.yml", "tools/commands/davinci/corpus-diff.rs"],
   },
   {
     id: "p3-16-source-map",
@@ -70,7 +70,7 @@ const phaseExitGateDefinitions = [
   {
     id: "p3-16-mandatory-suites",
     text: "TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to L2→L3 green",
-    witnesses: [".github/workflows/davinci-lean.yml", ".github/workflows/fuzz.yml"],
+    witnesses: [".github/workflows/davinci-reference.yml", ".github/workflows/fuzz.yml"],
   },
 ] as const;
 
