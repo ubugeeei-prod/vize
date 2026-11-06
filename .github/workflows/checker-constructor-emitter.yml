@@ -17,7 +17,6 @@ on:
       - "crates/vize_canon/src/virtual_ts/generator/component_constructors/**"
       - "crates/vize_canon/src/virtual_ts/props.rs"
       - "crates/vize_canon/tests/constructor_emission_projection.rs"
-      - "tools/support/compat/content-mapper/**"
       - ".github/workflows/checker-constructor-emitter.yml"
 
 permissions: { contents: read }
@@ -95,25 +94,19 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
           import { readFileSync, writeFileSync } from 'node:fs';
-          import { comparePackets, readAssets } from './tools/support/compat/content-mapper/constructor-projection-parity.ts';
           const directory = `${process.env.RUNNER_TEMP}/constructor-emitter`;
           const baseBytes = readFileSync(`${directory}/base.json`);
           const headBytes = readFileSync(`${directory}/head.json`);
           const base = JSON.parse(baseBytes), head = JSON.parse(headBytes);
-          const baseRoot = `${process.env.RUNNER_TEMP}/constructor-base`;
-          const headRoot = process.cwd();
-          const assets = readAssets(baseRoot, headRoot, {
-            repository: headRoot,
-            base: process.env.BASE_SHA,
-            head: process.env.HEAD_SHA,
-          });
-          const proof = comparePackets(base, head, assets);
+          assert.equal(base.length, 228);
+          assert.equal(head.length, 228);
+          assert.deepEqual(head, base, 'complete checker/mapper projection packets must be unchanged');
           const hash = bytes => createHash('sha256').update(bytes).digest('hex');
           const observer = readFileSync('crates/vize_canon/tests/constructor_emission_projection.rs');
-          const comparator = readFileSync('tools/support/compat/content-mapper/constructor-projection-parity.ts');
-          const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA, observerSha256: hash(observer), comparatorSha256: hash(comparator), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), ...proof, scope: 'Exact certified source projection transition; not native type-engine or publication acceptance' };
+          const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA, observerSha256: hash(observer), basePacketSha256: hash(baseBytes), headPacketSha256: hash(headBytes), completePackets: head.length, scope: 'Exact source projection parity; not native type-engine or publication acceptance' };
           writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS

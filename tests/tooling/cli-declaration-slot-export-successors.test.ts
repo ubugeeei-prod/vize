@@ -10,13 +10,6 @@ import {
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
-import {
-  constructorSourceTransition,
-  elidedBuildOutputTransition,
-  elidedCheckOutputTransition,
-  elidedSourceTransition,
-  ownSplitSourceTransition,
-} from "./support/cli-declaration-slot-own-instance-transition.ts";
 
 const originals = [
   [
@@ -88,6 +81,75 @@ const identity = (bytes: Buffer): Identity => ({
   bytes: bytes.length,
 });
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
+const currentConstructorSource: Identity = {
+  bytes: 10645,
+  sha256: "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
+};
+const constructorSourceEdit = {
+  before:
+    [
+      "        append!(",
+      "            *ts,",
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{own}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>> & "',
+      "        );",
+      "        if aliases.has_authored_default {",
+      "            append!(",
+      "                *ts,",
+      "                \"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & \"",
+      "            );",
+      "        }",
+      "        instance_base(",
+      "            ts,",
+      "            legacy_vue2,",
+      "            dialect,",
+      "            aliases.has_exposed_type,",
+      "            (aliases.has_root_el, aliases.has_refs),",
+      "        );",
+      '        ts.push_str(";\\n");',
+    ].join("\n") + "\n",
+  after:
+    [
+      "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and",
+      "        // leave undeclared attributes to the consumer's own excess-property",
+      "        // check; TSX binds `$JsxProps` and stays exact (#11629).",
+      "        append!(",
+      "            *ts,",
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
+      "        );",
+    ].join("\n") + "\n",
+};
+
+function constructorSourceTransition(
+  current: Buffer,
+  direction: "forward" | "inverse",
+  historical: Identity,
+): Buffer {
+  const [fromIdentity, toIdentity, from, to] =
+    direction === "inverse"
+      ? ([
+          currentConstructorSource,
+          historical,
+          constructorSourceEdit.after,
+          constructorSourceEdit.before,
+        ] as const)
+      : ([
+          historical,
+          currentConstructorSource,
+          constructorSourceEdit.before,
+          constructorSourceEdit.after,
+        ] as const);
+  assert.deepEqual(identity(current), {
+    bytes: fromIdentity.bytes,
+    sha256: fromIdentity.sha256,
+  });
+  const text = current.toString("utf8");
+  assert.equal(text.split(from).length - 1, 1);
+  assert.equal(text.split(to).length - 1, 0);
+  const changed = Buffer.from(text.replace(from, to));
+  assert.deepEqual(identity(changed), { bytes: toIdentity.bytes, sha256: toIdentity.sha256 });
+  return changed;
+}
+
 function constructorTransition(
   current: Buffer,
   direction: "forward" | "inverse",
@@ -218,33 +280,18 @@ function overloadOutputTransition(current: Buffer, direction: "forward" | "inver
 test("the declaration constructor successor authenticates the whole source and both complete outputs", () => {
   const { source, output, edit } = constructorSuccessor;
   const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
-  const elidedSource = elidedSourceTransition(sourceBytes, "inverse");
-  const ownedSource = ownSplitSourceTransition(elidedSource, "inverse");
-  const previousSource = constructorSourceTransition(ownedSource, "inverse", source);
-  assert.deepEqual(
-    elidedSourceTransition(
-      ownSplitSourceTransition(
-        constructorSourceTransition(previousSource, "forward", source),
-        "forward",
-      ),
-      "forward",
-    ),
-    sourceBytes,
-  );
+  const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
+  assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const aliasedEnvelope = elidedCheckOutputTransition(current, "inverse");
-  const integratedEnvelope = overloadOutputTransition(aliasedEnvelope, "inverse");
+  const integratedEnvelope = overloadOutputTransition(current, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
   const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
-    elidedCheckOutputTransition(
-      overloadOutputTransition(
-        discriminatedOutputTransition(
-          integratedOutputTransition(ownedEnvelope, "forward"),
-          "forward",
-        ),
+    overloadOutputTransition(
+      discriminatedOutputTransition(
+        integratedOutputTransition(ownedEnvelope, "forward"),
         "forward",
       ),
       "forward",
@@ -280,36 +327,18 @@ test("the declaration constructor successor authenticates the whole source and b
 test("the build declaration constructor adds a reversible receipt without changing older packets", () => {
   const { source, output, edit } = buildConstructorSuccessor;
   const sourceBytes = fs.readFileSync(path.join(repoRoot, source.path));
-  const elidedSource = elidedSourceTransition(sourceBytes, "inverse");
-  const ownedSource = ownSplitSourceTransition(elidedSource, "inverse");
-  const previousSource = constructorSourceTransition(ownedSource, "inverse", source);
-  assert.deepEqual(
-    elidedSourceTransition(
-      ownSplitSourceTransition(
-        constructorSourceTransition(previousSource, "forward", source),
-        "forward",
-      ),
-      "forward",
-    ),
-    sourceBytes,
-  );
+  const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
+  assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
   const integratedEnvelope = overloadOutputTransition(current, "inverse");
-  const aliasedEnvelope = elidedBuildOutputTransition(integratedEnvelope, "inverse");
-  const ownedEnvelope = buildIntegratedOutputTransition(aliasedEnvelope, "inverse");
+  const ownedEnvelope = buildIntegratedOutputTransition(integratedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse", buildConstructorSuccessor);
   assert.deepEqual(
     constructorTransition(previous, "forward", buildConstructorSuccessor),
     ownedEnvelope,
   );
   assert.deepEqual(
-    overloadOutputTransition(
-      elidedBuildOutputTransition(
-        buildIntegratedOutputTransition(ownedEnvelope, "forward"),
-        "forward",
-      ),
-      "forward",
-    ),
+    overloadOutputTransition(buildIntegratedOutputTransition(ownedEnvelope, "forward"), "forward"),
     current,
   );
   for (const [bytes, direction, from, to] of [
@@ -412,13 +441,9 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
-    const aliasedEnvelope =
-      constructor === constructorSuccessor
-        ? elidedCheckOutputTransition(currentSlot, "inverse")
-        : currentSlot;
     const integratedEnvelope = constructor
-      ? overloadOutputTransition(aliasedEnvelope, "inverse")
-      : aliasedEnvelope;
+      ? overloadOutputTransition(currentSlot, "inverse")
+      : currentSlot;
     const discriminatedEnvelope =
       constructor === constructorSuccessor
         ? discriminatedOutputTransition(integratedEnvelope, "inverse")
@@ -429,10 +454,7 @@ for (const [name, digest, successorDigest] of originals) {
         : discriminatedEnvelope;
     const ownedEnvelope =
       constructor === buildConstructorSuccessor
-        ? buildIntegratedOutputTransition(
-            elidedBuildOutputTransition(currentEnvelope, "inverse"),
-            "inverse",
-          )
+        ? buildIntegratedOutputTransition(currentEnvelope, "inverse")
         : currentEnvelope;
     const predecessorSlot = constructor
       ? overloadOutputTransition(

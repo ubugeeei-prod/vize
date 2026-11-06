@@ -318,14 +318,11 @@ export function assertPreservedCallbackPacket(
   assert.deepEqual(Buffer.concat(chunks), actual, "the complete text has only certified edits");
   const exportAt = original.indexOf(slotsTransition ? previousSlotsExport : currentSlotsExport);
   const boundary = Buffer.byteLength(original.slice(0, exportAt));
-  const range = (start: number, length: number, unmappedProducerTail = false): [number, number] => {
+  const range = (start: number, length: number): [number, number] => {
     assert.ok(Number.isSafeInteger(start) && start >= 0);
     assert.ok(Number.isSafeInteger(length) && length >= 0);
     const end = start + length;
-    assert.ok(
-      end <= boundary || (unmappedProducerTail && length > 0 && start >= boundary),
-      "authored projection precedes the public Slots export",
-    );
+    assert.ok(end <= boundary, "authored projection precedes the public Slots export");
     for (const edit of edits) {
       assert.ok(
         edit.start === edit.end
@@ -399,8 +396,7 @@ export function assertPreservedCallbackPacket(
     assert.ok(tuple.every(Number.isSafeInteger));
     assert.ok(tuple[2] >= 0 && tuple[3] >= 0);
     if (authored) utf8Range(authored, tuple[2], tuple[3]);
-    const unmappedProducerTail = tuple[2] === 0 && tuple[3] === 0;
-    const [start, length] = range(tuple[0], tuple[1], unmappedProducerTail);
+    const [start, length] = range(tuple[0], tuple[1]);
     return [start, length, ...tuple.slice(2)];
   });
   expected.mappings.push(...currentSource.addedMappings);

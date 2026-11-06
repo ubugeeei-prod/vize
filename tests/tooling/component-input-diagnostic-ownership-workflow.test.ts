@@ -80,26 +80,6 @@ test("callback packets certify only the unmapped public Slots re-export", () => 
     ...after,
     text: `${after.text}type Public = ${previousSlotsMarker};\n`,
   });
-  const producerTail = "declare const Comp: unknown;\nexport default Comp;\n";
-  const beforeTail = `${before.text}${producerTail}`;
-  const afterTail = `${after.text}${producerTail}`;
-  const beforeTailStart = Buffer.byteLength(beforeTail.slice(0, beforeTail.lastIndexOf("Comp")));
-  const afterTailStart = Buffer.byteLength(afterTail.slice(0, afterTail.lastIndexOf("Comp")));
-  assertPreservedCallbackPacket(
-    { ...before, text: beforeTail, mappings: [[beforeTailStart, 4, 0, 0, 1, 248]] },
-    { ...after, text: afterTail, mappings: [[afterTailStart, 4, 0, 0, 1, 248]] },
-  );
-  for (const mapping of [
-    [beforeTailStart, 4, 0, 1, 1, 248],
-    [beforeTailStart, 0, 0, 0, 1, 248],
-    [Buffer.byteLength(before.text.split(previousSlotsExport)[0]) - 1, 2, 0, 0, 1, 248],
-  ])
-    assert.throws(() =>
-      assertPreservedCallbackPacket(
-        { ...before, text: beforeTail, mappings: [mapping] },
-        { ...after, text: afterTail, mappings: [mapping] },
-      ),
-    );
   for (const [original, candidate] of [
     [`${before.text}${currentSlotsExport}\n`, `${after.text}${currentSlotsExport}\n`],
     [`${before.text}${previousSlotsExport}\n`, `${after.text}${currentSlotsExport}\n`],
