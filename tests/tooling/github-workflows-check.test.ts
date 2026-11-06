@@ -189,8 +189,10 @@ test("check workflow builds local native bindings before JS checks", () => {
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
+  const smallNodeCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
-  assert.match(checkJsJob, /vp run --workspace-root check:iteration/);
+  assert.match(checkJsJob, /uses: \.\/\.github\/actions\/test-small-node-cases/);
+  assert.match(smallNodeCases, /vp run --workspace-root check:iteration/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
   assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);

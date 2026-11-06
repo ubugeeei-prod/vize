@@ -11,10 +11,11 @@ runs:
       id: cases
       shell: bash
       env:
+        SMALL_NODE_SUITE: ${{ inputs.suite }}
         TEST_CASES_JOB: ${{ inputs.job }}
         VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-${{ inputs.packet }}.json
       run: |
-        case "${{ inputs.suite }}" in
+        case "$SMALL_NODE_SUITE" in
           check-js)
             vp run --workspace-root check:iteration
             tests=(
@@ -35,7 +36,7 @@ runs:
               tests/tooling/npm-audit-command.test.ts
             )
             ;;
-          *) echo "unknown small Node suite: ${{ inputs.suite }}" >&2; exit 2 ;;
+          *) echo "unknown small Node suite: $SMALL_NODE_SUITE" >&2; exit 2 ;;
         esac
         node tools/support/compat/github/js-test-cases.ts capture -- node --test "${tests[@]}"
     - name: Upload small Node test cases

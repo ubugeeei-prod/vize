@@ -281,6 +281,7 @@ test("each test job names its case packet after itself and the report downloads 
   const smallUpload = smallAction.runs.steps.find(
     (step) => step.with?.["if-no-files-found"] === "error",
   );
+  assert.equal(runner?.env?.SMALL_NODE_SUITE, "${{ inputs.suite }}");
   assert.equal(runner?.env?.TEST_CASES_JOB, "${{ inputs.job }}");
   assert.equal(
     runner?.env?.VIZE_TEST_CASES,
