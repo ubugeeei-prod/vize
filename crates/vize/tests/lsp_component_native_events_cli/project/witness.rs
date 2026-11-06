@@ -13,6 +13,9 @@ const PACKAGE: &str = "{\"name\":\"vize-event-fixture\",\"version\":\"0.0.0\",\"
 const SLOT_NAVIGATION_PRELUDE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/component-native-events/slot-navigation-prelude.expected.txt"
 );
+const SHARED_SLOT_NAVIGATION_PRELUDE: &str = include_str!(
+    "../../../../../tests/_fixtures/differential/lsp/component-native-events/shared-slot-navigation-prelude.expected.txt"
+);
 const HISTORICAL_SLOT_NAVIGATION_PRELUDE: &str = concat!(
     "  type __VizeEmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? __VizeIsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? __VizeIsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
     "  type __VizeNativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? __VizeIsAny<InstanceType<C>> extends true ? __VizeEmptyVueNavigationSlots<C> : __VizeIsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
@@ -23,7 +26,7 @@ const COMPONENT_NAVIGATION_HELPER: &str = "  type $ComponentNavigationProps<P> =
 pub(crate) struct Witness {
     pub app_path: PathBuf,
     pub query_position: usize,
-    pub historical_query_position: usize,
+    pub inline_query_position: usize,
 }
 
 pub(crate) fn create_marker(root: &Path) {
@@ -67,8 +70,9 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     let (mirror, link) = matching.pop().unwrap();
     let app_path = mirror.join("src/App.vue.ts");
     let child_path = mirror.join("src/MySwitch.vue.ts");
+    let helpers_path = mirror.join("__vize_helpers.d.ts");
     let config_path = mirror.join("tsconfig.json");
-    for path in [&app_path, &child_path, &config_path] {
+    for path in [&app_path, &child_path, &helpers_path, &config_path] {
         assert!(
             std::fs::symlink_metadata(path)
                 .unwrap()
@@ -79,6 +83,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     }
     let app = std::fs::read_to_string(&app_path).unwrap();
     let child = std::fs::read_to_string(&child_path).unwrap();
+    let helpers = std::fs::read_to_string(&helpers_path).unwrap();
     let config = std::fs::read_to_string(&config_path).unwrap();
     let source = std::fs::read_to_string(root.join("src/App.vue")).unwrap();
     let authored: Vec<_> = [
@@ -98,6 +103,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
         "generated": [
             { "path": app_path, "source": app, "sha256": super::hash(app.as_bytes()) },
             { "path": child_path, "source": child, "sha256": super::hash(child.as_bytes()) },
+            { "path": helpers_path, "source": helpers, "sha256": super::hash(helpers.as_bytes()) },
             { "path": config_path, "source": config, "sha256": super::hash(config.as_bytes()) }
         ]
     });
@@ -110,6 +116,8 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     let mapping = format!("// @vize-map: component -> {source_start}:{source_end}\n");
     assert_eq!(app.matches(&mapping).count(), 1);
     assert_eq!(app.matches(COMPONENT_NAVIGATION_HELPER).count(), 1);
+    assert_eq!(app.matches(SLOT_NAVIGATION_PRELUDE).count(), 0);
+    assert_eq!(helpers.matches(SHARED_SLOT_NAVIGATION_PRELUDE).count(), 1);
     let construct = "\n  void MySwitch;\n  const { } = undefined as unknown as $ComponentNavigationProps<__MySwitch_Props_0>;\n";
     assert_eq!(app.matches(construct).count(), 1);
     let cursor = app.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
@@ -118,7 +126,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     // from this fixture's complete generated binding pattern, never its result.
     let query_position = app[..cursor].encode_utf16().count();
     receipt["query"] = json!({ "sourceRange": [source_start, source_end], "construct": construct, "byteCursor": cursor, "utf16Position": query_position });
-    let (counterfactual, historical_query_position) = historical_counterfactual(&app, construct);
+    let (counterfactual, inline_query_position) = inline_counterfactual(&app, construct);
     receipt["navigationPreludeCounterfactual"] = counterfactual;
     let (import_relocation, _) = child_import_relocation(&app, &child_path);
     receipt["childImportRelocation"] = import_relocation;
@@ -134,7 +142,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     Witness {
         app_path,
         query_position,
-        historical_query_position,
+        inline_query_position,
     }
 }
 
@@ -218,6 +226,30 @@ pub fn slot_navigation_prelude_utf16_len() -> usize {
 // A named source counterfactual preserves the old position; it is not an old backend run.
 fn historical_counterfactual(app: &str, construct: &str) -> (Value, usize) {
     source_counterfactual(app, construct, SLOT_NAVIGATION_PRELUDE)
+}
+
+fn inline_counterfactual(app: &str, construct: &str) -> (Value, usize) {
+    assert_eq!(app.matches(SLOT_NAVIGATION_PRELUDE).count(), 0);
+    assert_eq!(app.matches(construct).count(), 1);
+    let source = app.replacen(
+        construct,
+        &format!("{SLOT_NAVIGATION_PRELUDE}{construct}"),
+        1,
+    );
+    let cursor = source.find(construct).unwrap() + "\n  void MySwitch;\n  const { ".len();
+    let query_position = source[..cursor].encode_utf16().count();
+    (
+        json!({
+            "kind": "insert-only-exact-slot-navigation-prelude-source-counterfactual",
+            "helperBytesInserted": SLOT_NAVIGATION_PRELUDE.len(),
+            "source": source,
+            "sha256": super::hash(source.as_bytes()),
+            "byteCursor": cursor,
+            "utf16Position": query_position,
+            "historicalBackendExecution": false
+        }),
+        query_position,
+    )
 }
 
 fn source_counterfactual(app: &str, construct: &str, prelude: &str) -> (Value, usize) {

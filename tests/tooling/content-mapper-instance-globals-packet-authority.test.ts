@@ -325,12 +325,12 @@ test("CURRENT resolves the complete authenticated population in authored case or
   assert.ok(files.has(golden.provenance as string));
   const provenance = JSON.parse(files.get(golden.provenance as string)!);
   assert.equal(provenance.producer.sourceRevision, producer.sourceRevision);
-  assert.equal(provenance.artifact.run, 42094909442);
-  assert.equal(provenance.artifact.job, 127483376951);
-  assert.equal(provenance.artifact.id, 13446174296);
+  assert.equal(provenance.artifact.run, 42173370773);
+  assert.equal(provenance.artifact.job, 127746578706);
+  assert.equal(provenance.artifact.id, 13483220602);
   assert.equal(provenance.capturedQualification.totalOutcomes, 499);
-  assert.equal(provenance.capturedQualification.passedOutcomes, 419);
-  assert.equal(provenance.capturedQualification.gapCount, 80);
+  assert.equal(provenance.capturedQualification.passedOutcomes, 495);
+  assert.equal(provenance.capturedQualification.gapCount, 4);
   assert.equal(provenance.review.allNonWholePacketOutcomesPassed, true);
   assert.equal(provenance.review.sourceHostAdmitted, true);
   assert.equal(provenance.review.qualificationCredit, false);

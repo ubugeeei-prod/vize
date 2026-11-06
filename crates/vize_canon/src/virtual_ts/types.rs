@@ -261,6 +261,11 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// TypeScript program. Off by default so standalone single-document
     /// consumers keep self-contained output.
     pub(crate) hoist_shared_preamble: bool,
+    /// Retain the mapped aliases that own component prop symbols in each
+    /// generated editor module. Batch and declaration projects keep these
+    /// aliases in the shared preamble; editor projects need module ownership
+    /// so references and rename do not join unrelated SFC props.
+    pub(crate) local_component_ownership_helpers: bool,
     /// Type-only module that owns expensive component-attribute aliases for
     /// standalone Content Mapper output.
     pub(crate) external_component_attrs_module: Option<ComponentHelperModule>,

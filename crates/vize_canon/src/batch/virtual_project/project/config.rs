@@ -214,19 +214,19 @@ impl VirtualProject {
     }
 
     pub(crate) fn uses_shared_helpers(&self) -> bool {
-        if self.editor_document_options.is_some() {
-            return false;
-        }
         // Plain authored scripts and declarations need no Vue preamble. It
         // references vite/client and would add ambient asset types even when
         // the project's own compilerOptions.types is empty.
-        (self.shared_helper_source_count > 0)
-            && (self.experimental_patterned_template
-                || (!self.legacy_vue2
-                    && !matches!(
-                        self.dialect,
-                        vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
-                    )))
+        (self.shared_helper_source_count > 0) && self.hoists_shared_preamble()
+    }
+
+    pub(super) fn hoists_shared_preamble(&self) -> bool {
+        self.experimental_patterned_template
+            || (!self.legacy_vue2
+                && !matches!(
+                    self.dialect,
+                    vize_carton::config::VueVersion::V2 | vize_carton::config::VueVersion::V2_7
+                ))
     }
 
     pub(crate) fn set_template_syntax(&mut self, template_syntax: TemplateSyntaxMode) {

@@ -6,5 +6,10 @@
     "strict": true
   },
   "exclude": [],
-  "include": ["__vize_vue_modules.d.ts", "src/App.vue.ts", "src/MySwitch.vue.ts"]
+  "include": [
+    "__vize_helpers.d.ts",
+    "__vize_vue_modules.d.ts",
+    "src/App.vue.ts",
+    "src/MySwitch.vue.ts"
+  ]
 }

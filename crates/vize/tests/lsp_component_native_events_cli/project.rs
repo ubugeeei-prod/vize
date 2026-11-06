@@ -217,8 +217,8 @@ impl Project {
         });
         if lf {
             assert_eq!(
-                observed.query_position,
-                observed.historical_query_position + witness::slot_navigation_prelude_utf16_len()
+                observed.inline_query_position,
+                observed.query_position + witness::slot_navigation_prelude_utf16_len()
             );
         }
         let mut data: Value = serde_json::from_str(include_str!(

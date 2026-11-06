@@ -143,6 +143,7 @@ fn shared_aliases_follow_actual_model_and_spread_reads() {
                             ..Default::default()
                         },
                         hoist_shared_preamble: hoist,
+                        local_component_ownership_helpers: hoist,
                         ..Default::default()
                     },
                 );
@@ -479,6 +480,7 @@ fn generated(
         &VirtualTsOptions::default(),
         VirtualTsGenerationOptions {
             hoist_shared_preamble: hoist,
+            local_component_ownership_helpers: hoist,
             ..Default::default()
         },
     )
