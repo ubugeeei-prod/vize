@@ -12,6 +12,12 @@ fn guarded_component_listener_keeps_nested_callback_context() {
         "guarded-listener-nested-callback-11977",
         &[
             (
+                "tsconfig.json",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/guarded-listener-nested-callback-11977/tsconfig.json.txt"
+                ),
+            ),
+            (
                 "src/Child.vue",
                 include_str!(
                     "../../../../../../../tests/_fixtures/differential/typechecker/guarded-listener-nested-callback-11977/Child.vue.txt"
@@ -42,6 +48,12 @@ fn nested_callback_body_diagnostic_has_one_typed_owner() {
     let project = super::real_vue::create_project_case(
         "guarded-listener-nested-callback-error-11977",
         &[
+            (
+                "tsconfig.json",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/guarded-listener-nested-callback-11977/tsconfig.json.txt"
+                ),
+            ),
             (
                 "src/Child.vue",
                 include_str!(
