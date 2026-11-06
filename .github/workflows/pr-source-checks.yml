@@ -163,6 +163,8 @@ jobs:
         env: { TEST_CASES_JOB: "CI selection tests" }
         run: >-
           node --test
+          --test-reporter=spec
+          --test-reporter-destination=stdout
           --test-reporter=./tools/support/compat/github/test-case-reporter.ts
           --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json"
           tests/tooling/ci-iteration-plans.test.ts

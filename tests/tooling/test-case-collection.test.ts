@@ -243,7 +243,7 @@ test("each test job names its case packet after itself and the report downloads 
     assert.equal(cases?.env?.TEST_CASES_JOB, selected.name ?? jobName);
     assert.ok(cases?.run?.includes("test-case-reporter.ts"));
     assert.ok(cases?.run?.includes(packet));
-    const upload = selected.steps[selected.steps.indexOf(cases ?? {}) + 1];
+    const upload = selected.steps.find((step) => step.with?.name === artifact);
     assert.equal(upload.with?.name, artifact);
     assert.ok(upload.with?.path?.endsWith(packet));
     assert.equal(upload.with?.["if-no-files-found"], "error");

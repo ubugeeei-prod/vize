@@ -133,8 +133,102 @@ function restoreHistoryToolchainSelection(job: Job, original: Job) {
     marker + " tests/tooling/native-history-toolchain.test.ts",
   );
   const current = selection(job);
-  assert.deepEqual(current, { ...previous, run: reviewed });
+  assert.equal(current.id, "cases");
+  assert.deepEqual(current.env, { TEST_CASES_JOB: "CI selection tests" });
+  const reporter =
+    'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json" ';
+  assert.equal(typeof current.run, "string");
+  assert.equal((current.run as string).replace(reporter, "node --test "), reviewed);
   current.run = command;
+  delete current.id;
+  delete current.env;
+  assert.deepEqual(current, previous);
+  const steps = job.steps;
+  assert(steps);
+  const upload = steps.findIndex((step) => step.name === "Upload CI selection test cases");
+  assert.equal(upload, steps.indexOf(current) + 1);
+  assert.deepEqual(steps[upload], {
+    name: "Upload CI selection test cases",
+    if: "${{ !cancelled() && steps.cases.outcome != 'skipped' }}",
+    uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    with: {
+      name: "test-cases-ci-selection-${{ github.run_attempt }}",
+      path: "${{ runner.temp }}/test-cases-ci-selection.json",
+      "if-no-files-found": "error",
+      "retention-days": 7,
+    },
+  });
+  steps.splice(upload, 1);
+}
+
+function restoreCheckJsCasePacket(job: Job, original: Job) {
+  const steps = job.steps;
+  const previous = original.steps;
+  assert(steps && previous);
+  const fast = steps.find((step) => step.name === "Check fast JS/TS");
+  const originalFast = previous.find((step) => step.name === "Check fast JS/TS");
+  assert(fast && originalFast && typeof originalFast.run === "string");
+  const [check, tests] = originalFast.run.split(" && ");
+  assert(check && tests?.startsWith("node --test "));
+  assert.deepEqual(fast, { ...originalFast, run: check });
+  const index = steps.findIndex((step) => step.name === "Test fast JS/TS workflow contracts");
+  assert.equal(index, steps.indexOf(fast) + 1);
+  assert.deepEqual(steps[index], {
+    name: "Test fast JS/TS workflow contracts",
+    id: "cases",
+    if: "${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') }}",
+    env: { TEST_CASES_JOB: "check-js" },
+    run: tests.replace(
+      "node --test ",
+      'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-check-js.json" ',
+    ),
+  });
+  assert.deepEqual(steps[index + 1], {
+    name: "Upload fast JS/TS test cases",
+    if: "${{ !cancelled() && steps.cases.outcome != 'skipped' }}",
+    uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    with: {
+      name: "test-cases-check-js-${{ github.run_attempt }}",
+      path: "${{ runner.temp }}/test-cases-check-js.json",
+      "if-no-files-found": "error",
+      "retention-days": 7,
+    },
+  });
+  steps.splice(index, 2);
+  fast.run = originalFast.run;
+}
+
+function restoreNodeEngineCasePacket(job: Job, original: Job) {
+  const steps = job.steps;
+  const previous = original.steps;
+  assert(steps && previous);
+  const index = steps.findIndex((step) => step.name === "Check package engine matrix");
+  const originalStep = previous.find((step) => step.name === "Check package engine matrix");
+  assert(index >= 0 && originalStep && typeof originalStep.run === "string");
+  assert.deepEqual(steps[index], {
+    ...originalStep,
+    id: "cases",
+    env: { TEST_CASES_JOB: "node-engine-compat (${{ matrix.node-version }})" },
+    run: originalStep.run.replace(
+      "node --test ",
+      'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-node-engine-${{ matrix.node-version }}.json" ',
+    ),
+  });
+  steps[index] = structuredClone(originalStep);
+  const upload = steps.findIndex((step) => step.name === "Upload package engine test cases");
+  assert.equal(steps[upload - 1]?.name, "Report unchanged inputs");
+  assert.deepEqual(steps[upload], {
+    name: "Upload package engine test cases",
+    if: "${{ !cancelled() && steps.cases.outcome != 'skipped' }}",
+    uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    with: {
+      name: "test-cases-node-engine-${{ matrix.node-version }}-${{ github.run_attempt }}",
+      path: "${{ runner.temp }}/test-cases-node-engine-${{ matrix.node-version }}.json",
+      "if-no-files-found": "error",
+      "retention-days": 7,
+    },
+  });
+  steps.splice(upload, 1);
 }
 
 function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
@@ -235,6 +329,11 @@ test("the seven runner selectors and exact runtime steps preserve every original
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
       restoreTestReportComment(restored, before);
+      restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
+      restoreNodeEngineCasePacket(
+        restored.jobs["node-engine-compat"],
+        before.jobs["node-engine-compat"],
+      );
       restoreContentMapperHelperAbi(restored.jobs["node-engine-compat"]);
     }
     if (specification.name === "pr-source-checks") {
@@ -377,8 +476,14 @@ test("all existing frontend job and step truth tables stay identical", () => {
       const original = before.jobs[id],
         updated = structuredClone(after.jobs[id]);
       assert(original && updated, id);
-      if (specification.name === "check" && id === "node-engine-compat")
+      if (specification.name === "check" && id === "check-js")
+        restoreCheckJsCasePacket(updated, original);
+      if (specification.name === "check" && id === "node-engine-compat") {
+        restoreNodeEngineCasePacket(updated, original);
         restoreContentMapperHelperAbi(updated);
+      }
+      if (specification.name === "pr-source-checks" && id === "ci-selection-tests")
+        restoreHistoryToolchainSelection(updated, original);
       const predicates = [{ before: original.if ?? "true", after: updated.if ?? "true" }];
       for (const [index, step] of (original.steps ?? []).entries()) {
         const counterpart = updated.steps?.[index];

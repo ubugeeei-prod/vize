@@ -135,6 +135,8 @@ jobs:
         env: { TEST_CASES_JOB: check-js }
         run: >-
           node --test
+          --test-reporter=spec
+          --test-reporter-destination=stdout
           --test-reporter=./tools/support/compat/github/test-case-reporter.ts
           --test-reporter-destination="$RUNNER_TEMP/test-cases-check-js.json"
           tests/tooling/github-workflows-source-selection.test.ts
@@ -264,6 +266,8 @@ jobs:
         env: { TEST_CASES_JOB: "node-engine-compat (${{ matrix.node-version }})" }
         run: >-
           node --test
+          --test-reporter=spec
+          --test-reporter-destination=stdout
           --test-reporter=./tools/support/compat/github/test-case-reporter.ts
           --test-reporter-destination="$RUNNER_TEMP/test-cases-node-engine-${{ matrix.node-version }}.json"
           tests/tooling/node-engine-matrix.test.ts
@@ -275,6 +279,12 @@ jobs:
           tests/tooling/plan-check-inputs.test.ts
           tests/tooling/warning-budget.test.ts
           tests/tooling/npm-audit-command.test.ts
+      - name: Check content mapper helper ABI
+        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
+        run: node npm/cli/scripts/content-mapper-helper-abi.ts --check
+      - name: Report unchanged inputs
+        if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
+        run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
       - name: Upload package engine test cases
         if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -283,12 +293,6 @@ jobs:
           path: ${{ runner.temp }}/test-cases-node-engine-${{ matrix.node-version }}.json
           if-no-files-found: error
           retention-days: 7
-      - name: Check content mapper helper ABI
-        if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-        run: node npm/cli/scripts/content-mapper-helper-abi.ts --check
-      - name: Report unchanged inputs
-        if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
-        run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
   check-vize-apps:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     needs: iteration-plan
