@@ -1,7 +1,24 @@
 import type { Component } from 'vue';
-import type { ComponentEmit, ComponentSlots } from 'vue-component-type-helpers';
 import Generic from './Generic.vue';
 
+type ComponentSlots<T> = T extends new (...args: any) => { $slots: infer S }
+  ? NonNullable<S>
+  : T extends (
+        props: any,
+        context: { slots: infer S; attrs: any; emit: any },
+        ...args: any
+      ) => any
+    ? NonNullable<S>
+    : {};
+type ComponentEmit<T> = T extends new (...args: any) => { $emit: infer E }
+  ? NonNullable<E>
+  : T extends (
+        props: any,
+        context: { slots: any; attrs: any; emit: infer E },
+        ...args: any
+      ) => any
+    ? NonNullable<E>
+    : {};
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends
   (<T>() => T extends B ? 1 : 2) ? true : false;

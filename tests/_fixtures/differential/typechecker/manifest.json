@@ -11828,7 +11828,7 @@
         {
           "file": "src/consumer.ts",
           "path": "generic-component-public-context-11966/consumer.ts.txt",
-          "sha256": "8d00b0e985825f6b51f290b7ec627cec5b6f6644e5b110e877a433b541a2b941"
+          "sha256": "e6dd13ed7822cc95dd7008e894389435c99ab3822aca5d485bc11e41f5ce6f1b"
         },
         {
           "file": "tsconfig.json",
