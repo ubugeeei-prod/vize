@@ -21,13 +21,13 @@ other upstream catalogues.
 
 ## Namespace and preset boundaries
 
-| Upstream | Patina ownership | Default policy |
-| --- | --- | --- |
-| `eslint-plugin-vue` | `vue/*` and `script/*` | Broad correctness may enter `happy-path`; style remains stronger-preset or opt-in. |
-| `@intlify/eslint-plugin-vue-i18n` | `ecosystem/vue-i18n-*` | Explicit rule opt-in or the explicitly selected `ecosystem` preset only; never `essential` or the general default merely because Vue is present. |
-| Stylelint core rules | `css/*` | CSS semantics only. Convention-heavy rules remain in stronger presets. |
-| Markuplint rules | `html/*`, with accessibility behavior in `a11y/*` | Broad conformance and correctness may be default; project-specific policy remains opt-in. |
-| Musea | `musea/*` | Independent opt-in catalogue; Musea rules do not count as CSS or markup parity. |
+| Upstream                          | Patina ownership                                  | Default policy                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `eslint-plugin-vue`               | `vue/*` and `script/*`                            | Broad correctness may enter `happy-path`; style remains stronger-preset or opt-in.                                                               |
+| `@intlify/eslint-plugin-vue-i18n` | `ecosystem/vue-i18n-*`                            | Explicit rule opt-in or the explicitly selected `ecosystem` preset only; never `essential` or the general default merely because Vue is present. |
+| Stylelint core rules              | `css/*`                                           | CSS semantics only. Convention-heavy rules remain in stronger presets.                                                                           |
+| Markuplint rules                  | `html/*`, with accessibility behavior in `a11y/*` | Broad conformance and correctness may be default; project-specific policy remains opt-in.                                                        |
+| Musea                             | `musea/*`                                         | Independent opt-in catalogue; Musea rules do not count as CSS or markup parity.                                                                  |
 
 CSS and Musea therefore have separate catalogue pages, navigation entries and
 evidence links. A rule cannot be counted toward two upstream catalogues merely
