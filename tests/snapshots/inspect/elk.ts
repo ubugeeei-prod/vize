@@ -9,21 +9,22 @@ describe("elk inspector parity with Vue compiler", () => {
     assertInspectorCompareBudgets(elkApp, [
       {
         target: "dom",
-        changedFiles: 259,
-        // The current pinned elk fixture has four fewer added lines and one
-        // more removed line than the previous budget: three fewer diff lines.
-        additions: 10_761,
-        removals: 13_778,
+        changedFiles: 256,
+        additions: 11_220,
+        removals: 14_198,
         officialErrors: 3,
-        vizeErrors: 0,
+        // Both compilers reject the same two unresolved #shared macro types;
+        // Vue additionally rejects floating-vue's unresolved extends base.
+        vizeErrors: 2,
       },
       {
         target: "ssr",
-        changedFiles: 259,
-        additions: 9_201,
-        removals: 25_188,
+        changedFiles: 258,
+        additions: 8_869,
+        removals: 24_463,
         officialErrors: 3,
-        vizeErrors: 0,
+        // SSR observes the same unresolved macro types as DOM.
+        vizeErrors: 2,
       },
     ]);
   });

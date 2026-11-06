@@ -33,14 +33,12 @@ test("successor reviews retain historical hashes and all 395 sources at unchange
   let changedPackets = 0;
   let successors = 0;
   for (const [snapshot, alignment] of alignments) {
-    if (!alignment.successor) continue;
-    const { successor } = alignment;
+    const successor = alignment.successor;
+    const refreshed = successor?.review.successor;
+    if (!successor || !refreshed) continue;
     assert.equal(sha256(successor.previousRaw), alignment.currentSha256);
     assert.equal(successor.review.previousSha256, alignment.currentSha256);
-    assert.equal(
-      sha256(fs.readFileSync(path.join(root, snapshot))),
-      successor.review.currentSha256,
-    );
+    assert.equal(sha256(refreshed.previousRaw), successor.review.currentSha256);
     const project = path.basename(snapshot, "-lint.snap");
     const gitlink = execFileSync("git", ["ls-tree", "HEAD", `tests/_fixtures/_git/${project}`], {
       cwd: root,
@@ -56,6 +54,34 @@ test("successor reviews retain historical hashes and all 395 sources at unchange
     alignments.get("tests/snapshots/lint/__snapshots__/misskey-lint.snap")?.currentSha256,
     "f3b1001b1198613da2088667619b13f5f32d1f7c858046ad702a1f6c3eaf88a1",
     "the successor must not rewrite the original current hash",
+  );
+});
+
+test("the App E2E refresh extends every review chain without rebasing historical hashes", () => {
+  let refreshed = 0;
+  for (const [snapshot, alignment] of alignments) {
+    let tail = alignment;
+    while (tail.successor) {
+      const successor = tail.successor;
+      assert.equal(successor.review.previousSha256, tail.currentSha256);
+      tail = successor.review;
+    }
+    assert.equal(sha256(fs.readFileSync(path.join(root, snapshot))), tail.currentSha256);
+    const project = path.basename(snapshot, "-lint.snap");
+    const gitlink = execFileSync("git", ["ls-tree", "HEAD", `tests/_fixtures/_git/${project}`], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    assert.equal(
+      gitlink.trim().split(/\s+/)[2],
+      alignment.successor?.review.successor?.fixturePin ?? alignment.successor?.fixturePin,
+    );
+    refreshed++;
+  }
+  assert.equal(refreshed, 7);
+  assert.equal(
+    alignments.get("tests/snapshots/lint/__snapshots__/misskey-lint.snap")?.currentSha256,
+    "f3b1001b1198613da2088667619b13f5f32d1f7c858046ad702a1f6c3eaf88a1",
   );
 });
 

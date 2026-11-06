@@ -4,19 +4,33 @@ import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { vuefesApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
+import {
+  vuefesApp,
+  VIZE_BIN,
+  requireVizeBin,
+  syncGitFixtureWorktree,
+} from "../../_helpers/apps.ts";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
+import { prepareNuxtCheckFixture } from "../../_helpers/nuxt-check-prepare.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = vuefesApp;
+let buildCwd = app.check!.cwd;
 
 describe(`${app.name} build (compiler)`, () => {
   before(() => {
     requireVizeBin();
+    buildCwd = syncGitFixtureWorktree(app.name, "build-snapshot");
+    prepareNuxtCheckFixture({
+      name: app.name,
+      sourceDir: app.check!.cwd,
+      cwd: buildCwd,
+      env: app.env,
+      installTimeoutMs: 300_000,
+    });
   });
 
   it("vize build compiles without errors", () => {
-    const cwd = app.check!.cwd;
     const patterns = app.check!.patterns.map((p) => `'${p}'`).join(" ");
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
     fs.rmSync(outDir, { recursive: true, force: true });
@@ -25,7 +39,7 @@ describe(`${app.name} build (compiler)`, () => {
     console.log(`Running: ${cmd}`);
 
     const stdout = execSync(cmd, {
-      cwd,
+      cwd: buildCwd,
       timeout: 120_000,
       maxBuffer: 100 * 1024 * 1024,
     }).toString();

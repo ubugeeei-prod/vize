@@ -683,7 +683,7 @@
     {
       "file": "src/runtime/components/AuthForm.vue",
       "diagnostics": [
-        "error:349:30 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        "error:349:30 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'. (source: <slot name=\"submit\" :loading=\"props.loading\">; binding: 'loading')"
       ]
     },
     {
@@ -824,7 +824,9 @@
     },
     {
       "file": "src/runtime/components/DashboardSearch.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:208:10 [TS2589] Type instantiation is excessively deep and possibly infinite. (source: <UCommandPalette)"
+      ]
     },
     {
       "file": "src/runtime/components/DashboardSearchButton.vue",
@@ -928,11 +930,19 @@
     },
     {
       "file": "src/runtime/components/InputDate.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:175:8 [TS2322] Type '\"end\" | \"start\" | undefined' is not assignable to type 'DateRangeType'.\nType 'undefined' is not assignable to type 'DateRangeType'. (source: :type=\"type\"; binding: 'type')",
+        "error:203:50 [TS2339] Property 'start' does not exist on type 'never'. (source: <ReuseSegmentsTemplate :segments=\"segments.start\" type=\"start\" />; binding: 'segments')",
+        "error:207:50 [TS2339] Property 'end' does not exist on type 'never'. (source: <ReuseSegmentsTemplate :segments=\"segments.end\" type=\"end\" />; binding: 'segments')"
+      ]
     },
     {
       "file": "src/runtime/components/InputMenu.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:660:4 [TS2345] Argument of type '{ highlightOnHover?: boolean; open?: boolean; defaultOpen?: boolean; resetSearchTermOnBlur?: boolean; openOnFocus?: boolean; openOnClick?: boolean; as?: any; required?: boolean; defaultValue?: UnwrapRef<...> | ... 1 more ... | undefined; ... 8 more ...; ignoreFilter: true; }' is not assignable to parameter of type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { name?: string | undefined; required?: boolean | undefined; ... 19 more ...; onHighlight?: ((payload: { ...; } | undefined) => any) | undefined; } & Record<...> & { ...; }'.\nType '{ highlightOnHover?: boolean; open?: boolean; defaultOpen?: boolean; resetSearchTermOnBlur?: boolean; openOnFocus?: boolean; openOnClick?: boolean; as?: any; required?: boolean; defaultValue?: UnwrapRef<...> | ... 1 more ... | undefined; ... 8 more ...; ignoreFilter: true; }' is not assignable to type '{ name?: string | undefined; required?: boolean | undefined; asChild?: boolean | undefined; as?: AsTag | Component | undefined; modelValue?: AcceptableValue[] | AcceptableValue | undefined; ... 16 more ...; onHighlight?: ((payload: { ...; } | undefined) => any) | undefined; }'.\nTypes of property 'modelValue' are incompatible.\nType 'UnwrapRef<...> | UnwrapRef<...> | undefined' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<_Number<_Optional<_Nullable<GetModelValue<T, VK, M, ExcludeItem>, Mod>, Mod>, Mod>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<...> | UnwrapRef<...>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<_Optional<_Nullable<GetModelValue<T, VK, M, ExcludeItem>, Mod>, Mod>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<_Nullable<GetModelValue<T, VK, M, ExcludeItem>, Mod>> | undefined' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<_Nullable<GetModelValue<T, VK, M, ExcludeItem>, Mod>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<GetModelValue<T, VK, M, ExcludeItem>> | null' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<GetModelValue<T, VK, M, ExcludeItem>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRefSimple<GetItemValue<T, VK, ExcludeItem, NestedItem<T>>>[] | UnwrapRef<GetItemValue<T, VK, ExcludeItem, NestedItem<...>>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<GetItemValue<T, VK, ExcludeItem, NestedItem<T>>>' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'UnwrapRef<VK extends undefined ? { [key: string]: any; label?: string | undefined; description?: string | undefined; icon?: any; avatar?: AvatarProps | undefined; ... 5 more ...; ui?: Pick<...> | undefined; } : ...> | AcceptableValue' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'.\nType 'false' is not assignable to type 'AcceptableValue[] | AcceptableValue | undefined'. (source: <Component.Root)",
+        "error:677:24 [TS2352] Conversion of type 'string' to type 'string[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first. (source: :model-value=\"(modelValue as string[])\")",
+        "error:684:42 [TS2352] Conversion of type 'string' to type 'GetItemValue<T, VK, ExcludeItem, NestedItem<T>>[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first. (source: @remove-tag=\"onRemoveTag($event, modelValue as GetModelValue<T, VK, true, ExcludeItem>)\")"
+      ]
     },
     {
       "file": "src/runtime/components/InputNumber.vue",
@@ -948,7 +958,11 @@
     },
     {
       "file": "src/runtime/components/InputTime.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:189:8 [TS2322] Type '\"end\" | \"start\" | undefined' is not assignable to type 'DateRangeType'.\nType 'undefined' is not assignable to type 'DateRangeType'. (source: :type=\"type\"; binding: 'type')",
+        "error:217:50 [TS2339] Property 'start' does not exist on type 'never'. (source: <ReuseSegmentsTemplate :segments=\"segments.start\" type=\"start\" />; binding: 'segments')",
+        "error:221:50 [TS2339] Property 'end' does not exist on type 'never'. (source: <ReuseSegmentsTemplate :segments=\"segments.end\" type=\"end\" />; binding: 'segments')"
+      ]
     },
     {
       "file": "src/runtime/components/Kbd.vue",
@@ -1056,7 +1070,9 @@
     },
     {
       "file": "src/runtime/components/Popover.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:129:16 [TS2339] Property 'Anchor' does not exist on type '{ Root: __VLS_WithSlots$180<DefineComponent<HoverCardRootProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, { \"update:open\": (value: boolean) => any; }, ... 11 more ..., any>, { ...; }>; Trigger: __VLS_WithSlots$179<...>; Portal: __VLS_WithSlots$181<...>; Content: __VLS_WithSlots$182<...>; Arrow: _...'.\nProperty 'Anchor' does not exist on type '{ Root: __VLS_WithSlots$180<DefineComponent<HoverCardRootProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, { \"update:open\": (value: boolean) => any; }, ... 11 more ..., any>, { ...; }>; Trigger: __VLS_WithSlots$179<...>; Portal: __VLS_WithSlots$181<...>; Content: __VLS_WithSlots$182<...>; Arrow: _...'. (source: <Component.Anchor v-if=\"'Anchor' in Component && !!slots.anchor\" as-child>)"
+      ]
     },
     {
       "file": "src/runtime/components/PricingPlan.vue",
@@ -1185,7 +1201,7 @@
     {
       "file": "src/runtime/components/content/ContentSearch.vue",
       "diagnostics": [
-        "error:354:11 [TS2589] Vize internal error: the type-check code generated for this file made the checker give up (TS2589). Types in this and other files may be degraded. Please report this file to Vize."
+        "error:365:10 [TS2589] Type instantiation is excessively deep and possibly infinite. (source: <UCommandPalette)"
       ]
     },
     {
@@ -1597,7 +1613,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 2,
+  "errorCount": 13,
   "warningCount": 0,
   "fileCount": 398
 }

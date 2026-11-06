@@ -24,11 +24,15 @@
     },
     {
       "file": "app/components/AppFooter.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:11:18 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/AppHeader.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:169:22 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/AppLogo.vue",
@@ -74,7 +78,9 @@
     },
     {
       "file": "app/components/Brand/Customize.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:9:23 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/BuildEnvironment.vue",
@@ -82,7 +88,9 @@
     },
     {
       "file": "app/components/Button/Base.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:34:12 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/Button/Group.vue",
@@ -127,7 +135,8 @@
         "error:7:34 [TS2307] Cannot find module 'vue-data-ui/vue-ui-pattern-seed' or its corresponding type declarations.",
         "error:9:41 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:10:42 [TS2307] Cannot find module 'vue-data-ui/utils' or its corresponding type declarations.",
-        "error:141:25 [TS7031] Binding element 'value' implicitly has an 'any' type."
+        "error:141:25 [TS7031] Binding element 'value' implicitly has an 'any' type.",
+        "error:217:14 [TS2339] Property 'applyEllipsis' does not exist on the component instance. (source: {{ applyEllipsis(dataset?.[i]?.name ?? '', 27) }})"
       ]
     },
     {
@@ -139,12 +148,15 @@
     {
       "file": "app/components/Code/FileTree.vue",
       "diagnostics": [
-        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'."
+        "error:3:15 [TS2305] Module '\"vue-router/auto-routes\"' has no exported member 'RouteNamedMap'.",
+        "error:16:18 [TS2304] Cannot find name 'useTemplateRef'."
       ]
     },
     {
       "file": "app/components/Code/Header.vue",
       "diagnostics": [
+        "error:84:31 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:85:29 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:96:1 [TS2304] Cannot find name 'onClickOutside'.",
         "error:100:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
@@ -161,7 +173,13 @@
     },
     {
       "file": "app/components/Code/Viewer.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:12:17 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:41:18 [TS7006] Parameter 'line' implicitly has an 'any' type.",
+        "error:41:24 [TS7006] Parameter 'index' implicitly has an 'any' type.",
+        "error:67:19 [TS7006] Parameter 'anchor' implicitly has an 'any' type.",
+        "error:69:38 [TS7006] Parameter 'event' implicitly has an 'any' type."
+      ]
     },
     {
       "file": "app/components/CollapsibleSection.vue",
@@ -177,6 +195,8 @@
     {
       "file": "app/components/ColumnPicker.vue",
       "diagnostics": [
+        "error:15:19 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:16:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:17:16 [TS2304] Cannot find name 'useId'.",
         "error:20:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
@@ -184,6 +204,8 @@
     {
       "file": "app/components/CommandPalette.client.vue",
       "diagnostics": [
+        "error:17:18 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:21:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:24:27 [TS2304] Cannot find name 'resolveComponent'.",
         "error:278:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
       ]
@@ -191,7 +213,8 @@
     {
       "file": "app/components/Compare/ComparisonGrid.vue",
       "diagnostics": [
-        "error:2:40 [TS2307] Cannot find module 'module-replacements' or its corresponding type declarations."
+        "error:2:40 [TS2307] Cannot find module 'module-replacements' or its corresponding type declarations.",
+        "error:51:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(col.name, col.version)\")"
       ]
     },
     {
@@ -201,6 +224,7 @@
         "error:8:34 [TS2307] Cannot find module 'vue-data-ui/vue-ui-pattern-seed' or its corresponding type declarations.",
         "error:10:34 [TS2307] Cannot find module 'vue-data-ui/utils' or its corresponding type declarations.",
         "error:37:19 [TS2304] Cannot find name 'useElementSize'.",
+        "error:39:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:133:14 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:138:14 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:145:30 [TS7031] Binding element 'dst' implicitly has an 'any' type.",
@@ -223,6 +247,7 @@
         "error:9:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-scatter' or its corresponding type declarations.",
         "error:19:31 [TS2304] Cannot find name 'PackageComparisonData'.",
         "error:26:19 [TS2304] Cannot find name 'useElementSize'.",
+        "error:28:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:87:52 [TS2304] Cannot find name 'FacetInfoWithLabels'.",
         "error:89:12 [TS7006] Parameter 'v' implicitly has an 'any' type.",
         "error:142:14 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -230,7 +255,8 @@
         "error:154:30 [TS7031] Binding element 'dst' implicitly has an 'any' type.",
         "error:154:43 [TS7031] Binding element 'cfg' implicitly has an 'any' type.",
         "error:205:28 [TS7006] Parameter 'args' implicitly has an 'any' type.",
-        "error:226:28 [TS7006] Parameter 'args' implicitly has an 'any' type."
+        "error:226:28 [TS7006] Parameter 'args' implicitly has an 'any' type.",
+        "error:419:19 [TS2339] Property 'drawSmallNpmxLogoAndTaglineWatermark' does not exist on the component instance. (source: drawSmallNpmxLogoAndTaglineWatermark({)"
       ]
     },
     {
@@ -250,12 +276,17 @@
     {
       "file": "app/components/Compare/PackageSelector.vue",
       "diagnostics": [
+        "error:19:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:55:10 [TS7006] Parameter 'o' implicitly has an 'any' type.",
         "error:59:13 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:163:53 [TS7006] Parameter 'r' implicitly has an 'any' type.",
+        "error:192:22 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:194:1 [TS2304] Cannot find name 'onClickOutside'.",
+        "error:212:31 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase v-else :to=\"packageRoute(pkg)\" class=\"text-sm\">; binding: 'to')",
         "error:300:42 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'. (source: :class=\"highlightedIndex === index + resultIndexOffset ? '!bg-accent/15' : ''\")",
-        "error:301:45 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'. (source: @mouseenter=\"highlightedIndex = index + resultIndexOffset\")"
+        "error:301:45 [TS2365] Operator '+' cannot be applied to types 'string | number' and 'number'. (source: @mouseenter=\"highlightedIndex = index + resultIndexOffset\")",
+        "error:309:18 [TS2339] Property 'stripHtmlTags' does not exist on the component instance. (source: {{ stripHtmlTags(decodeHtmlEntities(result.description)) }})",
+        "error:309:32 [TS2339] Property 'decodeHtmlEntities' does not exist on the component instance. (source: {{ stripHtmlTags(decodeHtmlEntities(result.description)) }})"
       ]
     },
     {
@@ -277,8 +308,10 @@
       "file": "app/components/DependencyPathPopup.vue",
       "diagnostics": [
         "error:3:30 [TS2307] Cannot find module '@vueuse/integrations/useFocusTrap/component' or its corresponding type declarations.",
+        "error:11:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:19:1 [TS2304] Cannot find name 'onClickOutside'.",
-        "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?"
+        "error:32:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
+        "error:97:17 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: packageRoute()"
       ]
     },
     {
@@ -313,7 +346,9 @@
     },
     {
       "file": "app/components/Diff/ViewerPanel.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:20:28 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/Filter/Chips.vue",
@@ -326,6 +361,7 @@
     {
       "file": "app/components/Header/AccountMenu.client.vue",
       "diagnostics": [
+        "error:27:24 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:29:1 [TS2304] Cannot find name 'onClickOutside'.",
         "error:33:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:33:29 [TS7006] Parameter 'event' implicitly has an 'any' type."
@@ -347,7 +383,9 @@
     },
     {
       "file": "app/components/Header/MobileMenu.client.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:15:16 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/Header/OrgsDropdown.vue",
@@ -355,15 +393,21 @@
     },
     {
       "file": "app/components/Header/PackagesDropdown.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:97:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(pkg)\")"
+      ]
     },
     {
       "file": "app/components/Header/SearchBox.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:32:18 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/Input/Base.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:40:12 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/InstantSearch.vue",
@@ -402,12 +446,14 @@
     {
       "file": "app/components/LogoContextMenu.vue",
       "diagnostics": [
+        "error:5:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:74:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
     },
     {
       "file": "app/components/Modal.client.vue",
       "diagnostics": [
+        "error:8:19 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:15:14 [TS2552] Cannot find name 'getCurrentInstance'. Did you mean 'getCurrentScope'?",
         "error:21:14 [TS2552] Cannot find name 'getCurrentInstance'. Did you mean 'getCurrentScope'?"
       ]
@@ -443,7 +489,8 @@
     {
       "file": "app/components/Noodle/Lens.vue",
       "diagnostics": [
-        "error:28:30 [TS2304] Cannot find name 'useMediaQuery'."
+        "error:28:30 [TS2304] Cannot find name 'useMediaQuery'.",
+        "error:30:22 [TS2304] Cannot find name 'useTemplateRef'."
       ]
     },
     {
@@ -552,16 +599,23 @@
     },
     {
       "file": "app/components/Package/ActionBar.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:5:19 [TS2304] Cannot find name 'useTemplateRef'."
+      ]
     },
     {
       "file": "app/components/Package/Card.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:54:16 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(result.package.name)\")"
+      ]
     },
     {
       "file": "app/components/Package/ClaimPackageModal.vue",
       "diagnostics": [
-        "error:78:53 [TS7006] Parameter 'op' implicitly has an 'any' type."
+        "error:78:53 [TS7006] Parameter 'op' implicitly has an 'any' type.",
+        "error:101:19 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:178:16 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName)\")",
+        "error:290:24 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(pkg.name)\")"
       ]
     },
     {
@@ -572,13 +626,22 @@
       "file": "app/components/Package/Dependencies.vue",
       "diagnostics": [
         "error:31:49 [TS7006] Parameter 'p' implicitly has an 'any' type.",
-        "error:37:49 [TS7006] Parameter 'p' implicitly has an 'any' type."
+        "error:37:49 [TS7006] Parameter 'p' implicitly has an 'any' type.",
+        "error:130:26 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase :to=\"packageRoute(dep)\" class=\"block truncate\" dir=\"ltr\">; binding: 'to')",
+        "error:163:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(dep, getVulnerableDepInfo(dep)!.version)\")",
+        "error:176:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(dep, getDeprecatedDepInfo(dep)!.version)\")",
+        "error:183:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(dep, version)\")",
+        "error:241:28 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase :to=\"packageRoute(peer.name)\" class=\"block min-w-0 break-all\" dir=\"ltr\">; binding: 'to')",
+        "error:253:18 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(peer.name, peer.version)\")",
+        "error:303:26 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase :to=\"packageRoute(dep)\" class=\"block max-w-[80%] break-words\" dir=\"ltr\">; binding: 'to')",
+        "error:307:18 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(dep, version)\")"
       ]
     },
     {
       "file": "app/components/Package/DeprecatedTree.vue",
       "diagnostics": [
-        "error:44:10 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly root: { readonly bg: \"bg-purple-500/5 border-is-2 border-is-purple-600\"; readonly text: \"text-fg\"; }; readonly direct: { readonly bg: \"bg-purple-500/5 border-is-2 border-is-purple-500\"; readonly text: \"text-fg-muted\"; }; readonly transitive: { ...; }; }'."
+        "error:44:10 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly root: { readonly bg: \"bg-purple-500/5 border-is-2 border-is-purple-600\"; readonly text: \"text-fg\"; }; readonly direct: { readonly bg: \"bg-purple-500/5 border-is-2 border-is-purple-500\"; readonly text: \"text-fg-muted\"; }; readonly transitive: { ...; }; }'.",
+        "error:90:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(pkg.name, pkg.version)\")"
       ]
     },
     {
@@ -594,15 +657,19 @@
     {
       "file": "app/components/Package/Header.vue",
       "diagnostics": [
+        "error:21:16 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:23:34 [TS2304] Cannot find name 'useElementBounding'.",
         "error:39:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:40:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
-        "error:60:24 [TS2552] Cannot find name 'useScroll'. Did you mean 'scroll'?"
+        "error:60:24 [TS2552] Cannot find name 'useScroll'. Did you mean 'scroll'?",
+        "error:310:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName, resolvedVersion, '#provenance')\")"
       ]
     },
     {
       "file": "app/components/Package/InstallScripts.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:126:18 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(dep)\")"
+      ]
     },
     {
       "file": "app/components/Package/Keywords.vue",
@@ -610,7 +677,9 @@
     },
     {
       "file": "app/components/Package/LikeCard.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:73:18 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <NuxtLink :to=\"packageRoute(name)\">; binding: 'to')"
+      ]
     },
     {
       "file": "app/components/Package/Likes.vue",
@@ -622,6 +691,7 @@
       "file": "app/components/Package/List.vue",
       "diagnostics": [
         "error:2:35 [TS2307] Cannot find module 'virtua/vue' or its corresponding type declarations.",
+        "error:54:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:54:32 [TS2304] Cannot find name 'WindowVirtualizerHandle'.",
         "error:62:42 [TS2552] Cannot find name 'DEFAULT_COLUMNS'. Did you mean 'DEFAULT_ICON'?",
         "error:63:53 [TS7006] Parameter 'column' implicitly has an 'any' type.",
@@ -643,10 +713,15 @@
     {
       "file": "app/components/Package/ManagerSelect.vue",
       "diagnostics": [
+        "error:15:17 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:16:20 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:33:17 [TS2304] Cannot find name 'useId'.",
         "error:48:56 [TS7006] Parameter 'pm' implicitly has an 'any' type.",
         "error:57:21 [TS2304] Cannot find name 'PackageManagerId'.",
         "error:64:30 [TS2304] Cannot find name 'useMediaQuery'.",
+        "error:108:34 [TS2339] Property 'packageManagers' does not exist on the component instance. (source: <template v-for=\"pmOption in packageManagers\" :key=\"pmOption.id\">; binding: v-for)",
+        "error:150:31 [TS2339] Property 'packageManagers' does not exist on the component instance. (source: ? `${listboxId}-${packageManagers[highlightedIndex]?.id}`)",
+        "error:158:33 [TS2339] Property 'packageManagers' does not exist on the component instance. (source: v-for=\"(pm, index) in packageManagers\")",
         "error:169:24 [TS2322] Type 'string | number' is not assignable to type 'number'.\nType 'string' is not assignable to type 'number'. (source: @mouseenter=\"highlightedIndex = index\")"
       ]
     },
@@ -657,6 +732,8 @@
     {
       "file": "app/components/Package/Playgrounds.vue",
       "diagnostics": [
+        "error:58:21 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:59:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:62:1 [TS2304] Cannot find name 'onClickOutside'."
       ]
     },
@@ -669,7 +746,10 @@
     },
     {
       "file": "app/components/Package/SelectionCheckbox.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:25:58 [TS2339] Property 'isTouchDevice' does not exist on the component instance. (source: :class=\"{ 'opacity-100! disabled:opacity-30!': isTouchDevice() }\")",
+        "error:35:56 [TS2339] Property 'isTouchDevice' does not exist on the component instance. (source: :class=\"{ 'opacity-100! disabled:opacity-30!': isTouchDevice() }\")"
+      ]
     },
     {
       "file": "app/components/Package/SelectionView.vue",
@@ -682,6 +762,8 @@
       "diagnostics": [
         "error:2:18 [TS2304] Cannot find name 'useWindowSize'.",
         "error:3:16 [TS2304] Cannot find name 'useWindowScroll'.",
+        "error:4:19 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:5:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:6:16 [TS2304] Cannot find name 'useElementBounding'."
       ]
     },
@@ -713,7 +795,10 @@
     },
     {
       "file": "app/components/Package/TableRow.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:75:10 [TS2339] Property 'stripHtmlTags' does not exist on the component instance. (source: {{ stripHtmlTags(decodeHtmlEntities(pkg.description || '')) || '-' }})",
+        "error:75:24 [TS2339] Property 'decodeHtmlEntities' does not exist on the component instance. (source: {{ stripHtmlTags(decodeHtmlEntities(pkg.description || '')) || '-' }})"
+      ]
     },
     {
       "file": "app/components/Package/TimelineChart.vue",
@@ -721,6 +806,7 @@
         "error:9:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:16:8 [TS2307] Cannot find module 'vue-data-ui/vue-ui-stackbar' or its corresponding type declarations.",
         "error:17:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
+        "error:57:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:437:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:442:10 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
         "error:460:10 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -768,6 +854,7 @@
       "diagnostics": [
         "error:2:71 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
         "error:3:36 [TS2307] Cannot find module 'vue-data-ui/composables' or its corresponding type declarations.",
+        "error:74:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:575:23 [TS7006] Parameter 'm' implicitly has an 'any' type.",
         "error:1155:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
         "error:1160:16 [TS7006] Parameter 'csvStr' implicitly has an 'any' type.",
@@ -784,6 +871,7 @@
       "file": "app/components/Package/VersionDistribution.vue",
       "diagnostics": [
         "error:2:70 [TS2307] Cannot find module 'vue-data-ui/vue-ui-xy' or its corresponding type declarations.",
+        "error:24:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:141:38 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:149:33 [TS7006] Parameter 'item' implicitly has an 'any' type.",
         "error:201:16 [TS7006] Parameter 'args' implicitly has an 'any' type.",
@@ -800,7 +888,9 @@
       "file": "app/components/Package/Versions.vue",
       "diagnostics": [
         "error:2:41 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
-        "error:4:34 [TS2307] Cannot find module 'packumeta' or its corresponding type declarations."
+        "error:4:34 [TS2307] Cannot find module 'packumeta' or its corresponding type declarations.",
+        "error:708:39 [TS2339] Property 'filterExcludedTags' does not exist on the component instance. (source: v-if=\"v.tags?.length && filterExcludedTags(v.tags, row.tags).length\")",
+        "error:712:31 [TS2339] Property 'filterExcludedTags' does not exist on the component instance. (source: v-for=\"tag in filterExcludedTags(v.tags, row.tags)\")"
       ]
     },
     {
@@ -810,8 +900,10 @@
         "error:42:10 [TS2552] Cannot find name 'SEVERITY_LEVELS'. Did you mean 'severityLabels'?",
         "error:42:33 [TS7006] Parameter 's' implicitly has an 'any' type.",
         "error:43:10 [TS7006] Parameter 's' implicitly has an 'any' type.",
-        "error:138:31 [TS2551] Property 'SEVERITY_LEVELS' does not exist on the component instance. Did you mean 'severityLabels'? (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")",
-        "error:138:54 [TS7006] Parameter 's' implicitly has an 'any' type. (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")"
+        "error:129:24 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(pkg.name, pkg.version)\")",
+        "error:138:31 [TS2339] Property 'SEVERITY_LEVELS' does not exist on the component instance. (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")",
+        "error:138:54 [TS7006] Parameter 's' implicitly has an 'any' type. (source: v-for=\"s in SEVERITY_LEVELS.filter(s => pkg.counts[s] > 0)\")",
+        "error:165:24 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(pkg.name, vuln.fixedIn)\")"
       ]
     },
     {
@@ -844,6 +936,8 @@
     {
       "file": "app/components/ReadmeTocDropdown.vue",
       "diagnostics": [
+        "error:47:17 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:48:20 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:73:17 [TS2304] Cannot find name 'useId'.",
         "error:109:30 [TS2304] Cannot find name 'useMediaQuery'."
       ]
@@ -859,6 +953,7 @@
     {
       "file": "app/components/SearchProviderToggle.client.vue",
       "diagnostics": [
+        "error:7:19 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:9:1 [TS2304] Cannot find name 'onClickOutside'.",
         "error:13:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:13:29 [TS7006] Parameter 'event' implicitly has an 'any' type."
@@ -941,7 +1036,11 @@
     },
     {
       "file": "app/components/Tab/List.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:8:17 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:32:17 [TS2339] Property 'focus' does not exist on type '{}'.",
+        "error:33:17 [TS2339] Property 'click' does not exist on type '{}'."
+      ]
     },
     {
       "file": "app/components/Tab/Panel.vue",
@@ -973,7 +1072,9 @@
         "error:76:35 [TS7006] Parameter 'p' implicitly has an 'any' type.",
         "error:234:19 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
         "error:264:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
+        "error:297:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(typesPackageName!)\")",
         "error:329:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)",
+        "error:351:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(createPackageInfo.packageName)\")",
         "error:372:21 [TS2365] Operator '>' cannot be applied to types 'string | number' and 'number'. (source: >{{ i > 0 ? ' ' : '' }}{{ part }}</span)"
       ]
     },
@@ -991,7 +1092,9 @@
       "file": "app/components/Tooltip/Base.vue",
       "diagnostics": [
         "error:3:42 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
-        "error:4:82 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations."
+        "error:4:82 [TS2307] Cannot find module '@floating-ui/vue' or its corresponding type declarations.",
+        "error:34:20 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:35:20 [TS2304] Cannot find name 'useTemplateRef'."
       ]
     },
     {
@@ -1009,20 +1112,26 @@
     {
       "file": "app/components/UserCombobox.vue",
       "diagnostics": [
+        "error:21:17 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:24:17 [TS2304] Cannot find name 'useId'.",
-        "error:136:30 [TS2304] Cannot find name 'useMediaQuery'."
+        "error:136:30 [TS2304] Cannot find name 'useMediaQuery'.",
+        "error:148:15 [TS2339] Property 'noCorrect' does not exist on the component instance. (source: v-bind=\"noCorrect\")"
       ]
     },
     {
       "file": "app/components/VersionSelector.vue",
       "diagnostics": [
-        "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations."
+        "error:3:25 [TS2307] Cannot find module 'verkit' or its corresponding type declarations.",
+        "error:30:21 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:31:20 [TS2304] Cannot find name 'useTemplateRef'.",
+        "error:682:18 [TS2339] Property 'packageVersionsRoute' does not exist on the component instance. (source: :to=\"packageVersionsRoute(packageName)\")"
       ]
     },
     {
       "file": "app/components/VideoPlayer.vue",
       "diagnostics": [
         "error:2:17 [TS2307] Cannot find module 'hls.js' or its corresponding type declarations.",
+        "error:9:18 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:22:30 [TS7006] Parameter 'err' implicitly has an 'any' type.",
         "error:34:1 [TS2552] Cannot find name 'useIntersectionObserver'. Did you mean 'IntersectionObserver'?",
         "error:36:5 [TS7031] Binding element 'entry' implicitly has an 'any' type."
@@ -1115,12 +1224,16 @@
     },
     {
       "file": "app/pages/diff/[[org]]/[packageName]/v/[versionRange].vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:165:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <NuxtLink :to=\"packageRoute(packageName)\" class=\"btn\">{{; binding: 'to')",
+        "error:179:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <NuxtLink :to=\"packageRoute(packageName)\" class=\"btn\">{{; binding: 'to')"
+      ]
     },
     {
       "file": "app/pages/index.vue",
       "diagnostics": [
-        "error:20:1 [TS2304] Cannot find name 'defineOgImage'."
+        "error:20:1 [TS2304] Cannot find name 'defineOgImage'.",
+        "error:100:28 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase :to=\"packageRoute(framework.package)\" class=\"gap-2 text-sm\">; binding: 'to')"
       ]
     },
     {
@@ -1128,7 +1241,10 @@
       "diagnostics": [
         "error:20:43 [TS18047] 'leaderboardEntries.value' is possibly 'null'.",
         "error:21:41 [TS18047] 'leaderboardEntries.value' is possibly 'null'.",
-        "error:112:15 [TS18047] 'leaderboardEntries' is possibly 'null'. (source: v-if=\"leaderboardEntries.length === 0\")"
+        "error:112:15 [TS18047] 'leaderboardEntries' is possibly 'null'. (source: v-if=\"leaderboardEntries.length === 0\")",
+        "error:148:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(entry.packageName)\")",
+        "error:249:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(entry.packageName)\")",
+        "error:336:20 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(entry.packageName)\")"
       ]
     },
     {
@@ -1161,6 +1277,7 @@
     {
       "file": "app/pages/package-changelog/[[org]]/[name].vue",
       "diagnostics": [
+        "error:58:15 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:100:1 [TS2304] Cannot find name 'defineOgImage'."
       ]
     },
@@ -1176,17 +1293,21 @@
       "file": "app/pages/package-code/[[org]]/[packageName]/v/[version]/[...filePath].vue",
       "diagnostics": [
         "error:19:8 [TS7006] Parameter 'route' implicitly has an 'any' type.",
+        "error:31:27 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:216:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:347:1 [TS2304] Cannot find name 'defineOgImage'.",
         "error:430:1 [TS2304] Cannot find name 'onPrehydrate'.",
-        "error:430:14 [TS7006] Parameter 'el' implicitly has an 'any' type."
+        "error:430:14 [TS7006] Parameter 'el' implicitly has an 'any' type.",
+        "error:454:49 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase variant=\"button-secondary\" :to=\"packageRoute(packageName)\">{{; binding: 'to')",
+        "error:468:49 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: <LinkBase variant=\"button-secondary\" :to=\"packageRoute(packageName, version)\">{{; binding: 'to')"
       ]
     },
     {
       "file": "app/pages/package-docs/[...path].vue",
       "diagnostics": [
         "error:3:35 [TS2307] Cannot find module 'h3' or its corresponding type declarations.",
-        "error:126:1 [TS2304] Cannot find name 'defineOgImage'."
+        "error:126:1 [TS2304] Cannot find name 'defineOgImage'.",
+        "error:193:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName)\")"
       ]
     },
     {
@@ -1207,6 +1328,7 @@
     {
       "file": "app/pages/package/[[org]]/[name].vue",
       "diagnostics": [
+        "error:5:22 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:24:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:25:1 [TS2552] Cannot find name 'useEventListener'. Did you mean 'addEventListener'?",
         "error:38:1 [TS2304] Cannot find name 'defineOgImage'.",
@@ -1234,7 +1356,11 @@
         "error:74:19 [TS7006] Parameter 'key' implicitly has an 'any' type.",
         "error:74:24 [TS7006] Parameter 'nuxtApp' implicitly has an 'any' type.",
         "error:205:23 [TS2304] Cannot find name 'refDebounced'.",
-        "error:220:46 [TS7006] Parameter 'v' implicitly has an 'any' type."
+        "error:220:46 [TS7006] Parameter 'v' implicitly has an 'any' type.",
+        "error:275:18 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName)\")",
+        "error:326:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName, latestTagRow!.version)\")",
+        "error:399:22 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName, row.version)\")",
+        "error:598:32 [TS2339] Property 'packageRoute' does not exist on the component instance. (source: :to=\"packageRoute(packageName, item.version)\")"
       ]
     },
     {
@@ -1275,6 +1401,7 @@
         "error:154:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
         "error:193:17 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ readonly algolia: 500; readonly npm: 500; }'.",
         "error:202:21 [TS7053] Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<\"algolia\" | \"npm\", Set<SortKey>>'.",
+        "error:373:30 [TS2304] Cannot find name 'useTemplateRef'.",
         "error:379:44 [TS7006] Parameter 'r' implicitly has an 'any' type.",
         "error:388:5 [TS7006] Parameter 's' implicitly has an 'any' type.",
         "error:404:9 [TS7006] Parameter 's' implicitly has an 'any' type.",
@@ -1319,7 +1446,7 @@
       ]
     }
   ],
-  "errorCount": 328,
+  "errorCount": 437,
   "warningCount": 0,
   "fileCount": 222
 }

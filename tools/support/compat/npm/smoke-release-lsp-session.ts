@@ -8,7 +8,8 @@
  *
  * Vite checks hover, the imported component's definition, template completion,
  * and rename. Nuxt checks the same authored `title` binding: hover, template
- * completion, definition back to the script binding, and rename.
+ * completion, definition back to the script binding, and rename. Both shapes
+ * then prove watched SFC and TypeScript module lifecycle refreshes.
  */
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -17,6 +18,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { DIAGNOSTIC_QUIET_MS, writeLspDiagnosticSettle } from "./smoke-release-init-timing.ts";
+import { runReleaseLspFileRefresh } from "./smoke-release-lsp-file-refresh.ts";
 
 const [projectRoot, projectShape = "vite"] = process.argv.slice(2);
 assert.ok(projectRoot, "Usage: smoke-release-lsp-session.ts <project-root> [vite|nuxt]");
@@ -250,6 +252,20 @@ await expectFeature(
   { ...at("const title", 6), newName: "heading" },
   (result) => mentions(result, appPath),
 );
+try {
+  await runReleaseLspFileRefresh({
+    appPath,
+    appText,
+    appUri: app,
+    notifications,
+    record: (name, result) => results.push({ name, result }),
+    send,
+  });
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  results.push({ name: "watched file lifecycle", result: message });
+  failures.push(`watched file lifecycle: ${message}`);
+}
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -291,6 +307,6 @@ await request("shutdown", undefined);
 send({ method: "exit" });
 console.log(
   projectShape === "nuxt"
-    ? "runtime: project-local Nuxt vize lsp (hover, definition, completion, rename)"
-    : "runtime: project-local vize lsp (hover, definition, completion, rename)",
+    ? "runtime: project-local Nuxt vize lsp (hover, definition, completion, rename, watched file refresh)"
+    : "runtime: project-local vize lsp (hover, definition, completion, rename, watched file refresh)",
 );

@@ -1096,7 +1096,11 @@
     },
     {
       "file": "packages/core/src/DismissableLayer/story/DismissableLayerBasic.story.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:66:14 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: (ev) => {)",
+        "error:71:14 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: (ev) => {)",
+        "error:76:14 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: (ev) => {)"
+      ]
     },
     {
       "file": "packages/core/src/DismissableLayer/story/DismissableLayerDialog.story.vue",
@@ -1112,7 +1116,11 @@
     },
     {
       "file": "packages/core/src/DismissableLayer/story/_DismissableLayer.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:37:26 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: @escape-key-down=\"(ev) => {)",
+        "error:41:31 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: @pointer-down-outside=\"(ev) => {)",
+        "error:46:24 [TS7006] Parameter 'ev' implicitly has an 'any' type. (source: @focus-outside=\"(ev) => {)"
+      ]
     },
     {
       "file": "packages/core/src/DismissableLayer/story/_DummyDialog.vue",
@@ -2004,9 +2012,7 @@
     },
     {
       "file": "packages/core/src/PinInput/story/PinInput.story.vue",
-      "diagnostics": [
-        "error:20:11 [TS2322] Type 'string[]' is not assignable to type 'number[]'.\nType 'string' is not assignable to type 'number'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "packages/core/src/PinInput/story/PinInputNumeric.story.vue",
@@ -2498,7 +2504,9 @@
     },
     {
       "file": "packages/core/src/Select/SelectContentImpl.vue",
-      "diagnostics": []
+      "diagnostics": [
+        "error:317:12 [TS2322] Type 'Direction' is not assignable to type 'never'.\nType '\"ltr\"' is not assignable to type 'never'. (source: :dir=\"rootContext.dir.value\"; binding: 'dir')"
+      ]
     },
     {
       "file": "packages/core/src/Select/SelectGroup.vue",
@@ -3721,7 +3729,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 5,
+  "errorCount": 11,
   "warningCount": 0,
   "fileCount": 928
 }
