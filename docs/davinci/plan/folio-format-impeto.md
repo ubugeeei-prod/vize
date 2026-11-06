@@ -82,7 +82,8 @@ from the P3-2 effect vocabulary: `freeze`, `capture`, `read-prop`,
 
 P3-10 adds `vize_impeto::placement::L3PlacementFolio`, a derived page named
 `[s3-placement-folio]`. Placements are an overlay, so they print on their own
-page and the graph grammar the Lean reference parses stays unchanged.
+page and the graph grammar the independent Rust reference parses stays
+unchanged.
 
 | section                           | entry grammar                                                    |
 | --------------------------------- | ---------------------------------------------------------------- |

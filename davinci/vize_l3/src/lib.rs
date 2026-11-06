@@ -20,7 +20,7 @@
 //!
 //! The operation semantics review point lives in
 //! [`docs/davinci/plan/impeto-ops.md`](../../../docs/davinci/plan/impeto-ops.md)
-//! and is kept in sync with [`op::OpKind`] plus the Lean reference runner.
+//! and is kept in sync with [`op::OpKind`] plus the independent Rust reference.
 
 #![no_std]
 

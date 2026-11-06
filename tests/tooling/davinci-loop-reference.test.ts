@@ -7,7 +7,7 @@ function fixture(name: string, extension: string) {
   return JSON.parse(
     fs.readFileSync(
       new URL(
-        `../formal/impeto/fixtures/rust-lowered-loop-${name}.${extension}.json`,
+        `../fixtures/l3-reference/rust-lowered-loop-${name}.${extension}.json`,
         import.meta.url,
       ),
       "utf8",

@@ -9,7 +9,7 @@
 - [x] P3-1 `vize_impeto` crate + phase validator
 - [x] P3-2 Reactivity lattice fact group v1
 - [x] P3-3 L2→L3 lowering + shared partition
-- [x] P3-4 Lean reference semantics + differential runner
+- [x] P3-4 Rust reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
 - [ ] P3-6 Vapor backend on L3
 - [x] P3-7 VDOM patch flags from lattice facts _(owner-keyed table and hydrated DOM corpus gate; see [record](./phase-3-records/p3-7.md))_
@@ -20,7 +20,7 @@
 - [x] P3-12 Behavioral (sprout) runner incl. IME scripts
 - [x] P3-13 Optimization remarks + corpus remarks-diff
 - [x] P3-14 `folio-reduce` _(`vize reduce`; see [record](./phase-3-records/p3-14.md))_
-- [x] P3-15 Lean theorems (lattice / grouping / IVM linearity)
+- [x] P3-15 Kani laws (lattice / grouping / IVM linearity)
 - [ ] P3-16 Phase exit
 - [x] P3-17 Production SFC reach _(slice 1 measures `compile_sfc` reach per shipping shape and pins `[reach]` floors; see [record](./phase-3-records/p3-17.md))_
 
@@ -60,11 +60,12 @@ total lowering skeleton, and exported partition fact contract. _Closed
 2026-09-12:_ TS-17 L3 Folio snapshots and TS-20 L2→L3 fuzz coverage were added
 to the same record.
 
-**P3-4 Lean reference + differential.** `tests/formal/impeto/` Lean package
-(CI-lenient lane per charter #39): executable small-step semantics for L3 ops
-under both Vapor and VDOM interpretations; runner compares compiled-output
-behavior traces vs reference on L3 fixtures (TS-28). _Accept:_ runner in CI
-on the fixture ladder. The 2026-09-15 compiled-runtime slice evaluates emitted
+**P3-4 Rust reference + differential.** The independent, test-only reference in
+`tests/davinci_test_support/src/l3_reference` provides executable small-step
+semantics for L3 ops under both Vapor and VDOM interpretations; the runner
+compares compiled-output behavior traces with the reference on L3 fixtures
+(TS-28). _Accept:_ runner in CI on the fixture ladder. The 2026-09-15
+compiled-runtime slice evaluates emitted
 DOM/Vapor render functions under a deterministic JS host trace runner in TS-28;
 P3-4 still exits only once the mounted behavior runner uses the same reference
 contract.
@@ -85,14 +86,14 @@ absent-slot fallback `v-text` updates. _Model slice 2026-09-22:_ native
 twelve full reference observations with both mounted runtimes. _Closed
 2026-09-22:_ supplied slots (static text or displayed slot props, including in
 branches and keyed loops) now share eight full observations too. The mounted
-runner and the Lean reference use one contract across the fixture ladder, the
+runner and the independent reference use one contract across the fixture ladder, the
 TS-29 matrix and the model/slot references (see the record).
 
 **P3-5 Op reference doc.** `docs/davinci/plan/impeto-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
-lands** (MIR anti-lesson); Lean file is the normative companion; Folio is the
-concrete syntax. _Accept:_ review point — signed off; doc cross-linked from
-rustdoc. _Landed 2026-09-12:_ see
+lands** (MIR anti-lesson); the independent Rust reference is the normative
+companion; Folio is the concrete syntax. _Accept:_ review point — signed off;
+doc cross-linked from rustdoc. _Landed 2026-09-12:_ see
 [P3-5 record](./phase-3-records/p3-5.md).
 
 **P3-6 Vapor on L3.** `vize_atelier_vapor` lowers L2→L3→generate with full
@@ -246,16 +247,16 @@ applied/missed `s3.extract-placements` remark per candidate, gated corpus-wide
 by a TS-32 baseline. _Closed 2026-09-23:_ TS-17 and TS-32 exit 0 and
 emitted output is unchanged. Vapor still does not read `chosen` (P3-6).
 
-**P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the Lean
-reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
+**P3-11 IVM oracle.** Incremental-update ≡ from-scratch render on the independent
+Rust reference for keyed/unkeyed `v-for`, conditional toggles, mixed non-linear
 expressions (TS-29). _Accept:_ suite green over matrix fixtures.
 
 _Array-loop slice 2026-09-20:_ the [P3-11 record](./phase-3-records/p3-11.md)
 adds independent scoped array execution and retained-identity reconciliation,
 with full mounted VDOM/Vapor observations. _Closed 2026-09-21:_ a generated
 32-case matrix covers keyed and positional arrays, objects and ranges; per-item
-and guard toggles; and non-linear expressions evaluated by an independent Lean
-JavaScript subset. It runs through the proved update machine and both mounted
+and guard toggles; and non-linear expressions evaluated by the independent
+reference's JavaScript subset. It runs through the proved update machine and both mounted
 runtimes. The only divergence is an exactly pinned upstream `runtime-vapor`
 unkeyed-object key-alias defect.
 
@@ -273,7 +274,7 @@ bindings. It records the `v-text`, source-order, and model-expression defects
 exposed by those scripts. _Closed 2026-09-22:_ every acceptance surface
 (IME scripts, modifiers, checkbox arrays, select-multiple, keyed interactions
 including live model state across reorder, slots) now has trace equality across
-both backends and against the Lean reference; see the record's gate table.
+both backends and against the independent Rust reference; see the record's gate table.
 
 **P3-13 Remarks.** `{pass, kind: applied|missed, span, args}` structured
 remarks through the observer; corpus remarks-diff job (TS-32); missed-remarks
@@ -300,23 +301,24 @@ fixture to ≤ 20% size while preserving the oracle. **Landed 2026-09-22:**
 content-seeded crash repro from 3733 to 117 bytes (3.1%, 1-minimal), and the
 reduced repro still replays through `vize repro`.
 
-**P3-15 Lean theorems.** Lattice laws (classification monotonicity, join),
+**P3-15 Kani laws.** Lattice laws (classification monotonicity, join),
 effect-grouping preserves dependency edges, keyed-`v-for` IVM linearity —
 proved against the P3-4 semantics as they stabilize. _Accept:_ theorems in
-CI-lenient lane; failures block L3-semantics changes, not unrelated PRs.
+the Kani lane; failures block L3-semantics changes, not unrelated PRs.
 
 _Lattice slice 2026-09-21:_ the [P3-15 record](./phase-3-records/p3-15.md)
 proves the lattice order, least-upper-bound join, declarative-spec minimality
-and classification monotonicity in Lean, audits every theorem's foundations
-during `lake build`, and checks the Rust evaluator's 400-row fact page against
-the proved classifier. _Grouping slice 2026-09-21:_ acceptance by the TS-27
+and classification monotonicity with bounded Kani harnesses, and checks the
+Rust evaluator's 400-row fact page against the proved classifier. _Grouping
+slice 2026-09-21:_ acceptance by the TS-27
 scheduled-phase edge contract is proved to order every state edge in the P3-4
 VDOM and Vapor traces, and to keep scoped edges in scope. Any accepted
 regrouping therefore preserves the edge set; 45 Rust validator verdicts match
-the Lean contract. _Closed 2026-09-21:_ the reference update machine is proved
+the reference contract. _Closed 2026-09-21:_ the reference update machine is proved
 to equal recompute-from-scratch, retain keyed identities and allocate exactly
-the inserted delta, completing the three theorem families in the CI-lenient
-lane (see the record).
+the inserted delta, completing the three theorem families. Since 2026-11-03,
+the Rust/Kani mapping and explicit proof bounds are recorded in the
+[migration decision](../decisions/2026-11-03-10825-l3-reference-laws-kani.md).
 
 **P3-17 Production SFC reach.** Every Davinci backend stage must be reached
 by the compiles users actually run: `compile_sfc` with a Croquis summary,

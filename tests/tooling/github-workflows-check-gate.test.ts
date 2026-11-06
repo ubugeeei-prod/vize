@@ -360,7 +360,7 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     "benchmark.yml",
     "check-bench.yml",
     "content-mapper-conformance.yml",
-    "davinci-lean.yml",
+    "davinci-reference.yml",
     "davinci-resource-budgets.yml",
     "e2e.yml",
     "editor-conformance.yml",
