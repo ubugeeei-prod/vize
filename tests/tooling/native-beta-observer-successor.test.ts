@@ -128,6 +128,8 @@ test("missing or forged current source, dependency, runtime or four-role produce
     "tests/tooling/support/native-beta-dto/audit-wire-types.ts",
     "tests/tooling/support/native-beta-dto/historical-acknowledged-root-warning.ts",
     "tests/tooling/support/native-beta-dto/beta-attached-route.ts",
+    "tests/tooling/support/native-beta-dto/merged-trace.ts",
+    "tests/tooling/support/native-beta-dto/run-source.ts",
   ];
   for (const path of paths)
     for (const bytes of [null, Buffer.from("unregistered current observer/dependency\n")])

@@ -12,13 +12,15 @@ import {
 import { verifyAfterLogicalRevision } from "./logical-revision.ts";
 import { verifyBetaLogicalRoute } from "./logical-attached-route.ts";
 import { loadAfter4CleanupSource } from "./after4-cleanup-source.ts";
-import type { Packet, Syscall, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
+import type { Packet, StreamPair, Provider, Source, Receipt } from "./audit-wire-types.ts";
 import {
   readNativeTrace,
   nativeOwnerTerminalState,
   requireNoUnknownNativeWrites,
   requireSingleTerminalStderrRole,
+  compareNativeCompletionOrder,
 } from "./native-io.ts";
+import type { MergedTraceAuthority } from "./merged-trace.ts";
 import { observeHistoricalTerminalStderr } from "./terminal-stderr-unavailable.ts";
 import { observeHistoricalSplitWatchLog } from "./stable-watcher-mixed.ts";
 import {
@@ -38,6 +40,45 @@ assert.equal(source.sdkVersion, provider.version);
 assert.equal(source.sdkSha256, provider.executableSha256);
 assert.equal(source.source, process.env.VIZE_NATIVE_DTO_SOURCE_SHA);
 assert.equal(source.rows.length, 3);
+const sourceExecution = load("source-execution.json") as {
+  source: string;
+  executable: string;
+  executableSha256: string;
+  command: string;
+  commandSha256: string;
+  commandVersion: string;
+  args: string[];
+  trace: MergedTraceAuthority;
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  error: string | null;
+};
+assert.equal(sourceExecution.source, source.source);
+assert.equal(sourceExecution.status, 0);
+assert.equal(sourceExecution.signal, null);
+assert.equal(sourceExecution.error, null);
+assert.equal(hash(fs.readFileSync(sourceExecution.executable)), sourceExecution.executableSha256);
+assert.equal(fs.realpathSync(sourceExecution.command), sourceExecution.command);
+assert.equal(hash(fs.readFileSync(sourceExecution.command)), sourceExecution.commandSha256);
+assert.match(sourceExecution.commandVersion, /^strace -- version [0-9]/u);
+const selector =
+  "lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete";
+assert.deepEqual(sourceExecution.args, [
+  "-f",
+  "-ttt",
+  "-s",
+  "16777216",
+  "-xx",
+  "-e",
+  "trace=read,write,readv,writev,process",
+  "-o",
+  path.join(root, "syscalls.merged"),
+  sourceExecution.executable,
+  selector,
+  "--ignored",
+  "--exact",
+  "--nocapture",
+]);
 const prepared = load("source-role.json") as Record<string, unknown>;
 verifyObserverDependencies(
   source.observerDependencies,
@@ -54,7 +95,9 @@ const watcherContext = () => ({
   sdkExecutable: provider.executable,
   projectRoots: [source.root, source.attached.root],
 });
-const trace = await readNativeTrace(root, provider.executable);
+const trace = await readNativeTrace(root, provider.executable, sourceExecution.trace);
+assert.ok(trace.mergedTrace, "current qualification requires merged native trace authority");
+save("merged-native-trace.json", trace.mergedTrace);
 const { threads, leaders, exits, records, eofReads } = trace;
 save("native-execve-handoffs.json", trace.execveHandoffs);
 const native = leaders.filter((entry) => entry.lsp).sort((a, b) => a.pid - b.pid);
@@ -170,19 +213,15 @@ fs.mkdirSync(path.join(root, "raw-streams"), { recursive: true });
 for (const [index, process] of native.entries()) {
   const leader = process.pid;
   const scope = index === 0 ? "api-owned-explicit-file-changes" : "attached-editor-overlay";
-  const streams = new Map<string, Syscall[]>();
+  const streams = new Map<string, (typeof records)[number][]>();
   for (const row of records) {
     if (owner(row.tid) !== leader) continue;
     const id = `${row.fd}:${row.op}`;
     if (!streams.has(id)) streams.set(id, []);
     streams.get(id)!.push(row);
   }
-  const joined = (rows: Syscall[]) =>
-    Buffer.concat(
-      [...rows]
-        .sort((a, b) => a.at.localeCompare(b.at) || a.tid - b.tid || a.line - b.line)
-        .map((row) => row.data),
-    );
+  const joined = (rows: (typeof records)[number][]) =>
+    Buffer.concat([...rows].sort(compareNativeCompletionOrder).map((row) => row.data));
   const stderr = joined(streams.get("2:write") ?? []);
   const stderrFile = `raw-streams/owner-${leader}.stderr.bin`;
   fs.writeFileSync(path.join(root, stderrFile), stderr);
