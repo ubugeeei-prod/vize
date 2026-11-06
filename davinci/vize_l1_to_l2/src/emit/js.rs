@@ -90,6 +90,15 @@ fn parse_rejected_opaque<'a>(expr: &ExprRef<'a>) -> Option<&'a OpaqueExpr<'a>> {
     (opaque.reason == OpaqueReason::ParseRejected).then_some(opaque)
 }
 
+/// Whether an L2 parse rejection is nevertheless an emitter-supported raw
+/// JavaScript spelling (for example a reserved dynamic key or an expression
+/// ending in a line comment).
+#[doc(hidden)]
+pub fn parse_rejected_expression_is_raw_js(expr: &ExprRef<'_>, allow_identifier: bool) -> bool {
+    parse_rejected_opaque(expr).is_some_and(|opaque| opaque.source.trim().is_empty())
+        || parse_rejected_original_raw_js(expr, allow_identifier).is_some()
+}
+
 fn trailing_block_comment_value_is_js(source: &str, span: Span) -> bool {
     strip_trailing_block_comments(source)
         .map(|stripped| super::js_comment::source_is_js(stripped, span.start))
@@ -170,7 +179,7 @@ mod tests {
     use vize_l0::Span;
     use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 
-    use super::{js_expr_source, parse_rejected_raw_js};
+    use super::{js_expr_source, parse_rejected_expression_is_raw_js, parse_rejected_raw_js};
 
     fn rejected<'a>(allocator: &'a vize_l0::Allocator, source: &'a str) -> ExprRef<'a> {
         ExprRef::Opaque(allocator.alloc(OpaqueExpr {
@@ -197,5 +206,38 @@ mod tests {
             .expect("line comment can be rewritten");
         assert_eq!(raw.as_str(), "ok /*  comment */");
         assert!(parse_rejected_raw_js(&rejected(&allocator, "ok. // comment"), false).is_none());
+    }
+
+    #[test]
+    fn classifies_supported_raw_rejections_without_admitting_invalid_syntax() {
+        let allocator = vize_l0::Allocator::new();
+        for source in [
+            "state.ok\n// note\n",
+            "state.ok // note\n",
+            "state.ok\n// */ + missingName() /*\n",
+            "state.雪 / 2 // note\n",
+            "state.obj.return / 2 // note\n",
+        ] {
+            assert_eq!(
+                parse_rejected_expression_is_raw_js(&rejected(&allocator, source), false),
+                true,
+                "{source:?}"
+            );
+        }
+        assert_eq!(
+            parse_rejected_expression_is_raw_js(&rejected(&allocator, "class"), true),
+            true
+        );
+        assert_eq!(
+            parse_rejected_expression_is_raw_js(&rejected(&allocator, "  \n"), false),
+            true
+        );
+        for source in ["count as", "const x = 1", "x +"] {
+            assert_eq!(
+                parse_rejected_expression_is_raw_js(&rejected(&allocator, source), false),
+                false,
+                "{source:?}"
+            );
+        }
     }
 }

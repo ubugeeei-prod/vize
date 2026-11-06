@@ -34,10 +34,17 @@ const value = 'a' as 'a' | 'b';
             &[(child.clone(), child_source)],
         )
         .unwrap();
-        assert_eq!(project.host.code.contains("$Patterns.Match<"), enabled);
         assert_eq!(
-            project.host.code.contains("declare namespace $Patterns"),
-            enabled
+            project.host.code.matches("$Patterns.Match<").count(),
+            4 * usize::from(enabled)
+        );
+        assert_eq!(
+            project
+                .host
+                .code
+                .matches("declare namespace $Patterns")
+                .count(),
+            0
         );
         let dependency = project
             .host
@@ -45,10 +52,28 @@ const value = 'a' as 'a' | 'b';
             .iter()
             .find(|dependency| dependency.source_path.ends_with("Child.vue"))
             .unwrap();
-        assert_eq!(dependency.code.contains("$Patterns.Match<"), enabled);
         assert_eq!(
-            dependency.code.contains("declare namespace $Patterns"),
-            enabled
+            dependency.code.matches("$Patterns.Match<").count(),
+            2 * usize::from(enabled)
+        );
+        assert_eq!(
+            dependency
+                .code
+                .matches("declare namespace $Patterns")
+                .count(),
+            0
+        );
+        let project_root = project
+            .session_project_root
+            .as_ref()
+            .expect("editor project must own a materialized project root");
+        let shared_helpers = std::fs::read_to_string(project_root.join("__vize_helpers.d.ts"))
+            .expect("editor project must materialize one shared helper file");
+        assert_eq!(
+            shared_helpers
+                .matches("declare namespace $Patterns")
+                .count(),
+            1
         );
         let mirrored_child = project.host.materialized_sources.iter().find(|file| {
             file.source_path.ends_with("Child.vue") && file.code.contains("Exhaustiveness<")

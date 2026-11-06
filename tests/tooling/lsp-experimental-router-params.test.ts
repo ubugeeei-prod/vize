@@ -66,17 +66,37 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
   const bytes = fs.readFileSync(path.join(custody, entry.file));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
-  const receipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
+  const historicalReceipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
   assert.equal(
-    createHash("sha256").update(receipt).digest("hex"),
+    createHash("sha256").update(historicalReceipt).digest("hex"),
     "5ed5d324fe566f4d5de43b31bd0e4695b1e6ce2fb359ee493e03d40b56fd54be",
   );
-  const successor = JSON.parse(receipt.toString("utf8"));
+  const successor = JSON.parse(historicalReceipt.toString("utf8"));
   assert.equal(successor.schema, "vize.experimental-router-generated-transition.v1");
   assert.equal(successor.qualificationCredit, false);
   const transition = successor.entries.find((row: { file: string }) => row.file === entry.file);
   assert.ok(transition);
-  assert.equal(transition.currentSha256, entry.sha256);
+  const sharedHelperReceipt = fs.readFileSync(
+    path.join(custody, "shared-helper-preamble-20261106.json"),
+  );
+  assert.equal(
+    createHash("sha256").update(sharedHelperReceipt).digest("hex"),
+    "f79c2fe318ad3db71ef2643cf31c0a95225ccad3b287c24b9263cf22f39d5c79",
+  );
+  const sharedHelper = JSON.parse(sharedHelperReceipt.toString("utf8"));
+  assert.equal(sharedHelper.schema, "vize.experimental-router-shared-helper-transition.v1");
+  assert.equal(sharedHelper.qualificationCredit, false);
+  assert.equal(sharedHelper.previous.path, "integrated-current-11964.json");
+  assert.equal(
+    sharedHelper.previous.sha256,
+    createHash("sha256").update(historicalReceipt).digest("hex"),
+  );
+  const currentTransition = sharedHelper.entries.find(
+    (row: { file: string }) => row.file === entry.file,
+  );
+  assert.ok(currentTransition);
+  assert.equal(currentTransition.previousSha256, transition.currentSha256);
+  assert.equal(currentTransition.currentSha256, entry.sha256);
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),

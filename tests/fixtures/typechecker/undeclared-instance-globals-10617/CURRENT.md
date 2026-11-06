@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-b13ee5096a47.json`: all 80 whole transform results from [source Actions 42173370773](https://github.com/ubugeeei-prod/vize/actions/runs/42173370773/job/127746578706), synthetic merge producer `b13ee5096a47944a43cd812c8ee5c6c8fbee81b6` for PR head `bca76f46fa8953e46124a0f280607b7de730113e`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The original strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed; the other 76 complete results remain byte-identical. Each changed packet retains component-navigation ownership locally by replacing the imported `$ComponentNavigationProps` alias with the exact local `$IsAny` and `$ComponentNavigationProps` declarations. Every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-b13ee5096a47-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-ccf36f226d00.json`: all 80 whole transform results from [source Actions 42094909442](https://github.com/ubugeeei-prod/vize/actions/runs/42094909442/job/127483376951), synthetic merge producer `ccf36f226d005ecd6a7d9d2e0778d3912917baf4` for PR head `90acb2a9783c4ac4a4d129b52ad6417974040bf0`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The original strict comparison remains **unqualified**: 419 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Exactly the 80 historical whole-packet comparisons changed after integrating the component-constructor and native-fallthrough projections; every non-whole-packet outcome and all three real-host controls passed. The complete current result objects are retained without a normalizer, filter, or relabelled historical packet.

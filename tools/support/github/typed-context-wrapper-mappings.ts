@@ -22,10 +22,21 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "f75096741294e3f99e5fedf6accad2daf49ee402c72af2bc684b20b0f4310e20",
+    "d51c0acbed93e899ec5b634825bd3d7d2ffb2d47908f5bbc575e68feb909a937",
     "unqualified content-mapper producer",
   );
-  let historicalProducer = producerText;
+  const localOwnershipSuccessor = "            local_component_ownership_helpers: false,\n";
+  assert.equal(
+    producerText.split(localOwnershipSuccessor).length,
+    2,
+    "finite local-ownership producer successor",
+  );
+  let historicalProducer = producerText.replace(localOwnershipSuccessor, "");
+  assert.equal(
+    digest(historicalProducer),
+    "f75096741294e3f99e5fedf6accad2daf49ee402c72af2bc684b20b0f4310e20",
+    "finite local-ownership producer successor",
+  );
   for (const addition of componentExportAdditions) {
     assert.equal(
       historicalProducer.split(addition).length,

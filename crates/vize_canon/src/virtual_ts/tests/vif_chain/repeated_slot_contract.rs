@@ -179,6 +179,7 @@ fn generated(
         &VirtualTsOptions::default(),
         VirtualTsGenerationOptions {
             hoist_shared_preamble: hoist,
+            local_component_ownership_helpers: hoist,
             ..Default::default()
         },
     )

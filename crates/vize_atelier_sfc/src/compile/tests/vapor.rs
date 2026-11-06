@@ -53,6 +53,62 @@ const doubled = computed(() => count.value * 2)
     insta::assert_snapshot!(result.code.as_str());
 }
 
+#[test]
+fn test_vapor_sfc_rejects_unparseable_template_expressions() {
+    for invalid in ["count as", "const x = 1"] {
+        for is_ts in [false, true] {
+            let lang = if is_ts { r#" lang="ts""# } else { "" };
+            let source = format!(
+                r#"<script setup{lang}>
+const count = 1
+</script>
+<template><div>{{{{ {invalid} }}}}</div></template>"#
+            );
+            let descriptor =
+                parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
+            let result = compile_sfc(
+                &descriptor,
+                SfcCompileOptions {
+                    vapor: true,
+                    script: ScriptCompileOptions {
+                        is_ts,
+                        ..Default::default()
+                    },
+                    template: TemplateCompileOptions {
+                        is_ts,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .expect("compile_sfc returns a diagnostic result");
+
+            assert_eq!(
+                result.errors.len(),
+                1,
+                "invalid={invalid:?}, is_ts={is_ts}: {:?}",
+                result.errors
+            );
+            assert_eq!(
+                result.errors[0].code.as_deref(),
+                Some("VAPOR_TEMPLATE_ERROR")
+            );
+            assert_eq!(
+                result.errors[0].message.as_str(),
+                r#"Vapor template compilation errors: ["Error parsing JavaScript expression: invalid expression"]"#,
+                "invalid={invalid:?}, is_ts={is_ts}: {}",
+                result.errors[0].message
+            );
+            assert_eq!(
+                result.code.find(invalid),
+                None,
+                "invalid={invalid:?}, is_ts={is_ts}: {}",
+                result.code
+            );
+        }
+    }
+}
+
 // Regression test for #3073: a Vapor SFC `<slot>` must lower to the Vapor
 // runtime's `createSlot`, never the vdom `renderSlot` helper, and nested slot
 // blocks must insert with the runtime's `insert(block, parent)` argument order.

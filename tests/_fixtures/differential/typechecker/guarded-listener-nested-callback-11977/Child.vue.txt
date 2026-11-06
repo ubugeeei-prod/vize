@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ change: [value: { id: string }[]] }>();
+</script>
+
+<template>
+  <div />
+</template>

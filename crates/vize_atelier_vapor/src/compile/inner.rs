@@ -259,13 +259,16 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     };
     let legacy_reason = match &l3_bridge_status {
         VaporL3BridgeStatus::Legacy(reason) => Some(*reason),
-        VaporL3BridgeStatus::Rejected(_) | VaporL3BridgeStatus::Accepted(_) => None,
+        VaporL3BridgeStatus::SourceError(_)
+        | VaporL3BridgeStatus::Rejected(_)
+        | VaporL3BridgeStatus::Accepted(_) => None,
     };
     l3::record_selection(&l3_bridge_status);
     match l3_bridge_status {
         // Every accepted artifact returned above, including emission failures.
         VaporL3BridgeStatus::Accepted(_) => {}
-        VaporL3BridgeStatus::Rejected(error_messages) => {
+        VaporL3BridgeStatus::SourceError(error_messages)
+        | VaporL3BridgeStatus::Rejected(error_messages) => {
             capture.finish(|| {
                 CaptureOutcome::Rejected(error_messages.first().cloned().unwrap_or_default())
             });

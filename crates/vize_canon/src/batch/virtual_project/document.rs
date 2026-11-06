@@ -153,6 +153,10 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             experimental_patterned_template: document_options.experimental_patterned_template,
             experimental_strict_slot_children: false,
             hoist_shared_preamble,
+            // The generic single-document API remains byte-identical to batch
+            // generation. Editor VirtualProject callers opt into local owner
+            // aliases through their explicit editor project configuration.
+            local_component_ownership_helpers: false,
             inline_auto_import_stubs: false,
             omit_vite_client_reference: false,
             tsx_module: use_tsx_virtual,

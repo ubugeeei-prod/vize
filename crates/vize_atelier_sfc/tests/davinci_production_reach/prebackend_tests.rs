@@ -55,6 +55,41 @@ fn original_vapor_parser_rejections_keep_their_identity_and_complete_diagnostics
 }
 
 #[test]
+fn authored_vapor_expression_errors_are_prebackend_diagnostics() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let name = "invalid-expression.vue";
+    let source = "<script setup>const count = 1</script><template>{{ count as }}</template>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let selected = compile(&descriptor, name, Shape::Vapor).unwrap();
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+    assert_eq!(classify(Shape::Vapor, &counters), Ok(Lane::Unrecorded));
+    assert_eq!(selected.errors.len(), 1);
+    assert_eq!(
+        selected.errors[0].code.as_deref(),
+        Some("VAPOR_TEMPLATE_ERROR")
+    );
+    assert_eq!(
+        selected.errors[0].message,
+        "Vapor template compilation errors: [\"Error parsing JavaScript expression: invalid expression\"]"
+    );
+
+    let mut tally = Tally::default();
+    crate::measure(&descriptor, name, Shape::Vapor, &mut tally);
+    assert_eq!(tally.templates, 0);
+    assert_eq!(tally.rejected, 0);
+    assert_eq!(
+        tally.sfc_errors,
+        BTreeMap::from([("VAPOR_TEMPLATE_ERROR".to_owned(), 1)])
+    );
+    assert_eq!(tally.prebackend_rejections.len(), 1);
+}
+
+#[test]
 fn recorded_surface_semantics_controls_are_not_parser_rejections() {
     let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     let cases = [

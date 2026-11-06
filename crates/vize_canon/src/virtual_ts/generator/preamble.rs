@@ -7,6 +7,18 @@ use crate::virtual_ts::{
     types::{ComponentHelperModule, VirtualTsGenerationOptions},
 };
 
+const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS: &str = concat!(
+    include_str!("../helpers/declarations/core-types.d.ts.txt"),
+    include_str!("../helpers/declarations/vue3-types.d.ts.txt"),
+    include_str!("../helpers/declarations/prop-keys.d.ts.txt"),
+    include_str!("../component_prop_helpers.txt")
+);
+const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS: &str = concat!(
+    "export type { __RuntimePropShape, __LooseRequired, __DefineProps, ",
+    "__WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, ",
+    "$UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps };\n"
+);
+
 /// Keep helpers outside setup so public component aliases can refer to them.
 pub(super) fn emit_module_preamble(
     ts: &mut String,
@@ -25,6 +37,25 @@ pub(super) fn emit_module_preamble(
         } else {
             // Program helpers and global augmentation are shared once per project.
             ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
+        }
+        if options.local_component_ownership_helpers {
+            // TypeScript resolves property references through mapped-type
+            // declarations. Sharing this alias bundle makes unrelated editor
+            // SFCs appear to own the same prop symbol, so retain only this small
+            // owner boundary in each generated editor module. Batch/declaration
+            // projects keep their established fully-shared preamble.
+            ts.push_str("// Keep public prop owners module-local for references and rename.\n");
+            crate::virtual_ts::helpers::hygiene::emit_type_helpers(
+                ts,
+                summary,
+                OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS,
+                false,
+            );
+            // Export helper aliases that are valid but optional for a given
+            // SFC. TypeScript otherwise reports TS6196 under noUnusedLocals;
+            // editor-only named type exports keep them module-local without
+            // turning clean authored files into suggestion-only diagnostics.
+            ts.push_str(OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS);
         }
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);

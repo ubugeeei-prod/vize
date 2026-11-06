@@ -81,6 +81,7 @@ impl From<LegacyReason> for AdmissionFailure {
 pub(crate) enum VaporL3BridgeStatus<'a> {
     Legacy(LegacyReason),
     Accepted(VaporL3Artifact<'a>),
+    SourceError(std::vec::Vec<String>),
     Rejected(std::vec::Vec<String>),
 }
 
@@ -233,6 +234,11 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.retained_index",
             retained::Retained::collect(allocator, &s2.root)
         );
+        if retained.has_invalid_parse_rejection() {
+            return VaporL3BridgeStatus::SourceError(std::vec![String::from(
+                "Error parsing JavaScript expression: invalid expression",
+            )]);
+        }
         // Template carriers keep their wrapper facts in L2 side tables.
         let loops = match bridge_profile!(
             "atelier.vapor.bridge.template_carriers",
@@ -319,11 +325,13 @@ fn admit_with<'a>(
 }
 
 pub(crate) fn record_selection(status: &VaporL3BridgeStatus<'_>) {
-    record(match status {
+    let counter = match status {
         VaporL3BridgeStatus::Accepted(_) => ACCEPTED,
         VaporL3BridgeStatus::Legacy(reason) => reason.counter(),
+        VaporL3BridgeStatus::SourceError(_) => return,
         VaporL3BridgeStatus::Rejected(_) => REJECTED,
-    });
+    };
+    record(counter);
 }
 
 /// [`record_selection`] for an admitted artifact already moved into emission.

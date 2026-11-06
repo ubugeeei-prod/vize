@@ -236,14 +236,20 @@ fn without_is_ts_the_authored_bytes_are_kept() {
     }
 }
 
-/// Negative control: text that is neither JavaScript nor TypeScript is not
-/// erased into something that parses; it reaches the module as authored.
+/// Invalid text is rejected by the native lane before it can reach a module;
+/// the explicitly retained compatibility lane keeps its historical bytes.
 #[test]
 fn text_that_is_not_typescript_is_not_erased() {
-    for retained in [false, true] {
-        let (_, erased) = compile("<div>{{ count as }}</div>", true, retained);
-        let (_, authored) = compile("<div>{{ count as }}</div>", false, retained);
-        assert_eq!(erased, authored, "retained: {retained}");
-        assert_eq!(javascript_diagnostics(&erased).len(), 1, "{erased}");
+    let expected = Vec::from([String::from(
+        "Error parsing JavaScript expression: invalid expression",
+    )]);
+    for is_ts in [false, true] {
+        let (errors, code) = compile("<div>{{ count as }}</div>", is_ts, false);
+        assert_eq!(errors, expected, "is_ts: {is_ts}");
+        assert_eq!(code, "", "is_ts: {is_ts}");
     }
+    let (_, erased) = compile("<div>{{ count as }}</div>", true, true);
+    let (_, authored) = compile("<div>{{ count as }}</div>", false, true);
+    assert_eq!(erased, authored);
+    assert_eq!(javascript_diagnostics(&erased).len(), 1, "{erased}");
 }

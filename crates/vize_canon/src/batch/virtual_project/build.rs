@@ -169,6 +169,8 @@ pub(super) fn build_vue_registered_file(
                 experimental_patterned_template: context.experimental_patterned_template,
                 experimental_strict_slot_children: context.experimental_strict_slot_children,
                 hoist_shared_preamble: context.hoist_shared_preamble,
+                local_component_ownership_helpers: context.editor_document_options.is_some()
+                    && context.hoist_shared_preamble,
                 inline_auto_import_stubs: false,
                 omit_vite_client_reference: false,
                 tsx_module: use_tsx_virtual,
