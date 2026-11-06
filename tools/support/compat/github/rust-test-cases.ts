@@ -2,12 +2,12 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { fileURLToPath } from "node:url";
 
 import { type Outcome, type TestCase, packet, parsePacket, workspaceCrates } from "./test-cases.ts";
 import { parseJson } from "../../json-value.ts";
 
-const ansi = /\x1b\[[0-?]*[ -/]*[@-~]/g;
 const testLine = /^test (.+?) \.\.\. (ok|FAILED|ignored)(?:\b.*)?$/;
 
 function ownerForTest(
@@ -35,7 +35,7 @@ export function rustOutputCases(
   paths: readonly string[] = [],
 ): TestCase[] {
   const cases: TestCase[] = [];
-  for (const line of output.replace(ansi, "").split(/\r?\n/)) {
+  for (const line of stripVTControlCharacters(output).split(/\r?\n/)) {
     const match = testLine.exec(line.trim());
     if (!match) continue;
     const [, name, result] = match;
