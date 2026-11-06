@@ -46,7 +46,7 @@ jobs:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
       TEST_CASES_JOB: "Clippy, doctests and feature lanes (${{ matrix.lane }})"
-      VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-rust-source-${{ matrix.lane }}.json
+      VIZE_TEST_CASES: test-cases-rust-source-${{ matrix.lane }}.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6

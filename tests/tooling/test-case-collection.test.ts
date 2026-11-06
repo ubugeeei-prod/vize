@@ -301,10 +301,7 @@ test("each test job names its case packet after itself and the report downloads 
   );
 
   const rustSource = workflow("pr-rust-checks.yml").jobs["pr-rust-build"];
-  assert.equal(
-    rustSource.env?.VIZE_TEST_CASES,
-    "${{ runner.temp }}/test-cases-rust-source-${{ matrix.lane }}.json",
-  );
+  assert.equal(rustSource.env?.VIZE_TEST_CASES, "test-cases-rust-source-${{ matrix.lane }}.json");
   const rustSourceUpload = rustSource.steps.find(
     (step) => step.name === "Upload Rust source test cases",
   );
@@ -317,7 +314,7 @@ test("each test job names its case packet after itself and the report downloads 
   const differential = workflow("pr-rust-differential.yml").jobs.differential;
   assert.equal(
     differential.env?.VIZE_TEST_CASES,
-    "${{ runner.temp }}/test-cases-rust-differential-${{ matrix.lane }}.json",
+    "test-cases-rust-differential-${{ matrix.lane }}.json",
   );
   const differentialUpload = differential.steps.find(
     (step) => step.name === "Upload Rust differential test cases",

@@ -224,10 +224,7 @@ const sourceJobs = ["merge-rust-differential", "pr-rust-build"];
 
 function restoreRustCaseReporting(job: RustJob, contracts: number) {
   assert.equal(job.env.TEST_CASES_JOB, "Clippy, doctests and feature lanes (${{ matrix.lane }})");
-  assert.equal(
-    job.env.VIZE_TEST_CASES,
-    "${{ runner.temp }}/test-cases-rust-source-${{ matrix.lane }}.json",
-  );
+  assert.equal(job.env.VIZE_TEST_CASES, "test-cases-rust-source-${{ matrix.lane }}.json");
   delete job.env.TEST_CASES_JOB;
   delete job.env.VIZE_TEST_CASES;
 

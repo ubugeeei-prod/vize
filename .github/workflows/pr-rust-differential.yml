@@ -29,7 +29,7 @@ jobs:
       VIZE_TEST_REQUIRE_TSGO: "1"
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
       TEST_CASES_JOB: "Rust product differential (${{ matrix.lane }})"
-      VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-rust-differential-${{ matrix.lane }}.json
+      VIZE_TEST_CASES: test-cases-rust-differential-${{ matrix.lane }}.json
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
