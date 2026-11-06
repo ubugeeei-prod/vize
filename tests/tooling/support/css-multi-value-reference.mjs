@@ -7,7 +7,7 @@ import { sha256 } from "../../differential/manifest.mjs";
 
 const authorityPath =
   "tests/_fixtures/differential/formatter-regressions/css-multi-value-7968/current-references.json";
-const authoritySha256 = "8e53853840d474c0d9cd6a29eaa0ab061a8e3e46df7f1c45fd82d705e0a6220c";
+const authoritySha256 = "1c31a5485303348ffe2bd62ee7f86d1ab752c1db1e9ff1d0a95873ea5a7acbea";
 
 export function multiValueReference(root, owner, fixture, input, historical, corpus) {
   const bytes = fs.readFileSync(path.join(root, authorityPath));
@@ -16,7 +16,7 @@ export function multiValueReference(root, owner, fixture, input, historical, cor
   assert.equal(authority.schema, "vize.css-multi-value-current-references");
   assert.equal(authority.version, 1);
   assert.equal(authority.issue, 7968);
-  assert.equal(authority.cases.length, 12);
+  assert.equal(authority.cases.length, 13);
   const row = authority.cases.find((row) => row.owner === owner && row.id === fixture.id);
   if (!row) return { expected: historical, cliExpected: fixture.cliExpected };
   assert.equal(sha256(corpus), row.corpusSha256, "original complete corpus changed");

@@ -52,7 +52,7 @@ impl TemplateFormatter<'_> {
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 if self.options.sort_attributes {
-                    super::sort_attributes(&mut attrs, self.options);
+                    super::sort_attributes(&tag_name, &mut attrs, self.options);
                 }
                 output.push(b'<');
                 output.extend_from_slice(tag_name.as_bytes());

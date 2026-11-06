@@ -191,7 +191,7 @@ impl<'a> TemplateFormatter<'a> {
                     let mut sorted_attrs = attrs;
                     inline = InlineNode::None;
                     if self.options.sort_attributes {
-                        sort_attributes(&mut sorted_attrs, self.options);
+                        sort_attributes(&tag_name, &mut sorted_attrs, self.options);
                     }
                     if self.options.normalize_inline_styles {
                         normalize_inline_styles(&mut sorted_attrs);

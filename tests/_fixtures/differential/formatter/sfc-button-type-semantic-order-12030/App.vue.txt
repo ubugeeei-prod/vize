@@ -1,0 +1,5 @@
+<template>
+  <button title="Save" name="save" disabled class="primary" type="button">Save</button>
+  <Button type="button" class="primary">Save</Button>
+  <button class="primary" :type="kind" disabled>Save</button>
+</template>

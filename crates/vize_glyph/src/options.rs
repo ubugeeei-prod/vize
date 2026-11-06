@@ -71,7 +71,8 @@ pub struct FormatOptions {
     #[serde(default = "default_true")]
     pub sort_attributes: bool,
 
-    /// How to sort attributes within the same priority group (default: Alphabetical)
+    /// How to sort attributes within the same priority group (default: Alphabetical).
+    /// Behavior-defining native attributes precede the alphabetical tail.
     #[serde(default)]
     pub attribute_sort_order: AttributeSortOrder,
 
@@ -313,7 +314,7 @@ pub enum EndOfLine {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum AttributeSortOrder {
-    /// Sort alphabetically (a-z)
+    /// Put behavior-defining native attributes first, then sort alphabetically (a-z)
     #[default]
     Alphabetical,
     /// Keep original order (no sorting within groups)

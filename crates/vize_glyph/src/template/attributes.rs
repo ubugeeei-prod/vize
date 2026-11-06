@@ -30,7 +30,11 @@ pub(crate) struct ParsedAttribute {
 }
 
 /// Sort attributes based on the configured options.
-pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
+pub(crate) fn sort_attributes(
+    tag_name: &str,
+    attrs: &mut [ParsedAttribute],
+    options: &FormatOptions,
+) {
     // Bindings and directives can execute Vue instance getters, calls,
     // assignments, or updates while the render data object is constructed.
     // Keep them fixed and sort only unique, literal HTML attributes between
@@ -44,25 +48,32 @@ pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOpt
         if has_duplicate_static_names(segment) {
             continue;
         }
-        sort_attribute_segment(segment, options);
+        sort_attribute_segment(tag_name, segment, options);
     }
 }
 
 /// Sort one contiguous group with no order-sensitive dynamic attributes.
-fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions) {
+fn sort_attribute_segment(tag_name: &str, attrs: &mut [ParsedAttribute], options: &FormatOptions) {
     match options.attribute_sort_order {
         AttributeSortOrder::Alphabetical => {
             // Decorate-sort-undecorate: `attr_sort_key` lowercases the name,
             // so computing it inside a comparator re-allocates O(n log n)
             // times. `sort_by_cached_key` evaluates the key closure exactly
             // once per attribute and caches it, then sorts on the cached
-            // tuples. The composite key `(priority, group, lowercased base,
-            // original index)` reproduces the previous comparator (including
-            // the stable original-index tie-break) exactly.
+            // tuples. Native elements may nominate a behavior-defining
+            // attribute before the alphabetical tail of their ordinary
+            // attributes. The tag-aware rank deliberately does not apply to
+            // PascalCase Vue components.
             let merge_bind = options.merge_bind_and_non_bind_attrs;
             attrs.sort_by_cached_key(|attr| {
                 let (group, base) = attr_sort_key(&attr.name, merge_bind);
-                (attr.priority, group, base, attr.original_index)
+                (
+                    attr.priority,
+                    native_attribute_semantic_rank(tag_name, &attr.name),
+                    group,
+                    base,
+                    attr.original_index,
+                )
             });
         }
         AttributeSortOrder::AsWritten => {
@@ -75,6 +86,16 @@ fn sort_attribute_segment(attrs: &mut [ParsedAttribute], options: &FormatOptions
                 a.original_index.cmp(&b.original_index)
             });
         }
+    }
+}
+
+/// Rank behavior-defining attributes before the alphabetical tail for native
+/// elements. Keep this table deliberately tag-aware: a prop with the same name
+/// on a Vue component does not necessarily carry the HTML element's semantics.
+fn native_attribute_semantic_rank(tag_name: &str, attr_name: &str) -> u8 {
+    match (tag_name, attr_name) {
+        ("button", name) if name.eq_ignore_ascii_case("type") => 0,
+        _ => 1,
     }
 }
 
