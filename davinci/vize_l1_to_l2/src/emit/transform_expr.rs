@@ -196,7 +196,7 @@ impl<'b> TransformExpressions<'b> {
     #[must_use]
     pub fn params(&self, params: &str) -> String {
         if self.scope.prefixes_identifiers() {
-            return prefix::prefix_slot_defaults(params, &self.scope)
+            return prefix::prefix_slot_defaults_with_render_prefixes(params, &self.scope)
                 .as_str()
                 .to_owned()
                 .into();
