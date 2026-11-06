@@ -209,6 +209,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         integrated_successor,
         discriminated_jsx_union_successor,
     );
+    let owned_instance_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-owned-instance-11984/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-owned-instance-11984/receipt.json"
+        ),
+        "67aab9c65deb2bac25a7698ee25091d1fc1abb2d32180a65c47b4f789a900743",
+        11984,
+        discriminated_jsx_union_successor,
+        owned_instance_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -232,7 +244,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        discriminated_jsx_union_successor
+        owned_instance_successor
     );
 }
 
@@ -406,6 +418,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             integrated_successor,
             discriminated_jsx_union_successor,
         );
+        let owned_instance_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-owned-instance-11984/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-owned-instance-11984/receipt.json"
+            ),
+            "5aba53760a798a8ae3d55fc78272781401fe8d380f8c2a65ccb5e5fe19b269db",
+            11984,
+            discriminated_jsx_union_successor,
+            owned_instance_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -419,7 +443,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            discriminated_jsx_union_successor
+            owned_instance_successor
         );
     }
 }

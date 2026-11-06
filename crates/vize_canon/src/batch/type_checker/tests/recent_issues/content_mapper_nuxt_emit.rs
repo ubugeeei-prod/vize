@@ -18,10 +18,12 @@ fn content_mapper_preserves_emit_with_nuxt_pattern_injections() {
         result.text.matches("=> $ComponentInstanceFor<{\n").count(),
         1
     );
-    assert!(
-        !result
+    assert_eq!(
+        result
             .text
-            .contains("$ComponentInstanceFor<$ComponentInstance")
+            .matches("$ComponentInstanceFor<$ComponentInstance")
+            .count(),
+        0
     );
     assert_eq!(
         result
