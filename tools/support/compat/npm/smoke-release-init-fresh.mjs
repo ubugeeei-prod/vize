@@ -141,7 +141,7 @@ export function assertExpectedNativeBinding(
         'const native = fromVize("@vizejs/native");',
         'const fromNative = createRequire(fromVize.resolve("@vizejs/native"));',
         "const selected = fromNative(expectedPackage);",
-        "assert.strictEqual(native, selected, `${expectedPackage} was installed but not loaded`);",
+        'assert.strictEqual(native, selected, expectedPackage + " was installed but not loaded");',
         "const token = native.getNativeBuildToken();",
         'assert.match(token, /^[0-9a-f]{32}$/u, "loaded native image has no build token");',
         'assert.equal(selected.getNativeBuildToken(), token, "loaded native build token differs");',
