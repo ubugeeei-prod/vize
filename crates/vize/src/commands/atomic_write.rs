@@ -7,7 +7,10 @@ use std::path::Path;
 
 use tempfile::NamedTempFile;
 
-/// Replace an existing file only after its successor is fully written and synced.
+/// Replace an existing file only after its successor is fully written.
+///
+/// Killing the process at any point leaves either the old bytes or the new
+/// ones. There is no fsync, so surviving a power loss is not promised.
 ///
 /// `tempfile` creates the sibling with exclusive create semantics, so an
 /// existing file or symlink can never redirect writes. Its persist operation
@@ -36,7 +39,6 @@ fn atomic_write_with<O: AtomicWriteOperations>(
     operations.write_all(temporary.as_file_mut(), contents)?;
     operations.flush(temporary.as_file_mut())?;
     temporary.as_file().set_permissions(permissions)?;
-    operations.sync_all(temporary.as_file())?;
     operations.replace(temporary, path)
 }
 
@@ -54,7 +56,6 @@ fn resolve_write_target(path: &Path) -> io::Result<(Cow<'_, Path>, Permissions)>
 trait AtomicWriteOperations {
     fn write_all(&mut self, file: &mut File, contents: &[u8]) -> io::Result<()>;
     fn flush(&mut self, file: &mut File) -> io::Result<()>;
-    fn sync_all(&mut self, file: &File) -> io::Result<()>;
     fn replace(&mut self, temporary: NamedTempFile, path: &Path) -> io::Result<()>;
 }
 
@@ -67,10 +68,6 @@ impl AtomicWriteOperations for OsOperations {
 
     fn flush(&mut self, file: &mut File) -> io::Result<()> {
         file.flush()
-    }
-
-    fn sync_all(&mut self, file: &File) -> io::Result<()> {
-        file.sync_all()
     }
 
     fn replace(&mut self, temporary: NamedTempFile, path: &Path) -> io::Result<()> {
@@ -93,7 +90,6 @@ mod tests {
     enum FailureStage {
         Write,
         Flush,
-        Sync,
         Replace,
     }
 
@@ -117,14 +113,6 @@ mod tests {
         fn flush(&mut self, file: &mut File) -> io::Result<()> {
             file.flush()?;
             if self.0 == FailureStage::Flush {
-                return Err(Self::injected_failure());
-            }
-            Ok(())
-        }
-
-        fn sync_all(&mut self, file: &File) -> io::Result<()> {
-            file.sync_all()?;
-            if self.0 == FailureStage::Sync {
                 return Err(Self::injected_failure());
             }
             Ok(())
@@ -204,7 +192,6 @@ mod tests {
         for stage in [
             FailureStage::Write,
             FailureStage::Flush,
-            FailureStage::Sync,
             FailureStage::Replace,
         ] {
             fs::write(&path, ORIGINAL).unwrap();
@@ -227,5 +214,168 @@ mod tests {
             })
             .count();
         assert_eq!(temporary_count, 0);
+    }
+
+    /// A real child process is stopped between its complete temporary write
+    /// and the rename.
+    #[cfg(unix)]
+    mod interruption {
+        use super::{ORIGINAL, REPLACEMENT};
+        use crate::commands::atomic_write::{
+            AtomicWriteOperations, OsOperations, atomic_write_with,
+        };
+        use std::fs::{self, File};
+        use std::io::{self, BufRead, BufReader, Read};
+        use std::os::unix::fs::PermissionsExt;
+        use std::os::unix::process::ExitStatusExt;
+        use std::path::{Path, PathBuf};
+        use std::process::{Child, ChildStderr, ChildStdin, Command, Stdio};
+        use tempfile::NamedTempFile;
+
+        const TARGET_ENV: &str = "VIZE_ATOMIC_WRITE_CHILD_TARGET";
+        const AT_REPLACE: &str = "vize-atomic-write-child: at replace";
+        const MODE: u32 = 0o640;
+
+        /// Holds the replace stage until stdin closes.
+        struct GatedOperations;
+
+        impl AtomicWriteOperations for GatedOperations {
+            fn write_all(&mut self, file: &mut File, contents: &[u8]) -> io::Result<()> {
+                OsOperations.write_all(file, contents)
+            }
+
+            fn flush(&mut self, file: &mut File) -> io::Result<()> {
+                OsOperations.flush(file)
+            }
+
+            fn replace(&mut self, temporary: NamedTempFile, path: &Path) -> io::Result<()> {
+                eprintln!("\n{AT_REPLACE}");
+                io::copy(&mut io::stdin().lock(), &mut io::sink())?;
+                OsOperations.replace(temporary, path)
+            }
+        }
+
+        #[test]
+        fn child_replaces_target() {
+            let Some(target) = std::env::var_os(TARGET_ENV) else {
+                return;
+            };
+            atomic_write_with(Path::new(&target), REPLACEMENT, &mut GatedOperations).unwrap();
+        }
+
+        struct HeldChild {
+            process: Child,
+            gate: ChildStdin,
+            stderr: BufReader<ChildStderr>,
+        }
+
+        fn original_target(directory: &Path) -> PathBuf {
+            let target = directory.join("App.vue");
+            fs::write(&target, ORIGINAL).unwrap();
+            fs::set_permissions(&target, fs::Permissions::from_mode(MODE)).unwrap();
+            target
+        }
+
+        /// Returns once the child sits in `replace` with the sibling fully written.
+        fn spawn_held_child(target: &Path) -> HeldChild {
+            let module = module_path!()
+                .split_once("::")
+                .map_or(module_path!(), |(_, path)| path);
+            let mut process = Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    &[module, "::child_replaces_target"].concat(),
+                    "--nocapture",
+                ])
+                .env(TARGET_ENV, target)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .stderr(Stdio::piped())
+                .spawn()
+                .unwrap();
+            let gate = process.stdin.take().unwrap();
+            let mut stderr = BufReader::new(process.stderr.take().unwrap());
+            let mut line = Vec::new();
+            loop {
+                line.clear();
+                let read = stderr.read_until(b'\n', &mut line).unwrap();
+                assert_ne!(read, 0, "child exited before reaching replace");
+                if line.trim_ascii_end() == AT_REPLACE.as_bytes() {
+                    break;
+                }
+            }
+            let siblings = temporary_siblings(target.parent().unwrap());
+            assert_eq!(siblings.len(), 1, "{siblings:?}");
+            assert_eq!(fs::read(&siblings[0]).unwrap(), REPLACEMENT);
+            assert_eq!(fs::read(target).unwrap(), ORIGINAL);
+            HeldChild {
+                process,
+                gate,
+                stderr,
+            }
+        }
+
+        fn temporary_siblings(directory: &Path) -> Vec<PathBuf> {
+            fs::read_dir(directory)
+                .unwrap()
+                .map(|entry| entry.unwrap().path())
+                .filter(|path| {
+                    path.file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| {
+                            name.starts_with(".vize-write-") && name.ends_with(".tmp")
+                        })
+                })
+                .collect()
+        }
+
+        fn mode(path: &Path) -> u32 {
+            fs::metadata(path).unwrap().permissions().mode() & 0o7777
+        }
+
+        #[test]
+        fn sigkill_before_rename_leaves_the_target_untouched() {
+            let project = tempfile::tempdir().unwrap();
+            let target = original_target(project.path());
+            let HeldChild {
+                mut process,
+                gate,
+                stderr: _stderr,
+            } = spawn_held_child(&target);
+
+            process.kill().unwrap();
+            let status = process.wait().unwrap();
+            drop(gate);
+
+            assert_eq!(status.signal(), Some(libc::SIGKILL));
+            assert_eq!(fs::read(&target).unwrap(), ORIGINAL);
+            assert_eq!(mode(&target), MODE);
+        }
+
+        #[test]
+        fn released_child_replaces_the_target() {
+            let project = tempfile::tempdir().unwrap();
+            let target = original_target(project.path());
+            let HeldChild {
+                mut process,
+                gate,
+                mut stderr,
+            } = spawn_held_child(&target);
+
+            drop(gate);
+            let status = process.wait().unwrap();
+            if !status.success() {
+                let mut rest = Vec::new();
+                stderr.read_to_end(&mut rest).unwrap();
+                panic!(
+                    "child failed with {status}: {}",
+                    std::str::from_utf8(&rest).unwrap_or("<non-UTF-8 stderr>")
+                );
+            }
+
+            assert_eq!(fs::read(&target).unwrap(), REPLACEMENT);
+            assert_eq!(mode(&target), MODE);
+            assert!(temporary_siblings(project.path()).is_empty());
+        }
     }
 }
