@@ -172,13 +172,10 @@ impl fmt::Display for GenericSignature<'_> {
         if *vue_component_context {
             // Vue's generic SFC function overlaps `Component` when emitted
             // listeners are present. Required Vize metadata makes TypeScript
-            // compare the function branch more strictly, so preserve that
-            // public overlap without widening the retained slot context used
-            // for inference (#11966).
-            write!(
-                formatter,
-                " | {{ attrs: any; emit: (...args: any[]) => any; slots: any }}"
-            )?;
+            // compare the function branch more strictly. Keep the fallback
+            // attrs-only so `ComponentEmit` and `ComponentSlots` continue to
+            // infer their precise types from the retained context (#11966).
+            write!(formatter, " | {{ attrs: any }}")?;
         }
         writeln!(
             formatter,

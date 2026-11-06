@@ -165,18 +165,24 @@ test("setup-await oracle locks the renderer to the same Vue runtime", () => {
     .map((document) => document.toJS() as Lockfile)
     .find((document) => document.importers?.tests != null);
   assert.ok(lockfile, "workspace lockfile document");
-  const oracle = lockfile.importers.tests?.devDependencies?.["vue-setup-await-oracle"];
-  assert.ok(oracle, "vue-setup-await-oracle importer");
-  assert.equal(oracle.specifier, "npm:vue@3.5.38");
+  const oracle = lockfile.importers["tests/tooling/vue-setup-await-oracle"]?.devDependencies;
+  assert.ok(oracle, "dedicated vue-setup-await-oracle importer");
+  const vue = oracle.vue;
+  const renderer = oracle["@vue/server-renderer"];
+  assert.ok(vue, "pinned Vue runtime");
+  assert.ok(renderer, "pinned Vue renderer");
+  assert.equal(vue.specifier, "3.5.38");
+  assert.equal(renderer.specifier, "3.5.38");
 
-  const version = oracle.version.match(/^vue@3\.5\.38\((typescript@[^()]+)\)$/u);
+  const version = vue.version.match(/^3\.5\.38\((typescript@[^()]+)\)$/u);
   assert.ok(version, "Vue 3.5.38 snapshot with its TypeScript peer");
 
   const vuePeer = `3.5.38(${version[1]})`;
   const rendererPeer = `3.5.38(vue@${vuePeer})`;
   const rendererSnapshot = `@vue/server-renderer@${rendererPeer}`;
+  assert.equal(renderer.version, rendererPeer);
   assert.equal(
-    lockfile.snapshots[oracle.version]?.dependencies?.["@vue/server-renderer"],
+    lockfile.snapshots[`vue@${vuePeer}`]?.dependencies?.["@vue/server-renderer"],
     rendererPeer,
   );
   assert.equal(lockfile.snapshots[rendererSnapshot]?.dependencies?.vue, vuePeer);

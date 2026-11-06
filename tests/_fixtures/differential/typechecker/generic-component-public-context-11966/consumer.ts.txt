@@ -1,0 +1,33 @@
+import type { Component } from 'vue';
+import Generic from './Generic.vue';
+
+type ComponentSlots<T> = T extends new (...args: any) => { $slots: infer S }
+  ? NonNullable<S>
+  : T extends (
+        props: any,
+        context: { slots: infer S; attrs: any; emit: any },
+        ...args: any
+      ) => any
+    ? NonNullable<S>
+    : {};
+type ComponentEmit<T> = T extends new (...args: any) => { $emit: infer E }
+  ? NonNullable<E>
+  : T extends (
+        props: any,
+        context: { slots: any; attrs: any; emit: infer E },
+        ...args: any
+      ) => any
+    ? NonNullable<E>
+    : {};
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends
+  (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+
+export type EmitContract = Assert<
+  Equal<ComponentEmit<typeof Generic<number>>, (event: 'bar', value: number) => void>
+>;
+export type SlotContract = Assert<
+  Equal<ComponentSlots<typeof Generic<number>>, { default?: (props: number) => unknown }>
+>;
+export const asComponent = Generic as Component;

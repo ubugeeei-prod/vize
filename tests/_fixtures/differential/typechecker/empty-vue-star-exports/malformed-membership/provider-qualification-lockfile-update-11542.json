@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-lockfile-successor",
+  "sourceRevision": "52fc037caad10b7023af79009db1883ffb4165c6",
+  "sourceTree": "04be86460ea8dfaf53b53622d1bf14841f040e5d",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json",
+    "bytes": 2219,
+    "sha256": "d8e7a42a623f261eecd89b349224058993fd7ff2c008932d16c46dad29eae6a7",
+    "gitBlob": "3525ca76279989add0aa721c8f66f9f01f4ea489"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1150435,
+    "sha256": "bc0ff0b8a3b617d02c86d27540ba3046fe55ef5d41c2e9179dec155caaf5c38c",
+    "gitBlob": "ad3e7f2e0100c4de76d93110f7c114a3d0288450"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1125305,
+    "sha256": "2560b4282b013dff0c25977b43adb705956e0ec174db1f8f34bb77d5bed5f01d",
+    "gitBlob": "b4ef0cd46bdcbbef080d913dd62f707b391b60f7"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9090,
+    "sha256": "11b0d843666bcd72e148d48e772e2d32b02937aeb4029897b7005ccc629a01bd",
+    "gitBlob": "04291b042e6548c65419711d745fe311577e3b35"
+  },
+  "testsManifest": {
+    "path": "tests/package.json",
+    "bytes": 8000,
+    "sha256": "04d1c9968a3d6f2ae943d350044afaaf84d96888b5309e1da85e56cb1fe32283",
+    "gitBlob": "ddc6049cc7c923654ff333d0eacce0906a329426"
+  },
+  "oracleManifest": {
+    "path": "tests/tooling/vue-setup-await-oracle/package.json",
+    "bytes": 170,
+    "sha256": "bc3714e92e86f9dc5c08a9b1292340135cbbc94e88216b62a813d21f53ae3910",
+    "gitBlob": "8128e239b4f505005c3652a7106ed6cad6d0d058"
+  },
+  "setupAwaitSupport": {
+    "path": "tests/tooling/support/setup-scope-await.mjs",
+    "bytes": 12292,
+    "sha256": "03314148e2fc6a2c76e9633580cd6179c42bd95d7dfd109b2369ea92d18446cc",
+    "gitBlob": "6ab59525da5cd3c85740435439f1084afa26b0c0"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "2560b4282b013dff0c25977b43adb705956e0ec174db1f8f34bb77d5bed5f01d"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Raise only the root @unhead/vue override to the Nuxt 4.6-compatible 3.4.3 line, remove the setup-await Vue alias from the shared tests importer, and move its Vue 3.5.38 runtime plus renderer into one dedicated workspace importer. The exact generated lockfile is a resolver fixed point. Root package, provider roster, provider bodies, and all native membership controls retain their prior authority; this record gives source provenance only."
+}

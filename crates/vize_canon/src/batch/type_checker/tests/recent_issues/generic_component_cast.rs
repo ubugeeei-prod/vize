@@ -3,6 +3,22 @@
 
 use super::super::{resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+const PUBLIC_CONTEXT_COMPONENT: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/",
+    "generic-component-public-context-11966/Generic.vue.txt"
+));
+const PUBLIC_CONTEXT_CONSUMER: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/",
+    "generic-component-public-context-11966/consumer.ts.txt"
+));
+const PUBLIC_CONTEXT_TSCONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/",
+    "generic-component-public-context-11966/tsconfig.json.txt"
+));
+
 #[test]
 fn generic_component_with_emits_and_slots_casts_to_component() {
     if resolve_test_tsgo_binary().is_none() {
@@ -40,6 +56,28 @@ export const asComponent = List as Component;
         actual,
         Some(Vec::new()),
         "the reported cast must match vue-tsc 3.3.11",
+    );
+}
+
+#[test]
+fn generic_component_helpers_keep_precise_emits_slots_and_component_overlap() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project = super::real_vue::create_project_case(
+        "generic-component-public-context-11966",
+        &[
+            ("src/Generic.vue", PUBLIC_CONTEXT_COMPONENT),
+            ("src/consumer.ts", PUBLIC_CONTEXT_CONSUMER),
+            ("tsconfig.json", PUBLIC_CONTEXT_TSCONFIG),
+        ],
+    );
+    let actual = snapshot_project_diagnostics(&project);
+    let _ = std::fs::remove_dir_all(project);
+    assert_eq!(
+        actual,
+        Some(Vec::new()),
+        "public helper extraction and Vue Component overlap must both remain precise",
     );
 }
 
