@@ -140,6 +140,10 @@ test("generic attribute type parameters navigate like script setup code", async 
       contents: unknown;
     } | null;
     assert.ok(scriptHover, "a body usage of T has a hover");
+    assert.deepEqual(scriptHover.contents, {
+      kind: "markdown",
+      value: "```typescript\n(type parameter) T extends Item\n```",
+    });
     for (const [label, query] of Object.entries(T)) {
       assert.deepEqual(
         await request("textDocument/hover", query),

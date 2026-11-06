@@ -2201,6 +2201,51 @@
       }
     },
     {
+      "id": "lsp/regression/generic-attribute-hover-11502",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "generic-attribute-hover-11502",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b5a7005c7c4449dc1f6dda8945072413dd7e1737ea1eb4d7c9a647ce632cba3c"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "generic-attribute-hover-11502/case.json",
+        "sha256": "8337edce579c78480ee5e14d369e2e39e7395f78973c63c692583dd64e3749f5"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/generic-attribute-references-11503",
       "state": "active",
       "targets": [
