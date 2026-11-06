@@ -11,6 +11,11 @@ use crate::markup::{Namespace, Profile};
 
 impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn body_start(&mut self, tag: Tag) -> Result<(), Refusal> {
+        if self.current_namespace() == Some(Namespace::Html) && self.current() == Some("iframe") {
+            // The retained lexer exposes markup that Chromium keeps as iframe
+            // RAWTEXT. Fall back before choosing either historical tree.
+            return Err(Refusal::UnsupportedElement(tag.span));
+        }
         if P::IMPLIED_END_TAGS
             && tag.namespace == Namespace::Html
             && matches!(tag.name, "a" | "nobr")

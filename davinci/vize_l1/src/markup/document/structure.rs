@@ -71,8 +71,8 @@ pub enum DocumentHtmlRefusal {
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
 /// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `title`/`style`/`script`/`textarea`,
 /// `select`/`option`/`optgroup`, table parts, headings, preformatted and form
-/// containers, disclosure/dialog/slot elements, bounded phrasing/media
-/// elements, and bounded SVG/MathML
+/// containers, disclosure/dialog/slot elements, bounded `iframe`/`noscript`
+/// fallback content, bounded phrasing/media elements, and bounded SVG/MathML
 /// descendants. HTML names match without ASCII case, SVG local/attribute names
 /// receive the HTML parser's canonical adjustments, and a slash never closes a
 /// nonvoid HTML element. A slash does close a foreign element.
@@ -94,6 +94,9 @@ pub enum DocumentHtmlRefusal {
 /// slash behavior on which Chromium and the shipped parser disagree stays a
 /// typed refusal, as do foreign HTML breakouts, CDATA, annotation-xml HTML
 /// integration and markup hidden by the retained lexer's SVG-title RCDATA mode.
+/// Plain-text `iframe` fallback is retained only where the shipped parser and
+/// Chromium agree. Entities, comments, child markup and self-closing syntax
+/// that expose their RAWTEXT disagreement remain typed refusals.
 /// Formatting that follows authored nesting is retained; transitions that need
 /// the active-formatting list or adoption agency explicitly refuse. Other
 /// raw-text elements, templates, Vue directive/interpolation syntax and

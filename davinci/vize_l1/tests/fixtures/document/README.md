@@ -139,3 +139,10 @@ compare the same whole namespace/parent/attribute/direct-node trees, including
 mixed-case names, table cells and SVG integration points. Browser
 paragraph closing differs from the shipped parser and remains a typed fallback
 boundary. Raw-text elements and template-specific policies remain separate.
+
+`html-embedded-fallback.json` retains five complete packets for plain-text
+`iframe` fallback and body `noscript` content. Native L1, the shipped parser and
+Chromium compare the same whole namespace/parent/attribute/direct-node trees in
+ordinary, table-cell and SVG integration-point contexts. `iframe` entities,
+comments, child markup and self-closing syntax remain typed fallback boundaries
+where RAWTEXT handling differs.
