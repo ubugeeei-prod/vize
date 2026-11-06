@@ -156,7 +156,10 @@ test("queue scope reaches the planner and every selected source lane remains req
     assert.notEqual(step["continue-on-error"], true);
   }
   assert.match(commands(source.jobs["pr-playground-test"]), /test:browser/);
-  assert.match(commands(source.jobs["pr-playground-test"]), /test:vrt/);
+  assert.match(
+    commands(source.jobs["pr-playground-test"]),
+    /vp exec --filter '\.\/playground' -- playwright test/,
+  );
   const vrtFailure = source.jobs["pr-playground-test"].steps?.find(
     (step) => step.name === "Fail if VRT failed",
   );

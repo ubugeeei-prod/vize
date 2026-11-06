@@ -10,6 +10,7 @@ import {
   restoreHistoryToolchainSelection,
   restoreNodeEngineCasePacket,
 } from "./support/frontend-case-reporting.ts";
+import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 
 type Step = { name?: string; if?: string; [key: string]: unknown };
@@ -178,7 +179,6 @@ function restoreTestReportComment(workflow: Workflow, original: Workflow) {
   workflow.jobs["test-report"] = structuredClone(before);
 }
 
-// The same change names each tooling shard's case packet after its job.
 function restoreToolingCasePacketJob(workflow: Workflow, original: Workflow) {
   const before = original.jobs["affected-tooling"];
   const steps = before.steps ?? [];
@@ -221,6 +221,7 @@ test("the seven runner selectors and exact runtime steps preserve every original
       );
       restoreEmptyPrToolingBuild(restored, before);
       restoreToolingCasePacketJob(restored, before);
+      restorePlaygroundCaseReporting(restored, before);
     }
     for (const id of specification.jobs) {
       const original = before.jobs[id],

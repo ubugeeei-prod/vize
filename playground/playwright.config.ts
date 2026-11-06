@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const caseReport = process.env.VIZE_PLAYWRIGHT_CASES;
+
 export default defineConfig({
   testDir: "./e2e/vrt",
   outputDir: "./e2e/vrt/test-results",
@@ -10,7 +12,11 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   maxFailures: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: [
+    ["list"],
+    ["html", { open: "never" }],
+    ...(caseReport ? ([["json", { outputFile: caseReport }]] as const) : []),
+  ],
   use: {
     baseURL: "http://localhost:5180",
     screenshot: "only-on-failure",

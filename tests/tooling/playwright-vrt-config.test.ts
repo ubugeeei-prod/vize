@@ -17,9 +17,15 @@ test("VRT Playwright configs keep failure artifacts and CI-readable output", () 
   ]) {
     const config = readRepoFile(...configPath);
 
-    assert.match(config, /reporter:\s*\[\["list"\], \["html", \{ open: "never" \}\]\]/);
+    assert.match(config, /\["list"\]/);
+    assert.match(config, /\["html", \{ open: "never" \}\]/);
     assert.match(config, /screenshot:\s*"only-on-failure"/);
     assert.match(config, /trace:\s*"on-first-retry"/);
     assert.match(config, /video:\s*"retain-on-failure"/);
+
+    if (configPath[0] === "playground") {
+      assert.match(config, /process\.env\.VIZE_PLAYWRIGHT_CASES/);
+      assert.match(config, /\["json", \{ outputFile: caseReport \}\]/);
+    }
   }
 });
