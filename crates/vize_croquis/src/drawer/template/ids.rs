@@ -184,6 +184,19 @@ impl Drawer {
             }
         };
         let base_offset = expr.loc().span.start;
+        // Standalone petite-vue virtual documents have no occurrence packet.
+        // Reuse the authenticated Davinci expression walk there; occurrence
+        // capture still owns its richer reference/range packet on other paths.
+        if self.occurrence_capture.is_none()
+            && !self.ident_cache.contains_key(content)
+            && let Some(names) = self
+                .template_semantic_reuse
+                .as_ref()
+                .and_then(|reuse| reuse.petite_expression_names(expr))
+        {
+            self.ident_cache
+                .insert(CompactString::new(content), names.to_vec());
+        }
         self.check_expression_text_refs(content, retained.as_ref(), base_offset, scope_vars, true);
     }
 
