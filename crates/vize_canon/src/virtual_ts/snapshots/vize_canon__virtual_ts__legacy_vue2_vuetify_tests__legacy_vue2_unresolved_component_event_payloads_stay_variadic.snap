@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 180
 expression: legacy
 ---
 /// <reference lib="es2022" />
@@ -117,10 +116,12 @@ function __setup() {
   void __vize_events_nav_0.submit;
 
   // @range-change handler
+  type __CalendarRange_9__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __CalendarRange_9__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __CalendarRange_9__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __CalendarRange_9__listener_missing<__P, __Raw> : __CalendarRange_9__listener_missing<__P, __Raw>;
   type __CalendarRange_9__library = typeof CalendarRange extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof CalendarRange extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __CalendarRange_9__props = typeof CalendarRange extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof CalendarRange extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __CalendarRange_9__emit_props = typeof CalendarRange extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
-  type __CalendarRange_9_range_change_prop_args = __CalendarRange_9__library extends true ? unknown[] : __CalendarRange_9__props extends infer __B ? __B extends [infer __P] ? __P extends { onRangeChange?: (...args: infer __A) => any } ? __A : __P extends { onRangeChange?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __P extends { "onRange-change"?: (...args: infer __A) => any } ? __A : unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __P extends { "onRange-change"?: (...args: infer __A) => any } ? __A : unknown[] : __P extends { "onRange-change"?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
+  type __CalendarRange_9_range_change_prop_args = __CalendarRange_9__library extends true ? unknown[] : __CalendarRange_9__props extends infer __B ? __B extends [infer __P] ? __CalendarRange_9__listener_args<__P, "onRangeChange", "onRange-change"> : unknown[] : never;
   type __CalendarRange_9_range_change_static_emit_args = __CalendarRange_9__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onRangeChange?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __CalendarRange_9_range_change_emit_args = __CalendarRange_9_range_change_static_emit_args;
   type __CalendarRange_9_range_change_args = unknown[] extends __CalendarRange_9_range_change_prop_args ? (unknown[] extends __CalendarRange_9_range_change_emit_args ? unknown[] : __CalendarRange_9_range_change_emit_args) : __CalendarRange_9_range_change_prop_args;
@@ -135,7 +136,7 @@ function __setup() {
   });
 
   // @submit handler
-  type __CalendarRange_10_submit_prop_args = __CalendarRange_9__library extends true ? unknown[] : __CalendarRange_9__props extends infer __B ? __B extends [infer __P] ? __P extends { onSubmit?: (...args: infer __A) => any } ? __A : __P extends { onSubmit?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type __CalendarRange_10_submit_prop_args = __CalendarRange_9__library extends true ? unknown[] : __CalendarRange_9__props extends infer __B ? __B extends [infer __P] ? __CalendarRange_9__listener_args<__P, "onSubmit", never> : unknown[] : never;
   type __CalendarRange_10_submit_static_emit_args = __CalendarRange_9__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onSubmit?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __CalendarRange_10_submit_emit_args = __CalendarRange_10_submit_static_emit_args;
   type __CalendarRange_10_submit_args = unknown[] extends __CalendarRange_10_submit_prop_args ? (unknown[] extends __CalendarRange_10_submit_emit_args ? unknown[] : __CalendarRange_10_submit_emit_args) : __CalendarRange_10_submit_prop_args;

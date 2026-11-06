@@ -17,9 +17,9 @@ test("the current mapper graph preserves complete source bodies, dependencies an
     graph = captureDeclarationGraph(root);
   assertCurrentGraph(graph, root);
   assertSameGraph(graph, root, graph, root);
-  assert.equal(graph.files.length, 12);
-  assert.equal(graph.edges.length, 20);
-  for (const module of ["virtual-ts-emits", "virtual-ts-emit-overloads"]) {
+  assert.equal(graph.files.length, 13);
+  assert.equal(graph.edges.length, 23);
+  for (const module of ["virtual-ts-emits", "virtual-ts-emit-overloads", "virtual-ts-listeners"]) {
     const missingLeaf = structuredClone(graph);
     missingLeaf.files = missingLeaf.files.filter((file) => !file.path.endsWith(`${module}.d.ts`));
     assert.throws(() => assertCurrentGraph(missingLeaf, root));

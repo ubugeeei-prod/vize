@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { beforeStaticListenerSource } from "./static-listener-prop-source.ts";
 import { beforeGenericEventSpecialization } from "./generic-event-specialization-source.ts";
+import { beforeSharedListenerRelationSource } from "./listener-relation-source-transition.ts";
 import {
   beforeDiscriminatedJsxUnion,
   discriminatedJsxUnionAfterSha256,
@@ -216,7 +217,11 @@ export function emitGateOracle(read: (path: string) => string): EmitGateOracle {
           beforeGenericEventSpecialization(
             read,
             path,
-            beforeStaticListenerSource(read, path, read(path)),
+            beforeStaticListenerSource(
+              read,
+              path,
+              beforeSharedListenerRelationSource(path, read(path)),
+            ),
           ),
           expected,
         ),

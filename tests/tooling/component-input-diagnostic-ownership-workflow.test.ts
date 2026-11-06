@@ -156,6 +156,51 @@ test("callback packets certify only the unmapped public Slots re-export", () => 
     );
 });
 
+test("callback packets certify only the complete local listener relation transition", () => {
+  const missing = "__Comp_9__listener_missing";
+  const args = "__Comp_9__listener_args";
+  const inline =
+    "__P extends { onSave?: (...args: infer __A) => any } ? __A : " +
+    "__P extends { onSave?: infer __H } ? " +
+    "[Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : " +
+    "Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]";
+  const relations =
+    `  type ${missing}<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];\n` +
+    `  type ${args}<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? ${missing}<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : ${missing}<__P, __Raw> : ${missing}<__P, __Raw>;\n`;
+  const owner = "  type __Comp_9__library = false;\n";
+  const beforeProp = `  type __Comp_9_save_prop_args = ${inline};\n`;
+  const beforeFallthrough = `  type __Comp_9_save_fallthrough_args = NonNullable<__F> extends infer __P ? (${inline}) extends infer __A extends unknown[] ? __A : unknown[];\n`;
+  const afterProp = `  type __Comp_9_save_prop_args = ${args}<__P, "onSave", never>;\n`;
+  const afterFallthrough = `  type __Comp_9_save_fallthrough_args = NonNullable<__F> extends infer __P ? (${args}<__P, "onSave", never>) extends infer __A extends unknown[] ? __A : unknown[];\n`;
+  const prefix = "const mapped = 1;\n// @save handler\n";
+  const suffix = "const suffix = mapped;\n";
+  const beforeText = `${prefix}${owner}${beforeProp}${beforeFallthrough}${currentSlotsExport}\n${suffix}`;
+  const afterText = `${prefix}${relations}${owner}${afterProp}${afterFallthrough}${currentSlotsExport}\n${suffix}`;
+  const authored = "mappedsuffix";
+  const packet = (text: string) => ({
+    extension: ".tsx",
+    text,
+    mappings: [
+      [Buffer.byteLength(text.slice(0, text.indexOf("mapped"))), 6, 0, 6, 0, 1048575],
+      [Buffer.byteLength(text.slice(0, text.lastIndexOf("suffix"))), 6, 6, 6, 0, 1048575],
+    ],
+    diagnostics: [],
+  });
+  const before = packet(beforeText),
+    after = packet(afterText);
+  assertPreservedCallbackPacket(before, after, authored);
+  for (const mutation of [
+    { ...after, text: after.text.replace("[__Raw] extends [never]", "[__Raw] extends [unknown]") },
+    { ...after, text: after.text.replace(`${args}<__P, "onSave", never>`, "unknown[]") },
+    { ...after, mappings: before.mappings },
+    { ...after, text: `${after.text}type Foreign = any;\n` },
+  ])
+    assert.throws(
+      () => assertPreservedCallbackPacket(before, mutation, authored),
+      assert.AssertionError,
+    );
+});
+
 test("callback event scaffolding relocates complete UTF-8 packets and refuses unknown changes", () => {
   for (const newline of ["\n", "\r\n"]) {
     const prefix = `// 日本 🧭${newline}`;

@@ -307,6 +307,7 @@ pub(super) fn emit_scope_closures(
             check_options,
             legacy_vue2: options.legacy_vue2,
             hoist_shared_preamble: options.hoist_shared_preamble,
+            share_listener_relations: options.share_listener_relations,
             generic_component: options
                 .generic_parameters
                 .is_some_and(|generic| !generic.parameters.is_empty()),

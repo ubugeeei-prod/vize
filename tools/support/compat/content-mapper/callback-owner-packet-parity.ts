@@ -177,6 +177,133 @@ function scaffoldEdits(text: string, markerTransition: boolean, nativeTransition
   return edits;
 }
 
+function propertyKeyValue(key: string): string {
+  if (key.startsWith('"')) {
+    const value: unknown = JSON.parse(key);
+    assert.ok(typeof value === "string", "listener keys are string literals");
+    return value;
+  }
+  return key;
+}
+
+function assertInlineListenerRelation(
+  relation: string,
+  listenerKey: string,
+  rawListenerKey: string,
+) {
+  const marker = "?: (...args: infer __A) => any } ? __A : __P extends { ";
+  assert.ok(relation.startsWith("__P extends { "), "the original listener relation is complete");
+  const propEnd = relation.indexOf(marker, "__P extends { ".length);
+  assert.ok(propEnd > 0, "the original listener relation has its callable branch");
+  const propKey = relation.slice("__P extends { ".length, propEnd);
+  assert.equal(propertyKeyValue(propKey), propertyKeyValue(listenerKey));
+
+  const missing =
+    rawListenerKey === "never"
+      ? "unknown[]"
+      : (() => {
+          const rawKey = propertyKeyValue(rawListenerKey);
+          const rawProperty = /^[A-Za-z_$][\w$]*$/u.test(rawKey) ? rawKey : JSON.stringify(rawKey);
+          return `__P extends { ${rawProperty}?: (...args: infer __A) => any } ? __A : unknown[]`;
+        })();
+  const expected =
+    `__P extends { ${propKey}?: (...args: infer __A) => any } ? __A : ` +
+    `__P extends { ${propKey}?: infer __H } ? ` +
+    `[Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? ${missing} : ` +
+    `Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : ${missing} : ${missing}`;
+  assert.equal(relation, expected, "only the complete inline listener relation may be replaced");
+}
+
+/** Certify the finite inline-to-local relation transition emitted by this change. */
+function listenerRelationEdits(original: string, actual: string): Edit[] {
+  const edits: Edit[] = [];
+  const aliases = new Set<string>();
+  const missingPattern =
+    /^([ \t]*)type ([^\s=]+_listener_missing)<__P, __Raw extends string \| number \| symbol> = \[__Raw\] extends \[never\] \? unknown\[\] : __P extends \{ \[__K in __Raw\]\?: \(\.\.\.args: infer __A\) => any \} \? __A : unknown\[\];\r?$/gmu;
+  for (const match of actual.matchAll(missingPattern)) {
+    const [missingLine, indent, missing] = match;
+    const prefix = missing.slice(0, -"_listener_missing".length);
+    const args = `${prefix}_listener_args`;
+    const argsLine =
+      `${indent}type ${args}<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = ` +
+      `__P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : ` +
+      `__P extends { [__Q in __K]?: infer __H } ? ` +
+      `[Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? ${missing}<__P, __Raw> : ` +
+      `Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : ` +
+      `${missing}<__P, __Raw> : ${missing}<__P, __Raw>;`;
+    assert.equal(actual[match.index + missingLine.length], "\n");
+    const newline = missingLine.endsWith("\r") ? "\r\n" : "\n";
+    const argsAt = match.index + missingLine.length + 1;
+    assert.equal(actual.slice(argsAt, argsAt + argsLine.length), argsLine);
+    const blockEnd = argsAt + argsLine.length + newline.length;
+    assert.equal(actual.slice(argsAt + argsLine.length, blockEnd), newline);
+
+    const library = `${indent}type ${prefix}_library`;
+    assert.ok(
+      actual.startsWith(library, blockEnd),
+      "listener relations immediately precede their owner",
+    );
+    const insertion = original.indexOf(library);
+    assert.ok(insertion >= 0, "the original listener owner remains present");
+    assert.equal(original.indexOf(library, insertion + 1), -1, "the listener owner is unambiguous");
+    assert.equal(original.includes(`${indent}type ${missing}<`), false);
+    const block = actual.slice(match.index, blockEnd);
+    edits.push({
+      start: Buffer.byteLength(original.slice(0, insertion)),
+      end: Buffer.byteLength(original.slice(0, insertion)),
+      replacement: Buffer.from(block),
+    });
+    aliases.add(args);
+  }
+
+  for (const args of aliases) {
+    const escapePattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    const stringLiteral = String.raw`"(?:[^"\\]|\\.)*"`;
+    const callPattern = new RegExp(
+      String.raw`^([ \t]*)type ([^\s=]+_(?:prop|fallthrough)_args) = .*${escapePattern(args)}<__P, (${stringLiteral}), (never|${stringLiteral})>.*;\r?$`,
+      "gmu",
+    );
+    let calls = 0;
+    for (const match of actual.matchAll(callPattern)) {
+      const [afterLine, , name, listenerKey, rawListenerKey] = match;
+      const oldPattern = new RegExp(
+        String.raw`^([ \t]*)type ${escapePattern(name)} = .*;\r?$`,
+        "mu",
+      );
+      const beforeMatch = oldPattern.exec(original);
+      assert.ok(beforeMatch, `the original ${name} relation remains present`);
+      assert.equal(
+        original.slice(beforeMatch.index + beforeMatch[0].length).match(/^\r?\n/u)?.[0],
+        "\n",
+      );
+      const call = `${args}<__P, ${listenerKey}, ${rawListenerKey}>`;
+      const callAt = afterLine.indexOf(call);
+      assert.ok(callAt >= 0);
+      assert.equal(afterLine.indexOf(call, callAt + 1), -1, "one relation call per generated line");
+      const prefix = afterLine.slice(0, callAt);
+      const suffix = afterLine.slice(callAt + call.length);
+      assert.ok(beforeMatch[0].startsWith(prefix));
+      assert.ok(beforeMatch[0].endsWith(suffix));
+      assertInlineListenerRelation(
+        beforeMatch[0].slice(prefix.length, beforeMatch[0].length - suffix.length),
+        listenerKey,
+        rawListenerKey,
+      );
+      const start = Buffer.byteLength(original.slice(0, beforeMatch.index));
+      const end = start + Buffer.byteLength(beforeMatch[0]) + 1;
+      edits.push({ start, end, replacement: Buffer.from(`${afterLine}\n`) });
+      calls++;
+    }
+    assert.ok(calls > 0, `${args} must replace an observed inline relation`);
+  }
+  edits.sort((left, right) => left.start - right.start);
+  for (let index = 1; index < edits.length; index++) {
+    assert.ok(edits[index - 1]!.end <= edits[index]!.start, "listener relation edits are disjoint");
+    assert.notEqual(edits[index - 1]!.start, edits[index]!.start);
+  }
+  return edits;
+}
+
 /** Reuse the constructor certificate's self-described map-comment law. */
 function mapCommentEdits(
   before: string,
@@ -261,6 +388,7 @@ export function assertPreservedCallbackPacket(
     currentSourceRead,
   );
   const currentEdits = currentSource.edits;
+  const relationEdits = listenerRelationEdits(original, actualText);
   const slotsTransition = original.includes(previousSlotsExport);
   if (slotsTransition) {
     assert.equal(original.split(previousSlotsExport).length, 2);
@@ -268,7 +396,10 @@ export function assertPreservedCallbackPacket(
     assert.equal(actualText.split(previousSlotsExport).length, 1);
     assert.equal(actualText.split(currentSlotsExport).length, 2);
   } else {
-    assert.ok(currentEdits.length > 0, "same current Slots requires certified emitter edits");
+    assert.ok(
+      currentEdits.length > 0 || relationEdits.length > 0,
+      "same current Slots requires certified emitter edits",
+    );
     for (const text of [original, actualText]) {
       assert.equal(text.split(previousSlotsExport).length, 1);
       assert.equal(text.split(currentSlotsExport).length, 2);
@@ -291,13 +422,18 @@ export function assertPreservedCallbackPacket(
   const edits = [
     ...scaffoldEdits(original, markerTransition, nativeTransition),
     ...currentEdits,
+    ...relationEdits,
   ].sort((left, right) => left.start - right.start);
   for (let index = 1; index < edits.length; index++) {
     assert.ok(edits[index - 1]!.end <= edits[index]!.start, "current scaffold edits are disjoint");
     assert.notEqual(edits[index - 1]!.start, edits[index]!.start);
   }
-  if (nativeTransition || currentEdits.length > 0) {
-    assert.equal(typeof authoredSource, "string", "native relocation requires its authored source");
+  if (nativeTransition || currentEdits.length > 0 || relationEdits.length > 0) {
+    assert.equal(
+      typeof authoredSource,
+      "string",
+      "scaffold relocation requires its authored source",
+    );
     mapCommentEdits(
       original,
       actualText,
@@ -317,14 +453,20 @@ export function assertPreservedCallbackPacket(
   chunks.push(source.subarray(position));
   assert.deepEqual(Buffer.concat(chunks), actual, "the complete text has only certified edits");
   const exportAt = original.indexOf(slotsTransition ? previousSlotsExport : currentSlotsExport);
+  assert.ok(exportAt >= 0, "the public Slots export remains present");
   const boundary = Buffer.byteLength(original.slice(0, exportAt));
+  const exportLineEnd = original.indexOf("\n", exportAt);
+  assert.ok(exportLineEnd >= 0, "the public Slots export retains its line boundary");
+  const afterExport = Buffer.byteLength(original.slice(0, exportLineEnd + 1));
   const range = (start: number, length: number, unmappedProducerTail = false): [number, number] => {
     assert.ok(Number.isSafeInteger(start) && start >= 0);
     assert.ok(Number.isSafeInteger(length) && length >= 0);
     const end = start + length;
     assert.ok(
-      end <= boundary || (unmappedProducerTail && length > 0 && start >= boundary),
-      "authored projection precedes the public Slots export",
+      end <= boundary ||
+        (unmappedProducerTail && length > 0 && start >= boundary) ||
+        (relationEdits.length > 0 && start >= afterExport),
+      "authored projection cannot claim the public Slots export",
     );
     for (const edit of edits) {
       assert.ok(

@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/loose_is_listener_tests.rs
-assertion_line: 38
 expression: code
 ---
 /// <reference lib="es2022" />
@@ -174,12 +173,14 @@ function __setup() {
   // @vize-map: expr -> 246:252
 
   // @pick handler
+  type __target_7__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __target_7__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __target_7__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __target_7__listener_missing<__P, __Raw> : __target_7__listener_missing<__P, __Raw>;
   type __target_7__library = typeof target extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof target extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __target_7__props = typeof target extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof target extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __target_7__emit_props = typeof target extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __target_7__fallthrough = typeof target extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof target as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];
-  type __target_7_pick_prop_args = __target_7__library extends true ? unknown[] : __target_7__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
-  type __target_7_pick_fallthrough_args = __target_7__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
+  type __target_7_pick_prop_args = __target_7__library extends true ? unknown[] : __target_7__props extends infer __B ? __B extends [infer __P] ? __target_7__listener_args<__P, "onPick", never> : unknown[] : never;
+  type __target_7_pick_fallthrough_args = __target_7__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__target_7__listener_args<__P, "onPick", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __target_0_emit_resolver = __target_7__library extends true ? (component: typeof target) => typeof target : $EmitPropsFactory<typeof target>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_0 = (undefined as unknown as __target_0_emit_resolver)(target)({
@@ -204,12 +205,14 @@ function __setup() {
   });
 
   // @pick handler
+  type __node_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __node_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __node_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __node_8__listener_missing<__P, __Raw> : __node_8__listener_missing<__P, __Raw>;
   type __node_8__library = typeof node extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof node extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __node_8__props = typeof node extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof node extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __node_8__emit_props = typeof node extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __node_8__fallthrough = typeof node extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof node as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];
-  type __node_8_pick_prop_args = __node_8__library extends true ? unknown[] : __node_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
-  type __node_8_pick_fallthrough_args = __node_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
+  type __node_8_pick_prop_args = __node_8__library extends true ? unknown[] : __node_8__props extends infer __B ? __B extends [infer __P] ? __node_8__listener_args<__P, "onPick", never> : unknown[] : never;
+  type __node_8_pick_fallthrough_args = __node_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__node_8__listener_args<__P, "onPick", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __node_1_emit_resolver = __node_8__library extends true ? (component: typeof node) => typeof node : $EmitPropsFactory<typeof node>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_1 = (undefined as unknown as __node_1_emit_resolver)(node)({
@@ -234,12 +237,14 @@ function __setup() {
   });
 
   // @pick handler
+  type __loose_9__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __loose_9__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __loose_9__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __loose_9__listener_missing<__P, __Raw> : __loose_9__listener_missing<__P, __Raw>;
   type __loose_9__library = typeof loose extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof loose extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __loose_9__props = typeof loose extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof loose extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __loose_9__emit_props = typeof loose extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __loose_9__fallthrough = typeof loose extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof loose as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];
-  type __loose_9_pick_prop_args = __loose_9__library extends true ? unknown[] : __loose_9__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
-  type __loose_9_pick_fallthrough_args = __loose_9__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
+  type __loose_9_pick_prop_args = __loose_9__library extends true ? unknown[] : __loose_9__props extends infer __B ? __B extends [infer __P] ? __loose_9__listener_args<__P, "onPick", never> : unknown[] : never;
+  type __loose_9_pick_fallthrough_args = __loose_9__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__loose_9__listener_args<__P, "onPick", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __loose_2_emit_resolver = __loose_9__library extends true ? (component: typeof loose) => typeof loose : $EmitPropsFactory<typeof loose>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_2 = (undefined as unknown as __loose_2_emit_resolver)(loose)({
@@ -264,12 +269,14 @@ function __setup() {
   });
 
   // @pick handler
+  type __tag_10__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __tag_10__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __tag_10__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __tag_10__listener_missing<__P, __Raw> : __tag_10__listener_missing<__P, __Raw>;
   type __tag_10__library = typeof tag extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof tag extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __tag_10__props = typeof tag extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof tag extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __tag_10__emit_props = typeof tag extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __tag_10__fallthrough = typeof tag extends { readonly __vizeNativeFallthroughRoot: true; readonly __vizeFallthroughProps?: infer __F } ? "__vizeEmitProps" extends keyof { [__K in keyof typeof tag as string extends __K ? never : number extends __K ? never : symbol extends __K ? never : __K]: unknown } ? $IsAny<__F> extends true ? [] : [__F] : [] : [];
-  type __tag_10_pick_prop_args = __tag_10__library extends true ? unknown[] : __tag_10__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
-  type __tag_10_pick_fallthrough_args = __tag_10__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[]) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
+  type __tag_10_pick_prop_args = __tag_10__library extends true ? unknown[] : __tag_10__props extends infer __B ? __B extends [infer __P] ? __tag_10__listener_args<__P, "onPick", never> : unknown[] : never;
+  type __tag_10_pick_fallthrough_args = __tag_10__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__tag_10__listener_args<__P, "onPick", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __tag_3_emit_resolver = __tag_10__library extends true ? (component: typeof tag) => typeof tag : $EmitPropsFactory<typeof tag>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_3 = (undefined as unknown as __tag_3_emit_resolver)(tag)({
@@ -294,10 +301,12 @@ function __setup() {
   });
 
   // @pick handler
+  type ____vize_dynamic_is_230_11__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type ____vize_dynamic_is_230_11__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? ____vize_dynamic_is_230_11__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : ____vize_dynamic_is_230_11__listener_missing<__P, __Raw> : ____vize_dynamic_is_230_11__listener_missing<__P, __Raw>;
   type ____vize_dynamic_is_230_11__library = typeof __vize_dynamic_is_230 extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof __vize_dynamic_is_230 extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type ____vize_dynamic_is_230_11__props = typeof __vize_dynamic_is_230 extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof __vize_dynamic_is_230 extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type ____vize_dynamic_is_230_11__emit_props = typeof __vize_dynamic_is_230 extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
-  type ____vize_dynamic_is_230_11_pick_prop_args = ____vize_dynamic_is_230_11__library extends true ? unknown[] : ____vize_dynamic_is_230_11__props extends infer __B ? __B extends [infer __P] ? __P extends { onPick?: (...args: infer __A) => any } ? __A : __P extends { onPick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type ____vize_dynamic_is_230_11_pick_prop_args = ____vize_dynamic_is_230_11__library extends true ? unknown[] : ____vize_dynamic_is_230_11__props extends infer __B ? __B extends [infer __P] ? ____vize_dynamic_is_230_11__listener_args<__P, "onPick", never> : unknown[] : never;
   type ____vize_dynamic_is_230_4_emit_resolver = ____vize_dynamic_is_230_11__library extends true ? (component: typeof __vize_dynamic_is_230) => typeof __vize_dynamic_is_230 : $EmitPropsFactory<typeof __vize_dynamic_is_230>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_4 = (undefined as unknown as ____vize_dynamic_is_230_4_emit_resolver)(__vize_dynamic_is_230)({

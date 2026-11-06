@@ -167,6 +167,7 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     pub(crate) check_options: VirtualTsCheckOptions,
     pub(crate) legacy_vue2: bool,
     pub(crate) hoist_shared_preamble: bool,
+    pub(crate) share_listener_relations: bool,
     /// The template runs inside the SFC's generic setup signature, so a
     /// component binding's type may be a type parameter.
     pub(crate) generic_component: bool,
@@ -193,6 +194,8 @@ pub(crate) struct ScopeGenerationOptions<'a, 'template> {
     /// The batch project provides one ambient helper file for every generated
     /// module. Standalone editor/content-mapper documents keep helpers local.
     pub(crate) hoist_shared_preamble: bool,
+    /// False when authored utility types or incomplete syntax require lexical capture.
+    pub(crate) share_listener_relations: bool,
     /// Names already declared by the conservative Options API setup-spread fallback.
     /// Instance-global generation shares the same template scope and must not redeclare them.
     pub(crate) setup_spread_bindings: &'a [String],

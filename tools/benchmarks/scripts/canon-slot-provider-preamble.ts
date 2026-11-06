@@ -50,6 +50,14 @@ const INTEGRATED_TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
   ],
 ];
 
+const sharedEmitInferencePath =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt";
+const sharedEmitInferenceSha256 =
+  "d6daefb4cb7cf6d7b8a17b55d487e555e9c3ee6cf4d9b66c7f521a463dc77106";
+const sharedListenerArgsPath =
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt";
+const sharedListenerArgsSha256 = "fef5c40105887cdd343341d34f38343a3522d2fd5526a73107ee6de9ebf90ff5";
+
 const previousOverloadPath = "tests/tooling/fixtures/emit-overload-transition/before.d.ts.txt";
 const currentOverloadPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
@@ -76,7 +84,10 @@ export function applySourceOwnedPreambleTransitions(historical: string) {
 }
 
 /** Apply source-owned changes that follow the immutable emit and slot certificates. */
-export function applyIntegratedSourcePreambleTransitions(certified: string) {
+export function applyIntegratedSourcePreambleTransitions(
+  certified: string,
+  read = (file: string) => fs.readFileSync(file, "utf8"),
+) {
   let current = certified;
   for (const [before, after] of INTEGRATED_TRANSITIONS) {
     assert.equal(
@@ -87,6 +98,16 @@ export function applyIntegratedSourcePreambleTransitions(certified: string) {
     assert.equal(current.includes(after), false, `preamble already contains ${after.slice(0, 48)}`);
     current = current.replace(before, after);
   }
+  const authenticated = (file: string, expectedSha256: string) => {
+    const text = read(file);
+    assert.equal(identity(text).sha256, expectedSha256, `authenticated preamble asset: ${file}`);
+    return text;
+  };
+  const emitInference = authenticated(sharedEmitInferencePath, sharedEmitInferenceSha256);
+  const listenerArgs = authenticated(sharedListenerArgsPath, sharedListenerArgsSha256);
+  assert.equal(current.split(emitInference).length, 2, "one shared emit inference asset");
+  assert.equal(current.includes(listenerArgs), false, "listener relation asset is not duplicated");
+  current = current.replace(emitInference, emitInference + listenerArgs);
   return current;
 }
 

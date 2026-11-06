@@ -20,7 +20,7 @@ test("source ARIA consumers copy every declared physical SDK file without alteri
   try {
     const files = sourceAriaDeclarationFiles(manifest);
     assert.deepEqual(files, declared);
-    assert.equal(files.length, 13);
+    assert.equal(files.length, 14);
     copyAriaDeclarations(source, scratch, files);
     for (const file of declared) {
       assert.deepEqual(

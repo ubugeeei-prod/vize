@@ -43,6 +43,7 @@ fn render(script: &str, template: &str, packets: bool, navigation: bool) -> Outp
                 },
                 virtual_ts_options: &options,
                 hoist_shared_preamble: false,
+                share_listener_relations: false,
                 setup_spread_bindings: &[],
                 keyed_prop_bindings: &FxHashSet::default(),
                 syntactic_type_only_imported_names: &names,
