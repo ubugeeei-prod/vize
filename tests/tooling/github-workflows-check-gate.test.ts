@@ -227,7 +227,13 @@ test("input selection gates work inside required jobs and keeps the planner depe
     assert.ok(job);
     assert.equal(job.if, undefined, `${jobName} must always report its selected-input result`);
     assert.equal(job.needs, "iteration-plan", `${jobName} requires a successful planner`);
-    const check = job.steps?.find((step) => (step.run ?? step.uses ?? "").startsWith(command));
+    const check = job.steps?.find((step) => {
+      const invocation = step.run ?? step.uses ?? "";
+      return jobName === "node-engine-compat"
+        ? invocation.startsWith("node --test") &&
+            invocation.includes(command.slice("node --test ".length))
+        : invocation.startsWith(command);
+    });
     assert.ok(check, `${jobName} must keep its product check`);
     assert.equal(check.if, `\${{ needs.iteration-plan.outputs.${output} == 'true' }}`);
     assert.ok(
