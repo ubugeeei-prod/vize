@@ -1,0 +1,42 @@
+{
+  "schema": "vize.experimental-router-shared-helper-transition.v1",
+  "qualificationCredit": false,
+  "observedRun": 42171394858,
+  "candidateHead": "0c3a07003a1ff91d9fbcc889ec1fd9110b18c829",
+  "previous": {
+    "path": "integrated-current-11964.json",
+    "sha256": "5ed5d324fe566f4d5de43b31bd0e4695b1e6ce2fb359ee493e03d40b56fd54be"
+  },
+  "entries": [
+    {
+      "file": "crlf.invalid.virtual.ts.txt",
+      "previousSha256": "e760435e1e76a55dd683fef155fee98d31a1dd4122254b547b2f7eb30644b97b",
+      "currentSha256": "f2aaf555a82f2968e56bb21e0f09a9a090d30dd278a6d846bc41ea73287d8b65"
+    },
+    {
+      "file": "crlf.valid.virtual.ts.txt",
+      "previousSha256": "a5df69d608335303f5dd5dc75d4dee9f29ad8e3c9f42c0c1605b400387d39159",
+      "currentSha256": "e558a1b4df32344c06f96ee964e293a70df18e56fc0289bbe6ee8149635877f0"
+    },
+    {
+      "file": "explicit.invalid.virtual.ts.txt",
+      "previousSha256": "63803fa4e430ece84058deccce80badcc3d7a11b64ed549de7db5b4316b54db3",
+      "currentSha256": "7b3d5bf195155ac1519f1608b8598db0b93e53dbce164ea41ad9d09ff087d469"
+    },
+    {
+      "file": "explicit.valid.virtual.ts.txt",
+      "previousSha256": "63803fa4e430ece84058deccce80badcc3d7a11b64ed549de7db5b4316b54db3",
+      "currentSha256": "7b3d5bf195155ac1519f1608b8598db0b93e53dbce164ea41ad9d09ff087d469"
+    },
+    {
+      "file": "lf.invalid.virtual.ts.txt",
+      "previousSha256": "57501b21c90281e74f4879c78ae3d67f87468021c68d7af26658b7462fd358eb",
+      "currentSha256": "4b920aec8846a9ee387849482db34ae09369844695a5e52502dbabc9250d9e5a"
+    },
+    {
+      "file": "lf.valid.virtual.ts.txt",
+      "previousSha256": "0ae07f50033de36808a20a74e0cb71a5816e9108f7ea1b28ca2774e9fbc2bca5",
+      "currentSha256": "c14fff66b8f1b99ef71f7d1239c1e1adc9e3d74ba9b05186544d7ecc0b3ce4bf"
+    }
+  ]
+}
