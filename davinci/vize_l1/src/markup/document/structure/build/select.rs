@@ -28,9 +28,9 @@ impl<P: Profile> Builder<'_, '_, P> {
                 }
                 Ok(())
             }
-            // Modern HTML can retain other elements in select. They need
-            // their own native contracts, not the old ignore-token rule.
-            _ => Err(Refusal::UnsupportedSelectContent(tag.span)),
+            // Customizable selects retain ordinary HTML descendants instead
+            // of applying the obsolete ignore-token rule.
+            _ => Ok(()),
         }
     }
 }

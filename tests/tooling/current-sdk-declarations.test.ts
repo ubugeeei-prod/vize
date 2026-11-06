@@ -10,12 +10,13 @@ const source = fileURLToPath(new URL("../../npm/cli", import.meta.url));
 
 void test("the current manifest and actual declaration graph cover mapper and checker consumers", () => {
   const closure = captureCurrentSdkDeclarations(source);
-  assert.equal(closure.files.length, 13);
-  assert.equal(closure.graph.files.length, 13);
-  assert.equal(closure.graph.edges.length, 21);
-  assert.equal(closure.mapperGraph.files.length, 12);
-  assert.equal(closure.mapperGraph.edges.length, 20);
+  assert.equal(closure.files.length, 14);
+  assert.equal(closure.graph.files.length, 14);
+  assert.equal(closure.graph.edges.length, 24);
+  assert.equal(closure.mapperGraph.files.length, 13);
+  assert.equal(closure.mapperGraph.edges.length, 23);
   assert.ok(closure.files.includes("virtual-ts-emits.d.ts"));
+  assert.ok(closure.files.includes("virtual-ts-listeners.d.ts"));
   assert.ok(closure.files.includes("virtual-ts-checker.d.ts"));
 });
 

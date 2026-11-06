@@ -14,11 +14,11 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String};
 
-use super::compat::js_module_compatible;
 use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::rewrite::Retained;
 use super::scope::PrefixScope;
 use super::splice::splice_replacements;
+use crate::js_module_compatible;
 
 struct IdentifierVisitor<'s> {
     scope: &'s PrefixScope<'s>,

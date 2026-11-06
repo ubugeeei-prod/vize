@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 77
 expression: "format!(\"=== omitted ===\\n{omitted}\\n=== explicit false ===\\n{explicit_false}\\n=== explicit true ===\\n{explicit_true}\")"
 ---
 === omitted ===
@@ -109,10 +108,12 @@ function __setup() {
   void __vize_events_nav_0.click;
 
   // @click handler
+  type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __MyItem_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __MyItem_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __MyItem_8__listener_missing<__P, __Raw> : __MyItem_8__listener_missing<__P, __Raw>;
   type __MyItem_8__library = typeof MyItem extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof MyItem extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __MyItem_8__props = typeof MyItem extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof MyItem extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __MyItem_8__emit_props = typeof MyItem extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
-  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onClick?: (...args: infer __A) => any } ? __A : __P extends { onClick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __MyItem_8__listener_args<__P, "onClick", never> : unknown[] : never;
   type __MyItem_8_click_static_emit_args = __MyItem_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onClick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __MyItem_8_click_emit_args = __MyItem_8_click_static_emit_args;
   type __MyItem_8_click_args = unknown[] extends __MyItem_8_click_prop_args ? (unknown[] extends __MyItem_8_click_emit_args ? unknown[] : __MyItem_8_click_emit_args) : __MyItem_8_click_prop_args;
@@ -403,10 +404,12 @@ function __setup() {
   void __vize_events_nav_0.click;
 
   // @click handler
+  type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __MyItem_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __MyItem_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __MyItem_8__listener_missing<__P, __Raw> : __MyItem_8__listener_missing<__P, __Raw>;
   type __MyItem_8__library = typeof MyItem extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof MyItem extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __MyItem_8__props = typeof MyItem extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof MyItem extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __MyItem_8__emit_props = typeof MyItem extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
-  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onClick?: (...args: infer __A) => any } ? __A : __P extends { onClick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __MyItem_8__listener_args<__P, "onClick", never> : unknown[] : never;
   type __MyItem_8_click_static_emit_args = __MyItem_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onClick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __MyItem_8_click_emit_args = __MyItem_8_click_static_emit_args;
   type __MyItem_8_click_args = unknown[] extends __MyItem_8_click_prop_args ? (unknown[] extends __MyItem_8_click_emit_args ? unknown[] : __MyItem_8_click_emit_args) : __MyItem_8_click_prop_args;
@@ -697,11 +700,13 @@ function __setup() {
   void __vize_events_nav_0.click;
 
   // @click handler
+  type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  type __MyItem_8__listener_args<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? __MyItem_8__listener_missing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : __MyItem_8__listener_missing<__P, __Raw> : __MyItem_8__listener_missing<__P, __Raw>;
   type __MyItem_8__library = typeof MyItem extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : typeof MyItem extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;
   type __MyItem_8__props = typeof MyItem extends { new (...args: any[]): { $props: infer __P } } ? [__P] : typeof MyItem extends (props: infer __P, ...args: any[]) => any ? [__P] : [];
   type __MyItem_8__emit_props = typeof MyItem extends { __vizeEmitProps?: infer __EP } ? [__EP] : [];
   type __MyItem_8__fallthrough = typeof MyItem extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? [] : [__F] : [];
-  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __P extends { onClick?: (...args: infer __A) => any } ? __A : __P extends { onClick?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? unknown[] : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : unknown[] : unknown[] : unknown[] : never;
+  type __MyItem_8_click_prop_args = __MyItem_8__library extends true ? unknown[] : __MyItem_8__props extends infer __B ? __B extends [infer __P] ? __MyItem_8__listener_args<__P, "onClick", never> : unknown[] : never;
   type __MyItem_8_click_fallthrough_args = __MyItem_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends { onClick?: (...args: infer __A) => any } ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : never;
   type __MyItem_8_click_static_emit_args = __MyItem_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onClick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __MyItem_8_click_emit_args = __MyItem_8_click_static_emit_args;

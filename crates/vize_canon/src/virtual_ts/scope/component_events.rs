@@ -7,6 +7,7 @@ mod emit_resolver_share;
 mod generic_inference;
 mod handler_context;
 mod inference_helpers;
+mod listener_relations;
 mod listener_return;
 mod native_fallthrough;
 mod prop_array_share;
@@ -54,6 +55,7 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) source_context: ComponentPropSource<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) hoist_shared_preamble: bool,
+    pub(super) share_listener_relations: bool,
     pub(super) needs_typed_handler_assignment: bool,
     /// `fallthroughAttributes`: a listener the child neither declares nor
     /// emits may still be typed from its root's forwarded props.
@@ -86,6 +88,7 @@ pub(super) fn generate_component_event_types(
         source_context,
         legacy_vue2,
         hoist_shared_preamble,
+        share_listener_relations,
         needs_typed_handler_assignment,
         fallthrough_listeners,
         native_fallthrough_only,
@@ -123,6 +126,8 @@ pub(super) fn generate_component_event_types(
     if fallthrough_listeners && !legacy_vue2 {
         push_ts_string_literal(&mut owned_listener_key, on_handler.as_str());
     }
+    let mut listener_key = String::default();
+    push_ts_string_literal(&mut listener_key, on_handler.as_str());
     let prop_key = if on_handler.contains(':') {
         cstr!("\"{}\"", on_handler.as_str())
     } else {
@@ -166,12 +171,16 @@ pub(super) fn generate_component_event_types(
     let emit_props_box = cstr!("{component_aliases}_emit_props");
     let fallthrough_box = cstr!("{component_aliases}_fallthrough");
     let library = cstr!("{component_aliases}_library");
+    let relations = listener_relations::ListenerRelations::new(
+        &component_aliases,
+        hoist_shared_preamble && share_listener_relations,
+    );
     let prop_args =
         cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_prop_args");
     // Vue's published EmitsToProps retains authored hyphens (onFoo-bar),
     // while generated SFC contracts expose the camelized listener (onFooBar).
     // Only the spelling actually written by the user admits the raw alias.
-    let missing_prop_args = if data.event_name.contains('-') {
+    let raw_listener_key = if data.event_name.contains('-') {
         let mut raw_handler = String::from("on");
         let mut chars = data.event_name.chars();
         if let Some(first) = chars.next() {
@@ -180,9 +189,9 @@ pub(super) fn generate_component_event_types(
         raw_handler.push_str(chars.as_str());
         let mut raw_key = String::default();
         push_ts_string_literal(&mut raw_key, &raw_handler);
-        cstr!("__P extends {{ {raw_key}?: (...args: infer __A) => any }} ? __A : unknown[]")
+        raw_key
     } else {
-        String::from("unknown[]")
+        String::from("never")
     };
     let static_emit_args =
         cstr!("__{component_type_name}_{contract_scope_id}_{safe_event_name}_static_emit_args");
@@ -194,6 +203,7 @@ pub(super) fn generate_component_event_types(
     let event_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
     let listener_type = cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_listener");
     if first_component {
+        relations.emit(ts, indent);
         // A vue-tsc generic library export instantiates its generics with their
         // constraints here, so its payload comes from the bound-props call below.
         append!(
@@ -249,7 +259,8 @@ pub(super) fn generate_component_event_types(
     // Fn[]`, as Nuxt UI's Button declares); its function member still
     // supplies the payload.
     let prop_listener_args = cstr!(
-        "__P extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : __P extends {{ {prop_key}?: infer __H }} ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? {missing_prop_args} : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : {missing_prop_args} : {missing_prop_args}"
+        "{}<__P, {listener_key}, {raw_listener_key}>",
+        relations.args
     );
     if first_contract {
         if let Some(props) = contextual_props.as_ref() {

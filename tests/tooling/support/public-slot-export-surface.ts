@@ -105,6 +105,41 @@ function withProvenDefaultsRestored(
   return { ...actual, exports };
 }
 
+function withProvenListenerAdditionRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const name = "$ListenerArgs";
+  const expectedHasListener = expected.exports.some((entry) => entry.name === name);
+  const index = exports.findIndex((entry) => entry.name === name);
+  if (expectedHasListener || index < 0) return { ...actual, exports };
+  const oracle = new URL(
+    "tests/tooling/canon-listener-relations-equivalence.test.ts",
+    repositoryRoot,
+  );
+  assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+  assert.deepEqual(exports[index], {
+    name,
+    type: true,
+    value: false,
+    namespace: false,
+    declarations: [
+      {
+        kind: "TypeAliasDeclaration",
+        parameters: [
+          { name: "__P", constraint: null, default: null },
+          { name: "__K", constraint: "string | number | symbol", default: null },
+          { name: "__Raw", constraint: "string | number | symbol", default: "never" },
+        ],
+        signatures: [],
+      },
+    ],
+  });
+  exports.splice(index, 1);
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -115,7 +150,10 @@ export function assertPublicSlotExportSurface(
   // Only listed, oracle-proven defaults may differ; their old text must match.
   assert.deepEqual(
     Object.fromEntries(
-      withProvenDefaultsRestored(actual, changes).exports.map((entry) => [entry.name, entry]),
+      withProvenDefaultsRestored(
+        withProvenListenerAdditionRemoved(actual, expected),
+        changes,
+      ).exports.map((entry) => [entry.name, entry]),
     ),
     Object.fromEntries(expected.exports.map((entry) => [entry.name, entry])),
     "all former implicit and explicit entry exports retain their kinds and parameters",

@@ -9,19 +9,27 @@ import { certifiedTransition } from "./canonical-helper-transition.ts";
 export const emitOverloadsPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
 const ownerPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt";
+const preamblePath = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
 const sourceHashes = [
-  [ownerPath, "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30"],
   [
-    "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
+    ownerPath,
+    "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30",
+    "ede8a64664b4f16e139b909b77ce10fd911fa11164ed5eff53ad07b4bb1d4d30",
+  ],
+  [
+    preamblePath,
     "38c8e437524c3983a57d089febbf49ac4898ddfc1318672ded78608728c0dde6",
+    "15ad52d5dbc3166ba6fb5d7386515b6929064862ac530795c6a56525b539076e",
   ],
   [
     "crates/vize_canon/src/virtual_ts/generator/emits.rs",
     // The integrated transition keeps the newer verified main producer on both sides.
     "17b531f50a473ef1bdadac55d311756d2193bd547cc039f8af961355a05a538a",
+    "17b531f50a473ef1bdadac55d311756d2193bd547cc039f8af961355a05a538a",
   ],
   [
     "crates/vize_canon/tests/constructor_emission_projection.rs",
+    "631c2b23b93178857a595f33d391027be961eef54300d7538d4a32493dad046d",
     "631c2b23b93178857a595f33d391027be961eef54300d7538d4a32493dad046d",
   ],
 ] as const;
@@ -73,10 +81,7 @@ export function certifyEmitOverloadAssets(
     Buffer.from(before.toString().replace(previous, current)),
     "only the owned emit alias may change",
   );
-  const assets = [
-    [emitOverloadsPath, previousHash, currentHash],
-    ...sourceHashes.map(([file, hash]) => [file, hash, hash]),
-  ];
+  const assets = [[emitOverloadsPath, previousHash, currentHash], ...sourceHashes];
   for (const [file, baseHash, headHash] of assets) {
     for (const [root, revision, expectedHash] of [
       [baseRoot, sources.base, baseHash],
@@ -95,6 +100,21 @@ export function certifyEmitOverloadAssets(
       );
     }
   }
+  const selected = (revision: string, file: string): Buffer =>
+    execFileSync("git", ["-C", sources.repository, "show", `${revision}:${file}`], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  const previousPreamble = selected(sources.base, preamblePath);
+  const listenerAnchor = '    include_str!("declarations/shared-emit-inference.d.ts.txt"),\n';
+  const listenerAddition = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
+  assert.equal(previousPreamble.toString().split(listenerAnchor).length, 2);
+  assert.deepEqual(
+    selected(sources.head, preamblePath),
+    Buffer.from(
+      previousPreamble.toString().replace(listenerAnchor, listenerAnchor + listenerAddition),
+    ),
+    "only the certified shared listener include may change the emit preamble dependency",
+  );
   const owner = readFileSync(path.join(headRoot, ownerPath));
   assert.equal(owner.length, 242);
   return {

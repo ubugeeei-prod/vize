@@ -408,6 +408,11 @@ test("release workflows run the runtime matrix with every required package", () 
           "node",
           "tools/commands/release/npm/smoke-release-install.ts",
         ]);
+      else if (args.includes('"npm/native/npm/$NATIVE_PLATFORM"'))
+        assert.deepEqual(args.slice(0, 2), [
+          "node",
+          "tools/commands/release/npm/smoke-release-install.ts",
+        ]);
       else
         assert.deepEqual(
           args.slice(0, 3),

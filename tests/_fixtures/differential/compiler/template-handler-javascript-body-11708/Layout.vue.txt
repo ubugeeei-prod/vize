@@ -1,0 +1,9 @@
+<script>
+export default {
+  data: () => ({ count: 0 }),
+}
+</script>
+
+<template>
+  <Counter @increment="() => { count++; }" />
+</template>

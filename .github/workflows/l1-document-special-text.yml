@@ -13,6 +13,7 @@ on:
       - package.json
       - pnpm-lock.yaml
       - tests/package.json
+      - tests/tooling/davinci-document-select.test.ts
       - tests/tooling/davinci-document-special-text.test.ts
 permissions: { contents: read }
 concurrency:
@@ -51,6 +52,13 @@ jobs:
       - name: Compare the original packet with native and legacy Rust
         run: |
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-          cargo test --locked --profile ci -p vize_l1 --test html_special_text --test html_special_text_legacy_oracle
+          cargo test --locked --profile ci -p vize_l1 \
+            --test html_select \
+            --test html_select_legacy_oracle \
+            --test html_special_text \
+            --test html_special_text_legacy_oracle
       - name: Compare the original packet with Chromium
-        run: vp node --test tests/tooling/davinci-document-special-text.test.ts
+        run: |
+          vp node --test \
+            tests/tooling/davinci-document-select.test.ts \
+            tests/tooling/davinci-document-special-text.test.ts
