@@ -59,8 +59,11 @@ const typeErrors = (params: PublishDiagnosticsParams) =>
   params.diagnostics.filter(
     (diagnostic) => diagnostic.source === "vize/types" && Number(diagnostic.code) === 2322,
   );
-const lintWarnings = (params: PublishDiagnosticsParams) =>
-  params.diagnostics.filter((diagnostic) => diagnostic.source === "vize/lint");
+const vForKeyWarnings = (params: PublishDiagnosticsParams) =>
+  params.diagnostics.filter(
+    (diagnostic) =>
+      diagnostic.source === "vize/lint" && diagnostic.code === "vue/require-v-for-key",
+  );
 const summary = (publications: PublishDiagnosticsParams[]) =>
   publications
     .map(
@@ -112,7 +115,7 @@ test("lint publications after an edit keep the moved type diagnostics", async (t
       60_000,
     )) as PublishDiagnosticsParams;
     assert.deepEqual(typeErrors(opened)[0]?.range?.start, BROKEN, summary([opened]));
-    assert.equal(lintWarnings(opened).length, 1, summary([opened]));
+    assert.equal(vForKeyWarnings(opened).length, 1, summary([opened]));
 
     for (const { version, edit } of STEPS) {
       session.notify("textDocument/didChange", {
@@ -149,8 +152,8 @@ test("lint publications after an edit keep the moved type diagnostics", async (t
       } else {
         assert.deepEqual(typeErrors(complete), [], summary(publications));
       }
-      assert.equal(lintWarnings(published[0]).length, lint ? 1 : 0, summary(publications));
-      assert.equal(lintWarnings(complete).length, lint ? 1 : 0, summary(publications));
+      assert.equal(vForKeyWarnings(published[0]).length, lint ? 1 : 0, summary(publications));
+      assert.equal(vForKeyWarnings(complete).length, lint ? 1 : 0, summary(publications));
     }
   } finally {
     if (!stopped) await session.shutdown();

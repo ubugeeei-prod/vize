@@ -27,8 +27,52 @@ await test("bare instance names use complete explicit prefix-policy successor pa
   );
   const routeSuccessors = JSON.parse(fs.readFileSync(routeSuccessorsPath, "utf8"));
   const routePackets = new Map(routeSuccessors.cases.map((entry) => [entry.id, entry]));
+  const defaultSuccessorsPath = path.join(
+    path.dirname(successorsPath),
+    "require-define-component-route-successors.json",
+  );
+  const defaultSuccessors = JSON.parse(fs.readFileSync(defaultSuccessorsPath, "utf8"));
+  const defaultPackets = new Map(defaultSuccessors.bareCases.map((entry) => [entry.id, entry]));
+  const unusedSuccessorsPath = path.join(
+    path.dirname(successorsPath),
+    "no-unused-setup-bindings-route-successors.json",
+  );
+  const unusedSuccessors = JSON.parse(fs.readFileSync(unusedSuccessorsPath, "utf8"));
+  const unusedPackets = new Map(unusedSuccessors.bareCases.map((entry) => [entry.id, entry]));
+  const propsSuccessorsPath = path.join(
+    path.dirname(successorsPath),
+    "define-props-destructuring-route-successors.json",
+  );
+  const propsSuccessors = JSON.parse(fs.readFileSync(propsSuccessorsPath, "utf8"));
+  const propsPackets = new Map(propsSuccessors.bareCases.map((entry) => [entry.id, entry]));
+  const withCurrentDefault = (entry, findings) => {
+    const successor = defaultPackets.get(entry.id);
+    const unused = unusedPackets.get(entry.id);
+    const props = propsPackets.get(entry.id);
+    for (const selected of [successor, unused, props].filter(Boolean)) {
+      assert.equal(selected.filename, entry.filename);
+      assert.equal(selected.sourceSha256, entry.sourceSha256);
+    }
+    const additions = [
+      ...(successor ? [successor.diagnostic] : []),
+      ...(unused ? unused.diagnostics : []),
+      ...(props ? props.diagnostics : []),
+    ];
+    assert.ok(
+      findings.every((finding) =>
+        additions.every((diagnostic) => diagnostic.start <= finding.start),
+      ),
+    );
+    return [...additions, ...findings];
+  };
   assert.equal(routeSuccessors.cases.length, 16);
+  assert.equal(defaultSuccessors.bareCases.length, 15);
+  assert.equal(unusedSuccessors.bareCases.length, 1);
+  assert.equal(propsSuccessors.bareCases.length, 0);
   assert.equal(routeSuccessors.targetSuccessors.sha256, sha256(fs.readFileSync(successorsPath)));
+  assert.equal(defaultSuccessors.bases.bare.sha256, sha256(fs.readFileSync(routeSuccessorsPath)));
+  assert.equal(unusedSuccessors.bases.bare.sha256, sha256(fs.readFileSync(routeSuccessorsPath)));
+  assert.equal(propsSuccessors.bases.bare.sha256, sha256(fs.readFileSync(routeSuccessorsPath)));
   assert.equal(
     routeSuccessors.cases.reduce((count, entry) => count + entry.combinedCliDiagnostics.length, 0),
     11,
@@ -73,6 +117,9 @@ await test("bare instance names use complete explicit prefix-policy successor pa
     "tests/_fixtures/differential/lint/bare-reserved-8090/cases.json",
     "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-successors.json",
     "tests/_fixtures/differential/lint/reserved-prefix-8090/bare-parent-route-successors.json",
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/require-define-component-route-successors.json",
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/no-unused-setup-bindings-route-successors.json",
+    "tests/_fixtures/differential/lint/reserved-prefix-8090/define-props-destructuring-route-successors.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/observe-before.mjs",
     "tests/_fixtures/differential/lint/bare-reserved-8090/primary-sources.json",
     "tests/_fixtures/differential/lint/bare-reserved-8090/original-public-before.json",
@@ -115,17 +162,20 @@ await test("bare instance names use complete explicit prefix-policy successor pa
     persist();
     validateBuildReceipt(receipt, build);
     const scenarios = corpus.cases.flatMap((entry) => [
-      ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
-        entry,
-        preset,
-        config: null,
-        findings: routePackets.get(entry.id).combinedCliDiagnostics,
-      })),
+      ...[null, "recommended", "essential", "ecosystem"].map((preset) => {
+        const findings = routePackets.get(entry.id).combinedCliDiagnostics;
+        return {
+          entry,
+          preset,
+          config: null,
+          findings: preset === "essential" ? findings : withCurrentDefault(entry, findings),
+        };
+      }),
       { entry, preset: "incremental", config: null, findings: [] },
       {
         entry,
         preset: null,
-        findings: routePackets.get(entry.id).diagnostics,
+        findings: withCurrentDefault(entry, routePackets.get(entry.id).diagnostics),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {
