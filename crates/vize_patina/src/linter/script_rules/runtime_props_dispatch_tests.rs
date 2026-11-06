@@ -45,8 +45,8 @@ impl ScriptRule for Namesake {
 fn configured_namesake_cannot_gain_runtime_props_capability() {
     let rule = Namesake;
     assert!(rule.as_setup_props_defaults().is_none());
-    let mut linter = Linter::with_preset(LintPreset::Incremental)
-        .with_additional_rules(vec![META.name.into()]);
+    let mut linter =
+        Linter::with_preset(LintPreset::Incremental).with_additional_rules(vec![META.name.into()]);
     linter
         .script_rule_overrides
         .insert(META.name, Box::new(rule));
