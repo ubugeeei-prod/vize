@@ -7,6 +7,7 @@
 //! same byte-proven `process_expression` port the DOM lane uses and returns
 //! the rewritten text unconsumed ([`prefix::Site::Raw`]).
 
+use alloc::borrow::ToOwned;
 use vize_l0::{String, cstr};
 use vize_l2::expr::ExprRef;
 
