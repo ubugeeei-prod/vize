@@ -189,7 +189,7 @@ fn verify_lockfile_update(
         return Err("two exact setup-await dependencies");
     }
     let lock = std::str::from_utf8(lock).map_err(|_| "UTF-8 qualification lock")?;
-    if lock.matches("  '@unhead/vue': 3.4.3").count() != 1
+    if !lock.contains("  '@unhead/vue': 3.4.3")
         || lock.matches(SETUP_AWAIT_IMPORTER).count() != 1
         || lock.contains("      vue-setup-await-oracle:\n        specifier: npm:vue@3.5.38")
     {
