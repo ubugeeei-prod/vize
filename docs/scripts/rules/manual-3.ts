@@ -11,7 +11,7 @@ export const manual3: Record<string, RuleExample> = {
       source:
         "<style scoped>\n.button {\n  padding: var(--space-3) var(--space-4);\n  color: var(--color-action-text);\n}\n</style>",
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "css/no-id-selectors": {
     bad: {
@@ -22,7 +22,7 @@ export const manual3: Record<string, RuleExample> = {
       language: "vue",
       source: "<style scoped>\n.submit {\n  font-weight: 600;\n}\n</style>",
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "css/no-important": {
     bad: {
@@ -33,7 +33,7 @@ export const manual3: Record<string, RuleExample> = {
       language: "vue",
       source: "<style scoped>\n.button {\n  color: var(--button-color);\n}\n</style>",
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "css/no-v-bind-performance": {
     bad: {
@@ -45,7 +45,7 @@ export const manual3: Record<string, RuleExample> = {
       source:
         '<template>\n  <article :style="{ transform: `translateX(${offset}px)` }" class="card" />\n</template>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "css/prefer-logical-properties": {
     bad: {
@@ -56,7 +56,7 @@ export const manual3: Record<string, RuleExample> = {
       language: "vue",
       source: "<style scoped>\n.panel {\n  margin-inline-start: 1rem;\n}\n</style>",
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "css/require-font-display": {
     bad: {
@@ -69,7 +69,7 @@ export const manual3: Record<string, RuleExample> = {
       source:
         '<style>\n@font-face {\n  font-family: "Inter";\n  src: url("/inter.woff2") format("woff2");\n  font-display: swap;\n}\n</style>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
   "ecosystem/nuxt-prefer-nuxt-link": {
     bad: {

@@ -160,4 +160,5 @@ Musea と CSS の診断は、通常の Vue テンプレートのルールとは�
 - [SSR ルール](../rules/ssr.md)
 - [Vapor ルール](../rules/vapor.md)
 - [ファイル横断ルール](../rules/cross-file.md)
-- [Musea と CSS のルール](../rules/musea-and-css.md)
+- [CSS ルール](../rules/css.md)
+- [Musea ルール](../rules/musea.md)

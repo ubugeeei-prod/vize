@@ -7,8 +7,8 @@
 ///   sourceMap = true
 /// }
 module vize.Config
-import "SortImportsConfig.pkl"
 import "LintRuleOptionTypes.pkl"
+import "SortImportsConfig.pkl"
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
 typealias Whitespace = "condense" | "preserve" | "vue2-line-breaks" | "vue2-preserve"
@@ -16,9 +16,24 @@ typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
-typealias LintPreset = "general-recommended" | "general_recommended" | "generalRecommended" | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated" | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
+typealias LintPreset =
+  "general-recommended"
+    | "general_recommended"
+    | "generalRecommended"
+    | "happy-path"
+    | "happy_path"
+    | "happy"
+    | "default"
+    | "recommended"
+    | "opinionated"
+    | "strict"
+    | "all"
+    | "essential"
+    | "incremental"
+    | "ecosystem"
+    | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
-typealias CustomEventNameCasing = "camelCase" | "kebab-case"
+typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
 typealias PropNameCasingStyle = "camelCase" | "snake_case"
 typealias HtmlSelfClosingStyle = "always" | "never" | "any"
 typealias HtmlQuoteStyle = "double" | "single"
@@ -101,7 +116,7 @@ class ComponentNameInTemplateCasingOptions {
   globals: Listing<String> = new Listing {}
 }
 class CustomEventNameCasingOptions {
-  casing: CustomEventNameCasing = "camelCase"
+  casing: CustomEventNameCasing = "lowercase"
 }
 
 class PropNameCasingOptions {
@@ -140,8 +155,8 @@ class HtmlQuotesOptions {
   avoidEscape: Boolean = false
 }
 
-typealias VSlotUniformStyle = "shorthand"|"longform"
-typealias VSlotStyleValue = VSlotUniformStyle|"v-slot"
+typealias VSlotUniformStyle = "shorthand" | "longform"
+typealias VSlotStyleValue = VSlotUniformStyle | "v-slot"
 
 class VSlotStyleOptions {
   atComponent: VSlotStyleValue = "v-slot"
@@ -174,7 +189,7 @@ class ContentDirectivesOptions extends LintRuleOptionTypes.ContentDirectivesOpti
 
 /// Style for props destructuring; matches eslint-plugin-vue's default.
 class DefinePropsDestructuringOptions {
-  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+  destructure: "only-when-assigned" | "always" | "never" = "only-when-assigned"
 }
 
 class DefineMacrosOrderOptions {
@@ -207,13 +222,13 @@ class LintRuleOptions {
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
-  `vue/html-quotes`: (HtmlQuoteStyle|HtmlQuotesOptions)? = null
+  `vue/html-quotes`: (HtmlQuoteStyle | HtmlQuotesOptions)? = null
   `vue/mustache-interpolation-spacing`: MustacheInterpolationSpacingStyle? = null
-  `vue/v-on-event-hyphenation`: (HyphenationStyle|VOnEventHyphenationOptions)? = null
+  `vue/v-on-event-hyphenation`: (HyphenationStyle | VOnEventHyphenationOptions)? = null
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
-  `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null
-  `vue/attribute-hyphenation`: (HyphenationStyle|AttributeHyphenationOptions)? = null
+  `vue/v-slot-style`: (VSlotUniformStyle | VSlotStyleOptions)? = null
+  `vue/attribute-hyphenation`: (HyphenationStyle | AttributeHyphenationOptions)? = null
   `vue/valid-v-on`: LintRuleOptionTypes.ValidVOnOptions? = null
   `vue/valid-v-slot`: LintRuleOptionTypes.ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
@@ -284,17 +299,17 @@ class FormatterConfig {
   jsxSingleQuote: Boolean? = null
   bracketSpacing: Boolean? = null
   bracketSameLine: Boolean? = null
-  arrowParens: ("always"|"avoid")? = null
-  endOfLine: ("lf"|"crlf"|"cr"|"auto")? = null
-  quoteProps: ("as-needed"|"consistent"|"preserve")? = null
+  arrowParens: ("always" | "avoid")? = null
+  endOfLine: ("lf" | "crlf" | "cr" | "auto")? = null
+  quoteProps: ("as-needed" | "consistent" | "preserve")? = null
   singleAttributePerLine: Boolean? = null
   vueIndentScriptAndStyle: Boolean? = null
   sortAttributes: Boolean? = null
-  attributeSortOrder: ("alphabetical"|"as-written")? = null
+  attributeSortOrder: ("alphabetical" | "as-written")? = null
   mergeBindAndNonBindAttrs: Boolean? = null
   maxAttributesPerLine: Int? = null
   attributeGroups: Listing<Listing<String>>? = null
-  preset: ("vize"|"prettier"|"compact"|"documentation")? = null
+  preset: ("vize" | "prettier" | "compact" | "documentation")? = null
   normalizeDirectiveShorthands: Boolean? = null
   sortBlocks: Boolean? = null
   normalizeCssQuotes: Boolean? = null

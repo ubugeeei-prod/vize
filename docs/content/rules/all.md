@@ -58,11 +58,11 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | Disallow a negated v-if condition when the chain has a v-else. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | Disallow plain element wrappers directly below `<KeepAlive>`. | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | Discourage CSS preprocessor usage in favor of modern CSS. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Disallow copying a ref value in the same scope. | — |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Disallow copying a ref value in the same scope. | `happy-path` |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | Disallow the use of reserved names as component names. | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | Disallow v-if on the single root element of a template. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | Discourage non-standard script lang values. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Disallow setup prop reads that lose reactivity. | — |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Disallow setup prop reads that lose reactivity. | `happy-path` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | Discourage src attribute on SFC blocks. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Disallow static inline style attributes. | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | Disallow `key` attribute on `<template>`. | `essential` |  |
@@ -70,14 +70,14 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | Disallow variable names that shadow variables in outer scope. | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | Disallow target="_blank" without rel="noopener noreferrer". | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | Disallow mustache interpolation in `<textarea>`. | `essential` |  |
-| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Disallow `this` in `beforeRouteEnter`. | — |  |
-| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Disallow undefined variable references in templates. | — |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Disallow `this` in `beforeRouteEnter`. | `happy-path` |  |
+| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Disallow undefined variable references in templates. | `happy-path` |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | Warn about potentially unsafe URL bindings. | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | Require a sandbox attribute on iframe elements. | `happy-path` |  |
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | Disallow registering components that are not used inside templates. | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | Disallow unused properties defined in defineProps. | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Report template refs (ref="x") never referenced in &lt;script&gt;. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Disallow unread script setup bindings. | — |  |
+| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Disallow unread script setup bindings. | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | Disallow unused variable definitions in v-for and v-slot directives. | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | Disallow using `v-else-if` or `v-else` on the same element as `v-for`. | `happy-path` |  |
 | <span id="vue-no-use-v-if-with-v-for"></span>[`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | Disallow using `v-if` on the same element as `v-for`. | `essential` |  |
@@ -134,7 +134,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Warn about custom blocks in SFC files. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Warn about custom directives that need registration. | `nuxt`, `opinionated` |  |
 
-## Type and script rules (82)
+## Type and script rules (83)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -197,6 +197,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="script-prefer-use-slots"></span>[`script/prefer-use-slots`](./reference/script-prefer-use-slots.md) | Recommend using useSlots() over context.slots. | — |  |
 | <span id="script-prefer-use-template-ref"></span>[`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | Recommend useTemplateRef over ref for template references (Vue 3.5+). | `opinionated`, `nuxt` |  |
 | <span id="script-require-default-prop"></span>[`script/require-default-prop`](./reference/script-require-default-prop.md) | Require a default value for every optional, non-Boolean prop. | `opinionated`, `nuxt` |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | Require defineComponent() for TypeScript SFC default exports. | `happy-path` |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | Require emitted events to be declared in defineEmits or the emits option. | `happy-path` |  |
 | <span id="script-require-explicit-slots"></span>[`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;(). | `opinionated`, `nuxt` |  |
 | <span id="script-require-function-return-type"></span>[`script/require-function-return-type`](./reference/script-require-function-return-type.md) | Require return type annotations on functions. | — |  |
@@ -304,7 +305,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="nuxt-nuxt-config-keys-order"></span>[`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | Prefer recommended order of Nuxt config properties. | `nuxt` | ✓ |
 | <span id="nuxt-prefer-import-meta"></span>[`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | Prefer using `import.meta.*` over `process.*`. | `nuxt` | ✓ |
 
-## Musea and CSS rules (16)
+## CSS rules (10)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -318,6 +319,11 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | Recommend using CSS nesting for descendant selectors. | `opinionated`, `nuxt` |  |
 | <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | Recommend ::v-slotted() for styling slot content. | `opinionated`, `nuxt` |  |
 | <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | Require font-display in @font-face rules. | `opinionated`, `nuxt` |  |
+
+## Musea rules (6)
+
+| Rule | What it checks | Preset | Auto-fix |
+| --- | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | Disallow empty &lt;variant&gt; blocks. | — |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | Prefer design token CSS variables over hardcoded primitive values. | — |  |
 | <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Require component attribute in &lt;art&gt; block. | — |  |

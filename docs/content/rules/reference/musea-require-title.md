@@ -58,6 +58,6 @@ Then run `vp run lint`.
 
 ## Related
 
-- [Musea and CSS rules](../musea-and-css.md)
+- [Musea rules](../musea.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)

@@ -15,23 +15,23 @@ emit するカスタムイベント名を指定した形式に揃えます。
 
 ## 悪い例
 
-emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。
+emit する文字列 `transitionStart` に大文字が含まれ、区切りなしの lowercase を使う既定の命名規則に違反しています。
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['my-event'])
-emit('my-event')         // kebab-case → report
+const emit = defineEmits(['transitionStart'])
+emit('transitionStart')         // camelCase → report
 </script>
 ```
 
 ## 良い例
 
-宣言と呼び出しの両方を `myEvent` にそろえ、イベント名の一致を保ったまま既定の命名規則を満たします。kebab-case に設定した場合の期待値は異なります。
+宣言と呼び出しの両方を `transitionstart` にそろえ、プラットフォーム風の lowercase 規則を満たします。camelCase または kebab-case を明示的に設定することもできます。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
+const emit = defineEmits(['transitionstart'])
+emit('transitionstart')
 </script>
 ```
 
@@ -59,4 +59,4 @@ export default defineConfig({
 - [型と script のルール](../type-and-script.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L62)

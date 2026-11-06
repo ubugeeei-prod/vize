@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "Imposer camelCase aux noms des événements personnalisés émis."
+description: "Imposer la casse configurée aux noms des événements personnalisés émis."
 ---
 
 # `script/custom-event-name-casing`
 
-Imposer camelCase aux noms des événements personnalisés émis.
+Imposer la casse configurée aux noms des événements personnalisés émis.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
@@ -15,23 +15,23 @@ Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la for
 
 ## Mauvais
 
-La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.
+La chaîne émise `transitionStart` contient une majuscule et enfreint la convention par défaut en minuscules sans séparateur.
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['my-event'])
-emit('my-event')         // kebab-case → report
+const emit = defineEmits(['transitionStart'])
+emit('transitionStart')         // camelCase → report
 </script>
 ```
 
 ## Bon
 
-La déclaration et l’appel utilisent tous deux `myEvent`, ce qui maintient la correspondance entre le nom de l’événement et son émission tout en respectant la convention de casse par défaut. Une convention kebab-case configurée impose une autre forme.
+La déclaration et l’appel utilisent tous deux `transitionstart`, ce qui maintient leur correspondance tout en suivant la convention de plateforme en minuscules. Un projet peut configurer explicitement camelCase ou kebab-case.
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
+const emit = defineEmits(['transitionstart'])
+emit('transitionstart')
 </script>
 ```
 
@@ -59,4 +59,4 @@ Lancez ensuite `vp run lint`.
 - [Règles de type et de script](../type-and-script.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L62)

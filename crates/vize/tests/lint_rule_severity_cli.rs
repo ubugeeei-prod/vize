@@ -43,7 +43,7 @@ fn lint_config_rule_severity_override_applies_to_builtin_script_rules() {
         r#"<script setup lang="ts">
 const emit = defineEmits(["step-changed"])
 
-const handleStepClick = (stepIndex: number) => {
+const _handleStepClick = (stepIndex: number) => {
   emit("step-changed", stepIndex)
 }
 </script>
@@ -240,12 +240,12 @@ emit("step-changed", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 2,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not lowercase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
               "endColumn": 20,
-              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+              "help": "Use a separator-free lowercase event name (e.g. transitionstart)."
             }],
             "errorCount": 1,
             "warningCount": 0
@@ -256,12 +256,12 @@ emit("step-changed", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 2,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not lowercase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
               "endColumn": 20,
-              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+              "help": "Use a separator-free lowercase event name (e.g. transitionstart)."
             }],
             "errorCount": 1,
             "warningCount": 0
@@ -272,12 +272,12 @@ emit("step-changed", 1)
               "ruleId": "script/custom-event-name-casing",
               "ruleDocsPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
               "severity": 1,
-              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not camelCase.",
+              "message": "[vize:script/custom-event-name-casing] Custom event name 'step-changed' is not lowercase.",
               "line": 3,
               "column": 6,
               "endLine": 3,
               "endColumn": 20,
-              "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
+              "help": "Use a separator-free lowercase event name (e.g. transitionstart)."
             }],
             "errorCount": 0,
             "warningCount": 1

@@ -58,11 +58,11 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | 禁止在含有 v-else 的条件链中使用否定的 v-if 条件。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | 禁止在 `<KeepAlive>` 的直属子层使用普通元素包装。 | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | 不建议使用 CSS 预处理器，优先使用现代 CSS。 | `nuxt`, `opinionated` |  |
-| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 禁止在同一作用域中复制 ref 的值而丢失后续响应式更新。 | — |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | 禁止在同一作用域中复制 ref 的值而丢失后续响应式更新。 | `happy-path` |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 禁止使用保留名称作为组件名称。 | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | 禁止在模板的唯一根元素上使用 v-if。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | 不建议使用非标准的 script lang 值。 | `nuxt`, `opinionated` |  |
-| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 禁止通过复制 setup 的 prop 值而丢失后续响应式更新。 | — |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | 禁止通过复制 setup 的 prop 值而丢失后续响应式更新。 | `happy-path` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | 不建议在 SFC 块上使用 src 属性。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 禁止静态内联 style 属性。 | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | 禁止在 `<template>` 上使用 `key` 属性。 | `essential` |  |
@@ -70,14 +70,14 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | 禁止使用遮蔽外层作用域变量的变量名称。 | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | 禁止使用 target="_blank" 而不设置 rel="noopener noreferrer"。 | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | 禁止在 `<textarea>` 内使用双花括号插值。 | `essential` |  |
-| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 禁止在 `beforeRouteEnter` 中通过 `this` 访问尚未创建的组件实例。 | — |  |
-| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | 禁止在模板中引用未定义的变量。 | — |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 禁止在 `beforeRouteEnter` 中通过 `this` 访问尚未创建的组件实例。 | `happy-path` |  |
+| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | 禁止在模板中引用未定义的变量。 | `happy-path` |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 警告可能不安全的 URL 绑定。 | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | 要求 iframe 元素具有 sandbox 属性。 | `happy-path` |  |
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 禁止注册未在模板中使用的组件。 | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | 禁止 defineProps 中定义的未使用属性。 | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 | — |  |
+| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | 禁止 v-for 和 v-slot 指令中未使用的变量定义。 | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 禁止在同一元素上使用 `v-else-if` 或 `v-else` 与 `v-for`。 | `happy-path` |  |
 | <span id="vue-no-use-v-if-with-v-for"></span>[`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | 禁止在同一元素上使用 `v-if` 与 `v-for`。 | `essential` |  |
@@ -134,12 +134,12 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 类型与脚本规则 (82)
+## 类型与脚本规则 (83)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
 | <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | 要求组件 `name` 选项使用 PascalCase。 | `opinionated`, `nuxt` |  |
-| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | 要求发出的自定义事件名称使用 camelCase。 | `opinionated`, `nuxt` |  |
+| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | 要求发出的自定义事件名称使用配置的格式。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | 要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | 要求 &lt;script setup&gt; 中的 Vue 编译器宏保持一致的顺序。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-props-declaration"></span>[`script/define-props-declaration`](./reference/script-define-props-declaration.md) | 要求使用类型形式 defineProps&lt;{ ... }&gt;()，而不是运行时或对象形式。 | `opinionated`, `nuxt` |  |
@@ -197,6 +197,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="script-prefer-use-slots"></span>[`script/prefer-use-slots`](./reference/script-prefer-use-slots.md) | 建议使用 useSlots() 而不是 context.slots。 | — |  |
 | <span id="script-prefer-use-template-ref"></span>[`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | 模板引用建议使用 useTemplateRef 而不是 ref（Vue 3.5+）。 | `opinionated`, `nuxt` |  |
 | <span id="script-require-default-prop"></span>[`script/require-default-prop`](./reference/script-require-default-prop.md) | 要求每个可选的非 Boolean prop 具有默认值。 | `opinionated`, `nuxt` |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | 要求 TypeScript SFC 的默认导出使用 defineComponent()。 | `happy-path` |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | 要求发出的事件在 defineEmits 或 emits 选项中声明。 | `happy-path` |  |
 | <span id="script-require-explicit-slots"></span>[`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | 要求通过 useSlots() 使用的插槽由 defineSlots&lt;...&gt;() 显式定义类型。 | `opinionated`, `nuxt` |  |
 | <span id="script-require-function-return-type"></span>[`script/require-function-return-type`](./reference/script-require-function-return-type.md) | 要求函数具有返回类型注解。 | — |  |
@@ -304,7 +305,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="nuxt-nuxt-config-keys-order"></span>[`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | 优先使用推荐的 Nuxt 配置属性顺序。 | `nuxt` | ✓ |
 | <span id="nuxt-prefer-import-meta"></span>[`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | 优先使用 `import.meta.*`，而不是 `process.*`。 | `nuxt` | ✓ |
 
-## Musea 与 CSS 规则 (16)
+## CSS 规则 (10)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -318,6 +319,11 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | 建议为后代选择器使用 CSS 嵌套。 | `opinionated`, `nuxt` |  |
 | <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | 建议使用 ::v-slotted() 为插槽内容设置样式。 | `opinionated`, `nuxt` |  |
 | <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | 要求 @font-face 规则具有 font-display。 | `opinionated`, `nuxt` |  |
+
+## Musea 规则 (6)
+
+| 规则 | 检查内容 | 预设 | 自动修复 |
+| --- | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | 禁止空的 &lt;variant&gt; 块。 | — |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | 优先使用设计令牌 CSS 变量，而不是硬编码的原始值。 | — |  |
 | <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | 要求 &lt;art&gt; 块具有 component 属性。 | — |  |

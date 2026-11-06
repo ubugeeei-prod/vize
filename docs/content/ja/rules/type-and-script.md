@@ -55,7 +55,7 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | defineProps の重複や型と実行時引数の併用を検出します。 |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | nextTick() の完了を await、then、またはコールバックで扱います。 |  |
 
-## 既定 (5)
+## 既定 (6)
 
 既定のプリセット `happy-path` で追加されるルールです。
 
@@ -63,6 +63,7 @@ description: "`<script>` と `<script setup>` を検査します。コンパイ�
 | --- | --- | --- |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | scoped slot 関数に複数の引数を渡す箇所を検出します。 |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | setup / render 内で毎回コンポーネントを定義する箇所を検出します。 |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | TypeScript SFC の default export を defineComponent() で型付けします。 |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | emit するイベントを defineEmits または emits に宣言します。 |  |
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | defineEmits に型定義を指定します。 |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | defineProps に型定義を指定します。 |  |

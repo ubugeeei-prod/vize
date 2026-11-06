@@ -1,8 +1,8 @@
 export const chineseRules2: Record<string, readonly [string, string, string]> = {
   "script/custom-event-name-casing": [
-    "要求发出的自定义事件名称使用 camelCase",
-    "发出的字符串 `my-event` 含有连字符，违反默认的 camelCase 事件命名策略。",
-    "声明和调用都使用 `myEvent`，既保持事件名称与发出操作一致，也满足默认大小写策略。配置为 kebab-case 时要求不同。",
+    "要求发出的自定义事件名称使用配置的格式",
+    "发出的字符串 `transitionStart` 含有大写字母，违反默认的无分隔符全小写策略。",
+    "声明和调用都使用 `transitionstart`，既保持名称一致，也遵循平台风格的全小写约定。项目仍可显式配置 camelCase 或 kebab-case。",
   ],
   "script/define-emits-declaration": [
     "要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式",

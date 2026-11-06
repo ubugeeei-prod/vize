@@ -184,6 +184,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/prefer-use-slots", Exact, SCRIPT, Warning),
     row!("script/prefer-use-template-ref", Complete, BINDINGS, Warning),
     row!("script/require-default-prop", Exact, OPTIONS, Error),
+    row!("script/require-define-component", Exact, SCRIPT, Error),
     row!("script/require-explicit-emits", Complete, MACROS, Warning),
     row!("script/require-explicit-slots", Complete, MACROS, Warning),
     row!("script/require-function-return-type", Exact, SCRIPT, Warning),

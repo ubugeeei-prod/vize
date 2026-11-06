@@ -9,7 +9,7 @@ Interdit les copies des valeurs des props de setup qui perdent leurs mises à jo
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | Aucune | Non | Aucune |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Non | Aucune |
 
 Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup.
 

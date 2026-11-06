@@ -43,7 +43,7 @@ Un préréglage est un ensemble de règles de départ. `happy-path` est celui pa
 | `happy-path` (par défaut) | 147 | `essential`, plus les conventions de mise en forme des templates (dont la forme courte de `v-bind` et les événements de composant avec trait d’union), l’accessibilité, la conformité HTML, les risques SSR, les propriétés inutilisées, les emits déclarés et les props et emits typés |
 | `ecosystem` | 155 | `happy-path`, plus les vérifications des bibliothèques de l’écosystème |
 | `nuxt` | 213 | `opinionated`, adapté aux auto-imports de Nuxt |
-| `opinionated` | 213 | `happy-path`, plus des conventions plus strictes, des props typées, `defineProps`/`defineEmits` basés sur les types, l’ordre des macros de `<script setup>`, des noms d’événements en camelCase, `useTemplateRef`, `defineSlots`, l’hygiène des valeurs par défaut des props et des emits, `defineOptions` et les règles de style `css/*` |
+| `opinionated` | 213 | `happy-path`, plus des conventions plus strictes, des props typées, `defineProps`/`defineEmits` basés sur les types, l’ordre des macros de `<script setup>`, des noms d’événements en minuscules, `useTemplateRef`, `defineSlots`, l’hygiène des valeurs par défaut des props et des emits, `defineOptions` et les règles de style `css/*` |
 | `incremental` | 0 | Rien. Partez de là pour n’activer que les règles que vous nommez. |
 
 Les nombres excluent les règles inter-fichiers. Quand `compiler.compatibility.vueVersion` vaut `2` ou `2.7`, les vérifications des suppressions de Vue 3 sont désactivées.
@@ -60,7 +60,8 @@ Les nombres excluent les règles inter-fichiers. Quand `compiler.compatibility.v
 | [SSR](./ssr.md) | Risques du rendu serveur et de l’hydratation |
 | [Vapor](./vapor.md) | Contraintes des composants compilés en mode Vapor |
 | [Écosystème et Nuxt](./ecosystem.md) | Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils et Void Vue |
-| [Musea et CSS](./musea-and-css.md) | Stories `.art.vue` de Musea et CSS standard |
+| [CSS](./css.md) | Vérifications de justesse et de maintenabilité du CSS standard |
+| [Musea](./musea.md) | Stories `.art.vue`, variantes et jetons de design de Musea |
 | [petite-vue](./petite-vue.md) | Pages HTML qui utilisent petite-vue |
 | [Inter-fichiers](./cross-file.md) | Vérifications entre composants, providers et routeurs, activées avec `crossFile: true` |
 | [Options des règles](/rules/options.md) | `ruleOptions` typées et leurs valeurs par défaut |

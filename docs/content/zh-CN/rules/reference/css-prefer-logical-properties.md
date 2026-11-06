@@ -58,6 +58,6 @@ export default defineConfig({
 
 ## 相关页面
 
-- [Musea 与 CSS 规则](../musea-and-css.md)
+- [CSS 规则](../css.md)
 - [全部规则](../all.md)
 - [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

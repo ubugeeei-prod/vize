@@ -58,11 +58,11 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-negated-v-if-condition"></span>[`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | Interdire une condition v-if négative lorsque la chaîne comporte un v-else. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-non-component-keep-alive-child"></span>[`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | Interdire les enveloppes d’éléments ordinaires directement sous `<KeepAlive>`. | `essential` |  |
 | <span id="vue-no-preprocessor-lang"></span>[`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | Déconseiller les préprocesseurs CSS au profit du CSS moderne. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Interdit de copier la valeur d'une ref dans la même portée en perdant ses mises à jour réactives. | — |  |
+| <span id="vue-no-ref-object-reactivity-loss"></span>[`vue/no-ref-object-reactivity-loss`](./reference/vue-no-ref-object-reactivity-loss.md) | Interdit de copier la valeur d'une ref dans la même portée en perdant ses mises à jour réactives. | `happy-path` |  |
 | <span id="vue-no-reserved-component-names"></span>[`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | Interdire l’utilisation de noms réservés comme noms de composants. | `essential` |  |
 | <span id="vue-no-root-v-if"></span>[`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | Interdire v-if sur l’unique élément racine d’un template. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-script-non-standard-lang"></span>[`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | Déconseiller les valeurs lang non standard dans les scripts. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Interdit les copies des valeurs des props de setup qui perdent leurs mises à jour réactives. | — |  |
+| <span id="vue-no-setup-props-reactivity-loss"></span>[`vue/no-setup-props-reactivity-loss`](./reference/vue-no-setup-props-reactivity-loss.md) | Interdit les copies des valeurs des props de setup qui perdent leurs mises à jour réactives. | `happy-path` |  |
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | Déconseiller l’attribut src sur les blocs SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-static-inline-styles"></span>[`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | Interdire les attributs de style en ligne statiques. | — |  |
 | <span id="vue-no-template-key"></span>[`vue/no-template-key`](./reference/vue-no-template-key.md) | Interdire l’attribut `key` sur `<template>`. | `essential` |  |
@@ -70,14 +70,14 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-no-template-shadow"></span>[`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | Interdire les noms de variables qui masquent des variables d’une portée externe. | `happy-path` |  |
 | <span id="vue-no-template-target-blank"></span>[`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | Interdire target="_blank" sans rel="noopener noreferrer". | `happy-path` |  |
 | <span id="vue-no-textarea-mustache"></span>[`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | Interdire l’interpolation à doubles accolades dans `<textarea>`. | `essential` |  |
-| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Interdit d'accéder par `this` à une instance encore inexistante dans `beforeRouteEnter`. | — |  |
-| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Interdire les références à des variables non définies dans les templates. | — |  |
+| <span id="vue-no-this-in-before-route-enter"></span>[`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | Interdit d'accéder par `this` à une instance encore inexistante dans `beforeRouteEnter`. | `happy-path` |  |
+| <span id="vue-no-undefined-refs"></span>[`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | Interdire les références à des variables non définies dans les templates. | `happy-path` |  |
 | <span id="vue-no-unsafe-url"></span>[`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | Signaler les liaisons d’URL potentiellement dangereuses. | `essential` |  |
 | <span id="vue-no-unsandboxed-iframe"></span>[`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | Exiger un attribut sandbox sur les éléments iframe. | `happy-path` |  |
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | Interdire l’enregistrement de composants inutilisés dans les templates. | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | Interdire les propriétés inutilisées définies dans defineProps. | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Signaler les refs de template (ref="x") jamais référencées dans &lt;script&gt;. | `nuxt`, `opinionated` |  |
-| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Interdire les liaisons script setup qui ne sont jamais lues. | — |  |
+| <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Interdire les liaisons script setup qui ne sont jamais lues. | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | Interdire les variables inutilisées définies dans les directives v-for et v-slot. | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | Interdire `v-else-if` ou `v-else` sur le même élément que `v-for`. | `happy-path` |  |
 | <span id="vue-no-use-v-if-with-v-for"></span>[`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | Interdire `v-if` sur le même élément que `v-for`. | `essential` |  |
@@ -134,12 +134,12 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Signaler les blocs personnalisés dans les fichiers SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Signaler les directives personnalisées nécessitant un enregistrement. | `nuxt`, `opinionated` |  |
 
-## Règles de type et de script (82)
+## Règles de type et de script (83)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
 | <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Imposer PascalCase à l’option `name` du composant. | `opinionated`, `nuxt` |  |
-| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Imposer camelCase aux noms des événements personnalisés émis. | `opinionated`, `nuxt` |  |
+| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Imposer la casse configurée aux noms des événements personnalisés émis. | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau. | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | Imposer un ordre cohérent aux macros du compilateur Vue dans &lt;script setup&gt;. | `opinionated`, `nuxt` |  |
 | <span id="script-define-props-declaration"></span>[`script/define-props-declaration`](./reference/script-define-props-declaration.md) | Imposer la forme typée defineProps&lt;{ ... }&gt;() à la place de la forme à l’exécution sous forme d’objet. | `opinionated`, `nuxt` |  |
@@ -197,6 +197,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="script-prefer-use-slots"></span>[`script/prefer-use-slots`](./reference/script-prefer-use-slots.md) | Recommander useSlots() plutôt que context.slots. | — |  |
 | <span id="script-prefer-use-template-ref"></span>[`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | Recommander useTemplateRef plutôt que ref pour les références de template (Vue 3.5+). | `opinionated`, `nuxt` |  |
 | <span id="script-require-default-prop"></span>[`script/require-default-prop`](./reference/script-require-default-prop.md) | Exiger une valeur par défaut pour chaque prop facultative non booléenne. | `opinionated`, `nuxt` |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | Exiger defineComponent() pour les exports par défaut des SFC TypeScript. | `happy-path` |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | Exiger la déclaration des événements émis dans defineEmits ou l’option emits. | `happy-path` |  |
 | <span id="script-require-explicit-slots"></span>[`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | Exiger que les slots utilisés via useSlots() soient explicitement typés avec defineSlots&lt;...&gt;(). | `opinionated`, `nuxt` |  |
 | <span id="script-require-function-return-type"></span>[`script/require-function-return-type`](./reference/script-require-function-return-type.md) | Exiger des annotations de type de retour sur les fonctions. | — |  |
@@ -304,7 +305,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="nuxt-nuxt-config-keys-order"></span>[`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | Préférer l’ordre recommandé des propriétés de configuration Nuxt. | `nuxt` | ✓ |
 | <span id="nuxt-prefer-import-meta"></span>[`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | Préférer `import.meta.*` à `process.*`. | `nuxt` | ✓ |
 
-## Règles Musea et CSS (16)
+## Règles CSS (10)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
@@ -318,6 +319,11 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="css-prefer-nested-selectors"></span>[`css/prefer-nested-selectors`](./reference/css-prefer-nested-selectors.md) | Recommander l’imbrication CSS pour les sélecteurs de descendants. | `opinionated`, `nuxt` |  |
 | <span id="css-prefer-slotted"></span>[`css/prefer-slotted`](./reference/css-prefer-slotted.md) | Recommander ::v-slotted() pour styliser le contenu des slots. | `opinionated`, `nuxt` |  |
 | <span id="css-require-font-display"></span>[`css/require-font-display`](./reference/css-require-font-display.md) | Exiger font-display dans les règles @font-face. | `opinionated`, `nuxt` |  |
+
+## Règles Musea (6)
+
+| Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
+| --- | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | Interdire les blocs &lt;variant&gt; vides. | — |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | Préférer les variables CSS de design tokens aux valeurs primitives codées en dur. | — |  |
 | <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Exiger l’attribut component dans le bloc &lt;art&gt;. | — |  |

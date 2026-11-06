@@ -258,7 +258,8 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     assert!(!happy_path.has_rule("type/no-reactivity-loss"));
     assert!(happy_path.has_rule("html/no-empty-palpable-content"));
     assert!(!happy_path.has_rule("vue/multi-word-component-names"));
-    assert!(!happy_path.has_rule("vue/no-undefined-refs"));
+    assert!(happy_path.has_rule("vue/no-undefined-refs"));
+    assert!(happy_path.has_rule("vue/no-unused-setup-bindings"));
     assert!(!happy_path.has_rule("a11y/use-list"));
     assert!(RuleRegistry::with_opt_in_rules().has_rule("vue/no-undefined-refs"));
     assert!(opinionated.has_rule("vue/attribute-order"));
@@ -317,6 +318,8 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     );
     assert!(happy_path_script.contains(&"script/require-explicit-emits"));
     assert!(!essential_script.contains(&"script/require-explicit-emits"));
+    assert!(happy_path_script.contains(&"script/no-export-in-script-setup"));
+    assert!(essential_script.contains(&"script/no-export-in-script-setup"));
     assert!(
         super::builtin_script_rule_names(LintPreset::Opinionated)
             .contains(&"script/no-options-api")

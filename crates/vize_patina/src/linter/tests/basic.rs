@@ -370,7 +370,7 @@ fn test_lint_sfc_reports_sfc_parser_errors() {
 fn test_lint_sfc_no_template() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">
-const foo = 'bar';
+const _foo = 'bar';
 </script>
 "#;
     let result = linter.lint_sfc(sfc, "test.vue");
@@ -449,6 +449,7 @@ fn test_lint_sfc_additional_opt_in_script_rule_preserves_preset_rules() {
     let sfc = r#"<script setup>
 router.push('/settings')
 const data = computed(async () => await fetch('/api'))
+void data
 </script>
 "#;
     let result = linter.lint_sfc(sfc, "test.vue");

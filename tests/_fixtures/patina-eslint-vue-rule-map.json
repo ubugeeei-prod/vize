@@ -900,7 +900,12 @@
       "status": "mapped"
     },
     "vue/no-ref-object-reactivity-loss": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-ref-object-reactivity-loss",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1011,7 +1016,12 @@
       "status": "mapped"
     },
     "vue/no-setup-props-reactivity-loss": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-setup-props-reactivity-loss",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1101,7 +1111,12 @@
       "status": "mapped"
     },
     "vue/no-this-in-before-route-enter": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-this-in-before-route-enter",
       "patinaSeverity": "warning",
       "status": "mapped"

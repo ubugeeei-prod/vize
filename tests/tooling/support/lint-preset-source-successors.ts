@@ -35,6 +35,7 @@ interface ReaderOptions {
   reviewedNextest: string;
   currentSources: CurrentSources;
   presetSuccessors: Successor[];
+  latestSourceInverse?: (name: string, body: Buffer) => Buffer;
 }
 export const sha = (body: Uint8Array): string => createHash("sha256").update(body).digest("hex");
 export const jsonBytes = (value: unknown): Buffer =>
@@ -140,9 +141,19 @@ export function loadCurrentSourceSuccessors(
 }
 
 export function createSourceReader(options: ReaderOptions): (name: string) => Buffer {
-  const { root, liveNextest, reviewedNextest, currentSources, presetSuccessors } = options;
+  const {
+    root,
+    liveNextest,
+    reviewedNextest,
+    currentSources,
+    presetSuccessors,
+    latestSourceInverse = (_name, body) => body,
+  } = options;
   return (name: string): Buffer => {
-    const body = fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name));
+    const body = latestSourceInverse(
+      name,
+      fs.readFileSync(path.join(root, name === liveNextest ? reviewedNextest : name)),
+    );
     const current = currentSources.sources.find((row) => row.path === name);
     return presetSuccessors.reduceRight(
       (body, row) => (row.path === name ? inverse(row, body) : body),

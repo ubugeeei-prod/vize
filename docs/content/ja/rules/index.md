@@ -45,7 +45,7 @@ export default defineConfig({
 | `happy-path`（既定） | 147 | `essential` に加え、テンプレートの書式（`v-bind` の省略記法、コンポーネントのイベント名のハイフン区切りを含む）、アクセシビリティ、HTML 適合性、SSR の危険、未使用のプロパティ、emit の宣言、props と emits の型 |
 | `ecosystem` | 155 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
 | `nuxt` | 213 | `opinionated` を Nuxt の自動インポートに合わせたもの |
-| `opinionated` | 213 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、`<script setup>` のマクロ順序、camelCase のイベント名、`useTemplateRef`、`defineSlots`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
+| `opinionated` | 213 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、`<script setup>` のマクロ順序、lowercase のイベント名、`useTemplateRef`、`defineSlots`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
 | `incremental` | 0 | なし。指定したルールだけを有効にするときの出発点です。 |
 
 ルール数にファイル間ルールは含みません。`compiler.compatibility.vueVersion` が `2` または `2.7` のときは、
@@ -63,7 +63,8 @@ Vue 3 で削除された構文と API の検査を無効にします。
 | [SSR](./ssr.md) | サーバーレンダリングとハイドレーションの危険 |
 | [Vapor](./vapor.md) | Vapor モードでコンパイルするコンポーネントの制約 |
 | [エコシステムと Nuxt](./ecosystem.md) | Nuxt、Vue Router、Pinia、Vue I18n、Vue Test Utils、Void Vue |
-| [Musea と CSS](./musea-and-css.md) | Musea の `.art.vue` ストーリーとプレーン CSS |
+| [CSS](./css.md) | プレーン CSS の正しさと保守性 |
+| [Musea](./musea.md) | Musea の `.art.vue` ストーリー、variant、デザイントークン |
 | [petite-vue](./petite-vue.md) | petite-vue を使う HTML ページ |
 | [ファイル間](./cross-file.md) | コンポーネント、provide/inject、ルーターをまたぐ検査。`crossFile: true` で有効にします |
 | [ルールのオプション](./options.md) | 型付きの `ruleOptions` と既定値 |

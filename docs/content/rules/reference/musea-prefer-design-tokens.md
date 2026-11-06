@@ -81,7 +81,7 @@ Then run `vp run lint`.
 
 ## Related
 
-- [Musea and CSS rules](../musea-and-css.md)
+- [Musea rules](../musea.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32)

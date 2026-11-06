@@ -10,9 +10,9 @@ export const frenchRules2 = {
     "`MyComponent` commence par une majuscule et ne contient que des caractères alphanumériques, ce qui satisfait le contrôle du nom.",
   ],
   "script/custom-event-name-casing": [
-    "Imposer camelCase aux noms des événements personnalisés émis",
-    "La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.",
-    "La déclaration et l’appel utilisent tous deux `myEvent`, ce qui maintient la correspondance entre le nom de l’événement et son émission tout en respectant la convention de casse par défaut. Une convention kebab-case configurée impose une autre forme.",
+    "Imposer la casse configurée aux noms des événements personnalisés émis",
+    "La chaîne émise `transitionStart` contient une majuscule et enfreint la convention par défaut en minuscules sans séparateur.",
+    "La déclaration et l’appel utilisent tous deux `transitionstart`, ce qui maintient leur correspondance tout en suivant la convention de plateforme en minuscules. Un projet peut configurer explicitement camelCase ou kebab-case.",
   ],
   "script/define-emits-declaration": [
     "Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau",

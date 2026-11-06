@@ -15,23 +15,23 @@ Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or
 
 ## Bad
 
-The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.
+The emitted string `transitionStart` contains an uppercase letter and violates the default separator-free lowercase policy.
 
 ```vue annotate="remove:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['my-event'])
-emit('my-event')         // kebab-case → report
+const emit = defineEmits(['transitionStart'])
+emit('transitionStart')         // camelCase → report
 </script>
 ```
 
 ## Good
 
-Both the declaration and call use `myEvent`, preserving agreement between the event name and its emission while satisfying the default casing policy. A configured kebab-case policy has a different expectation.
+Both the declaration and call use `transitionstart`, preserving agreement while following the platform-style lowercase convention. Projects can explicitly configure camelCase or kebab-case instead.
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
+const emit = defineEmits(['transitionstart'])
+emit('transitionstart')
 </script>
 ```
 
@@ -59,4 +59,4 @@ Then run `vp run lint`.
 - [Type and script rules](../type-and-script.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L62)

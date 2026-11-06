@@ -55,7 +55,7 @@ Regras de correção da predefinição `essential`.
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | Exigir uso válido de defineProps() (uma única chamada, sem argumentos de tipo e de tempo de execução juntos, sem referências locais). |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | Exigir que o resultado de uma chamada de nextTick() seja aguardado, encadeado ou receba uma função de retorno. |  |
 
-## Padrão (5)
+## Padrão (6)
 
 Adicionadas por `happy-path`, a predefinição padrão.
 
@@ -63,6 +63,7 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | --- | --- | --- |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | Proibir passar mais de um argumento a uma chamada de função de slot com escopo. |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | Proibir definições de componentes dentro de funções de setup ou renderização. |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | Exigir defineComponent() em exports padrão de SFCs TypeScript. |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | Exigir que os eventos emitidos sejam declarados em defineEmits ou na opção emits. |  |
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Exigir uma definição de tipo para defineEmits. |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | Exigir uma definição de tipo para defineProps. |  |
@@ -74,7 +75,7 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | Regra | O que verifica | Predefinições | Correção automática |
 | --- | --- | --- | --- |
 | <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Exigir PascalCase na opção `name` do componente. | `opinionated`, `nuxt` |  |
-| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Exigir camelCase nos nomes de eventos personalizados emitidos. | `opinionated`, `nuxt` |  |
+| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Aplicar o formato configurado aos nomes de eventos personalizados emitidos. | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array. | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | Exigir uma ordem consistente para as macros do compilador Vue em &lt;script setup&gt;. | `opinionated`, `nuxt` |  |
 | <span id="script-define-props-declaration"></span>[`script/define-props-declaration`](./reference/script-define-props-declaration.md) | Exigir defineProps&lt;{ ... }&gt;() baseado em tipos em vez da forma com objeto em tempo de execução. | `opinionated`, `nuxt` |  |

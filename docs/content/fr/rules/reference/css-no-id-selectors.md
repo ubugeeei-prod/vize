@@ -58,6 +58,6 @@ Lancez ensuite `vp run lint`.
 
 ## Voir aussi
 
-- [Règles Musea et CSS](../musea-and-css.md)
+- [Règles CSS](../css.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19)

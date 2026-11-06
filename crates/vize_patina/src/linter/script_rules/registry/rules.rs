@@ -30,13 +30,14 @@ use super::names::{
     RULE_PREFER_IMPORT_FROM_VUE, RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST,
     RULE_PREFER_REF_OVER_REACTIVE, RULE_PREFER_USE_ATTRS, RULE_PREFER_USE_ID,
     RULE_PREFER_USE_SLOTS, RULE_PREFER_USE_TEMPLATE_REF, RULE_REQUIRE_DEFAULT_PROP,
-    RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS, RULE_REQUIRE_EXPOSE,
-    RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES,
-    RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_SYMBOL_PROVIDE,
-    RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,
-    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,
-    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_MODEL_DEFINITION,
-    RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_REQUIRE_DEFINE_COMPONENT, RULE_REQUIRE_EXPLICIT_EMITS, RULE_REQUIRE_EXPLICIT_SLOTS,
+    RULE_REQUIRE_EXPOSE, RULE_REQUIRE_FUNCTION_RETURN_TYPE, RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR,
+    RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN, RULE_REQUIRE_SLOTS_AS_FUNCTIONS,
+    RULE_REQUIRE_SYMBOL_PROVIDE, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,
+    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
+    RULE_VALID_DEFINE_PROPS, RULE_VALID_MODEL_DEFINITION, RULE_VALID_NEXT_TICK,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{
     BuiltinScriptRuleEntry, ECOSYSTEM_SCRIPT_PRESETS, ESSENTIAL_SCRIPT_PRESETS,
@@ -62,12 +63,12 @@ use crate::rules::script::{
     PiniaPreferStoreToRefs, PreferComputed, PreferDefineEmitsBinding, PreferDefineOptions,
     PreferImportFromVue, PreferImportMeta, PreferPropTypeBooleanFirst, PreferRefOverReactive,
     PreferUseAttrs, PreferUseId, PreferUseSlots, PreferUseTemplateRef, RequireDefaultProp,
-    RequireExplicitEmits, RequireExplicitSlots, RequireExpose, RequireFunctionReturnType,
-    RequirePropTypeConstructor, RequirePropTypes, RequireRenderReturn, RequireSlotsAsFunctions,
-    RequireSymbolProvide, RequireTypedObjectProp, RequireTypedRef, RequireValidDefaultProp,
-    ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineEmits, ValidDefineOptions,
-    ValidDefineProps, ValidModelDefinition, ValidNextTick, VueRouterPreferNamedPush,
-    VueTestUtilsNoHtmlSnapshot,
+    RequireDefineComponent, RequireExplicitEmits, RequireExplicitSlots, RequireExpose,
+    RequireFunctionReturnType, RequirePropTypeConstructor, RequirePropTypes, RequireRenderReturn,
+    RequireSlotsAsFunctions, RequireSymbolProvide, RequireTypedObjectProp, RequireTypedRef,
+    RequireValidDefaultProp, ReturnInComputedProperty, ReturnInEmitsValidator, ValidDefineEmits,
+    ValidDefineOptions, ValidDefineProps, ValidModelDefinition, ValidNextTick,
+    VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
 
 static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
@@ -79,7 +80,7 @@ static NO_DEEP_DESTRUCTURE_IN_PROPS_RULE: NoDeepDestructureInProps =
 static NO_RESTRICTED_GLOBALS_RULE: NoRestrictedGlobals = NoRestrictedGlobals::new();
 static NO_RESTRICTED_MEMBERS_RULE: NoRestrictedMembers = NoRestrictedMembers::new();
 static CUSTOM_EVENT_NAME_CASING_RULE: CustomEventNameCasing =
-    CustomEventNameCasing::new(crate::rules::script::EventNameCasing::CamelCase);
+    CustomEventNameCasing::new(crate::rules::script::EventNameCasing::Lowercase);
 
 /// The full ordered set of built-in script rules. The first 8 engine-reachable
 /// rules stay first to preserve default diagnostic ordering; the rest are
@@ -157,6 +158,7 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_NO_MULTIPLE_SLOT_ARGS, profile_name: "patina.script_rule.no_multiple_slot_args", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoMultipleSlotArgs },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPLICIT_EMITS, profile_name: "patina.script_rule.require_explicit_emits", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &RequireExplicitEmits },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_UNSTABLE_NESTED_COMPONENTS, profile_name: "patina.script_rule.no_unstable_nested_components", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoUnstableNestedComponents },
+    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_DEFINE_COMPONENT, profile_name: "patina.script_rule.require_define_component", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &RequireDefineComponent },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_LIFECYCLE_AFTER_AWAIT, profile_name: "patina.script_rule.no_lifecycle_after_await", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoLifecycleAfterAwait },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_WATCH_AFTER_AWAIT, profile_name: "patina.script_rule.no_watch_after_await", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoWatchAfterAwait },
     BuiltinScriptRuleEntry { rule_name: RULE_NO_EXPOSE_AFTER_AWAIT, profile_name: "patina.script_rule.no_expose_after_await", category: "Script", fixable: false, presets: ESSENTIAL_SCRIPT_PRESETS, rule: &NoExposeAfterAwait },
@@ -170,9 +172,9 @@ pub(in crate::linter::script_rules) static BUILTIN_SCRIPT_RULES: &[BuiltinScript
     BuiltinScriptRuleEntry { rule_name: RULE_ONE_COMPONENT_PER_FILE, profile_name: "patina.script_rule.one_component_per_file", category: "Script", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OneComponentPerFile },
     BuiltinScriptRuleEntry { rule_name: RULE_ORDER_IN_COMPONENTS, profile_name: "patina.script_rule.order_in_components", category: "Script", fixable: false, presets: OPINIONATED_AND_NUXT_SCRIPT_PRESETS, rule: &OrderInComponents },
     BuiltinScriptRuleEntry { rule_name: RULE_PREFER_DEFINE_EMITS_BINDING, profile_name: "patina.script_rule.prefer_define_emits_binding", category: "Script", fixable: true, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferDefineEmitsBinding },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_ref_object_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_setup_props_reactivity_loss", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },
-    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_REF_OBJECT_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_ref_object_reactivity_loss", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoRefObjectReactivityLoss },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_SETUP_PROPS_REACTIVITY_LOSS, profile_name: "patina.script_rule.no_setup_props_reactivity_loss", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoSetupPropsReactivityLoss },
+    BuiltinScriptRuleEntry { rule_name: RULE_NO_THIS_IN_BEFORE_ROUTE_ENTER, profile_name: "patina.script_rule.no_this_in_before_route_enter", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &NoThisInBeforeRouteEnter },
     BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_EXPOSE, profile_name: "patina.script_rule.require_expose", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &RequireExpose },
     BuiltinScriptRuleEntry { rule_name: RULE_PREFER_PROP_TYPE_BOOLEAN_FIRST, profile_name: "patina.script_rule.prefer_prop_type_boolean_first", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &PreferPropTypeBooleanFirst },
     BuiltinScriptRuleEntry { rule_name: RULE_VALID_MODEL_DEFINITION, profile_name: "patina.script_rule.valid_model_definition", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &ValidModelDefinition },

@@ -55,7 +55,7 @@ Correctness rules in the `essential` preset.
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | Enforce valid defineProps() usage (single call, not both type and runtime args, no local references). |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | Require the result of a nextTick() call to be awaited, chained, or given a callback. |  |
 
-## Default (5)
+## Default (6)
 
 Added by `happy-path`, the default preset.
 
@@ -63,6 +63,7 @@ Added by `happy-path`, the default preset.
 | --- | --- | --- |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | Disallow passing more than one argument to a scoped-slot function call. |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | Disallow component definitions inside setup or render functions. |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | Require defineComponent() for TypeScript SFC default exports. |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | Require emitted events to be declared in defineEmits or the emits option. |  |
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Require type definition for defineEmits. |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | Require type definition for defineProps. |  |

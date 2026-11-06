@@ -108,9 +108,9 @@ const env = readServerEnv();
 ## `script/custom-event-name-casing`
 
 Use this option when emitted custom events should follow one casing convention across both script
-and template usage. The default is `camelCase`; set `kebab-case` for projects that author emitted
-event names in their template-facing form.
-Component `v-model` events beginning with `update:` are accepted in either mode because their
+and template usage. The default is separator-free `lowercase` (for example, `transitionstart`).
+Set `camelCase` or `kebab-case` when a project intentionally uses one of those conventions.
+Component `v-model` events beginning with `update:` are accepted in every mode because their
 suffix mirrors the corresponding prop name.
 
 ```ts
@@ -124,7 +124,7 @@ export default defineConfig({
       },
       "ruleOptions": {
         "script/custom-event-name-casing": {
-          "casing": "kebab-case"
+          "casing": "lowercase"
         }
       }
     }

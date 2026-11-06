@@ -56,6 +56,6 @@ Depois, execute `vp run lint`.
 
 ## Páginas relacionadas
 
-- [Regras de Musea e CSS](../musea-and-css.md)
+- [Regras CSS](../css.md)
 - [Todas as regras](../all.md)
 - [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37)

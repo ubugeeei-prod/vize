@@ -88,11 +88,14 @@ fn allows_other_hooks_and_nested_functions() {
 }
 
 #[test]
-fn stays_opt_in() {
+fn belongs_to_the_default_presets() {
     let meta = crate::linter::script_rules::builtin_script_rules()
         .into_iter()
         .find(|rule| rule.name == RULE)
         .expect(RULE);
     assert_eq!(meta.default_severity, Severity::Warning);
-    assert!(meta.presets.is_empty());
+    assert_eq!(
+        meta.presets,
+        ["happy-path", "ecosystem", "nuxt", "opinionated"]
+    );
 }

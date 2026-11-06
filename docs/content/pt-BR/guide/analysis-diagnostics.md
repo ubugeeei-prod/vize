@@ -20,7 +20,8 @@ Ruim/Bom.
 - [SSR rules](../rules/ssr.md)
 - [Vapor rules](../rules/vapor.md)
 - [Cross-file rules](../rules/cross-file.md)
-- [Musea and CSS rules](../rules/musea-and-css.md)
+- [Regras CSS](../rules/css.md)
+- [Regras Musea](../rules/musea.md)
 
 ## Famílias Diagnosticadas
 

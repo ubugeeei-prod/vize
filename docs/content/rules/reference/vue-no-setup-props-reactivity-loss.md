@@ -9,7 +9,7 @@ Disallow setup prop reads that lose reactivity.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | None | No | None |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | None |
 
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 

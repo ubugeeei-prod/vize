@@ -159,6 +159,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/prefer-use-slots": "setup の context.slots を useSlots() に置き換えます。",
   "script/prefer-use-template-ref": "テンプレート参照に Vue 3.5 の useTemplateRef() を使います。",
   "script/require-default-prop": "省略可能な、Boolean 以外の prop に default を用意します。",
+  "script/require-define-component":
+    "TypeScript SFC の default export を defineComponent() で型付けします。",
   "script/require-explicit-emits": "emit するイベントを defineEmits または emits に宣言します。",
   "script/require-explicit-slots": "useSlots() で使う slot を defineSlots の型で宣言します。",
   "script/require-function-return-type": "関数に戻り値の型注釈を指定します。",

@@ -1,4 +1,4 @@
-//! Template half (#3413 B): a template `$emit` with a non-camelCase name.
+//! Template half (#3413 B): a template `$emit` with a non-lowercase name.
 //!
 //! Because this half *creates* findings from template evidence, the over-match
 //! probes are as load-bearing as the positive cases: each asserts the full
@@ -9,7 +9,7 @@ use crate::diagnostic::Severity;
 
 /// The finding the quoted event name `literal` produces, located inside the
 /// `<template>` block.
-fn not_camel_case(
+fn not_lowercase(
     sfc: &str,
     literal: &str,
     name: &str,
@@ -21,11 +21,11 @@ fn not_camel_case(
         Severity::Error,
         start as u32,
         (start + literal.len()) as u32,
-        format!("Custom event name '{name}' is not camelCase."),
+        format!("Custom event name '{name}' is not lowercase."),
     )
 }
 
-/// [`findings`] with owned messages, so it compares against [`not_camel_case`].
+/// [`findings`] with owned messages, so it compares against [`not_lowercase`].
 fn owned(
     result: &crate::linter::LintResult,
 ) -> Vec<(&'static str, Severity, u32, u32, std::string::String)> {
@@ -52,7 +52,7 @@ const a = 1;
 "#;
     assert_eq!(
         owned(&lint_sfc(sfc)),
-        vec![not_camel_case(sfc, "'foo-bar'", "foo-bar")]
+        vec![not_lowercase(sfc, "'foo-bar'", "foo-bar")]
     );
 }
 
@@ -68,7 +68,7 @@ const a = 1;
 "#;
     assert_eq!(
         owned(&lint_sfc(sfc)),
-        vec![not_camel_case(sfc, "'FooBar'", "FooBar")]
+        vec![not_lowercase(sfc, "'FooBar'", "FooBar")]
     );
 }
 
@@ -85,7 +85,7 @@ const emit = defineEmits<{ 'foo-bar': [] }>();
 "#;
     assert_eq!(
         owned(&lint_sfc(sfc)),
-        vec![not_camel_case(sfc, "'foo-bar'", "foo-bar")]
+        vec![not_lowercase(sfc, "'foo-bar'", "foo-bar")]
     );
 }
 
@@ -101,20 +101,36 @@ const a = 1;
 "#;
     assert_eq!(
         owned(&lint_sfc(sfc)),
-        vec![not_camel_case(sfc, "'foo-bar'", "foo-bar")]
+        vec![not_lowercase(sfc, "'foo-bar'", "foo-bar")]
     );
 }
 
 // --- Well-named events: exactly zero findings ------------------------------
 
 #[test]
-fn ignores_a_camel_case_dollar_emit() {
+fn reports_a_camel_case_dollar_emit() {
     let sfc = r#"<script setup lang="ts">
 const a = 1;
 </script>
 
 <template>
   <button @click="$emit('fooBar')">{{ a }}</button>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![not_lowercase(sfc, "'fooBar'", "fooBar")]
+    );
+}
+
+#[test]
+fn ignores_a_separator_free_lowercase_dollar_emit() {
+    let sfc = r#"<script setup lang="ts">
+const a = 1;
+</script>
+
+<template>
+  <button @click="$emit('foobar')">{{ a }}</button>
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
@@ -279,7 +295,7 @@ emit('foo-bar');
             Severity::Error,
             literal as u32,
             (literal + "'foo-bar'".len()) as u32,
-            "Custom event name 'foo-bar' is not camelCase.",
+            "Custom event name 'foo-bar' is not lowercase.",
         )]
     );
 }

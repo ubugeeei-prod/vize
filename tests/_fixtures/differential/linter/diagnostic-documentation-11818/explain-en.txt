@@ -1832,12 +1832,12 @@ autofix: no
 docs: docs/content/rules/reference/script-custom-event-name-casing.md
 
 invalid:
-  const emit = defineEmits(['my-event'])
-  emit('my-event')         // kebab-case → report
+  const emit = defineEmits(['transitionStart'])
+  emit('transitionStart')         // camelCase → report
 
 valid:
-  const emit = defineEmits(['myEvent'])
-  emit('myEvent')
+  const emit = defineEmits(['transitionstart'])
+  emit('transitionstart')
 === script/define-emits-declaration
 script/define-emits-declaration · lint rule
 Enforce the type-based defineEmits<{}>() form over the runtime/array form
@@ -3196,6 +3196,37 @@ valid:
       id: { type: Number, required: true },
     }
   }
+=== script/require-define-component
+script/require-define-component · lint rule
+Require defineComponent() for TypeScript SFC default exports
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/script-require-define-component.md
+
+invalid:
+  <script lang="ts">
+  export default {
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  }
+  </script>
+
+valid:
+  <script lang="ts">
+  import { defineComponent } from 'vue'
+  export default defineComponent({
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  })
+  </script>
 === script/require-explicit-emits
 script/require-explicit-emits · lint rule
 Require emitted events to be declared in defineEmits or the emits option

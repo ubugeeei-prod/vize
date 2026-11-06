@@ -49,6 +49,11 @@ export const portugueseRules3: Record<string, readonly [string, string, string]>
     "`name` e `age` são props opcionais de tempo de execução que não são Boolean e não têm valores padrão, deixando indefinidos seus valores quando a entrada é omitida.",
     "`name` recebe `default: ''`. `enabled` usa o valor padrão false implícito de Boolean, e o `id` obrigatório não precisa de um valor alternativo, ilustrando ambas as exceções.",
   ],
+  "script/require-define-component": [
+    "Exigir defineComponent() em exports padrão de SFCs TypeScript",
+    "A SFC TypeScript exporta diretamente um objeto da Options API, portanto suas opções não recebem os tipos contextuais fornecidos por `defineComponent()`.",
+    "Envolver o objeto com `defineComponent()` aplica a verificação TypeScript específica do Vue a props, emits, `this` e às demais opções.",
+  ],
   "script/require-explicit-emits": [
     "Exigir que os eventos emitidos sejam declarados em defineEmits ou na opção emits",
     "A função de emissão capturada emite `save`, mas `defineEmits([])` não declara esse evento.",

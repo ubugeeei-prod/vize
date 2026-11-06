@@ -128,8 +128,8 @@ void test("all current RuleMeta names are discovered without changing source fil
   const rules = files(RULES_DIR)
     .map((file) => parseRuleFile(file, model))
     .filter((file) => file.meta);
-  assert.equal(rules.length, 279);
-  assert.equal(new Set(rules.map((rule) => rule.meta?.name)).size, 279);
+  assert.equal(rules.length, 280);
+  assert.equal(new Set(rules.map((rule) => rule.meta?.name)).size, 280);
   const actual = rules.find((rule) => rule.rel === "script/no_ref_object_reactivity_loss.rs");
   assert(actual);
   assert.deepEqual(actual.meta, {

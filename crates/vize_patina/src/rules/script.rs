@@ -69,6 +69,7 @@ mod prefer_use_id;
 mod prefer_use_slots;
 mod prefer_use_template_ref;
 mod props_emits;
+mod require_define_component;
 mod require_explicit_slots;
 mod require_expose;
 mod require_function_return_type;

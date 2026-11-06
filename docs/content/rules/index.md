@@ -45,7 +45,7 @@ A preset is a starting set of rules. `happy-path` is the default.
 | `happy-path` (default) | 147 | `essential`, plus template formatting conventions (including `v-bind` shorthand and hyphenated component events), accessibility, HTML conformance, SSR hazards, unused properties, declared emits, and typed props and emits |
 | `ecosystem` | 155 | `happy-path`, plus the ecosystem library checks |
 | `nuxt` | 213 | `opinionated`, adjusted for Nuxt auto-imports |
-| `opinionated` | 213 | `happy-path`, plus stricter conventions, typed props, type-based `defineProps`/`defineEmits`, `<script setup>` macro order, camelCase event names, `useTemplateRef`, `defineSlots`, prop default and emit hygiene, `defineOptions`, and the `css/*` style rules |
+| `opinionated` | 213 | `happy-path`, plus stricter conventions, typed props, type-based `defineProps`/`defineEmits`, `<script setup>` macro order, lowercase event names, `useTemplateRef`, `defineSlots`, prop default and emit hygiene, `defineOptions`, and the `css/*` style rules |
 | `incremental` | 0 | Nothing. Start here to turn on only the rules you name. |
 
 Counts exclude cross-file rules. When `compiler.compatibility.vueVersion` is `2` or `2.7`, the
@@ -63,7 +63,8 @@ Vue 3 removal checks are off.
 | [SSR](./ssr.md) | Server rendering and hydration hazards |
 | [Vapor](./vapor.md) | Constraints for components compiled in Vapor mode |
 | [Ecosystem and Nuxt](./ecosystem.md) | Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils, and Void Vue |
-| [Musea and CSS](./musea-and-css.md) | Musea `.art.vue` stories and plain CSS |
+| [CSS](./css.md) | Plain CSS correctness and maintainability checks |
+| [Musea](./musea.md) | Musea `.art.vue` stories, variants and design tokens |
 | [petite-vue](./petite-vue.md) | HTML pages that use petite-vue |
 | [Cross-file](./cross-file.md) | Checks across components, providers, and routers, turned on with `crossFile: true` |
 | [Rule Options](./options.md) | Typed `ruleOptions` and their defaults |

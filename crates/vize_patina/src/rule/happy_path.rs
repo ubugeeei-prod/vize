@@ -128,6 +128,8 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoUnusedComponents::default()));
         registry.register(Box::new(crate::rules::vue::NoMutatingProps::default()));
         registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
+        registry.register(Box::new(crate::rules::vue::NoUndefinedRefs));
+        registry.register(Box::new(crate::rules::facts::NoUnusedSetupBindings));
         #[cfg(not(target_arch = "wasm32"))]
         registry.register(Box::new(
             crate::rules::type_aware::RequireTypedProps::default(),

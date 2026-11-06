@@ -2,10 +2,11 @@
 //!
 //! Enforce configured casing for emitted custom event names.
 //!
-//! eslint-plugin-vue recommends a consistent casing for the events a component
-//! emits. For Vue 3 the default is **camelCase**, so an emit whose event name is
-//! kebab-case (`'my-event'`) or PascalCase (`'MyEvent'`) is inconsistent with the
-//! recommended casing and is reported.
+//! Vize recommends separator-free **lowercase** event names, matching platform
+//! event spellings such as `transitionstart`. An emit whose event name is
+//! camelCase (`'transitionStart'`), kebab-case (`'transition-start'`), or
+//! PascalCase (`'TransitionStart'`) is inconsistent with the default policy and
+//! is reported. Projects can still explicitly select camelCase or kebab-case.
 //!
 //! This walks the emit call sites and checks the string-literal event name (the
 //! first argument). Only string-literal event names are checked; a dynamic name
@@ -32,21 +33,21 @@
 //! call sites live in the block being linted — a template `$emit` is visible to
 //! every block, so two blocks would report it twice.
 //!
-//! Mirrors [`vue/custom-event-name-casing`](https://eslint.vuejs.org/rules/custom-event-name-casing.html)
-//! with the Vue 3 default (`camelCase`).
+//! Extends [`vue/custom-event-name-casing`](https://eslint.vuejs.org/rules/custom-event-name-casing.html)
+//! with a separator-free lowercase policy, which is Vize's default.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```ts
-//! const emit = defineEmits(['my-event'])
-//! emit('my-event')         // kebab-case → report
+//! const emit = defineEmits(['transitionStart'])
+//! emit('transitionStart')         // camelCase → report
 //! ```
 //!
 //! ### Valid
 //! ```ts
-//! const emit = defineEmits(['myEvent'])
-//! emit('myEvent')
+//! const emit = defineEmits(['transitionstart'])
+//! emit('transitionstart')
 //! ```
 
 use super::template_scan::{DOLLAR_EMIT, for_each_template_call};
@@ -68,6 +69,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum EventNameCasing {
     #[default]
+    Lowercase,
     CamelCase,
     KebabCase,
 }
@@ -85,7 +87,7 @@ impl CustomEventNameCasing {
 
 impl Default for CustomEventNameCasing {
     fn default() -> Self {
-        Self::new(EventNameCasing::CamelCase)
+        Self::new(EventNameCasing::Lowercase)
     }
 }
 
@@ -233,6 +235,7 @@ fn report(
     result: &mut ScriptLintResult,
 ) {
     let casing_name = match casing {
+        EventNameCasing::Lowercase => "lowercase",
         EventNameCasing::CamelCase => "camelCase",
         EventNameCasing::KebabCase => "kebab-case",
     };
@@ -244,11 +247,15 @@ fn report(
     message.push('.');
 
     let help = match casing {
-        EventNameCasing::CamelCase => {
-            "Vue 3 recommends camelCase for emitted event names; rename this event \
-             to camelCase (e.g. `myEvent`)."
+        EventNameCasing::Lowercase => {
+            "Use a separator-free lowercase event name (e.g. `transitionstart`)."
         }
-        EventNameCasing::KebabCase => "Rename this emitted event to kebab-case (e.g. `my-event`).",
+        EventNameCasing::CamelCase => {
+            "Rename this emitted event to camelCase (e.g. `transitionStart`)."
+        }
+        EventNameCasing::KebabCase => {
+            "Rename this emitted event to kebab-case (e.g. `transition-start`)."
+        }
     };
     let diagnostic = LintDiagnostic::error(META.name, message, start, end)
         .with_label(vize_l0::cstr!("expected {casing_name}"), start, end)
@@ -267,9 +274,22 @@ fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
         return true;
     }
     match casing {
+        EventNameCasing::Lowercase => is_lowercase_event(value),
         EventNameCasing::CamelCase => is_camel_case_event(value),
         EventNameCasing::KebabCase => is_kebab_case_event(value),
     }
+}
+
+/// Whether `value` is a separator-free lowercase event name. Each
+/// `:`-separated segment must match `^[a-z][a-z0-9]*$`.
+fn is_lowercase_event(value: &str) -> bool {
+    !value.is_empty() && value.split(':').all(is_lowercase_segment)
+}
+
+fn is_lowercase_segment(segment: &str) -> bool {
+    let mut bytes = segment.bytes();
+    matches!(bytes.next(), Some(b'a'..=b'z'))
+        && bytes.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
 }
 
 /// Whether `value` is an acceptable camelCase event name. Each `:`-separated

@@ -137,6 +137,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "要求每个可选的非 Boolean prop 都有默认值",
     ),
     (
+        "script/require-define-component.description",
+        "Require defineComponent() for TypeScript SFC default exports",
+        "TypeScript SFC のデフォルト export に defineComponent() を必須にする",
+        "要求 TypeScript SFC 的默认导出使用 defineComponent()",
+    ),
+    (
         "script/require-explicit-emits.description",
         "Require emitted events to be declared in defineEmits or the emits option",
         "発行するイベントを defineEmits か emits オプションで宣言することを必須にする",

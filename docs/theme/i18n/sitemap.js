@@ -98,7 +98,8 @@
     { page: "/rules/ssr", namespaces: ["ssr"] },
     { page: "/rules/vapor", namespaces: ["vapor"] },
     { page: "/rules/ecosystem", namespaces: ["ecosystem", "nuxt"] },
-    { page: "/rules/musea-and-css", namespaces: ["musea", "css"] },
+    { page: "/rules/css", namespaces: ["css"] },
+    { page: "/rules/musea", namespaces: ["musea"] },
     { page: "/rules/petite-vue", namespaces: ["petite-vue"] },
     { page: "/rules/cross-file", directory: "/rules/project/" },
   ];

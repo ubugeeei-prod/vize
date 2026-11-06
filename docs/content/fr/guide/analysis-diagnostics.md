@@ -20,7 +20,8 @@ Mauvais/Bon.
 - [SSR rules](../rules/ssr.md)
 - [Vapor rules](../rules/vapor.md)
 - [Cross-file rules](../rules/cross-file.md)
-- [Musea and CSS rules](../rules/musea-and-css.md)
+- [Règles CSS](../rules/css.md)
+- [Règles Musea](../rules/musea.md)
 
 ## Familles diagnostiques
 

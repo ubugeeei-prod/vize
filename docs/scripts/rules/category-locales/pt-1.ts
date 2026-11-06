@@ -175,9 +175,9 @@ export const portugueseRules1: Record<string, readonly [string, string, string]>
     "`MyComponent` começa com uma letra maiúscula e contém apenas caracteres alfanuméricos, atendendo à verificação de nome.",
   ],
   "script/custom-event-name-casing": [
-    "Exigir camelCase nos nomes de eventos personalizados emitidos",
-    "A string emitida `my-event` contém um hífen e viola a política padrão de nomes de eventos em camelCase.",
-    "Tanto a declaração quanto a chamada usam `myEvent`, preservando a correspondência entre o nome do evento e sua emissão e atendendo à política padrão de maiúsculas e minúsculas. Uma política configurada de kebab-case tem uma expectativa diferente.",
+    "Aplicar o formato configurado aos nomes de eventos personalizados emitidos",
+    "A string emitida `transitionStart` contém uma letra maiúscula e viola a política padrão de minúsculas sem separadores.",
+    "Tanto a declaração quanto a chamada usam `transitionstart`, preservando a correspondência e seguindo a convenção de plataforma em minúsculas. O projeto pode configurar camelCase ou kebab-case explicitamente.",
   ],
   "script/define-emits-declaration": [
     "Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array",

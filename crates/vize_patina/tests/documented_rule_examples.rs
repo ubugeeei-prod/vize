@@ -41,7 +41,7 @@ fn verify_examples(type_aware: bool) {
     ];
     assert_eq!(
         paths.len(),
-        279 + operational_pages.len(),
+        280 + operational_pages.len(),
         "all current rule implementations and authored operational diagnostics"
     );
     for page in operational_pages {
@@ -53,7 +53,7 @@ fn verify_examples(type_aware: bool) {
     // Parser/project examples have their own full-report and failure controls.
     // Keep the complete registered-rule preset/configuration corpus.
     paths.retain(|path| !operational_pages.contains(&path.file_name().unwrap().to_str().unwrap()));
-    assert_eq!(paths.len(), 279, "all current rule implementations");
+    assert_eq!(paths.len(), 280, "all current rule implementations");
     let mut checked = 0;
     let mut unavailable = 0;
     let mut parser_owned = 0;
@@ -126,7 +126,7 @@ fn verify_examples(type_aware: bool) {
             }
         }
     }
-    assert_eq!(checked, if type_aware { 6 } else { 273 });
+    assert_eq!(checked, if type_aware { 6 } else { 274 });
     assert_eq!(unavailable, if type_aware { 0 } else { 2 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(

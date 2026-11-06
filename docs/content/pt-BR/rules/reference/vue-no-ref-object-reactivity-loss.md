@@ -9,7 +9,7 @@ Proíbe copiar o valor de um ref no mesmo escopo e perder suas atualizações re
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | Nenhuma | Não | Nenhuma |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Não | Nenhuma |
 
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
 

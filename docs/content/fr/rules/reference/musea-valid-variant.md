@@ -54,6 +54,6 @@ Lancez ensuite `vp run lint`.
 
 ## Voir aussi
 
-- [Règles Musea et CSS](../musea-and-css.md)
+- [Règles Musea](../musea.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8)

@@ -55,7 +55,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | 要求 defineProps() 用法有效（只调用一次、不同时提供类型和运行时参数、不引用局部变量）。 |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | 要求 nextTick() 调用结果被等待、链式处理，或提供回调。 |  |
 
-## 默认 (5)
+## 默认 (6)
 
 由默认预设 `happy-path` 添加。
 
@@ -63,6 +63,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | --- | --- | --- |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | 禁止向作用域插槽函数调用传入多个参数。 |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | 禁止在 setup 或 render 函数内定义组件。 |  |
+| <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | 要求 TypeScript SFC 的默认导出使用 defineComponent()。 |  |
 | <span id="script-require-explicit-emits"></span>[`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | 要求发出的事件在 defineEmits 或 emits 选项中声明。 |  |
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | 要求 defineEmits 具有类型定义。 |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | 要求 defineProps 具有类型定义。 |  |
@@ -74,7 +75,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
 | <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | 要求组件 `name` 选项使用 PascalCase。 | `opinionated`, `nuxt` |  |
-| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | 要求发出的自定义事件名称使用 camelCase。 | `opinionated`, `nuxt` |  |
+| <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | 要求发出的自定义事件名称使用配置的格式。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | 要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | 要求 &lt;script setup&gt; 中的 Vue 编译器宏保持一致的顺序。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-props-declaration"></span>[`script/define-props-declaration`](./reference/script-define-props-declaration.md) | 要求使用类型形式 defineProps&lt;{ ... }&gt;()，而不是运行时或对象形式。 | `opinionated`, `nuxt` |  |

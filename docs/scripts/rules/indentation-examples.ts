@@ -65,7 +65,7 @@ export const ruleIndentationExamples = [
         language: "vue",
         source: "<style scoped>\n.button {\n  color: var(--button-color);\n}\n</style>",
       },
-      evidence: "docs/content/rules/musea-and-css.md",
+      evidence: "docs/content/rules/css.md",
     },
   },
 ] as const satisfies readonly {

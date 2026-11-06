@@ -40,6 +40,8 @@ pub struct CustomEventNameCasingOptions {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CustomEventNameCasing {
     #[default]
+    #[serde(rename = "lowercase")]
+    Lowercase,
     #[serde(rename = "camelCase")]
     CamelCase,
     #[serde(rename = "kebab-case")]
