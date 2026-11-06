@@ -140,8 +140,10 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
         }) + "\n",
       findings: original.diagnostics,
     });
-    for (const { entry, preset, config, findings } of scenarios) {
-      const currentFindings = entry.id === "setup-block-cannot-leak" ? [] : findings;
+    for (const { entry, preset, config, findings: recordedFindings } of scenarios) {
+      // Script region pragmas are file-wide. Keep the immutable successor
+      // packets intact while qualifying the current cross-block behavior.
+      const findings = entry.id === "setup-block-cannot-leak" ? [] : recordedFindings;
       const bytes = fs.readFileSync(
         path.join(fixture, entry.sourceFile ?? entry.filename + ".fixture"),
       );
@@ -180,8 +182,8 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
         signal: result.signal,
         stdout: result.stdout ?? "",
         stderr: result.stderr ?? "",
-        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, currentFindings))),
-        expectedStatus: currentFindings.some((d) => d.severity === "error") ? 1 : 0,
+        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, findings))),
+        expectedStatus: findings.some((d) => d.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(run);
       persist();

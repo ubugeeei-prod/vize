@@ -242,6 +242,24 @@ impl SfcDirectiveState {
         unused
     }
 
+    /// Blanket pragmas that suppressed a diagnostic after the ordinary SFC
+    /// pass finished. Project diagnostics use this to retire the matching
+    /// early unused-directive report without affecting peer comments.
+    pub(super) fn used_blanket_markers(&self) -> Vec<(u32, u32)> {
+        let mut used = self
+            .blocks
+            .iter()
+            .flat_map(|block| block.inline_suppressions.used_blanket_markers())
+            .chain(self.file_regions.used_blanket_markers())
+            .collect::<Vec<_>>();
+        if let Some(root) = &self.root {
+            used.extend(root.used_blanket_markers());
+        }
+        used.sort_unstable();
+        used.dedup();
+        used
+    }
+
     pub(super) fn offset_to_line(&self, offset: u32) -> u32 {
         match self.line_offsets.binary_search(&offset) {
             Ok(line) => (line + 1) as u32,

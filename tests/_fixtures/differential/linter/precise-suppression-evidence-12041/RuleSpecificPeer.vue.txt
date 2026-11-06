@@ -1,0 +1,4 @@
+<template>
+  <!-- @vize:forget vue/html-self-closing -->
+  <img src="/logo.png">
+</template>

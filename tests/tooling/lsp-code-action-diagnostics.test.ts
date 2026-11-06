@@ -224,17 +224,16 @@ test("source LSP selects each same-range original diagnostic and preserves valid
     assert.deepEqual(await request(uri, range, diagnostics), expected);
     const insertedAlt = source.replace("  <img", "  <!-- @vize:forget a11y/alt-text -->\n  <img");
     await change(4, insertedAlt, [shiftedStyle]);
-    const shiftedFix = {
-      ...expected[0],
-      diagnostics: [shiftedStyle],
-      edit: {
-        changes: {
-          [uri]: [{ range: shiftedStyle.range, newText: '<img src="/logo.png" />' }],
+    assert.deepEqual(await request(uri, shiftedStyle.range as LspRange, [shiftedStyle]), [
+      {
+        ...expected[0],
+        diagnostics: [shiftedStyle],
+        edit: {
+          changes: {
+            [uri]: [{ range: shiftedStyle.range, newText: '<img src="/logo.png" />' }],
+          },
         },
       },
-    };
-    assert.deepEqual(await request(uri, shiftedStyle.range as LspRange, [shiftedStyle]), [
-      shiftedFix,
       suppression(shiftedStyle, 2),
     ]);
     await change(5, reference.fixedSource, []);
