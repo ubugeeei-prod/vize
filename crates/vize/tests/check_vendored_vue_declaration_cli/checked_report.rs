@@ -4,6 +4,13 @@ use serde_json::Value;
 use std::path::Path;
 
 pub(super) fn diagnostic_sites(bytes: &[u8]) -> Vec<(u32, u32, u32)> {
+    diagnostic_sites_with_file_count(bytes, 1)
+}
+
+pub(super) fn diagnostic_sites_with_file_count(
+    bytes: &[u8],
+    expected_file_count: usize,
+) -> Vec<(u32, u32, u32)> {
     let report: Value = serde_json::from_slice(bytes).unwrap_or_else(|error| {
         panic!(
             "invalid check JSON: {error}\n{}",
@@ -13,17 +20,31 @@ pub(super) fn diagnostic_sites(bytes: &[u8]) -> Vec<(u32, u32, u32)> {
     let files = report["files"].as_array().expect("a complete file report");
     assert_eq!(
         files.len(),
-        1,
+        expected_file_count,
         "the authored probe must be checked: {report}"
     );
-    assert_eq!(report["fileCount"], 1, "{report}");
+    assert_eq!(report["fileCount"], expected_file_count, "{report}");
     assert_eq!(report["warningCount"], 0, "{report}");
+    let probe = files
+        .iter()
+        .find(|file| file["file"].as_str() == Some("src/Probe.vue"))
+        .unwrap_or_else(|| panic!("the authored probe must be checked: {report}"));
+    for file in files {
+        if std::ptr::eq(file, probe) {
+            continue;
+        }
+        assert_eq!(
+            file["diagnostics"].as_array().map(Vec::len),
+            Some(0),
+            "supporting files must stay clean: {report}"
+        );
+    }
     assert_eq!(
-        Path::new(files[0]["file"].as_str().expect("a diagnostic file path")),
+        Path::new(probe["file"].as_str().expect("a diagnostic file path")),
         Path::new("src/Probe.vue"),
         "diagnostics must belong to the authored probe: {report}"
     );
-    let diagnostics = files[0]["diagnostics"]
+    let diagnostics = probe["diagnostics"]
         .as_array()
         .expect("the complete diagnostic list");
     assert_eq!(
@@ -80,6 +101,27 @@ mod tests {
         value["files"][0]["diagnostics"] = json!([]);
         value["errorCount"] = json!(0);
         assert!(diagnostic_sites(&serde_json::to_vec(&value).unwrap()).is_empty());
+    }
+
+    #[test]
+    fn supporting_files_may_be_present_but_must_stay_clean() {
+        let mut value = packet();
+        value["files"]
+            .as_array_mut()
+            .unwrap()
+            .insert(0, json!({ "file": "src/Foo.vue", "diagnostics": [] }));
+        value["fileCount"] = json!(2);
+        assert_eq!(
+            diagnostic_sites_with_file_count(&serde_json::to_vec(&value).unwrap(), 2),
+            [(3, 7, 2322)]
+        );
+        value["files"][0]["diagnostics"] = json!(["error:1:1 [TS2322] supporting failure"]);
+        assert!(
+            std::panic::catch_unwind(|| {
+                diagnostic_sites_with_file_count(&serde_json::to_vec(&value).unwrap(), 2)
+            })
+            .is_err()
+        );
     }
 
     #[test]

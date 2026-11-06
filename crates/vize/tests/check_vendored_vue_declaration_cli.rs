@@ -82,6 +82,14 @@ fn vue_tsc(dir: &Path) -> Command {
 
 /// `(line, column, code)` from `vue-tsc --pretty false` and from `vize check`.
 fn diagnostics(corsa: &Path, dir: &Path) -> [Vec<(u32, u32, u32)>; 2] {
+    diagnostics_with_file_count(corsa, dir, 1)
+}
+
+fn diagnostics_with_file_count(
+    corsa: &Path,
+    dir: &Path,
+    expected_file_count: usize,
+) -> [Vec<(u32, u32, u32)>; 2] {
     let (reference_code, reference) =
         run(vue_tsc(dir).args(["--noEmit", "-p", "tsconfig.json", "--pretty", "false"]));
     let reference: Vec<(u32, u32, u32)> = reference
@@ -101,7 +109,8 @@ fn diagnostics(corsa: &Path, dir: &Path) -> [Vec<(u32, u32, u32)>; 2] {
         .args(["check", "--format", "json"])
         .output()
         .unwrap();
-    let checked = checked_report::diagnostic_sites(&output.stdout);
+    let checked =
+        checked_report::diagnostic_sites_with_file_count(&output.stdout, expected_file_count);
     // A crashed checker must not pass for a clean one.
     assert_eq!(
         reference_code,
@@ -231,7 +240,7 @@ fn authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror() {
     }
 
     let expected = vec![(6, 9, 2322)];
-    let [reference, checked] = diagnostics(&corsa, &consumer);
+    let [reference, checked] = diagnostics_with_file_count(&corsa, &consumer, 2);
     assert_eq!(reference, expected, "vue-tsc authored .vue.ts");
     assert_eq!(checked, expected, "vize check authored .vue.ts");
 }
