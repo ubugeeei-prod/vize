@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string">
+const props = defineProps<{ value: T }>();
+const current: T = props.value;
+</script>
+<template>{{ (props.value as T).toUpperCase() }} {{ current }}</template>
