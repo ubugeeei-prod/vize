@@ -271,12 +271,6 @@ type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
 type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: __EmitOptions<T>[K] };
 
 // ========== Default Export ==========
-type $ComponentInstance = {
-  $props: Props;
-  readonly __vizeRawProps?: Props;
-  $emit: $PublicEmit<Emits>;
-  $slots: $PublicSlots<$Slots>;
-} & $ComponentPublicBase;
 type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{
   $props: Props;
   readonly __vizeRawProps?: Props;
