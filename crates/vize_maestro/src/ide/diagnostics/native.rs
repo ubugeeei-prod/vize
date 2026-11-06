@@ -50,8 +50,13 @@ pub(super) fn combine(
     if native.owns_script_syntax && native_script_syntax {
         sync.retain(|diagnostic| diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER));
     }
+    let native_diagnostics = if native.owns_script_syntax {
+        native.diagnostics
+    } else {
+        without_carried_parser_duplicates(native.diagnostics, &sync)
+    };
     let family = NativeFamily {
-        diagnostics: without_duplicate_required_props(native.diagnostics, &sync),
+        diagnostics: without_duplicate_required_props(native_diagnostics, &sync),
         owns_script_syntax: native.owns_script_syntax,
     };
     sync.extend(
@@ -64,6 +69,29 @@ pub(super) fn combine(
         diagnostics: sync,
         native: Some(family),
     }
+}
+
+/// A carried family describes an earlier revision. When an unphased diagnostic
+/// lands on the exact range of the current script parser error, the parser owns
+/// that finding until the native pass for the current revision completes.
+/// Other unknown diagnostics and every producer-owned phase still move with
+/// unrelated edits.
+fn without_carried_parser_duplicates(
+    native: Vec<NativeDiagnostic>,
+    authored: &[Diagnostic],
+) -> Vec<NativeDiagnostic> {
+    let parser_ranges = authored
+        .iter()
+        .filter(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER))
+        .map(|diagnostic| diagnostic.range)
+        .collect::<Vec<_>>();
+    native
+        .into_iter()
+        .filter(|diagnostic| {
+            diagnostic.phase != vize_canon::corsa_bridge::DiagnosticPhase::Unknown
+                || !parser_ranges.contains(&diagnostic.range)
+        })
+        .collect()
 }
 
 impl DiagnosticService {
