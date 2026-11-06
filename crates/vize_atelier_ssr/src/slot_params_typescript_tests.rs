@@ -112,7 +112,7 @@ fn slot_param_defaults_prefix_free_identifiers_on_both_lanes() {
         ),
         card(
             "default",
-            "{ row = _ctx.fallback, active = row.active, n = Math.max(_ctx.seed, 1), map = item => item.id, config = { value: _ctx.value } }",
+            "{ row = _ctx.fallback, active = row.active, n = Math.max(_ctx.seed, 1), map = (item) => item.id, config = { value: _ctx.value } }",
             "row"
         )
     );

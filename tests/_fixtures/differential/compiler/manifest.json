@@ -3292,7 +3292,7 @@
       },
       "reference": {
         "path": "ssr-slot-param-defaults-11621/module.expected.txt",
-        "sha256": "d2fadd7328719ef5c90c7e0a9178ee2b50c660db246c325f18135d401ad02ef5",
+        "sha256": "7e23d5f00799c30a43e9a13576937231d0c7f1a6d5896626dab2fc00c11272f6",
         "source": "https://github.com/ubugeeei-prod/vize/issues/11621; crates/vize_atelier_ssr/src/slot_params_typescript_tests.rs:slot_param_defaults_prefix_free_identifiers_on_both_lanes"
       },
       "adapters": {
