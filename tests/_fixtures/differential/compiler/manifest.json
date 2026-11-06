@@ -3836,7 +3836,7 @@
       },
       "reference": {
         "path": "template-handler-javascript-body-11708/module.expected.txt",
-        "sha256": "4ca4d099cb23627f19683e98743282deeb599167963b57619b1e28e8305d6354",
+        "sha256": "44d78d82a60809115d702bbd4aa3ebad8a714038a94effdbab25cc2a1d9ff0c1",
         "source": "crates/vize_atelier_sfc/tests/template_handler_typescript.rs:javascript_handler_bodies_keep_their_bytes"
       },
       "adapters": {
