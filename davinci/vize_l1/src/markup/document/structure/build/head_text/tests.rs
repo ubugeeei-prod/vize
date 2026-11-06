@@ -54,10 +54,17 @@ fn head_text_ancestry_borrows_the_original_single_lexer_owner() {
             head.opening_span()
         );
         assert_eq!(node.children().count(), 0);
-        assert_eq!(
-            node.child_nodes().unwrap_err(),
-            Refusal::UnsupportedNodeParent(node.opening_span())
-        );
+        let values: Vec<String> = node
+            .child_nodes()
+            .unwrap()
+            .map(|child| match child.unwrap() {
+                crate::markup::document::DocumentHtmlNode::Text(text) => {
+                    text.characters().collect()
+                }
+                unexpected => panic!("unexpected head text child: {unexpected:?}"),
+            })
+            .collect();
+        assert_eq!(values.len(), 1);
         let offset = ORIGINAL.find(opening).expect("authored opening");
         assert!(core::ptr::eq(
             node.opening().as_ptr(),
@@ -124,21 +131,23 @@ fn explicit_unslashed_head_text_preserves_both_profiles_name_rules() {
 }
 
 #[test]
-fn slashed_starts_and_body_raw_text_refuse_instead_of_borrowing_html_ownership() {
+fn slashed_special_text_starts_refuse_instead_of_borrowing_html_ownership() {
     for (head, body) in [
         ("<title/>x</title>", ""),
         ("<style/>x</style>", ""),
-        ("", "<title>x</title>"),
-        ("", "<style>x</style>"),
+        ("<script/>x</script>", ""),
+        ("", "<title/>x</title>"),
+        ("", "<style/>x</style>"),
+        ("", "<script/>x</script>"),
+        ("", "<textarea/>x</textarea>"),
     ] {
         let source = envelope(head, body);
         let arena = Allocator::default();
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
-        let raw = if source.contains("title") {
-            "title"
-        } else {
-            "style"
-        };
+        let raw = ["title", "style", "script", "textarea"]
+            .into_iter()
+            .find(|name| source.contains(name))
+            .unwrap();
         let start = source.find(raw).expect("authored element") as u32;
         assert_eq!(
             owner.html_structure().unwrap_err(),
@@ -150,7 +159,11 @@ fn slashed_starts_and_body_raw_text_refuse_instead_of_borrowing_html_ownership()
 
 #[test]
 fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
-    for head in ["<title>unfinished", "<style>unfinished"] {
+    for head in [
+        "<title>unfinished",
+        "<style>unfinished",
+        "<script>unfinished",
+    ] {
         let source = envelope(head, "");
         let arena = Allocator::default();
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
@@ -168,12 +181,7 @@ fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
 
 #[test]
 fn other_head_and_foreign_features_keep_their_existing_refusal() {
-    for head in [
-        "<script></script>",
-        "<svg></svg>",
-        "<b></b>",
-        "<template></template>",
-    ] {
+    for head in ["<svg></svg>", "<b></b>", "<template></template>"] {
         let source = envelope(head, "");
         let arena = Allocator::default();
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));

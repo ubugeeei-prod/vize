@@ -60,12 +60,13 @@ pub enum DocumentHtmlRefusal {
 ///
 /// Supported envelope: exactly `<!DOCTYPE html>`, `html`, `head`, then `body`,
 /// with explicit ends. Head children are `base`, `link`, `meta`, and explicitly
-/// closed, unslashed `title`/`style` elements; body
+/// closed, unslashed `title`/`style`/`script` elements; body
 /// elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
 /// `source`, `track`, `wbr`, `article`, `aside`, `footer`, `header`, `main`, `nav`
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
-/// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `select`/`option`/`optgroup`,
+/// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `title`/`style`/`script`/`textarea`,
+/// `select`/`option`/`optgroup`,
 /// and table parts. HTML names match without ASCII case, and a slash never
 /// closes a nonvoid HTML element.
 ///
@@ -82,9 +83,9 @@ pub enum DocumentHtmlRefusal {
 /// other nested elements refuse instead of borrowing obsolete HTML rules.
 /// Foreign content, other raw-text elements, formatting, templates, Vue
 /// directive/interpolation syntax and implicit envelopes refuse this provider.
-/// Direct body-subtree child nodes retain original text/comment callbacks;
-/// head text readback and outer insertion-mode text retain typed refusals. Petite-vue remains
-/// unfinished. This view borrows the actual original lexer owner and arena.
+/// Direct supported-subtree child nodes retain original text/comment callbacks;
+/// outer insertion-mode text retains typed refusals. Petite-vue remains unfinished.
+/// This view borrows the actual original lexer owner and arena.
 ///
 /// ```compile_fail
 /// use vize_l1::markup::document::DocumentHtmlStructure;

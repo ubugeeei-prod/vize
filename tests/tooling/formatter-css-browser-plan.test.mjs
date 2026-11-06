@@ -9,23 +9,26 @@ import {
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
+const specialTextBrowser = "tests/tooling/davinci-document-special-text.test.ts";
 const others = Array.from({ length: 40 }, (_, index) => `tests/tooling/${index}.test.mjs`);
 const files = [...others.slice(0, 3), browser];
 
 await test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
-  for (const tier of ["pr", "merge"]) {
-    const tests = [...others, browser];
-    const plan = { version: 1, tier, tests };
-    const shards = toolingShardMatrix(plan).include;
-    assert.ok(shards.length > 1);
-    const owners = shards.filter(({ index, total }) => {
-      const shard = `${index}/${total}`;
-      const needed = needsFormatterCssBrowser(plan, tests, shard, tier);
-      assert.equal(needed, selectToolingShard(plan, shard).includes(browser));
-      return needed;
-    });
-    assert.equal(owners.length, 1);
-    assert.equal(needsFormatterCssBrowser(plan, tests, "", tier), true);
+  for (const selectedBrowser of [browser, specialTextBrowser]) {
+    for (const tier of ["pr", "merge"]) {
+      const tests = [...others, selectedBrowser];
+      const plan = { version: 1, tier, tests };
+      const shards = toolingShardMatrix(plan).include;
+      assert.ok(shards.length > 1);
+      const owners = shards.filter(({ index, total }) => {
+        const shard = `${index}/${total}`;
+        const needed = needsFormatterCssBrowser(plan, tests, shard, tier);
+        assert.equal(needed, selectToolingShard(plan, shard).includes(selectedBrowser));
+        return needed;
+      });
+      assert.equal(owners.length, 1);
+      assert.equal(needsFormatterCssBrowser(plan, tests, "", tier), true);
+    }
   }
   assert.equal(
     needsFormatterCssBrowser({ version: 1, tier: "pr", tests: [files[0]] }, files, "1/1", "pr"),

@@ -14,6 +14,7 @@ mod head_text;
 mod insertion;
 mod select;
 mod table;
+mod text;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Mode {
@@ -158,27 +159,6 @@ impl<P: Profile> Builder<'_, '_, P> {
         Ok(())
     }
 
-    /// Text belongs to body content and cells; table text may only be
-    /// whitespace, which the browser keeps in place instead of fostering it.
-    fn text(&mut self, span: Span, space: bool) -> Result<(), Refusal> {
-        match self.mode {
-            Mode::InBody | Mode::InCell | Mode::InCaption => Ok(()),
-            Mode::InHead if self.in_head_text() => Ok(()),
-            Mode::InTable | Mode::InTableBody | Mode::InRow | Mode::InColumnGroup if !space => {
-                Err(Refusal::TableText(span))
-            }
-            Mode::InTable | Mode::InTableBody | Mode::InRow | Mode::InColumnGroup => Ok(()),
-            _ if !space => Err(Refusal::ExplicitEnvelope),
-            Mode::HtmlEnd | Mode::End => {
-                if !span.is_empty() {
-                    self.body_tail_text.get_or_insert(span);
-                }
-                Ok(())
-            }
-            _ => Ok(()),
-        }
-    }
-
     fn source(&self, span: Span) -> Result<&str, Refusal> {
         self.owner
             .source()
@@ -226,7 +206,15 @@ impl<P: Profile> Builder<'_, '_, P> {
             (Mode::Head, "head") => Mode::InHead,
             (Mode::Body, "body") => Mode::InBody,
             (Mode::InHead, "base" | "link" | "meta") => Mode::InHead,
-            (_, "title" | "style") => return self.head_text_start(tag),
+            (Mode::InHead, "title" | "style" | "script") => {
+                return self.head_text_start(tag);
+            }
+            (Mode::InBody, "title" | "style" | "script" | "textarea") => {
+                if tag.slash {
+                    return Err(Refusal::UnsupportedElement(tag.span));
+                }
+                return self.body_start(tag);
+            }
             (_, "html" | "head" | "body" | "base" | "link" | "meta") => {
                 return Err(Refusal::ExplicitEnvelope);
             }
@@ -274,7 +262,7 @@ impl<P: Profile> Builder<'_, '_, P> {
             event,
         };
         match (self.mode, name) {
-            (Mode::InHead, "title" | "style") => self.pop_matching(&end),
+            (Mode::InHead, "title" | "style" | "script") => self.pop_matching(&end),
             (Mode::InHead, "head") => {
                 self.pop_matching(&end)?;
                 self.mode = Mode::Body;
@@ -393,7 +381,7 @@ struct End {
     event: usize,
 }
 
-const NAMES: [&str; 58] = [
+const NAMES: [&str; 60] = [
     "html",
     "head",
     "body",
@@ -402,6 +390,8 @@ const NAMES: [&str; 58] = [
     "meta",
     "title",
     "style",
+    "script",
+    "textarea",
     "div",
     "span",
     "br",

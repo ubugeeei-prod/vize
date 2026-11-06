@@ -59,7 +59,7 @@ and actual Chromium, including seven mixed-case/slash names, normalized
 attribute duplicates, harmless `xmlns` attributes, literal/reference CRLF/NUL,
 complete sibling and nested parent boundaries, and an existing-tag control.
 All containers require explicit matching ends; implied-end/table policies,
-foreign namespaces, formatting/raw elements and Vue syntax remain refused.
+foreign namespaces, formatting elements and Vue syntax remain refused.
 
 `html-semantic-body-frames.json` independently records every admitted semantic
 container's exact authored opening/closing bytes and ignored-slash flag. Native
@@ -70,8 +70,17 @@ spelling; it does not infer an expected slash from a suffix of actual output.
 whole ancestry, effective attributes, direct child nodes and authored frames
 for `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and `search`.
 Native Rust and actual Chromium consume the same packets. Every admitted case
-uses explicit matching ends; the existing implied-end, table, foreign, raw,
+uses explicit matching ends; the existing implied-end, table, foreign,
 formatting and Vue-syntax refusals remain authoritative.
+
+`html-special-text.json` retains eight complete explicit-envelope sources and
+whole ancestry, effective attributes and direct child nodes for head `script`
+and body `title`/`style`/`script`/`textarea`. The same packet executes against
+actual Chromium, the shipped document parser and native L1. RAWTEXT versus
+RCDATA entity handling, ASCII-folded ends, pseudo script closes and the HTML
+textarea first-newline rule (literal LF, CRLF and a decoded reference) are
+covered. Slashed special-text starts, Vue interpolation and literal NULL stay
+typed refusals where the retained lexer or the two oracles do not agree.
 
 `html-implied-ends-and-tables.json` keeps twelve complete original sources and
 whole ancestry, effective attributes and direct child nodes for implied end
