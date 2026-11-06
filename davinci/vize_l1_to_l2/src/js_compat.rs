@@ -10,6 +10,14 @@ use oxc_syntax::scope::ScopeFlags;
 
 /// Return whether a retained TypeScript expression can bypass the legacy JavaScript re-parse.
 pub fn js_module_compatible(ast: &oxc_ast_types::Expression<'_>, source: &str) -> bool {
+    // Exact lexer-owned identifiers have no nested syntax to classify. Keeping
+    // this admission in the shared gate avoids a full visitor for the dominant
+    // template-expression shape while retaining the strict-module refusal.
+    if let oxc_ast_types::Expression::Identifier(identifier) = ast
+        && source == identifier.name.as_str()
+    {
+        return !strict_mode_divergent_identifier(identifier.name.as_str());
+    }
     if source.contains("<!--") || source.contains("-->") {
         return false;
     }
