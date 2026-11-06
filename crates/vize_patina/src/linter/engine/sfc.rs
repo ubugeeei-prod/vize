@@ -29,6 +29,7 @@ impl Linter {
                     sfc_descriptor: Some(input.descriptor),
                     sfc_scripts: Some(scripts),
                     art_script_analysis: None,
+                    defer_exact_suppressions: true,
                     dialect: VueDialect::Vue,
                     facade_rules: facade::RULES,
                 },
@@ -292,6 +293,7 @@ impl Linter {
                 sfc_descriptor: None,
                 sfc_scripts: None,
                 art_script_analysis: None,
+                defer_exact_suppressions: true,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,
             },
@@ -328,25 +330,36 @@ impl Linter {
         // `<variant>` markup is not an SFC `<template>`, so the template lane
         // never sees it. Gallery variants are real components.
         self.append_art_variant_template_diagnostics(source, filename, &mut result, descriptor);
-        if (source.contains("eslint-")
+        if source.contains("eslint-")
             || source.contains("oxlint-")
             || source.contains("vize-disable")
-            || source.contains("vize-enable"))
-            && let Ok(descriptor) = super::super::script_rules::parse_sfc_for_lint(source, filename)
-            && crate::context::retain_unless_sfc_suppressed(&descriptor, &mut result.diagnostics)
+            || source.contains("vize-enable")
+            || source.contains("@vize:")
         {
-            let error_count = result
-                .diagnostics
-                .iter()
-                .filter(|diagnostic| diagnostic.severity == crate::Severity::Error)
-                .count();
-            let warning_count = result
-                .diagnostics
-                .iter()
-                .filter(|diagnostic| diagnostic.severity == crate::Severity::Warning)
-                .count();
-            result.error_count = error_count;
-            result.warning_count = warning_count;
+            let parsed = descriptor
+                .is_none()
+                .then(|| super::super::script_rules::parse_sfc_for_lint(source, filename));
+            let descriptor =
+                descriptor.or_else(|| parsed.as_ref().and_then(|result| result.as_ref().ok()));
+            if let Some(suppressions) = descriptor.and_then(crate::context::SfcSuppression::new) {
+                let changed = suppressions.retain(&mut result.diagnostics);
+                let reported = self.can_report_unused_directives()
+                    && suppressions.append_unused(&mut result.diagnostics, |rule| {
+                        self.can_report_suppression_rule(rule)
+                    });
+                if changed || reported {
+                    result.error_count = result
+                        .diagnostics
+                        .iter()
+                        .filter(|diagnostic| diagnostic.severity == crate::Severity::Error)
+                        .count();
+                    result.warning_count = result
+                        .diagnostics
+                        .iter()
+                        .filter(|diagnostic| diagnostic.severity == crate::Severity::Warning)
+                        .count();
+                }
+            }
         }
         result
     }

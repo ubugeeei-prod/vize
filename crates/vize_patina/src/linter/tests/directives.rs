@@ -6,6 +6,33 @@ mod script_style;
 mod vize_script_aliases;
 
 #[test]
+fn report_flag_owns_unused_template_pragmas_without_rule_selection() {
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["vue/no-v-html".into()]))
+        .with_report_unused_disable_directives(true)
+        .lint_template(
+            "<!-- eslint-disable-next-line vue/no-v-html -->\n<div />",
+            "ExcludedCommentDirective.vue",
+        );
+
+    assert_eq!(result.filename, "ExcludedCommentDirective.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.diagnostics.len(), 1);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(diagnostic.rule_name, "vue/comment-directive");
+    assert_eq!(diagnostic.severity, crate::Severity::Error);
+    assert_eq!(
+        diagnostic.message,
+        "Unused eslint-disable directive (no problems were reported from 'vue/no-v-html')."
+    );
+    assert_eq!((diagnostic.start, diagnostic.end), (5, 43));
+    assert_eq!(diagnostic.help.as_deref(), None);
+    assert_eq!(diagnostic.labels.len(), 0);
+    assert_eq!(diagnostic.fix.as_ref().map(|_| ()), None);
+}
+
+#[test]
 fn test_vize_todo_emits_warning() {
     let linter = Linter::new();
     let result = linter.lint_template(
@@ -153,6 +180,27 @@ fn test_template_apostrophe_does_not_hide_a_same_line_eslint_directive() {
             .count(),
         0,
         "an unmatched apostrophe must not suppress the directive that follows it"
+    );
+}
+
+#[test]
+fn test_template_prose_mentioning_eslint_marker_is_not_a_directive() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/require-v-for-key".into()]));
+    let result = linter.lint_sfc(
+        r#"<template>
+  <!-- Documentation: eslint-disable-next-line vue/require-v-for-key disables the next line. -->
+  <li v-for="item in items">{{ item }}</li>
+</template>"#,
+        "test.vue",
+    );
+
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/require-v-for-key")
+            .count(),
+        1
     );
 }
 

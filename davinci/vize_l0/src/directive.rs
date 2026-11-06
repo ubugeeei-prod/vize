@@ -26,7 +26,8 @@ pub enum DirectiveKind {
     Deprecated,
     /// `@vize:dev-only` - strip in production, keep in dev mode
     DevOnly,
-    /// `@vize:forget <reason>` - suppress all diagnostics for the next element
+    /// `@vize:forget <rule-or-reason>` - suppress selected rules, or all rules
+    /// for a free-form reason, on the exact next authored node
     Forget,
     /// Unknown `@vize:` directive
     Unknown,

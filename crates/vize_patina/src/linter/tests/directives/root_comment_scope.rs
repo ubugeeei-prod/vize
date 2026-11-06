@@ -80,6 +80,30 @@ fn disable_of_another_rule_does_not_reach_the_template() {
 }
 
 #[test]
+fn accepted_root_disable_that_suppresses_nothing_is_reported_unused() {
+    let source = r#"<!-- eslint-disable vue/no-v-html -->
+<template>
+  <div />
+</template>
+"#;
+    let diagnostics = Linter::new()
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "vue/no-v-html".into(),
+        ]))
+        .with_report_unused_disable_directives(true)
+        .lint_sfc(source, "UnusedRootDirective.vue")
+        .diagnostics;
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule_name, "vue/comment-directive");
+    assert_eq!(
+        diagnostics[0].message,
+        "Unused eslint-disable directive (no problems were reported from 'vue/no-v-html')."
+    );
+}
+
+#[test]
 fn next_line_pragma_only_covers_the_line_after_the_comment() {
     let source = r#"<!-- eslint-disable-next-line vue/no-multiple-template-root -->
 <template>

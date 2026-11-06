@@ -3,17 +3,19 @@
 mod lexer;
 
 use memchr::memchr_iter;
+use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
-use vize_l0::{FxHashMap, FxHashSet};
+use vize_l0::{Allocator, FxHashMap, FxHashSet};
 
-use super::DisabledRange;
 use super::eslint_directive::{
-    EslintDisableDirective, EslintDisableKind, InlineSuppressionState,
+    EslintDisableDirective, EslintDisableKind, ExactSuppressionState, InlineSuppressionState,
     parse_eslint_disable_comment, parse_script_disable_comment,
 };
+use super::{DisabledRange, LintContext};
+use crate::visitor::LintVisitor;
 use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 mod root_comments;
@@ -27,12 +29,18 @@ pub(super) fn script_suppressions(source: &str, filename: &str) -> InlineSuppres
     for (line_number, raw_line) in (1u32..).zip(source.split_inclusive('\n')) {
         let line = raw_line.trim_end_matches(['\r', '\n']);
         let markers = lexer.scan_line(line, source.get(offset..).unwrap_or_default());
-        if let Some(directive) = markers
+        if let Some(index) = markers
             .eslint
-            .and_then(|index| line.get(index..))
-            .and_then(parse_script_disable_comment)
+            .filter(|&index| marker_starts_comment_content(line, index))
+            && let Some(directive) = line.get(index..).and_then(parse_script_disable_comment)
         {
-            state.record(directive, line_number);
+            let text = line.get(index..).unwrap_or_default();
+            let text = text.split_once("*/").map_or(text, |(comment, _)| comment);
+            let marker = (!text.starts_with("vize-")).then_some((
+                offset as u32 + index as u32,
+                offset as u32 + index as u32 + text.trim_end().len() as u32,
+            ));
+            state.record_at(directive, line_number, marker);
         }
         offset += raw_line.len();
     }
@@ -48,11 +56,18 @@ enum BlockDomain<'a> {
 #[derive(Default)]
 pub(super) struct SfcDirectiveState {
     blocks: Vec<BlockDirectiveState>,
-    /// Content range of every script and style block, with or without pragmas.
-    code_blocks: Vec<(u32, u32)>,
+    /// File-level script regions in complete authored source order.
+    file_regions: InlineSuppressionState,
     /// Pragmas in comments written between the blocks.
     root: Option<InlineSuppressionState>,
+    template_exact: Option<TemplateExactSuppressions>,
     line_offsets: Vec<u32>,
+}
+
+struct TemplateExactSuppressions {
+    start: u32,
+    end: u32,
+    state: ExactSuppressionState,
 }
 
 #[derive(Default)]
@@ -87,8 +102,9 @@ impl SfcDirectiveState {
 
         let mut state = Self {
             blocks: Vec::new(),
-            code_blocks: Vec::new(),
+            file_regions: InlineSuppressionState::default(),
             root: None,
+            template_exact: None,
             line_offsets: std::iter::once(0)
                 .chain(memchr_iter(b'\n', source.as_bytes()).map(|offset| (offset + 1) as u32))
                 .collect(),
@@ -120,11 +136,6 @@ impl SfcDirectiveState {
             }))
             .collect::<Vec<_>>();
         blocks.sort_unstable_by_key(|(start, _, _, _)| *start);
-        state.code_blocks = blocks
-            .iter()
-            .map(|(start, end, _, _)| (*start as u32, *end as u32))
-            .collect();
-
         for (start, end, content, domain) in blocks {
             if !has_directive_marker(content) {
                 continue;
@@ -150,6 +161,7 @@ impl SfcDirectiveState {
                     block.scan(content, first_line, |line, _| lexer.scan_line(line));
                 }
             }
+            state.file_regions.append(&mut block.file_regions);
             state.blocks.push(block);
         }
         if has_root_comments {
@@ -171,6 +183,25 @@ impl SfcDirectiveState {
                 root_comments::scan(source, blocks, |offset| state.offset_to_line(offset as u32));
             state.root = root;
         }
+        state.template_exact = descriptor.template.as_ref().and_then(|template| {
+            if template.src.is_some()
+                || !template.lang.as_deref().is_none_or(|lang| lang == "html")
+                || !template.content.contains("@vize:forget")
+            {
+                return None;
+            }
+            let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
+            let (root, _) = Parser::new(&allocator, &template.content).parse();
+            let mut context = LintContext::new(&allocator, &template.content, "<sfc-directives>");
+            LintVisitor::new(&mut context, &[], &[], false).prescan_suppression_directives(&root);
+            let mut exact = context.exact_suppressions;
+            exact.offset_markers(template.loc.start as u32);
+            Some(TemplateExactSuppressions {
+                start: template.loc.start as u32,
+                end: template.loc.end as u32,
+                state: exact,
+            })
+        });
         Some(state)
     }
 
@@ -179,24 +210,35 @@ impl SfcDirectiveState {
         &self,
         is_active: impl Fn(&str) -> bool,
     ) -> Vec<super::eslint_directive::UnusedDirective> {
+        self.unused(is_active)
+            .into_iter()
+            .filter(|directive| directive.rule.is_some())
+            .collect()
+    }
+
+    /// Accepted script/style/root pragmas that suppressed no final diagnostic.
+    pub(super) fn unused(
+        &self,
+        is_active: impl Fn(&str) -> bool,
+    ) -> Vec<super::eslint_directive::UnusedDirective> {
         let mut unused = Vec::new();
         for block in &self.blocks {
-            block.inline_suppressions.import_usage(&block.file_regions);
-            unused.extend(
-                block
-                    .inline_suppressions
-                    .unused(&is_active)
-                    .into_iter()
-                    .filter(|directive| directive.rule.is_some()),
-            );
+            block.inline_suppressions.import_usage(&self.file_regions);
+            unused.extend(block.inline_suppressions.unused(&is_active));
         }
         if let Some(root) = &self.root {
-            unused.extend(
-                root.unused(&is_active)
-                    .into_iter()
-                    .filter(|directive| directive.rule.is_some()),
-            );
+            unused.extend(root.unused(&is_active));
         }
+        if let Some(template) = &self.template_exact {
+            unused.extend(template.state.unused(&is_active));
+        }
+        unused.sort_unstable_by_key(|directive| (directive.start, directive.end));
+        unused.dedup_by(|left, right| {
+            left.start == right.start
+                && left.end == right.end
+                && left.rule == right.rule
+                && left.source == right.source
+        });
         unused
     }
 
@@ -208,13 +250,16 @@ impl SfcDirectiveState {
     }
 
     pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32, offset: u32) -> bool {
-        self.block_at(offset)
+        self.template_exact.as_ref().is_some_and(|template| {
+            template.start <= offset
+                && offset < template.end
+                && template
+                    .state
+                    .is_disabled_at(rule_name, offset - template.start)
+        }) || self
+            .block_at(offset)
             .is_some_and(|block| block.is_disabled_at(rule_name, line))
-            || (self.outside_code_blocks(offset)
-                && self
-                    .blocks
-                    .iter()
-                    .any(|block| block.end <= offset && block.is_disabled_after_end(rule_name)))
+            || self.file_regions.is_disabled_at(rule_name, line)
             || self
                 .root
                 .as_ref()
@@ -229,15 +274,6 @@ impl SfcDirectiveState {
     pub(super) fn severity_at(&self, line: u32, offset: u32) -> Option<DirectiveSeverity> {
         self.block_at(offset)
             .and_then(|block| block.severity_overrides.get(&line).copied())
-    }
-
-    /// Whether `offset` lies in the template or between the blocks. Script
-    /// and style blocks keep their own pragmas to themselves.
-    fn outside_code_blocks(&self, offset: u32) -> bool {
-        !self
-            .code_blocks
-            .iter()
-            .any(|(start, end)| *start <= offset && offset < *end)
     }
 
     fn block_at(&self, offset: u32) -> Option<&BlockDirectiveState> {
@@ -276,14 +312,6 @@ impl BlockDirectiveState {
             || self.inline_suppressions.is_disabled_at(rule_name, line)
     }
 
-    /// Whether an `eslint-disable` for `rule_name` is still open when the
-    /// block ends. ESLint keeps such a region active to the end of the file,
-    /// which is how `/* eslint-disable vue/… */` at the top of `<script>`
-    /// silences a template rule. Single-line pragmas never reach this far.
-    fn is_disabled_after_end(&self, rule_name: &str) -> bool {
-        self.file_regions.is_disabled_at(rule_name, u32::MAX)
-    }
-
     fn scan_eslint_directive(
         &mut self,
         line: &str,
@@ -294,6 +322,9 @@ impl BlockDirectiveState {
         let Some(index) = index else {
             return;
         };
+        if !marker_starts_comment_content(line, index) {
+            return;
+        }
         let parser = if self.script {
             parse_script_disable_comment
         } else {
@@ -372,6 +403,24 @@ fn has_directive_marker(source: &str) -> bool {
         || source.contains("vize-disable")
         || source.contains("vize-enable")
         || source.contains("@vize:")
+}
+
+fn marker_starts_comment_content(line: &str, index: usize) -> bool {
+    let Some(before) = line.get(..index) else {
+        return false;
+    };
+    let opener_end = [
+        before.rfind("//").map(|at| at + 2),
+        before.rfind("/*").map(|at| at + 2),
+    ]
+    .into_iter()
+    .flatten()
+    .max();
+    let prefix = opener_end
+        .and_then(|start| before.get(start..))
+        .unwrap_or(before)
+        .trim();
+    prefix.is_empty() || prefix == "*"
 }
 
 fn range_contains(range: &DisabledRange, line: u32) -> bool {

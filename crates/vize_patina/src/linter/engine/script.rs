@@ -34,6 +34,8 @@ impl Linter {
             source,
             &result.filename,
             &mut result.diagnostics,
+            self.can_report_unused_directives(),
+            |rule| self.can_report_suppression_rule(rule),
         );
         result.error_count = result
             .diagnostics

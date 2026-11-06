@@ -4,6 +4,7 @@ use vize_l0::{Allocator, ToCompactString};
 
 mod additional_rules;
 mod basic;
+mod basic_precise_suppression;
 mod css;
 mod directives;
 mod dynamic_component;

@@ -1,0 +1,4 @@
+<template>
+  <!-- Documentation: eslint-disable-next-line vue/require-v-for-key disables the next line. -->
+  <li v-for="item in items">{{ item }}</li>
+</template>

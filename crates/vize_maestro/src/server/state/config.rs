@@ -208,6 +208,11 @@ impl ServerState {
         tracing::info!("Loaded linter config from {}", source);
     }
 
+    #[cfg(test)]
+    pub(crate) fn set_linter_config_for_test(&self, config: LinterConfig) {
+        self.apply_linter_config(config, "test");
+    }
+
     fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
         let features = self.update_names_configuration(|| self.apply_lsp_config_locked(config));
         tracing::info!("Loaded LSP config from {}: {:?}", source, features);

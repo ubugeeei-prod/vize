@@ -41,6 +41,9 @@ impl Linter {
         ctx.set_custom_elements(&self.custom_elements);
         ctx.set_dialect(env.dialect);
         ctx.art_script_analysis = env.art_script_analysis;
+        if env.defer_exact_suppressions {
+            ctx.defer_exact_suppressions();
+        }
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_template_descriptor(descriptor);
         }

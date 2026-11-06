@@ -1,0 +1,4 @@
+// eslint-disable-next-line script/no-restricted-globals -- intentional exception
+const value = 1;
+
+export { value };

@@ -105,6 +105,17 @@ fn ir_img_alt_tsx_is_flagged() {
 }
 
 #[test]
+fn ir_img_alt_tsx_string_marker_is_inert() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/precise-suppression-12022/StringMarker.tsx.txt"
+    ));
+    let result = linter_with(Box::new(ImgAlt)).lint_jsx(source, "StringMarker.tsx", JsxLang::Tsx);
+
+    assert_eq!(diagnostic_rules(&result), vec!["a11y/img-alt"]);
+}
+
+#[test]
 fn ir_diagnostic_range_points_at_jsx_source() {
     // The reported range must address the original JSX bytes, so editor fixes
     // land on the written `<img>` and not some reconstructed offset.
