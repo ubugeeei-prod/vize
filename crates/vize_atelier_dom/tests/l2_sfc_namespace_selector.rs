@@ -7,6 +7,8 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use std::sync::Arc;
+
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
@@ -17,7 +19,7 @@ use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn sfc_sections_entry_keeps_custom_foreign_descendants_on_l2() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -59,7 +61,7 @@ fn sfc_sections_entry_keeps_custom_foreign_descendants_on_l2() {
 
 #[test]
 fn sfc_sections_entry_ignores_lt_inside_foreign_attributes() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -101,7 +103,7 @@ fn sfc_sections_entry_ignores_lt_inside_foreign_attributes() {
 
 #[test]
 fn sfc_sections_entry_ignores_native_raw_text_bodies() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -143,7 +145,7 @@ fn sfc_sections_entry_ignores_native_raw_text_bodies() {
 
 #[test]
 fn sfc_sections_entry_pops_html_reentry_closes_case_insensitively() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -175,7 +177,7 @@ fn sfc_sections_entry_pops_html_reentry_closes_case_insensitively() {
 
 #[test]
 fn sfc_sections_entry_uses_parser_backed_l2_for_root_html_title() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.clear();
     profiler.set_enabled(true);

@@ -7,6 +7,8 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use std::sync::Arc;
+
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
@@ -18,7 +20,7 @@ use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn source_map_free_dom_compile_uses_l2_without_profiler() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -51,7 +53,7 @@ fn source_map_free_dom_compile_uses_l2_without_profiler() {
 
 #[test]
 fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -86,7 +88,7 @@ fn source_map_compiles_use_l2_with_the_compatibility_map_when_profiled() {
 
 #[test]
 fn unsupported_options_stay_on_compatibility_without_profiler() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
 
     let cases = [
@@ -134,7 +136,7 @@ fn unsupported_options_stay_on_compatibility_without_profiler() {
 
 #[test]
 fn in_tag_comment_compiles_use_l2_codegen() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -157,7 +159,7 @@ fn in_tag_comment_compiles_use_l2_codegen() {
 
 #[test]
 fn sfc_sections_entry_uses_l2_once_sections_land() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -185,7 +187,7 @@ fn sfc_sections_entry_uses_l2_once_sections_land() {
 
 #[test]
 fn sfc_sections_entry_uses_l2_for_foreign_namespace_templates() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();

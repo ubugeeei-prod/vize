@@ -7,6 +7,8 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use std::sync::Arc;
+
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
@@ -18,7 +20,7 @@ use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn sfc_sections_entry_uses_l2_for_parser_recovered_html_self_closing_native_tags() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
 
     for (label, source) in [
