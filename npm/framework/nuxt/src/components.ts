@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { registeredComponentPath } from "./component-registration.ts";
 
 export interface NuxtComponentDescriptor {
+  _raw?: boolean;
   pascalName?: string;
   kebabName?: string;
   name?: string;
@@ -164,11 +166,8 @@ function isBarePackageSpecifier(importPath: string): boolean {
 }
 
 function resolveDtsImportPath(baseDir: string, importPath: string): string {
-  // Nuxt component d.ts entries can name a bare package specifier (e.g. PrimeVue's
-  // `Button: typeof import("primevue/button")['default']`). Resolving against the
-  // d.ts directory would mint a non-existent `<buildDir>/primevue/button` path that
-  // Rollup later fails to resolve. Preserve package specifiers verbatim so the
-  // downstream import keeps the original bare specifier.
+  // Resolving d.ts package specifiers against buildDir creates nonexistent paths.
+  // Preserve them verbatim so downstream imports retain package resolution.
   if (isBarePackageSpecifier(importPath)) {
     return importPath;
   }
@@ -406,7 +405,7 @@ export function createNuxtComponentResolver(options: NuxtComponentResolverOption
     register(components: NuxtComponentDescriptor[]): void {
       for (const component of components) {
         const resolved = createComponentImport(
-          component.filePath,
+          registeredComponentPath(component, components),
           component.export || "default",
           false,
           component.mode,

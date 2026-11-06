@@ -1,4 +1,4 @@
-// #11757: select Nuxt component registrations by the active client/server build mode.
+// #11757/#11758: preserve Nuxt component build modes and standalone server islands.
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { at, readJson } from "../../json-value.ts";
+import { assertComponentModesHtml } from "./nuxt-component-modes-assertions.ts";
 import { freePort } from "./host-types.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
@@ -76,19 +77,6 @@ async function fetchHtml(child: ChildProcess, port: number): Promise<string> {
   assert.fail(`Nuxt server exited or did not answer on port ${port}`);
 }
 
-function assertServerRegistration(html: string, label: string): void {
-  assert.match(
-    html,
-    /<span[^>]*id="mode-probe"[^>]*data-mode="server"[^>]*>server registration<\/span>/,
-    `${label} must render the server registration`,
-  );
-  assert.doesNotMatch(
-    html,
-    /data-mode="client"/,
-    `${label} must not render the client registration`,
-  );
-}
-
 async function runServer(
   workspace: string,
   label: string,
@@ -131,7 +119,7 @@ try {
       [nuxt, "dev", "--host", "127.0.0.1"],
       environment,
     );
-    assertServerRegistration(developmentHtml, `${variant} development`);
+    assertComponentModesHtml(developmentHtml, `${variant} development`);
 
     for (const output of [".nuxt", ".output"]) {
       fs.rmSync(path.join(workspace, output), { recursive: true, force: true });
@@ -156,14 +144,14 @@ try {
       [path.join(workspace, ".output/server/index.mjs")],
       environment,
     );
-    assertServerRegistration(productionHtml, `${variant} production`);
+    assertComponentModesHtml(productionHtml, `${variant} production`);
   }
 
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
     JSON.stringify(
       {
-        issue: 11757,
+        issues: [11757, 11758],
         candidateHead: process.env.GITHUB_SHA ?? null,
         nuxt: "4.6.4",
         vue: "3.5.44",
@@ -174,7 +162,7 @@ try {
       2,
     ) + "\n",
   );
-  console.log("Nuxt component mode selection passed in development and production");
+  console.log("Nuxt component modes and server islands passed in development and production");
 } finally {
   for (const server of servers) if (server.exitCode === null) server.kill("SIGTERM");
 }
