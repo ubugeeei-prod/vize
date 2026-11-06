@@ -209,6 +209,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         integrated_successor,
         discriminated_jsx_union_successor,
     );
+    let strict_extra_keys_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-strict-extra-keys-11497/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-strict-extra-keys-11497/receipt.json"
+        ),
+        "2c4f0e8a7ac22b0b84cb9c0abd60e5b5dc32cbc80d4ed73018789b8abdd6cde1",
+        12025,
+        discriminated_jsx_union_successor,
+        strict_extra_keys_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -232,7 +244,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        discriminated_jsx_union_successor
+        strict_extra_keys_successor
     );
 }
 
@@ -406,6 +418,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             integrated_successor,
             discriminated_jsx_union_successor,
         );
+        let strict_extra_keys_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-strict-extra-keys-11497/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-strict-extra-keys-11497/receipt.json"
+            ),
+            "1e9643648ae9e1bc6659efbce622a6213a922c0380577555205dd461ca89b555",
+            12025,
+            discriminated_jsx_union_successor,
+            strict_extra_keys_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -419,7 +443,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            discriminated_jsx_union_successor
+            strict_extra_keys_successor
         );
     }
 }

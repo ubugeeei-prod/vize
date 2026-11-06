@@ -65,7 +65,7 @@ type $MissingRequiredInputKeys<T, Authored, K extends $RequiredKeys<T> & string 
 type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
 type $IsSinglePropKey<T> = [T] extends [never] ? false : $IsPropKeyUnion<T> extends true ? false : true;
 type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<keyof Authored, keyof Allowed>;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [$MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>; } };
 type $ComponentInputGuard<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? {} : T extends unknown ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
@@ -132,7 +132,7 @@ function __setup() {
   
   defineProps<Props>()
   
-  // @vize-map: 15686:15715 -> 0:76
+  // @vize-map: 15555:15584 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -174,13 +174,13 @@ function __setup() {
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 17683:17689 -> 8:14
+  // @vize-map: 17552:17558 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 17766:17777 -> 21:32
+  // @vize-map: 17635:17646 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 17855:17860 -> 39:44
+  // @vize-map: 17724:17729 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 17938:17943 -> 51:56
+  // @vize-map: 17807:17812 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;

@@ -32,11 +32,13 @@ fn standard_tsgo_lsp_uses_vue_declaration_maps_from_packed_consumer() {
         .prefix("content-mapper-declaration-library-")
         .tempdir_in(&cases_root)
         .unwrap();
-    let app_source = r#"<script setup lang="ts">
+    let app_source = r#"<script lang="ts">
 export interface PublicProps {
   label: string;
   emojiLabel?: "💥";
 }
+</script>
+<script setup lang="ts">
 defineProps<PublicProps>();
 </script>
 <template>

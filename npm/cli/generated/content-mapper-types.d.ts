@@ -196,17 +196,7 @@ type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> 
       : false
     : false
   : false;
-type $ExtraInputKeys<
-  T,
-  Declared,
-  Authored,
-  Allowed,
-  K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>,
-> = K extends unknown
-  ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true
-    ? never
-    : K
-  : never;
+type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<keyof Authored, keyof Allowed>;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown
   ? [$MissingRequiredInputKeys<T, Authored>] extends [never]
     ? {}

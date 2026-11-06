@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import SingleRequired from "./SingleRequired.vue";
+</script>
+
+<template>
+  <SingleRequired :bar="1" disabled />
+</template>

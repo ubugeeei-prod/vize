@@ -1,9 +1,8 @@
-use std::borrow::Cow;
-
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
 use super::script_blocks::ScriptBlockScopes;
+use crate::virtual_ts::VizeMapping;
 
 fn skip_trivia(source: &str, mut at: usize) -> usize {
     let bytes = source.as_bytes();
@@ -64,7 +63,7 @@ struct SetupTypeExport {
 
 /// Preserves public types whose `typeof` dependencies keep them in setup scope.
 pub(super) struct SetupTypeExportsPlan {
-    export_starts: Vec<u32>,
+    diagnostic_starts: Vec<u32>,
     exports: Vec<SetupTypeExport>,
 }
 
@@ -73,8 +72,27 @@ impl SetupTypeExportsPlan {
         summary: &Croquis,
         script: Option<&str>,
         script_blocks: &ScriptBlockScopes,
+        has_script_setup: bool,
     ) -> Self {
-        let mut export_starts = Vec::new();
+        let diagnostic_starts = if has_script_setup {
+            script
+                .into_iter()
+                .flat_map(|script| {
+                    summary
+                        .type_exports
+                        .iter()
+                        .filter(move |item| item.hoisted)
+                        .filter_map(move |declaration| {
+                            let source =
+                                script.get(declaration.start as usize..declaration.end as usize)?;
+                            (source.starts_with("export") && !script_blocks.owns(declaration.start))
+                                .then_some(declaration.start)
+                        })
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
         let mut exports = Vec::new();
         let mut captured_names: FxHashSet<String> = FxHashSet::default();
 
@@ -97,24 +115,19 @@ impl SetupTypeExportsPlan {
                 }
 
                 let name: String = declaration.name.as_str().into();
-                // Every analyzed setup-scoped export must lose its `export`
-                // modifier so the declaration is legal inside `__setup`; a
-                // retained modifier emitted in function scope is TS1184. Record
-                // the span before the guards below, which only decide whether we
-                // additionally capture a re-exportable artifact.
-                export_starts.push(declaration.start);
                 // Generic declarations cannot ride the non-generic
                 // `undefined as unknown as T` capture path: it drops their type
                 // parameters, and a value-dependent generic cannot be
-                // reconstructed at module scope. Strip the modifier (above) but
-                // skip artifact capture.
+                // reconstructed at module scope. Keep the authored modifier so
+                // TypeScript reports TS1184 inside `__setup`, matching vue-tsc,
+                // and skip artifact capture.
                 if exported_type_is_generic(source, &name) {
                     continue;
                 }
                 // Legal declaration merging (e.g. two `export interface
-                // Options`) surfaces the same name twice. Keep every modifier
-                // span, but capture a single artifact per exported name so the
-                // generated module has no duplicate bindings or aliases.
+                // Options`) surfaces the same name twice. Capture a single
+                // artifact per exported name so the generated module has no
+                // duplicate bindings or aliases.
                 if !captured_names.insert(name.clone()) {
                     continue;
                 }
@@ -125,9 +138,8 @@ impl SetupTypeExportsPlan {
             }
         }
 
-        export_starts.sort_unstable();
         Self {
-            export_starts,
+            diagnostic_starts,
             exports,
         }
     }
@@ -141,32 +153,24 @@ impl SetupTypeExportsPlan {
             .any(|export| export.name.as_str() == name)
     }
 
-    pub(super) fn strip_modifiers(&self, line: &mut Cow<'_, str>, line_start: u32) {
-        let line_end = line_start.saturating_add(line.len() as u32);
-        let first = self
-            .export_starts
-            .partition_point(|start| *start < line_start);
-        let last = self
-            .export_starts
-            .partition_point(|start| *start < line_end);
-        if first == last {
-            return;
+    /// A hoisted setup type is legal in the generated module, but its authored
+    /// `export` modifier is not legal in `<script setup>`. Keep one anonymous,
+    /// collision-free modifier in setup scope and map only that token back to
+    /// the authored modifier so TypeScript reports TS1184 at the correct site.
+    pub(super) fn emit_diagnostic_anchors(
+        &self,
+        ts: &mut String,
+        mappings: &mut Vec<VizeMapping>,
+        source_offset: &dyn Fn(usize) -> usize,
+    ) {
+        for &start in &self.diagnostic_starts {
+            let generated_start = ts.len() + 2;
+            ts.push_str("  export default class {}\n");
+            mappings.push(VizeMapping::new(
+                generated_start..generated_start + "export".len(),
+                source_offset(start as usize)..source_offset(start as usize + "export".len()),
+            ));
         }
-
-        let original = line.as_ref();
-        let mut output = String::with_capacity(original.len());
-        let mut copied_until = 0usize;
-        for start in self.export_starts.get(first..last).unwrap_or_default() {
-            let column = (*start - line_start) as usize;
-            if original.get(column..column + "export".len()) == Some("export")
-                && let Some(kept) = original.get(copied_until..column)
-            {
-                output.push_str(kept);
-                copied_until = column + "export".len();
-            }
-        }
-        output.push_str(original.get(copied_until..).unwrap_or_default());
-        *line = Cow::Owned(output.into());
     }
 
     pub(super) fn emit_setup_artifacts(&self, ts: &mut String, fields: &mut Vec<String>) {
@@ -221,44 +225,13 @@ mod tests {
             hoisted: false,
         });
 
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
-        let mut line = std::borrow::Cow::Borrowed("export type Public = typeof value;");
-        plan.strip_modifiers(&mut line, public_start);
-        assert_eq!(line, " type Public = typeof value;");
-
+        let plan =
+            SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default(), true);
         let mut fields = Vec::new();
         let mut setup = vize_carton::String::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(setup.contains("unknown as Public"));
         assert_eq!(fields, ["__vize_exported_type_Public"]);
-    }
-
-    #[test]
-    fn every_export_modifier_on_a_shared_line_is_removed_by_exact_span() {
-        let script = "const value = 1; export type Public = typeof value; export interface Shape { value: typeof value }";
-        let public_start = script.find("export").unwrap() as u32;
-        let shape_start = script.rfind("export").unwrap() as u32;
-        let mut summary = Croquis::new();
-        for (name, kind, start) in [
-            ("Public", TypeExportKind::Type, public_start),
-            ("Shape", TypeExportKind::Interface, shape_start),
-        ] {
-            summary.type_exports.push(TypeExport {
-                name: name.into(),
-                kind,
-                start,
-                end: script.len() as u32,
-                hoisted: false,
-            });
-        }
-
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
-        let mut line = std::borrow::Cow::Borrowed(script);
-        plan.strip_modifiers(&mut line, 0);
-        assert_eq!(
-            line,
-            "const value = 1;  type Public = typeof value;  interface Shape { value: typeof value }"
-        );
     }
 
     #[test]
@@ -274,23 +247,47 @@ mod tests {
             end: source.len() as u32,
             hoisted: false,
         });
-        let plan = SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default());
-        // The `export` modifier is still stripped: a non-hoisted generic stays
-        // inside `__setup`, where a retained modifier would be TS1184.
-        let mut line = std::borrow::Cow::Borrowed(source);
-        plan.strip_modifiers(&mut line, 0);
-        assert_eq!(
-            line,
-            " /* public */ type Box<T extends typeof value> = { value: T }"
-        );
-
-        // But it is never captured through the non-generic artifact path, which
-        // would drop its type parameters.
+        let plan =
+            SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default(), true);
+        // It is never captured through the non-generic artifact path, which
+        // would drop its type parameters. The authored modifier remains in the
+        // setup scope so TypeScript reports TS1184.
         let mut fields = Vec::new();
         let mut setup = vize_carton::String::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(fields.is_empty());
         assert!(setup.is_empty());
+    }
+
+    #[test]
+    fn hoisted_setup_exports_keep_a_mapped_modifier_diagnostic_anchor() {
+        let source = "export interface Public {}";
+        let mut summary = Croquis::new();
+        summary.type_exports.push(TypeExport {
+            name: "Public".into(),
+            kind: TypeExportKind::Interface,
+            start: 0,
+            end: source.len() as u32,
+            hoisted: true,
+        });
+
+        let plan =
+            SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default(), true);
+        let mut setup = vize_carton::String::default();
+        let mut mappings = Vec::new();
+        plan.emit_diagnostic_anchors(&mut setup, &mut mappings, &|offset| offset + 10);
+        assert_eq!(setup, "  export default class {}\n");
+        assert_eq!(mappings.len(), 1);
+        assert_eq!(mappings[0].gen_range, 2..8);
+        assert_eq!(mappings[0].src_range, 10..16);
+
+        let plain =
+            SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default(), false);
+        setup.clear();
+        mappings.clear();
+        plain.emit_diagnostic_anchors(&mut setup, &mut mappings, &|offset| offset + 10);
+        assert!(setup.is_empty());
+        assert!(mappings.is_empty());
     }
 
     #[test]
@@ -309,18 +306,10 @@ mod tests {
             });
         }
 
-        let plan = SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default());
+        let plan =
+            SetupTypeExportsPlan::new(&summary, Some(script), &ScriptBlockScopes::default(), true);
 
-        // Both `export` modifiers are stripped so neither merged declaration is
-        // illegal inside `__setup`.
-        let mut line = std::borrow::Cow::Borrowed(script);
-        plan.strip_modifiers(&mut line, 0);
-        assert_eq!(
-            line,
-            " interface Options { a: typeof value }  interface Options { b: typeof value }"
-        );
-
-        // But only one artifact/alias is emitted for the merged name.
+        // Only one artifact/alias is emitted for the merged name.
         let mut fields = Vec::new();
         let mut setup = vize_carton::String::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);

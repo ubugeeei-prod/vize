@@ -1184,12 +1184,14 @@ fn check_resolves_named_exports_from_vue_imported_via_path_alias() {
         &[
             (
                 "src/AliasProvider.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface AliasConfig {
   key: string;
   label: string;
 }
+</script>
 
+<script setup lang="ts">
 defineProps<{ configs: AliasConfig[] }>();
 </script>
 
@@ -2554,11 +2556,13 @@ fn check_can_emit_declarations() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   count: number
 }
+</script>
 
+<script setup lang="ts">
 const props = defineProps<PublicProps>()
 </script>
 
@@ -3175,11 +3179,13 @@ fn check_declaration_emit_uses_tsconfig_options() {
             ),
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
 
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 

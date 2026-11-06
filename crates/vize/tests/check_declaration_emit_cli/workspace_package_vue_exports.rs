@@ -52,10 +52,12 @@ export type WorkspaceWidgetModule = typeof import('@scope/workspace-vue')
     .unwrap();
     std::fs::write(
         package_root.join("src/Root.vue"),
-        r#"<script setup lang="ts">
+        r#"<script lang="ts">
 export interface WorkspaceWidgetProps {
   count: number
 }
+</script>
+<script setup lang="ts">
 defineProps<WorkspaceWidgetProps>()
 </script>
 <template>{{ count }}</template>

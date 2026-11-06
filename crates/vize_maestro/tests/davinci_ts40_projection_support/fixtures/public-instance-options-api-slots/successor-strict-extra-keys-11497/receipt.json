@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "pullRequest": 12025,
+  "predecessor": {
+    "path": "successor-discriminated-jsx-union-20261106/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "234dcb12397e78bf1f8b94227d627c94a3d27ba65557dcbe4fc4b9e379f8ac05"
+  },
+  "successor": {
+    "path": "successor-strict-extra-keys-11497/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "3f0fa59d0a624088cedb8493d43d8d110aa8b0e593f413e5562e16a0d2ac4052"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": -131,
+    "contentMapperGeneratedTextBytes": -131,
+    "maestroGeneratedTextBytes": -131,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "qualification": {
+    "head": "d4f6cd3ec18e432ab518933f426cb528427ccfc3",
+    "run": 42257766023,
+    "artifact": {
+      "id": 13523975472,
+      "name": "component-input-packets-head-d4f6cd3ec18e432ab518933f426cb528427ccfc3-42257766023",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "sha256": "709ebab36e0cf546c639a30fa4926d95c642b9acfd2b0a730f73e7570ddf7840"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authenticated exact GitHub Actions successor for strict component extra-key diagnostics. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+}

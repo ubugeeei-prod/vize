@@ -1779,10 +1779,12 @@ fn batch_type_checker_snapshots_declaration_emit_outputs() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   count: number
 }
+</script>
+<script setup lang="ts">
 
 const props = defineProps<PublicProps>()
 </script>

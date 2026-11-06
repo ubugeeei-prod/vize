@@ -10,6 +10,7 @@ import {
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
+import { beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -105,7 +106,7 @@ export function currentCallbackSourceEdits(
   };
   assert.equal(transition.file.path, componentHelperSource);
   const currentHelper = readSource(componentHelperSource);
-  const integratedHelper = beforeDiscriminatedJsxUnion(currentHelper);
+  const integratedHelper = beforeDiscriminatedJsxUnion(beforeStrictExtraKeys(currentHelper));
   assert.equal(Buffer.byteLength(integratedHelper), transition.file.after.bytes);
   assert.equal(digest(integratedHelper), transition.file.after.sha256);
   let previousHelper = integratedHelper;

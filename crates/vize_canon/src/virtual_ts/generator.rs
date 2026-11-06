@@ -170,7 +170,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     namespace_hoist.reconcile_exports(&mut named_value_exports);
     let script_blocks = ScriptBlockScopes::collect(summary, script_content, has_script_setup);
-    let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content, &script_blocks);
+    let setup_type_exports =
+        SetupTypeExportsPlan::new(summary, script_content, &script_blocks, has_script_setup);
     // Share the default-export parse with Options API facts. Plain objects keep
     // Vue's `this` typing; classes keep decorators; setup-only skips rewrites.
     let classify_default_export = !has_script_setup || has_plain_script_scope;
@@ -375,6 +376,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if let Some(aliases) = &hoisted_generic_aliases {
         aliases.emit_setup_aliases(&mut ts);
     }
+    setup_type_exports.emit_diagnostic_anchors(&mut ts, &mut mappings, source_offset);
     setup_imports.emit_setup(
         &mut ts,
         options,
@@ -448,7 +450,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push_str("  "); // indentation (not in source)
 
                 let mut output_line = std::borrow::Cow::Borrowed(line);
-                setup_type_exports.strip_modifiers(&mut output_line, line_start as u32);
 
                 // Close the `defineComponent(` wrap right after the wrapped
                 // options object's closing brace.
