@@ -167,14 +167,14 @@ impl fmt::Display for GenericSignature<'_> {
         let pick = names::lib("Pick");
         if *vue_component_context {
             // Vue's generic SFC function overlaps `Component` when emitted
-            // listeners are present. Keep its loose compatibility signature
-            // first and the precise public signature last: conditional helpers
-            // such as `ComponentEmit` and `ComponentSlots` infer from the last
-            // overload, while the first one preserves the cast overlap
+            // listeners are present. Keep the existing compatibility signature
+            // first and add the precise public signature last: conditional
+            // helpers such as `ComponentEmit` and `ComponentSlots` infer from
+            // the last overload, while the first one preserves the cast overlap
             // required by Vue's `Component` union (#11966).
             return writeln!(
                 formatter,
-                "type {name} = ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {{ attrs: any; emit: (...args: any[]) => any; slots: any }}, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }}) & ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }});"
+                "type {name} = ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'> | {{ attrs: any; emit: (...args: any[]) => any; slots: any }}, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }}) & ({parameters}(props: {context}{arguments}['props']{props_tail}, ctx?: {pick}<{context}{arguments}, 'attrs' | 'emit' | 'slots'>, expose?: {context}{arguments}['expose']) => import('vue').VNode & {{ __ctx?: {context}{arguments} }});"
             );
         }
         writeln!(

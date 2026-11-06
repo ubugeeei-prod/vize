@@ -172,7 +172,7 @@ function relocationEdits(
   const componentConstructorTransition = certifyComponentConstructorTransition(before, after);
   if (componentConstructorTransition) certifiedEdits.push(componentConstructorTransition);
   const genericComponentContextTransition = certifyGenericComponentContextTransition(before, after);
-  if (genericComponentContextTransition) certifiedEdits.push(genericComponentContextTransition);
+  if (genericComponentContextTransition) certifiedEdits.push(...genericComponentContextTransition);
   const componentExportTransition = certifyComponentExportTransition(before, after);
   if (componentExportTransition) certifiedEdits.push(...componentExportTransition.edits);
   const originalComments = comments(before.toString(), baseGeneratedRanges);
@@ -196,11 +196,19 @@ function relocationEdits(
     if (event.kind === "replacement") {
       const { edit } = event;
       assert.ok((edits.at(-1)?.end ?? 0) <= edit.start, "certified replacements must be disjoint");
-      assert.equal(
-        uniqueOffset(after, edit.replacement),
-        point(edit.start, edits),
-        `${edit.label} boundary moved`,
-      );
+      const expectedStart = point(edit.start, edits);
+      if (edit.start === edit.end)
+        assert.deepEqual(
+          after.subarray(expectedStart, expectedStart + edit.replacement.length),
+          edit.replacement,
+          `${edit.label} boundary moved`,
+        );
+      else
+        assert.equal(
+          uniqueOffset(after, edit.replacement),
+          expectedStart,
+          `${edit.label} boundary moved`,
+        );
       edits.push(edit);
       continue;
     }
