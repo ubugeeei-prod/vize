@@ -33,6 +33,39 @@ pub(crate) async fn open_canonical_virtual_document_strict(
     open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays).await
 }
 
+/// Synchronize and borrow the immutable local projection needed by hover.
+/// Cold requests with an admitted initial project keep the general path so
+/// their direct startup receipt is still consumed exactly once.
+pub(crate) async fn open_canonical_hover_document_strict(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Result<Option<vize_canon::CorsaVueHoverDocument>, CorsaBridgeError> {
+    if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
+        return Ok(None);
+    }
+    let Some(source_path) = ctx.uri.to_file_path().ok() else {
+        tracing::warn!(uri = %ctx.uri, "canonical hover skipped: URI is not a file path");
+        return Ok(None);
+    };
+    let cached_overlays = ctx.state.corsa_overlays();
+    let overlays = cached_overlays
+        .iter()
+        .map(|(path, content)| (path.clone(), &**content))
+        .collect::<Vec<_>>();
+    let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
+    let opened = bridge
+        .open_vue_hover_document_with_borrowed_overlays_and_options(
+            &source_path,
+            &ctx.content,
+            ctx.state.canonical_vue_document_options(),
+            &overlays,
+            &virtual_ts_options,
+        )
+        .await?;
+    ctx.record_foreground_preparation();
+    Ok(Some(opened))
+}
+
 pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,

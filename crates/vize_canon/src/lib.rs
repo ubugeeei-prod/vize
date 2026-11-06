@@ -138,7 +138,7 @@ pub use corsa_bridge::{
     CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaInitialVueDocument,
     CorsaInitialVueProject, CorsaMaterializedMappingKind, CorsaMaterializedSource,
     CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest, CorsaScriptVirtualProject,
-    CorsaSourceCatalog, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
+    CorsaSourceCatalog, CorsaVueHoverDocument, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
     CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest, DiagnosingConfiguration,
     DiagnosingSnapshot, LspCompletionItem, LspCompletionList, LspCompletionResponse,
     LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
