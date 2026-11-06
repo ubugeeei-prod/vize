@@ -214,11 +214,10 @@ const value: string = typed;
     project.register_path(&app).unwrap();
     project.register_path(&typed).unwrap();
     project.register_reachable_dependencies().unwrap();
-    assert!(
-        !project
-            .registered_original_paths_sorted()
-            .contains(&declaration),
-        "inferred declarations must not become program roots"
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![app.clone(), typed.clone()],
+        "inferred declarations must not become program roots",
     );
 
     project.finalize_package_routes().unwrap();
@@ -226,9 +225,12 @@ const value: string = typed;
     let module = crate::batch::declaration_module_path(&declaration)
         .to_string_lossy()
         .replace('\\', "/");
-    assert!(generated.contains(&module), "{generated}");
-    assert!(
-        !generated.contains(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL),
+    assert_eq!(generated.matches(&module).count(), 1, "{generated}");
+    assert_eq!(
+        generated
+            .matches(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
+            .count(),
+        0,
         "{generated}"
     );
     let _ = fs::remove_dir_all(&root);
