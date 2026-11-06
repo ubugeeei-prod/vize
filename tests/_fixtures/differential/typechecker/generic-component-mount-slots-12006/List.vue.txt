@@ -1,0 +1,8 @@
+<script setup lang="ts" generic="T">
+defineProps<{ rows: T[] }>();
+defineEmits<{ loadMore: [] }>();
+</script>
+
+<template>
+  <ul><li v-for="(row, i) in rows" :key="i"><slot name="row" :row="row" /></li></ul>
+</template>

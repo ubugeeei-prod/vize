@@ -177,13 +177,23 @@ pub(super) fn generate_scope_node(
             // mutable captures must not inherit its narrowing. Immutable
             // `v-for` aliases are the exception: TypeScript preserves their
             // narrowing across closures. Bare listener values retain the full
-            // render guard (#11965, #11973).
+            // render guard; inline statements carry it inside their generated
+            // handler so their shared inference declarations stay visible to
+            // sibling listeners (#11965, #11973, #12005).
             let expressions = ctx.expressions_by_scope.get(&scope_id);
             let has_deferred_callback = expressions.is_some_and(|expressions| {
                 expressions.iter().any(|expression| {
                     matches!(
                         classify_event_handler(expression.content.as_str()),
                         EventHandlerExpression::Callback { .. }
+                    )
+                })
+            });
+            let has_listener_reference = expressions.is_some_and(|expressions| {
+                expressions.iter().any(|expression| {
+                    matches!(
+                        classify_event_handler(expression.content.as_str()),
+                        EventHandlerExpression::Reference
                     )
                 })
             });
@@ -208,11 +218,13 @@ pub(super) fn generate_scope_node(
                     .then_some(common_guard.as_deref())
                     .flatten()
                     .and_then(|guard| callback_vif_guard_for_v_for_aliases(guard, &v_for_aliases))
-            } else {
+            } else if has_listener_reference {
                 data.target_component
                     .as_ref()
                     .and(common_guard.as_deref())
                     .map(String::from)
+            } else {
+                None
             }
             .map(|guard| {
                 rewrite_reserved_template_binding(guard.as_str(), ctx.template_binding_access)

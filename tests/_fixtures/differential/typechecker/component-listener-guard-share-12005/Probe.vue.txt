@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue';
+defineProps<{ show?: boolean }>();
+const emit = defineEmits<{ (e: 'close'): void }>();
+</script>
+
+<template>
+  <Child v-if="show" title="x" @close="emit('close')" @set-mode="(m) => void m" />
+</template>
