@@ -15,7 +15,6 @@
 mod aliases;
 mod codegen_visitor;
 mod collector;
-mod compat;
 pub(in crate::emit) mod globals;
 mod handler;
 mod params;
@@ -87,7 +86,7 @@ pub(super) enum Site {
 
 /// Whether an existing key AST can reach the retained rewrite without a parse.
 pub(super) fn retained_expression_is_js(js: &JsExpr<'_>) -> bool {
-    compat::js_module_compatible(js.ast, js.source)
+    crate::js_module_compatible(js.ast, js.source)
 }
 
 /// The shipped node's content for one expression position: the raw
@@ -137,7 +136,7 @@ impl Erased<'_, '_, '_> {
     fn proven_js(&self) -> bool {
         self.proven_js.unwrap_or_else(|| {
             self.retained
-                .is_some_and(|js| compat::js_module_compatible(js.ast, js.source))
+                .is_some_and(|js| crate::js_module_compatible(js.ast, js.source))
         })
     }
 }

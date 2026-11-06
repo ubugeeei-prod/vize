@@ -238,14 +238,14 @@ test("Davinci DOM production imports lowering through the physical L1-to-L2 pack
 });
 
 test("Atelier core L2 witnesses import lowering through the physical L1-to-L2 package", () => {
-  const lowering = dependency(metadata, "vize_atelier_core", "vize_l1_to_l2", "dev");
+  const lowering = dependency(metadata, "vize_atelier_core", "vize_l1_to_l2", null);
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_core").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
         dependency.name !== "vize_l1_to_l2" ||
-        (dependency.kind === "dev" && dependency.rename === null),
+        (dependency.kind === null && dependency.rename === null),
     ),
     "vize_atelier_core must use the physical vize_l1_to_l2 package name",
   );

@@ -14,10 +14,10 @@ use vize_l0::{Allocator, String};
 
 use super::Erased;
 use super::collector::IdentifierCollector;
-use super::compat::js_module_compatible;
 use super::globals::{is_generated_filter_helper, is_simple_identifier};
 use super::scope::PrefixScope;
 use super::splice::splice_insertions;
+use crate::js_module_compatible;
 
 mod reparse;
 use reparse::rewrite_reparsed;

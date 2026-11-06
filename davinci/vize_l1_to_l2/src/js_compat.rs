@@ -1,5 +1,4 @@
-//! The JS-module dialect gate (`vize_atelier_core::retained::js_module_compatible`,
-//! Davinci P1-7), ported verbatim: the retained TS-dialect AST drives the
+//! The shared JS-module dialect gate (Davinci P1-7). A retained TS-dialect AST drives the
 //! rewrite only when the legacy `SourceType::default().with_module(true)`
 //! parse of the same bytes is provably the same parse; everything the scan
 //! rejects keeps the legacy re-parse chain, whose *failure* modes (raw
@@ -9,7 +8,16 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk};
 use oxc_syntax::scope::ScopeFlags;
 
-pub(super) fn js_module_compatible(ast: &oxc_ast_types::Expression<'_>, source: &str) -> bool {
+/// Return whether a retained TypeScript expression can bypass the legacy JavaScript re-parse.
+pub fn js_module_compatible(ast: &oxc_ast_types::Expression<'_>, source: &str) -> bool {
+    // Exact lexer-owned identifiers have no nested syntax to classify. Keeping
+    // this admission in the shared gate avoids a full visitor for the dominant
+    // template-expression shape while retaining the strict-module refusal.
+    if let oxc_ast_types::Expression::Identifier(identifier) = ast
+        && source == identifier.name.as_str()
+    {
+        return !strict_mode_divergent_identifier(identifier.name.as_str());
+    }
     if source.contains("<!--") || source.contains("-->") {
         return false;
     }
@@ -57,6 +65,58 @@ fn sloppy_only_string_raw(raw: &str) -> bool {
     false
 }
 
+/// Positive, exhaustive admission for the expression enum. A new oxc
+/// expression kind must be classified here before it can be treated as
+/// JavaScript. TypeScript, JSX, and V8-only syntax are never admitted.
+fn expression_kind_is_javascript(expression: &oxc_ast_types::Expression<'_>) -> bool {
+    match expression {
+        oxc_ast_types::Expression::BooleanLiteral(_)
+        | oxc_ast_types::Expression::NullLiteral(_)
+        | oxc_ast_types::Expression::NumericLiteral(_)
+        | oxc_ast_types::Expression::BigIntLiteral(_)
+        | oxc_ast_types::Expression::RegExpLiteral(_)
+        | oxc_ast_types::Expression::StringLiteral(_)
+        | oxc_ast_types::Expression::TemplateLiteral(_)
+        | oxc_ast_types::Expression::Identifier(_)
+        | oxc_ast_types::Expression::Super(_)
+        | oxc_ast_types::Expression::ArrayExpression(_)
+        | oxc_ast_types::Expression::ArrowFunctionExpression(_)
+        | oxc_ast_types::Expression::AssignmentExpression(_)
+        | oxc_ast_types::Expression::AwaitExpression(_)
+        | oxc_ast_types::Expression::BinaryExpression(_)
+        | oxc_ast_types::Expression::CallExpression(_)
+        | oxc_ast_types::Expression::ChainExpression(_)
+        | oxc_ast_types::Expression::ClassExpression(_)
+        | oxc_ast_types::Expression::ConditionalExpression(_)
+        | oxc_ast_types::Expression::FunctionExpression(_)
+        | oxc_ast_types::Expression::ImportExpression(_)
+        | oxc_ast_types::Expression::LogicalExpression(_)
+        | oxc_ast_types::Expression::NewExpression(_)
+        | oxc_ast_types::Expression::ObjectExpression(_)
+        | oxc_ast_types::Expression::ParenthesizedExpression(_)
+        | oxc_ast_types::Expression::SequenceExpression(_)
+        | oxc_ast_types::Expression::TaggedTemplateExpression(_)
+        | oxc_ast_types::Expression::ThisExpression(_)
+        | oxc_ast_types::Expression::UnaryExpression(_)
+        | oxc_ast_types::Expression::UpdateExpression(_)
+        | oxc_ast_types::Expression::YieldExpression(_)
+        | oxc_ast_types::Expression::PrivateInExpression(_)
+        | oxc_ast_types::Expression::ImportMeta(_)
+        | oxc_ast_types::Expression::NewTarget(_)
+        | oxc_ast_types::Expression::ComputedMemberExpression(_)
+        | oxc_ast_types::Expression::StaticMemberExpression(_)
+        | oxc_ast_types::Expression::PrivateFieldExpression(_) => true,
+        oxc_ast_types::Expression::JSXElement(_)
+        | oxc_ast_types::Expression::JSXFragment(_)
+        | oxc_ast_types::Expression::TSAsExpression(_)
+        | oxc_ast_types::Expression::TSSatisfiesExpression(_)
+        | oxc_ast_types::Expression::TSTypeAssertion(_)
+        | oxc_ast_types::Expression::TSNonNullExpression(_)
+        | oxc_ast_types::Expression::TSInstantiationExpression(_)
+        | oxc_ast_types::Expression::V8IntrinsicExpression(_) => false,
+    }
+}
+
 struct JsModuleCompatScan {
     compatible: bool,
 }
@@ -69,6 +129,35 @@ impl JsModuleCompatScan {
 }
 
 impl<'a> Visit<'a> for JsModuleCompatScan {
+    fn visit_expression(&mut self, it: &oxc_ast_types::Expression<'a>) {
+        if !expression_kind_is_javascript(it) {
+            self.reject();
+            return;
+        }
+        walk::walk_expression(self, it);
+    }
+    fn visit_statement(&mut self, it: &oxc_ast_types::Statement<'a>) {
+        if it.is_typescript_syntax() {
+            self.reject();
+            return;
+        }
+        walk::walk_statement(self, it);
+    }
+    fn visit_ts_type(&mut self, _it: &oxc_ast_types::TSType<'a>) {
+        self.reject();
+    }
+    fn visit_ts_type_parameter_declaration(
+        &mut self,
+        _it: &oxc_ast_types::TSTypeParameterDeclaration<'a>,
+    ) {
+        self.reject();
+    }
+    fn visit_ts_type_parameter_instantiation(
+        &mut self,
+        _it: &oxc_ast_types::TSTypeParameterInstantiation<'a>,
+    ) {
+        self.reject();
+    }
     fn visit_ts_as_expression(&mut self, _it: &oxc_ast_types::TSAsExpression<'a>) {
         self.reject();
     }
@@ -84,43 +173,6 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
     fn visit_ts_instantiation_expression(
         &mut self,
         _it: &oxc_ast_types::TSInstantiationExpression<'a>,
-    ) {
-        self.reject();
-    }
-    fn visit_ts_type_annotation(&mut self, _it: &oxc_ast_types::TSTypeAnnotation<'a>) {
-        self.reject();
-    }
-    fn visit_ts_type_parameter_declaration(
-        &mut self,
-        _it: &oxc_ast_types::TSTypeParameterDeclaration<'a>,
-    ) {
-        self.reject();
-    }
-    fn visit_ts_type_parameter_instantiation(
-        &mut self,
-        _it: &oxc_ast_types::TSTypeParameterInstantiation<'a>,
-    ) {
-        self.reject();
-    }
-    fn visit_ts_enum_declaration(&mut self, _it: &oxc_ast_types::TSEnumDeclaration<'a>) {
-        self.reject();
-    }
-    // TypeScript-only declarations a function body may hold.
-    fn visit_ts_type_alias_declaration(&mut self, _it: &oxc_ast_types::TSTypeAliasDeclaration<'a>) {
-        self.reject();
-    }
-    fn visit_ts_interface_declaration(&mut self, _it: &oxc_ast_types::TSInterfaceDeclaration<'a>) {
-        self.reject();
-    }
-    fn visit_ts_module_declaration(&mut self, _it: &oxc_ast_types::TSModuleDeclaration<'a>) {
-        self.reject();
-    }
-    fn visit_ts_global_declaration(&mut self, _it: &oxc_ast_types::TSGlobalDeclaration<'a>) {
-        self.reject();
-    }
-    fn visit_ts_import_equals_declaration(
-        &mut self,
-        _it: &oxc_ast_types::TSImportEqualsDeclaration<'a>,
     ) {
         self.reject();
     }
@@ -217,5 +269,30 @@ mod tests {
         assert!(!compatible("() => { void Child; type T = typeof Other }"));
         assert!(!compatible("() => { interface I { id: number } pick() }"));
         assert!(compatible("() => { void Child }"));
+    }
+
+    #[test]
+    fn typescript_expression_kinds_and_fields_are_fail_closed() {
+        for source in [
+            "value as unknown",
+            "value satisfies unknown",
+            "<unknown>value",
+            "value!",
+            "value! = next",
+            "value?.property!",
+            "generic<string>",
+            "(value: string) => value",
+            "<T>(value: T) => value",
+        ] {
+            assert!(!compatible(source), "{source}");
+        }
+        for source in [
+            "value",
+            "generic(value)",
+            "(value) => value",
+            "value?.property ?? fallback",
+        ] {
+            assert!(compatible(source), "{source}");
+        }
     }
 }
