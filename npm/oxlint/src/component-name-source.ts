@@ -12,7 +12,7 @@ import {
 } from "../../../tools/support/json-value.ts";
 
 export const componentNameSuccessorPath = "npm/oxlint/src/component-name-source-successor.json";
-const successorSha256 = "e0f7eef40664e4c0fa048ac0328469ad430d1b8dd105f67c8ba6ce29dd9c1b92";
+const successorSha256 = "9d3261794fdfc9fbbb37360ddb77e23addf4e8c2e3dc0a6d4e3223959241436d";
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
 export function componentNameSource(

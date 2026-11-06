@@ -12,7 +12,7 @@ const read = (path: string) => readFileSync(join(root, path));
 void test("the casing source keeps the complete original and its exact finite successors", () => {
   const source = componentNameSource(root);
   assert.equal(source.historical.length, 16768);
-  assert.equal(source.current.length, 16846);
+  assert.equal(source.current.length, 16838);
   assert.deepEqual(asArray(source.successor.changes), [
     {
       ruleId: "vue/component-name-in-template-casing",
@@ -27,14 +27,7 @@ void test("the casing source keeps the complete original and its exact finite su
       occurrences: 1,
     },
   ]);
-  assert.deepEqual(asArray(source.successor.latestChanges), [
-    {
-      ruleId: "script/custom-event-name-casing",
-      before: "Rename this emitted event to kebab-case (e.g. my-event).",
-      after: "Rename this emitted event to kebab-case (e.g. transition-start).",
-      occurrences: 1,
-    },
-  ]);
+  assert.deepEqual(asArray(source.successor.latestChanges), []);
   const prefix = '"src/Casing.vue",\n        r#"';
   const extract = (bytes: Buffer) => {
     const rust = bytes.toString("utf8"),
