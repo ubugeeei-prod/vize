@@ -100,13 +100,16 @@ fn scope_bound_targets_declare_their_alias_inside_that_scope() {
 
 #[test]
 fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
-    const SCRIPT: &str = "import Picker from './Picker.vue'\nimport Panel from './Panel.vue'\nconst map = { a: Picker }\nconst visible = true\n";
-    const TEMPLATE: &str = concat!(
-        r#"<Panel v-if="visible" v-slot:default="{ kind, open, visible }">"#,
-        r#"<component :is="map[kind]"></component>"#,
-        r#"<component v-if="open" :is="map[kind]"></component>"#,
-        r#"</Panel>"#,
-    );
+    const SCRIPT: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/",
+        "dynamic-component-shadowed-guard-11601/script.ts.txt",
+    ));
+    const TEMPLATE: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/",
+        "dynamic-component-shadowed-guard-11601/template.html.txt",
+    ));
     let code = generate_source(SCRIPT, TEMPLATE);
     let template = &code[code
         .find(";(function __template()")
