@@ -127,7 +127,7 @@ function assertHarness(source: string, name: string): void {
   assert.match(
     source,
     new RegExp(
-      `^ *#\\[kani::proof\\]\\n(?: *#\\[kani::unwind\\(\\d+\\)\\]\\n)? *fn ${name}\\(\\)`,
+      `^ *#\\[kani::proof\\]\\n(?: *#\\[kani::(?:unwind\\(\\d+\\)|solver\\([^)]+\\))\\]\\n)* *fn ${name}\\(\\)`,
       "mu",
     ),
     `missing Kani harness ${name}`,
@@ -162,7 +162,13 @@ test("P3-15 laws are Kani harnesses that the Kani workflow verifies", () => {
     "accepted_schedule_orders_edges",
     "accepted_edges_stay_in_scope",
     "accepted_regrouping_preserves_edges",
-    "the_checker_reports_exactly_the_violated_invariants",
+    "the_checker_reports_codes_in_validator_order",
+    "l3v001_unique_ids_is_exact",
+    "l3v002_rooted_is_exact",
+    "l3v005_resolved_is_exact",
+    "l3v003_ops_resolved_is_exact",
+    "l3v008_ordered_is_exact",
+    "a_well_formed_schedule_points_every_edge_forward",
     "the_patched_tree_displays_the_view",
     "an_update_is_recompute_and_reorders_allocate_nothing",
     "top_level_identities_are_retained_or_fresh",

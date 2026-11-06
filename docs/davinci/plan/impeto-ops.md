@@ -60,9 +60,9 @@ for fact/schedule edges that are not DOM order.
 | `l3.set-child-value`   | Normalize an opaque JSX child value through the owning backend.      | `normalize-child-value` | `child-value-effect`   | Appended stable tag 16; existing tags 0 through 15 keep their original meaning.                |
 
 The VDOM and Vapor labels above are intentionally small observations, not code
-generation byte strings. They are the trace vocabulary used by the first Lean
-reference runner so semantic drift appears before optional passes rewrite or
-schedule the op stream.
+generation byte strings. They are the trace vocabulary used by the independent
+Rust reference runner so semantic drift appears before optional passes rewrite
+or schedule the op stream.
 
 `set-child-value` carries the explicit JSX child role, currently minted only by
 the Native client VDOM producer. It does not replace template interpolation or
@@ -129,8 +129,9 @@ Exported partition facts keep describing canonical L3 because the overlay
 never changes an op's effect scope. `L3V010` re-derives every recorded
 alternative and every committed choice: a chosen `group` must stay contiguous
 with its committed unit, and a chosen `hoist` may not sit inside another. The
-Lean reference does not interpret placements yet; the legality rules above are
-the semantic argument until extraction output reaches a backend under TS-28.
+independent Rust reference does not interpret placements yet; the legality
+rules above are the semantic argument until extraction output reaches a backend
+under TS-28.
 
 ## Try-Measure-Commit Extraction
 
@@ -169,5 +170,5 @@ removes, so it is recorded as missed until a budget ratchet decides otherwise.
 ## Review Point
 
 P3-5 lands before optional passes. A new Impeto op, a changed mnemonic, or a
-changed Lean trace label must update this page, the Rust `OpKind` table, the
-Lean parser/semantics, and the sync test in the same PR.
+changed reference trace label must update this page, the Rust `OpKind` table,
+the independent parser/semantics, and the sync test in the same PR.
