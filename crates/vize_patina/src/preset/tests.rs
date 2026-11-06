@@ -6,6 +6,8 @@ use crate::rule::RuleRegistry;
 use std::collections::BTreeSet;
 use vize_atelier_jsx::JsxLang;
 
+mod policy_tests;
+
 #[test]
 fn parses_common_aliases() {
     assert_eq!(LintPreset::parse("default"), Some(LintPreset::HappyPath));
@@ -446,73 +448,6 @@ fn incremental_starts_empty() {
 
     assert!(!incremental.has_rule("vue/require-v-for-key"));
     assert!(super::builtin_script_rule_names(LintPreset::Incremental).is_empty());
-}
-
-#[test]
-fn opinionated_uses_kebab_case_for_custom_events() {
-    let camel = r#"<script setup lang="ts">
-const emit = defineEmits<{ saveItem: [] }>()
-emit('saveItem')
-</script>"#;
-    let kebab = r#"<script setup lang="ts">
-const emit = defineEmits<{ "save-item": [] }>()
-emit('save-item')
-</script>"#;
-
-    let camel_result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(camel, "App.vue");
-    assert!(
-        camel_result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| { diagnostic.rule_name == "script/custom-event-name-casing" })
-    );
-
-    let kebab_result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(kebab, "App.vue");
-    assert!(
-        !kebab_result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| { diagnostic.rule_name == "script/custom-event-name-casing" })
-    );
-}
-
-#[test]
-fn explicit_custom_event_casing_overrides_opinionated() {
-    let source = r#"<script setup lang="ts">
-const emit = defineEmits<{ saveItem: [] }>()
-emit('saveItem')
-</script>"#;
-    let result = Linter::with_preset(LintPreset::Opinionated)
-        .with_custom_event_name_casing(crate::rules::script::EventNameCasing::CamelCase)
-        .lint_sfc(source, "App.vue");
-
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|diagnostic| { diagnostic.rule_name == "script/custom-event-name-casing" })
-    );
-}
-
-#[test]
-fn consistent_props_emits_key_quotes_is_opinionated_only() {
-    let source = r#"<script setup lang="ts">
-defineProps<{ "aria-label": string; disabled: boolean }>()
-</script>"#;
-
-    let opinionated = Linter::with_preset(LintPreset::Opinionated).lint_sfc(source, "App.vue");
-    assert!(
-        opinionated.diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
-        })
-    );
-
-    let nuxt = Linter::with_preset(LintPreset::Nuxt).lint_sfc(source, "App.vue");
-    assert!(
-        !nuxt.diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule_name == "script/consistent-props-emits-key-quotes"
-        })
-    );
 }
 
 fn rule_names(preset: LintPreset) -> Vec<&'static str> {
