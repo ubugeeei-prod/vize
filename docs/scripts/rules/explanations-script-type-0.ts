@@ -57,11 +57,18 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "`MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。",
   ],
   [
+    "script/consistent-props-emits-key-quotes",
+    "The emits declaration mixes the necessarily quoted `update:modelValue` key with the unquoted `close` key.",
+    "Every static key in the declaration is quoted because `update:modelValue` cannot be written as an unquoted JavaScript identifier.",
+    "emits 宣言で、引用符が必須の `update:modelValue` キーと、引用符のない `close` キーが混在しています。",
+    "`update:modelValue` は引用符なしの JavaScript 識別子として書けないため、宣言内のすべての静的キーを引用符付きにそろえます。",
+  ],
+  [
     "script/custom-event-name-casing",
     "The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.",
-    "Both the declaration and call use `myEvent`, preserving agreement between the event name and its emission while satisfying the default casing policy. A configured kebab-case policy has a different expectation.",
+    "Both the declaration and call use `myEvent`, preserving agreement while satisfying the global camelCase default. The `opinionated` preset selects kebab-case instead, and explicit rule options can also select lowercase names such as `transitionstart`.",
     "emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。",
-    "宣言と呼び出しの両方を `myEvent` にそろえ、イベント名の一致を保ったまま既定の命名規則を満たします。kebab-case に設定した場合の期待値は異なります。",
+    "宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションでは `transitionstart` のような lowercase も選択できます。",
   ],
   [
     "script/define-emits-declaration",
@@ -86,9 +93,9 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/define-props-destructuring",
-    "`defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.",
+    "The bare typed `defineProps` call declares `foo` without binding it through the default destructuring policy.",
     "The object pattern binds `foo` and `bar` directly and gives the optional `bar` a default. This relies on Vue 3.5+ reactive props destructuring; the configurable `never` mode prefers the opposite form.",
-    "`defineProps` の結果を分割代入せず、単一の `props` 変数に代入しており、既定の分割代入の推奨に従っていません。",
+    "型付きの `defineProps` を単独で呼び出し、既定の分割代入方針で `foo` を束縛していません。",
     "オブジェクトパターンで `foo` と `bar` を直接取り出し、省略可能な `bar` に既定値を付けます。Vue 3.5 以降のリアクティブな props 分割代入を前提とし、設定を `never` にした場合は逆の形式を推奨します。",
   ],
   [

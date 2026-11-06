@@ -283,13 +283,13 @@ const emit = defineEmits<{
   "update:checked": [keys: readonly K[]];
 
   /** Fired when Enter or a double click activates a row, for example to open a file. */
-  action: [key: K, node: T, nativeEvent: Event];
+  "action": [key: K, node: T, nativeEvent: Event];
 
   /** Fired after `loadChildren` resolves for a node. */
-  load: [key: K, children: readonly T[]];
+  "load": [key: K, children: readonly T[]];
 
   /** Fired when `loadChildren` rejects for a node. */
-  loadError: [key: K, error: unknown];
+  "loadError": [key: K, error: unknown];
 }>();
 
 defineSlots<{

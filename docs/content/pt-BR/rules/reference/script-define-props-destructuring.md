@@ -9,17 +9,17 @@ Exigir um estilo consistente de desestruturação de defineProps em &lt;script s
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | Nenhuma | Não | [Opções das regras](/rules/options.md) |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
 
 ## Incorreto
 
-`defineProps` é atribuído à variável única `props` em vez de ser desestruturado, contrariando a preferência padrão pela desestruturação.
+A chamada tipada isolada a `defineProps` declara `foo` sem vinculá-lo segundo a política padrão de desestruturação.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
-const props = defineProps<{ foo: string }>()
+defineProps<{ foo: string }>()
 </script>
 ```
 
@@ -55,4 +55,4 @@ Depois, execute `vp run lint`.
 - [Regras de tipo e script](../type-and-script.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L30)

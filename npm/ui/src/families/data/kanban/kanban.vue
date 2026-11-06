@@ -109,7 +109,7 @@ const emit = defineEmits<{
   /** Fired with the board after a move (supports `v-model`). */
   "update:modelValue": [value: KanbanBoard<Card, ColumnId>];
   /** Fired after a move commits with origin and destination. */
-  move: [event: KanbanMoveEvent<Card, ColumnId>];
+  "move": [event: KanbanMoveEvent<Card, ColumnId>];
 }>();
 
 defineSlots<{

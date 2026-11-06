@@ -87,3 +87,26 @@ fn every_property_quote_policy_has_independent_full_output_controls() {
         assert_eq!(options.quote_props, quote_props);
     }
 }
+
+#[test]
+fn preserve_keeps_props_and_emits_declaration_quotes_for_lint_ownership() {
+    let source = r#"const emit=defineEmits<{
+  "update:modelValue":[value:string]
+  "close":[]
+}>()
+const props=defineProps({"aria-label":String,"disabled":Boolean})
+"#;
+    let expected = r#"const emit = defineEmits<{
+  "update:modelValue": [value: string];
+  "close": [];
+}>();
+const props = defineProps({ "aria-label": String, "disabled": Boolean });
+"#;
+    let options = FormatOptions {
+        quote_props: QuoteProps::Preserve,
+        ..FormatOptions::default()
+    };
+    let first = format_script(source, &options).unwrap();
+    assert_eq!(first.as_bytes(), expected.as_bytes());
+    assert_eq!(format_script(&first, &options).unwrap(), expected);
+}

@@ -8,7 +8,13 @@ import type {
   TypeExportDisplay,
 } from "../../wasm/index";
 
-const props = defineProps<{
+const {
+  stats,
+  macros: macroProps,
+  css,
+  typeExports: typeExportProps,
+  invalidExports: invalidExportProps,
+} = defineProps<{
   stats?: CroquisStats;
   macros?: MacroDisplay[];
   css?: CssDisplay;
@@ -16,9 +22,9 @@ const props = defineProps<{
   invalidExports?: InvalidExportDisplay[];
 }>();
 
-const macros = computed(() => props.macros ?? []);
-const typeExports = computed(() => props.typeExports ?? []);
-const invalidExports = computed(() => props.invalidExports ?? []);
+const macros = computed(() => macroProps ?? []);
+const typeExports = computed(() => typeExportProps ?? []);
+const invalidExports = computed(() => invalidExportProps ?? []);
 </script>
 
 <template>

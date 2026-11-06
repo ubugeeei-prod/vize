@@ -80,7 +80,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: SelectModelValue<T, Multiple>];
 
   /** Fired after a user interaction changes the selection: next value, previous value, and the native event. */
-  change: [
+  "change": [
     value: SelectModelValue<T, Multiple>,
     previous: SelectModelValue<T, Multiple>,
     nativeEvent: Event,
@@ -93,10 +93,10 @@ const emit = defineEmits<{
   "update:open": [open: boolean];
 
   /** Fired after any distinct open-state request with the next state, previous state, and triggering event. */
-  openChange: [open: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [open: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired when `createOption` builds a new value from the typed text, before it is selected. */
-  create: [value: T, text: string];
+  "create": [value: T, text: string];
 }>();
 
 defineSlots<{

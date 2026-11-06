@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## 良い例
 
-宣言と呼び出しの両方を `myEvent` にそろえ、イベント名の一致を保ったまま既定の命名規則を満たします。kebab-case に設定した場合の期待値は異なります。
+宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションでは `transitionstart` のような lowercase も選択できます。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -57,4 +57,4 @@ export default defineConfig({}).withVue({
 - [型と script のルール](../type-and-script.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)

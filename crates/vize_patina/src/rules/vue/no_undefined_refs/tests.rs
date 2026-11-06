@@ -55,15 +55,15 @@ fn test_meta() {
 }
 
 #[test]
-fn opt_in_registry_owns_the_rule_and_default_presets_do_not() {
+fn default_presets_and_opt_in_registry_own_the_rule() {
     assert!(RuleRegistry::with_opt_in_rules().has_rule(RULE));
-    assert!(!RuleRegistry::with_preset(crate::preset::LintPreset::HappyPath).has_rule(RULE));
-    assert!(!RuleRegistry::with_preset(crate::preset::LintPreset::Ecosystem).has_rule(RULE));
-    assert!(!RuleRegistry::with_preset(crate::preset::LintPreset::Opinionated).has_rule(RULE));
+    assert!(RuleRegistry::with_preset(crate::preset::LintPreset::HappyPath).has_rule(RULE));
+    assert!(RuleRegistry::with_preset(crate::preset::LintPreset::Ecosystem).has_rule(RULE));
+    assert!(RuleRegistry::with_preset(crate::preset::LintPreset::Opinionated).has_rule(RULE));
 }
 
 #[test]
-fn default_preset_stays_silent_on_an_undefined_template_ref() {
+fn default_preset_reports_an_undefined_template_ref() {
     let sfc = r#"<script setup>
 const known = 1
 </script>
@@ -76,9 +76,7 @@ const known = 1
         result
             .diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule_name != RULE),
-        "default preset must not fire the opt-in rule: {:#?}",
-        result.diagnostics
+            .any(|diagnostic| diagnostic.rule_name == RULE)
     );
 }
 

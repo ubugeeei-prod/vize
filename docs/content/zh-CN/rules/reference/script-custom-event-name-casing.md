@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "要求发出的自定义事件名称使用 camelCase。"
+description: "要求发出的自定义事件名称使用配置的大小写形式。"
 ---
 
 # `script/custom-event-name-casing`
 
-要求发出的自定义事件名称使用 camelCase。
+要求发出的自定义事件名称使用配置的大小写形式。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## 正确示例
 
-声明和调用都使用 `myEvent`，既保持事件名称与发出操作一致，也满足默认大小写策略。配置为 kebab-case 时要求不同。
+声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项还可以选择 `transitionstart` 这样的全小写名称。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -57,4 +57,4 @@ export default defineConfig({}).withVue({
 - [类型与脚本规则](../type-and-script.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)

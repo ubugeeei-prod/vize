@@ -1,5 +1,5 @@
 use serde_json::{Value, json};
-use vize_patina::{LintPreset, LintResult, Linter, Severity};
+use vize_patina::{LintPreset, LintResult, Severity};
 
 const CASES: &str = include_str!(
     "../../../tests/_fixtures/differential/linter/plain-script-ownership-7934/cases.json"
@@ -32,7 +32,7 @@ fn original_and_boundary_corpus_keep_whole_configured_service_results() {
         "script/no-export-in-script-setup",
         "script/require-typed-ref",
     ];
-    let linter = Linter::with_preset(LintPreset::HappyPath)
+    let linter = crate::historical_linter(LintPreset::HappyPath)
         .with_additional_rules(rules.iter().map(|rule| (*rule).into()).collect())
         .with_rule_severity_overrides(
             rules

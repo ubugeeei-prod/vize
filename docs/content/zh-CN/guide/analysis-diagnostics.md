@@ -20,7 +20,8 @@ title: 分析诊断
 - [SSR规则](../rules/ssr.md)
 - [蒸汽规则](../rules/vapor.md)
 - [跨文件规则](../rules/cross-file.md)
-- [Musea和CSS规则](../rules/musea-and-css.md)
+- [CSS规则](../rules/css.md)
+- [Musea规则](../rules/musea.md)
 
 ## 诊断家族
 

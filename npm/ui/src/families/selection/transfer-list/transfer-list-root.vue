@@ -51,7 +51,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: readonly T[]];
 
   /** Fired after a move: next target, previous target, moved items, direction, and the triggering event. */
-  change: [
+  "change": [
     value: readonly T[],
     previous: readonly T[],
     moved: readonly T[],

@@ -92,3 +92,29 @@ fn reactive_defaults_pass_both_props_style_rules() {
     ]));
     assert!(linter.lint_sfc(source, "Badge.vue").diagnostics.is_empty());
 }
+
+#[test]
+fn happy_path_requires_bare_typed_props_destructuring_by_default() {
+    let bare = "<script setup lang=\"ts\">defineProps<{ size?: string }>()</script><template><span>{{ size }}</span></template>";
+    let result = Linter::with_preset(LintPreset::HappyPath).lint_sfc(bare, "Badge.vue");
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "script/define-props-destructuring"
+    );
+
+    let fixed = "<script setup lang=\"ts\">const { size } = defineProps<{ size?: string }>()</script><template><span>{{ size }}</span></template>";
+    assert!(
+        Linter::with_preset(LintPreset::HappyPath)
+            .lint_sfc(fixed, "Badge.vue")
+            .diagnostics
+            .is_empty()
+    );
+    assert!(
+        Linter::with_preset(LintPreset::HappyPath)
+            .with_disabled_rules(vec!["script/define-props-destructuring".into()])
+            .lint_sfc(bare, "Badge.vue")
+            .diagnostics
+            .is_empty()
+    );
+}

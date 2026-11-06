@@ -7,7 +7,7 @@ use super::super::{
 fn deserializes_casing_options() {
     let json = r#"{
         "vue/component-name-in-template-casing": { "casing": "kebab-case" },
-        "script/custom-event-name-casing": { "casing": "camelCase" }
+        "script/custom-event-name-casing": { "casing": "lowercase" }
     }"#;
     let options = serde_json::from_str::<ConfigLintRuleOptions>(json).unwrap();
     assert_eq!(
@@ -20,7 +20,7 @@ fn deserializes_casing_options() {
     assert_eq!(
         options.custom_event_name_casing,
         Some(CustomEventNameCasingOptions {
-            casing: CustomEventNameCasing::CamelCase
+            casing: CustomEventNameCasing::Lowercase
         })
     );
     assert_eq!(
@@ -29,7 +29,7 @@ fn deserializes_casing_options() {
     );
     assert_eq!(
         options.custom_event_name_casing(),
-        Some(CustomEventNameCasing::CamelCase)
+        Some(CustomEventNameCasing::Lowercase)
     );
 }
 

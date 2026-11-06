@@ -200,7 +200,7 @@ provide(OrderKey, order);
         r#"<script setup lang="ts">
 import { inject } from "vue";
 import { NoticeKey, OrderKey } from "../../../composables/keys";
-defineProps<{ order: string }>();
+const { order } = defineProps<{ order: string }>();
 const notice = inject(NoticeKey)!;
 const current = inject(OrderKey)!;
 </script>

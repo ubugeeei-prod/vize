@@ -78,7 +78,7 @@ const emit = defineEmits<{
   "update:open": [open: SwipeActionsOpen];
 
   /** Fired when a release passes the full-swipe threshold, with the committed side. */
-  fullSwipe: [side: SwipeActionsSide];
+  "fullSwipe": [side: SwipeActionsSide];
 }>();
 
 defineSlots<{

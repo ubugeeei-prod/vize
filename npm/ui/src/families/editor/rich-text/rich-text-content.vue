@@ -5,12 +5,7 @@ import { richTextContext } from "./rich-text-context.ts";
 import { readDomSelection, writeDomSelection } from "./rich-text-dom.ts";
 import { richTextFromHtml, richTextToHtml } from "./rich-text-html.ts";
 import { richTextKeyName } from "./rich-text-keymap.ts";
-import {
-  comparePositions,
-  isCollapsed,
-  richTextDocFromText,
-  textContent,
-} from "./rich-text-model.ts";
+import { comparePositions, isCollapsed, richTextDocFromText } from "./rich-text-model.ts";
 import type { RichTextSelection } from "./rich-text-model.ts";
 import type { RichTextCommand } from "./rich-text-state.ts";
 import type { RichTextContentExpose } from "./rich-text-types.ts";

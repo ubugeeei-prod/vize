@@ -104,8 +104,10 @@ const env = readServerEnv();
 ## `script/custom-event-name-casing`
 
 Use this option when emitted custom events should follow one casing convention across both script
-and template usage. The default is `camelCase`; set `kebab-case` for projects that author emitted
-event names in their template-facing form.
+and template usage. The default is `camelCase`; use `lowercase` for unseparated names such as
+`transitionstart`, or `kebab-case` for projects that author emitted event names in their
+template-facing form. The `opinionated` preset selects `kebab-case` unless an explicit rule option
+overrides it.
 Component `v-model` events beginning with `update:` are accepted in either mode because their
 suffix mirrors the corresponding prop name.
 
@@ -189,9 +191,9 @@ const props = defineProps<{ label: string }>();
 
 ## `script/define-props-destructuring`
 
-The default, `only-when-assigned`, requires a destructured binding when the result is assigned.
-A bare `defineProps<Props>()` is allowed. `always` also reports bare calls; `never` reports
-destructured bindings instead. Vue 3.5 preserves reactivity when destructuring props.
+The default, `always`, requires a destructured binding for assigned and bare typed calls.
+`only-when-assigned` skips bare `defineProps<Props>()` calls; `never` reports destructured
+bindings instead. Vue 3.5 preserves reactivity when destructuring props.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -200,7 +202,7 @@ export default defineConfig({}).withVue({
   linter: {
     preset: "incremental",
     rules: { "script/define-props-destructuring": "warn" },
-    ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
+    ruleOptions: { "script/define-props-destructuring": { destructure: "always" } },
   },
 });
 ```

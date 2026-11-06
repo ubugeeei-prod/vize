@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { formatArg, summarizeRemarks, type StageRemark } from "./remarks";
 
-const props = defineProps<{
+const { remarks } = defineProps<{
   remarks: StageRemark[];
 }>();
 
@@ -11,7 +11,7 @@ const emit = defineEmits<{
   locate: [StageRemark];
 }>();
 
-const summary = computed(() => summarizeRemarks(props.remarks));
+const summary = computed(() => summarizeRemarks(remarks));
 </script>
 
 <template>

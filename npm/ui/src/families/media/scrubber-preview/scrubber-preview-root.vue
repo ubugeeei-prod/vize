@@ -108,7 +108,7 @@ const emit = defineEmits<{
   "update:time": [time: number | null];
 
   /** Fired when the user releases a click or scrub on the track. */
-  seek: [time: number, nativeEvent: Event];
+  "seek": [time: number, nativeEvent: Event];
 }>();
 
 defineSlots<{

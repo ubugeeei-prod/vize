@@ -38,7 +38,7 @@ fn setup_emits_return_checks_preserve_owned_macros_and_sibling_offsets() {
             LintPreset::Essential,
             LintPreset::Ecosystem,
         ] {
-            let result = Linter::with_preset(preset)
+            let result = crate::historical_linter(preset)
                 .with_help_level(HelpLevel::None)
                 .lint_sfc(source, filename);
             assert_eq!(
@@ -56,9 +56,11 @@ fn setup_emits_return_checks_preserve_owned_macros_and_sibling_offsets() {
         }
         for (linter, findings) in [
             (
-                Linter::new()
-                    .with_help_level(HelpLevel::None)
-                    .with_disabled_rules(disabled.clone()),
+                crate::historical_linter_with_disabled(
+                    LintPreset::HappyPath,
+                    &disabled.iter().map(String::as_str).collect::<Vec<_>>(),
+                )
+                .with_help_level(HelpLevel::None),
                 case["disabledDiagnostics"].clone(),
             ),
             (Linter::with_preset(LintPreset::Incremental), json!([])),

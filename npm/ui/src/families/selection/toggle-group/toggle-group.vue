@@ -68,7 +68,7 @@ const emit = defineEmits<{
   /** Fired when the selected value requests a new controlled value. */
   "update:modelValue": [value: ToggleGroupValue];
   /** Fired after user activation requests a distinct group value. */
-  change: [value: ToggleGroupValue, previous: ToggleGroupValue, nativeEvent: MouseEvent];
+  "change": [value: ToggleGroupValue, previous: ToggleGroupValue, nativeEvent: MouseEvent];
 }>();
 
 defineSlots<{
@@ -278,7 +278,7 @@ function setActiveValue(itemValue: string): void {
   if (!disabledState.value) activeValue.value = itemValue;
 }
 
-const context = toggleGroupContext.provide({
+toggleGroupContext.provide({
   activeValue,
   disabled: disabledState,
   getItemState,

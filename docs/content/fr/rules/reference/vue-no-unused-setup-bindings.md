@@ -9,7 +9,7 @@ Interdire les liaisons script setup qui ne sont jamais lues.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | Aucune | Non | Aucune |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Non | Aucune |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 

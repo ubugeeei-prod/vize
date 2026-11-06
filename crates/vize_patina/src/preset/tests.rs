@@ -6,6 +6,8 @@ use crate::rule::RuleRegistry;
 use std::collections::BTreeSet;
 use vize_atelier_jsx::JsxLang;
 
+mod policy_tests;
+
 #[test]
 fn parses_common_aliases() {
     assert_eq!(LintPreset::parse("default"), Some(LintPreset::HappyPath));
@@ -258,7 +260,8 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     assert!(!happy_path.has_rule("type/no-reactivity-loss"));
     assert!(happy_path.has_rule("html/no-empty-palpable-content"));
     assert!(!happy_path.has_rule("vue/multi-word-component-names"));
-    assert!(!happy_path.has_rule("vue/no-undefined-refs"));
+    assert!(happy_path.has_rule("vue/no-undefined-refs"));
+    assert!(happy_path.has_rule("vue/no-unused-setup-bindings"));
     assert!(!happy_path.has_rule("a11y/use-list"));
     assert!(RuleRegistry::with_opt_in_rules().has_rule("vue/no-undefined-refs"));
     assert!(opinionated.has_rule("vue/attribute-order"));
@@ -317,6 +320,20 @@ fn happy_path_keeps_opinionated_rules_opt_in() {
     );
     assert!(happy_path_script.contains(&"script/require-explicit-emits"));
     assert!(!essential_script.contains(&"script/require-explicit-emits"));
+    assert_eq!(
+        happy_path_script
+            .iter()
+            .filter(|name| **name == "script/no-export-in-script-setup")
+            .count(),
+        1,
+    );
+    assert_eq!(
+        essential_script
+            .iter()
+            .filter(|name| **name == "script/no-export-in-script-setup")
+            .count(),
+        1,
+    );
     assert!(
         super::builtin_script_rule_names(LintPreset::Opinionated)
             .contains(&"script/no-options-api")

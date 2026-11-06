@@ -64,6 +64,11 @@ export const chineseRules3: Record<string, readonly [string, string, string]> = 
     "`name` 和 `age` 是没有默认值的可选非 Boolean 运行时 props，省略输入时的值未指定。",
     "`name` 获得 `default: ''`。`enabled` 使用 Boolean 隐式的 false 默认值，必需的 `id` 无需后备值，展示了两种豁免。",
   ],
+  "script/require-define-component": [
+    "要求 TypeScript SFC 的默认导出使用 defineComponent()",
+    "TypeScript SFC 直接导出 Options API 对象，因此组件选项无法获得 `defineComponent()` 提供的上下文类型。",
+    "用 `defineComponent()` 包裹对象后，props、emits、`this` 和其他组件选项都会获得 Vue 感知的 TypeScript 检查。",
+  ],
   "script/require-explicit-emits": [
     "要求发出的事件在 defineEmits 或 emits 选项中声明",
     "捕获的 emit 函数发出 `save`，但 `defineEmits([])` 未声明该事件。",

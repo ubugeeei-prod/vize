@@ -80,9 +80,9 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled week. */
   "update:modelValue": [value: DateRange | null];
   /** Fired after a distinct committed week with the previous week and triggering event. */
-  change: [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
+  "change": [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
   /** Fired for every week activation, even when the week is unchanged. */
-  select: [value: DateRange, nativeEvent: Event];
+  "select": [value: DateRange, nativeEvent: Event];
   /** Fired when keyboard or navigation moves the focus date. */
   "update:focusedDate": [date: PlainDate];
 }>();

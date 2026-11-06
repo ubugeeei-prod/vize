@@ -29,12 +29,24 @@
     {
       "id": "macro-default",
       "input": "Macro.vue.txt",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": []
     },
     {
       "id": "macro-happy-path",
       "input": "Macro.vue.txt",
       "preset": "happy-path",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": []
     },
     {
@@ -53,18 +65,36 @@
       "id": "macro-ecosystem",
       "input": "Macro.vue.txt",
       "preset": "ecosystem",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": []
     },
     {
       "id": "macro-nuxt",
       "input": "Macro.vue.txt",
       "preset": "nuxt",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": []
     },
     {
       "id": "macro-opinionated",
       "input": "Macro.vue.txt",
       "preset": "opinionated",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": [
         [
           39,
@@ -76,6 +106,12 @@
       "id": "macro-strict",
       "input": "Macro.vue.txt",
       "preset": "strict",
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": [
         [
           39,
@@ -105,6 +141,12 @@
       "input": "Macro.vue.txt",
       "preset": "opinionated",
       "maxWarnings": 0,
+      "definePropsDestructuringSpans": [
+        [
+          31,
+          36
+        ]
+      ],
       "spans": [
         [
           39,

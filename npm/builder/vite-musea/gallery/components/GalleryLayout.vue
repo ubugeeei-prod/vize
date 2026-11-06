@@ -19,7 +19,7 @@ import { useResizable } from "../composables/useResizable";
 
 const router = useRouter();
 const { arts, load } = useArts();
-const { query, results } = useSearch(arts);
+const { results } = useSearch(arts);
 const { currentTheme, cycleTheme } = useTheme();
 
 const searchModalOpen = ref(false);

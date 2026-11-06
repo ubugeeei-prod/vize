@@ -50,7 +50,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: ListboxGridModelValue<T, Multiple>];
 
   /** Fired after a user interaction changes the selection: next value, previous value, native event. */
-  change: [
+  "change": [
     value: ListboxGridModelValue<T, Multiple>,
     previous: ListboxGridModelValue<T, Multiple>,
     nativeEvent: Event,

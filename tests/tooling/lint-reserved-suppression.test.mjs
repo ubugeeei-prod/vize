@@ -23,6 +23,11 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
   const original = JSON.parse(
     fs.readFileSync(path.join(fixture, "original-vue-select-successor.json")),
   );
+  const focusedRules = {
+    "script/require-define-component": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
+  const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   original.source = fs.readFileSync(path.join(fixture, original.sourceFile), "utf8");
   assert.equal(corpus.cases.length, 24);
   assert.equal(
@@ -92,21 +97,33 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
         ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
           entry,
           preset,
-          config: null,
+          config: focusedConfig,
           findings:
             preset === "essential" ? successor.essentialDiagnostics : successor.defaultDiagnostics,
         })),
-        { entry, preset: "incremental", config: null, findings: successor.incrementalDiagnostics },
+        {
+          entry,
+          preset: "incremental",
+          config: focusedConfig,
+          findings: successor.incrementalDiagnostics,
+        },
         {
           entry,
           preset: null,
-          config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
+          config:
+            JSON.stringify({ linter: { rules: { ...focusedRules, [corpus.rule]: "off" } } }) + "\n",
           findings: successor.offDiagnostics,
         },
         {
           entry,
           preset: null,
-          config: JSON.stringify({ linter: projection.linter }) + "\n",
+          config:
+            JSON.stringify({
+              linter: {
+                ...projection.linter,
+                rules: { ...projection.linter.rules, ...focusedRules },
+              },
+            }) + "\n",
           findings: successor.projectionDiagnostics,
         },
       ];
@@ -115,8 +132,12 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
       entry: original,
       preset: null,
       config:
-        JSON.stringify({ linter: { preset: "incremental", rules: { [corpus.rule]: "error" } } }) +
-        "\n",
+        JSON.stringify({
+          linter: {
+            preset: "incremental",
+            rules: { ...focusedRules, [corpus.rule]: "error" },
+          },
+        }) + "\n",
       findings: original.diagnostics,
     });
     for (const { entry, preset, config, findings } of scenarios) {

@@ -8,7 +8,6 @@ import {
   mdiDiamond,
   mdiHome,
   mdiCheckCircleOutline,
-  mdiNavigationOutline,
 } from "@mdi/js";
 import type { ArtFileInfo } from "../../src/types/index.js";
 import MdiIcon from "./MdiIcon.vue";

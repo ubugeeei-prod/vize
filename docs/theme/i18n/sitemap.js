@@ -33,6 +33,9 @@
     /^\/guide\/experimentals-(?:reference|vue-rfcs)$/,
     // Linked from Type Checking in the two locales with an authored recipe.
     /^\/guide\/experimental-router-types$/,
+    // This compatibility page points readers at the separate CSS and Musea
+    // catalogues; the two current category pages own the sidebar entries.
+    /^\/rules\/musea-and-css$/,
   ];
 
   // Every published page belongs to exactly one group below or is hidden
@@ -112,9 +115,10 @@
     { page: "/rules/ssr", namespaces: ["ssr"] },
     { page: "/rules/vapor", namespaces: ["vapor"] },
     { page: "/rules/ecosystem", namespaces: ["ecosystem", "nuxt"] },
+    { page: "/rules/css", namespaces: ["css"] },
     {
-      page: "/rules/musea-and-css",
-      namespaces: ["musea", "css"],
+      page: "/rules/musea",
+      namespaces: ["musea"],
       extraPaths: ["/rules/options-musea"],
     },
     { page: "/rules/petite-vue", namespaces: ["petite-vue"] },

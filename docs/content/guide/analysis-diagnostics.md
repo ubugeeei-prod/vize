@@ -152,4 +152,5 @@ Musea and CSS diagnostics are documented separately because they are not part of
 - [SSR rules](../rules/ssr.md)
 - [Vapor rules](../rules/vapor.md)
 - [Cross-file rules](../rules/cross-file.md)
-- [Musea and CSS rules](../rules/musea-and-css.md)
+- [CSS rules](../rules/css.md)
+- [Musea rules](../rules/musea.md)

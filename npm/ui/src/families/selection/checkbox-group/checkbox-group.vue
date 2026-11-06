@@ -152,7 +152,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: readonly Value[]];
 
   /** Fired after a user or API change with the next values, the toggled value (or `null` for select-all), and its new state. */
-  change: [value: readonly Value[], toggled: Value | null, selected: boolean];
+  "change": [value: readonly Value[], toggled: Value | null, selected: boolean];
 }>();
 
 defineSlots<{

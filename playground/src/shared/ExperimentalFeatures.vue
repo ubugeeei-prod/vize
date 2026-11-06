@@ -7,19 +7,20 @@ import {
   type ExperimentalKey,
 } from "./experimentalFeatures";
 
-const props = defineProps<{ scope: ExperimentalScope; modelValue: ExperimentalOptions }>();
+const { scope, modelValue } = defineProps<{
+  scope: ExperimentalScope;
+  modelValue: ExperimentalOptions;
+}>();
 const emit = defineEmits<{
   "update:modelValue": [options: ExperimentalOptions];
-  example: [key: string];
+  "example": [key: string];
 }>();
-const features = computed(() => featuresFor(props.scope));
-const enabledCount = computed(
-  () => features.value.filter(({ key }) => props.modelValue[key]).length,
-);
+const features = computed(() => featuresFor(scope));
+const enabledCount = computed(() => features.value.filter(({ key }) => modelValue[key]).length);
 
 function toggle(key: ExperimentalKey, event: Event) {
   emit("update:modelValue", {
-    ...props.modelValue,
+    ...modelValue,
     [key]: (event.target as HTMLInputElement).checked,
   });
 }

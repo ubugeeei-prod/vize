@@ -120,6 +120,13 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "`name` に `default: ''` を付けます。`enabled` は Boolean の暗黙の false を使い、必須の `id` には代替値が不要であるため、二つの除外条件も示しています。",
   ],
   [
+    "script/require-define-component",
+    "The TypeScript SFC exports a plain Options API object, so its component options do not receive the contextual types supplied by `defineComponent()`.",
+    "Wrapping the object with `defineComponent()` gives props, emits, `this`, and the other component options Vue-aware TypeScript checking.",
+    "TypeScript SFC が Options API のオブジェクトをそのまま export しているため、`defineComponent()` が提供するコンポーネント向けの文脈型を受けられません。",
+    "オブジェクトを `defineComponent()` で包み、props、emits、`this` などのコンポーネントオプションを Vue 向けの TypeScript 検査につなげます。",
+  ],
+  [
     "script/require-explicit-emits",
     "The captured emit function emits `save`, but `defineEmits([])` declares no such event.",
     'Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.',

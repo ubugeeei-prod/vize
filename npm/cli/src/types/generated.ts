@@ -288,7 +288,7 @@ export interface LintRuleOptions {
     globals?: string[];
   };
   "script/custom-event-name-casing"?: {
-    casing?: "camelCase" | "kebab-case";
+    casing?: "lowercase" | "camelCase" | "kebab-case";
   };
   "vue/prop-name-casing"?: {
     casing?: "camelCase" | "snake_case";

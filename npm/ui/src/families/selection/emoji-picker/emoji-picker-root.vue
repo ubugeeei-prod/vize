@@ -47,7 +47,7 @@ const {
 
 const emit = defineEmits<{
   /** Fired when an emoji is chosen, with the item and its glyph with the skin tone applied. */
-  select: [item: T, glyph: string];
+  "select": [item: T, glyph: string];
 
   /** Fired when the skin tone requests a new controlled value. */
   "update:skinTone": [tone: EmojiSkinTone];

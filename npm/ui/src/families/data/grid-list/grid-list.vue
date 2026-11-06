@@ -145,11 +145,11 @@ const emit = defineEmits<{
   /** Fired with the new selected keys (supports `v-model:selection`). */
   "update:selection": [value: readonly string[]];
   /** Fired when Enter or a double click activates an enabled item. */
-  action: [item: Item, key: string];
+  "action": [item: Item, key: string];
   /** Fired with the reordered items (supports `v-model:items`). */
   "update:items": [value: readonly Item[]];
   /** Fired after a reorder commits. */
-  reorder: [event: GridListReorderEvent<Item>];
+  "reorder": [event: GridListReorderEvent<Item>];
 }>();
 
 defineSlots<{

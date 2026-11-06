@@ -77,17 +77,17 @@ const emit = defineEmits<{
   /** Fired when the value requests a new controlled string. */
   "update:modelValue": [value: string];
   /** Fired after the default clear button clears the field. */
-  clear: [value: "", nativeEvent: MouseEvent];
+  "clear": [value: "", nativeEvent: MouseEvent];
   /** Fired after a native change/commit with the current string and native Event. */
-  change: [value: string, nativeEvent: Event];
+  "change": [value: string, nativeEvent: Event];
   /** Fired when IME composition ends. */
-  compositionEnd: [value: string, nativeEvent: CompositionEvent];
+  "compositionEnd": [value: string, nativeEvent: CompositionEvent];
   /** Fired when IME composition starts. */
-  compositionStart: [value: string, nativeEvent: CompositionEvent];
+  "compositionStart": [value: string, nativeEvent: CompositionEvent];
   /** Fired after a native input event with the next string and native Event. */
-  input: [value: string, nativeEvent: Event];
+  "input": [value: string, nativeEvent: Event];
   /** Fired after a native search event with the committed search string. */
-  search: [value: string, nativeEvent: Event];
+  "search": [value: string, nativeEvent: Event];
 }>();
 
 defineSlots<{

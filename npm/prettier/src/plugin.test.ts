@@ -70,6 +70,36 @@ void test("one native format per nonempty file with explicit host option precede
   );
 });
 
+void test("preserve keeps lint-owned props and emits key quotes", async () => {
+  const source = `<script setup lang="ts">
+const emit = defineEmits<{
+  "update:modelValue": [value: string]
+  "close": []
+}>()
+const props = defineProps({
+  "aria-label": String,
+  "disabled": Boolean,
+})
+</script>`;
+  const actual = await format(source, {
+    filepath: "Declarations.vue",
+    plugins: [plugin],
+    quoteProps: "preserve",
+  });
+  assert.match(actual, /"update:modelValue": \[value: string\]/u);
+  assert.match(actual, /"close": \[\]/u);
+  assert.match(actual, /"aria-label": String/u);
+  assert.match(actual, /"disabled": Boolean/u);
+  assert.equal(
+    await format(actual, {
+      filepath: "Declarations.vue",
+      plugins: [plugin],
+      quoteProps: "preserve",
+    }),
+    actual,
+  );
+});
+
 void test("shared complete packets retain goldens, semantics and fixed points", async () => {
   for (const fixtureFile of ["directives.json", "text.json"]) {
     const fixtures = JSON.parse(

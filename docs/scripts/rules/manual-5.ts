@@ -11,7 +11,7 @@ export const manual5: Record<string, RuleExample> = {
       source:
         '<art title="Button" component="./Button.vue">\n  <variant name="primary">\n    <Button tone="primary">Save</Button>\n  </variant>\n</art>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/musea.md",
   },
   "musea/require-component": {
     bad: {
@@ -23,7 +23,7 @@ export const manual5: Record<string, RuleExample> = {
       source:
         '<script setup>\ndefineArt("./Button.vue", { title: "Button" });\n</script>\n\n<art>\n  <variant name="primary" />\n</art>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/musea.md",
   },
   "musea/require-title": {
     bad: {
@@ -35,7 +35,7 @@ export const manual5: Record<string, RuleExample> = {
       source:
         '<script setup>\ndefineArt("./Button.vue", { title: "Button" });\n</script>\n\n<art>\n  <variant name="primary" />\n</art>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/musea.md",
   },
   "musea/unique-variant-names": {
     bad: {
@@ -48,7 +48,7 @@ export const manual5: Record<string, RuleExample> = {
       source:
         '<art title="Button" component="./Button.vue">\n  <variant name="primary" />\n  <variant name="secondary" />\n</art>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/musea.md",
   },
   "musea/valid-variant": {
     bad: {
@@ -59,7 +59,7 @@ export const manual5: Record<string, RuleExample> = {
       language: "vue",
       source: '<art title="Button" component="./Button.vue">\n  <variant name="primary" />\n</art>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/musea.md",
   },
   "script/no-options-api": {
     bad: {

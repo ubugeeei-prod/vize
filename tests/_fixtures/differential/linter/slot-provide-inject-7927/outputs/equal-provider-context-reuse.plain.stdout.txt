@@ -1,4 +1,4 @@
-Patina lint report: 6 warnings in 4 files
+Patina lint report: 7 warnings in 4 files
 
 src/App.vue
   src/App.vue:3:1 warning cross-file vize:croquis/cf/non-reactive-provide: provide('owner') value is not reactive - consumers won't see updates
@@ -191,6 +191,10 @@ src/Provider.vue
         import { UserKey } from './injection-keys'
         const user = inject(UserKey)  // Type: Ref<UserState> | undefined
       Suggestion: Define an InjectionKey, for example const countKey: InjectionKey<...> = Symbol('count'), then use it in provide() and inject()
+  src/Provider.vue:6:7 warning vue/no-unused-setup-bindings Setup binding 'owner' is never read
+    Reference: docs/content/rules/reference/vue-no-unused-setup-bindings.md
+    Help:
+      Remove the binding or prefix its name with underscore if intentionally unused
   src/Provider.vue:6:15 warning cross-file vize:croquis/cf/inject-without-symbol: inject('owner') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
     Reference: docs/content/rules/cross-file.md
     Help:

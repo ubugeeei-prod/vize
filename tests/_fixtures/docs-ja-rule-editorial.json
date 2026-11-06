@@ -19,7 +19,7 @@
     },
     {
       "case": "other-18",
-      "route": "/ja/rules/musea-and-css",
+      "route": "/ja/rules/css",
       "rule": "css/prefer-slotted",
       "section": "good",
       "before": ":slotted(.label) を使い、slot から渡される label の要素を対象にします。",

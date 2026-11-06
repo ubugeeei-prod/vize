@@ -43,7 +43,7 @@ fn lint_config_rule_severity_override_applies_to_builtin_script_rules() {
         r#"<script setup lang="ts">
 const emit = defineEmits(["step-changed"])
 
-const handleStepClick = (stepIndex: number) => {
+const _handleStepClick = (stepIndex: number) => {
   emit("step-changed", stepIndex)
 }
 </script>

@@ -89,7 +89,7 @@ const emit = defineEmits<{
   "update:activeId": [id: string | null];
 
   /** Fired when a link is activated, before any script-driven scrolling. */
-  navigate: [id: string, nativeEvent: MouseEvent];
+  "navigate": [id: string, nativeEvent: MouseEvent];
 }>();
 
 defineSlots<{

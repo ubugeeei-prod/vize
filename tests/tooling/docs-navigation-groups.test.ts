@@ -134,7 +134,7 @@ void test("rule option guides are colocated with the rule groups they configure"
         ],
       ],
       ["/rules/type-and-script", ["/rules/options-script", "/rules/options-type"]],
-      ["/rules/musea-and-css", ["/rules/options-musea"]],
+      ["/rules/musea", ["/rules/options-musea"]],
     ],
   );
 });

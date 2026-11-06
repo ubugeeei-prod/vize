@@ -135,7 +135,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: AccordionModelValue<Value, Type>];
 
   /** Fired after any distinct open-item request. */
-  valueChange: [
+  "valueChange": [
     value: AccordionModelValue<Value, Type>,
     previous: AccordionModelValue<Value, Type>,
     nativeEvent: Event | null,

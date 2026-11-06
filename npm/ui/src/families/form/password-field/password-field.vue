@@ -152,7 +152,7 @@ const emit = defineEmits<{
   "update:visible": [visible: boolean];
 
   /** Fired when Caps Lock turns on or off while typing in the input. */
-  capsLockChange: [active: boolean];
+  "capsLockChange": [active: boolean];
 }>();
 
 defineSlots<{

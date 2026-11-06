@@ -25,43 +25,35 @@ the committed miniature set runs in CI via
 - Committed miniature set (`tests/_fixtures/davinci-fpfn`):
   `scope-proof: files-scanned=4 class-a-eligible=3 class-a-injections=3 class-b-injections=4`
 
-## FN-1 — class (a) undefined-template-ref: `vue/no-undefined-refs` is unreachable
+## FN-1 — class (a) undefined-template-ref: fixed by default registration
 
-**Measured recall:** 0/49 on the corpus shard, 0/3 on the miniature set —
-identity-verified, every miss listed by exact location and identifier.
+**Measured recall:** 3/3 on the committed miniature set after default-preset
+registration, identity-verified by exact rule, severity, and location. The
+historical corpus-shard result was 0/49; a fresh hydrated shard measurement is
+still required before replacing that historical number.
 
-**Witness (registration gap, verified against the sources and the CLI):**
-the rule is implemented
+**Historical witness (the former registration gap, verified against the
+sources and the CLI):** the rule was implemented
 (`crates/vize_patina/src/rules/vue/no_undefined_refs.rs`), exported, and
 listed in `SEMANTIC_TEMPLATE_RULES`
-(`crates/vize_patina/src/linter/engine/rule_sets.rs`), but no
+(`crates/vize_patina/src/linter/engine/rule_sets.rs`), but no former
 `RuleRegistry` preset constructor (`crates/vize_patina/src/rule.rs`) and no
 opt-in registration path (`register_opt_in` in
-`crates/vize_patina/src/rules/vue.rs`) ever instantiates it. Config-enabling
-`"vue/no-undefined-refs": "warn"` is a no-op: `with_additional_rules` only
-adds rule _names_ to the enabled set, it cannot summon an unregistered rule
-instance (verified with a live `vize lint` run; a config-enabled opt-in rule
-fires, this rule does not).
+`crates/vize_patina/src/rules/vue.rs`) instantiated it. Config-enabling
+`"vue/no-undefined-refs": "warn"` was therefore a no-op: `with_additional_rules`
+only added rule _names_ to the enabled set and could not summon an
+unregistered rule instance.
 
-The P0-13 plan sentence "current Patina must flag 100% of seeded class-(a)
-instances" is therefore falsified by the pilot — which is precisely the
-assumption-testing job the oracle exists to do. The identity-assertion
-_mechanism_ is proven green both ways in CI (a synthetic diagnostic set
-matching the manifest passes; a same-count wrong-location set fails listing
-the exact miss).
+The P0-13 pilot initially falsified its 100% expectation; the now-green exact
+identity assertion proves the registration fix without weakening the oracle.
 
-**Disposition:** `justified-with-witness` for default-preset recall;
-config-enable is fixed.
+**Disposition:** `fixed` for default-preset recall and config enablement.
 
-- Default presets still do not instantiate the rule, so the seeded-defect
-  pilot remains 0/3 (`tests/_fixtures/davinci-fpfn/expected/assert-report.json`).
-  Putting it on a default preset is a separate FP-audit change.
+- The default preset now instantiates the rule, so the seeded-defect pilot is
+  3/3 (`tests/_fixtures/davinci-fpfn/expected/assert-report.json`).
 - `#4636` / `fix/patina-undefined-refs-dispatch` registers the rule on the
   opt-in path. `"vue/no-undefined-refs": "warn"` now instantiates and runs
   the rule. The engine rule-name set is no longer a dead gate entry.
-
-The CI expectation still pins the measured default-preset 0/3. Flip that
-pin in the same change that adds the rule to a default preset.
 
 ## FN-2 — class (b) unused-binding: `unused_bindings` has no lint consumer
 
@@ -84,8 +76,9 @@ with complete baseline/seeded diagnostic multiset checks, preventing a
 class-(a) rename from introducing a separate unused declaration.
 
 **Disposition:** `fixed` — [P4-3c evidence](./phase-4-records/p4-3c.md).
-Default presets retain their scope, so FN-1's class-(a) default-preset
-misses remain visible in the aggregate assertion verdict.
+The class-(b) measurement explicitly disables `vue/no-undefined-refs` so its
+independent unused-binding diagnostic multiset remains isolated from FN-1's
+default-preset closure.
 
 ## FN-3 — exact/sound rules without a seeded defect class (P4-15a)
 
@@ -182,6 +175,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `petite-vue/valid-v-effect`
 - `petite-vue/valid-v-scope`
 - `script/component-options-name-casing`
+- `script/consistent-props-emits-key-quotes`
 - `script/define-emits-declaration`
 - `script/define-macros-order`
 - `script/define-props-declaration`
@@ -226,6 +220,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `script/prefer-use-attrs`
 - `script/prefer-use-slots`
 - `script/require-default-prop`
+- `script/require-define-component`
 - `script/require-function-return-type`
 - `script/require-prop-type-constructor`
 - `script/require-prop-types`

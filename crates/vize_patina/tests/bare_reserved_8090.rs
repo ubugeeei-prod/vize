@@ -111,20 +111,24 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
             .map(|name| name.as_str().into())
             .collect();
         let routes = [
-            ("default", Linter::new(), diagnostics.as_slice()),
+            (
+                "default",
+                crate::historical_linter(LintPreset::HappyPath),
+                diagnostics.as_slice(),
+            ),
             (
                 "recommended",
-                Linter::with_preset(LintPreset::HappyPath),
+                crate::historical_linter(LintPreset::HappyPath),
                 diagnostics.as_slice(),
             ),
             (
                 "essential",
-                Linter::with_preset(LintPreset::Essential),
+                crate::historical_linter(LintPreset::Essential),
                 diagnostics.as_slice(),
             ),
             (
                 "ecosystem",
-                Linter::with_preset(LintPreset::Ecosystem),
+                crate::historical_linter(LintPreset::Ecosystem),
                 diagnostics.as_slice(),
             ),
             (
@@ -134,7 +138,7 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
             ),
             (
                 "explicit-off",
-                Linter::new().with_disabled_rules(vec![rule.into()]),
+                crate::historical_linter_with_disabled(LintPreset::HappyPath, &[rule]),
                 off_diagnostics.as_slice(),
             ),
             (

@@ -498,7 +498,7 @@
           "type": "object",
           "properties": {
             "destructure": {
-              "default": "only-when-assigned",
+              "default": "always",
               "type": "string",
               "enum": ["only-when-assigned", "always", "never"]
             }
@@ -589,7 +589,7 @@
             "casing": {
               "default": "camelCase",
               "type": "string",
-              "enum": ["camelCase", "kebab-case"]
+              "enum": ["lowercase", "camelCase", "kebab-case"]
             }
           },
           "additionalProperties": false

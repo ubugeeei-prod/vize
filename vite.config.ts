@@ -85,6 +85,9 @@ const config = {
     outDir: "target/vp-build",
   },
   fmt: {
+    // Lint rules own declaration-specific key quoting; formatting must not
+    // remove quotes required for props/emits consistency.
+    quoteProps: "preserve",
     ignorePatterns: [
       ...localGeneratedIgnorePatterns,
       "**/__snapshots__/**",

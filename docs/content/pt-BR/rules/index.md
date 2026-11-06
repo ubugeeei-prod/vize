@@ -41,7 +41,7 @@ Uma predefinição é um conjunto inicial de regras. `happy-path` é a padrão.
 | `happy-path` (padrão) | 147 | `essential`, mais convenções de formatação de template (incluindo a forma curta de `v-bind` e eventos de componente com hífen), acessibilidade, conformidade HTML, riscos de SSR, propriedades não usadas, emits declarados e props e emits tipados |
 | `ecosystem` | 155 | `happy-path`, mais as verificações das bibliotecas do ecossistema |
 | `nuxt` | 213 | `opinionated`, ajustada para os auto-imports do Nuxt |
-| `opinionated` | 213 | `happy-path`, mais convenções mais rígidas, props tipadas, `defineProps`/`defineEmits` baseados em tipos, ordem das macros de `<script setup>`, nomes de eventos em camelCase, `useTemplateRef`, `defineSlots`, padrões de props e emits, `defineOptions` e as regras de estilo `css/*` |
+| `opinionated` | 214 | `happy-path`, mais convenções mais rígidas, props tipadas, `defineProps`/`defineEmits` baseados em tipos, ordem das macros de `<script setup>`, nomes de eventos em kebab-case, aspas consistentes nas chaves de props e emits, `useTemplateRef`, `defineSlots`, padrões de props e emits, `defineOptions` e as regras de estilo `css/*` |
 | `incremental` | 0 | Nada. Comece aqui para ativar só as regras que você nomear. |
 
 As contagens não incluem as regras entre arquivos. Quando `compiler.compatibility.vueVersion` é `2` ou `2.7`, as verificações de remoções do Vue 3 ficam desativadas.
@@ -58,7 +58,8 @@ As contagens não incluem as regras entre arquivos. Quando `compiler.compatibili
 | [SSR](./ssr.md) | Riscos de renderização no servidor e hidratação |
 | [Vapor](./vapor.md) | Restrições para componentes compilados no modo Vapor |
 | [Ecossistema e Nuxt](./ecosystem.md) | Nuxt, Vue Router, Pinia, Vue I18n, Vue Test Utils e Void Vue |
-| [Musea e CSS](./musea-and-css.md) | Histórias `.art.vue` do Musea e CSS puro |
+| [CSS](./css.md) | Verificações de correção e manutenção de CSS puro |
+| [Musea](./musea.md) | Histórias `.art.vue`, variantes e tokens de design do Musea |
 | [petite-vue](./petite-vue.md) | Páginas HTML que usam petite-vue |
 | [Entre arquivos](./cross-file.md) | Verificações entre componentes, providers e roteadores, ativadas com `crossFile: true` |
 | [Opções das regras](/rules/options.md) | `ruleOptions` tipadas e seus valores padrão |

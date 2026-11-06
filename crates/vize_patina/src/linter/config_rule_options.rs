@@ -48,6 +48,9 @@ impl Linter {
                 CustomEventNameCasing::CamelCase => {
                     crate::rules::script::EventNameCasing::CamelCase
                 }
+                CustomEventNameCasing::Lowercase => {
+                    crate::rules::script::EventNameCasing::Lowercase
+                }
                 CustomEventNameCasing::KebabCase => {
                     crate::rules::script::EventNameCasing::KebabCase
                 }

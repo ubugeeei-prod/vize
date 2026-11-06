@@ -15,7 +15,8 @@ Add the plugin to your Prettier configuration:
 {
   "plugins": ["prettier-plugin-vize"],
   "printWidth": 100,
-  "singleQuote": true
+  "singleQuote": true,
+  "quoteProps": "preserve"
 }
 ```
 
@@ -46,6 +47,11 @@ UTF-16 API, including Unicode and CRLF input.
 
 `vizeVueVersion` accepts `"2"` or `"3"` (default). Block, attribute and import
 sorting remain disabled.
+
+Use `quoteProps: "preserve"` with Vize's
+`script/consistent-props-emits-key-quotes` lint rule. This leaves the
+props/emits-specific convention to lint and prevents format-on-save from
+removing required quotes without changing unrelated object literals.
 
 The shared script formatter supports `printWidth` from 1 to 320 and
 `tabWidth` from 0 to 24. Other values produce an error. Whole-file formatting

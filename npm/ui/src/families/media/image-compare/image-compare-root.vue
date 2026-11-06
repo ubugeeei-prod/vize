@@ -112,10 +112,10 @@ const emit = defineEmits<{
   "update:modelValue": [position: number];
 
   /** Fired after every distinct position request with its source. */
-  change: [position: number, previous: number, source: ImageCompareChangeSource];
+  "change": [position: number, previous: number, source: ImageCompareChangeSource];
 
   /** Fired when a pointer drag or keyboard interaction finishes. */
-  commit: [position: number];
+  "commit": [position: number];
 }>();
 
 defineSlots<{

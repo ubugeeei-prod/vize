@@ -71,7 +71,7 @@ const emit = defineEmits<{
   /** Fired when the pressed state requests a new controlled boolean value. */
   "update:modelValue": [value: boolean];
   /** Fired after user interaction requests the next pressed value. */
-  change: [value: boolean, nativeEvent: MouseEvent];
+  "change": [value: boolean, nativeEvent: MouseEvent];
 }>();
 
 function getToggleKeyboardAction(key: string, phase: ToggleKeyboardPhase): ToggleKeyboardAction {

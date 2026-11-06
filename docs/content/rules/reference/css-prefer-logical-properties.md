@@ -56,6 +56,6 @@ Then run `vp run lint`.
 
 ## Related
 
-- [Musea and CSS rules](../musea-and-css.md)
+- [CSS rules](../css.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

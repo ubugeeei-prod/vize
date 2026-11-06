@@ -19,7 +19,7 @@ import {
 import { useMonacoTypeCheck } from "./useMonacoTypeCheck";
 import { formatHelp, formatMessage } from "./formatHelpers";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: WasmModule | null;
 }>();
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
@@ -55,7 +55,7 @@ const {
 } = useMonacoTypeCheck({
   source,
   experimentals,
-  compiler: () => props.compiler ?? getWasm(),
+  compiler: () => compilerProp ?? getWasm(),
   strictMode,
   includeVirtualTs,
   checkProps,
@@ -135,9 +135,9 @@ watch(
 watch(experimentals, typeCheck, { deep: true });
 
 watch(
-  () => props.compiler,
+  () => compilerProp,
   () => {
-    if (props.compiler) {
+    if (compilerProp) {
       typeCheck();
       loadCapabilities();
     }

@@ -141,13 +141,13 @@ const emit = defineEmits<{
   "update:modelValue": [transform: PanZoomTransform];
 
   /** Fired after every distinct transform request with its source. */
-  change: [transform: PanZoomTransform, previous: PanZoomTransform, source: PanZoomChangeSource];
+  "change": [transform: PanZoomTransform, previous: PanZoomTransform, source: PanZoomChangeSource];
 
   /** Fired when a continuous gesture (pan, pinch, wheel burst) starts. */
-  transformStart: [source: PanZoomChangeSource];
+  "transformStart": [source: PanZoomChangeSource];
 
   /** Fired when a continuous gesture ends. */
-  transformEnd: [source: PanZoomChangeSource];
+  "transformEnd": [source: PanZoomChangeSource];
 }>();
 
 defineSlots<{

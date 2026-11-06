@@ -74,7 +74,12 @@ test(
     );
     writeVueConfigFixture(directory, {
       languageServer: { lint: true, typecheck: true, editor: true },
-      linter: { rules: { "vue/require-v-for-key": "error" } },
+      linter: {
+        rules: {
+          "script/define-props-destructuring": "off",
+          "vue/require-v-for-key": "error",
+        },
+      },
       typeChecker: { corsaPath: runtime },
     });
     const session = new LspSession({ repoRoot: sourceRoot, binary });

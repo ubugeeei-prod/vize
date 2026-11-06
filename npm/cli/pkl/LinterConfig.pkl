@@ -1,22 +1,37 @@
 /// Linter configuration for Vize.
 module vize.LinterConfig
 
-typealias RuleSeverity = "off"|"warn"|"error"
+typealias RuleSeverity = "off" | "warn" | "error"
 
-typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"security"
+typealias RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a11y" | "security"
 
-typealias LintPreset = "general-recommended" | "general_recommended" | "generalRecommended" | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated" | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
-typealias TemplateComponentNameCasing = "PascalCase"|"kebab-case"
-typealias CustomEventNameCasing = "camelCase"|"kebab-case"
-typealias PropNameCasingStyle = "camelCase"|"snake_case"
-typealias HtmlSelfClosingStyle = "always"|"never"|"any"
-typealias HtmlQuoteStyle = "double"|"single"
-typealias MustacheInterpolationSpacingStyle = "always"|"never"
-typealias HyphenationStyle = "always"|"never"
-typealias VBindStyle = "shorthand"|"longform"
-typealias VOnStyle = "shorthand"|"longform"
-typealias VSlotUniformStyle = "shorthand"|"longform"
-typealias VSlotStyleValue = VSlotUniformStyle|"v-slot"
+typealias LintPreset =
+  "general-recommended"
+    | "general_recommended"
+    | "generalRecommended"
+    | "happy-path"
+    | "happy_path"
+    | "happy"
+    | "default"
+    | "recommended"
+    | "opinionated"
+    | "strict"
+    | "all"
+    | "essential"
+    | "incremental"
+    | "ecosystem"
+    | "nuxt"
+typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
+typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
+typealias PropNameCasingStyle = "camelCase" | "snake_case"
+typealias HtmlSelfClosingStyle = "always" | "never" | "any"
+typealias HtmlQuoteStyle = "double" | "single"
+typealias MustacheInterpolationSpacingStyle = "always" | "never"
+typealias HyphenationStyle = "always" | "never"
+typealias VBindStyle = "shorthand" | "longform"
+typealias VOnStyle = "shorthand" | "longform"
+typealias VSlotUniformStyle = "shorthand" | "longform"
+typealias VSlotStyleValue = VSlotUniformStyle | "v-slot"
 
 /// A restricted global identifier for `script/no-restricted-globals`.
 class RestrictedGlobal {
@@ -143,7 +158,7 @@ class StrictBooleanExpressionsOptions {
 
 /// Style for props destructuring; matches eslint-plugin-vue's default.
 class DefinePropsDestructuringOptions {
-  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+  destructure: "only-when-assigned" | "always" | "never" = "always"
 }
 
 /// Options for `script/define-macros-order`.
@@ -185,13 +200,13 @@ class LintRuleOptions {
   `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
-  `vue/html-quotes`: (HtmlQuoteStyle|HtmlQuotesOptions)? = null
+  `vue/html-quotes`: (HtmlQuoteStyle | HtmlQuotesOptions)? = null
   `vue/mustache-interpolation-spacing`: MustacheInterpolationSpacingStyle? = null
-  `vue/v-on-event-hyphenation`: (HyphenationStyle|VOnEventHyphenationOptions)? = null
+  `vue/v-on-event-hyphenation`: (HyphenationStyle | VOnEventHyphenationOptions)? = null
   `vue/v-bind-style`: VBindStyle? = null
   `vue/v-on-style`: VOnStyle? = null
-  `vue/v-slot-style`: (VSlotUniformStyle|VSlotStyleOptions)? = null
-  `vue/attribute-hyphenation`: (HyphenationStyle|AttributeHyphenationOptions)? = null
+  `vue/v-slot-style`: (VSlotUniformStyle | VSlotStyleOptions)? = null
+  `vue/attribute-hyphenation`: (HyphenationStyle | AttributeHyphenationOptions)? = null
   `vue/valid-v-on`: ValidVOnOptions? = null
   `vue/valid-v-slot`: ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null

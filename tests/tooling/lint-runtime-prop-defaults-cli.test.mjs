@@ -22,6 +22,16 @@ await test("runtime props preserve whole scoped original packets and full minima
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
+  const focusedRules = {
+    "script/define-props-destructuring": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
+  const withFocusedRules = (config = "{}\n") => {
+    const parsed = JSON.parse(config);
+    parsed.linter ??= {};
+    parsed.linter.rules = { ...parsed.linter.rules, ...focusedRules };
+    return JSON.stringify(parsed) + "\n";
+  };
   assert.equal(corpus.cases.length, 18);
   assert.equal(scoped.cases.length, 18);
   assert.equal(controls.cases.length, 7);
@@ -33,7 +43,11 @@ await test("runtime props preserve whole scoped original packets and full minima
     const entry = byId.get(route.id);
     assert(entry);
     assert.equal(route.sourceSha256, entry.sourceSha256);
-    return { suite: "original-scoped", entry, route };
+    return {
+      suite: "original-scoped",
+      entry,
+      route: { ...route, config: withFocusedRules(route.config) },
+    };
   });
   for (const entry of ownership.cases) {
     vectors.push({
@@ -41,7 +55,7 @@ await test("runtime props preserve whole scoped original packets and full minima
       entry,
       route: {
         id: "scoped",
-        config: scoped.cliConfig,
+        config: withFocusedRules(scoped.cliConfig),
         argv: [
           "lint",
           entry.filename,
@@ -72,10 +86,17 @@ await test("runtime props preserve whole scoped original packets and full minima
         : null;
       const config =
         route.id === "explicit-off"
-          ? JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n"
+          ? JSON.stringify({
+              linter: { rules: { [corpus.rule]: "off", ...focusedRules } },
+            }) + "\n"
           : route.id === "n8n-projection"
-            ? JSON.stringify({ linter: projection.linter }) + "\n"
-            : null;
+            ? JSON.stringify({
+                linter: {
+                  ...projection.linter,
+                  rules: { ...projection.linter.rules, ...focusedRules },
+                },
+              }) + "\n"
+            : withFocusedRules();
       vectors.push({
         suite: "minimal-full-route",
         entry,

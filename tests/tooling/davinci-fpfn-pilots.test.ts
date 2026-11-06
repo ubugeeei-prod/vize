@@ -6,11 +6,9 @@
 // (docs/davinci/plan/phase-0.md, P0-13).
 //
 // The committed expected/assert-report.json pins the MEASURED current
-// toolchain behavior: class-(a) recall is 0/3 because vue/no-undefined-refs
-// is registered by no preset and no opt-in path, so `vize lint` cannot fire
-// it (docs/davinci/plan/ledger-fn.md, FN-1). The day that rule gains a
-// consumer this test fails loudly — refresh expected/assert-report.json AND
-// flip the FN-1 ledger entry in the same change.
+// toolchain behavior: class-(a) recall is 3/3 now that
+// vue/no-undefined-refs is part of the default preset. The exact identity
+// oracle keeps that FN-1 closure from regressing (docs/davinci/plan/ledger-fn.md).
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -81,10 +79,10 @@ test("seeding is deterministic: a second run is byte-identical", () => {
   }
 });
 
-test("identity assertion measures current recall exactly (class a 0/3, class b 4/4)", async () => {
+test("identity assertion measures current recall exactly (class a 3/3, class b 4/4)", async () => {
   const reportPath = path.join(seedOut, "assert-report.json");
   const result = runTool(seedTool, ["--assert", "--out", seedOut, "--report", reportPath]);
-  assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   assert.deepStrictEqual(
     readJson(reportPath),
     readJson(path.join(expectedDir, "assert-report.json")),
@@ -93,7 +91,14 @@ test("identity assertion measures current recall exactly (class a 0/3, class b 4
     const generated = path.join(seedOut, "class-b", tree, "vite.config.mjs");
     const source = (await import(pathToFileURL(generated).href)).default;
     assert.deepEqual(source, {
-      vue: { linter: { rules: { "vue/no-unused-setup-bindings": "warn" } } },
+      vue: {
+        linter: {
+          rules: {
+            "vue/no-undefined-refs": "off",
+            "vue/no-unused-setup-bindings": "warn",
+          },
+        },
+      },
     });
     assert.equal(fs.existsSync(path.join(path.dirname(generated), "vize.config.json")), false);
   }
@@ -321,7 +326,7 @@ test("suppression telemetry reports the mapped FP candidate and the unmapped nam
 });
 
 // This exercises the JavaScript compatibility writer with synthetic diagnostic
-// hooks. The real current-recall oracle above retains its unchanged 0/3 + 4/4 law.
+// hooks. The real current-recall oracle above retains its 3/3 + 4/4 law.
 test("compatibility seeded assertion carries the same opt-in policy through canonical Vite", async () => {
   const { assertSeededTree } =
     await import("../../tools/support/compat/davinci/lib/fpfn-seed-assert.ts");
@@ -342,7 +347,14 @@ test("compatibility seeded assertion carries the same opt-in policy through cano
   for (const tree of ["original", "seeded"]) {
     const config = path.join(seedOut, "class-b", tree, "vite.config.mjs");
     assert.deepEqual((await import(pathToFileURL(config).href)).default, {
-      vue: { linter: { rules: { "vue/no-unused-setup-bindings": "warn" } } },
+      vue: {
+        linter: {
+          rules: {
+            "vue/no-undefined-refs": "off",
+            "vue/no-unused-setup-bindings": "warn",
+          },
+        },
+      },
     });
     assert.equal(fs.existsSync(path.join(path.dirname(config), "vize.config.json")), false);
   }

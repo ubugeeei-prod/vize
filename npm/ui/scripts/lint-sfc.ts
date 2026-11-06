@@ -16,12 +16,25 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const corsaExecutable = process.platform === "win32" ? "tsc.exe" : "tsc";
 const corsaPackageName = `typescript-${process.platform}-${process.arch}`;
 const workspaceCorsaPath = resolveWorkspaceCorsaPath();
+const legacyPropsStyleRule = "script/define-props-destructuring";
 
-const lintCoreSfc: SfcLintFunction = (source, options) =>
-  lintPatinaSfc(source, {
+const lintCoreSfc: SfcLintFunction = (source, options) => {
+  const result = lintPatinaSfc(source, {
     ...options,
+    // The published UI package already exposes camelCase event names. Keep
+    // its native SFC gate aligned with the package's explicit Vite+ policy.
+    customEventNameCasing: "camelCase",
     ...(workspaceCorsaPath == null ? {} : { corsaPath: workspaceCorsaPath }),
   });
+  // Date/time primitives retain a props object for Vue versions before 3.5.
+  // Keep this package-local compatibility exception out of the product preset.
+  if (Array.isArray(result?.diagnostics)) {
+    result.diagnostics = result.diagnostics.filter(
+      (diagnostic: { rule?: unknown }) => diagnostic.rule !== legacyPropsStyleRule,
+    );
+  }
+  return result;
+};
 
 /**
  * Lint the package's SFC sources with Vize's opinionated preset.

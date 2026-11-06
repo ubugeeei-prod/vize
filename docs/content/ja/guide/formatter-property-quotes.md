@@ -32,6 +32,33 @@ export default defineConfig({}).withVue({
 引用符の文字自体は、引き続き `singleQuote` で選びます。
 `quoteProps` はどのキーに引用符を付けるかを指定するもので、元の引用符の文字を保つ設定ではありません。
 
+## props / emits の引用符ルールと併用する
+
+opinionated lint プリセットでは `script/consistent-props-emits-key-quotes` が有効になります。
+このルールは props / emits 宣言だけを対象とするため、宣言単位の方針は lint に任せ、formatter には元の引用符を保持させます。
+Vite+ では、ルートの formatter 設定を Oxfmt と Vize の Vue formatter で共有できます。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  fmt: { quoteProps: "preserve" },
+}).withVue({
+  linter: { preset: "opinionated" },
+});
+```
+
+Prettier では同じ設定を Prettier 自身の設定ファイルに指定します。
+`prettier-plugin-vize` にもこの値が渡されます。
+
+```json
+{
+  "quoteProps": "preserve"
+}
+```
+
+`preserve` を使うと、無関係なオブジェクトまで引用符付きに統一せず、保存時の整形が lint に適合した引用符を取り除くことも防げます。
+
 CLI とエディターは `vite.config.*` の `vue.formatter` を共有します。
 CLI で直接上書きする場合は `vize fmt --quote-props preserve` を使います。
 Node の native API では、`formatSfc` の `quoteProps` オプションに同じ 3 つの文字列を指定できます。

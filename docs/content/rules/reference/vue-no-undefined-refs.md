@@ -9,7 +9,7 @@ Disallow undefined variable references in templates.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | None | No | None |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 

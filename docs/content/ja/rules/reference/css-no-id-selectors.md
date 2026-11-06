@@ -56,6 +56,6 @@ export default defineConfig({}).withVue({
 
 ## 関連ページ
 
-- [Musea と CSS のルール](../musea-and-css.md)
+- [CSS ルール](../css.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19)

@@ -176,25 +176,25 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired when the tour requests a controlled step value. */
   "update:step": [value: StepValue];
 
   /** Fired after any distinct step request. */
-  stepChange: [value: StepValue, previous: StepValue | null, nativeEvent: Event | null];
+  "stepChange": [value: StepValue, previous: StepValue | null, nativeEvent: Event | null];
 
   /** Fired when TourNext is activated on the last step or `complete()` is called. */
-  complete: [nativeEvent: Event | null];
+  "complete": [nativeEvent: Event | null];
 
   /** Fired when an open tour closes without completing. */
-  dismiss: [reason: TourDismissReason, nativeEvent: Event | null];
+  "dismiss": [reason: TourDismissReason, nativeEvent: Event | null];
 
   /** Fired when a `beforeEnter` hook resolves `false`; the current step is kept. */
-  navigationCancel: [value: StepValue, from: StepValue | null];
+  "navigationCancel": [value: StepValue, from: StepValue | null];
 
   /** Fired when a `beforeEnter` hook throws or rejects; the current step is kept. */
-  navigationError: [error: unknown, value: StepValue, from: StepValue | null];
+  "navigationError": [error: unknown, value: StepValue, from: StepValue | null];
 }>();
 
 const TARGET_ATTRIBUTE = "data-vize-tour-target";

@@ -183,7 +183,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 
   /** Fired when the last field is filled, with the code and its characters as a typed tuple. */
-  complete: [value: string, characters: PinInputCharacters<Length>];
+  "complete": [value: string, characters: PinInputCharacters<Length>];
 }>();
 
 defineSlots<{

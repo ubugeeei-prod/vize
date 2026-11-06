@@ -7,7 +7,12 @@ import {
 } from "./codeHighlighting";
 import { createCodeHighlighter } from "./codeHighlightingClient";
 
-const props = defineProps<{
+const {
+  code,
+  language,
+  showLineNumbers,
+  theme: _theme,
+} = defineProps<{
   code: string;
   language: CodeHighlightLanguage;
   showLineNumbers?: boolean;
@@ -23,7 +28,7 @@ function renderLineNumbers(count: number) {
   if (!lineNumbersEl.value) {
     return;
   }
-  if (!props.showLineNumbers) {
+  if (!showLineNumbers) {
     lineNumbersEl.value.innerHTML = "";
     return;
   }
@@ -47,8 +52,8 @@ function renderCodeLines(lines: string[]) {
 }
 
 function render() {
-  renderCodeLines(normalizePlainHtmlLines(props.code));
-  highlighter.highlight(props.code, props.language, (lines) => {
+  renderCodeLines(normalizePlainHtmlLines(code));
+  highlighter.highlight(code, language, (lines) => {
     renderCodeLines(lines.map(codeTokensToHtml));
   });
 }
@@ -57,28 +62,22 @@ function renderWhenReady() {
   if (!codeContentEl.value) {
     return;
   }
-  if (props.showLineNumbers && !lineNumbersEl.value) {
+  if (showLineNumbers && !lineNumbersEl.value) {
     return;
   }
   render();
 }
 
 watch(
-  [
-    codeContentEl,
-    lineNumbersEl,
-    () => props.code,
-    () => props.language,
-    () => props.showLineNumbers,
-  ],
+  [codeContentEl, lineNumbersEl, () => code, () => language, () => showLineNumbers],
   renderWhenReady,
   { immediate: true, flush: "post" },
 );
 </script>
 
 <template>
-  <div class="code-highlight" :class="{ 'with-line-numbers': props.showLineNumbers }">
-    <div v-if="props.showLineNumbers" ref="lineNumbersEl" class="line-numbers"></div>
+  <div class="code-highlight" :class="{ 'with-line-numbers': showLineNumbers }">
+    <div v-if="showLineNumbers" ref="lineNumbersEl" class="line-numbers"></div>
     <div ref="codeContentEl" class="code-content"></div>
   </div>
 </template>

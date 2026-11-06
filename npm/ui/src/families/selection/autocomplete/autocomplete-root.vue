@@ -45,7 +45,7 @@ const emit = defineEmits<{
   "update:history": [history: readonly T[]];
 
   /** Fired when the user submits: the typed text and the chosen suggestion, if any. */
-  submit: [text: string, value: T | null];
+  "submit": [text: string, value: T | null];
 }>();
 
 defineSlots<{
@@ -67,7 +67,6 @@ const historyState = useControllableState<readonly T[]>({
 });
 const recent = computed(() => historyState.value.value);
 const historyCount = computed(() => recent.value.length);
-const hasHistory = computed(() => historyCount.value > 0);
 
 function currentHistory(): readonly T[] {
   return historyState.value.value;

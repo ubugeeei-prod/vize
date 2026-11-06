@@ -9,7 +9,7 @@ import { componentNameSource, componentNameSuccessorPath } from "./component-nam
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const read = (path: string) => readFileSync(join(root, path));
 
-void test("the casing source keeps the complete original and its exact two-URL current successor", () => {
+void test("the casing source keeps the complete original and its exact finite successors", () => {
   const source = componentNameSource(root);
   assert.equal(source.historical.length, 16768);
   assert.equal(source.current.length, 16838);
@@ -27,6 +27,7 @@ void test("the casing source keeps the complete original and its exact two-URL c
       occurrences: 1,
     },
   ]);
+  assert.deepEqual(asArray(source.successor.latestChanges), []);
   const prefix = '"src/Casing.vue",\n        r#"';
   const extract = (bytes: Buffer) => {
     const rust = bytes.toString("utf8"),

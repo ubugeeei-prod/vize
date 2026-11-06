@@ -7,7 +7,6 @@ import {
   mdiCheckCircle,
   mdiCloseCircle,
   mdiCircleOutline,
-  mdiAlertCircle,
   mdiOpenInNew,
 } from "@mdi/js";
 import { useArts } from "../composables/useArts";

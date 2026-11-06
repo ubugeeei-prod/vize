@@ -198,10 +198,21 @@ fn six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packet
                     .as_str()
                     .unwrap();
                 write_project_file(project.path(), filename, source);
-                let mut config = serde_json::json!({"linter": {"preset": preset}});
+                // Preserve this historical packet corpus while later default
+                // additions are covered by their own preset and rule tests.
+                let mut config = serde_json::json!({"linter": {
+                    "preset": preset,
+                    "rules": {
+                        "vue/no-undefined-refs": "off",
+                        "vue/no-unused-setup-bindings": "off",
+                        "vue/no-ref-object-reactivity-loss": "off",
+                        "vue/no-setup-props-reactivity-loss": "off",
+                        "vue/no-this-in-before-route-enter": "off"
+                    }
+                }});
                 if mode == "off" {
-                    config["linter"]["rules"] =
-                        serde_json::json!({(case["rule"].as_str().unwrap()): "off"});
+                    config["linter"]["rules"][case["rule"].as_str().unwrap()] =
+                        serde_json::json!("off");
                 }
                 let original_config = serde_json::to_vec(&config).unwrap();
                 let carrier = vite_config::source(&original_config);

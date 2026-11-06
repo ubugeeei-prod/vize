@@ -86,11 +86,11 @@ const emit = defineEmits<{
   /** Fired when the picker requests a new controlled range. */
   "update:modelValue": [value: DateRange | null];
   /** Fired after a distinct committed range with the previous range and triggering event. */
-  change: [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
+  "change": [value: DateRange | null, previous: DateRange | null, nativeEvent: Event | null];
   /** Fired when the picker requests a new controlled open state. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

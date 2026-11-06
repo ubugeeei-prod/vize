@@ -174,10 +174,15 @@ export const portugueseRules1: Record<string, readonly [string, string, string]>
     "A opção de componente `name: 'my-component'` está em kebab-case, enquanto esta regra exige um nome de componente literal em PascalCase.",
     "`MyComponent` começa com uma letra maiúscula e contém apenas caracteres alfanuméricos, atendendo à verificação de nome.",
   ],
+  "script/consistent-props-emits-key-quotes": [
+    "Uniformizar chaves entre aspas nas declarações de props e emits",
+    "A declaração de emits mistura a chave `update:modelValue`, que precisa de aspas, com a chave `close` sem aspas.",
+    "Todas as chaves estáticas da declaração usam aspas, pois `update:modelValue` não pode ser escrito como um identificador JavaScript sem aspas.",
+  ],
   "script/custom-event-name-casing": [
-    "Exigir camelCase nos nomes de eventos personalizados emitidos",
+    "Exigir a capitalização configurada nos nomes de eventos personalizados emitidos",
     "A string emitida `my-event` contém um hífen e viola a política padrão de nomes de eventos em camelCase.",
-    "Tanto a declaração quanto a chamada usam `myEvent`, preservando a correspondência entre o nome do evento e sua emissão e atendendo à política padrão de maiúsculas e minúsculas. Uma política configurada de kebab-case tem uma expectativa diferente.",
+    "Tanto a declaração quanto a chamada usam `myEvent`, atendendo ao padrão global camelCase. O preset `opinionated` seleciona kebab-case, e as opções explícitas da regra também permitem nomes totalmente minúsculos como `transitionstart`.",
   ],
   "script/define-emits-declaration": [
     "Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array",

@@ -1128,7 +1128,7 @@ export interface PatinaLintOptionsNapi {
   corsaPath?: string;
   /** Casing for `vue/component-name-in-template-casing`: "PascalCase" or "kebab-case" */
   componentNameInTemplateCasing?: string;
-  /** Casing for `script/custom-event-name-casing`: "camelCase" or "kebab-case" */
+  /** Casing for `script/custom-event-name-casing`: "lowercase", "camelCase", or "kebab-case" */
   customEventNameCasing?: string;
   /** Options for `vue/no-mutating-props` */
   noMutatingProps?: NoMutatingPropsOptionsNapi;

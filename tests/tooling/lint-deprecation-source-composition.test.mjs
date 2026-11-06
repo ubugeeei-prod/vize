@@ -7,6 +7,7 @@ import { gunzipSync } from "node:zlib";
 import {
   restoreHistoricalHelp,
   withoutDefaultBindStyle,
+  withoutDefaultPropsDestructuring,
 } from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -204,7 +205,10 @@ const vectors = [
 ];
 function validateCurrentPacket(original, current, changes, autofixes, firstNumericOnly) {
   const inverse = structuredClone(current);
-  if (original.schema === "vize.lint.default-correctness") withoutDefaultBindStyle(inverse);
+  if (original.schema === "vize.lint.default-correctness") {
+    withoutDefaultBindStyle(inverse);
+    withoutDefaultPropsDestructuring(inverse);
+  }
   for (const [index, id, start, end, lspStart, lspEnd] of changes) {
     const row = inverse.cases[index];
     const old = original.cases[index];

@@ -65,7 +65,7 @@ const emit = defineEmits<{
   /** Fired when the Tooltip requests a controlled open value. */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{
@@ -166,7 +166,7 @@ watch(disabledState, (next, previousDisabled) => {
 
 onUnmounted(cancelOpen);
 
-const context = tooltipContext.provide({
+tooltipContext.provide({
   id: baseId,
   triggerId,
   contentId,

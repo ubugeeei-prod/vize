@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const { variant, disabled } = defineProps<{
   variant?: "default" | "primary" | "secondary";
   disabled?: boolean;
 }>();

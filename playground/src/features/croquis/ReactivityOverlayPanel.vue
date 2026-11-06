@@ -3,7 +3,7 @@ import "./ReactivityOverlayPanel.css";
 import { computed } from "vue";
 import type { ReactivityOverlay, ReactivityOverlayLoss } from "../../wasm/index";
 
-const props = defineProps<{
+const { overlay } = defineProps<{
   overlay?: ReactivityOverlay;
 }>();
 
@@ -19,11 +19,11 @@ const emptySummary = {
   effectCycleCount: 0,
 };
 
-const summary = computed(() => props.overlay?.summary ?? emptySummary);
-const sources = computed(() => props.overlay?.sources ?? []);
-const losses = computed(() => props.overlay?.losses ?? []);
-const edges = computed(() => props.overlay?.effectGraph.edges ?? []);
-const cycle = computed(() => props.overlay?.effectGraph.cycle ?? null);
+const summary = computed(() => overlay?.summary ?? emptySummary);
+const sources = computed(() => overlay?.sources ?? []);
+const losses = computed(() => overlay?.losses ?? []);
+const edges = computed(() => overlay?.effectGraph.edges ?? []);
+const cycle = computed(() => overlay?.effectGraph.cycle ?? null);
 
 function labelLoss(loss: ReactivityOverlayLoss): string {
   switch (loss.kind) {

@@ -4,6 +4,25 @@ use crate::{LintPreset, LintResult, Linter, rule::RuleRegistry};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 
+// This corpus preserves byte-exact packets for an earlier finite set of
+// promoted warnings. Later default-preset additions have their own membership
+// and rule tests, so keep them out of these historical packet assertions.
+const LATER_DEFAULT_RULES: &[&str] = &[
+    "script/define-props-destructuring",
+    "vue/no-undefined-refs",
+    "vue/no-unused-setup-bindings",
+    "vue/no-this-in-before-route-enter",
+];
+
+fn corpus_linter(preset: LintPreset, additionally_disabled: Option<&str>) -> Linter {
+    let mut disabled: Vec<_> = LATER_DEFAULT_RULES
+        .iter()
+        .map(|rule| (*rule).into())
+        .collect();
+    disabled.extend(additionally_disabled.map(Into::into));
+    Linter::with_preset(preset).with_disabled_rules(disabled)
+}
+
 fn cases() -> Value {
     serde_json::from_str(include_str!(
         "../../../../tests/_fixtures/lint-preset-default-warnings/cases.json"
@@ -55,7 +74,7 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
                 "filename": filename, "error_count": 0,
                 "warning_count": diagnostics.len(), "diagnostics": diagnostics
             });
-            let linter = Linter::with_preset(preset);
+            let linter = corpus_linter(preset, None);
             assert_eq!(
                 whole(&linter.lint_sfc(case["source"].as_str().unwrap(), filename)),
                 expected,
@@ -70,7 +89,7 @@ fn all_six_presets_emit_the_complete_authored_warning_packets() {
                 case["id"],
                 preset.as_str()
             );
-            let disabled = linter.with_disabled_rules(vec![case["rule"].as_str().unwrap().into()]);
+            let disabled = corpus_linter(preset, case["rule"].as_str());
             assert_eq!(
                 whole(&disabled.lint_sfc(case["source"].as_str().unwrap(), filename)),
                 json!({"filename": filename, "error_count": 0, "warning_count": baseline.len(), "diagnostics": baseline}),

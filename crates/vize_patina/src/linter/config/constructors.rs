@@ -7,6 +7,7 @@ use super::{FxHashMap, FxHashSet, HelpLevel, LintPreset, Linter, Locale, RuleReg
 use crate::preset::{
     builtin_css_rule_names, builtin_script_rule_names, ecosystem_builtin_script_rule_names,
 };
+use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 
 impl Linter {
     /// Default initial capacity for the arena (64KB).
@@ -57,7 +58,7 @@ impl Linter {
     /// Create a new linter with a named preset.
     #[inline]
     pub fn with_preset(preset: LintPreset) -> Self {
-        Self {
+        let mut linter = Self {
             preset: Some(preset),
             registry: RuleRegistry::with_preset(preset),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
@@ -92,7 +93,14 @@ impl Linter {
             corsa_path: None,
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_tsconfig: None,
+        };
+        if matches!(preset, LintPreset::Opinionated) {
+            linter.script_rule_overrides.insert(
+                "script/custom-event-name-casing",
+                Box::new(CustomEventNameCasing::new(EventNameCasing::KebabCase)),
+            );
         }
+        linter
     }
 
     /// Create a new linter with Vue ecosystem integration rules enabled.
@@ -141,6 +149,9 @@ impl Linter {
     pub fn with_all() -> Self {
         let mut linter = Self::with_preset(LintPreset::Opinionated);
         linter.preset = None;
+        linter
+            .script_rule_overrides
+            .remove("script/custom-event-name-casing");
         linter.registry = RuleRegistry::with_all();
         linter.registry.register_opt_in_rules();
         linter.script_rules = super::super::script_rules::all_builtin_script_rule_names();

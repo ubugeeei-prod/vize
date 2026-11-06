@@ -130,7 +130,7 @@ const emit = defineEmits<{
   "update:index": [index: number];
 
   /** Fired after every distinct index request, with its cause. */
-  change: [index: number, previous: number, reason: LightboxChangeReason];
+  "change": [index: number, previous: number, reason: LightboxChangeReason];
 }>();
 
 defineSlots<{

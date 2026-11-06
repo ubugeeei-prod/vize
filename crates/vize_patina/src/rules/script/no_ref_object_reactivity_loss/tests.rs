@@ -111,7 +111,7 @@ unknown.value
 }
 
 #[test]
-fn stays_opt_in() {
+fn stays_opt_in_until_same_scope_value_reads_are_precise() {
     let meta = crate::linter::script_rules::builtin_script_rules()
         .into_iter()
         .find(|rule| rule.name == RULE)

@@ -17,7 +17,7 @@ import { useStageLadder, type StageId } from "./useStageLadder";
 import { stepKeyAction } from "./keys";
 import { formatArg } from "./remarks";
 
-const props = defineProps<{
+const { compiler: compilerProp } = defineProps<{
   compiler: WasmModule | null;
 }>();
 
@@ -56,7 +56,7 @@ const {
   selectPage,
   locateRemark,
   onCursor,
-} = useStageLadder(() => props.compiler ?? getWasm());
+} = useStageLadder(() => compilerProp ?? getWasm());
 
 const showTabs = computed(
   () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "l1"),

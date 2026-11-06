@@ -186,19 +186,19 @@ const emit = defineEmits<{
   "update:deviceId": [deviceId: string | null];
 
   /** Fired after every distinct status transition. */
-  statusChange: [status: WebcamCaptureStatus, previous: WebcamCaptureStatus];
+  "statusChange": [status: WebcamCaptureStatus, previous: WebcamCaptureStatus];
 
   /** Fired when owned acquisition fails. */
-  error: [failure: WebcamCaptureFailure];
+  "error": [failure: WebcamCaptureFailure];
 
   /** Fired when an owned stream starts or stops. */
-  streamChange: [stream: WebcamMediaStreamLike | undefined];
+  "streamChange": [stream: WebcamMediaStreamLike | undefined];
 
   /** Fired after a photo is captured. */
-  capture: [photo: WebcamCapturePhotoResult];
+  "capture": [photo: WebcamCapturePhotoResult];
 
   /** Fired when a capture fails to draw or encode. */
-  captureError: [error: unknown];
+  "captureError": [error: unknown];
 }>();
 
 defineSlots<{

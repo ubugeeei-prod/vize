@@ -1,4 +1,7 @@
 export const portugueseShared: Record<string, string> = {
+  "Formatter compatibility": "Compatibilidade com formatadores",
+  'This lint rule owns declaration-specific quoting. Configure Prettier, Oxfmt, and the Vize formatter with `quoteProps: "preserve"` so formatting does not remove quotes required by the rule.':
+    'Esta regra de lint controla as aspas por declaração. Configure o Prettier, o Oxfmt e o formatador Vize com `quoteProps: "preserve"` para que a formatação não remova as aspas exigidas pela regra.',
   "Scope and limitations": "Escopo e limitações",
   "This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.":
     "Este contrato sem produtor atual usa um cenário histórico de atribuição a índices de arrays no Vue 2.7. O Vue 2 não notifica atualizações por atribuição direta ao índice; o Vue 3 rastreia essas atribuições. Os arquivos incorreto e correto ilustram a correção para o Vue 2, e não um defeito do Vue 3.",

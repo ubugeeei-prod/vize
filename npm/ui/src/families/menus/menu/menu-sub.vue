@@ -46,7 +46,7 @@ const emit = defineEmits<{
   /** Fired with the requested submenu open value (supports `v-model:open`). */
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request with the previous value and native event. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

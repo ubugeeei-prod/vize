@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "Imposer camelCase aux noms des événements personnalisés émis."
+description: "Imposer la casse configurée aux noms des événements personnalisés émis."
 ---
 
 # `script/custom-event-name-casing`
 
-Imposer camelCase aux noms des événements personnalisés émis.
+Imposer la casse configurée aux noms des événements personnalisés émis.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ emit('my-event')         // kebab-case → report
 
 ## Bon
 
-La déclaration et l’appel utilisent tous deux `myEvent`, ce qui maintient la correspondance entre le nom de l’événement et son émission tout en respectant la convention de casse par défaut. Une convention kebab-case configurée impose une autre forme.
+La déclaration et l’appel utilisent tous deux `myEvent`, conformément à la valeur globale par défaut camelCase. Le preset `opinionated` choisit plutôt kebab-case, et les options explicites de la règle permettent aussi de sélectionner des noms entièrement en minuscules comme `transitionstart`.
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -57,4 +57,4 @@ Lancez ensuite `vp run lint`.
 - [Règles de type et de script](../type-and-script.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)

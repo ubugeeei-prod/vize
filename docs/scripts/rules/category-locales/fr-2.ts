@@ -9,10 +9,15 @@ export const frenchRules2 = {
     "L’option de composant `name: 'my-component'` utilise kebab-case, alors que cette règle exige un nom de composant littéral en PascalCase.",
     "`MyComponent` commence par une majuscule et ne contient que des caractères alphanumériques, ce qui satisfait le contrôle du nom.",
   ],
+  "script/consistent-props-emits-key-quotes": [
+    "Uniformiser les clés entre guillemets dans les déclarations props et emits",
+    "La déclaration emits mélange la clé `update:modelValue`, qui doit être entre guillemets, avec la clé `close` sans guillemets.",
+    "Toutes les clés statiques de la déclaration sont entre guillemets, car `update:modelValue` ne peut pas être écrit comme identifiant JavaScript sans guillemets.",
+  ],
   "script/custom-event-name-casing": [
-    "Imposer camelCase aux noms des événements personnalisés émis",
+    "Imposer la casse configurée aux noms des événements personnalisés émis",
     "La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.",
-    "La déclaration et l’appel utilisent tous deux `myEvent`, ce qui maintient la correspondance entre le nom de l’événement et son émission tout en respectant la convention de casse par défaut. Une convention kebab-case configurée impose une autre forme.",
+    "La déclaration et l’appel utilisent tous deux `myEvent`, conformément à la valeur globale par défaut camelCase. Le preset `opinionated` choisit plutôt kebab-case, et les options explicites de la règle permettent aussi de sélectionner des noms entièrement en minuscules comme `transitionstart`.",
   ],
   "script/define-emits-declaration": [
     "Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau",
@@ -31,7 +36,7 @@ export const frenchRules2 = {
   ],
   "script/define-props-destructuring": [
     "Imposer un style cohérent de déstructuration de defineProps dans &lt;script setup&gt;",
-    "`defineProps` est affecté à la seule liaison `props` au lieu d’être déstructuré, contrairement à la préférence par défaut pour la déstructuration.",
+    "L’appel typé isolé à `defineProps` déclare `foo` sans le lier conformément à la politique de déstructuration par défaut.",
     "Le motif objet lie directement `foo` et `bar` et donne une valeur par défaut à `bar`, qui est facultatif. Cela repose sur la déstructuration réactive des props de Vue 3.5+ ; le mode configurable `never` préfère la forme opposée.",
   ],
   "script/no-arrow-functions-in-watch": [

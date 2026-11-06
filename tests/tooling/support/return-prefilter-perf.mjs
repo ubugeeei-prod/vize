@@ -29,11 +29,11 @@ function workloadSource(variant) {
     emits.push(member(`event${index}`, "payload: number", "payload > 0"));
   }
   return (
-    '<script lang="ts">\nexport default {\n  computed: {\n' +
+    '<script lang="ts">\nimport { defineComponent } from "vue"\n\nexport default defineComponent({\n  computed: {\n' +
     computed.join(",\n") +
     "\n  },\n  emits: {\n" +
     emits.join(",\n") +
-    "\n  }\n}\n</script>\n"
+    "\n  }\n})\n</script>\n"
   );
 }
 

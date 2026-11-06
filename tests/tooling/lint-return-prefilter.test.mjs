@@ -19,6 +19,11 @@ await test("default return checks preserve whole CLI packets across method and a
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
+  const focusedRules = {
+    "script/require-define-component": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
+  const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   assert.equal(corpus.cases.length, 16);
   assert.equal(Object.keys(projection.linter.rules).length, 51);
   for (const rule of corpus.rules) assert.equal(projection.linter.rules[rule], undefined);
@@ -39,24 +44,35 @@ await test("default return checks preserve whole CLI packets across method and a
       ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
         entry,
         preset,
-        config: null,
+        config: focusedConfig,
         findings: entry.diagnostics,
       })),
-      { entry, preset: "incremental", config: null, findings: [] },
+      { entry, preset: "incremental", config: focusedConfig, findings: [] },
       {
         entry,
         preset: null,
         findings: [],
         config:
           JSON.stringify({
-            linter: { rules: Object.fromEntries(corpus.rules.map((rule) => [rule, "off"])) },
+            linter: {
+              rules: {
+                ...focusedRules,
+                ...Object.fromEntries(corpus.rules.map((rule) => [rule, "off"])),
+              },
+            },
           }) + "\n",
       },
       {
         entry,
         preset: null,
         findings: [],
-        config: JSON.stringify({ linter: projection.linter }) + "\n",
+        config:
+          JSON.stringify({
+            linter: {
+              ...projection.linter,
+              rules: { ...projection.linter.rules, ...focusedRules },
+            },
+          }) + "\n",
       },
     ]);
     for (const { entry, preset, config, findings } of scenarios) {

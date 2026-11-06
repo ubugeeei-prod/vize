@@ -9,7 +9,7 @@ description: "禁止在模板中引用未定义的变量。"
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
-| `warning` | 无 | 不支持 | 无 |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | 不支持 | 无 |
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 

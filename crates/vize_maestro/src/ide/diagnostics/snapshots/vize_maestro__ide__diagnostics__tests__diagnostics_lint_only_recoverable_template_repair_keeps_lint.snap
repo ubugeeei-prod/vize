@@ -21,4 +21,22 @@ expression: diagnostic_snapshots(diagnostics)
             9,
         ),
     },
+    DiagnosticSnapshot {
+        source: Some(
+            "vize/lint",
+        ),
+        severity: Some(
+            "warning",
+        ),
+        code: Some(
+            "vue/no-unused-setup-bindings",
+        ),
+        message: "Setup binding 'count' is never read\n\nHelp: Remove the binding or prefix its name with underscore if intentionally unused",
+        range: (
+            4,
+            6,
+            4,
+            11,
+        ),
+    },
 ]

@@ -207,10 +207,10 @@ const emit = defineEmits<{
   "update:rotation": [rotation: number];
 
   /** Fired after every distinct crop request, with its cause. */
-  change: [crop: CropArea, reason: ImageCropperChangeReason];
+  "change": [crop: CropArea, reason: ImageCropperChangeReason];
 
   /** Fired when a pointer interaction or key press finishes changing the crop. */
-  cropEnd: [crop: CropArea];
+  "cropEnd": [crop: CropArea];
 }>();
 
 defineSlots<{

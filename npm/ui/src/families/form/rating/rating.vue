@@ -53,9 +53,9 @@ const emit = defineEmits<{
   /** Fired when the rating requests a new controlled value. */
   "update:modelValue": [value: RatingValue];
   /** Fired after user activation requests a distinct rating value. */
-  change: [value: RatingValue, previous: RatingValue, nativeEvent: Event];
+  "change": [value: RatingValue, previous: RatingValue, nativeEvent: Event];
   /** Fired after user activation clears a previously selected rating. */
-  clear: [previous: number, nativeEvent: Event];
+  "clear": [previous: number, nativeEvent: Event];
 }>();
 
 defineSlots<{

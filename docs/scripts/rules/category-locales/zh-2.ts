@@ -1,8 +1,13 @@
 export const chineseRules2: Record<string, readonly [string, string, string]> = {
+  "script/consistent-props-emits-key-quotes": [
+    "统一 props 和 emits 声明中带引号的键",
+    "emits 声明将必须带引号的 `update:modelValue` 键与不带引号的 `close` 键混合使用。",
+    "声明中的所有静态键都带引号，因为 `update:modelValue` 无法写成不带引号的 JavaScript 标识符。",
+  ],
   "script/custom-event-name-casing": [
-    "要求发出的自定义事件名称使用 camelCase",
+    "要求发出的自定义事件名称使用配置的大小写形式",
     "发出的字符串 `my-event` 含有连字符，违反默认的 camelCase 事件命名策略。",
-    "声明和调用都使用 `myEvent`，既保持事件名称与发出操作一致，也满足默认大小写策略。配置为 kebab-case 时要求不同。",
+    "声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项还可以选择 `transitionstart` 这样的全小写名称。",
   ],
   "script/define-emits-declaration": [
     "要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式",
@@ -21,7 +26,7 @@ export const chineseRules2: Record<string, readonly [string, string, string]> = 
   ],
   "script/define-props-destructuring": [
     "要求 &lt;script setup&gt; 中的 defineProps 解构风格保持一致",
-    "`defineProps` 被赋给单一的 `props` 绑定，而非解构，不符合默认的解构偏好。",
+    "单独的类型化 `defineProps` 调用声明了 `foo`，但没有按照默认的解构策略绑定它。",
     "对象模式直接绑定 `foo` 和 `bar`，并为可选的 `bar` 提供默认值。这依赖 Vue 3.5+ 的响应式 props 解构；可配置的 `never` 模式偏好相反形式。",
   ],
   "script/no-arrow-functions-in-watch": [

@@ -68,7 +68,7 @@ pub struct PatinaLintOptionsNapi {
     pub corsa_path: Option<String>,
     /// Casing for `vue/component-name-in-template-casing`: "PascalCase" or "kebab-case"
     pub component_name_in_template_casing: Option<String>,
-    /// Casing for `script/custom-event-name-casing`: "camelCase" or "kebab-case"
+    /// Casing for `script/custom-event-name-casing`: "lowercase", "camelCase", or "kebab-case"
     pub custom_event_name_casing: Option<String>,
     /// Options for `vue/no-mutating-props`
     pub no_mutating_props: Option<NoMutatingPropsOptionsNapi>,
@@ -306,6 +306,7 @@ pub(super) fn event_name_casing_from_option(
     value: &str,
 ) -> Option<vize_patina::rules::script::EventNameCasing> {
     match value {
+        "lowercase" => Some(vize_patina::rules::script::EventNameCasing::Lowercase),
         "camelCase" => Some(vize_patina::rules::script::EventNameCasing::CamelCase),
         "kebab-case" => Some(vize_patina::rules::script::EventNameCasing::KebabCase),
         _ => None,

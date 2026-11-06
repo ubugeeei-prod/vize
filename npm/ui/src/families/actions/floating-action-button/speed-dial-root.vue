@@ -91,10 +91,10 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request, with its cause. */
-  openChange: [value: boolean, reason: SpeedDialChangeReason, nativeEvent: Event | null];
+  "openChange": [value: boolean, reason: SpeedDialChangeReason, nativeEvent: Event | null];
 
   /** Fired when an action is selected. Call `preventDefault()` to keep the speed dial open. */
-  select: [event: SpeedDialSelectEvent];
+  "select": [event: SpeedDialSelectEvent];
 }>();
 
 defineSlots<{

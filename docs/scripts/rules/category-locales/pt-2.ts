@@ -11,7 +11,7 @@ export const portugueseRules2: Record<string, readonly [string, string, string]>
   ],
   "script/define-props-destructuring": [
     "Exigir um estilo consistente de desestruturação de defineProps em &lt;script setup&gt;",
-    "`defineProps` é atribuído à variável única `props` em vez de ser desestruturado, contrariando a preferência padrão pela desestruturação.",
+    "A chamada tipada isolada a `defineProps` declara `foo` sem vinculá-lo segundo a política padrão de desestruturação.",
     "O padrão de objeto vincula `foo` e `bar` diretamente e fornece um valor padrão para o `bar` opcional. Isso depende da desestruturação reativa de props do Vue 3.5+; o modo configurável `never` prefere a forma oposta.",
   ],
   "script/no-arrow-functions-in-watch": [

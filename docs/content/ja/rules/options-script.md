@@ -111,7 +111,9 @@ const env = readServerEnv();
 ## `script/custom-event-name-casing`
 
 スクリプトとテンプレートで使うカスタムイベント名の表記を揃えるための設定です。
-既定は `camelCase` です。テンプレートで使うハイフン区切りの表記に揃える場合は、`kebab-case` を指定します。
+既定は `camelCase` です。`transitionstart` のように区切りのない小文字へ揃える場合は `lowercase`、
+テンプレートで使うハイフン区切りの表記に揃える場合は `kebab-case` を指定します。
+`opinionated` プリセットは、明示的なルールオプションで上書きしない限り `kebab-case` を選びます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -192,9 +194,9 @@ const props = defineProps<{ label: string }>();
 
 ## `script/define-props-destructuring`
 
-既定の `only-when-assigned` では、戻り値を変数に代入する場合に分割代入を要求します。
-戻り値を代入しない `defineProps<Props>()` は許可します。`always` は戻り値を代入しない呼び出しも報告し、
-`never` は反対に分割代入を報告します。Vue 3.5 では、props を分割代入してもリアクティビティを保ちます。
+既定の `always` は、戻り値を代入する呼び出しと型付きの単独呼び出しで分割代入を要求します。
+`only-when-assigned` は単独の `defineProps<Props>()` を除外し、`never` は反対に分割代入を報告します。
+Vue 3.5 では、props を分割代入してもリアクティビティを保ちます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -203,7 +205,7 @@ export default defineConfig({}).withVue({
   linter: {
     preset: "incremental",
     rules: { "script/define-props-destructuring": "warn" },
-    ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
+    ruleOptions: { "script/define-props-destructuring": { destructure: "always" } },
   },
 });
 ```

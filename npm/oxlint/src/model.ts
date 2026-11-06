@@ -188,7 +188,7 @@ export interface LineColumn {
 }
 
 export type ComponentNameInTemplateCasingOption = "PascalCase" | "kebab-case";
-export type CustomEventNameCasingOption = "camelCase" | "kebab-case";
+export type CustomEventNameCasingOption = "lowercase" | "camelCase" | "kebab-case";
 export interface NoMutatingPropsOption {
   shallowOnly?: boolean;
 }

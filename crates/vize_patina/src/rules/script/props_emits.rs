@@ -5,6 +5,7 @@
 //! so the parent `script` module file does not grow per added rule.
 
 mod compiler_macro_bindings;
+mod consistent_key_quotes;
 mod emits_source;
 mod no_required_prop_with_default;
 mod no_reserved_props;
@@ -22,6 +23,7 @@ mod template_emits;
 
 pub(crate) use props_source::collect_options_props;
 
+pub use consistent_key_quotes::ConsistentPropsEmitsKeyQuotes;
 pub use no_required_prop_with_default::NoRequiredPropWithDefault;
 pub use no_reserved_props::NoReservedProps;
 pub use no_unused_emit_declarations::NoUnusedEmitDeclarations;

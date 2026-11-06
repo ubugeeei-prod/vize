@@ -18,6 +18,12 @@
     "sha256": "bad0adb1aa50fe79125f97ae1646997a18bd2726c1edc97eecbd53d7e7934d6e",
     "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
   },
+  "latest": {
+    "source": "592ab1da10fc2fa5c921b93c4f446484aa18b08d",
+    "bytes": 16838,
+    "sha256": "bad0adb1aa50fe79125f97ae1646997a18bd2726c1edc97eecbd53d7e7934d6e",
+    "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
+  },
   "changes": [
     {
       "ruleId": "vue/component-name-in-template-casing",
@@ -31,5 +37,6 @@
       "after": "docs/content/rules/reference/script-custom-event-name-casing.md",
       "occurrences": 1
     }
-  ]
+  ],
+  "latestChanges": []
 }

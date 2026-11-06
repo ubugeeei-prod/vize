@@ -156,7 +156,12 @@
       "status": "mapped"
     },
     "vue/define-props-destructuring": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/define-props-destructuring",
       "patinaSeverity": "warning",
       "status": "mapped"
@@ -1101,7 +1106,12 @@
       "status": "mapped"
     },
     "vue/no-this-in-before-route-enter": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-this-in-before-route-enter",
       "patinaSeverity": "warning",
       "status": "mapped"

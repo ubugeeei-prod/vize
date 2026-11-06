@@ -15,9 +15,14 @@ import {
   replaceBytes,
   sha,
 } from "./support/lint-preset-source-successors.ts";
+import {
+  currentPresetCases,
+  inverseLatestDefaultExpansion,
+} from "./support/lint-preset-latest-default-expansion.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/lint-preset-default-warnings";
+
 // Later preset-default changes are finite successor rows, newest last. Each
 // row pins both byte identities and is undone before the audits below, so they
 // keep judging the tree they reviewed while presets grow.
@@ -38,6 +43,7 @@ const read = createSourceReader({
   reviewedNextest,
   currentSources,
   presetSuccessors,
+  latestSourceInverse: inverseLatestDefaultExpansion,
 });
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
@@ -113,27 +119,7 @@ function originalEssentialMembership(body) {
   return Buffer.concat([Buffer.from(text.slice(0, at)), jsonBytes(table)]);
 }
 function currentCases(body) {
-  // This is the reviewed 81f5033 additive fixture, independently exercised by
-  // all 76 complete CLI receipts in native queue Check 39043300642, not a new capture.
-  identity(body, {
-    bytes: 12915,
-    sha256: "d347790320c83bbfb0ae513de8781559312766f48ac5c07483ce753146d579ea",
-  });
-  const value = JSON.parse(body);
-  assert.deepEqual(
-    value.cases.map(({ id }) => id),
-    ["else-for", "deep-props", ...essentialCases],
-  );
-  const { essentialExtensionAuthority, essentialBaselineAuthority, ...original } = value;
-  assert(essentialExtensionAuthority && essentialBaselineAuthority);
-  original.cases = value.cases.slice(0, 2);
-  identity(jsonBytes(original), manifest.cases); // Keep the original 5090-byte oracle.
-  for (const [index, sha256] of [
-    "c99b63e767e42a975eb39bdfe14bb25b9fa2328165b0d29d49a9a27d9aec57b8",
-    "7588faadaa8522d8fdc7783193decbe0ff3fcb611d183d08cb371e5f7af02399",
-  ].entries())
-    assert.equal(sha(jsonBytes(value.cases[index + 2])), sha256);
-  return value;
+  return currentPresetCases(body, essentialCases, manifest);
 }
 
 function inverseCurrent(row, body) {
@@ -147,7 +133,10 @@ function inverseCurrent(row, body) {
 
 void test("current source successors preserve whole histories and reject missing, partial, duplicate and unrelated bytes", () => {
   for (const row of currentSources.sources) {
-    const current = fs.readFileSync(path.join(root, row.path));
+    const current = inverseLatestDefaultExpansion(
+      row.path,
+      fs.readFileSync(path.join(root, row.path)),
+    );
     identity(inverseCurrentSource(row, current), row.before);
     const hunk = row.hunks.find((hunk) => hunk.after.length > 0);
     const changedByte = Buffer.from(current);
@@ -179,6 +168,21 @@ void test("current source successors preserve whole histories and reject missing
     const shifted = structuredClone(row);
     shifted.hunks[0].afterOffset++;
     assert.throws(() => inverseCurrentSource(shifted, current));
+  }
+});
+
+void test("the latest general-default expansion has one exact finite inverse", () => {
+  for (const row of currentSources.sources) {
+    const live = fs.readFileSync(path.join(root, row.path));
+    const predecessor = inverseLatestDefaultExpansion(row.path, live);
+    identity(predecessor, row.after);
+    if (predecessor.equals(live)) continue;
+    for (const changed of [
+      live.subarray(0, live.length - 1),
+      Buffer.concat([live, Buffer.from("\n")]),
+      Buffer.concat([Buffer.from("// unrelated\n"), live]),
+    ])
+      assert.throws(() => identity(inverseLatestDefaultExpansion(row.path, changed), row.after));
   }
 });
 

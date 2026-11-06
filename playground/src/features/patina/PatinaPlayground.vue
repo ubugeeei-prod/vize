@@ -20,7 +20,7 @@ import { useLocale } from "./useLocale";
 import { useRuleManagement } from "./useRuleManagement";
 import { useLinting } from "./useLinting";
 
-const props = defineProps<{
+const { compiler: _compiler } = defineProps<{
   compiler: WasmModule | null;
 }>();
 

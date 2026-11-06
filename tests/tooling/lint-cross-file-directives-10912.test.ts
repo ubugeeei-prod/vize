@@ -121,6 +121,47 @@ void test("cross-file directives share authored ranges, actual suppression, unus
       errorCount: file.messages.filter((message: any) => message.severity === 2).length,
       warningCount: file.messages.filter((message: any) => message.severity === 1).length,
     }));
+  const withPromotedDefaults = (packet: any[], files: Record<string, string>) => {
+    const current = clone(packet);
+    const source = files["src/Editor.vue"];
+    const editor = current.find((row: any) => row.file === "src/Editor.vue");
+    if (!source || !editor) return current;
+    if (source.includes('import { reactive } from "vue";') && !source.includes("reactive(")) {
+      editor.messages.push({
+        ruleId: "vue/no-unused-setup-bindings",
+        ruleDocsPath: "docs/content/rules/vue.md",
+        severity: 1,
+        message: "[vize:vue/no-unused-setup-bindings] Setup binding 'reactive' is never read",
+        line: 2,
+        column: 10,
+        endLine: 2,
+        endColumn: 18,
+        help: "Remove the binding or prefix its name with underscore if intentionally unused",
+      });
+    }
+    if (source.includes("\ndefineProps<{ initial: { name: string } }>();\n")) {
+      editor.messages.push({
+        ruleId: "script/define-props-destructuring",
+        ruleDocsPath: "docs/content/rules/type-and-script.md",
+        severity: 1,
+        message:
+          "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        line: 4,
+        column: 1,
+        endLine: 4,
+        endColumn: 45,
+        help: "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity.",
+      });
+    }
+    editor.messages.sort(
+      (left: any, right: any) =>
+        left.line - right.line ||
+        left.column - right.column ||
+        right.severity - left.severity ||
+        left.ruleId.localeCompare(right.ruleId),
+    );
+    return counts(current);
+  };
   try {
     const archived = new Map<number, any>();
     for (const frozen of [
@@ -195,7 +236,10 @@ void test("cross-file directives share authored ranges, actual suppression, unus
         ...flags,
         "src/**/*.vue",
       ];
-      const expected = phase === "before" ? entry.beforePacket : entry.afterPacket;
+      const expected =
+        phase === "before"
+          ? entry.beforePacket
+          : withPromotedDefaults(entry.afterPacket, entry.files);
       const expectedStatus =
         phase === "before"
           ? Number(entry.beforePacket.some((file: any) => file.errorCount > 0))
@@ -216,10 +260,13 @@ void test("cross-file directives share authored ranges, actual suppression, unus
       (entry: any) => entry.id === "literal-repair-comments-retained",
     );
     assert.ok(stale);
-    const base = clone(stale.afterPacket);
-    const ordinary = clone(stale.beforePacket);
+    const base = withPromotedDefaults(stale.afterPacket, stale.files);
+    const ordinary = withPromotedDefaults(stale.beforePacket, stale.files);
     // Preserve the unrelated ordinary prop warning, including every range/help field.
-    assert.equal(ordinary[0].messages[0].ruleId, "vue/no-unused-properties");
+    assert.deepEqual(
+      ordinary[0].messages.find((message: any) => message.ruleId === "vue/no-unused-properties"),
+      stale.beforePacket[0].messages[0],
+    );
     const withoutUnused = (file: string) => {
       const packet = clone(base);
       const added = stale.wholeChanges.find(

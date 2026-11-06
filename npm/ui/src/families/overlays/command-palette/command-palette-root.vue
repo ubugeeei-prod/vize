@@ -157,7 +157,7 @@ const emit = defineEmits<{
   "update:recent": [value: readonly Id[]];
 
   /** Fired after an item was selected; `commandId` is `null` for plain items. */
-  select: [commandId: Id | null, nativeEvent: Event | null];
+  "select": [commandId: Id | null, nativeEvent: Event | null];
 }>();
 
 defineSlots<{

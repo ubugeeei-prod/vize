@@ -81,6 +81,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "petite-vue/valid-v-scope": "v-scope に値を指定する場合は、オブジェクトリテラルにします。",
   "script/component-options-name-casing":
     "コンポーネントの name オプションを PascalCase に揃えます。",
+  "script/consistent-props-emits-key-quotes":
+    "props / emits 宣言で引用符が必須のキーがある場合、すべてのキーを引用符付きに揃えます。",
   "script/custom-event-name-casing": "emit するカスタムイベント名を指定した形式に揃えます。",
   "script/define-emits-declaration": "defineEmits を型による宣言形式に揃えます。",
   "script/define-macros-order": "script setup のコンパイラーマクロを一定の順に宣言します。",
@@ -159,6 +161,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "script/prefer-use-slots": "setup の context.slots を useSlots() に置き換えます。",
   "script/prefer-use-template-ref": "テンプレート参照に Vue 3.5 の useTemplateRef() を使います。",
   "script/require-default-prop": "省略可能な、Boolean 以外の prop に default を用意します。",
+  "script/require-define-component":
+    "TypeScript SFC の default export を defineComponent() で型付けします。",
   "script/require-explicit-emits": "emit するイベントを defineEmits または emits に宣言します。",
   "script/require-explicit-slots": "useSlots() で使う slot を defineSlots の型で宣言します。",
   "script/require-function-return-type": "関数に戻り値の型注釈を指定します。",

@@ -2,7 +2,7 @@
 import type { Rung } from "./ladder";
 import type { StageId } from "./useStageLadder";
 
-defineProps<{
+const { rungs, selected } = defineProps<{
   rungs: Rung[];
   selected: StageId;
 }>();

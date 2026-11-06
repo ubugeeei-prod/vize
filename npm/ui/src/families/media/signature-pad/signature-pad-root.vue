@@ -155,13 +155,13 @@ const emit = defineEmits<{
   "update:modelValue": [value: SignatureValue];
 
   /** Fired after every distinct value request, with its cause. */
-  change: [value: SignatureValue, previous: SignatureValue, reason: SignaturePadChangeReason];
+  "change": [value: SignatureValue, previous: SignatureValue, reason: SignaturePadChangeReason];
 
   /** Fired when a pointer starts a stroke. */
-  strokeStart: [point: SignaturePoint];
+  "strokeStart": [point: SignaturePoint];
 
   /** Fired when a stroke is committed. */
-  strokeEnd: [stroke: SignatureStroke];
+  "strokeEnd": [stroke: SignatureStroke];
 }>();
 
 const EMPTY: SignatureValue = Object.freeze([]);

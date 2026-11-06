@@ -1771,6 +1771,32 @@ script/component-options-name-casing · lint ルール
   export default {
     name: 'MyComponent'
   }
+=== script/consistent-props-emits-key-quotes
+script/consistent-props-emits-key-quotes · lint ルール
+props と emits の宣言で引用符付きキーを統一する
+
+精度: exact
+対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/script-consistent-props-emits-key-quotes.md
+
+不正な例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    close: []
+  }>()
+
+正しい例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    "close": []
+  }>()
+  const props = defineProps({
+    "aria-label": String,
+    "disabled": Boolean,
+  })
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint ルール
 発行するカスタムイベント名を設定した形式に統一する
@@ -1876,7 +1902,7 @@ script/define-props-destructuring · lint ルール
 ドキュメント: docs/content/rules/reference/script-define-props-destructuring.md
 
 不正な例:
-  const props = defineProps<{ foo: string }>()
+  defineProps<{ foo: string }>()
 
 正しい例:
   const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
@@ -3147,6 +3173,37 @@ Boolean 以外の省略可能な props にデフォルト値を必須にする
       id: { type: Number, required: true },
     }
   }
+=== script/require-define-component
+script/require-define-component · lint ルール
+TypeScript SFC のデフォルト export に defineComponent() を必須にする
+
+精度: exact
+対象: the syntax of <script> and <script setup> programs, without type information
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/script-require-define-component.md
+
+不正な例:
+  <script lang="ts">
+  export default {
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  }
+  </script>
+
+正しい例:
+  <script lang="ts">
+  import { defineComponent } from 'vue'
+  export default defineComponent({
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  })
+  </script>
 === script/require-explicit-emits
 script/require-explicit-emits · lint ルール
 発行するイベントを defineEmits か emits オプションで宣言することを必須にする

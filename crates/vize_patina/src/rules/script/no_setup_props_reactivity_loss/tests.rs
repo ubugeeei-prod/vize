@@ -191,7 +191,7 @@ fn allows_nested_reads_and_non_vue_objects() {
 }
 
 #[test]
-fn stays_opt_in() {
+fn stays_opt_in_until_root_scope_prop_reads_are_precise() {
     let meta = crate::linter::script_rules::builtin_script_rules()
         .into_iter()
         .find(|rule| rule.name == RULE)

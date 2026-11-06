@@ -135,23 +135,23 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 
   /** Fired after any distinct open-state request. */
-  openChange: [value: boolean, previous: boolean, nativeEvent: Event | null];
+  "openChange": [value: boolean, previous: boolean, nativeEvent: Event | null];
 
   /** Fired when the Drawer requests a controlled snap point. */
   "update:activeSnapPoint": [value: DrawerSnapPoint | null];
 
   /** Fired after any distinct snap point request. */
-  snapPointChange: [
+  "snapPointChange": [
     value: DrawerSnapPoint | null,
     previous: DrawerSnapPoint | null,
     nativeEvent: Event | null,
   ];
 
   /** Fired once a pointer has moved past the drag slop. */
-  dragStart: [nativeEvent: PointerEvent];
+  "dragStart": [nativeEvent: PointerEvent];
 
   /** Fired when a started drag gesture ends. */
-  dragEnd: [event: DrawerDragEndEvent];
+  "dragEnd": [event: DrawerDragEndEvent];
 }>();
 
 const dragSlop = 4;

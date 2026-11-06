@@ -102,13 +102,13 @@ const emit = defineEmits<{
   "update:modelValue": [step: StepId];
 
   /** Fired after the current step changes, with the previous step and direction. */
-  change: [step: StepId, previous: StepId, direction: FormWizardDirection];
+  "change": [step: StepId, previous: StepId, direction: FormWizardDirection];
 
   /** Fired when a validation gate keeps the wizard on a step. */
-  blocked: [step: StepId, target: StepId];
+  "blocked": [step: StepId, target: StepId];
 
   /** Fired when the last step passes its gate. */
-  complete: [];
+  "complete": [];
 }>();
 
 defineSlots<{

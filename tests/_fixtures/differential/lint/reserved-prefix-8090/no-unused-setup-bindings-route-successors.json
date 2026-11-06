@@ -1,0 +1,127 @@
+{
+  "schema": "vize.lint.no-unused-setup-bindings-route-successors",
+  "version": 1,
+  "authority": "Additive current default-route successor for unread script-setup bindings. Frozen reserved-key, reserved-prop, historical provider, and original route authorities remain byte-exact.",
+  "rule": "vue/no-unused-setup-bindings",
+  "bases": {
+    "core": {
+      "path": "default-route-companions.json",
+      "sha256": "07267827ba3f3fc6cf789e6939a2b58f61758198be2527fa59ece5cae2470800"
+    },
+    "bare": {
+      "path": "bare-parent-route-successors.json",
+      "sha256": "54610b0976da6e8571d4e170cb4593bfdca4b2d8650025fa882b795f50b3aed8"
+    },
+    "producer": {
+      "path": "../../../../../crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",
+      "sha256": "c67553a900eaedfd5415f2526aa72799bca8778fc867805cdeac4c088aec47b9"
+    }
+  },
+  "routes": {
+    "default": "append in CLI source order",
+    "recommended": "append in CLI source order",
+    "essential": "absent",
+    "ecosystem": "append in CLI source order",
+    "explicitTargetOff": "append in CLI source order",
+    "incremental": "absent",
+    "n8nProjection": "absent"
+  },
+  "coreCases": [
+    {
+      "id": "setup-locals",
+      "filename": "ReservedLookingLocals.vue",
+      "sourceSha256": "3b472fc554196cb26dbfc80974901609f9f5023e1b8fd4afad619a93ba82b826",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding '$data' is never read",
+          "start": 31,
+          "end": 36,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding '$custom' is never read",
+          "start": 65,
+          "end": 72,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    }
+  ],
+  "bareCases": [
+    {
+      "id": "script-setup-locals",
+      "filename": "SetupLocals.vue",
+      "sourceSha256": "19b35fb7cd3da449291cc73c0d27d62537636f9d787b29c724a92e7fb6cee284",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding 'data' is never read",
+          "start": 31,
+          "end": 35,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding 'props' is never read",
+          "start": 41,
+          "end": 46,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding 'slots' is never read",
+          "start": 52,
+          "end": 57,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding 'options' is never read",
+          "start": 63,
+          "end": 70,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding 'emit' is never read",
+          "start": 81,
+          "end": 85,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        },
+        {
+          "rule_name": "vue/no-unused-setup-bindings",
+          "severity": "warning",
+          "message": "Setup binding '$emit' is never read",
+          "start": 105,
+          "end": 110,
+          "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    }
+  ]
+}

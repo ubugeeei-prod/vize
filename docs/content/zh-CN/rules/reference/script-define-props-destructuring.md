@@ -9,17 +9,17 @@ description: "要求 &lt;script setup&gt; 中的 defineProps 解构风格保持�
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
-| `warning` | 无 | 不支持 | [规则选项](/rules/options.md) |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | 不支持 | [规则选项](/rules/options.md) |
 
 适用范围：Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式。
 
 ## 错误示例
 
-`defineProps` 被赋给单一的 `props` 绑定，而非解构，不符合默认的解构偏好。
+单独的类型化 `defineProps` 调用声明了 `foo`，但没有按照默认的解构策略绑定它。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
-const props = defineProps<{ foo: string }>()
+defineProps<{ foo: string }>()
 </script>
 ```
 
@@ -55,4 +55,4 @@ export default defineConfig({}).withVue({
 - [类型与脚本规则](../type-and-script.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L30)

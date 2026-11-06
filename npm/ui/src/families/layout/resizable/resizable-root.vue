@@ -134,13 +134,13 @@ const emit = defineEmits<{
   "update:size": [value: ResizableSize];
 
   /** Fired when a pointer or keyboard resize begins. */
-  resizeStart: [event: ResizableResizeEvent];
+  "resizeStart": [event: ResizableResizeEvent];
 
   /** Fired for every distinct size produced by an interaction. */
-  resize: [event: ResizableResizeEvent];
+  "resize": [event: ResizableResizeEvent];
 
   /** Fired when a pointer or keyboard resize ends. */
-  resizeEnd: [event: ResizableResizeEvent];
+  "resizeEnd": [event: ResizableResizeEvent];
 }>();
 
 defineSlots<{

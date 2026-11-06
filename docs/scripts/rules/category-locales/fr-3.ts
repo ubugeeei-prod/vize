@@ -79,6 +79,11 @@ export const frenchRules3 = {
     "`name` et `age` sont des props à l’exécution facultatives, non booléennes et sans valeur par défaut ; leurs valeurs en cas d’omission restent indéterminées.",
     "`name` reçoit `default: ''`. `enabled` utilise la valeur false implicite de Boolean, et `id`, obligatoire, n’a pas besoin de valeur de repli, ce qui illustre les deux exemptions.",
   ],
+  "script/require-define-component": [
+    "Exiger defineComponent() pour les exports par défaut des SFC TypeScript",
+    "La SFC TypeScript exporte directement un objet Options API ; ses options ne reçoivent donc pas les types contextuels fournis par `defineComponent()`.",
+    "Envelopper l’objet avec `defineComponent()` applique la vérification TypeScript adaptée à Vue aux props, aux événements, à `this` et aux autres options.",
+  ],
   "script/require-explicit-emits": [
     "Exiger la déclaration des événements émis dans defineEmits ou l’option emits",
     "La fonction emit récupérée émet `save`, mais `defineEmits([])` ne déclare pas cet événement.",

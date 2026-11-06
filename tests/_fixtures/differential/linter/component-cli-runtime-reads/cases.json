@@ -83,10 +83,21 @@
               "endLine": 2,
               "endColumn": 13,
               "help": "Remove the unused import or use the component in your template"
+            },
+            {
+              "ruleId": "vue/no-unused-setup-bindings",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'Child' is never read",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the binding or prefix its name with underscore if intentionally unused"
             }
           ],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 2
         }
       ]
     },
@@ -119,10 +130,21 @@
               "endLine": 2,
               "endColumn": 13,
               "help": "Remove the unused import or use the component in your template"
+            },
+            {
+              "ruleId": "vue/no-unused-setup-bindings",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'Child' is never read",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the binding or prefix its name with underscore if intentionally unused"
             }
           ],
           "errorCount": 0,
-          "warningCount": 1
+          "warningCount": 2
         }
       ]
     },
@@ -156,10 +178,21 @@
               "endLine": 2,
               "endColumn": 13,
               "help": "Remove the unused import or use the component in your template"
+            },
+            {
+              "ruleId": "vue/no-unused-setup-bindings",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'Child' is never read",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the binding or prefix its name with underscore if intentionally unused"
             }
           ],
           "errorCount": 1,
-          "warningCount": 0
+          "warningCount": 1
         }
       ]
     },
@@ -182,9 +215,21 @@
       "expected": [
         {
           "file": "ValueReader.vue",
-          "messages": [],
+          "messages": [
+            {
+              "ruleId": "vue/no-unused-setup-bindings",
+              "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+              "severity": 1,
+              "message": "[vize:vue/no-unused-setup-bindings] Setup binding 'Child' is never read",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 13,
+              "help": "Remove the binding or prefix its name with underscore if intentionally unused"
+            }
+          ],
           "errorCount": 0,
-          "warningCount": 0
+          "warningCount": 1
         }
       ]
     }

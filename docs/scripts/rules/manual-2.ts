@@ -118,6 +118,6 @@ export const manual2: Record<string, RuleExample> = {
       language: "vue",
       source: '<template>\n  <p v-show="isSaved" class="message">Saved</p>\n</template>',
     },
-    evidence: "docs/content/rules/musea-and-css.md",
+    evidence: "docs/content/rules/css.md",
   },
 };

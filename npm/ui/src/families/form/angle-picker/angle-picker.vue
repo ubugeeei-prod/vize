@@ -135,7 +135,7 @@ const emit = defineEmits<{
   "update:modelValue": [angle: number];
 
   /** Fired once a change is committed (key press, pointer release, or API). */
-  change: [angle: number, source: AnglePickerChangeSource];
+  "change": [angle: number, source: AnglePickerChangeSource];
 }>();
 
 defineSlots<{

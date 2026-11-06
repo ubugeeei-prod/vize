@@ -2,7 +2,7 @@
 import type { TimelineStep } from "./ladder";
 import { formatNanos } from "./format";
 
-defineProps<{
+const { step, current, title } = defineProps<{
   step: TimelineStep;
   current: boolean;
   /** What the step did, for the tooltip. */

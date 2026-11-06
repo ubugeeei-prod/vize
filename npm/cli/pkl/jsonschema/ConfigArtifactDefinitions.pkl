@@ -2,6 +2,7 @@
 module vize.jsonschema.ConfigArtifactDefinitions
 
 import "@json_schema/JsonSchema.pkl"
+
 import "LintRuleOptionsSchemaDefinitions.pkl"
 
 experimentalsConfigDef: JsonSchema = new JsonSchema {
@@ -37,7 +38,8 @@ compilerCompatibilityConfigDef: JsonSchema = new JsonSchema {
     }
     ["scriptSetupInStandalone"] = new JsonSchema {
       type = "boolean"
-      description = "Enable <script setup> when emitting function-body output for CDN/global Vue usage"
+      description =
+        "Enable <script setup> when emitting function-body output for CDN/global Vue usage"
       default = false
     }
     ["optionsApiVapor"] = new JsonSchema {
@@ -137,7 +139,8 @@ compilerConfigDef: JsonSchema = new JsonSchema {
     }
     ["comments"] = new JsonSchema {
       type = "boolean"
-      description = "Keep template comments. Unset follows Vue: kept in development, dropped in production"
+      description =
+        "Keep template comments. Unset follows Vue: kept in development, dropped in production"
     }
     ["isTs"] = new JsonSchema {
       type = "boolean"
@@ -210,14 +213,15 @@ noRestrictedMembersOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
-componentNameInTemplateCasingOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.componentNameInTemplateCasingOptionsDef
+componentNameInTemplateCasingOptionsDef: JsonSchema =
+  LintRuleOptionsSchemaDefinitions.componentNameInTemplateCasingOptionsDef
 
 customEventNameCasingOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
     ["casing"] = new JsonSchema {
       type = "string"
-      enum = new Listing { "camelCase"; "kebab-case" }
+      enum = new Listing { "lowercase"; "camelCase"; "kebab-case" }
       default = "camelCase"
     }
   }
@@ -332,6 +336,7 @@ museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
-definePropsDestructuringOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.definePropsDestructuringOptionsDef
+definePropsDestructuringOptionsDef: JsonSchema =
+  LintRuleOptionsSchemaDefinitions.definePropsDestructuringOptionsDef
 
 lintRuleOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef

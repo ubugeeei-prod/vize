@@ -16,6 +16,7 @@ pub(super) fn event_name_casing(
 ) -> vize_patina::rules::script::EventNameCasing {
     match casing {
         ConfigEventNameCasing::CamelCase => vize_patina::rules::script::EventNameCasing::CamelCase,
+        ConfigEventNameCasing::Lowercase => vize_patina::rules::script::EventNameCasing::Lowercase,
         ConfigEventNameCasing::KebabCase => vize_patina::rules::script::EventNameCasing::KebabCase,
     }
 }

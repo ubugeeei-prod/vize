@@ -4,7 +4,7 @@ import CodeHighlight from "../../shared/CodeHighlight.vue";
 import type { CodeOutputs } from "../atelier/codeOutputs";
 import type { OutputTarget } from "./useStageLadder";
 
-const props = defineProps<{
+const { outputs, target, theme, backendPages } = defineProps<{
   outputs: CodeOutputs;
   target: OutputTarget;
   theme: "dark" | "light";
@@ -21,16 +21,14 @@ const TARGETS: { id: OutputTarget; label: string; note: string }[] = [
   { id: "ssr", label: "SSR", note: "Server string renderer" },
 ];
 
-const variant = computed(() => props.outputs[props.target]);
+const variant = computed(() => outputs[target]);
 const selected = ref("backend:0");
 const backendIndex = computed(() => {
   const index = Number(selected.value.slice("backend:".length));
-  return Number.isInteger(index) && index >= 0 && index < (props.backendPages?.length ?? 0)
-    ? index
-    : 0;
+  return Number.isInteger(index) && index >= 0 && index < (backendPages?.length ?? 0) ? index : 0;
 });
 const backend = computed(() => {
-  return props.backendPages?.[backendIndex.value];
+  return backendPages?.[backendIndex.value];
 });
 const moduleShown = computed(() => selected.value === "module" || !backend.value);
 const code = computed(() =>

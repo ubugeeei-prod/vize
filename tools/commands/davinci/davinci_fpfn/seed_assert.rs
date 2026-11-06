@@ -226,7 +226,10 @@ fn assert_unused(
                 &config,
                 &format!(
                     "export default {};\n",
-                    serde_json::json!({"vue": {"linter": {"rules": {CLASS_B_RULE: "warn"}}}})
+                    serde_json::json!({"vue": {"linter": {"rules": {
+                        CLASS_A_RULE: "off",
+                        CLASS_B_RULE: "warn"
+                    }}}})
                 ),
             )?;
             let cli = cli.ok_or("vize cli is required")?;
@@ -304,10 +307,10 @@ fn assert_unused(
     ))
 }
 
-/// eslint-plugin-vue checks a template's `$emit` calls against `<script setup>`
-/// once one exists, so a block the class-(b) seed creates turns them into
-/// undeclared events. Those findings belong to the created block, not to a
-/// seeded class, on either side of the comparison.
+/// Some template rules require `<script setup>` ownership. A block created
+/// solely by the class-(b) seed can therefore activate unrelated explicit
+/// emit or undefined-reference findings. Those belong to the created block,
+/// not to the seeded unused-binding class.
 const CREATED_SETUP_RULE: &str = "script/require-explicit-emits";
 
 fn created_setup_paths(manifest: &SeedManifest) -> BTreeSet<String> {
@@ -326,6 +329,9 @@ fn without_created_setup_rows(
     created: &BTreeSet<String>,
 ) -> Vec<DiagnosticRow> {
     rows.into_iter()
-        .filter(|row| !(row.rule_id == CREATED_SETUP_RULE && created.contains(&row.path)))
+        .filter(|row| {
+            !((row.rule_id == CREATED_SETUP_RULE || row.rule_id == CLASS_A_RULE)
+                && created.contains(&row.path))
+        })
         .collect()
 }

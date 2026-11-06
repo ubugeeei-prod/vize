@@ -71,6 +71,7 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
       JSON.stringify({
         linter: { preset: "incremental", rules: { [corpus.rule]: "warn" } },
       }) + "\n";
+    const focusedRules = { "vue/no-unused-setup-bindings": "off" };
     const scenarios = corpus.cases.map((entry) => ({
       entry,
       kind: "scoped",
@@ -86,10 +87,17 @@ await test("public Vue imports preserve whole CLI packets and safe final file by
       for (const route of control.routes) {
         const config =
           route.id === "explicit-off"
-            ? JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n"
+            ? JSON.stringify({
+                linter: { rules: { ...focusedRules, [corpus.rule]: "off" } },
+              }) + "\n"
             : route.id === "n8n-projection"
-              ? JSON.stringify({ linter: projection.linter }) + "\n"
-              : null;
+              ? JSON.stringify({
+                  linter: {
+                    ...projection.linter,
+                    rules: { ...projection.linter.rules, ...focusedRules },
+                  },
+                }) + "\n"
+              : JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
         scenarios.push({
           entry,
           kind: route.id,

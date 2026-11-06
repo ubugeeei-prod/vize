@@ -42,6 +42,8 @@ pub enum CustomEventNameCasing {
     #[default]
     #[serde(rename = "camelCase")]
     CamelCase,
+    #[serde(rename = "lowercase")]
+    Lowercase,
     #[serde(rename = "kebab-case")]
     KebabCase,
 }

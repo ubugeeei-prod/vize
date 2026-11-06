@@ -139,7 +139,7 @@ function cliRuleOptions(ruleName: string, option: Record<string, unknown>): Pati
 }
 
 function isCustomEventNameCasingOption(value: unknown): value is CustomEventNameCasingOption {
-  return value === "camelCase" || value === "kebab-case";
+  return value === "lowercase" || value === "camelCase" || value === "kebab-case";
 }
 
 function isNoMutatingPropsOption(value: unknown): value is NoMutatingPropsOption {

@@ -155,16 +155,16 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 
   /** Fired after a native input event with the next string and native `Event`. */
-  input: [value: string, nativeEvent: Event];
+  "input": [value: string, nativeEvent: Event];
 
   /** Fired after native change/commit with the current string and native `Event`. */
-  change: [value: string, nativeEvent: Event];
+  "change": [value: string, nativeEvent: Event];
 
   /** Fired when IME composition starts. */
-  compositionStart: [value: string, nativeEvent: CompositionEvent];
+  "compositionStart": [value: string, nativeEvent: CompositionEvent];
 
   /** Fired when IME composition ends. */
-  compositionEnd: [value: string, nativeEvent: CompositionEvent];
+  "compositionEnd": [value: string, nativeEvent: CompositionEvent];
 }>();
 
 const element = useTemplateRef<HTMLInputElement>("element");

@@ -20,7 +20,7 @@ type Manifest = {
 export function validateComponentCliControls(value: unknown, read: (file: string) => Buffer) {
   assert.equal(
     sha(JSON.stringify(value)),
-    "1bba252ed30e6adf31da2153f9f471e83269d871307665dc958b708dfa0ca47a",
+    "d7fb703384beace2fb6a39bb8e528c4867f571ba81ebd690e22727a8a9d993b2",
   );
   const manifest = value as Manifest;
   assert.equal(manifest.version, 1);

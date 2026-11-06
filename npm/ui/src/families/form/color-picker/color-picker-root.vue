@@ -129,10 +129,10 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 
   /** Fired after every distinct color change with the normalized color and its source. */
-  change: [value: string, detail: ColorPickerChangeDetail];
+  "change": [value: string, detail: ColorPickerChangeDetail];
 
   /** Fired when a continuous interaction (drag end, key press, field commit, pick) settles. */
-  commit: [value: string, color: ColorValue];
+  "commit": [value: string, color: ColorValue];
 }>();
 
 defineSlots<{

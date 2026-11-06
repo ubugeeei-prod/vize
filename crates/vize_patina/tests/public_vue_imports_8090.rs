@@ -133,14 +133,17 @@ fn minimal_import_routes_retain_full_preset_config_and_order_diagnostics() {
                 .collect(),
         };
         let routes = [
-            ("default", Linter::new()),
-            ("recommended", Linter::with_preset(LintPreset::HappyPath)),
-            ("essential", Linter::with_preset(LintPreset::Essential)),
-            ("ecosystem", Linter::with_preset(LintPreset::Ecosystem)),
+            ("default", crate::historical_linter(LintPreset::HappyPath)),
+            (
+                "recommended",
+                crate::historical_linter(LintPreset::HappyPath),
+            ),
+            ("essential", crate::historical_linter(LintPreset::Essential)),
+            ("ecosystem", crate::historical_linter(LintPreset::Ecosystem)),
             ("incremental", Linter::with_preset(LintPreset::Incremental)),
             (
                 "explicit-off",
-                Linter::new().with_disabled_rules(vec![rule.into()]),
+                crate::historical_linter_with_disabled(LintPreset::HappyPath, &[rule]),
             ),
             (
                 "n8n-projection",

@@ -22,6 +22,7 @@ import path from "node:path";
 
 import {
   CLASS_A,
+  CLASS_A_RULE,
   CLASS_B,
   CLASS_B_RULE,
   applySeed,
@@ -273,7 +274,11 @@ function assertUnused({ manifest, outDir, cli, hooks }: SeedAssertInput) {
     const config = path.join(cwd, "vite.config.mjs");
     fs.writeFileSync(
       config,
-      `export default ${JSON.stringify({ vue: { linter: { rules: { [CLASS_B_RULE]: "warn" } } } })};\n`,
+      `export default ${JSON.stringify({
+        vue: {
+          linter: { rules: { [CLASS_A_RULE]: "off", [CLASS_B_RULE]: "warn" } },
+        },
+      })};\n`,
     );
     const rows = hook
       ? loadLintRows(hook, cli, cwd, files)

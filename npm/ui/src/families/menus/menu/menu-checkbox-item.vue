@@ -59,7 +59,7 @@ const emit = defineEmits<{
   /** Fired with the toggled checked value (supports `v-model`). */
   "update:modelValue": [value: boolean];
   /** Fired when the item is activated, before toggling; call `preventDefault()` to keep the menu open. */
-  select: [event: MenuSelectEvent];
+  "select": [event: MenuSelectEvent];
 }>();
 
 defineSlots<{

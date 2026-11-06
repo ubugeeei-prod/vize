@@ -5,7 +5,7 @@ import { describeWalk, type TimelineWalk } from "./fusion";
 import { formatNanos } from "./format";
 import StepPill from "./StepPill.vue";
 
-const props = defineProps<{
+const { steps, walks, current } = defineProps<{
   steps: TimelineStep[];
   /** The L2 transform plan's walks, from its plan page. */
   walks: TimelineWalk[];
@@ -24,8 +24,8 @@ type Entry =
 
 const entries = computed<Entry[]>(() => {
   const out: Entry[] = [];
-  for (const step of props.steps) {
-    const walk = step.walk === null ? undefined : props.walks.find((w) => w.index === step.walk);
+  for (const step of steps) {
+    const walk = step.walk === null ? undefined : walks.find((w) => w.index === step.walk);
     const last = out[out.length - 1];
     if (!walk) out.push({ key: step.key, step });
     else if (last && "steps" in last && last.walk === walk) last.steps.push(step);
@@ -34,11 +34,9 @@ const entries = computed<Entry[]>(() => {
   return out;
 });
 
-const passCount = computed(() => props.steps.filter((step) => !step.producer).length);
-const changedPasses = computed(
-  () => props.steps.filter((step) => !step.producer && step.changed).length,
-);
-const measured = computed(() => props.steps.filter((step) => step.nanos !== null));
+const passCount = computed(() => steps.filter((step) => !step.producer).length);
+const changedPasses = computed(() => steps.filter((step) => !step.producer && step.changed).length);
+const measured = computed(() => steps.filter((step) => step.nanos !== null));
 const totalNanos = computed(() => measured.value.reduce((sum, step) => sum + (step.nanos ?? 0), 0));
 
 function share(step: TimelineStep): string {

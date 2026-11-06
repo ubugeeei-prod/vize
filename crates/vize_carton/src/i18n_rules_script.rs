@@ -11,6 +11,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "强制组件的 `name` 选项使用 PascalCase",
     ),
     (
+        "script/consistent-props-emits-key-quotes.description",
+        "Require consistent quoted keys in props and emits declarations",
+        "props と emits の宣言で引用符付きキーを統一する",
+        "要求 props 和 emits 声明中的键使用一致的引号形式",
+    ),
+    (
         "script/custom-event-name-casing.description",
         "Enforce configured casing for emitted custom event names",
         "発行するカスタムイベント名を設定した形式に統一する",

@@ -181,6 +181,8 @@ fn observe_complete_provide_assertion_packets() {
                     "-f",
                     "json",
                     "--no-config",
+                    "--preset",
+                    "incremental",
                     "--cross-file",
                     "src/**/*.vue",
                 ],

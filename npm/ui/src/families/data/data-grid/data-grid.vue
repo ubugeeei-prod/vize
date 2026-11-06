@@ -248,7 +248,7 @@ const emit = defineEmits<{
   /** Fired when rows expand or collapse. */
   "update:expanded": [value: readonly string[]];
   /** Fired when a cell edit commits; update `rows` to apply it. */
-  cellEdit: [event: DataGridCellEditEvent<Row>];
+  "cellEdit": [event: DataGridCellEditEvent<Row>];
 }>();
 
 defineSlots<{

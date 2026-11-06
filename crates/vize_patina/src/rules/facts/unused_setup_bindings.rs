@@ -1,4 +1,4 @@
-//! `vue/no-unused-setup-bindings` (P4-3c), opt-in, tier Sound.
+//! `vue/no-unused-setup-bindings` (P4-3c), default preset, tier Sound.
 //!
 //! Report valid script-setup declarations with no resolved script, template
 //! or style `v-bind()` read. Underscore prefixes express intentional non-use.
@@ -226,7 +226,7 @@ mod tests {
     }
 
     #[test]
-    fn actual_opt_in_dispatch_and_exact_identifier_spans() {
+    fn default_and_opt_in_dispatch_preserve_exact_identifier_spans() {
         for source in [
             "<script setup>const unused = 0;</script><template><div /></template>",
             "<template><div /></template><script setup>const unused = 0;</script>",
@@ -243,7 +243,7 @@ mod tests {
             let start = source.find(name).unwrap();
             assert_eq!(unused(source), [(start, start + name.len())], "{source}");
         }
-        assert!(!RuleRegistry::with_all().has_rule(RULE));
+        assert!(RuleRegistry::with_all().has_rule(RULE));
         assert!(RuleRegistry::with_opt_in_rules().has_rule(RULE));
         assert_eq!(
             crate::rule_contracts::contract_for(RULE)
@@ -350,6 +350,14 @@ const unused = 0;
         let source = "<script setup>const unused = 0;</script><template><div /></template>";
         assert!(
             Linter::new()
+                .lint_sfc(source, "Example.vue")
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == RULE)
+        );
+        assert!(
+            Linter::new()
+                .with_disabled_rules(vec![RULE.into()])
                 .lint_sfc(source, "Example.vue")
                 .diagnostics
                 .iter()

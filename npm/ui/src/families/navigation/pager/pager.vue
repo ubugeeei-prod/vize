@@ -47,7 +47,7 @@ const emit = defineEmits<{
   "update:modelValue": [page: PageId];
 
   /** Fired after the active page changes, with the previous page and what caused it. */
-  change: [page: PageId, previous: PageId, reason: PagerChangeReason];
+  "change": [page: PageId, previous: PageId, reason: PagerChangeReason];
 }>();
 
 defineSlots<{

@@ -56,6 +56,6 @@ export default defineConfig({}).withVue({
 
 ## 相关页面
 
-- [Musea 与 CSS 规则](../musea-and-css.md)
+- [Musea 规则](../musea.md)
 - [全部规则](../all.md)
 - [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11)

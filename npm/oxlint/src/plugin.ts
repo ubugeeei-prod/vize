@@ -165,8 +165,8 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return [
         {
           oneOf: [
-            { enum: ["camelCase", "kebab-case"] },
-            objectSchema({ casing: { enum: ["camelCase", "kebab-case"] } }),
+            { enum: ["lowercase", "camelCase", "kebab-case"] },
+            objectSchema({ casing: { enum: ["lowercase", "camelCase", "kebab-case"] } }),
           ],
         },
       ];

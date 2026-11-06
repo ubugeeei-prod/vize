@@ -25,42 +25,42 @@ const {
    *
    * @default "section"
    */
-  readonly as?: PrimitiveAs;
+  readonly "as"?: PrimitiveAs;
 
   /**
    * Whether the region is currently blocked by in-progress or unavailable work.
    *
    * @default false
    */
-  readonly blocked?: boolean;
+  readonly "blocked"?: boolean;
 
   /**
    * Consumer styling and status reason mirrored to `data-reason`.
    *
    * @default "loading"
    */
-  readonly reason?: BlockUIReason;
+  readonly "reason"?: BlockUIReason;
 
   /**
    * Optional interaction policy. `inert` applies the native inert attribute only while blocked.
    *
    * @default "none"
    */
-  readonly interaction?: BlockUIInteraction;
+  readonly "interaction"?: BlockUIInteraction;
 
   /**
    * Optional live-region announcement policy used only when `label` is non-empty.
    *
    * @default "off"
    */
-  readonly announce?: BlockUIAnnouncement;
+  readonly "announce"?: BlockUIAnnouncement;
 
   /**
    * Accessible announcement label used when `announce` is not `off`.
    *
    * @default undefined
    */
-  readonly label?: string;
+  readonly "label"?: string;
 
   /**
    * Consumed so BlockUI state owns `aria-busy` instead of fallthrough attrs.
@@ -75,7 +75,7 @@ const {
    *
    * @default undefined
    */
-  readonly inert?: boolean | "";
+  readonly "inert"?: boolean | "";
 }>();
 
 defineSlots<{

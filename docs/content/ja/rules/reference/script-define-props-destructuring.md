@@ -9,17 +9,17 @@ defineProps の分割代入スタイルを指定した方針に揃えます。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | なし | なし | [ルールのオプション](../options.md) |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
 ## 悪い例
 
-`defineProps` の結果を分割代入せず、単一の `props` 変数に代入しており、既定の分割代入の推奨に従っていません。
+型付きの `defineProps` を単独で呼び出し、既定の分割代入方針で `foo` を束縛していません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
-const props = defineProps<{ foo: string }>()
+defineProps<{ foo: string }>()
 </script>
 ```
 
@@ -55,4 +55,4 @@ export default defineConfig({}).withVue({
 - [型と script のルール](../type-and-script.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L30)

@@ -68,7 +68,7 @@ const emit = defineEmits<{
   "update:active": [id: string | null];
 
   /** Fired after every distinct active-marker change with its source. */
-  activeChange: [id: string | null, previous: string | null, source: HotspotActiveChangeSource];
+  "activeChange": [id: string | null, previous: string | null, source: HotspotActiveChangeSource];
 }>();
 
 defineSlots<{
