@@ -161,9 +161,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         has_script_setup,
         has_plain_script_scope,
     );
-    // A `namespace` cannot stay inside `__setup()` (TS1235), so it and any
-    // declaration it merges with move to module scope instead of through the
-    // export bridge.
+    // A `namespace` cannot stay in `__setup()` (TS1235), so it and merged declarations move to
+    // module scope instead of through the export bridge.
     let namespace_hoist = self::script_module::NamespaceHoistPlan::collect(
         script_content,
         has_script_setup,
@@ -225,9 +224,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     };
 
     namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
-    // Whether a default-export rewrite declared `__default__`, tracked as
-    // state: grepping the generated text would match helper type positions
-    // and user code that merely mentions the name (#3888).
+    // Track whether a default-export rewrite declared `__default__`; generated helpers and user
+    // code can also mention the name (#3888), so grepping the output is not authoritative.
     let binding_anchors = SetupBindingAnchors {
         summary,
         imports: &imports.values,
