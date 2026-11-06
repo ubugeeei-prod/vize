@@ -178,6 +178,20 @@ pub(super) fn emit_component_constructors<'a>(
         } else {
             String::from("{}")
         };
+        let mut component_instance_base = String::default();
+        if aliases.has_authored_default {
+            append!(
+                component_instance_base,
+                "Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
+            );
+        }
+        instance_base(
+            &mut component_instance_base,
+            legacy_vue2,
+            dialect,
+            aliases.has_exposed_type,
+            (aliases.has_root_el, aliases.has_refs),
+        );
         // `$ComponentInput` is a conditional on the authored type
         // parameter, so the checker defers it instead of resolving the input
         // shape while it checks the alias declaration. That matters because
@@ -193,7 +207,7 @@ pub(super) fn emit_component_constructors<'a>(
         // check; TSX binds `$JsxProps` and stays exact (#11629).
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{own}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base};\n"
         );
     }
 
