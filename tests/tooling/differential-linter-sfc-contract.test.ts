@@ -61,7 +61,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "2ca07d6ae58540be3ea88dfd1a775a468acb86cbbef4a1611e1e457a231a4f1c",
+    "e9161090b4f479b19fa44ae64dc6289d8a81938c9de50812a9b4eb616d64017e",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],

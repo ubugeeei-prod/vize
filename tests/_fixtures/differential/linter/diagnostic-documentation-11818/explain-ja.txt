@@ -1771,6 +1771,32 @@ script/component-options-name-casing · lint ルール
   export default {
     name: 'MyComponent'
   }
+=== script/consistent-props-emits-key-quotes
+script/consistent-props-emits-key-quotes · lint ルール
+props と emits の宣言で引用符付きキーを統一する
+
+精度: exact
+対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+重大度: エラー
+カテゴリー: script
+自動修正: なし
+ドキュメント: docs/content/rules/reference/script-consistent-props-emits-key-quotes.md
+
+不正な例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    close: []
+  }>()
+
+正しい例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    "close": []
+  }>()
+  const props = defineProps({
+    "aria-label": String,
+    "disabled": Boolean,
+  })
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint ルール
 発行するカスタムイベント名を設定した形式に統一する
@@ -1783,12 +1809,12 @@ script/custom-event-name-casing · lint ルール
 ドキュメント: docs/content/rules/reference/script-custom-event-name-casing.md
 
 不正な例:
-  const emit = defineEmits(['transitionStart'])
-  emit('transitionStart')         // camelCase → report
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
 
 正しい例:
-  const emit = defineEmits(['transitionstart'])
-  emit('transitionstart')
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
 === script/define-emits-declaration
 script/define-emits-declaration · lint ルール
 defineEmits にはランタイム・配列形式ではなく型ベースの defineEmits<{}>() 形式を強制する

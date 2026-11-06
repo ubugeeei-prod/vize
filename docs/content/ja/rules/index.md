@@ -43,7 +43,7 @@ export default defineConfig({}).withVue({
 | `happy-path`（既定） | 147 | `essential` に加え、テンプレートの書式（`v-bind` の省略記法、コンポーネントのイベント名のハイフン区切りを含む）、アクセシビリティ、HTML 適合性、SSR の危険、未使用のプロパティ、emit の宣言、props と emits の型 |
 | `ecosystem` | 155 | `happy-path` に加え、エコシステムのライブラリー向けの検査 |
 | `nuxt` | 213 | `opinionated` を Nuxt の自動インポートに合わせたもの |
-| `opinionated` | 213 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、`<script setup>` のマクロ順序、lowercase のイベント名、`useTemplateRef`、`defineSlots`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
+| `opinionated` | 214 | `happy-path` に加え、より厳しい規約、props の型宣言、型ベースの `defineProps`/`defineEmits`、`<script setup>` のマクロ順序、kebab-case のイベント名、props / emits キーの引用符統一、`useTemplateRef`、`defineSlots`、props の既定値と emit の整理、`defineOptions`、`css/*` のスタイル規則 |
 | `incremental` | 0 | なし。指定したルールだけを有効にするときの出発点です。 |
 
 ルール数にファイル間ルールは含みません。`compiler.compatibility.vueVersion` が `2` または `2.7` のときは、

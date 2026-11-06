@@ -1,8 +1,13 @@
 export const chineseRules2: Record<string, readonly [string, string, string]> = {
+  "script/consistent-props-emits-key-quotes": [
+    "统一 props 和 emits 声明中带引号的键",
+    "emits 声明将必须带引号的 `update:modelValue` 键与不带引号的 `close` 键混合使用。",
+    "声明中的所有静态键都带引号，因为 `update:modelValue` 无法写成不带引号的 JavaScript 标识符。",
+  ],
   "script/custom-event-name-casing": [
-    "要求发出的自定义事件名称使用配置的格式",
-    "发出的字符串 `transitionStart` 含有大写字母，违反默认的无分隔符全小写策略。",
-    "声明和调用都使用 `transitionstart`，既保持名称一致，也遵循平台风格的全小写约定。项目仍可显式配置 camelCase 或 kebab-case。",
+    "要求发出的自定义事件名称使用 camelCase",
+    "发出的字符串 `my-event` 含有连字符，违反默认的 camelCase 事件命名策略。",
+    "声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项可以选择这两种受支持的样式。",
   ],
   "script/define-emits-declaration": [
     "要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式",

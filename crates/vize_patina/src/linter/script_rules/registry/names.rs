@@ -80,6 +80,8 @@ pub(crate) const RULE_VALID_DEFINE_EMITS: &str = "script/valid-define-emits";
 pub(crate) const RULE_REQUIRE_VALID_DEFAULT_PROP: &str = "script/require-valid-default-prop";
 pub(crate) const RULE_REQUIRE_TYPED_OBJECT_PROP: &str = "script/require-typed-object-prop";
 pub(crate) const RULE_CUSTOM_EVENT_NAME_CASING: &str = "script/custom-event-name-casing";
+pub(crate) const RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES: &str =
+    "script/consistent-props-emits-key-quotes";
 pub(crate) const RULE_NO_REF_AS_OPERAND: &str = "script/no-ref-as-operand";
 pub(crate) const RULE_REQUIRE_EXPLICIT_SLOTS: &str = "script/require-explicit-slots";
 pub(crate) const RULE_NO_DUPLICATE_ATTR_INHERITANCE: &str = "script/no-duplicate-attr-inheritance";
@@ -176,6 +178,7 @@ pub(in crate::linter::script_rules) const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str]
     RULE_REQUIRE_VALID_DEFAULT_PROP,
     RULE_REQUIRE_TYPED_OBJECT_PROP,
     RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES,
     RULE_NO_REF_AS_OPERAND,
     RULE_REQUIRE_EXPLICIT_SLOTS,
     RULE_NO_DUPLICATE_ATTR_INHERITANCE,
@@ -269,6 +272,7 @@ pub(in crate::linter::script_rules) const OPT_IN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_REQUIRE_VALID_DEFAULT_PROP,
     RULE_REQUIRE_TYPED_OBJECT_PROP,
     RULE_CUSTOM_EVENT_NAME_CASING,
+    RULE_CONSISTENT_PROPS_EMITS_KEY_QUOTES,
     RULE_NO_REF_AS_OPERAND,
     RULE_REQUIRE_EXPLICIT_SLOTS,
     RULE_NO_DUPLICATE_ATTR_INHERITANCE,

@@ -57,11 +57,18 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "`MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。",
   ],
   [
+    "script/consistent-props-emits-key-quotes",
+    "The emits declaration mixes the necessarily quoted `update:modelValue` key with the unquoted `close` key.",
+    "Every static key in the declaration is quoted because `update:modelValue` cannot be written as an unquoted JavaScript identifier.",
+    "emits 宣言で、引用符が必須の `update:modelValue` キーと、引用符のない `close` キーが混在しています。",
+    "`update:modelValue` は引用符なしの JavaScript 識別子として書けないため、宣言内のすべての静的キーを引用符付きにそろえます。",
+  ],
+  [
     "script/custom-event-name-casing",
-    "The emitted string `transitionStart` contains an uppercase letter and violates the default separator-free lowercase policy.",
-    "Both the declaration and call use `transitionstart`, preserving agreement while following the platform-style lowercase convention. Projects can explicitly configure camelCase or kebab-case instead.",
-    "emit する文字列 `transitionStart` に大文字が含まれ、区切りなしの lowercase を使う既定の命名規則に違反しています。",
-    "宣言と呼び出しの両方を `transitionstart` にそろえ、プラットフォーム風の lowercase 規則を満たします。camelCase または kebab-case を明示的に設定することもできます。",
+    "The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.",
+    "Both the declaration and call use `myEvent`, preserving agreement while satisfying the global camelCase default. The `opinionated` preset selects kebab-case instead, and explicit rule options can select either supported style.",
+    "emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。",
+    "宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションではどちらの形式も選択できます。",
   ],
   [
     "script/define-emits-declaration",

@@ -6,15 +6,15 @@ expression: result.diagnostics
     LintDiagnostic {
         rule_name: "script/custom-event-name-casing",
         severity: Error,
-        message: "Custom event name 'my-event' is not lowercase.",
+        message: "Custom event name 'my-event' is not camelCase.",
         start: 45,
         end: 55,
         help: Some(
-            "Use a separator-free lowercase event name (e.g. `transitionstart`).",
+            "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. `myEvent`).",
         ),
         labels: [
             Label {
-                message: "expected lowercase",
+                message: "expected camelCase",
                 start: 45,
                 end: 55,
             },

@@ -41,7 +41,7 @@ Uma predefinição é um conjunto inicial de regras. `happy-path` é a padrão.
 | `happy-path` (padrão) | 147 | `essential`, mais convenções de formatação de template (incluindo a forma curta de `v-bind` e eventos de componente com hífen), acessibilidade, conformidade HTML, riscos de SSR, propriedades não usadas, emits declarados e props e emits tipados |
 | `ecosystem` | 155 | `happy-path`, mais as verificações das bibliotecas do ecossistema |
 | `nuxt` | 213 | `opinionated`, ajustada para os auto-imports do Nuxt |
-| `opinionated` | 213 | `happy-path`, mais convenções mais rígidas, props tipadas, `defineProps`/`defineEmits` baseados em tipos, ordem das macros de `<script setup>`, nomes de eventos em minúsculas, `useTemplateRef`, `defineSlots`, padrões de props e emits, `defineOptions` e as regras de estilo `css/*` |
+| `opinionated` | 214 | `happy-path`, mais convenções mais rígidas, props tipadas, `defineProps`/`defineEmits` baseados em tipos, ordem das macros de `<script setup>`, nomes de eventos em kebab-case, aspas consistentes nas chaves de props e emits, `useTemplateRef`, `defineSlots`, padrões de props e emits, `defineOptions` e as regras de estilo `css/*` |
 | `incremental` | 0 | Nada. Comece aqui para ativar só as regras que você nomear. |
 
 As contagens não incluem as regras entre arquivos. Quando `compiler.compatibility.vueVersion` é `2` ou `2.7`, as verificações de remoções do Vue 3 ficam desativadas.

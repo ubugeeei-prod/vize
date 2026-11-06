@@ -587,9 +587,9 @@
           "type": "object",
           "properties": {
             "casing": {
-              "default": "lowercase",
+              "default": "camelCase",
               "type": "string",
-              "enum": ["lowercase", "camelCase", "kebab-case"]
+              "enum": ["camelCase", "kebab-case"]
             }
           },
           "additionalProperties": false

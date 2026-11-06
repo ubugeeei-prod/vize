@@ -282,12 +282,13 @@ fn component_casing(
 fn event_name_casing(
     casing: vize_l0::config::CustomEventNameCasing,
 ) -> vize_patina::rules::script::EventNameCasing {
-    use vize_l0::config::CustomEventNameCasing as Source;
-    use vize_patina::rules::script::EventNameCasing as Target;
     match casing {
-        Source::Lowercase => Target::Lowercase,
-        Source::CamelCase => Target::CamelCase,
-        Source::KebabCase => Target::KebabCase,
+        vize_l0::config::CustomEventNameCasing::CamelCase => {
+            vize_patina::rules::script::EventNameCasing::CamelCase
+        }
+        vize_l0::config::CustomEventNameCasing::KebabCase => {
+            vize_patina::rules::script::EventNameCasing::KebabCase
+        }
     }
 }
 

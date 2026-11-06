@@ -1833,6 +1833,32 @@ script/component-options-name-casing · lint 规则
   export default {
     name: 'MyComponent'
   }
+=== script/consistent-props-emits-key-quotes
+script/consistent-props-emits-key-quotes · lint 规则
+要求 props 和 emits 声明中的键使用一致的引号形式
+
+精度层级: exact
+适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/script-consistent-props-emits-key-quotes.md
+
+错误示例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    close: []
+  }>()
+
+正确示例:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    "close": []
+  }>()
+  const props = defineProps({
+    "aria-label": String,
+    "disabled": Boolean,
+  })
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint 规则
 强制触发的自定义事件名使用配置的格式
@@ -1845,12 +1871,12 @@ script/custom-event-name-casing · lint 规则
 文档: docs/content/rules/reference/script-custom-event-name-casing.md
 
 错误示例:
-  const emit = defineEmits(['transitionStart'])
-  emit('transitionStart')         // camelCase → report
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
 
 正确示例:
-  const emit = defineEmits(['transitionstart'])
-  emit('transitionstart')
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
 === script/define-emits-declaration
 script/define-emits-declaration · lint 规则
 强制使用基于类型的 defineEmits<{}>() 形式，而不是运行时/数组形式

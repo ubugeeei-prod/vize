@@ -33,7 +33,7 @@ typealias LintPreset =
     | "ecosystem"
     | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
-typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
+typealias CustomEventNameCasing = "camelCase" | "kebab-case"
 typealias PropNameCasingStyle = "camelCase" | "snake_case"
 typealias HtmlSelfClosingStyle = "always" | "never" | "any"
 typealias HtmlQuoteStyle = "double" | "single"
@@ -116,7 +116,7 @@ class ComponentNameInTemplateCasingOptions {
   globals: Listing<String> = new Listing {}
 }
 class CustomEventNameCasingOptions {
-  casing: CustomEventNameCasing = "lowercase"
+  casing: CustomEventNameCasing = "camelCase"
 }
 
 class PropNameCasingOptions {

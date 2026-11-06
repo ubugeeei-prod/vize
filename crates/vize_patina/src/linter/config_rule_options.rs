@@ -45,9 +45,6 @@ impl Linter {
         }
         if let Some(value) = options.custom_event_name_casing() {
             self = self.with_custom_event_name_casing(match value {
-                CustomEventNameCasing::Lowercase => {
-                    crate::rules::script::EventNameCasing::Lowercase
-                }
                 CustomEventNameCasing::CamelCase => {
                     crate::rules::script::EventNameCasing::CamelCase
                 }

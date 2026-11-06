@@ -111,7 +111,8 @@ const env = readServerEnv();
 ## `script/custom-event-name-casing`
 
 スクリプトとテンプレートで使うカスタムイベント名の表記を揃えるための設定です。
-既定は `transitionstart` のような区切りなしの `lowercase` です。プロジェクトで意図的に使う場合は、`camelCase` または `kebab-case` を指定します。
+既定は `camelCase` です。テンプレートで使うハイフン区切りの表記に揃える場合は、`kebab-case` を指定します。
+`opinionated` プリセットは、明示的なルールオプションで上書きしない限り `kebab-case` を選びます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

@@ -221,8 +221,8 @@ customEventNameCasingOptionsDef: JsonSchema = new JsonSchema {
   properties {
     ["casing"] = new JsonSchema {
       type = "string"
-      enum = new Listing { "lowercase"; "camelCase"; "kebab-case" }
-      default = "lowercase"
+      enum = new Listing { "camelCase"; "kebab-case" }
+      default = "camelCase"
     }
   }
   additionalProperties = false

@@ -34,17 +34,6 @@ fn deserializes_casing_options() {
 }
 
 #[test]
-fn custom_event_casing_defaults_to_separator_free_lowercase() {
-    let options = serde_json::from_str::<CustomEventNameCasingOptions>("{}").unwrap();
-    assert_eq!(options.casing, CustomEventNameCasing::Lowercase);
-
-    let explicit =
-        serde_json::from_str::<CustomEventNameCasingOptions>(r#"{ "casing": "lowercase" }"#)
-            .unwrap();
-    assert_eq!(explicit.casing, CustomEventNameCasing::Lowercase);
-}
-
-#[test]
 fn casing_registration_options_default_true_and_scoped_replacement_is_complete() {
     let mut options: ConfigLintRuleOptions = serde_json::from_str(
         r#"{

@@ -1820,6 +1820,32 @@ valid:
   export default {
     name: 'MyComponent'
   }
+=== script/consistent-props-emits-key-quotes
+script/consistent-props-emits-key-quotes · lint rule
+Require consistent quoted keys in props and emits declarations
+
+tier: exact
+domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
+severity: error
+category: script
+autofix: no
+docs: docs/content/rules/reference/script-consistent-props-emits-key-quotes.md
+
+invalid:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    close: []
+  }>()
+
+valid:
+  const emit = defineEmits<{
+    "update:modelValue": [value: string]
+    "close": []
+  }>()
+  const props = defineProps({
+    "aria-label": String,
+    "disabled": Boolean,
+  })
 === script/custom-event-name-casing
 script/custom-event-name-casing · lint rule
 Enforce configured casing for emitted custom event names
@@ -1832,12 +1858,12 @@ autofix: no
 docs: docs/content/rules/reference/script-custom-event-name-casing.md
 
 invalid:
-  const emit = defineEmits(['transitionStart'])
-  emit('transitionStart')         // camelCase → report
+  const emit = defineEmits(['my-event'])
+  emit('my-event')         // kebab-case → report
 
 valid:
-  const emit = defineEmits(['transitionstart'])
-  emit('transitionstart')
+  const emit = defineEmits(['myEvent'])
+  emit('myEvent')
 === script/define-emits-declaration
 script/define-emits-declaration · lint rule
 Enforce the type-based defineEmits<{}>() form over the runtime/array form

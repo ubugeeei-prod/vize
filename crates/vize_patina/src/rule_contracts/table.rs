@@ -126,6 +126,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("petite-vue/valid-v-effect", Exact, DIRECTIVES, Error),
     row!("petite-vue/valid-v-scope", Exact, DIRECTIVES, Error),
     row!("script/component-options-name-casing", Exact, OPTIONS, Error),
+    row!("script/consistent-props-emits-key-quotes", Exact, STYLE, Error),
     row!("script/custom-event-name-casing", Complete, MACROS, Error),
     row!("script/define-emits-declaration", Exact, MACROS, Warning),
     row!("script/define-macros-order", Exact, MACROS, Warning),

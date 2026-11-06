@@ -28,9 +28,8 @@ pub(super) fn parse_rule_option(
                 Some(string_enum(payload, &["PascalCase", "kebab-case"], name)?.to_owned());
         }
         "script/custom-event-name-casing" => {
-            options.custom_event_name_casing = Some(
-                string_enum(payload, &["lowercase", "camelCase", "kebab-case"], name)?.to_owned(),
-            );
+            options.custom_event_name_casing =
+                Some(string_enum(payload, &["camelCase", "kebab-case"], name)?.to_owned());
         }
         "vue/no-mutating-props" => {
             let object = strict_object(payload, &["shallowOnly"])?;
@@ -345,14 +344,14 @@ mod tests {
         for (name, values) in [
             (
                 "vue/component-name-in-template-casing",
-                &["PascalCase", "kebab-case"][..],
+                ["PascalCase", "kebab-case"],
             ),
             (
                 "script/custom-event-name-casing",
-                &["lowercase", "camelCase", "kebab-case"][..],
+                ["camelCase", "kebab-case"],
             ),
-            ("vue/v-on-event-hyphenation", &["always", "never"][..]),
-            ("vue/attribute-hyphenation", &["always", "never"][..]),
+            ("vue/v-on-event-hyphenation", ["always", "never"]),
+            ("vue/attribute-hyphenation", ["always", "never"]),
         ] {
             for value in values {
                 parse_rule_option(name, Some(&json!(value)), &mut options).unwrap();

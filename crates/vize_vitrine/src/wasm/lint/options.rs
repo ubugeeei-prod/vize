@@ -65,7 +65,6 @@ fn parse_custom_event_name_casing(
         .and_then(|v| v.as_string())
         .as_deref()
     {
-        Some("lowercase") => Some(vize_patina::rules::script::EventNameCasing::Lowercase),
         Some("camelCase") => Some(vize_patina::rules::script::EventNameCasing::CamelCase),
         Some("kebab-case") => Some(vize_patina::rules::script::EventNameCasing::KebabCase),
         _ => None,

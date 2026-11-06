@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "2ca07d6ae58540be3ea88dfd1a775a468acb86cbbef4a1611e1e457a231a4f1c"
+    "sha256": "e9161090b4f479b19fa44ae64dc6289d8a81938c9de50812a9b4eb616d64017e"
   },
   "cases": [
     {
@@ -2890,17 +2890,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "04afd214c2b39471de605ef52b9704ab5cf1ff45ce3ce31e63cbbd4f18bd8adc"
+            "sha256": "6866fffb05bf9dec4be4e7308655cbc51cbe0905626605e11c7a03b3a198d6dd"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "733576a7d5ed8927883f479805483a907fd08d4fc8750d6b568b4f9ccc8deb1f"
+            "sha256": "ca055a0f837e4e262c9ba6e4550408a325cf22a61eaf479d44265619d59fe936"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "a7e820fe65fbfb568732bdf41db0e11211e3581815259ca7ef4f02cab5078390"
+            "sha256": "9e82373cde6545af76e9c13abf903e107e6a4d4154b6d6ede0e92e6ef1aecf75"
           }
         ]
       },

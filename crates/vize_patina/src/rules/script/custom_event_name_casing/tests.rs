@@ -20,14 +20,6 @@ fn create_kebab_linter() -> ScriptLinter {
     linter
 }
 
-fn create_camel_linter() -> ScriptLinter {
-    let mut linter = ScriptLinter::new();
-    linter.add_rule(Box::new(CustomEventNameCasing::new(
-        EventNameCasing::CamelCase,
-    )));
-    linter
-}
-
 /// Lint a full SFC end-to-end with only this rule enabled, exercising the
 /// engine path that supplies the parsed `<template>` AST to the rule.
 fn lint_sfc(sfc: &str) -> LintResult {
@@ -58,24 +50,10 @@ fn none() -> Vec<(&'static str, Severity, u32, u32, &'static str)> {
 }
 
 #[test]
-fn test_default_reports_camel_case_setup_emit() {
+fn test_valid_camel_case_setup_emit() {
     let source = r#"
-const emit = defineEmits(['transitionStart'])
-emit('transitionStart')
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-    assert_eq!(
-        result.diagnostics[0].message.as_str(),
-        "Custom event name 'transitionStart' is not lowercase."
-    );
-}
-
-#[test]
-fn test_default_allows_separator_free_lowercase_setup_emit() {
-    let source = r#"
-const emit = defineEmits(['transitionstart'])
-emit('transitionstart')
+const emit = defineEmits(['myEvent'])
+emit('myEvent')
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
@@ -144,16 +122,6 @@ emit('update:modelValue')
 }
 
 #[test]
-fn test_configured_camel_case_allows_camel_emit() {
-    let source = r#"
-const emit = defineEmits(['transitionStart'])
-emit('transitionStart')
-"#;
-    let result = create_camel_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
 fn test_invalid_pascal_case_dollar_emit() {
     let result = lint_sfc("<script>this.$emit('MyEvent')</script>");
     assert_eq!(result.error_count, 1);
@@ -174,8 +142,8 @@ fn test_invalid_context_emit_kebab() {
 }
 
 #[test]
-fn test_valid_context_emit_lowercase() {
-    let result = create_linter().lint("ctx.emit('myevent')", 0);
+fn test_valid_context_emit_camel() {
+    let result = create_linter().lint("ctx.emit('myEvent')", 0);
     assert_eq!(result.error_count, 0);
 }
 

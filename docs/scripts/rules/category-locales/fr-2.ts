@@ -9,10 +9,15 @@ export const frenchRules2 = {
     "L’option de composant `name: 'my-component'` utilise kebab-case, alors que cette règle exige un nom de composant littéral en PascalCase.",
     "`MyComponent` commence par une majuscule et ne contient que des caractères alphanumériques, ce qui satisfait le contrôle du nom.",
   ],
+  "script/consistent-props-emits-key-quotes": [
+    "Uniformiser les clés entre guillemets dans les déclarations props et emits",
+    "La déclaration emits mélange la clé `update:modelValue`, qui doit être entre guillemets, avec la clé `close` sans guillemets.",
+    "Toutes les clés statiques de la déclaration sont entre guillemets, car `update:modelValue` ne peut pas être écrit comme identifiant JavaScript sans guillemets.",
+  ],
   "script/custom-event-name-casing": [
-    "Imposer la casse configurée aux noms des événements personnalisés émis",
-    "La chaîne émise `transitionStart` contient une majuscule et enfreint la convention par défaut en minuscules sans séparateur.",
-    "La déclaration et l’appel utilisent tous deux `transitionstart`, ce qui maintient leur correspondance tout en suivant la convention de plateforme en minuscules. Un projet peut configurer explicitement camelCase ou kebab-case.",
+    "Imposer camelCase aux noms des événements personnalisés émis",
+    "La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.",
+    "La déclaration et l’appel utilisent tous deux `myEvent`, conformément à la valeur globale par défaut camelCase. Le preset `opinionated` choisit plutôt kebab-case, et les options explicites de la règle permettent de sélectionner l’un ou l’autre style.",
   ],
   "script/define-emits-declaration": [
     "Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau",

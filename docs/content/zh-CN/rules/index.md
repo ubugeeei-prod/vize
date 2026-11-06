@@ -41,7 +41,7 @@ export default defineConfig({}).withVue({
 | `happy-path`（默认） | 147 | `essential`，加上模板格式约定（包括 `v-bind` 简写和连字符形式的组件事件）、无障碍、HTML 规范、SSR 风险、未使用的属性、已声明的 emits，以及带类型的 props 和 emits |
 | `ecosystem` | 155 | `happy-path`，加上生态系统库的检查 |
 | `nuxt` | 213 | 针对 Nuxt 自动导入调整过的 `opinionated` |
-| `opinionated` | 213 | `happy-path`，加上更严格的约定、带类型的 props、基于类型的 `defineProps`/`defineEmits`、`<script setup>` 宏的顺序、全小写事件名、`useTemplateRef`、`defineSlots`、props 默认值与 emit 的规范、`defineOptions`，以及 `css/*` 样式规则 |
+| `opinionated` | 214 | `happy-path`，加上更严格的约定、带类型的 props、基于类型的 `defineProps`/`defineEmits`、`<script setup>` 宏的顺序、kebab-case 事件名、props 与 emits 键的一致引号形式、`useTemplateRef`、`defineSlots`、props 默认值与 emit 的规范、`defineOptions`，以及 `css/*` 样式规则 |
 | `incremental` | 0 | 无。只想启用指定规则时从这里开始。 |
 
 规则数不含跨文件规则。当 `compiler.compatibility.vueVersion` 为 `2` 或 `2.7` 时，Vue 3 移除项的检查会关闭。
