@@ -514,6 +514,12 @@ mod tests {
         analyzer.analyze_script_setup(script);
         analyzer.analyze_template(&root);
         let summary = analyzer.finish();
+        let listener_source_range = summary
+            .template_expressions
+            .iter()
+            .find(|expression| expression.kind == TemplateExpressionKind::VOn)
+            .map(|expression| expression.start as usize..expression.end as usize)
+            .expect("the template should contain one component listener");
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
         assert_eq!(
@@ -532,10 +538,7 @@ mod tests {
                 .mapping
                 .spans()
                 .iter()
-                .filter(|mapping| output
-                    .code
-                    .get(mapping.gen_range.clone())
-                    .is_some_and(|mapped| mapped.contains("ids = v.map")))
+                .filter(|mapping| mapping.src_range == listener_source_range)
                 .count(),
             1,
             "only the typed event scope may map the authored listener:\n{}",
