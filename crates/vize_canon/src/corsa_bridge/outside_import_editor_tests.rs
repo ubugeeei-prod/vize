@@ -115,18 +115,10 @@ pub(super) fn assert_complete_alias_response(
         std::fs::copy(config, capture.join("generated-tsconfig.json")).unwrap();
         copy_inputs(root, &capture.join("inputs"));
     }
-    // The raw native protocol retains four unused generated type suggestions.
-    // Assert every field; package-resolution errors, TS5097 on the generated
-    // extensionless alias edge (#10753) or new suggestions must fail.
-    assert_eq!(
-        complete,
-        json!([
-            {"range":{"start":{"line":41,"character":5},"end":{"line":41,"character":10}},"severity":4,"code":6196,"source":"ts","message":"'__Ref' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":52,"character":5},"end":{"line":52,"character":27}},"severity":4,"code":6196,"source":"ts","message":"'$UnownedComponentAttrs' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":53,"character":5},"end":{"line":53,"character":14}},"severity":4,"code":6196,"source":"ts","message":"'$Prettify' is declared but never used.","relatedInformation":null},
-            {"range":{"start":{"line":55,"character":5},"end":{"line":55,"character":31}},"severity":4,"code":6196,"source":"ts","message":"'$ComponentFallthroughProps' is declared but never used.","relatedInformation":null}
-        ])
-    );
+    // Shared helper declarations are outside the generated SFC module, so a
+    // clean alias project has no unused local helper suggestions. Package
+    // resolution errors and TS5097 on the extensionless edge must still fail.
+    assert_eq!(complete, json!([]));
 }
 
 fn copy_inputs(source: &Path, target: &Path) {

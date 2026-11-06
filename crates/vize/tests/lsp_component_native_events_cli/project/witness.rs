@@ -67,8 +67,9 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     let (mirror, link) = matching.pop().unwrap();
     let app_path = mirror.join("src/App.vue.ts");
     let child_path = mirror.join("src/MySwitch.vue.ts");
+    let helpers_path = mirror.join("__vize_helpers.d.ts");
     let config_path = mirror.join("tsconfig.json");
-    for path in [&app_path, &child_path, &config_path] {
+    for path in [&app_path, &child_path, &helpers_path, &config_path] {
         assert!(
             std::fs::symlink_metadata(path)
                 .unwrap()
@@ -79,6 +80,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     }
     let app = std::fs::read_to_string(&app_path).unwrap();
     let child = std::fs::read_to_string(&child_path).unwrap();
+    let helpers = std::fs::read_to_string(&helpers_path).unwrap();
     let config = std::fs::read_to_string(&config_path).unwrap();
     let source = std::fs::read_to_string(root.join("src/App.vue")).unwrap();
     let authored: Vec<_> = [
@@ -98,6 +100,7 @@ pub(crate) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
         "generated": [
             { "path": app_path, "source": app, "sha256": super::hash(app.as_bytes()) },
             { "path": child_path, "source": child, "sha256": super::hash(child.as_bytes()) },
+            { "path": helpers_path, "source": helpers, "sha256": super::hash(helpers.as_bytes()) },
             { "path": config_path, "source": config, "sha256": super::hash(config.as_bytes()) }
         ]
     });

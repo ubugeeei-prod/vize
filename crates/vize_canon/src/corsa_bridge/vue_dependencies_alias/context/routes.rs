@@ -346,6 +346,7 @@ export const DecoratorBase = Vue;
         assert_eq!(
             mirrored,
             [
+                "__vize_helpers.d.ts",
                 "__vize_vue_modules.d.ts",
                 "package.json",
                 "src/App.vue.ts",

@@ -97,6 +97,15 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
             check_unknown_fallthrough_props,
             strict_component_attrs,
         );
+        // Keep the completion witness local to each generated module. Routing
+        // this alias through the shared ambient module makes TypeScript join
+        // same-spelled prop symbols from separate component owners during
+        // references and rename. These two small aliases preserve the editor
+        // navigation graph while the rest of the preamble remains shared.
+        ts.push_str("  type $IsAny<T> = 0 extends (1 & T) ? true : false;\n");
+        ts.push_str(
+            "  type $ComponentNavigationProps<P> = $IsAny<P> extends true ? Record<string, unknown> : unknown extends P ? {} : P;\n",
+        );
         return;
     }
     ts.push_str("  type $IsAny<T> = 0 extends (1 & T) ? true : false;\n");

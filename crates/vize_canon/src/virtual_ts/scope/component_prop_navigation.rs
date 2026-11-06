@@ -91,19 +91,12 @@ fn emit_prop_references(
     // even while the Vue attribute name is empty or only `:` has been typed.
     ts.push_str("  const { ");
     let completion_offset = ts.len();
-    if ctx.hoist_shared_preamble {
-        let component_navigation_props =
-            crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(true);
-        append!(
-            *ts,
-            "}} = undefined as unknown as {component_navigation_props}<__{component_type_name}_Props_{idx}>;\n"
-        );
-    } else {
-        append!(
-            *ts,
-            "}} = undefined as unknown as $ComponentNavigationProps<__{component_type_name}_Props_{idx}>;\n"
-        );
-    }
+    let component_navigation_props =
+        crate::virtual_ts::helpers::shared_types::COMPONENT_NAVIGATION_PROPS.select(false);
+    append!(
+        *ts,
+        "}} = undefined as unknown as {component_navigation_props}<__{component_type_name}_Props_{idx}>;\n"
+    );
     semantic_links.push(VizeSemanticLink {
         source_range: component_gen_range.clone(),
         target_range: completion_offset..completion_offset,
