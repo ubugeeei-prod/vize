@@ -1,0 +1,7 @@
+<template>
+  <p>{{ message }}</p>
+</template>
+
+<script setup lang="ts">
+import { message } from "./created";
+</script>

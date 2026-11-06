@@ -87,6 +87,10 @@ pub(crate) struct ProjectConfigChanges {
 }
 
 impl ProjectConfigChanges {
+    pub(crate) fn configuration_event_uris(&self) -> &[Url] {
+        &self.configuration_events
+    }
+
     /// A rejected dependency must not invalidate the retained native program.
     /// Other events in the same notification still reach this owner.
     pub(crate) fn accepted_file_events(

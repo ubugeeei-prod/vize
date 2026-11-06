@@ -139,10 +139,17 @@ fn watched_creates_refresh_open_documents_without_a_reverse_edge() {
     assert!(changes_require_open_document_fallback(
         &[event(FileChangeType::CREATED)],
         &[],
+        &[],
     ));
     assert!(!changes_require_open_document_fallback(
         &[event(FileChangeType::CHANGED)],
         &[],
+        &[],
+    ));
+    assert!(!changes_require_open_document_fallback(
+        &[event(FileChangeType::CREATED)],
+        &[],
+        std::slice::from_ref(&uri),
     ));
 }
 

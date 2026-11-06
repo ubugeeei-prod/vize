@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 5,
+      "character": 28
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nmodule \"./created\"\n```"
+      },
+      "range": {
+        "start": {
+          "line": 5,
+          "character": 25
+        },
+        "end": {
+          "line": 5,
+          "character": 34
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 5,
+      "character": 30
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nmodule \"./created\"\n```"
+      },
+      "range": {
+        "start": {
+          "line": 5,
+          "character": 25
+        },
+        "end": {
+          "line": 5,
+          "character": 34
+        }
+      }
+    }
+  }
+]
