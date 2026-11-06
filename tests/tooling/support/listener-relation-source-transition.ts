@@ -95,7 +95,7 @@ const sourceTransitions = new Map<string, Transition>([
           },
           edits: [{ before: "", after: publicExport }],
         },
-      ] as const,
+      ] as [string, Transition],
   ),
   [
     "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
