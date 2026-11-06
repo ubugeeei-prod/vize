@@ -1,0 +1,89 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "producer": {
+    "sourceRevision": "b13ee5096a47944a43cd812c8ee5c6c8fbee81b6",
+    "sourceTree": "677b7256bfe53a8fdf50754c57f8ca219dd5bfef",
+    "pullRequestHead": "bca76f46fa8953e46124a0f280607b7de730113e",
+    "binarySha256": "809e667993d0043af5717f250623e421566c7038d8cbbe4cebd383863c153c33",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42173370773,
+    "artifactId": 13483220602,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42173370773,
+    "job": 127746578706,
+    "id": 13483220602,
+    "digest": "sha256:535dc2063aaa47571280ee3363e9ab0477138cba2640ccc1d6cdb7a6c0d5da77",
+    "bytes": 18678317
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-ccf36f226d00.json",
+    "bytes": 492519,
+    "sha256": "53107e72941f7834d008a0b7105ed90b157f413f385d99c00b0ba148cb245852"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "de039a4557d488b49b89f130be3df54838c309efc894924247f6b628946dfeb2"
+    },
+    "source-identity.txt": {
+      "bytes": 82,
+      "sha256": "d8fe5a97ed3003d09d86fbc023dff719434c7599aeb541f33e6b2932d86ef6c2"
+    },
+    "source-host.json": {
+      "bytes": 558,
+      "sha256": "8e109d77b45cad4ecd5565983e9f8421381865e64130faa5e2f69a4155a8eb4b"
+    },
+    "consumer/source-launch.json": {
+      "bytes": 882,
+      "sha256": "8e6067a300ae093ee3f9db3440965f816c6c1ea3860e332025827875ec484e58"
+    },
+    "consumer/source-protocol.json": {
+      "bytes": 460206,
+      "sha256": "789051e5a72155dfe53479a620b126992d57355f24ee23bc7282f4052183ee16"
+    },
+    "consumer/outcomes.json": {
+      "bytes": 120199,
+      "sha256": "eb29e13d0562a12e2fdc9c03aa30a60fe709e664ef0aa9d9980b9478729f0227"
+    },
+    "consumer/qualification.json": {
+      "bytes": 124348,
+      "sha256": "7661af199e392913ec69371e2ecedb05e6a493d4e3042866b53a9307c92d6a3a"
+    },
+    "consumer/host-matrix.json": {
+      "bytes": 4326,
+      "sha256": "b99dc503c9c22da710e7b263c2ab2211b9bde7deea14910c92824515d4a185ff"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified before accepting this successor population",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "hostMatrixRequired": true,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "sourceHostAdmitted": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The shared editor-helper custody transition changed only the slot-shadow and mixed-slot-scope complete packets for LF and CRLF-Unicode inputs; the source campaign retained those exact postimages while semantic, protocol, mapping-geometry and all three real host controls passed."
+  }
+}
