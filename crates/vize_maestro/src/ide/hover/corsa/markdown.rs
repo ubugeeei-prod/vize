@@ -96,12 +96,13 @@ fn setup_owner_delimiter(code: &str) -> Option<usize> {
     let mut offset = 0;
 
     while offset < bytes.len() {
+        let &byte = bytes.get(offset)?;
         if let Some(delimiter) = quote {
             if escaped {
                 escaped = false;
-            } else if bytes[offset] == b'\\' {
+            } else if byte == b'\\' {
                 escaped = true;
-            } else if bytes[offset] == delimiter {
+            } else if byte == delimiter {
                 quote = None;
             }
             offset += 1;
@@ -111,11 +112,13 @@ fn setup_owner_delimiter(code: &str) -> Option<usize> {
             && brackets == 0
             && braces == 0
             && angles == 0
-            && bytes[offset..].starts_with(MARKER)
+            && bytes
+                .get(offset..)
+                .is_some_and(|remaining| remaining.starts_with(MARKER))
         {
             return Some(offset);
         }
-        match bytes[offset] {
+        match byte {
             delimiter @ (b'\'' | b'"' | b'`') => quote = Some(delimiter),
             b'(' => parentheses += 1,
             b')' => parentheses = parentheses.saturating_sub(1),
