@@ -12,9 +12,6 @@ use tower_lsp::{
 const SOURCE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/App.vue.txt"
 );
-const CONFIG: &str = include_str!(
-    "../../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/vize.config.json"
-);
 const REFERENCE: &str = include_str!(
     "../../../../../tests/_fixtures/differential/lsp/code-action-diagnostics/references.json"
 );
@@ -61,15 +58,12 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
     let original: serde_json::Value = serde_json::from_str(REFERENCE).unwrap();
     let diagnostic: Diagnostic =
         serde_json::from_value(original["diagnostics"][0].clone()).unwrap();
-    let root = tempfile::tempdir().unwrap();
-    std::fs::write(
-        root.path().join("vite.config.mjs"),
-        vize_l0::cstr!("export default {{ vue: {} }};", CONFIG).as_bytes(),
-    )
-    .unwrap();
+    let root = crate::test_support::tempdir().unwrap();
     let (service, _socket) = LspService::new(MaestroServer::new);
     let server = service.inner();
-    server.state.load_lsp_config(root.path());
+    server.state.set_linter_config_for_test(
+        serde_json::from_value(serde_json::json!({ "preset": "opinionated" })).unwrap(),
+    );
     server
         .state
         .apply_lsp_initialization_options(Some(&serde_json::json!({"typecheck":false})));
@@ -161,14 +155,32 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
         9
     ));
     server.state.update_virtual_docs(&uri, &applied);
+    let published = crate::ide::DiagnosticService::collect(&server.state, &uri);
+    let published_codes = published
+        .iter()
+        .filter_map(|diagnostic| diagnostic.code.as_ref())
+        .collect::<Vec<_>>();
+    assert!(
+        matches!(
+            published_codes.as_slice(),
+            [tower_lsp::lsp_types::NumberOrString::String(code)]
+                if code == "vue/html-self-closing"
+        ),
+        "{published:?}"
+    );
     let mut peer: Diagnostic = serde_json::from_value(original["diagnostics"][1].clone()).unwrap();
     peer.range.start.line = 2;
     peer.range.end.line = 2;
     let actual_peer =
         futures::executor::block_on(code_actions(server, &params(&uri, peer.clone())));
     eprintln!("whole fresh peer-rule suppression requery: {actual_peer:#?}");
-    // The existing @vize:forget payload is a reason, not a rule filter.
-    assert!(actual_peer.is_none());
+    assert_eq!(
+        serde_json::to_value(actual_peer.unwrap()).unwrap(),
+        serde_json::json!([
+            {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[peer.clone()],"edit":edit(&uri,2,2,23,"<img src=\"/logo.png\" />",Some(9)),"isPreferred":true},
+            suppression(&uri,&peer,Some(9))
+        ])
+    );
     let mut suppressed = diagnostic;
     suppressed.range.start.line = 2;
     suppressed.range.end.line = 2;

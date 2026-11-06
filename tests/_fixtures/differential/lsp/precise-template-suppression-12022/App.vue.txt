@@ -1,0 +1,4 @@
+<template>
+  <!-- @vize:forget a11y/alt-text -->
+  <img src="/logo.png">
+</template>

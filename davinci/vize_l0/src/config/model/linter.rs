@@ -93,7 +93,7 @@ impl LinterConfig {
             .insert(TYPE_AWARE_LINT_MARKER.into(), LintRuleSeverity::Warn);
     }
 
-    /// Whether to report template disable comments that suppress no active rule.
+    /// Whether to report accepted suppressions that match no final diagnostic.
     pub fn report_unused_disable_directives(&self) -> bool {
         self.rules
             .get(REPORT_UNUSED_DISABLE_MARKER)

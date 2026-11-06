@@ -161,3 +161,38 @@ export const B = defineComponent({});\n";
         suppressed.warning_count
     );
 }
+
+#[test]
+fn plain_module_unused_disable_uses_the_final_script_diagnostic_stream() {
+    let source = "/* eslint-disable script/one-component-per-file */\n\
+export const A = defineComponent({});\n";
+    let result = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "script/one-component-per-file".into(),
+        ]))
+        .with_report_unused_disable_directives(true)
+        .lint_script(source, "single.ts");
+
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/comment-directive");
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Unused eslint-disable directive (no problems were reported from 'script/one-component-per-file')."
+    );
+}
+
+#[test]
+fn plain_module_vize_alias_does_not_enter_unused_reporting() {
+    let source = "// vize-disable-next-line script/one-component-per-file\n\
+export const A = defineComponent({});\n";
+    let result = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "script/one-component-per-file".into(),
+        ]))
+        .with_report_unused_disable_directives(true)
+        .lint_script(source, "single.ts");
+
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}

@@ -6,7 +6,9 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::directive::DirectiveSeverity;
 use vize_l0::{Allocator, FxHashMap, FxHashSet, cstr};
 
-use super::eslint_directive::{InlineSuppressionState, UnusedDirective};
+use super::eslint_directive::{
+    ExactSuppressionState, InlineSuppressionState, SuppressionSource, UnusedDirective,
+};
 use super::{DisabledRange, LintContext, SfcDirectiveState};
 use crate::LintDiagnostic;
 use crate::visitor::LintVisitor;
@@ -28,6 +30,7 @@ struct TemplateDirectives {
     first_line: u32,
     suppressions: InlineSuppressionState,
     disabled_all: Vec<DisabledRange>,
+    exact_suppressions: ExactSuppressionState,
     expected_error_lines: FxHashSet<u32>,
     severity_overrides: FxHashMap<u32, DirectiveSeverity>,
 }
@@ -65,12 +68,15 @@ impl ProjectLintDirectives {
             LintVisitor::new(&mut context, &[], &[], false).prescan_suppression_directives(&root);
             let mut suppressions = context.inline_suppressions;
             suppressions.offset_markers(template.loc.start as u32);
+            let mut exact_suppressions = context.exact_suppressions;
+            exact_suppressions.offset_markers(template.loc.start as u32);
             Some(TemplateDirectives {
                 start: template.loc.start as u32,
                 end: template.loc.end as u32,
                 first_line: source_line(source, template.loc.start as u32),
                 suppressions,
                 disabled_all: context.disabled_all,
+                exact_suppressions,
                 expected_error_lines: context.expected_error_lines,
                 severity_overrides: context.severity_overrides,
             })
@@ -99,9 +105,14 @@ impl ProjectLintDirectives {
         }) || self.template.as_ref().is_some_and(|template| {
             template.start <= start && start < template.end && {
                 let line = line - template.first_line + 1;
-                template.disabled_all.iter().any(|range| {
-                    line >= range.start_line && range.end_line.is_none_or(|end| line <= end)
-                }) || template.suppressions.is_disabled_at(rule, line)
+                let local_start = start - template.start;
+                template
+                    .exact_suppressions
+                    .is_disabled_at(rule, local_start)
+                    || template.disabled_all.iter().any(|range| {
+                        line >= range.start_line && range.end_line.is_none_or(|end| line <= end)
+                    })
+                    || template.suppressions.is_disabled_at(rule, line)
                     || template.expected_error_lines.contains(&line)
             }
         })
@@ -163,6 +174,13 @@ impl ProjectLintDirectives {
                     .into_iter()
                     .filter(|directive| directive.rule.is_some()),
             );
+            unused.extend(
+                template
+                    .exact_suppressions
+                    .unused(&is_active)
+                    .into_iter()
+                    .filter(|directive| directive.rule.is_some()),
+            );
         }
         unused.sort_unstable_by_key(|directive| (directive.start, directive.end));
         unused.dedup_by(|a, b| a.start == b.start && a.end == b.end && a.rule == b.rule);
@@ -177,9 +195,11 @@ impl ProjectLintDirectives {
             return;
         };
         let used = template.suppressions.used_blanket_markers();
+        let exact_used = template.exact_suppressions.used_markers();
         diagnostics.retain(|diagnostic| {
             diagnostic.rule_name != UNUSED_RULE
-                || !used.contains(&(diagnostic.start, diagnostic.end))
+                || (!used.contains(&(diagnostic.start, diagnostic.end))
+                    && !exact_used.contains(&(diagnostic.start, diagnostic.end)))
         });
     }
 }
@@ -196,9 +216,17 @@ fn source_line(source: &str, offset: u32) -> u32 {
 
 fn unused_diagnostic(directive: UnusedDirective) -> Option<LintDiagnostic> {
     let rule = directive.rule?;
+    let message = match directive.source {
+        SuppressionSource::Eslint => {
+            cstr!("Unused eslint-disable directive (no problems were reported from '{rule}').")
+        }
+        SuppressionSource::VizeForget => {
+            cstr!("Unused @vize:forget directive (no problems were reported from '{rule}').")
+        }
+    };
     Some(LintDiagnostic::error(
         UNUSED_RULE,
-        cstr!("Unused eslint-disable directive (no problems were reported from '{rule}')."),
+        message,
         directive.start,
         directive.end,
     ))

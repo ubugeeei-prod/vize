@@ -224,9 +224,10 @@ await test("whole original bind-style diagnostics have configured fixes and supp
     for (const diagnostic of diagnostics(parent)) await request(parent, diagnostic);
     for (const diagnostic of diagnostics(parent)) {
       const suppressed = apply(parent, actions(parent, uri, diagnostic).at(-1)!, uri);
-      // The payload is a reason: primary visitor disables ALL rules on the next element.
+      // The generated rule payload suppresses only that rule on the next element.
       const expected = diagnostics(suppressed).filter(
-        (row) => row.range.start.line !== diagnostic.range.start.line + 1,
+        (row) =>
+          row.code !== diagnostic.code || row.range.start.line !== diagnostic.range.start.line + 1,
       );
       await change(++version, suppressed, expected);
       await change(++version, parent, diagnostics(parent));

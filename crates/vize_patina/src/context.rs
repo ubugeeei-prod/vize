@@ -13,10 +13,7 @@ mod state;
 
 pub(crate) use callback_order::CallbackSite;
 pub use project_directives::ProjectLintDirectives;
-pub(crate) use reporting::{
-    SfcSuppression, offset_diagnostic, retain_unless_sfc_suppressed,
-    retain_unless_source_suppressed,
-};
+pub(crate) use reporting::{SfcSuppression, offset_diagnostic, retain_unless_source_suppressed};
 pub use state::{DisabledRange, ElementContext, SsrMode};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
@@ -31,7 +28,8 @@ use vize_l0::{
     directive::DirectiveSeverity,
 };
 
-use eslint_directive::InlineSuppressionState;
+pub(crate) use eslint_directive::SuppressionSource;
+use eslint_directive::{ExactSuppressionState, InlineSuppressionState};
 use sfc_directives::SfcDirectiveState;
 
 /// Lint context provides utilities for rules during execution.
@@ -67,6 +65,10 @@ pub struct LintContext<'a> {
     disabled_all: Vec<DisabledRange>,
     /// Disabled ranges per rule name.
     disabled_rules: FxHashMap<CompactString, Vec<DisabledRange>>,
+    /// Exact authored node suppressions and their final diagnostic usage.
+    exact_suppressions: ExactSuppressionState,
+    /// Complete SFC lanes apply exact-node suppressions after every producer joins.
+    defer_exact_suppressions: bool,
     /// ESLint/Oxlint comments, ordered so named enables can override disable-all.
     inline_suppressions: InlineSuppressionState,
     /// Late template capabilities that actually ran in this context.
@@ -144,6 +146,8 @@ impl<'a> LintContext<'a> {
             warning_count: 0,
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
+            exact_suppressions: ExactSuppressionState::default(),
+            defer_exact_suppressions: false,
             inline_suppressions: InlineSuppressionState::default(),
             executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),
@@ -195,6 +199,8 @@ impl<'a> LintContext<'a> {
             warning_count: 0,
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
+            exact_suppressions: ExactSuppressionState::default(),
+            defer_exact_suppressions: false,
             inline_suppressions: InlineSuppressionState::default(),
             executed_template_rules: Vec::new(),
             line_offsets: Self::compute_line_offsets(source),

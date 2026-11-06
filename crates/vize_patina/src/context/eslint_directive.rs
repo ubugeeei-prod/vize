@@ -41,9 +41,117 @@ pub(crate) struct UnusedDirective {
     pub(crate) end: u32,
     /// The listed rule that reported nothing; `None` for a pragma without rules.
     pub(crate) rule: Option<String>,
+    pub(crate) source: SuppressionSource,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SuppressionSource {
+    Eslint,
+    VizeForget,
+}
+
+/// Exact-node suppressions such as `@vize:forget` share the same final
+/// diagnostic-identity usage accounting as line and region pragmas.
+#[derive(Default)]
+pub(super) struct ExactSuppressionState {
+    events: Vec<ExactSuppressionEvent>,
+}
+
+struct ExactSuppressionEvent {
+    targets: Vec<(u32, u32)>,
+    rules: Vec<String>,
+    marker: (u32, u32),
+    used: Cell<bool>,
+    used_rules: RefCell<Vec<String>>,
+}
+
+impl ExactSuppressionState {
+    pub(super) fn record(
+        &mut self,
+        rules: Vec<String>,
+        targets: Vec<(u32, u32)>,
+        marker: (u32, u32),
+    ) {
+        self.events.push(ExactSuppressionEvent {
+            targets,
+            rules,
+            marker,
+            used: Cell::new(false),
+            used_rules: RefCell::new(Vec::new()),
+        });
+    }
+
+    pub(super) fn offset_markers(&mut self, offset: u32) {
+        for event in &mut self.events {
+            event.marker.0 += offset;
+            event.marker.1 += offset;
+        }
+    }
+
+    pub(super) fn is_disabled_at(&self, rule_name: &str, offset: u32) -> bool {
+        let mut disabled = false;
+        for event in &self.events {
+            if !event
+                .targets
+                .iter()
+                .any(|&(start, end)| start <= offset && offset < end)
+                || (!event.rules.is_empty() && !event.rules.iter().any(|rule| rule == rule_name))
+            {
+                continue;
+            }
+            disabled = true;
+            event.used.set(true);
+            let mut used_rules = event.used_rules.borrow_mut();
+            if !used_rules.iter().any(|rule| rule == rule_name) {
+                used_rules.push(String::from(rule_name));
+            }
+        }
+        disabled
+    }
+
+    pub(super) fn unused(&self, is_active: impl Fn(&str) -> bool) -> Vec<UnusedDirective> {
+        let mut unused = Vec::new();
+        for event in &self.events {
+            if event.rules.is_empty() {
+                if !event.used.get() {
+                    unused.push(UnusedDirective {
+                        start: event.marker.0,
+                        end: event.marker.1,
+                        rule: None,
+                        source: SuppressionSource::VizeForget,
+                    });
+                }
+                continue;
+            }
+            let used_rules = event.used_rules.borrow();
+            for rule in &event.rules {
+                if is_active(rule) && !used_rules.contains(rule) {
+                    unused.push(UnusedDirective {
+                        start: event.marker.0,
+                        end: event.marker.1,
+                        rule: Some(rule.clone()),
+                        source: SuppressionSource::VizeForget,
+                    });
+                }
+            }
+        }
+        unused
+    }
+
+    pub(super) fn used_markers(&self) -> Vec<(u32, u32)> {
+        self.events
+            .iter()
+            .filter(|event| event.rules.is_empty() && event.used.get())
+            .map(|event| event.marker)
+            .collect()
+    }
 }
 
 impl InlineSuppressionState {
+    pub(super) fn append(&mut self, other: &mut Self) {
+        self.events.append(&mut other.events);
+    }
+
     /// Move only located comment spans into their containing source frame.
     pub(super) fn offset_markers(&mut self, offset: u32) {
         for event in &mut self.events {
@@ -145,6 +253,7 @@ impl InlineSuppressionState {
                         start,
                         end,
                         rule: None,
+                        source: SuppressionSource::Eslint,
                     });
                 }
                 continue;
@@ -156,6 +265,7 @@ impl InlineSuppressionState {
                         start,
                         end,
                         rule: Some(rule.clone()),
+                        source: SuppressionSource::Eslint,
                     });
                 }
             }
@@ -182,14 +292,41 @@ pub(super) fn parse_eslint_disable_comment(line: &str) -> Option<EslintDisableDi
         ("oxlint-enable", EslintDisableKind::Enable),
     ];
 
+    let content = directive_comment_content(line)?;
     for (marker, kind) in MARKERS {
-        if let Some(index) = line.find(marker) {
-            let rules =
-                parse_eslint_rule_list(line.get(index + marker.len()..).unwrap_or_default());
-            return Some(EslintDisableDirective { kind, rules });
+        let Some(raw) = content.strip_prefix(marker) else {
+            continue;
+        };
+        if !raw.is_empty()
+            && !raw.starts_with(char::is_whitespace)
+            && !raw.starts_with("*/")
+            && !raw.starts_with("-->")
+        {
+            continue;
         }
+        return Some(EslintDisableDirective {
+            kind,
+            rules: parse_eslint_rule_list(raw),
+        });
     }
 
+    None
+}
+
+fn directive_comment_content(line: &str) -> Option<&str> {
+    let trimmed = line.trim_start();
+    if trimmed.starts_with("eslint-") || trimmed.starts_with("oxlint-") {
+        return Some(trimmed);
+    }
+    for opener in ["<!--", "/*", "//"] {
+        let Some((_, content)) = line.split_once(opener) else {
+            continue;
+        };
+        let content = content.trim_start();
+        if content.starts_with("eslint-") || content.starts_with("oxlint-") {
+            return Some(content);
+        }
+    }
     None
 }
 

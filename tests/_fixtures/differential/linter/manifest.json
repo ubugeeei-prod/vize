@@ -3939,6 +3939,65 @@
       }
     },
     {
+      "id": "linter/precise-suppression-12022",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "precise-suppression-12022",
+        "files": [
+          {
+            "path": "CrossBlockEnable.vue.txt",
+            "role": "issue-authored-cross-block-ordering-reproduction",
+            "sha256": "d33d07f4e53e25815ac7922bea71f211b8bda3461e5e6e1e65fdec4d5000dc01"
+          },
+          {
+            "path": "ProseMarker.vue.txt",
+            "role": "issue-authored-marker-grammar-reproduction",
+            "sha256": "ecd52e46a470adb9aab93e67df131bf4af8d2feec0a6dc288e9fc0fe1c46bd21"
+          },
+          {
+            "path": "RuleSpecific.vue.txt",
+            "role": "issue-authored-rule-selector-reproduction",
+            "sha256": "a436f0d8354eb0fc34e7d313183d874c87c3f06687516fab18f7ce65897807f5"
+          },
+          {
+            "path": "SameLineSibling.vue.txt",
+            "role": "issue-authored-exact-node-reproduction",
+            "sha256": "777221d7336e4db5d0b1e50e10d3c709517dd418445f33a34def9d5b1cb726a1"
+          },
+          {
+            "path": "StringMarker.tsx.txt",
+            "role": "issue-authored-string-literal-control",
+            "sha256": "761e33b9c24706df465bd29d8c31ece75ba364b30c822bf8747b08694174106b"
+          },
+          {
+            "path": "UnusedDirective.ts.txt",
+            "role": "issue-authored-unused-directive-reproduction",
+            "sha256": "b21ebe2a64915350196f4d4fa87260bdd8fb0c3b2de726e7fd9226f0e87548a0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts",
+              "tsx"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/prop-name-casing-options-6097",
       "state": "active",
       "targets": [

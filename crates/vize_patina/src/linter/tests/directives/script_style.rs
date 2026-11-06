@@ -74,3 +74,82 @@ fn style_disable_comments_suppress_only_the_marked_declarations() {
         .collect();
     assert_eq!(lines, vec![6, 13, 14, 16], "{lines:?}");
 }
+
+#[test]
+fn script_and_style_pragmas_report_from_the_same_final_usage_state() {
+    let linter = Linter::with_preset(crate::LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "script/no-with-defaults".into(),
+            "css/no-important".into(),
+        ]))
+        .with_report_unused_disable_directives(true);
+    let cases = [
+        (
+            r#"<script setup lang="ts">
+// eslint-disable-next-line script/no-with-defaults
+const props = defineProps<{ a?: number }>();
+</script>
+<template><p>{{ props.a }}</p></template>"#,
+            "script/no-with-defaults",
+        ),
+        (
+            r#"<template><div class="a" /></template>
+<style scoped>
+/* oxlint-disable-next-line css/no-important */
+.a { margin: 0; }
+</style>"#,
+            "css/no-important",
+        ),
+    ];
+
+    for (source, rule) in cases {
+        let result = linter.lint_sfc(source, "Unused.vue");
+        let unused = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/comment-directive")
+            .collect::<Vec<_>>();
+        assert_eq!(unused.len(), 1, "{rule}: {:?}", result.diagnostics);
+        assert_eq!(
+            unused[0].message,
+            format!("Unused eslint-disable directive (no problems were reported from '{rule}').")
+        );
+    }
+}
+
+#[test]
+fn named_vize_forget_reports_unused_only_when_no_final_diagnostic_matches() {
+    let linter = Linter::new()
+        .with_enabled_rules(Some(vec![
+            "vue/comment-directive".into(),
+            "vue/require-v-for-key".into(),
+        ]))
+        .with_report_unused_disable_directives(true);
+    let unused = linter.lint_sfc(
+        r#"<template>
+<!-- @vize:forget vue/require-v-for-key -->
+<div>clean</div>
+</template>"#,
+        "Unused.vue",
+    );
+    assert_eq!(
+        unused
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/comment-directive")
+            .count(),
+        1,
+        "{:?}",
+        unused.diagnostics
+    );
+
+    let used = linter.lint_sfc(
+        r#"<template>
+<!-- @vize:forget vue/require-v-for-key -->
+<li v-for="item in items">{{ item }}</li>
+</template>"#,
+        "Used.vue",
+    );
+    assert!(used.diagnostics.is_empty(), "{:?}", used.diagnostics);
+}

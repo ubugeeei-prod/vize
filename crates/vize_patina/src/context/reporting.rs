@@ -2,9 +2,12 @@
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_l0::directive::DirectiveSeverity;
+use vize_l0::{cstr, directive::DirectiveSeverity};
 
+use super::eslint_directive::{SuppressionSource, UnusedDirective};
 use super::{LintContext, SfcDirectiveState};
+
+const UNUSED_RULE: &str = "vue/comment-directive";
 
 #[derive(Clone, Copy)]
 enum DirectiveDomain {
@@ -33,12 +36,14 @@ impl<'a> LintContext<'a> {
     /// Report a diagnostic whose range addresses the context's local source.
     #[inline]
     pub fn report(&mut self, diagnostic: LintDiagnostic) {
+        let directive_offset = diagnostic.start;
         let line = self.offset_to_line(diagnostic.start);
         self.report_at_line(
             diagnostic,
             line,
             DirectiveDomain::Template,
             self.source_offset,
+            directive_offset,
         );
     }
 
@@ -62,6 +67,7 @@ impl<'a> LintContext<'a> {
             self.offset_to_line(start),
             DirectiveDomain::Template,
             0,
+            start,
         );
     }
 
@@ -80,10 +86,11 @@ impl<'a> LintContext<'a> {
     /// Report a diagnostic whose range already addresses the containing SFC.
     #[inline]
     pub fn report_in_sfc(&mut self, diagnostic: LintDiagnostic) {
+        let directive_offset = diagnostic.start;
         let line = self
             .sfc_directives()
             .map_or(0, |directives| directives.offset_to_line(diagnostic.start));
-        self.report_at_line(diagnostic, line, DirectiveDomain::Sfc, 0);
+        self.report_at_line(diagnostic, line, DirectiveDomain::Sfc, 0, directive_offset);
     }
 
     /// Report a diagnostic whose range addresses croquis' script-analysis
@@ -131,6 +138,7 @@ impl<'a> LintContext<'a> {
         line: u32,
         domain: DirectiveDomain,
         output_offset: u32,
+        directive_offset: u32,
     ) {
         if !self.is_rule_enabled(diagnostic.rule_name) {
             return;
@@ -138,7 +146,7 @@ impl<'a> LintContext<'a> {
 
         let (disabled, expected, override_severity) = match domain {
             DirectiveDomain::Template => (
-                self.is_disabled_at(diagnostic.rule_name, line),
+                self.is_rule_disabled_at_offset(diagnostic.rule_name, directive_offset),
                 self.expected_error_lines.contains(&line),
                 self.severity_overrides.get(&line).copied(),
             ),
@@ -147,10 +155,12 @@ impl<'a> LintContext<'a> {
             // honours full-document comments.
             DirectiveDomain::Sfc => {
                 let rule_name = diagnostic.rule_name;
+                let defer_suppression = self.defer_exact_suppressions;
                 self.sfc_directives()
                     .map_or((false, false, None), |directives| {
                         (
-                            directives.is_disabled_at(rule_name, line, diagnostic.start),
+                            !defer_suppression
+                                && directives.is_disabled_at(rule_name, line, diagnostic.start),
                             directives.is_expected_at(line, diagnostic.start),
                             directives.severity_at(line, diagnostic.start),
                         )
@@ -181,17 +191,6 @@ impl<'a> LintContext<'a> {
     }
 }
 
-/// Drop diagnostics that an `eslint-*` / `oxlint-*` comment in a script or style
-/// block already covers. Template comments are applied when the template rule
-/// reports; script, CSS, and type-aware diagnostics are appended later and
-/// would otherwise ignore the same comments.
-pub(crate) fn retain_unless_sfc_suppressed(
-    descriptor: &SfcDescriptor<'_>,
-    diagnostics: &mut Vec<LintDiagnostic>,
-) -> bool {
-    SfcSuppression::new(descriptor).is_some_and(|directives| directives.retain(diagnostics))
-}
-
 /// Owned suppression state retained across project snapshot publication.
 pub(crate) struct SfcSuppression(SfcDirectiveState);
 
@@ -210,6 +209,17 @@ impl SfcSuppression {
         });
         diagnostics.len() != before
     }
+
+    pub(crate) fn append_unused(
+        &self,
+        diagnostics: &mut Vec<LintDiagnostic>,
+        is_active: impl Fn(&str) -> bool,
+    ) -> bool {
+        let unused = self.0.unused(is_active);
+        let changed = !unused.is_empty();
+        diagnostics.extend(unused.into_iter().map(unused_diagnostic));
+        changed
+    }
 }
 
 /// Drop diagnostics covered by an `eslint-*`, `oxlint-*`, or `vize-*` comment in a plain
@@ -219,8 +229,10 @@ pub(crate) fn retain_unless_source_suppressed(
     source: &str,
     filename: &str,
     diagnostics: &mut Vec<LintDiagnostic>,
+    report_unused: bool,
+    is_active: impl Fn(&str) -> bool,
 ) {
-    if diagnostics.is_empty()
+    if (!report_unused && diagnostics.is_empty())
         || (!source.contains("eslint-disable")
             && !source.contains("oxlint-disable")
             && !source.contains("eslint-enable")
@@ -235,12 +247,112 @@ pub(crate) fn retain_unless_source_suppressed(
         let line = source_line_number(source, diagnostic.start);
         !state.is_disabled_at(diagnostic.rule_name, line)
     });
+    if report_unused {
+        diagnostics.extend(state.unused(is_active).into_iter().map(unused_diagnostic));
+    }
+}
+
+fn unused_diagnostic(directive: UnusedDirective) -> LintDiagnostic {
+    let message = match (directive.source, directive.rule.as_deref()) {
+        (SuppressionSource::Eslint, Some(rule)) => {
+            cstr!("Unused eslint-disable directive (no problems were reported from '{rule}').")
+        }
+        (SuppressionSource::Eslint, None) => {
+            "Unused eslint-disable directive (no problems were reported).".into()
+        }
+        (SuppressionSource::VizeForget, Some(rule)) => {
+            cstr!("Unused @vize:forget directive (no problems were reported from '{rule}').")
+        }
+        (SuppressionSource::VizeForget, None) => {
+            "Unused @vize:forget directive (no problems were reported).".into()
+        }
+    };
+    LintDiagnostic::error(UNUSED_RULE, message, directive.start, directive.end)
 }
 
 fn source_line_number(source: &str, start: u32) -> u32 {
     let end = usize::try_from(start).unwrap_or(source.len());
     let prefix = source.get(..end).unwrap_or(source);
     u32::try_from(prefix.bytes().filter(|byte| *byte == b'\n').count()).unwrap_or(u32::MAX) + 1
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SfcSuppression;
+    use crate::{LintContext, LintDiagnostic};
+    use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+    use vize_l0::Allocator;
+
+    #[test]
+    fn final_sfc_pass_uses_exact_node_identity_for_type_aware_diagnostics() {
+        let source = r#"<template>
+<!-- @vize:forget type/no-unsafe-template-binding -->
+<button :disabled="unsafe" />
+</template>"#;
+        let descriptor = parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: "TypeAware.vue".into(),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let start = source.find("<button").unwrap() as u32;
+        let mut diagnostics = vec![
+            LintDiagnostic::error(
+                "type/no-unsafe-template-binding",
+                "unsafe binding",
+                start,
+                start + 7,
+            ),
+            LintDiagnostic::error("vue/html-self-closing", "peer finding", start, start + 7),
+        ];
+        let suppressions = SfcSuppression::new(&descriptor).unwrap();
+
+        assert!(suppressions.retain(&mut diagnostics));
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule_name, "vue/html-self-closing");
+        assert!(!suppressions.append_unused(&mut diagnostics, |_| true));
+    }
+
+    #[test]
+    fn final_sfc_pass_owns_region_usage_for_late_diagnostics() {
+        let source = r#"<script>
+/* eslint-disable script/no-with-defaults */
+const value = 1;
+</script>
+<template><div /></template>"#;
+        let descriptor = parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: "LateScriptDiagnostic.vue".into(),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let allocator = Allocator::default();
+        let mut context = LintContext::new(
+            &allocator,
+            descriptor.template.as_ref().unwrap().content.as_ref(),
+            "LateScriptDiagnostic.vue",
+        );
+        context.set_sfc_template_descriptor(&descriptor);
+        context.defer_exact_suppressions();
+        let start = source.find("const value").unwrap() as u32;
+        context.report_in_sfc(LintDiagnostic::error(
+            "script/no-with-defaults",
+            "late script diagnostic",
+            start,
+            start + 5,
+        ));
+        let mut diagnostics = context.into_diagnostics();
+        assert_eq!(diagnostics.len(), 1);
+
+        let suppressions = SfcSuppression::new(&descriptor).unwrap();
+        assert!(suppressions.retain(&mut diagnostics));
+        assert!(diagnostics.is_empty());
+        assert!(!suppressions.append_unused(&mut diagnostics, |_| true));
+    }
 }
 
 /// Shift every range carried by a diagnostic into its containing source.

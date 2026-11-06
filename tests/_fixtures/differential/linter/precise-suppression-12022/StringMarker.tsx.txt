@@ -1,0 +1,4 @@
+const documentation: string = "eslint-disable-next-line a11y/img-alt";
+const view = <img src="/logo.png" />;
+
+export { documentation, view };
