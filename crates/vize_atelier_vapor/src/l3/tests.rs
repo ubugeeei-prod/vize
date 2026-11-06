@@ -39,7 +39,7 @@ fn parse_rejected_expressions_are_compiler_errors() {
     for expression in ["count as", "const x = 1"] {
         let allocator = Allocator::new();
         let source = vize_carton::cstr!("<div>{{{{ {expression} }}}}</div>");
-        let VaporL3BridgeStatus::Rejected(errors) =
+        let VaporL3BridgeStatus::SourceError(errors) =
             lower_source_for_vapor(&allocator, &source, options())
         else {
             panic!("expected {expression:?} to be rejected");
