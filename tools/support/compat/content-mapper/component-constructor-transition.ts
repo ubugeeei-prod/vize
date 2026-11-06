@@ -57,7 +57,7 @@ export function certifyGenericComponentContextTransition(before: Buffer, after: 
     currentGenericComponentContext,
     "generic component overload must preserve the compatibility signature byte-for-byte",
   );
-  return [
+  const edits = [
     {
       start:
         transition.start +
@@ -79,6 +79,12 @@ export function certifyGenericComponentContextTransition(before: Buffer, after: 
       label: `${transition.label} precise overload`,
     },
   ];
+  return {
+    edits,
+    previousStart: transition.start,
+    previousEnd: transition.end,
+    preciseOverload: edits[1]!,
+  };
 }
 
 export const componentConstructorTransitions = [

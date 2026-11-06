@@ -20,6 +20,10 @@ import {
   type Assets,
   type Row,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import {
+  currentGenericComponentContext,
+  previousGenericComponentContext,
+} from "../../tools/support/compat/content-mapper/component-constructor-transition.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
@@ -96,6 +100,52 @@ function virtualPacket(packet: ReturnType<typeof fixture>["base"]) {
     opaque: { producer: "unchanged" },
   };
 }
+
+test("generic overload insertion duplicates only its projected generic directive", () => {
+  const source = "x".repeat(200);
+  const projected = "extends { id: number; label: string } = { id: number; label: string }>(pro";
+  const baseStart = previousGenericComponentContext.indexOf(projected);
+  const headStart = currentGenericComponentContext.indexOf(projected);
+  const duplicateStart = currentGenericComponentContext.indexOf(projected, headStart + 1);
+  assert.ok(baseStart >= 0 && headStart >= 0 && duplicateStart > headStart);
+  assert.equal(previousGenericComponentContext.indexOf(projected, baseStart + 1), -1);
+  assert.equal(currentGenericComponentContext.indexOf(projected, duplicateStart + 1), -1);
+  const length = bytes(projected);
+  const packet = (text: string, starts: number[]) => ({
+    text,
+    extension: ".ts",
+    mappings: [],
+    semanticLinks: [],
+    diagnosticDirectives: {
+      unusedExpectDirectiveDiagnostics: [],
+      directives: starts.flatMap((start, index) => [
+        [0, 0, index === 0 ? 0 : starts[index - 1]! + length, start, 0, 0],
+        [63, 71, start, start + length, 0, 0],
+      ]),
+    },
+    diagnostics: [],
+  });
+  const base = packet(previousGenericComponentContext, [baseStart]);
+  base.diagnosticDirectives.directives.push([
+    0,
+    0,
+    baseStart + length,
+    bytes(previousGenericComponentContext),
+    0,
+    0,
+  ]);
+  const head = packet(currentGenericComponentContext, [headStart, duplicateStart]);
+  head.diagnosticDirectives.directives.push([
+    0,
+    0,
+    duplicateStart + length,
+    bytes(currentGenericComponentContext),
+    0,
+    0,
+  ]);
+  const proof = relocatePacket(base, head, source, assets);
+  assert.equal(proof.edits.length, 2);
+});
 
 test("native alias migration applies only where each mapper or virtual packet emits it", () => {
   const migratedAssets = nativeMigrationAssets();

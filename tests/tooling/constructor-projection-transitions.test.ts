@@ -50,7 +50,8 @@ test("component constructor transitions retain the complete reviewed variants", 
 test("generic component context transition retains the complete reviewed signature", () => {
   const before = Buffer.from(previousGenericComponentContext);
   const after = Buffer.from(currentGenericComponentContext);
-  const certificates = certifyGenericComponentContextTransition(before, after);
+  const transition = certifyGenericComponentContextTransition(before, after);
+  const certificates = transition?.edits;
   assert.equal(certificates?.length, 2);
   let cursor = 0;
   const fragments = [];
