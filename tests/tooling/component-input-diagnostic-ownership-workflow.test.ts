@@ -191,7 +191,7 @@ test("callback packets certify only the complete local listener relation transit
   assertPreservedCallbackPacket(before, after, authored);
   for (const mutation of [
     { ...after, text: after.text.replace("[__Raw] extends [never]", "[__Raw] extends [unknown]") },
-    { ...after, text: after.text.replace(`${args}<__P, \"onSave\", never>`, "unknown[]") },
+    { ...after, text: after.text.replace(`${args}<__P, "onSave", never>`, "unknown[]") },
     { ...after, mappings: before.mappings },
     { ...after, text: `${after.text}type Foreign = any;\n` },
   ])
