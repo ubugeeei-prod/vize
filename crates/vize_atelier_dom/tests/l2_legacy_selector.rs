@@ -1,7 +1,7 @@
 //! P2-11 witness: legacy dialect compiles stay on compatibility after the DOM
 //! lane flag deletion, while stale flag values no longer select the old lane.
 
-use std::ffi::OsString;
+use std::{ffi::OsString, sync::Arc};
 use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
@@ -77,7 +77,7 @@ fn compile_with_l2_profiler(
     source: &str,
     options: DomCompilerOptions,
 ) -> (Compiled, CounterSummary) {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     profiler.clear();
     profiler.set_enabled(true);
     let _scope = ProfilerScope::install(&profiler);

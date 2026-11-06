@@ -7,6 +7,8 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use std::sync::Arc;
+
 use vize_atelier_core::codegen::CodegenResultWithSections;
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
@@ -19,7 +21,7 @@ use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -53,7 +55,7 @@ fn declarative_custom_element_matcher_uses_l2_for_template_sections() {
 
 #[test]
 fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -86,7 +88,7 @@ fn declarative_custom_element_matcher_uses_l2_for_sfc_sections() {
 
 #[test]
 fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();
@@ -123,7 +125,7 @@ fn static_predicate_custom_element_matcher_uses_l2_for_template_sections() {
 
 #[test]
 fn static_predicate_custom_element_matcher_uses_l2_for_sfc_sections() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
     profiler.set_enabled(false);
     profiler.clear();

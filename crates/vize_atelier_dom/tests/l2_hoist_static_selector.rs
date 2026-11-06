@@ -6,6 +6,8 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use std::sync::Arc;
+
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
@@ -17,7 +19,7 @@ use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
 fn disabled_static_hoists_use_l2_codegen() {
-    let profiler = Profiler::new();
+    let profiler = Arc::new(Profiler::new());
     let _scope = ProfilerScope::install(&profiler);
 
     for (label, source) in [
