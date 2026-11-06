@@ -8,6 +8,7 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk};
 use oxc_syntax::scope::ScopeFlags;
 
+/// Return whether a retained TypeScript expression can bypass the legacy JavaScript re-parse.
 pub fn js_module_compatible(ast: &oxc_ast_types::Expression<'_>, source: &str) -> bool {
     if source.contains("<!--") || source.contains("-->") {
         return false;
@@ -149,6 +150,24 @@ impl<'a> Visit<'a> for JsModuleCompatScan {
     ) {
         self.reject();
     }
+    fn visit_ts_as_expression(&mut self, _it: &oxc_ast_types::TSAsExpression<'a>) {
+        self.reject();
+    }
+    fn visit_ts_satisfies_expression(&mut self, _it: &oxc_ast_types::TSSatisfiesExpression<'a>) {
+        self.reject();
+    }
+    fn visit_ts_type_assertion(&mut self, _it: &oxc_ast_types::TSTypeAssertion<'a>) {
+        self.reject();
+    }
+    fn visit_ts_non_null_expression(&mut self, _it: &oxc_ast_types::TSNonNullExpression<'a>) {
+        self.reject();
+    }
+    fn visit_ts_instantiation_expression(
+        &mut self,
+        _it: &oxc_ast_types::TSInstantiationExpression<'a>,
+    ) {
+        self.reject();
+    }
     fn visit_decorator(&mut self, _it: &oxc_ast_types::Decorator<'a>) {
         self.reject();
     }
@@ -251,6 +270,8 @@ mod tests {
             "value satisfies unknown",
             "<unknown>value",
             "value!",
+            "value! = next",
+            "value?.property!",
             "generic<string>",
             "(value: string) => value",
             "<T>(value: T) => value",
