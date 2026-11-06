@@ -157,6 +157,18 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
             vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
         ),
         (
+            "authored-export-own-type-parameter",
+            CONFIG.into(),
+            PROBE
+                .replace(
+                    "interface Bar {",
+                    "export interface Bar<TItem extends Foo> {",
+                )
+                .replace("items: Foo[]", "items: TItem[]")
+                .replace("defineProps<Bar>();", "defineProps<Bar<Foo>>();"),
+            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+        ),
+        (
             "multiple-authored-exports",
             CONFIG.into(),
             PROBE
