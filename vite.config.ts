@@ -125,11 +125,6 @@ const config = {
     options: {
       typeAware: true,
     },
-    rules: {
-      // The published UI packages already expose camelCase event names. Keep
-      // that established API explicit while the product default is lowercase.
-      "vize/script/custom-event-name-casing": ["error", { casing: "camelCase" }],
-    },
     overrides: [
       {
         files: floatingPromiseTestPatterns,
