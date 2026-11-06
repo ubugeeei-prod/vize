@@ -8,7 +8,7 @@
     "rule": "script/prefer-use-template-ref",
     "vue_version": null,
     "vapor": null,
-    "diagnostics": 1,
+    "diagnostics": 0,
     "fixes": 0
   },
   {
@@ -32,7 +32,7 @@
     "rule": "script/prefer-use-template-ref",
     "vue_version": null,
     "vapor": null,
-    "diagnostics": 0,
+    "diagnostics": 1,
     "fixes": 0
   },
   {
