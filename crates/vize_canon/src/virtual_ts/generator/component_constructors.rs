@@ -190,11 +190,16 @@ pub(super) fn emit_component_constructors<'a>(
             aliases.has_exposed_type,
             (aliases.has_root_el, aliases.has_refs),
         );
-        // Keep the small owned surface named so TypeScript can reuse its
-        // relation identity across large component-import graphs. Inlining
-        // this object makes every constructor instantiation structurally
-        // expand the same fields again.
+        // Keep both the small owned surface and the complete split instance
+        // named so TypeScript can reuse their relation identities across
+        // large component-import graphs. The public base stays outside the
+        // owned-field mapper, but no constructor exposes that intersection
+        // anonymously to every importer.
         append!(*ts, "type $ComponentOwnedInstance = {own};\n");
+        append!(
+            *ts,
+            "type $ComponentInstance<$AuthoredProps, $JsxProps> = $ComponentInstanceFor<$ComponentOwnedInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base};\n"
+        );
         // `$ComponentInput` is a conditional on the authored type
         // parameter, so the checker defers it instead of resolving the input
         // shape while it checks the alias declaration. That matters because
@@ -210,7 +215,7 @@ pub(super) fn emit_component_constructors<'a>(
         // check; TSX binds `$JsxProps` and stays exact (#11629).
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentOwnedInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base};\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstance<$AuthoredProps, $JsxProps>;\n"
         );
     }
 
