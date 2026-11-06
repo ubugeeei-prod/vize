@@ -31,7 +31,7 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 }
 
-const HTML_NAMES: [&str; 117] = [
+const HTML_NAMES: [&str; 119] = [
     "html",
     "head",
     "body",
@@ -57,6 +57,7 @@ const HTML_NAMES: [&str; 117] = [
     "h4",
     "h5",
     "h6",
+    "iframe",
     "ins",
     "label",
     "legend",
@@ -116,6 +117,7 @@ const HTML_NAMES: [&str; 117] = [
     "header",
     "main",
     "nav",
+    "noscript",
     "section",
     "address",
     "blockquote",

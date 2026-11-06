@@ -146,6 +146,13 @@ impl<P: Profile> Builder<'_, '_, P> {
                     self.text(event.span, space)?;
                 }
                 Kind::TextEntity => {
+                    if self.current_namespace() == Some(Namespace::Html)
+                        && self.current() == Some("iframe")
+                    {
+                        // Chromium retains the reference spelling in RAWTEXT;
+                        // the shipped parser decodes it as ordinary text.
+                        return Err(Refusal::UnsupportedElement(event.span));
+                    }
                     let value = event.decoded_entity().ok_or(Refusal::ExplicitEnvelope)?;
                     let mut space = true;
                     value.for_each(|ch| space &= matches!(ch, '\t' | '\n' | '\x0c' | '\r' | ' '));
@@ -231,6 +238,14 @@ impl<P: Profile> Builder<'_, '_, P> {
             // Chromium ignores the slash after crossing an integration point;
             // the shipped parser closes this element. Keep the disagreement
             // explicit instead of manufacturing either oracle's tree.
+            return Err(Refusal::UnsupportedElement(tag.span));
+        }
+        if tag.namespace == Namespace::Html
+            && tag.slash
+            && matches!(tag.name, "iframe" | "noscript")
+            && !P::SELF_CLOSING_ANY_ELEMENT
+        {
+            // Chromium ignores the slash; the shipped parser closes the node.
             return Err(Refusal::UnsupportedElement(tag.span));
         }
         let next = match (self.mode, tag.name) {
@@ -410,6 +425,11 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 
     fn comment(&self, content: Span) -> Result<(), Refusal> {
+        if self.current_namespace() == Some(Namespace::Html) && self.current() == Some("iframe") {
+            // Comment spelling is RAWTEXT in Chromium and a comment node in
+            // the shipped parser, so the replacement view cannot claim it.
+            return Err(Refusal::UnsupportedElement(content));
+        }
         let source = self.owner.source();
         let start = content.start.checked_sub(4).ok_or(Refusal::NonHtmlToken)?;
         let end = (content.end as usize)

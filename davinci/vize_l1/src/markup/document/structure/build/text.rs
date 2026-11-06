@@ -14,7 +14,7 @@ impl<P: Profile> Builder<'_, '_, P> {
         if self.current_namespace() == Some(Namespace::Html)
             && matches!(
                 self.current(),
-                Some("title" | "style" | "script" | "textarea")
+                Some("title" | "style" | "script" | "textarea" | "iframe")
             )
             && self.source(span)?.contains('\0')
         {

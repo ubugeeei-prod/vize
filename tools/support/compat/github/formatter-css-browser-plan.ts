@@ -8,6 +8,7 @@ const browserTests = [
   "tests/tooling/formatter-css-rule-layout.test.mjs",
   "tests/tooling/davinci-document-body-elements.test.ts",
   "tests/tooling/davinci-document-disclosure-elements.test.ts",
+  "tests/tooling/davinci-document-embedded-fallback.test.ts",
   "tests/tooling/davinci-document-foreign-content.test.ts",
   "tests/tooling/davinci-document-phrasing.test.ts",
   "tests/tooling/davinci-document-select.test.ts",
