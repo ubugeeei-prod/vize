@@ -118,9 +118,12 @@ fn tokenize(text: &str) -> Result<Vec<Token>, String> {
                 return Err("unsupported numeric literal".into());
             }
             let literal: String = rest.iter().take(digits).collect();
-            let value = literal
+            let value: i64 = literal
                 .parse()
                 .map_err(|_| String::from("integer literal outside the safe range"))?;
+            if i128::from(value) > MAX_SAFE {
+                return Err("integer literal outside the safe range".into());
+            }
             tokens.push(Token::Num(value));
             index += digits;
         } else if c == '"' || c == '\'' {

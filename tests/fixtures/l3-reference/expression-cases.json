@@ -73,6 +73,7 @@
     { "expr": "42", "value": 42 },
     { "expr": "null", "value": null },
     { "expr": "  a\n  +\tb  ", "value": 4 },
+    { "expr": "9007199254740992", "unsupported": "literal beyond 2^53 - 1" },
     { "expr": "big + 1", "unsupported": "integer beyond 2^53 - 1" },
     { "expr": "a / 2", "unsupported": "division" },
     { "expr": "a == 7", "unsupported": "loose equality" },

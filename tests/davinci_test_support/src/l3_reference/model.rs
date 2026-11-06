@@ -147,6 +147,9 @@ pub fn control(program: &Program, rows: &[Operand], binding: &Op) -> Result<Cont
     if attrs
         .iter()
         .any(|row| !known.contains(&row.name.as_deref().unwrap_or_default()))
+        || attrs
+            .iter()
+            .any(|row| row.name.as_deref() != Some("element-kind") && row.kind != "absent")
         || !distinct
     {
         return Err("unsupported model modifier".into());

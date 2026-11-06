@@ -92,7 +92,7 @@ fn negative_tests(fixtures: &Path) -> Result<(), String> {
         (
             "exotic whitespace",
             &number,
-            r#"{"event":"input","selector":"input","value":" 42"}"#,
+            r#"{"event":"input","selector":"input","value":"\u00a042"}"#,
         ),
         (
             "selectedValues on a single select",
@@ -152,6 +152,20 @@ fn negative_tests(fixtures: &Path) -> Result<(), String> {
         ),
     ] {
         expect_error(label, run(&text.program, &rows, &text.scenario, false))?;
+    }
+    for name in ["trim", "number"] {
+        let rows = mutate(
+            &number.rows,
+            |row| row.role == "model-attribute" && row.name.as_deref() == Some(name),
+            |row| {
+                row.kind = "literal".into();
+                row.text = "true".into();
+            },
+        );
+        expect_error(
+            &format!("non-absent {name} modifier"),
+            run(&number.program, &rows, &number.scenario, false),
+        )?;
     }
     Ok(())
 }
