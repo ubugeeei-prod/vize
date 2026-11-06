@@ -220,3 +220,18 @@ fn select_stack_rules_preserve_the_profiles_distinct_nesting() {
         Err(Refusal::ImpliedEnd(Span::new(87, 93)))
     );
 }
+
+#[test]
+fn active_formatting_recovery_is_document_only() {
+    for body in ["<a><a>x</a></a>", "<nobr><nobr>x</nobr></nobr>"] {
+        assert!(
+            matches!(shape::<Document>(body), Err(Refusal::FormattingRecovery(_))),
+            "{body}"
+        );
+        let authored = shape::<Component>(body).expect(body);
+        assert_eq!(authored.len(), 2, "{body}");
+        assert_eq!(authored[0].1, Some(2), "{body}");
+        assert_eq!(authored[1].1, Some(3), "{body}");
+        assert!(authored.iter().all(|&(_, _, closed)| closed), "{body}");
+    }
+}

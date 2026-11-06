@@ -183,7 +183,7 @@ fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
 fn foreign_head_content_and_other_unsupported_features_keep_typed_refusals() {
     for (head, explicit_envelope) in [
         ("<svg></svg>", true),
-        ("<b></b>", false),
+        ("<b></b>", true),
         ("<template></template>", false),
     ] {
         let source = envelope(head, "");

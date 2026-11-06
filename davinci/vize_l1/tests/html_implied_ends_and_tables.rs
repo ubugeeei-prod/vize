@@ -119,6 +119,7 @@ fn transitions_without_authored_tags_refuse_with_typed_reasons() {
             "<li><span><li>",
             DocumentHtmlRefusal::ImpliedEnd(at(11, 13)),
         ),
+        ("<li><b><li>", DocumentHtmlRefusal::ImpliedEnd(at(8, 10))),
         ("<div></p></div>", DocumentHtmlRefusal::ImpliedEnd(at(7, 8))),
         (
             "<ul><li></ul></li>",

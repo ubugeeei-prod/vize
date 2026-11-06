@@ -11,6 +11,13 @@ use crate::markup::{Namespace, Profile};
 
 impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn body_start(&mut self, tag: Tag) -> Result<(), Refusal> {
+        if P::IMPLIED_END_TAGS
+            && tag.namespace == Namespace::Html
+            && matches!(tag.name, "a" | "nobr")
+            && self.in_scope(&[tag.name], &[])
+        {
+            return Err(Refusal::FormattingRecovery(tag.span));
+        }
         if P::SELECT_CONTENT_MODEL {
             self.select_start(&tag)?;
         }
@@ -234,6 +241,40 @@ const CLOSES_P: [&str; 24] = [
 fn special(name: &str) -> bool {
     !matches!(
         name,
-        "span" | "ruby" | "rb" | "rt" | "rtc" | "rp" | "option" | "optgroup"
+        "a" | "abbr"
+            | "b"
+            | "bdi"
+            | "bdo"
+            | "big"
+            | "cite"
+            | "code"
+            | "data"
+            | "dfn"
+            | "em"
+            | "font"
+            | "i"
+            | "kbd"
+            | "mark"
+            | "nobr"
+            | "q"
+            | "s"
+            | "samp"
+            | "small"
+            | "span"
+            | "strike"
+            | "strong"
+            | "sub"
+            | "sup"
+            | "time"
+            | "tt"
+            | "u"
+            | "var"
+            | "ruby"
+            | "rb"
+            | "rt"
+            | "rtc"
+            | "rp"
+            | "option"
+            | "optgroup"
     )
 }

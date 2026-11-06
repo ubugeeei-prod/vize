@@ -113,3 +113,14 @@ recovery would move nodes, or where the retained lexer hides SVG-title markup.
 Native Rust and actual Chromium consume every complete packet; no DOM result is
 derived from native output. CDATA, annotation-xml HTML integration, arbitrary
 foreign names and complete adoption/raw-text/template policies remain open.
+
+`html-phrasing.json` retains eight complete packets for twenty-eight HTML
+phrasing and formatting names. Native L1 and actual Chromium compare the same
+whole namespace/parent/attribute/direct-node trees. The shipped parser compares
+its complete historical tree separately: Vue 3 diagnostics retain a repeated
+attribute in that AST even though Chromium and native DOM readback keep the
+first occurrence, so that packet records an explicit `legacyElements` witness.
+Well-nested active-formatting elements retain their authored ancestry across
+ordinary body, table-cell, special-text and SVG integration-point contexts.
+Nested anchors/nobrs, misnested formatting and reconstruction across a block
+remain typed refusals; no adoption-agency completion is claimed.
