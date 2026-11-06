@@ -36,14 +36,12 @@ Le paragraphe interpole message et utilise ainsi la liaison déclarée.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-setup-bindings": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unused-setup-bindings": "warn"
+    }
   },
 });
 ```

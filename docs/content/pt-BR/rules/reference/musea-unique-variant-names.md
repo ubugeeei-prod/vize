@@ -40,14 +40,12 @@ As variantes têm os nomes distintos primary e secondary.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "musea/unique-variant-names": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "musea/unique-variant-names": "error"
+    }
   },
 });
 ```

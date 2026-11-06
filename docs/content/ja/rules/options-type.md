@@ -15,7 +15,7 @@ title: 型ルールのオプション
 
 ## `type/strict-boolean-expressions`
 
-Vite+ では、次のように `vue.linter.typeAware` と `vue.linter.rules` を設定してください。
+Vite+ では、次のように `withVue` の `linter.typeAware` と `linter.rules` を設定してください。
 このルールは、どのプリセットにも含まれていません。
 スタンドアロン設定では `linter.rules` と `linter.ruleOptions` に同じ設定を置きます。
 ネイティブの型チェック用コードは、すでに厳密な型チェックを使っています。
@@ -23,19 +23,17 @@ Vite+ では、次のように `vue.linter.typeAware` と `vue.linter.rules` を
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      typeAware: true,
-      rules: {
-        "type/strict-boolean-expressions": "error",
-      },
-      ruleOptions: {
-        "type/strict-boolean-expressions": {
-          allowString: false,
-          allowNumber: false,
-          allowNullableObject: false,
-        },
+export default defineConfig({}).withVue({
+  linter: {
+    typeAware: true,
+    rules: {
+      "type/strict-boolean-expressions": "error",
+    },
+    ruleOptions: {
+      "type/strict-boolean-expressions": {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
       },
     },
   },

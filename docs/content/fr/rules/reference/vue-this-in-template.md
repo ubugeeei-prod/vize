@@ -43,14 +43,12 @@ Utilisez directement `message`, `className` et `handleClick`. La chaîne littér
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/this-in-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/this-in-template": "warn"
+    }
   },
 });
 ```

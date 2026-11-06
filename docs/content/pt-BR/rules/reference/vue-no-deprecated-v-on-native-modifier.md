@@ -41,14 +41,12 @@ Os manipuladores omitem .native e preservam outros modificadores de evento, como
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-native-modifier": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-on-native-modifier": "error"
+    }
   },
 });
 ```

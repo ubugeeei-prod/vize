@@ -38,14 +38,12 @@ description: "禁止在可获得焦点的元素上使用 role=\"presentation\" �
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-role-presentation-on-focusable": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-role-presentation-on-focusable": "error"
+    }
   },
 });
 ```

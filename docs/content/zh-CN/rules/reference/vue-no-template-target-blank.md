@@ -38,14 +38,12 @@ description: "禁止使用 target=\"_blank\" 而不设置 rel=\"noopener norefer
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-target-blank": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-template-target-blank": "warn"
+    }
   },
 });
 ```

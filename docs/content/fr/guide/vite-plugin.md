@@ -27,13 +27,8 @@ Ajoutez `vize` comme dépendance directe si votre projet expose des scripts tels
 ## Usage de base
 
 ```javascript
-// vite.config.js
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 C’est tout. Remplacez `@vitejs/plugin-vue` par `@vizejs/vite-plugin` et votre projet sera compilé via Rust.
@@ -65,7 +60,7 @@ Pour les projets Vite Plus, gardez le type de client Vite Plus et ajoutez le pac
 
 ## Partager les réglages natifs
 
-Placez les réglages partagés sous `vue:` dans `vite.config.*`. Avec Vite+, utilisez `defineConfig(vpConfig).withVue(vueConfig)` depuis `@vizejs/vite-plugin/vite-plus`. Les options du compilateur se placent sous `vue.compiler` ; les réglages TypeScript restent dans `compilerOptions` et les options de templates dans `vueCompilerOptions` de `tsconfig.json`. Le [guide de configuration](./configuration.md) décrit la recherche et la migration.
+Placez les réglages racine dans `defineConfig({ ... })` et passez les réglages Vue directement à `.withVue({ ... })` depuis `@vizejs/vite-plugin/vite-plus`. Exportez cette chaîne sans variable intermédiaire. Les réglages TypeScript restent dans `compilerOptions` et les options de templates dans `vueCompilerOptions` de `tsconfig.json`. Le [guide de configuration](./configuration.md) décrit la recherche et la migration.
 
 <span id="compiler-options"></span>
 
@@ -86,25 +81,25 @@ vize({
 });
 ```
 
-| Option                 | Où le placer                                            | Description                                                                                                                                 |
-| ---------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vueVersion`           | `vize({ vueVersion })`                                  | Réglez `0.11`, `1`, `2`ou `"legacy"` pour exécuter en mode compatibilité Vue non invasif et laissez la compilation SFC au compilateur hôte. |
-| `sourceMap`            | `vue.compiler.sourceMap` ou `vize({ sourceMap })`           | Générez des cartes sources. Par défaut, développement activé, production désactivée.                                                        |
-| `ssr`                  | `vue.compiler.ssr` ou `vize({ ssr })`                       | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas.                                                         |
-| `vapor`                | `vue.compiler.vapor` ou `vize({ vapor })`                   | Compile les modèles via le backend Vapor.                                                                                                   |
-| `jsxMode`              | `vue.compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent.  |
+| Option                 | Où le placer                                                | Description                                                                                                                                             |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                      | Réglez `0.11`, `1`, `2`ou `"legacy"` pour exécuter en mode compatibilité Vue non invasif et laissez la compilation SFC au compilateur hôte.             |
+| `sourceMap`            | `vue.compiler.sourceMap` ou `vize({ sourceMap })`           | Générez des cartes sources. Par défaut, développement activé, production désactivée.                                                                    |
+| `ssr`                  | `vue.compiler.ssr` ou `vize({ ssr })`                       | Force la compilation SSR quand le drapeau de compilation SSR de Vite ne suffit pas.                                                                     |
+| `vapor`                | `vue.compiler.vapor` ou `vize({ vapor })`                   | Compile les modèles via le backend Vapor.                                                                                                               |
+| `jsxMode`              | `vue.compiler.jsxMode` ou `vize({ jsxMode })`               | Backend de sortie par défaut (`"vdom"` / `"vapor"`) pour `.jsx`/`.tsx` composants. Les directives `"use vue:*"` par composant l’emportent.              |
 | `customRenderer`       | `vue.compiler.customRenderer` ou `vize({ customRenderer })` | Considérez les balises minuscules non HTML comme des éléments de rendu personnalisés. Ne correspond pas aux balises PascalCase telles que `<TresMesh>`. |
-| `customElements`       | `vue.compiler.customElements` ou `vize({ customElements })` | Motifs de balises compilés comme éléments personnalisés. Utilisez `["Tres*"]` pour les balises PascalCase TresJS.                            |
-| `templateSyntax`       | `vue.compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                           |
-| `include`              | `vue.vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                |
-| `exclude`              | `vue.vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                 |
-| `scanPatterns`         | `vue.vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                               |
-| `ignorePatterns`       | `vue.vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                      |
-| `configMode`           | `vize({ configMode })`                                  | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé.                                                          |
-| `configFile`           | `vize({ configFile })`                                  | Chargez un fichier de configuration spécifique.                                                                                             |
-| `config`               | `vize({ config })`                                      | Configuration partagée en ligne pour les paramètres d’exécution de Vite Plus.                                                               |
-| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                        | Compile `.vue` fichiers importés depuis `node_modules` à la demande.                                                                        |
-| `debug`                | `vize({ debug })`                                       | Imprimer les journaux de débogage des plugins.                                                                                              |
+| `customElements`       | `vue.compiler.customElements` ou `vize({ customElements })` | Motifs de balises compilés comme éléments personnalisés. Utilisez `["Tres*"]` pour les balises PascalCase TresJS.                                       |
+| `templateSyntax`       | `vue.compiler.templateSyntax` ou `vize({ templateSyntax })` | Choisissez `"standard"`, `"strict"`ou `"quirks"` gestion de la syntaxe du modèle.                                                                       |
+| `include`              | `vue.vite.include` ou `vize({ include })`                   | Des fichiers que le plugin devrait compiler.                                                                                                            |
+| `exclude`              | `vue.vite.exclude` ou `vize({ exclude })`                   | Des fichiers que le plugin devrait ignorer.                                                                                                             |
+| `scanPatterns`         | `vue.vite.scanPatterns` ou `vize({ scanPatterns })`         | Des motifs glob utilisés pour la précompilation au démarrage.                                                                                           |
+| `ignorePatterns`       | `vue.vite.ignorePatterns` ou `vize({ ignorePatterns })`     | Les motifs glob étaient sautés lors de la précompilation au démarrage.                                                                                  |
+| `configMode`           | `vize({ configMode })`                                      | Utilisez `"root"`, `"auto"`ou `false` pour le chargement de configuration partagé.                                                                      |
+| `configFile`           | `vize({ configFile })`                                      | Chargez un fichier de configuration spécifique.                                                                                                         |
+| `config`               | `vize({ config })`                                          | Configuration partagée en ligne pour les paramètres d’exécution de Vite Plus.                                                                           |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                            | Compile `.vue` fichiers importés depuis `node_modules` à la demande.                                                                                    |
+| `debug`                | `vize({ debug })`                                           | Imprimer les journaux de débogage des plugins.                                                                                                          |
 
 Recettes courantes :
 
@@ -151,7 +146,7 @@ Le plugin intercepte `.vue` requêtes de fichiers et les compile en utilisant le
 
 ### Compilation Pipeline
 
-```
+```diagram
 .vue file
   → Armature (Parser)          — Tokenizes and parses the SFC structure
   → Croquis (Semantic Analysis) — Analyzes template expressions and bindings

@@ -38,14 +38,12 @@ description: "要求 `<component>` 元素具有 `v-bind:is`。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-component-is": "error"
+    }
   },
 });
 ```

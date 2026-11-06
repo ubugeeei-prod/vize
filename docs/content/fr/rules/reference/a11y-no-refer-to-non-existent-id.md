@@ -39,14 +39,12 @@ Ajouter le span correspondant résout la référence et fournit le libellé du b
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-refer-to-non-existent-id": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-refer-to-non-existent-id": "warn"
+    }
   },
 });
 ```

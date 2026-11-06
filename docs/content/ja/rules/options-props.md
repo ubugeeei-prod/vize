@@ -1,6 +1,7 @@
 ---
 title: Props のルールのオプション
 ---
+
 <!-- Reviewed translation; source: rules/options-props.md -->
 
 # Props のルールのオプション
@@ -15,12 +16,10 @@ snake_case に統一します。既定は `"camelCase"` です。実行時の配
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/prop-name-casing": "error" },
-      ruleOptions: { "vue/prop-name-casing": { casing: "snake_case" } },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/prop-name-casing": "error" },
+    ruleOptions: { "vue/prop-name-casing": { casing: "snake_case" } },
   },
 });
 ```

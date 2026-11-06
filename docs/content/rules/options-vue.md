@@ -18,13 +18,11 @@ keeps its existing quotes instead of adding an escape.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/html-quotes": "warn" },
-      ruleOptions: {
-        "vue/html-quotes": { style: "single", avoidEscape: true },
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/html-quotes": "warn" },
+    ruleOptions: {
+      "vue/html-quotes": { style: "single", avoidEscape: true },
     },
   },
 });
@@ -39,7 +37,7 @@ Bad with this config:
 Good with this config:
 
 ```vue
-<div class='card' title="don't"></div>
+<div class="card" title="don't"></div>
 ```
 
 The first value is safely fixed to `class='card'`; `title="don't"` remains unchanged.
@@ -53,12 +51,10 @@ to require tight interpolation delimiters. The default is `"always"`.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/mustache-interpolation-spacing": "warn" },
-      ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/mustache-interpolation-spacing": "warn" },
+    ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
   },
 });
 ```
@@ -125,19 +121,17 @@ the ESLint `ignores` option remain unsupported. Native HTML, SVG, MathML, `slot`
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/component-name-in-template-casing": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/component-name-in-template-casing": "warn",
+    },
+    ruleOptions: {
+      "vue/component-name-in-template-casing": {
+        casing: "kebab-case",
       },
-      "ruleOptions": {
-        "vue/component-name-in-template-casing": {
-          "casing": "kebab-case"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -171,19 +165,17 @@ the prop binding itself. The default `false` reports both direct and nested muta
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/no-mutating-props": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/no-mutating-props": "error",
+    },
+    ruleOptions: {
+      "vue/no-mutating-props": {
+        shallowOnly: true,
       },
-      "ruleOptions": {
-        "vue/no-mutating-props": {
-          "shallowOnly": true
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -217,25 +209,17 @@ custom block names.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/sfc-element-order": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/sfc-element-order": "warn",
+    },
+    ruleOptions: {
+      "vue/sfc-element-order": {
+        order: ["template", "script:not([setup])", "script[setup]", "i18n", "style"],
       },
-      "ruleOptions": {
-        "vue/sfc-element-order": {
-          "order": [
-            "template",
-            "script:not([setup])",
-            "script[setup]",
-            "i18n",
-            "style"
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -264,25 +248,23 @@ fields keep the Vize defaults.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/html-self-closing": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/html-self-closing": "warn",
+    },
+    ruleOptions: {
+      "vue/html-self-closing": {
+        html: {
+          void: "always",
+          normal: "never",
+          component: "always",
+        },
+        svg: "always",
+        math: "always",
       },
-      "ruleOptions": {
-        "vue/html-self-closing": {
-          "html": {
-            "void": "always",
-            "normal": "never",
-            "component": "always"
-          },
-          "svg": "always",
-          "math": "always"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -315,17 +297,15 @@ See [event listener options](./options-events.md) for ignore-list validation and
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-on-event-hyphenation": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-on-event-hyphenation": { "style": "always", "ignore": ["update:"] }
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-on-event-hyphenation": "warn",
+    },
+    ruleOptions: {
+      "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"] },
+    },
+  },
 });
 ```
 
@@ -356,17 +336,15 @@ explicit modifiers and their order. Object syntax such as `v-bind="attrs"` is le
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-bind-style": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-bind-style": "longform"
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-bind-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-bind-style": "longform",
+    },
+  },
 });
 ```
 
@@ -392,17 +370,15 @@ is therefore left unchanged.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-on-style": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-on-style": "longform"
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-on-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-on-style": "longform",
+    },
+  },
 });
 ```
 
@@ -429,21 +405,19 @@ named slot argument would change behavior. Safe fixes preserve slot arguments an
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-slot-style": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-slot-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-slot-style": {
+        atComponent: "longform",
+        default: "v-slot",
+        named: "longform",
       },
-      "ruleOptions": {
-        "vue/v-slot-style": {
-          "atComponent": "longform",
-          "default": "v-slot",
-          "named": "longform"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 

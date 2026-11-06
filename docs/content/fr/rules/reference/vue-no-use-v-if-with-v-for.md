@@ -46,14 +46,12 @@ const visibleItems = computed(() => items.filter((item) => item.visible));
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-use-v-if-with-v-for": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-use-v-if-with-v-for": "warn"
+    }
   },
 });
 ```

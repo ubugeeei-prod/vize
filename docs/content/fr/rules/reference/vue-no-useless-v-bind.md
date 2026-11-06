@@ -41,14 +41,12 @@ La valeur constante devient un attribut statique ; les valeurs variables et inte
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-v-bind": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-v-bind": "warn"
+    }
   },
 });
 ```

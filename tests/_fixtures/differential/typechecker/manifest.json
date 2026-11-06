@@ -15469,6 +15469,56 @@
       }
     },
     {
+      "id": "typechecker/vfor-const-listener-narrowing-11973",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::vfor_const_listener_narrowing_11973::standard_tsgo_keeps_v_for_const_narrowing_in_listener_callbacks",
+      "inputs": [
+        {
+          "file": "types.ts",
+          "path": "vfor-const-listener-narrowing-11973/types.ts.txt",
+          "sha256": "f4dee768b6969bc75ad9072af7ef0c97cb4b6e91d2c5a27c3eb0f1bdc05e8dba"
+        },
+        {
+          "file": "Guarded.vue",
+          "path": "vfor-const-listener-narrowing-11973/Guarded.vue.txt",
+          "sha256": "a2f2fd63c7f784f44a8bc9e10a54f61dbfd09870f3465f0b82cd0a3e620e8039"
+        },
+        {
+          "file": "Unguarded.vue",
+          "path": "vfor-const-listener-narrowing-11973/Unguarded.vue.txt",
+          "sha256": "ad32aaaf208487d824e7f3ef674b90e58d1d8bb523733bf08606318cdbbccd08"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "vfor-const-listener-narrowing-11973/tsconfig.json.txt",
+          "sha256": "c0c7682747ec64e37853842ee710442fec6ccd8af7bfb8ab7449b0845164a372"
+        },
+        {
+          "file": "cases.json",
+          "path": "vfor-const-listener-narrowing-11973/cases.json",
+          "sha256": "1f207f0ab8e7bb3d92fd60d24bd6257cf2c6d2e2adc3488fff96d772122afd08"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required actual source CLI beta content-mapper protocol; guarded v-for const aliases stay narrowed while the unguarded payload error remains."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"

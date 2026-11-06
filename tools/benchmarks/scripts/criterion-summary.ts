@@ -55,7 +55,7 @@ export function renderSummary({
       : `Regression threshold: ${threshold}% (median).`,
   );
   lines.push("");
-  lines.push("```");
+  lines.push("```console");
   lines.push(table.trimEnd());
   lines.push("```");
   if (regressions.length > 0) {

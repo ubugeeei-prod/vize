@@ -11,7 +11,7 @@ description: "检查使用 petite-vue 的 HTML 页面中的指令和作用域。
 
 ## 按需启用 (3)
 
-不属于任何预设。在 `vue.linter.rules` 中按名称启用。
+不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |

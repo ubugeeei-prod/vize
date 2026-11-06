@@ -16,15 +16,13 @@ title: 属性名のオプション
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: {
-        "vue/attribute-hyphenation": "warn",
-      },
-      ruleOptions: {
-        "vue/attribute-hyphenation": "never",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/attribute-hyphenation": "warn",
+    },
+    ruleOptions: {
+      "vue/attribute-hyphenation": "never",
     },
   },
 });

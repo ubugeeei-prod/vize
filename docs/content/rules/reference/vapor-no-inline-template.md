@@ -44,14 +44,12 @@ The markup is passed through the default slot instead of an inline template.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-inline-template": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/no-inline-template": "error"
+    }
   },
 });
 ```

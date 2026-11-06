@@ -74,11 +74,9 @@ import Child from "./Child.vue";
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "html/cross-component-nesting": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "html/cross-component-nesting": "warn" },
   },
 });
 ```

@@ -39,14 +39,12 @@ description: "連続する br 要素による余白指定を検出します。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-consecutive-br": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-consecutive-br": "warn"
+    }
   },
 });
 ```

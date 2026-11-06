@@ -130,6 +130,7 @@ void test("the shared Vue configuration guide documents the canonical entry poin
     read("docs/content/ja/guide/vue-configuration.md"),
   ]) {
     assert.match(source, /`basePath`.*`files`.*`ignores`.*`linter`/s);
-    assert.match(source, /defineConfig\(vpConfig\)\.withVue\(vueConfig\)/);
+    assert.match(source, /export default defineConfig\([\s\S]*?\)\.withVue\(\{/);
+    assert.doesNotMatch(source, /\b(?:const|let|var)\s+\w+\s*=\s*defineConfig\(/);
   }
 });

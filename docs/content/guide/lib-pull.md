@@ -55,7 +55,7 @@ The example imports the copied `rating.ts` beside it, so local component edits a
 
 Every published `@vizejs/ui` and `@vizejs/composable` tarball contains a versioned registry:
 
-```text
+```tree
 node_modules/@vizejs/ui/
   registry/
     registry.json          # items, files, sha256 digests, dependencies
@@ -114,14 +114,12 @@ between items keep working without any rewriting. The directory is chosen by:
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    lib: {
-      uiDir: "src/ui/vendor",
-      composableDir: "src/composables/vendor",
-      // dir: "src/vendor",
-      // lockfile: "vize-lib.lock.json",
-    },
+export default defineConfig({}).withVue({
+  lib: {
+    uiDir: "src/ui/vendor",
+    composableDir: "src/composables/vendor",
+    // dir: "src/vendor",
+    // lockfile: "vize-lib.lock.json",
   },
 });
 ```

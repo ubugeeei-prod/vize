@@ -10,26 +10,24 @@ Vize のリンターは、Vue の単一ファイルコンポーネントのテ�
 
 ## lint を有効にする
 
-Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`vue.linter` に設定して
+Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`linter` を `withVue` に直接渡して
 `vp run lint` を実行します。このコマンドで Vize のルールと Oxlint の両方が動きます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      preset: "happy-path",
-      rules: {
-        "vue/no-v-html": "off",
-        "a11y/alt-text": "error",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "happy-path",
+    rules: {
+      "vue/no-v-html": "off",
+      "a11y/alt-text": "error",
     },
   },
 });
 ```
 
-各ルールには `off`・`warn`・`error` を指定します。設定項目のあるルールは `vue.linter.ruleOptions` から
+各ルールには `off`・`warn`・`error` を指定します。設定項目のあるルールは `withVue` 内の `linter.ruleOptions` から
 読み取ります。[ルールのオプション](./options.md)を参照してください。
 
 プロジェクトに `lint` という名前の script がすでにある場合は、`vp run vize:lint` を使ってください。
@@ -77,5 +75,5 @@ Vue 3 で削除された構文と API の検査を無効にします。
 ## 型情報を使うルール
 
 `type/` のルールは、`tsconfig.json` の TypeScript プロジェクトから型情報を読み取ります。プリセットまたは
-`rules` で有効にしたうえで、`vue.linter` に `typeAware: true` を指定してください。グローバル名の型は、Vize の
+`rules` で有効にしたうえで、`withVue` の `linter` に `typeAware: true` を指定してください。グローバル名の型は、Vize の
 設定に別の `globals` を置くのではなく、`compilerOptions.types` や project references で宣言します。

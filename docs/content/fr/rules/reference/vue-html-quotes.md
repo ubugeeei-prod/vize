@@ -41,14 +41,12 @@ Les attributs ordinaires et les expressions des directives utilisent des guillem
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-quotes": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-quotes": "warn"
+    }
   },
 });
 ```

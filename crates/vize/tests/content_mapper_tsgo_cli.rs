@@ -56,6 +56,7 @@ mod type_only_import_use;
 mod typed_context_undefined;
 mod unicode_prop_bindings;
 mod unknown_options_10218;
+mod vfor_const_listener_narrowing_11973;
 
 use support::{
     assert_success, check_project, copy_fixture, emitted_vue_declaration, install_mapper_manifest,

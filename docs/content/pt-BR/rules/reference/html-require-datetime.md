@@ -38,14 +38,12 @@ O elemento time contém uma data legível por pessoas, mas não tem um valor dat
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/require-datetime": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/require-datetime": "warn"
+    }
   },
 });
 ```

@@ -75,7 +75,7 @@ watch(nextCount, value => { count.value = value; }, { immediate: true });
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```diagram
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B; B -> A
 ```
@@ -96,7 +96,7 @@ const nextCount = computed(() => count.value + 1); // B: the derived consumer.
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```diagram
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
@@ -106,11 +106,9 @@ Tracked flows: A -> B
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/circular-reactive-dependency": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/circular-reactive-dependency": "warn" },
   },
 });
 ```

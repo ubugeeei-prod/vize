@@ -44,14 +44,12 @@ LegacyCard の内部のマークアップに inline-template を使っていま�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-inline-template": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/no-inline-template": "error"
+    }
   },
 });
 ```

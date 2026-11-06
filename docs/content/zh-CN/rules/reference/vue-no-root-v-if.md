@@ -40,14 +40,12 @@ description: "禁止在模板的唯一根元素上使用 v-if。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-root-v-if": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-root-v-if": "warn"
+    }
   },
 });
 ```

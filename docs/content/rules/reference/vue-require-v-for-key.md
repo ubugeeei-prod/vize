@@ -38,14 +38,12 @@ Each repeated `<li>` lacks a key that identifies its corresponding item during l
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-v-for-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-v-for-key": "error"
+    }
   },
 });
 ```

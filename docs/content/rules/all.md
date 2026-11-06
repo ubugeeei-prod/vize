@@ -341,7 +341,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 
 ## Cross-file rules (66)
 
-Turn these checks on with `crossFile: true` in `vue.linter`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `vue.linter.rules` as `croquis/cf/<name>`, without `vize:`.
+Turn these checks on with `crossFile: true` in the `linter` passed to `withVue`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `linter.rules` as `croquis/cf/<name>`, without `vize:`.
 
 | Rule | What it checks | Status |
 | --- | --- | --- |

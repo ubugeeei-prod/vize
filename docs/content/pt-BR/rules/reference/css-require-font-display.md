@@ -45,14 +45,12 @@ A declaração font-face define a origem da fonte, mas omite sua política font-
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/require-font-display": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/require-font-display": "warn"
+    }
   },
 });
 ```

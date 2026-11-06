@@ -38,14 +38,12 @@ A section and a styling class replace the deprecated element while preserving th
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-element": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/deprecated-element": "warn"
+    }
   },
 });
 ```

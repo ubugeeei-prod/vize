@@ -38,14 +38,12 @@ description: "操作部品ではない要素へのイベント指定を検出し
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-static-element-interactions": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-static-element-interactions": "warn"
+    }
   },
 });
 ```

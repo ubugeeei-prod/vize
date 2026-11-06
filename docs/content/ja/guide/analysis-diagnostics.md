@@ -34,7 +34,7 @@ const items = ref([{ id: 1, name: "Ada" }]);
 
 `vize lint src/App.vue --help-level short --locale ja` を実行すると、次のように表示されます。
 
-```text
+```diagnostic
   × [vize:vue/require-v-for-key] `v-for` で繰り返す <li> には `v-bind:key` が必要です
     ╭─[src/App.vue:9:9]
   8 │   <ul>
@@ -82,7 +82,7 @@ Linted 1 files in 1.8971ms
 
 `--format plain` は診断を 1 行ずつ出力するので、CI のログで読みやすくなります。
 
-```text
+```diagnostic
 Patina lint report: 1 error, 1 warning in 1 file
 
 src/App.vue
@@ -106,13 +106,11 @@ src/App.vue
    ```ts
    import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-   export default defineConfig({
-     lint: {
-       vue: {
-         rules: {
-           "a11y/alt-text": "error",
-           "vue/require-v-for-key": "off",
-         },
+   export default defineConfig({}).withVue({
+     linter: {
+       rules: {
+         "a11y/alt-text": "error",
+         "vue/require-v-for-key": "off",
        },
      },
    });
@@ -135,7 +133,7 @@ src/App.vue
 
 ## 診断の種類
 
-| 種類                | ID の例                 | 診断を報告する機能                                                         |
+| 種類                | ID の例                 | 診断を報告する機能                                                   |
 | ------------------- | ----------------------- | -------------------------------------------------------------------- |
 | 単一ファイルの lint | `vue/require-v-for-key` | `vize lint`、エディター、Oxlint プラグイン                           |
 | ファイル横断        | `vize:croquis/cf/*`     | `vize lint --cross-file`（プロジェクト全体の依存関係を解析したあと） |

@@ -55,32 +55,21 @@ const count = ref(0);
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    compiler: { vapor: true },
-  },
+export default defineConfig({}).withVue({
+  compiler: { vapor: true },
 });
 ```
 
-通常の Vite プラグインでは、オプションを直接渡します。
-
-```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize({ vapor: true })],
-});
-```
+プロジェクト全体の安定した設定は、上記の `withVue` チェーンに直接置きます。
 
 Nuxt では `nuxt.config.ts` の `vize.compiler.vapor` を設定します。[Nuxt 連携](../integrations/nuxt.md)を
 参照してください。
 
-| 設定                                      | 範囲                         | 補足                                           |
-| ----------------------------------------- | ---------------------------- | ---------------------------------------------- |
-| `<script vapor>` / `<script setup vapor>` | 1 つの SFC                   | そのファイルでは常に優先される                 |
-| `vue.compiler.vapor` / `vize({ vapor })`      | プロジェクトのすべての SFC   | 安定した設定。`false` で明示的に無効にできる   |
-| `experimentals.vapor`                     | すべての SFC（実験として）   | `vue.compiler.vapor` がある場合は無視される。[Experimentals](./experimentals.md#vapor) を参照 |
+| 設定                                      | 範囲                       | 補足                                                                                          |
+| ----------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------- |
+| `<script vapor>` / `<script setup vapor>` | 1 つの SFC                 | そのファイルでは常に優先される                                                                |
+| `withVue({ compiler: { vapor } })`        | プロジェクトのすべての SFC | 安定した設定。`false` で明示的に無効にできる                                                  |
+| `experimentals.vapor`                     | すべての SFC（実験として） | `vue.compiler.vapor` がある場合は無視される。[Experimentals](./experimentals.md#vapor) を参照 |
 
 ## JSX と TSX
 

@@ -7,7 +7,7 @@ description: Partagez les réglages Vue depuis votre configuration Vite et votre
 
 # Configuration
 
-Placez les réglages Vue sous `vue:` dans `vite.config.*` et les réglages TypeScript dans `tsconfig.json`. La CLI, l’intégration Vite et l’extension de l’éditeur lisent ces fichiers de projet.
+Passez les réglages Vue directement à `withVue` dans `vite.config.*` et conservez les réglages TypeScript dans `tsconfig.json`. La CLI, l’intégration Vite et l’extension de l’éditeur lisent ces fichiers de projet.
 
 ## Conserver votre configuration Vite+
 
@@ -16,27 +16,23 @@ Enveloppez votre configuration existante avec l’assistant Vize :
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+export default defineConfig({
   server: { port: 3000 },
-};
-
-const vueConfig = {
+}).withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-`withVue` conserve les options, les plugins et les hooks Vite+ existants. Les objets, fonctions, promesses et fonctions asynchrones sont pris en charge. Une section `vue: { ... }` en ligne est équivalente. Le [guide de configuration Vue partagée](/guide/vue-configuration.md) décrit les chemins, les périmètres et la composition.
+Enchaînez `withVue` directement sur l’appel `defineConfig` exporté. Il conserve les options, les plugins et les hooks Vite+ existants. Les objets, fonctions, promesses et fonctions asynchrones sont pris en charge. Le [guide de configuration Vue partagée](/guide/vue-configuration.md) décrit les chemins, les périmètres et la composition.
 
-| Emplacement | Fonction | Commande |
-| --- | --- | --- |
-| `vue.compiler` | Compilation Vue | `vp dev`, `vp build` |
-| `vue.linter` | Règles lint Vue | `vp run lint` |
-| `vue.formatter` | Formatage Vue | `vp run fmt:check` |
-| `vue.typeChecker` | Réglages explicites du vérificateur Vue | `vp run typecheck` |
+| Emplacement       | Fonction                                | Commande             |
+| ----------------- | --------------------------------------- | -------------------- |
+| `vue.compiler`    | Compilation Vue                         | `vp dev`, `vp build` |
+| `vue.linter`      | Règles lint Vue                         | `vp run lint`        |
+| `vue.formatter`   | Formatage Vue                           | `vp run fmt:check`   |
+| `vue.typeChecker` | Réglages explicites du vérificateur Vue | `vp run typecheck`   |
 
 Utilisez `vp run check` pour les tâches Vize combinées. Les commandes intégrées `vp check`, `vp lint` et `vp fmt` conservent le fonctionnement propre à Vite+. Un script existant peut renommer une tâche générée en `vize:<nom>` ; consultez les [noms des tâches](/guide/vite-plus.md#tasks).
 
@@ -87,15 +83,10 @@ Placez les réglages natifs sous `vue.compiler`, `vue.typeChecker`, `vue.linter`
 Conservez la configuration Vite existante et remplacez le plugin de compilation Vue :
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-  vue: {
-    linter: { preset: "essential" },
-    formatter: { printWidth: 100 },
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
 });
 ```
 
@@ -119,7 +110,7 @@ Les exclusions globales partagées retirent les fichiers de la recherche CLI et 
 
 Les fichiers `vize.config.*` et la section racine `vize:` ne sont plus pris en charge. Déplacez les réglages natifs sous `vue:` dans `vite.config.*`, et les options du projet TypeScript dans `tsconfig.json`. Après vérification, supprimez les fichiers dédiés. Un fichier dédié résiduel placé à côté d’une configuration Vite est une erreur, la même erreur de migration qu’un projet qui ne contient qu’un fichier dédié. `vize init` et `vize setup` préservent les fichiers originaux et expliquent la migration.
 
-Il n’existe pas de `extends` propre à Vize. Importez des objets JavaScript ordinaires et transmettez-les à `defineConfig(vpConfig).withVue(vueConfig)` pour partager vos réglages. Les `extends` et `references` TypeScript standards restent valides.
+Il n’existe pas de `extends` propre à Vize. Conservez les réglages racine et Vue dans l’export direct `defineConfig({ ... }).withVue({ ... })` présenté ci-dessus. Les `extends` et `references` TypeScript standards restent valides.
 
 <span id="fichiers-de-configuration"></span>
 <span id="configuration-typescript"></span>

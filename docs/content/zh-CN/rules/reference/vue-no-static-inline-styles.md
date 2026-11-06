@@ -37,14 +37,12 @@ notice 类和 scoped 样式表将固定颜色放在模板属性之外。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-static-inline-styles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-static-inline-styles": "warn"
+    }
   },
 });
 ```

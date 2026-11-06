@@ -8,7 +8,7 @@ title: Référence de configuration du compilateur
 
 ## Options du compilateur
 
-Ces options se placent sous `vue.compiler` dans `vite.config.*`, ou dans l’objet Vue passé à `defineConfig(vpConfig).withVue(vueConfig)`. Chaque intégration consomme les options qui la concernent.
+Passez ces options sous `compiler` dans l’export direct `defineConfig({ ... }).withVue({ ... })`. Chaque intégration consomme les options qui la concernent.
 
 | Option              | Valeurs                               | Usage courant                                                                                               |
 | ------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -32,18 +32,14 @@ Ces options se placent sous `vue.compiler` dans `vite.config.*`, ou dans l’obj
 Pour les projets Vite, les options de plugin direct suppriment la configuration partagée :
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  compiler: {
+    vapor: true,
+    sourceMap: true,
+    customRenderer: true,
+    templateSyntax: "standard",
+  },
 });
 ```
 
@@ -64,13 +60,13 @@ Les cas connus sont :
   mode Standard les avertit et les réécrit comme des éléments vides, des erreurs strictes de mode, et le mode quirk les
   comme des feuilles qui se ferment automatiquement.
 
-```text
+```vue
 <template>
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
@@ -131,7 +127,7 @@ const Classic = () => {
 Comme chaque composant est routé indépendamment, un **seul module peut mélanger les deux backends** :
 
 ```tsx
-// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -180,5 +176,3 @@ Lorsque la clé est absente, le dialecte est détecté structurellement par docu
 résolvant vers le package petite-vue, une importation ES en ligne de `petite-vue`, ou un appel `PetiteVue.createApp`
 . Les mentions de petite-vue dans les commentaires ou la prose ne changent jamais de dialecte, et les composantes de
 en file indienne utilisent toujours le dialecte standard de Vue.
-
-

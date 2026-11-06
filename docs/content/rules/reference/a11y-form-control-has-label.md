@@ -41,14 +41,12 @@ Wrapping the input in a label associates the visible `Search` text with the cont
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/form-control-has-label": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/form-control-has-label": "warn"
+    }
   },
 });
 ```

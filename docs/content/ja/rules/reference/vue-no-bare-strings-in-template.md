@@ -45,14 +45,12 @@ description: "テンプレートに直接書かれた、国際化の対象とな
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-bare-strings-in-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-bare-strings-in-template": "warn"
+    }
   },
 });
 ```

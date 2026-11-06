@@ -43,14 +43,12 @@ description: "要求 v-on 处理器写为方法引用或内联函数。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-handler-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-handler-style": "warn"
+    }
   },
 });
 ```

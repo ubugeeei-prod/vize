@@ -44,14 +44,12 @@ select 设置了 `required`，但第一个选项是 Japan，表单一开始就�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/placeholder-label-option": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/placeholder-label-option": "warn"
+    }
   },
 });
 ```

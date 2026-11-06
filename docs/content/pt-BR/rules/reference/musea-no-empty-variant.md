@@ -40,14 +40,12 @@ A variante renderiza um Button primary com seu conteúdo Save.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "musea/no-empty-variant": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "musea/no-empty-variant": "warn"
+    }
   },
 });
 ```

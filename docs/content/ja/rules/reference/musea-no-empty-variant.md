@@ -40,14 +40,12 @@ variant の中に tone="primary" の Button を置き、Save を表示します�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "musea/no-empty-variant": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "musea/no-empty-variant": "warn"
+    }
   },
 });
 ```

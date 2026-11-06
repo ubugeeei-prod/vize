@@ -41,14 +41,12 @@ foo に固定の文字列か、補間がないテンプレート文字列をバ�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-v-bind": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-v-bind": "warn"
+    }
   },
 });
 ```

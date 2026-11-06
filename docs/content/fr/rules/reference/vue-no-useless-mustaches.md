@@ -43,14 +43,12 @@ Le texte littéral est écrit directement ; les expressions de variables, les ch
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-mustaches": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-mustaches": "warn"
+    }
   },
 });
 ```

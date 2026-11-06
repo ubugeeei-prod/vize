@@ -40,14 +40,12 @@ description: "要求点击事件配有键盘事件处理器。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/click-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/click-events-have-key-events": "warn"
+    }
   },
 });
 ```

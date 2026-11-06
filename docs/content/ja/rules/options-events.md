@@ -1,6 +1,7 @@
 ---
 title: イベントリスナーのオプション
 ---
+
 <!-- Reviewed translation; source: rules/options-events.md -->
 
 # イベントリスナーのオプション
@@ -22,13 +23,11 @@ title: イベントリスナーのオプション
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/v-on-event-hyphenation": "warn" },
-      ruleOptions: {
-        "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"], autofix: true },
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/v-on-event-hyphenation": "warn" },
+    ruleOptions: {
+      "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"], autofix: true },
     },
   },
 });

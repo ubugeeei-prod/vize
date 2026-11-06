@@ -41,14 +41,12 @@ Uma section envolve os parágrafos em uma única raiz; ative essa convenção ap
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-template-root": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-template-root": "error"
+    }
   },
 });
 ```

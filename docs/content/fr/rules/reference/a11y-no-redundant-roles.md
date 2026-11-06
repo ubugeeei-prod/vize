@@ -38,14 +38,12 @@ Supprimer le rôle répété conserve la sémantique du bouton fournie par HTML.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-redundant-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-redundant-roles": "warn"
+    }
   },
 });
 ```

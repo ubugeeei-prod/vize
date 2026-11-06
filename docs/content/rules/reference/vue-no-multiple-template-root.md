@@ -41,14 +41,12 @@ A section wraps the paragraphs into one root; enable this convention only when a
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-template-root": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-template-root": "error"
+    }
   },
 });
 ```

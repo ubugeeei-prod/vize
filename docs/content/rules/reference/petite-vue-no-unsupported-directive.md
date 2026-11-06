@@ -45,14 +45,12 @@ The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-o
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/no-unsupported-directive": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "petite-vue/no-unsupported-directive": "error"
+    }
   },
 });
 ```

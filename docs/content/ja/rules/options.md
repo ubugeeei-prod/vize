@@ -1,13 +1,15 @@
 ---
 title: ルールのオプション
 ---
+
 <!-- Reviewed translation; source: rules/options.md -->
 
 # ルールのオプション
+
 <!-- Type-aware reference: [型ルールのオプション](./options-type.md) -->
 
 ルールの判定方法をプロジェクトに合わせたいときに、このページを使ってください。
-Vite+ では `vite.config.ts` の `vue.linter.ruleOptions` に指定し、`vp run lint` で検査します。
+Vite+ では `vite.config.ts` の `withVue` に渡す `linter.ruleOptions` に指定し、`vp run lint` で検査します。
 単独で使う互換設定では、同じ内容を `linter.ruleOptions` に指定します。
 
 `linter.ruleOptions` には、オプションを受け取るルールの設定をプロジェクトごとに指定します。
@@ -20,47 +22,45 @@ Vite+ では `vite.config.ts` の `vue.linter.ruleOptions` に指定し、`vp ru
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-globals": "error",
-        "vue/html-self-closing": "warn",
-        "musea/prefer-design-tokens": "warn"
-      },
-      "ruleOptions": {
-        "script/no-restricted-globals": {
-          "globals": [
-            {
-              "name": "process",
-              "message": "Read env via a typed helper."
-            },
-            {
-              "name": "alert"
-            }
-          ]
-        },
-        "vue/html-self-closing": {
-          "html": {
-            "void": "always",
-            "normal": "never",
-            "component": "always"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-globals": "error",
+      "vue/html-self-closing": "warn",
+      "musea/prefer-design-tokens": "warn",
+    },
+    ruleOptions: {
+      "script/no-restricted-globals": {
+        globals: [
+          {
+            name: "process",
+            message: "Read env via a typed helper.",
           },
-          "svg": "always",
-          "math": "always"
+          {
+            name: "alert",
+          },
+        ],
+      },
+      "vue/html-self-closing": {
+        html: {
+          void: "always",
+          normal: "never",
+          component: "always",
         },
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    }
-  }
+        svg: "always",
+        math: "always",
+      },
+      "musea/prefer-design-tokens": {
+        tokens: [
+          {
+            path: "color.primary",
+            value: "#3b82f6",
+            tier: "semantic",
+          },
+        ],
+      },
+    },
+  },
 });
 ```
 
@@ -108,21 +108,17 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "html/no-empty-palpable-content": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "html/no-empty-palpable-content": "error",
+    },
+    ruleOptions: {
+      "html/no-empty-palpable-content": {
+        contentDirectives: ["safe-html"],
       },
-      "ruleOptions": {
-        "html/no-empty-palpable-content": {
-          "contentDirectives": [
-            "safe-html"
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -155,20 +151,15 @@ PascalCase と kebab-case の表記を許可し、正規表現は解釈しませ
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/require-component-registration": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/require-component-registration": "warn",
+    },
+    ruleOptions: {
+      "vue/require-component-registration": {
+        globals: ["MyButton", "MyIcon"],
       },
-      "ruleOptions": {
-        "vue/require-component-registration": {
-          "globals": [
-            "MyButton",
-            "MyIcon"
-          ]
-        }
-      }
     },
   },
 });

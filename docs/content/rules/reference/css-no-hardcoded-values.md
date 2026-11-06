@@ -44,14 +44,12 @@ The declarations refer to named spacing and color custom properties, so these va
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-hardcoded-values": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-hardcoded-values": "warn"
+    }
   },
 });
 ```

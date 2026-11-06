@@ -42,14 +42,12 @@ A classe `.submit` fornece um ponto de aplicação de estilo reutilizável sem u
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-id-selectors": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-id-selectors": "warn"
+    }
   },
 });
 ```

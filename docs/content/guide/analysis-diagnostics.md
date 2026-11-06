@@ -30,7 +30,7 @@ const items = ref([{ id: 1, name: "Ada" }]);
 
 `vize lint src/App.vue --help-level short` prints:
 
-```text
+```diagnostic
   × [vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <li>
     ╭─[src/App.vue:9:9]
   8 │   <ul>
@@ -78,7 +78,7 @@ Warnings alone leave the exit status at 0. Pass `--max-warnings 0` to fail when 
 
 `--format plain` keeps one line per diagnostic, which is easier to read in a CI log:
 
-```text
+```diagnostic
 Patina lint report: 1 error, 1 warning in 1 file
 
 src/App.vue
@@ -102,13 +102,11 @@ src/App.vue
    ```ts
    import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-   export default defineConfig({
-     lint: {
-       vue: {
-         rules: {
-           "a11y/alt-text": "error",
-           "vue/require-v-for-key": "off",
-         },
+   export default defineConfig({}).withVue({
+     linter: {
+       rules: {
+         "a11y/alt-text": "error",
+         "vue/require-v-for-key": "off",
        },
      },
    });

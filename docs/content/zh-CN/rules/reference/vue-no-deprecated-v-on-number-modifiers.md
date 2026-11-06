@@ -45,14 +45,12 @@ description: "禁止在 `v-on` 上使用已弃用的数字 `keyCode` 修饰符�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-number-modifiers": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-on-number-modifiers": "error"
+    }
   },
 });
 ```

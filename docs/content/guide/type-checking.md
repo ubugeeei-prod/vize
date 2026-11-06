@@ -68,12 +68,12 @@ Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
 
 ## Coming from vue-tsc
 
-| You use today                                 | With Vize                                                          |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| `vue-tsc --noEmit`                            | `tsc --runExternalCode --noEmit` with the mapper above             |
-| `vue-tsc -p tsconfig.app.json --noEmit`       | `tsc --runExternalCode --noEmit -p tsconfig.app.json`              |
-| the same project on tsrs                      | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`             |
-| Vue - Official extension diagnostics          | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
+| You use today                           | With Vize                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `vue-tsc --noEmit`                      | `tsc --runExternalCode --noEmit` with the mapper above                                          |
+| `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                           |
+| the same project on tsrs                | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                          |
+| Vue - Official extension diagnostics    | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
 
 ## Type-checking policy
 
@@ -164,7 +164,7 @@ const emit = defineEmits<{ change: [value: number] }>();
 `vize check` reports both template mistakes at their source position. A
 TypeScript 7.1 or tsrs run reports the same codes in that compiler's format:
 
-```text
+```diagnostic
 src/Counter.vue
   error:7:34 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'.
   error:7:66 [TS2551] Property 'stepp' does not exist on type ... Did you mean 'step'?
@@ -178,28 +178,26 @@ The exit code is non-zero when there are errors, so the command can gate CI as i
 
 ## What gets checked
 
-| Area                                      | Checked by default | Turn off with                     |
-| ----------------------------------------- | ------------------ | --------------------------------- |
-| `<script>` and `<script setup>` code      | Yes                | Exclude the file in `tsconfig`    |
-| Template expressions and bindings         | Yes                | `--no-check-template-bindings`    |
-| Props passed to child components          | Yes                | `--no-check-props`                |
-| Emitted events and their payloads         | Yes                | `--no-check-emits`                |
-| Options API template bindings (`data`, `computed`, `methods`, ...) | Yes | `vue.typeChecker.optionsApi: false` |
-| Plain `.ts` / `.tsx` / `.d.ts` files       | Yes                | Exclude the file in `tsconfig`    |
+| Area                                                               | Checked by default | Turn off with                       |
+| ------------------------------------------------------------------ | ------------------ | ----------------------------------- |
+| `<script>` and `<script setup>` code                               | Yes                | Exclude the file in `tsconfig`      |
+| Template expressions and bindings                                  | Yes                | `--no-check-template-bindings`      |
+| Props passed to child components                                   | Yes                | `--no-check-props`                  |
+| Emitted events and their payloads                                  | Yes                | `--no-check-emits`                  |
+| Options API template bindings (`data`, `computed`, `methods`, ...) | Yes                | `vue.typeChecker.optionsApi: false` |
+| Plain `.ts` / `.tsx` / `.d.ts` files                               | Yes                | Exclude the file in `tsconfig`      |
 
 The same switches are available in `vite.config.ts`:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      checkProps: true,
-      checkEmits: true,
-      checkTemplateBindings: true,
-      optionsApi: true,
-    },
+export default defineConfig({}).withVue({
+  typeChecker: {
+    checkProps: true,
+    checkEmits: true,
+    checkTemplateBindings: true,
+    optionsApi: true,
   },
 });
 ```

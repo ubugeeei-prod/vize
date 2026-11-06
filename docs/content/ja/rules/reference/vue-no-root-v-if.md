@@ -40,14 +40,12 @@ description: "テンプレートの単一ルートに v-if を指定する箇所
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-root-v-if": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-root-v-if": "warn"
+    }
   },
 });
 ```

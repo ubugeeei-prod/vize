@@ -44,14 +44,12 @@ The `.message` declaration hides the local paragraph through CSS rather than a t
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-display-none": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-display-none": "warn"
+    }
   },
 });
 ```

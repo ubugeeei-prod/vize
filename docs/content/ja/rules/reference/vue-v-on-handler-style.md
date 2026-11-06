@@ -43,14 +43,12 @@ handler などの関数への参照を使うか、インライン処理が必要
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-handler-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-handler-style": "warn"
+    }
   },
 });
 ```

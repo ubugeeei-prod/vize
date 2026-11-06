@@ -40,14 +40,12 @@ O segundo ramo testa loading, um estado distinto que pode alcançar o else-if.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-dupe-v-else-if": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-dupe-v-else-if": "error"
+    }
   },
 });
 ```

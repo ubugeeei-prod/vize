@@ -341,7 +341,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 
 ## Regras entre arquivos (66)
 
-Ative estas verificações com `crossFile: true` em `vue.linter` ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `vue.linter.rules` como `croquis/cf/<name>`, sem `vize:`.
+Ative estas verificações com `crossFile: true` em `linter`, passado a `withVue`, ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `linter.rules` como `croquis/cf/<name>`, sem `vize:`.
 
 | Regra | O que verifica | Status |
 | --- | --- | --- |

@@ -45,14 +45,12 @@ La syntaxe abrégée des liaisons de même nom de Vue 3.4+ supprime les expressi
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-props-shorthand": "warn"
+    }
   },
 });
 ```

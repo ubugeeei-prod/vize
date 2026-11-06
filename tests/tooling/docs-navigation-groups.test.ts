@@ -6,7 +6,13 @@ import { test } from "node:test";
 import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 
-type Section = { page: string; paths?: string[]; namespaces?: string[]; directory?: string };
+type Section = {
+  page: string;
+  paths?: string[];
+  extraPaths?: string[];
+  namespaces?: string[];
+  directory?: string;
+};
 type Sitemap = {
   hiddenPathPatterns: RegExp[];
   navGroups: Array<{
@@ -109,4 +115,26 @@ void test("operational failures are filed with lint execution in their authored 
       `${locale}: diagnostic pages are not duplicated as configurable rules`,
     );
   }
+});
+
+void test("rule option guides are colocated with the rule groups they configure", () => {
+  const rules = sitemap.navGroups.find((group) => group.key === "rules")!;
+  assert.deepEqual(
+    (rules.sections ?? [])
+      .filter((section) => section.extraPaths?.length)
+      .map((section) => [section.page, section.extraPaths]),
+    [
+      [
+        "/rules/vue",
+        [
+          "/rules/options-vue",
+          "/rules/options-events",
+          "/rules/options-attributes",
+          "/rules/options-props",
+        ],
+      ],
+      ["/rules/type-and-script", ["/rules/options-script", "/rules/options-type"]],
+      ["/rules/musea", ["/rules/options-musea"]],
+    ],
+  );
 });

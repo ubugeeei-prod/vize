@@ -40,14 +40,12 @@ SFC 的唯一根链接可能从父组件属性继承目标。此示例使用嵌�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/router-link-require-to": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/router-link-require-to": "error"
+    }
   },
 });
 ```

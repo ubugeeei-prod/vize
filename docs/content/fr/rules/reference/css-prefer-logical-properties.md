@@ -42,14 +42,12 @@ Champ d’application : Blocs style en CSS standard (les blocs scss, sass, less 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-logical-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/prefer-logical-properties": "warn"
+    }
   },
 });
 ```

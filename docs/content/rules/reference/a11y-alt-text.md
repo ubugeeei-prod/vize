@@ -38,14 +38,12 @@ The image submit control supplies only its image URL; it has no `alt` text descr
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/alt-text": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/alt-text": "warn"
+    }
   },
 });
 ```

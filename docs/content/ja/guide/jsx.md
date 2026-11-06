@@ -27,13 +27,8 @@ Vize のバンドラープラグインは `.jsx` と `.tsx` を自動的に処�
 - `@vizejs/nuxt`
 
 ```ts
-// vite.config.ts — nothing JSX-specific is required
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 プラグインは `@vizejs/native` または `@vizejs/wasm` の `compileJsx` を呼び出します。
@@ -187,12 +182,10 @@ const TodoList = ({ todos, initialActiveId }: TodoListProps) => {
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    compiler: {
-      // Default every .jsx/.tsx component to Vapor output.
-      jsxMode: "vapor",
-    },
+export default defineConfig({}).withVue({
+  compiler: {
+    // Default every .jsx/.tsx component to Vapor output.
+    jsxMode: "vapor",
   },
 });
 ```
@@ -222,7 +215,7 @@ const Classic = () => {
 各コンポーネントの出力先は独立しているため、**1 つのファイルで VDOM と Vapor を併用できます**。
 
 ```tsx
-// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -357,12 +350,10 @@ Vue と React が混在する場合は、`jsxTypecheck: false` にして React �
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      enabled: true,
-      jsxTypecheck: true,
-    },
+export default defineConfig({}).withVue({
+  typeChecker: {
+    enabled: true,
+    jsxTypecheck: true,
   },
 });
 ```

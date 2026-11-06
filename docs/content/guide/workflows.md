@@ -41,28 +41,29 @@ developers can isolate formatting, lint, type-checking, and compiler failures.
 
 ## Configure Once
 
-When defaults are not enough, add native options to the top-level `vue` object in your existing `vite.config.*`. See [Configuration](./configuration.md) for shared discovery and migration.
+When defaults are not enough, pass native options directly to `withVue` in `vite.config.*`.
+See [Configuration](./configuration.md) for shared discovery and migration.
 
 ```ts
 // vite.config.ts
-export default {
-  vue: {
-    formatter: {
-      printWidth: 100,
-    },
-    linter: {
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-      tsconfig: "tsconfig.json",
-    },
-    vite: {
-      scanPatterns: ["src/**/*.vue"],
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
   },
-};
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
 ```
 
 See [Configuration](./configuration.md) for scoped lint entries, TypeScript project options, compiler options, and

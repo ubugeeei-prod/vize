@@ -40,14 +40,12 @@ Les classes expriment la couleur fixe ; la largeur dépendant de ratio reste une
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-inline-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-inline-style": "warn"
+    }
   },
 });
 ```

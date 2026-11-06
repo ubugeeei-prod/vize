@@ -40,14 +40,12 @@ Alterar o título de cobrança para `h2` preserva uma hierarquia consecutiva de 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-levels": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/heading-levels": "warn"
+    }
   },
 });
 ```

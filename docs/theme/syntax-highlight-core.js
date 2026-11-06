@@ -16,6 +16,8 @@ const vizeDocsSyntaxCore = (() => {
     ["nix", "nix"],
     ["art", "art-vue"],
     ["html", "vue"],
+    ["output", "console"],
+    ["terminal", "console"],
   ]);
 
   const languageLabels = new Map([
@@ -30,6 +32,10 @@ const vizeDocsSyntaxCore = (() => {
     ["rust", "Rust"],
     ["lua", "Lua"],
     ["pkl", "Pkl"],
+    ["diagnostic", "Diagnostic"],
+    ["console", "Console"],
+    ["diagram", "Diagram"],
+    ["tree", "Files"],
     ["text", ""],
   ]);
 
@@ -363,6 +369,18 @@ const vizeDocsSyntaxCore = (() => {
         break;
       case "nix":
         result = languageHighlighters.highlightNix(result, store);
+        break;
+      case "diagnostic":
+        result = languageHighlighters.highlightDiagnostic(result, store);
+        break;
+      case "console":
+        result = languageHighlighters.highlightConsole(result, store);
+        break;
+      case "diagram":
+        result = languageHighlighters.highlightDiagram(result, store);
+        break;
+      case "tree":
+        result = languageHighlighters.highlightTree(result, store);
         break;
       default:
         result = highlightScriptLike(result, store, { highlightVariables: true });

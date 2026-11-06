@@ -16,16 +16,14 @@ Avec Vite+, importez `defineConfig` depuis `@vizejs/vite-plugin/vite-plus`, conf
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
+export default defineConfig({}).withVue({
     linter: {
-      preset: "happy-path",
-      rules: {
-        "vue/no-v-html": "off",
-        "a11y/alt-text": "error",
-      },
+        preset: "happy-path",
+        rules: {
+            "vue/no-v-html": "off",
+            "a11y/alt-text": "error",
+        },
     },
-  },
 });
 ```
 

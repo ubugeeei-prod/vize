@@ -23,9 +23,9 @@ export default defineConfig({}).withVue({
 
 `<template><p>hello</p></template>` を整形すると、次のようになります。
 
-```text
+```vue
 <template>
-   <p>hello</p>
+  <p>hello</p>
 </template>
 ```
 

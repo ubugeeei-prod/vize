@@ -40,14 +40,12 @@ description: "見出しの階層を飛ばした指定を検出します。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-levels": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/heading-levels": "warn"
+    }
   },
 });
 ```

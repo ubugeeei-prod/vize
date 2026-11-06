@@ -41,14 +41,12 @@ The native attribute uses its boolean shorthand. False bindings and component pr
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-true-attribute-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-true-attribute-shorthand": "warn"
+    }
   },
 });
 ```

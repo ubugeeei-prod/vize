@@ -16,16 +16,14 @@ Vize 的 linter 检查 Vue 单文件组件：模板、脚本、样式以及文�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
+export default defineConfig({}).withVue({
     linter: {
-      preset: "happy-path",
-      rules: {
-        "vue/no-v-html": "off",
-        "a11y/alt-text": "error",
-      },
+        preset: "happy-path",
+        rules: {
+            "vue/no-v-html": "off",
+            "a11y/alt-text": "error",
+        },
     },
-  },
 });
 ```
 

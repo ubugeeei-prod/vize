@@ -38,14 +38,12 @@ description: "建议为后代选择器使用 CSS 嵌套。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-nested-selectors": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/prefer-nested-selectors": "warn"
+    }
   },
 });
 ```

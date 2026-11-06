@@ -45,14 +45,12 @@ Le remplacement utilise les syntaxes prises en charge `v-scope`, `v-effect`, `v-
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/no-unsupported-directive": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "petite-vue/no-unsupported-directive": "error"
+    }
   },
 });
 ```

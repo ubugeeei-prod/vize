@@ -38,14 +38,12 @@ description: "禁止在同一元素上重复声明属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-duplicate-attributes": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-duplicate-attributes": "error"
+    }
   },
 });
 ```

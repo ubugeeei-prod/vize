@@ -36,14 +36,12 @@ Vue 2 の互換性のため、コンポーネントの v-model に独自の修�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-custom-modifiers-on-v-model": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-custom-modifiers-on-v-model": "warn"
+    }
   },
 });
 ```

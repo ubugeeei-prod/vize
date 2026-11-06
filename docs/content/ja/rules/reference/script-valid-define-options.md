@@ -41,14 +41,12 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/valid-define-options": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/valid-define-options": "error"
+    }
   },
 });
 ```

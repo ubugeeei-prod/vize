@@ -36,14 +36,12 @@ Os valores explícitos `inheritAttrs: true` repetem o padrão do Vue. Esta regra
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-duplicate-attr-inheritance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-duplicate-attr-inheritance": "warn"
+    }
   },
 });
 ```

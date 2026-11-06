@@ -38,14 +38,12 @@ La section utilise le rôle reconnu `dialog` et un libellé décrivant la sélec
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-role": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-role": "error"
+    }
   },
 });
 ```

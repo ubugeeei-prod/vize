@@ -38,14 +38,12 @@ O `<component>` dinâmico não tem um destino `is`, então o Vue não pode escol
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-component-is": "error"
+    }
   },
 });
 ```

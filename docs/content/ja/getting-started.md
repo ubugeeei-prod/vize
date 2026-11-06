@@ -11,15 +11,16 @@ description: 既存の Vite 設定と TypeScript プロジェクトで Vue に V
 
 ## 構成を選ぶ
 
-| プロジェクト                     | 始める場所                                              |
-| -------------------------------- | ------------------------------------------------------- |
-| Vite+ の Vue アプリ              | 以下の 3 ステップ                                       |
-| 通常の Vite の Vue アプリ        | [コンパイラーだけを置き換える](./guide/migration.md#vite-plugin) |
-| Nuxt                             | [Nuxt 統合](./integrations/nuxt.md)                     |
-| Void（`@void/vue`）              | [Void 統合](./integrations/void.md)                     |
-| ターミナルや CI だけで使う       | [Vite+ なしで利用する](#vite-なしで利用する)            |
-| Oxlint を使っている              | [Oxlint プラグイン](./guide/oxlint.md)                  |
-| エディターだけで使う             | [言語サーバー](./guide/language-server.md)              |
+| プロジェクト                   | 始める場所                                                       |
+| ------------------------------ | ---------------------------------------------------------------- |
+| Vite+ の Vue アプリ            | 以下の 3 ステップ                                                |
+| 通常の Vite の Vue アプリ      | [コンパイラーだけを置き換える](./guide/migration.md#vite-plugin) |
+| Nuxt                           | [Nuxt 統合](./integrations/nuxt.md)                              |
+| Void（`@void/vue`）            | [Void 統合](./integrations/void.md)                              |
+| ターミナルや CI だけで使う     | [Vite+ なしで利用する](#vite-なしで利用する)                     |
+| Oxlint を使っている            | [Oxlint プラグイン](./guide/oxlint.md)                           |
+| ESLint・Prettier・Babel を残す | [既存ツールとの統合](./guide/tool-integrations.md)               |
+| エディターだけで使う           | [言語サーバー](./guide/language-server.md)                       |
 
 ## 1. 統合パッケージをインストールする
 
@@ -38,7 +39,7 @@ vp install -D @vizejs/vite-plugin
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 ## 3. アプリをビルド・検査する
@@ -71,6 +72,7 @@ tsrs --runExternalCode --noEmit -p tsconfig.json
 - [Content Mapper で Vue ファイルを型チェックする](./guide/content-mapper.md)。TypeScript 7.1 と tsrs のどちらでも実行できます。コマンドは[型チェック](./guide/type-checking.md)にあります。
 - [ルールやコンパイラーの設定を変更する](./guide/configuration.md)。
 - [既存のツールから移行する](./guide/migration.md)。変更前後の例を確認できます。
+- [ESLint・Prettier・Babel・tsserver・今のエディターを残す](./guide/tool-integrations.md)。必要な Vize 連携だけを追加できます。
 - [lint の指摘を理解する](./rules/all.md)。Vue の問題例と修正例を掲載しています。
 - [Vapor モードを試す](./guide/vapor.md)。コンポーネント単位で切り替えられます。
 - [コンポーネントを探す](./guide/ui/index.md)。使い方と API を確認できます。

@@ -59,14 +59,12 @@ Le template parent délègue le rendu à RowList et conserve un seul v-if ; ses 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/max-template-complexity": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/max-template-complexity": "warn"
+    }
   },
 });
 ```

@@ -9,15 +9,16 @@ Add Vize to your Vue 3 app with [Vite+](https://viteplus.dev/guide/install). Kee
 
 ## Choose your setup
 
-| Your project                     | Start with                                              |
-| -------------------------------- | ------------------------------------------------------- |
-| Vue app on Vite+                 | The three steps below                                   |
+| Your project                     | Start with                                                    |
+| -------------------------------- | ------------------------------------------------------------- |
+| Vue app on Vite+                 | The three steps below                                         |
 | Vue app on plain Vite            | [Replace only the compiler](./guide/migration.md#vite-plugin) |
-| Nuxt                             | [Nuxt integration](./integrations/nuxt.md)              |
-| Void (`@void/vue`)               | [Void integration](./integrations/void.md)              |
-| Any project, terminal or CI only | [Use Vize without Vite+](#use-vize-without-vite)        |
-| Existing Oxlint setup            | [Oxlint plugin](./guide/oxlint.md)                      |
-| Just the editor                  | [Language server](./guide/language-server.md)           |
+| Nuxt                             | [Nuxt integration](./integrations/nuxt.md)                    |
+| Void (`@void/vue`)               | [Void integration](./integrations/void.md)                    |
+| Any project, terminal or CI only | [Use Vize without Vite+](#use-vize-without-vite)              |
+| Existing Oxlint setup            | [Oxlint plugin](./guide/oxlint.md)                            |
+| Keep ESLint, Prettier or Babel   | [Existing tool integrations](./guide/tool-integrations.md)    |
+| Just the editor                  | [Language server](./guide/language-server.md)                 |
 
 ## 1. Install the integration
 
@@ -36,7 +37,7 @@ The helper adds Vize's compiler and native check tasks. Remove the old Vue plugi
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 ## 3. Build and check your app
@@ -69,6 +70,7 @@ If a script already exists, Vize preserves it and generates `vize:<name>`; see [
 - [Type-check Vue files with the content mapper](./guide/content-mapper.md). TypeScript 7.1 and tsrs both run it. The commands are in [Type Checking](./guide/type-checking.md).
 - [Configure a rule or compiler option](./guide/configuration.md).
 - [Migrate existing tools](./guide/migration.md) with complete before/after examples.
+- [Keep ESLint, Prettier, Babel, tsserver, or your current editor](./guide/tool-integrations.md) and add only the Vize integration you need.
 - [Understand a lint diagnostic](./rules/all.md) with bad and good Vue examples.
 - [Try Vapor Mode](./guide/vapor.md) one component at a time.
 - [Explore components](./guide/ui/index.md) with recipes and the component reference.

@@ -139,7 +139,7 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 
 ## À activer (13)
 
-Dans aucun préréglage. Activez-les par leur nom dans `vue.linter.rules`.
+Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.
 
 | Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |

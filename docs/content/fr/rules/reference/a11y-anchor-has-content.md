@@ -38,14 +38,12 @@ Le texte visible `Settings` fournit le contenu du lien vers la même destination
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/anchor-has-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/anchor-has-content": "warn"
+    }
   },
 });
 ```

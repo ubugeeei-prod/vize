@@ -41,14 +41,12 @@ Un élément section enveloppe les paragraphes dans une seule racine ; activez c
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-template-root": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-template-root": "error"
+    }
   },
 });
 ```

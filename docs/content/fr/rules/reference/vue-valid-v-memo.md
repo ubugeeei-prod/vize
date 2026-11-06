@@ -38,14 +38,12 @@ Un `v-memo` seul ne donne à Vue aucune expression de dépendances pour décider
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-memo": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-memo": "error"
+    }
   },
 });
 ```

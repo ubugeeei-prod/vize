@@ -16,15 +16,14 @@ CLI、エディターで同じオプション名を使えます。ビルド、�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  vue: {
-    version: "3",
-    compiler: { sourceMap: true },
-    typeChecker: { strict: true },
-    linter: { preset: "essential" },
-    formatter: { singleQuote: true },
-    languageServer: { hover: true },
-  },
   server: { port: 3000 },
+}).withVue({
+  version: "3",
+  compiler: { sourceMap: true },
+  typeChecker: { strict: true },
+  linter: { preset: "essential" },
+  formatter: { singleQuote: true },
+  languageServer: { hover: true },
 });
 ```
 
@@ -39,19 +38,17 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = { server: { port: 3000 } };
-const vueConfig = {
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
   compiler: { sourceMap: true },
   formatter: { singleQuote: true },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-既存の Vite+ オブジェクト、Promise、設定関数、async 関数をそのまま渡せます。
+export する `defineConfig` に helper を直接つなげます。既存の Vite+ オブジェクト、Promise、設定関数、async 関数をそのまま渡せます。
 設定関数には Vite の環境を渡し、プラグイン、フック、Vite+ のフィールドを保ちます。
-Vue プラグインの注入は1回だけ実行します。通常の JavaScript オブジェクトを import して
-共有できるため、Vize 専用の設定ファイルや独自の `extends` は不要です。
+Vue プラグインの注入は1回だけ実行します。Vize 専用の設定ファイルや独自の `extends` は不要です。
 
 ## パスとスコープ
 
@@ -64,15 +61,14 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
   root: "packages/app",
-  vue: {
-    files: ["src/**/*.vue"],
-    entries: [
-      {
-        files: ["src/trusted/**/*.vue"],
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
-  },
+}).withVue({
+  files: ["src/**/*.vue"],
+  entries: [
+    {
+      files: ["src/trusted/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
 });
 ```
 
@@ -105,14 +101,14 @@ TypeScript プロジェクトに置きます。`strictTemplates` などの Vue �
 `relativePatternSupport` の両方に対応し、監視の登録が成功する必要があります。
 確認したクライアントの対応は次のとおりです。
 
-| クライアントの基準版 | 外部設定の変更 |
-| --- | --- |
-| [VS Code 1.107.1 / languageclient 9.0.1](https://github.com/microsoft/vscode-languageserver-node/blob/release/client/9.0.1/client/src/common/fileSystemWatcher.ts#L40-L65) | 両方の機能に対応し、自動監視を登録できます。 |
-| [Zed 1.16.1](https://github.com/zed-industries/zed/blob/v1.16.1/crates/lsp/src/lsp.rs#L812-L817) | 両方の対応を通知します。GUI での監視動作の検証は未完了です。 |
-| [Neovim 0.11.4](https://github.com/neovim/neovim/blob/v0.11.4/runtime/lua/vim/lsp/protocol.lua#L561-L566) | macOS・Windows の既定値は両方に対応します。Linux の既定値では次の通常の言語操作時に再確認します。 |
-| [Helix 25.07.1](https://github.com/helix-editor/helix/blob/25.07.1/helix-lsp/src/client.rs#L596-L599) | 相対パターンに非対応です。次の通常の言語操作時に再確認します。 |
-| [Vim / vim-lsp 474c6566](https://github.com/prabirshrestha/vim-lsp/blob/474c656659b5fb51eec6770309e0211c8aa49b5b/autoload/lsp.vim#L686-L694) | 動的なファイル監視はありません。次の通常の言語操作時に再確認します。プロジェクト内のバッファ保存でも Vize に通知します。 |
-| [Emacs 29.3 / Eglot 1.12.29](https://github.com/emacs-mirror/emacs/blob/emacs-29.3/lisp/progmodes/eglot.el#L3421-L3468) | プロジェクト内のディレクトリ監視は外部の対象をカバーしません。次の通常の言語操作時に再確認します。 |
+| クライアントの基準版                                                                                                                                                       | 外部設定の変更                                                                                                           |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [VS Code 1.107.1 / languageclient 9.0.1](https://github.com/microsoft/vscode-languageserver-node/blob/release/client/9.0.1/client/src/common/fileSystemWatcher.ts#L40-L65) | 両方の機能に対応し、自動監視を登録できます。                                                                             |
+| [Zed 1.16.1](https://github.com/zed-industries/zed/blob/v1.16.1/crates/lsp/src/lsp.rs#L812-L817)                                                                           | 両方の対応を通知します。GUI での監視動作の検証は未完了です。                                                             |
+| [Neovim 0.11.4](https://github.com/neovim/neovim/blob/v0.11.4/runtime/lua/vim/lsp/protocol.lua#L561-L566)                                                                  | macOS・Windows の既定値は両方に対応します。Linux の既定値では次の通常の言語操作時に再確認します。                        |
+| [Helix 25.07.1](https://github.com/helix-editor/helix/blob/25.07.1/helix-lsp/src/client.rs#L596-L599)                                                                      | 相対パターンに非対応です。次の通常の言語操作時に再確認します。                                                           |
+| [Vim / vim-lsp 474c6566](https://github.com/prabirshrestha/vim-lsp/blob/474c656659b5fb51eec6770309e0211c8aa49b5b/autoload/lsp.vim#L686-L694)                               | 動的なファイル監視はありません。次の通常の言語操作時に再確認します。プロジェクト内のバッファ保存でも Vize に通知します。 |
+| [Emacs 29.3 / Eglot 1.12.29](https://github.com/emacs-mirror/emacs/blob/emacs-29.3/lisp/progmodes/eglot.el#L3421-L3468)                                                    | プロジェクト内のディレクトリ監視は外部の対象をカバーしません。次の通常の言語操作時に再確認します。                       |
 
 ホバーや補完を要求するなど、通常の言語操作でも設定の変更を再確認します。
 外部ファイルを監視できないクライアントでも、この操作で修復を検知できます。

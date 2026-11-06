@@ -89,11 +89,9 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "ecosystem/vue-router-unknown-route": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "ecosystem/vue-router-unknown-route": "warn" },
   },
 });
 ```

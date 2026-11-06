@@ -94,11 +94,9 @@ const item = toRef(props, "item");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/destructuring-breaks-reactivity": "warn" },
   },
 });
 ```

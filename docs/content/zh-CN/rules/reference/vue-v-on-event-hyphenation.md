@@ -42,14 +42,12 @@ description: "要求组件上 v-on 中的自定义事件名称使用连字符。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-event-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-event-hyphenation": "warn"
+    }
   },
 });
 ```

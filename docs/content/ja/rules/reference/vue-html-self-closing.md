@@ -45,14 +45,12 @@ description: "要素の種類ごとに自己終了タグの形式を揃えます
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-self-closing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-self-closing": "warn"
+    }
   },
 });
 ```

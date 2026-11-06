@@ -10,27 +10,25 @@ between files. Pick a preset, then turn single rules up, down, or off.
 
 ## Turn on linting
 
-With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `vue.linter`,
-and run `vp run lint`. That command runs Vize's rules and Oxlint together.
+With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, pass `linter` directly to
+`withVue`, and run `vp run lint`. That command runs Vize's rules and Oxlint together.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      preset: "happy-path",
-      rules: {
-        "vue/no-v-html": "off",
-        "a11y/alt-text": "error",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "happy-path",
+    rules: {
+      "vue/no-v-html": "off",
+      "a11y/alt-text": "error",
     },
   },
 });
 ```
 
 Each rule takes `off`, `warn`, or `error`. Rules with settings read them from
-`vue.linter.ruleOptions`; see [Rule Options](./options.md).
+`linter.ruleOptions` inside `withVue`; see [Rule Options](./options.md).
 
 If your project already has a script named `lint`, run `vp run vize:lint` instead. The built-in
 `vp lint` command is Vite+'s own checker and does not run Vize's rules.
@@ -78,6 +76,6 @@ suite runs.
 ## Type-aware rules
 
 Rules under `type/` read type information from the TypeScript project in `tsconfig.json`. They
-need `typeAware: true` in `vue.linter` as well as a preset or a `rules` entry that turns them on. Declare shared environment names in
+need `typeAware: true` in the `linter` passed to `withVue` as well as a preset or a `rules` entry that turns them on. Declare shared environment names in
 `compilerOptions.types` or with project references, not in a separate `globals` list in the Vize
 configuration.

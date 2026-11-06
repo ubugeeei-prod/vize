@@ -11,7 +11,7 @@ Each rule page shows a failing example, a passing example, and the configuration
 
 ## Opt-in (6)
 
-Not in any preset. Turn them on by name in `vue.linter.rules`.
+Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |

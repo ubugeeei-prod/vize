@@ -24,7 +24,7 @@ Vue 3 SFC では **`@vitejs/plugin-vue` を置き換える**設計になって�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 [移行ガイド](./migration.md)に、置き換える import とプラグインの呼び出しを具体的に示しています。
@@ -54,13 +54,8 @@ vp install -D @vizejs/vite-plugin
 ## 基本的な使い方
 
 ```javascript
-// vite.config.js
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 `@vitejs/plugin-vue` を `@vizejs/vite-plugin` に置き換えると、Rust でコンパイルします。
@@ -96,10 +91,9 @@ Vite+ のプロジェクトでは、既存の Vite+ のクライアント型を�
 
 ## ネイティブ設定を共有する
 
-Vite+ では `@vizejs/vite-plugin/vite-plus` の
-`defineConfig(vpConfig).withVue(vueConfig)` で、既存の設定にネイティブ Vue 設定を追加します。
-通常の Vite では、同じ設定ファイルのトップレベルの `vue:` に共有設定を置き、
-`plugins: [vize()]` を使います。CLI とエディターも同じプロジェクト設定を読みます。
+ルート設定は `@vizejs/vite-plugin/vite-plus` の `defineConfig({ ... })` に書き、
+ネイティブ Vue 設定は続く `.withVue({ ... })` に直接渡します。中間変数には置かず、そのチェーンを
+export してください。CLI とエディターも同じプロジェクト設定を読みます。
 
 TypeScript の `compilerOptions`、標準の `extends`・`references` は `tsconfig.json` に、
 Vue テンプレートの設定は `vueCompilerOptions` に置いてください。
@@ -128,28 +122,28 @@ vize({
 });
 ```
 
-| オプション | 設定場所 | 説明 |
-| --- | --- | --- |
-| `vueVersion` | `vize({ vueVersion })` | `0.11`、`1`、`2`、`"legacy"` を指定すると、既存環境に介入しない旧 Vue の互換モードで動作し、SFC のコンパイルを既存のコンパイラに任せます。 |
-| `sourceMap` | `vue.compiler.sourceMap` または `vize({ sourceMap })` | `sources` が元の `.vue` ファイルを指すソースマップを生成します。`build.sourcemap` の指定がない場合、既定では開発時に有効、本番ビルド時に無効です。 |
-| `ssr` | `vue.compiler.ssr` または `vize({ ssr })` | Vite の SSR ビルドフラグだけでは足りない場合に、SSR 向けのコンパイルを強制します。 |
-| `vapor` | `vue.compiler.vapor` または `vize({ vapor })` | Vapor バックエンドでテンプレートをコンパイルします。 |
-| `jsxMode` | `vue.compiler.jsxMode` または `vize({ jsxMode })` | `.jsx` / `.tsx` コンポーネントの既定の出力先を `"vdom"` / `"vapor"` から選びます。コンポーネントごとの `"use vue:*"` ディレクティブが優先します。 |
-| `customRenderer` | `vue.compiler.customRenderer` または `vize({ customRenderer })` | 小文字の非 HTML タグをカスタムレンダラーの要素として扱います。`<TresMesh>` などの PascalCase タグには一致しません。 |
-| `customElements` | `vue.compiler.customElements` または `vize({ customElements })` | Vue コンポーネントではなくカスタム要素としてコンパイルするタグのパターンです。TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。 |
-| `templateSyntax` | `vue.compiler.templateSyntax` または `vize({ templateSyntax })` | テンプレート構文の処理を `"standard"`、`"strict"`、`"quirks"` から選びます。 |
-| `whitespace` | `vue.compiler.whitespace`、`vize({ whitespace })`、または `template.compilerOptions.whitespace` | Vue の `"condense"`（既定）と `"preserve"` を選びます。Vize の独自コンパイラ/Vite オプションでは `"vue2-line-breaks"` も指定でき、Vue 3 がテキストや補間の後の改行を空白一つにまとめる箇所で改行を残します。移行用の限定的なモードであり、Vue 2 の空白処理全体を再現するものではありません。Vue 2.7 の `whitespace: "preserve"`（Vue 2、vue-loader 15、Nuxt 2 が使う設定）と同じ出力にするには `"vue2-preserve"` を使います。テキストや補間の前後の空白は書いたとおりに残り、要素の間にある空白だけの部分は空白一つになります。 |
-| `template.compilerOptions.comments` | `vue.compiler.comments` または `vize({ template: { compilerOptions: { comments } } })` | テンプレートに書いたコメントは、既定では開発時に残し、本番ビルド時に省略します。`true` / `false` で変更できます。ネイティブ API を直接呼ぶ場合は `templateComments` を使い、既定値は `false` です。 |
-| `experimentals` | トップレベルの `experimentals` または `vize({ experimentals })` | Vue RFC とバックエンドの実験的機能を明示的に有効にします。キーの省略、`false`、`null` は無効です。 |
-| `include` | `vue.vite.include` または `vize({ include })` | プラグインがコンパイルするファイルを指定します。 |
-| `exclude` | `vue.vite.exclude` または `vize({ exclude })` | プラグインが処理しないファイルを指定します。 |
-| `scanPatterns` | `vue.vite.scanPatterns` または `vize({ scanPatterns })` | 起動時のプリコンパイルで検索する Glob パターンです。 |
-| `ignorePatterns` | `vue.vite.ignorePatterns` または `vize({ ignorePatterns })` | 起動時のプリコンパイルで除外する Glob パターンです。 |
-| `configMode` | `vize({ configMode })` | 共有設定の読み込み方法に `"root"`、`"auto"`、`false` を指定します。 |
-| `configFile` | `vize({ configFile })` | 読み込む設定ファイルを明示します。 |
-| `config` | `vize({ config })` | Vite+ の実行時設定に使うインラインの共有設定です。 |
-| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })` | `node_modules` から import した `.vue` ファイルを必要になった時点でコンパイルします。 |
-| `debug` | `vize({ debug })` | プラグインのデバッグログを出力します。 |
+| オプション                          | 設定場所                                                                                        | 説明                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vueVersion`                        | `vize({ vueVersion })`                                                                          | `0.11`、`1`、`2`、`"legacy"` を指定すると、既存環境に介入しない旧 Vue の互換モードで動作し、SFC のコンパイルを既存のコンパイラに任せます。                                                                                                                                                                                                                                                                                                                                                                                      |
+| `sourceMap`                         | `vue.compiler.sourceMap` または `vize({ sourceMap })`                                           | `sources` が元の `.vue` ファイルを指すソースマップを生成します。`build.sourcemap` の指定がない場合、既定では開発時に有効、本番ビルド時に無効です。                                                                                                                                                                                                                                                                                                                                                                              |
+| `ssr`                               | `vue.compiler.ssr` または `vize({ ssr })`                                                       | Vite の SSR ビルドフラグだけでは足りない場合に、SSR 向けのコンパイルを強制します。                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `vapor`                             | `vue.compiler.vapor` または `vize({ vapor })`                                                   | Vapor バックエンドでテンプレートをコンパイルします。                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `jsxMode`                           | `vue.compiler.jsxMode` または `vize({ jsxMode })`                                               | `.jsx` / `.tsx` コンポーネントの既定の出力先を `"vdom"` / `"vapor"` から選びます。コンポーネントごとの `"use vue:*"` ディレクティブが優先します。                                                                                                                                                                                                                                                                                                                                                                               |
+| `customRenderer`                    | `vue.compiler.customRenderer` または `vize({ customRenderer })`                                 | 小文字の非 HTML タグをカスタムレンダラーの要素として扱います。`<TresMesh>` などの PascalCase タグには一致しません。                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `customElements`                    | `vue.compiler.customElements` または `vize({ customElements })`                                 | Vue コンポーネントではなくカスタム要素としてコンパイルするタグのパターンです。TresJS の PascalCase レンダラータグには `["Tres*"]` を使います。                                                                                                                                                                                                                                                                                                                                                                                  |
+| `templateSyntax`                    | `vue.compiler.templateSyntax` または `vize({ templateSyntax })`                                 | テンプレート構文の処理を `"standard"`、`"strict"`、`"quirks"` から選びます。                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `whitespace`                        | `vue.compiler.whitespace`、`vize({ whitespace })`、または `template.compilerOptions.whitespace` | Vue の `"condense"`（既定）と `"preserve"` を選びます。Vize の独自コンパイラ/Vite オプションでは `"vue2-line-breaks"` も指定でき、Vue 3 がテキストや補間の後の改行を空白一つにまとめる箇所で改行を残します。移行用の限定的なモードであり、Vue 2 の空白処理全体を再現するものではありません。Vue 2.7 の `whitespace: "preserve"`（Vue 2、vue-loader 15、Nuxt 2 が使う設定）と同じ出力にするには `"vue2-preserve"` を使います。テキストや補間の前後の空白は書いたとおりに残り、要素の間にある空白だけの部分は空白一つになります。 |
+| `template.compilerOptions.comments` | `vue.compiler.comments` または `vize({ template: { compilerOptions: { comments } } })`          | テンプレートに書いたコメントは、既定では開発時に残し、本番ビルド時に省略します。`true` / `false` で変更できます。ネイティブ API を直接呼ぶ場合は `templateComments` を使い、既定値は `false` です。                                                                                                                                                                                                                                                                                                                             |
+| `experimentals`                     | トップレベルの `experimentals` または `vize({ experimentals })`                                 | Vue RFC とバックエンドの実験的機能を明示的に有効にします。キーの省略、`false`、`null` は無効です。                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `include`                           | `vue.vite.include` または `vize({ include })`                                                   | プラグインがコンパイルするファイルを指定します。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `exclude`                           | `vue.vite.exclude` または `vize({ exclude })`                                                   | プラグインが処理しないファイルを指定します。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `scanPatterns`                      | `vue.vite.scanPatterns` または `vize({ scanPatterns })`                                         | 起動時のプリコンパイルで検索する Glob パターンです。                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `ignorePatterns`                    | `vue.vite.ignorePatterns` または `vize({ ignorePatterns })`                                     | 起動時のプリコンパイルで除外する Glob パターンです。                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `configMode`                        | `vize({ configMode })`                                                                          | 共有設定の読み込み方法に `"root"`、`"auto"`、`false` を指定します。                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `configFile`                        | `vize({ configFile })`                                                                          | 読み込む設定ファイルを明示します。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `config`                            | `vize({ config })`                                                                              | Vite+ の実行時設定に使うインラインの共有設定です。                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `handleNodeModulesVue`              | `vize({ handleNodeModulesVue })`                                                                | `node_modules` から import した `.vue` ファイルを必要になった時点でコンパイルします。                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `debug`                             | `vize({ debug })`                                                                               | プラグインのデバッグログを出力します。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 `experimentals` の全フラグ、有効にする値、別名、共有設定の優先順位は、[Experimentals](./experimentals.md)を参照してください。
 
@@ -196,7 +190,7 @@ vize({ vueVersion: 2 });
 
 ### コンパイルのパイプライン
 
-```text
+```diagram
 .vue file
   → Parser            — Tokenizes and parses the SFC structure
   → Semantic analysis — Resolves template expressions and bindings
@@ -210,19 +204,19 @@ vize({ vueVersion: 2 });
 
 ## 比較
 
-| 機能 | @vitejs/plugin-vue | @vizejs/vite-plugin |
-| --- | --- | --- |
-| 実装言語 | JavaScript | Rust（NAPI） |
-| SFC のコンパイル | 対応 | 対応 |
-| テンプレートのコンパイル | 対応 | 対応 |
-| script setup | 対応 | 対応 |
-| scoped CSS | 対応 | 対応 |
-| SSR | 対応 | 対応 |
-| HMR | 対応 | 対応（style だけの更新を最適化） |
-| バッチプリコンパイル | 非対応 | 対応（Rayon で並列処理） |
-| CSS の抽出 | コンポーネントごと | 一つのファイルにまとめる |
-| Vapor | 実験段階 | 対応（実験段階） |
-| プラグインのオプション | 公開オプション全体 | `include` / `exclude` / `isProduction`。残る対応は [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) を参照 |
+| 機能                     | @vitejs/plugin-vue | @vizejs/vite-plugin                                                                                                  |
+| ------------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| 実装言語                 | JavaScript         | Rust（NAPI）                                                                                                         |
+| SFC のコンパイル         | 対応               | 対応                                                                                                                 |
+| テンプレートのコンパイル | 対応               | 対応                                                                                                                 |
+| script setup             | 対応               | 対応                                                                                                                 |
+| scoped CSS               | 対応               | 対応                                                                                                                 |
+| SSR                      | 対応               | 対応                                                                                                                 |
+| HMR                      | 対応               | 対応（style だけの更新を最適化）                                                                                     |
+| バッチプリコンパイル     | 非対応             | 対応（Rayon で並列処理）                                                                                             |
+| CSS の抽出               | コンポーネントごと | 一つのファイルにまとめる                                                                                             |
+| Vapor                    | 実験段階           | 対応（実験段階）                                                                                                     |
+| プラグインのオプション   | 公開オプション全体 | `include` / `exclude` / `isProduction`。残る対応は [#3227](https://github.com/ubugeeei-prod/vize/issues/3227) を参照 |
 
 ## 高度な機能
 
@@ -264,15 +258,15 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 
 `<style lang="scss">`・`sass`・`less`・`stylus` は Vue と同じ順序で処理します。まずプリプロセッサを実行し、その出力に Vize がスコープを付けて `v-bind()` を解決します。`<style module>` のクラス名は、バンドラーの CSS Modules 処理が生成します。`@vitejs/plugin-vue` と同じく、プリプロセッサのパッケージ（`sass` または `sass-embedded`、`less`、`stylus`）をプロジェクトにインストールしてください。`<template lang="pug">` は Vize 自身がコンパイルするため、追加のパッケージは不要です。従来の `<template lang="jade">` も同じ対象でエイリアスとして利用できます。
 
-| 対象 | scss / sass / less / stylus | pug / jade |
-| --- | --- | --- |
-| Vite | Vite が前処理し、その結果に Vize がスコープを付ける | ネイティブ |
-| `@vizejs/unplugin`（webpack・Rollup・Rolldown・esbuild） | webpack はプロジェクトのローダーを使用。Rollup・Rolldown・esbuild はインストール済みのプリプロセッサを実行 | ネイティブ |
-| `@vizejs/rspack-plugin` | プロジェクトのローダー（css-loader またはネイティブ CSS） | ネイティブ |
-| `vize build` | インストール済みのプリプロセッサを Node で実行 | ネイティブ |
-| `vize fmt` | プリプロセッサのブロックは 1 バイトも変更しない | 整形する |
-| `vize lint` | テンプレートのルールを適用。スタイルブロックは CSS として lint しない | テンプレートのルールを適用 |
-| LSP | CSS の補完とホバー（インデント記法を含む）、`v-bind()` の定義ジャンプ、すべてのプリプロセッサでの CSS Modules クラス名補完 | タグの補完と定義ジャンプ |
+| 対象                                                     | scss / sass / less / stylus                                                                                                | pug / jade                 |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Vite                                                     | Vite が前処理し、その結果に Vize がスコープを付ける                                                                        | ネイティブ                 |
+| `@vizejs/unplugin`（webpack・Rollup・Rolldown・esbuild） | webpack はプロジェクトのローダーを使用。Rollup・Rolldown・esbuild はインストール済みのプリプロセッサを実行                 | ネイティブ                 |
+| `@vizejs/rspack-plugin`                                  | プロジェクトのローダー（css-loader またはネイティブ CSS）                                                                  | ネイティブ                 |
+| `vize build`                                             | インストール済みのプリプロセッサを Node で実行                                                                             | ネイティブ                 |
+| `vize fmt`                                               | プリプロセッサのブロックは 1 バイトも変更しない                                                                            | 整形する                   |
+| `vize lint`                                              | テンプレートのルールを適用。スタイルブロックは CSS として lint しない                                                      | テンプレートのルールを適用 |
+| LSP                                                      | CSS の補完とホバー（インデント記法を含む）、`v-bind()` の定義ジャンプ、すべてのプリプロセッサでの CSS Modules クラス名補完 | タグの補完と定義ジャンプ   |
 
 ## Nuxt との連携
 

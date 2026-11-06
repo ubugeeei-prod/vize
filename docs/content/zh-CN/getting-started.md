@@ -26,7 +26,7 @@ vp install -D @vizejs/vite-plugin
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 ## 3. 构建并检查应用

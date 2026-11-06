@@ -70,21 +70,19 @@ Use an event with its handler, or pass a listener object to argument-free `v-on`
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-on": "error"
-      },
-      "ruleOptions": {
-        "vue/valid-v-on": {
-          "modifiers": [
-            "custom"
-          ]
-        }
-      }
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-on": "error"
     },
+    "ruleOptions": {
+      "vue/valid-v-on": {
+        "modifiers": [
+          "custom"
+        ]
+      }
+    }
   },
 });
 ```

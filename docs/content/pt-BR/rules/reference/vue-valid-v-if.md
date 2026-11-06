@@ -41,14 +41,12 @@ Cada `v-if` tem uma condição não vazia, como `ready` ou `count > 0`, sem uma 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-if": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-if": "error"
+    }
   },
 });
 ```

@@ -7,7 +7,7 @@ description: 通过现有的 Vite 配置和 TypeScript 项目共享 Vue 工具�
 
 # 配置
 
-将 Vue 工具设置放在 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目设置保留在 `tsconfig.json` 中。CLI、Vite 集成和编辑器扩展读取这些项目文件，无需专用的 Vize 配置。
+将 Vue 工具设置直接传给 `vite.config.*` 中的 `withVue`，并将 TypeScript 项目设置保留在 `tsconfig.json` 中。CLI、Vite 集成和编辑器扩展读取这些项目文件，无需专用的 Vize 配置。
 
 ## 保留现有的 Vite+ 配置
 
@@ -16,20 +16,16 @@ description: 通过现有的 Vite 配置和 TypeScript 项目共享 Vue 工具�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+export default defineConfig({
   server: { port: 3000 },
-};
-
-const vueConfig = {
+}).withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-`withVue` 保留现有的 Vite+ 选项、插件和钩子，支持配置对象、函数、Promise 和异步函数。也可以直接在配置中写 `vue: { ... }`。路径、作用域和配置组合详见[共享 Vue 配置](/guide/vue-configuration.md)（英文）。
+将 `withVue` 直接链接到导出的 `defineConfig` 调用。它保留现有的 Vite+ 选项、插件和钩子，并支持配置对象、函数、Promise 和异步函数。路径、作用域和配置组合详见[共享 Vue 配置](/guide/vue-configuration.md)（英文）。
 
 ## TypeScript 和 Vue 模板检查
 
@@ -74,15 +70,10 @@ export default defineConfig({
 保留现有的 Vite 配置，并替换 Vue 编译插件：
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-  vue: {
-    linter: { preset: "essential" },
-    formatter: { printWidth: 100 },
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
 });
 ```
 
@@ -106,7 +97,7 @@ Vite 配置中的原生相对路径以选定的 Vite `root` 为基准；相对 `
 
 `vize.config.*` 和顶层 `vize:` 配置已不再受支持。将原生设置移到 `vite.config.*` 的 `vue:` 中，将 TypeScript 项目选项移到 `tsconfig.json` 中。迁移并检查结果后，再移除专用配置文件。与 Vite 配置并存的旧专用文件会报错，和只有专用配置的项目一样收到迁移错误。`vize init` 和 `vize setup` 会保留原文件并说明迁移方式。
 
-不再提供 Vize 专用的 `extends`。要复用设置，请导入普通 JavaScript 对象，并传给 `defineConfig(vpConfig).withVue(vueConfig)`。标准 TypeScript `extends` 和项目 `references` 继续有效。
+不再提供 Vize 专用的 `extends`。请按照上面的示例，直接导出 `defineConfig({ ... }).withVue({ ... })` 并在其中保留根设置和 Vue 设置。标准 TypeScript `extends` 和项目 `references` 继续有效。
 
 <span id="配置文件"></span>
 <span id="typescript-配置"></span>

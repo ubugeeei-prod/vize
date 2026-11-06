@@ -42,14 +42,12 @@ The input keeps `email`; the help paragraph uses `email-help`, and aria-describe
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/id-duplication": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/id-duplication": "error"
+    }
   },
 });
 ```

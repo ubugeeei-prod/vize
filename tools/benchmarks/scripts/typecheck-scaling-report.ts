@@ -196,7 +196,7 @@ export function renderSummary(results: ScalingResults): string {
       lines.push(
         `- **${cell.label}**, ${cell.kind} ${cell.sfcs} SFCs:`,
         "",
-        "```text",
+        "```diagnostic",
         cell.refused ?? "",
         "```",
         "",

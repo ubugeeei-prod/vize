@@ -41,14 +41,12 @@ class の配列に、まとめられるオブジェクトリテラルを二つ�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-objects-in-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-objects-in-class": "warn"
+    }
   },
 });
 ```

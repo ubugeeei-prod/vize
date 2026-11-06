@@ -4,7 +4,9 @@ title: Rule Options
 
 # Rule Options
 
-With Vite+, configure `vue.linter.ruleOptions` in `vite.config.ts` and run `vp run lint`. The standalone compatibility config uses the same values under `linter.ruleOptions`.
+With Vite+, configure `linter.ruleOptions` inside `withVue` in `vite.config.ts` and run
+`vp run lint`. The standalone compatibility config uses the same values under
+`linter.ruleOptions`.
 
 `linter.ruleOptions` holds typed project-local settings for rules that accept options. Unknown
 option fields are rejected, and later matching config entries replace the full option object for the
@@ -17,47 +19,45 @@ before adjusting the options below.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-globals": "error",
-        "vue/html-self-closing": "warn",
-        "musea/prefer-design-tokens": "warn"
-      },
-      "ruleOptions": {
-        "script/no-restricted-globals": {
-          "globals": [
-            {
-              "name": "process",
-              "message": "Read env via a typed helper."
-            },
-            {
-              "name": "alert"
-            }
-          ]
-        },
-        "vue/html-self-closing": {
-          "html": {
-            "void": "always",
-            "normal": "never",
-            "component": "always"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-globals": "error",
+      "vue/html-self-closing": "warn",
+      "musea/prefer-design-tokens": "warn",
+    },
+    ruleOptions: {
+      "script/no-restricted-globals": {
+        globals: [
+          {
+            name: "process",
+            message: "Read env via a typed helper.",
           },
-          "svg": "always",
-          "math": "always"
+          {
+            name: "alert",
+          },
+        ],
+      },
+      "vue/html-self-closing": {
+        html: {
+          void: "always",
+          normal: "never",
+          component: "always",
         },
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    }
-  }
+        svg: "always",
+        math: "always",
+      },
+      "musea/prefer-design-tokens": {
+        tokens: [
+          {
+            path: "color.primary",
+            value: "#3b82f6",
+            tier: "semantic",
+          },
+        ],
+      },
+    },
+  },
 });
 ```
 
@@ -96,7 +96,6 @@ export default defineConfig({
   self-closing tags, event names, and attribute casing.
 - [Musea Rule Options](./options-musea.md): design-token inventory configuration.
 
-
 ## `html/no-empty-palpable-content`
 
 Custom directives may focus, style, or fill an element. List only the directives your project
@@ -108,21 +107,17 @@ This setting does not validate sanitization or enable the rule.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "html/no-empty-palpable-content": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "html/no-empty-palpable-content": "error",
+    },
+    ruleOptions: {
+      "html/no-empty-palpable-content": {
+        contentDirectives: ["safe-html"],
       },
-      "ruleOptions": {
-        "html/no-empty-palpable-content": {
-          "contentDirectives": [
-            "safe-html"
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -152,20 +147,15 @@ For components supplied by application plugins or Musea `previewSetup`, configur
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/require-component-registration": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/require-component-registration": "warn",
+    },
+    ruleOptions: {
+      "vue/require-component-registration": {
+        globals: ["MyButton", "MyIcon"],
       },
-      "ruleOptions": {
-        "vue/require-component-registration": {
-          "globals": [
-            "MyButton",
-            "MyIcon"
-          ]
-        }
-      }
     },
   },
 });

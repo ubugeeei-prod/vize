@@ -40,24 +40,22 @@ const token = authStorage.read("token");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-restricted-members": "error"
-      },
-      "ruleOptions": {
-        "script/no-restricted-members": {
-          "members": [
-            {
-              "object": "window",
-              "property": "localStorage"
-            }
-          ]
-        }
-      }
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-restricted-members": "error"
     },
+    "ruleOptions": {
+      "script/no-restricted-members": {
+        "members": [
+          {
+            "object": "window",
+            "property": "localStorage"
+          }
+        ]
+      }
+    }
   },
 });
 ```

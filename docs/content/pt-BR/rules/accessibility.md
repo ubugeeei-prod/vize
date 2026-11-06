@@ -55,7 +55,7 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 
 ## Opcionais (1)
 
-Não fazem parte de nenhuma predefinição. Ative pelo nome em `vue.linter.rules`.
+Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
 | Regra | O que verifica | Correção automática |
 | --- | --- | --- |

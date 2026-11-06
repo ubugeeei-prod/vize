@@ -38,14 +38,12 @@ The button uses its native focus order without a positive tabindex.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/tabindex-no-positive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/tabindex-no-positive": "warn"
+    }
   },
 });
 ```

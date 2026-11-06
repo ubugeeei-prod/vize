@@ -42,14 +42,12 @@ Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipp
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-logical-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/prefer-logical-properties": "warn"
+    }
   },
 });
 ```

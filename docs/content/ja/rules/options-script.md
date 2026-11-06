@@ -1,6 +1,7 @@
 ---
 title: スクリプトのルール設定
 ---
+
 <!-- Reviewed translation; source: rules/options-script.md -->
 
 <span id="script-rule-options"></span>
@@ -23,27 +24,25 @@ title: スクリプトのルール設定
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-globals": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-globals": "error",
+    },
+    ruleOptions: {
+      "script/no-restricted-globals": {
+        globals: [
+          {
+            name: "process",
+            message: "Read env through useRuntimeConfig().",
+          },
+          {
+            name: "localStorage",
+          },
+        ],
       },
-      "ruleOptions": {
-        "script/no-restricted-globals": {
-          "globals": [
-            {
-              "name": "process",
-              "message": "Read env through useRuntimeConfig()."
-            },
-            {
-              "name": "localStorage"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -71,29 +70,27 @@ const token = authStorage.read("auth.token");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-members": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-members": "error",
+    },
+    ruleOptions: {
+      "script/no-restricted-members": {
+        members: [
+          {
+            object: "window",
+            property: "localStorage",
+            message: "Use authStorage.",
+          },
+          {
+            object: "globalThis",
+            property: "process",
+          },
+        ],
       },
-      "ruleOptions": {
-        "script/no-restricted-members": {
-          "members": [
-            {
-              "object": "window",
-              "property": "localStorage",
-              "message": "Use authStorage."
-            },
-            {
-              "object": "globalThis",
-              "property": "process"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -119,19 +116,17 @@ const env = readServerEnv();
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/custom-event-name-casing": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/custom-event-name-casing": "error",
+    },
+    ruleOptions: {
+      "script/custom-event-name-casing": {
+        casing: "kebab-case",
       },
-      "ruleOptions": {
-        "script/custom-event-name-casing": {
-          "casing": "lowercase"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -165,14 +160,12 @@ emit("save-item");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "script/define-macros-order": "warn" },
-      ruleOptions: {
-        "script/define-macros-order": {
-          order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
-        },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "script/define-macros-order": "warn" },
+    ruleOptions: {
+      "script/define-macros-order": {
+        order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
       },
     },
   },
@@ -206,13 +199,11 @@ const props = defineProps<{ label: string }>();
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      preset: "incremental",
-      rules: { "script/define-props-destructuring": "warn" },
-      ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "incremental",
+    rules: { "script/define-props-destructuring": "warn" },
+    ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
   },
 });
 ```
@@ -241,4 +232,4 @@ ESLint から移行する場合は、Vize のルール ID と型付きオプシ�
  ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
-追加する設定は、上記の Vite+ 設定の `vue.linter` に指定してください。
+追加する設定は、上記の Vite+ 設定で `withVue` に渡す `linter` に指定してください。

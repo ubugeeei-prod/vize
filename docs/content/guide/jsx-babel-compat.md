@@ -97,7 +97,7 @@ at runtime. Passing `false` always treats that value as the raw default-slot chi
 `jsxMode: "vapor"` therefore has no defined meaning, and is rejected with a diagnostic rather than
 silently ignored:
 
-```text
+```console
 compiler.jsxCompat: "babel" is not supported with Vapor output: @vue/babel-plugin-jsx has no
 Vapor equivalent. Use jsxMode "vdom" for babel compatibility, or drop jsxCompat to use Vize's own
 Vapor semantics.
@@ -114,8 +114,8 @@ Both are deliberate answers, recorded in the crate so they are not relitigated.
 
 One corpus row is currently `deferred`: it needs type-resolution work outside compatibility mode.
 
-| Row | What Babel does | What it is waiting on |
-| --- | --- | --- |
+| Row                       | What Babel does                       | What it is waiting on                                                                                                                                                                                 |
+| ------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options/resolve_type_on` | appends `{ props: { … }, name: "A" }` | type-driven props/emits inference, which needs the type resolution tracked on [#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502) |
 
 `slots/dynamic_slot_name` is now `equivalent`; computed slot keys `{ [n]: () => … }` are no longer deferred.

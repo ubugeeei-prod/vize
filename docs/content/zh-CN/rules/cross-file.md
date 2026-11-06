@@ -7,7 +7,7 @@ description: "需要查看多个文件的检查：父组件与子组件、provid
 
 需要查看多个文件的检查：父组件与子组件、provide 与 inject、路由与链接。
 
-在 `vue.linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `vue.linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。
+在传给 `withVue` 的 `linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。
 
 每个规则页面都有会触发诊断的示例、不会触发的示例，以及启用该规则的配置。
 

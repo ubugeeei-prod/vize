@@ -42,14 +42,12 @@ transition の子要素に表示を切り替える条件を指定します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-toggle-inside-transition": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-toggle-inside-transition": "error"
+    }
   },
 });
 ```

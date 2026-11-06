@@ -102,7 +102,7 @@ passée comme enfant unique d’un composant peut déjà être un objet slot, do
 `jsxMode: "vapor"` n’a donc pas de signification définie, et est rejeté par un diagnostic plutôt que
 ignoré silencieusement :
 
-```text
+```console
 compiler.jsxCompat: "babel" is not supported with Vapor output: @vue/babel-plugin-jsx has no
 Vapor equivalent. Use jsxMode "vdom" for babel compatibility, or drop jsxCompat to use Vize's own
 Vapor semantics.

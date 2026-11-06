@@ -341,7 +341,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 
 ## Règles inter-fichiers (66)
 
-Activez ces vérifications avec `crossFile: true` dans `vue.linter`, ou lancez `vize lint --cross-file`. Les diagnostics s’affichent sous la forme `vize:croquis/cf/<name>` ; configurez-les dans `vue.linter.rules` sous la forme `croquis/cf/<name>`, sans `vize:`.
+Activez ces vérifications avec `crossFile: true` dans `linter`, passé à `withVue`, ou lancez `vize lint --cross-file`. Les diagnostics s’affichent sous la forme `vize:croquis/cf/<name>` ; configurez-les dans `linter.rules` sous la forme `croquis/cf/<name>`, sans `vize:`.
 
 | Règle | Ce qu’elle vérifie | État |
 | --- | --- | --- |

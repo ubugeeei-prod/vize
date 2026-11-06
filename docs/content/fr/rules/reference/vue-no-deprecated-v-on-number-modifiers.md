@@ -45,14 +45,12 @@ Les gestionnaires utilisent les modificateurs de touches nommés enter et esc.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-number-modifiers": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-on-number-modifiers": "error"
+    }
   },
 });
 ```

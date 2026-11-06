@@ -80,12 +80,10 @@ ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `vue.li
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: {
-        "vue/max-template-complexity": "warn",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
     },
   },
 });

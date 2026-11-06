@@ -41,14 +41,12 @@ O atributo nativo usa sua forma booleana abreviada. Vinculações false e props 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-true-attribute-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-true-attribute-shorthand": "warn"
+    }
   },
 });
 ```

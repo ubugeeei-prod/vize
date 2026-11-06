@@ -42,14 +42,12 @@ p は文字、li は補間で内容を入れ、空の td には aria-label で�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-empty-palpable-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-empty-palpable-content": "warn"
+    }
   },
 });
 ```

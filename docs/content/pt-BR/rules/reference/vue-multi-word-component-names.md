@@ -40,14 +40,12 @@ TodoItem.vue dá ao mesmo template um nome de componente com mais de uma palavra
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/multi-word-component-names": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/multi-word-component-names": "error"
+    }
   },
 });
 ```

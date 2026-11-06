@@ -38,14 +38,12 @@ Un attribut class statique exprime les mêmes classes du panneau sans liaison.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/prefer-static-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/prefer-static-class": "warn"
+    }
   },
 });
 ```

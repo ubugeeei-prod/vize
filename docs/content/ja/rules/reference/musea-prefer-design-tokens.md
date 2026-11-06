@@ -54,25 +54,23 @@ art の例で、設定した primary のデザイントークンではなく、�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "musea/prefer-design-tokens": "warn"
-      },
-      "ruleOptions": {
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "musea/prefer-design-tokens": "warn"
     },
+    "ruleOptions": {
+      "musea/prefer-design-tokens": {
+        "tokens": [
+          {
+            "path": "color.primary",
+            "value": "#3b82f6",
+            "tier": "semantic"
+          }
+        ]
+      }
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ Um parágrafo exibe a mesma oferta sem o elemento marquee que causa distração.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-distracting-elements": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-distracting-elements": "warn"
+    }
   },
 });
 ```

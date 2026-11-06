@@ -38,14 +38,12 @@ Le lien utilise la destination de navigation locale ordinaire /next.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsafe-url": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unsafe-url": "warn"
+    }
   },
 });
 ```

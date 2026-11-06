@@ -41,14 +41,12 @@ description: "要求表单控件具有相关联的标签。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/form-control-has-label": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/form-control-has-label": "warn"
+    }
   },
 });
 ```

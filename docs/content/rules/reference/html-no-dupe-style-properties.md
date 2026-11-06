@@ -40,14 +40,12 @@ The static style uses distinct color and background properties. Dynamic style bi
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-dupe-style-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-dupe-style-properties": "warn"
+    }
   },
 });
 ```

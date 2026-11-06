@@ -45,14 +45,12 @@ O conteúdo traduzível chama $t; os exemplos com pontuação e apenas números 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-bare-strings-in-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-bare-strings-in-template": "warn"
+    }
   },
 });
 ```

@@ -40,14 +40,12 @@ L’élément reçoit directement la transformation changeante via sa liaison de
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-v-bind-performance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-v-bind-performance": "warn"
+    }
   },
 });
 ```

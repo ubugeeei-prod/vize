@@ -39,14 +39,12 @@ sandbox applies restrictions; allow-scripts explicitly opts into that one capabi
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsandboxed-iframe": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unsandboxed-iframe": "warn"
+    }
   },
 });
 ```

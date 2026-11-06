@@ -40,14 +40,12 @@ Le slot fournit navigate à un bouton explicitement écrit dans le template.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-router-link-tag-prop": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-router-link-tag-prop": "error"
+    }
   },
 });
 ```

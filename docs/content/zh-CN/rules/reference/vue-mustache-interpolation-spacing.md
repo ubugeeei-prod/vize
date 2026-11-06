@@ -42,14 +42,12 @@ description: "要求双花括号插值内部的空格保持一致。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/mustache-interpolation-spacing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/mustache-interpolation-spacing": "warn"
+    }
   },
 });
 ```

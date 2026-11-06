@@ -36,14 +36,12 @@ script setup で宣言した message を p の補間で参照し、未使用の�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-setup-bindings": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unused-setup-bindings": "warn"
+    }
   },
 });
 ```
