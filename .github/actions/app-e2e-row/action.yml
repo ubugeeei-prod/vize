@@ -85,8 +85,8 @@ runs:
         cache: true
         run-install: false
 
-    - name: Provision Node 22 for authored Nuxt check preparation
-      if: inputs.suite == 'check'
+    - name: Provision Node 22 for authored Nuxt fixture preparation
+      if: inputs.suite == 'check' || inputs.suite == 'build'
       shell: bash
       run: |
         set -euo pipefail

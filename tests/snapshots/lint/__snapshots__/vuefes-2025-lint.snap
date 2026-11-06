@@ -34,7 +34,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'gapSp' is defined but never used",
         "line": 14,
@@ -45,7 +45,7 @@
       },
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'linkPath' is defined but never used",
         "line": 15,
@@ -63,7 +63,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 66,
@@ -93,7 +93,7 @@
     "messages": [
       {
         "ruleId": "script/no-import-compiler-macros",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-import-compiler-macros.md",
         "severity": 2,
         "message": "[vize:script/no-import-compiler-macros] Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
         "line": 2,
@@ -117,7 +117,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 63,
@@ -141,7 +141,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 24,
@@ -159,7 +159,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 21,
@@ -213,7 +213,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'id' is defined but never used",
         "line": 3,
@@ -224,7 +224,7 @@
       },
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 18,
@@ -254,7 +254,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 213,
@@ -296,7 +296,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
         "line": 91,
@@ -350,7 +350,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 25,
@@ -361,7 +361,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
@@ -379,7 +379,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-require-scoped-style.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 116,
@@ -475,7 +475,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 46,
@@ -486,7 +486,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 60,
@@ -516,7 +516,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
         "line": 118,
@@ -527,7 +527,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 144,
@@ -538,7 +538,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 145,
@@ -549,7 +549,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 152,
@@ -560,7 +560,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 153,
@@ -571,7 +571,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 160,
@@ -582,7 +582,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 161,
@@ -593,7 +593,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 185,
@@ -604,7 +604,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 186,
@@ -615,7 +615,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 193,
@@ -626,7 +626,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 194,
@@ -637,7 +637,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 201,
@@ -648,7 +648,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 202,
@@ -659,7 +659,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
         "line": 217,
@@ -689,7 +689,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-permitted-contents.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
         "line": 146,
@@ -749,7 +749,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 91,
@@ -760,7 +760,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 100,
@@ -771,7 +771,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 121,
@@ -782,7 +782,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 130,
@@ -793,7 +793,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 154,
@@ -804,7 +804,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 180,
@@ -815,7 +815,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 219,
@@ -833,7 +833,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 106,
@@ -844,7 +844,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 106,
@@ -862,7 +862,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 111,
@@ -873,7 +873,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 111,
@@ -897,7 +897,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 122,
@@ -908,7 +908,7 @@
       },
       {
         "ruleId": "vue/no-template-target-blank",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
         "severity": 1,
         "message": "[vize:vue/no-template-target-blank] Using target=\"_blank\" without rel=\"noopener noreferrer\" is a security risk",
         "line": 123,
