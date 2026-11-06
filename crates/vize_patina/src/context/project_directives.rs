@@ -187,19 +187,21 @@ impl ProjectLintDirectives {
         unused.into_iter().filter_map(unused_diagnostic).collect()
     }
 
-    /// The ordinary template pass finishes before project diagnostics exist.
+    /// The ordinary lint pass finishes before project diagnostics exist.
     /// Retire its blanket unused report only when this exact comment suppressed
     /// an admitted project diagnostic. Listed ordinary-rule reports are kept.
-    pub fn reconcile_template_unused(&self, diagnostics: &mut Vec<LintDiagnostic>) {
-        let Some(template) = &self.template else {
-            return;
-        };
-        let used = template.suppressions.used_blanket_markers();
-        let exact_used = template.exact_suppressions.used_markers();
+    pub fn reconcile_unused(&self, diagnostics: &mut Vec<LintDiagnostic>) {
+        let mut used = self
+            .sfc
+            .as_ref()
+            .map_or_else(Vec::new, SfcDirectiveState::used_blanket_markers);
+        if let Some(template) = &self.template {
+            used.extend(template.suppressions.used_blanket_markers());
+            used.extend(template.exact_suppressions.used_markers());
+        }
         diagnostics.retain(|diagnostic| {
             diagnostic.rule_name != UNUSED_RULE
-                || (!used.contains(&(diagnostic.start, diagnostic.end))
-                    && !exact_used.contains(&(diagnostic.start, diagnostic.end)))
+                || !used.contains(&(diagnostic.start, diagnostic.end))
         });
     }
 }

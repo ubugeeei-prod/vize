@@ -216,6 +216,27 @@ impl SfcDirectiveState {
             .collect()
     }
 
+    /// Blanket pragmas that suppressed a final project diagnostic. The
+    /// ordinary lint pass runs before project diagnostics exist, so callers
+    /// use these exact marker ranges to retire only its stale unused reports.
+    pub(super) fn used_blanket_markers(&self) -> Vec<(u32, u32)> {
+        let mut used = self
+            .blocks
+            .iter()
+            .flat_map(|block| block.inline_suppressions.used_blanket_markers())
+            .collect::<Vec<_>>();
+        used.extend(self.file_regions.used_blanket_markers());
+        if let Some(root) = &self.root {
+            used.extend(root.used_blanket_markers());
+        }
+        if let Some(template) = &self.template_exact {
+            used.extend(template.state.used_markers());
+        }
+        used.sort_unstable();
+        used.dedup();
+        used
+    }
+
     /// Accepted script/style/root pragmas that suppressed no final diagnostic.
     pub(super) fn unused(
         &self,

@@ -65,7 +65,7 @@ pub(super) fn finalize(
 
 pub(super) fn reconcile(state: Option<&ProjectLintDirectives>, result: &mut LintResult) {
     if let Some(state) = state {
-        state.reconcile_template_unused(&mut result.diagnostics);
+        state.reconcile_unused(&mut result.diagnostics);
         result.error_count = result
             .diagnostics
             .iter()

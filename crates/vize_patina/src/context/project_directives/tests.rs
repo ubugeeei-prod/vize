@@ -80,10 +80,10 @@ fn template_blanket_reconciliation_is_exact_and_keeps_listed_normal_reports() {
         ),
         crate::LintDiagnostic::error("vue/require-v-for-key", "ordinary finding", marker, end),
     ];
-    directives.reconcile_template_unused(&mut diagnostics);
+    directives.reconcile_unused(&mut diagnostics);
     assert_eq!(diagnostics.len(), 3);
     assert!(directives.is_disabled_at(DUPLICATE, source.find("id=").unwrap() as u32));
-    directives.reconcile_template_unused(&mut diagnostics);
+    directives.reconcile_unused(&mut diagnostics);
     assert_eq!(diagnostics.len(), 2);
     assert_eq!(diagnostics[0].message.as_str(), "another comment");
     assert_eq!(diagnostics[1].rule_name, "vue/require-v-for-key");
@@ -99,7 +99,7 @@ fn template_blanket_reconciliation_is_exact_and_keeps_listed_normal_reports() {
         end,
     )];
     assert!(directives.is_disabled_at(DUPLICATE, source.find("id=").unwrap() as u32));
-    directives.reconcile_template_unused(&mut listed);
+    directives.reconcile_unused(&mut listed);
     assert_eq!(listed.len(), 1);
 }
 
@@ -130,6 +130,32 @@ fn script_file_regions_share_usage_with_their_template_scope() {
     let directives = ProjectLintDirectives::from_sfc(&source, "Editor.vue").unwrap();
     assert!(!directives.is_disabled_at(DUPLICATE, source.find("<p>").unwrap() as u32));
     assert_eq!(ranges(&directives).len(), 1);
+}
+
+#[test]
+fn script_blanket_project_usage_retires_only_its_exact_unused_report() {
+    let source = r#"<script setup lang="ts">
+import { reactive } from "vue";
+/* eslint-disable */
+const draft = reactive({ ...initial });
+</script>"#;
+    let directives = ProjectLintDirectives::from_sfc(source, "Editor.vue").unwrap();
+    let marker = source.find("eslint-disable").unwrap() as u32;
+    let end = marker + "eslint-disable".len() as u32;
+    let mut diagnostics = vec![
+        crate::LintDiagnostic::error("vue/comment-directive", "unused", marker, end),
+        crate::LintDiagnostic::error(
+            "vue/comment-directive",
+            "same-range peer",
+            marker + 1,
+            end + 1,
+        ),
+    ];
+
+    assert!(directives.is_disabled_at(SPREAD, source.find("...initial").unwrap() as u32));
+    directives.reconcile_unused(&mut diagnostics);
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].message, "same-range peer");
 }
 
 #[test]
@@ -241,7 +267,7 @@ fn mixed_vize_forget_keeps_the_unused_ordinary_rule_report() {
     assert_eq!(ordinary.len(), 1);
 
     assert!(directives.is_disabled_at(DUPLICATE, source.find("id=").unwrap() as u32));
-    directives.reconcile_template_unused(&mut ordinary);
+    directives.reconcile_unused(&mut ordinary);
     assert_eq!(ordinary.len(), 1);
     assert_eq!(
         ordinary[0].message,
