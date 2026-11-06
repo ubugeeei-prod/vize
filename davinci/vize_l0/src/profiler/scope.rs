@@ -50,7 +50,7 @@ impl ProfilerScope {
 
 impl Drop for ProfilerScope {
     fn drop(&mut self) {
-        ACTIVE.with(|active| {
+        let _ = ACTIVE.try_with(|active| {
             let mut active = active.borrow_mut();
             if let Some(index) = active
                 .iter()
@@ -63,14 +63,20 @@ impl Drop for ProfilerScope {
 }
 
 /// Run `body` with this thread's installed profiler, or the process-global one.
+///
+/// The global profiler is also used if thread-local storage is already being
+/// destroyed.
 #[inline]
 pub fn with_active_profiler<R>(body: impl FnOnce(&Profiler) -> R) -> R {
-    let profiler = ACTIVE.with(|active| {
-        active
-            .borrow()
-            .last()
-            .map(|entry| Arc::clone(&entry.profiler))
-    });
+    let profiler = ACTIVE
+        .try_with(|active| {
+            active
+                .borrow()
+                .last()
+                .map(|entry| Arc::clone(&entry.profiler))
+        })
+        .ok()
+        .flatten();
     match profiler {
         Some(profiler) => body(&profiler),
         None => body(global_profiler()),
