@@ -346,7 +346,9 @@ fn public_instance_contract_survives_source_and_declaration_consumers() {
         public_dts.contains("$props: Props & import(\"./__vize_helpers.js\").__EmitProps<Emits>;")
             && public_dts.contains("$emit: $PublicEmit<Emits>;")
             && public_dts.contains("$slots: $PublicSlots<$Slots>;")
-            && public_dts.contains("} & $ComponentPublicBase &"),
+            && public_dts.contains(
+                "}, Props, import(\"./__vize_helpers.js\").__EmitProps<Emits>, $AuthoredProps, $JsxProps> & $ComponentPublicBase &"
+            ),
         "emitted public instance must own props/emits and adapt the Vue base:\n{public_dts}"
     );
     assert_eq!(
