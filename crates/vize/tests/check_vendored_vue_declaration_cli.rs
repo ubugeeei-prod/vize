@@ -27,6 +27,21 @@ const PROBE: &str = include_str!(concat!(
 ));
 const PROBE_TAG: &str = r#"<Foo :count="'x'" />"#;
 
+const AUTHORED_VUE_TS_CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/tsconfig.json.txt"
+));
+
+const AUTHORED_VUE_TS_FOO: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/Foo.vue.txt"
+));
+
+const AUTHORED_VUE_TS_PROBE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/Probe.vue.txt"
+));
+
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -185,7 +200,11 @@ fn authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror() {
         .tempdir()
         .unwrap();
     let producer = dir.path().join("producer");
-    project(&producer, CONFIG, &[("src/Foo.vue", FOO)]);
+    project(
+        &producer,
+        AUTHORED_VUE_TS_CONFIG,
+        &[("src/Foo.vue", AUTHORED_VUE_TS_FOO)],
+    );
     let (code, emitted) = run(Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&producer)
         .env("CORSA_PATH", &corsa)
@@ -194,15 +213,13 @@ fn authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror() {
     assert_eq!(code, Some(0), "{emitted}");
 
     let consumer = dir.path().join("consumer");
-    let config = CONFIG.replace(
-        "\"strict\": true,",
-        "\"strict\": true,\n    \"allowImportingTsExtensions\": true,",
-    );
-    let probe = PROBE.replace("./vendor/Foo.vue", "./Foo.vue.ts");
     project(
         &consumer,
-        &config,
-        &[("src/Probe.vue", probe.as_str()), ("src/Foo.vue", FOO)],
+        AUTHORED_VUE_TS_CONFIG,
+        &[
+            ("src/Probe.vue", AUTHORED_VUE_TS_PROBE),
+            ("src/Foo.vue", AUTHORED_VUE_TS_FOO),
+        ],
     );
     for entry in fs::read_dir(dir.path().join("emitted")).unwrap() {
         let entry = entry.unwrap().path();
