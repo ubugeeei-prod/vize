@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-type Projection = { path: string; text: string; metadata: unknown };
+export type Projection = { path: string; text: string; metadata: unknown };
 
 /** Certify the expected listener-relation rewrite while retaining both whole projections. */
 export function certifyListenerRelationProjections(before: Projection[], after: Projection[]) {

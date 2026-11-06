@@ -19,6 +19,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { materializeCorpus } from "./template-alias-paired-11822-corpus.ts";
+import type { Projection } from "./template-alias-paired-11822-campaign.ts";
 import { verifiedSourcePair } from "./template-alias-paired-11822-source.ts";
 import {
   assertCampaignEnvironment,
