@@ -1,6 +1,7 @@
 use super::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+mod listener_projection;
 mod repeated_contracts;
 mod repeated_slot_contract;
 

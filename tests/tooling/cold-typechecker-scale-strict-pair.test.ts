@@ -115,9 +115,14 @@ test("the current whole SDK and its dependency closure refuse changed or missing
         fs.copyFileSync(path.join(root, "npm/cli", file), target);
       }
     assert.deepEqual(verifySourceSdkPair(base, head, typescript, "current"), original);
-    assert.equal(original.declarations.length, 13);
-    assert.equal(original.edges.length, 21);
-    for (const file of ["virtual-ts-slots.d.ts", "virtual-ts-emits.d.ts", "package.json"]) {
+    assert.equal(original.declarations.length, 14);
+    assert.equal(original.edges.length, 24);
+    for (const file of [
+      "virtual-ts-slots.d.ts",
+      "virtual-ts-emits.d.ts",
+      "virtual-ts-listeners.d.ts",
+      "package.json",
+    ]) {
       const target = path.join(head, "npm/cli", file),
         before = fs.readFileSync(target);
       fs.appendFileSync(target, "\n");

@@ -122,6 +122,24 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   );
   const overloadPreamble = applyCurrentOverloadPreamble(successorPreamble);
   const integratedSourcePreamble = applyIntegratedSourcePreambleTransitions(overloadPreamble);
+  for (const changed of [
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt",
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-listener-args.d.ts.txt",
+  ]) {
+    for (const mutation of ["missing", "changed"] as const) {
+      assert.throws(
+        () =>
+          applyIntegratedSourcePreambleTransitions(overloadPreamble, (file) =>
+            file === changed
+              ? mutation === "missing"
+                ? ""
+                : fs.readFileSync(file, "utf8") + "\n"
+              : fs.readFileSync(file, "utf8"),
+          ),
+        /authenticated preamble asset/u,
+      );
+    }
+  }
   const currentSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
   assert.equal(beforeDiscriminatedJsxUnionIn(currentSourcePreamble), integratedSourcePreamble);
   assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
