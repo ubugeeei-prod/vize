@@ -58,6 +58,8 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     /// Hoist shared helpers to the project ambient `.d.ts`. Both batch and
     /// editor projects materialize that file beside their generated config.
     pub(in crate::batch::virtual_project) hoist_shared_preamble: bool,
+    /// Keep component prop ownership aliases local to editor modules.
+    pub(in crate::batch::virtual_project) local_component_ownership_helpers: bool,
     /// Keep configured auto-import declarations in this generated module.
     /// Batch projects materialize them once in their shared ambient file;
     /// standalone content mappers have no such file and must retain them.

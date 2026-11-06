@@ -191,6 +191,7 @@ fn transform_with_shared_sources(
             experimental_patterned_template: false,
             experimental_strict_slot_children: false,
             hoist_shared_preamble: transform_options.shared_virtual_module(),
+            local_component_ownership_helpers: false,
             inline_auto_import_stubs: true,
             omit_vite_client_reference: true,
             tsx_module: true,

@@ -33,17 +33,20 @@ pub(super) fn emit_module_preamble(
             // Program helpers and global augmentation are shared once per project.
             ts.push_str("// Shared preamble hoisted to the program-wide __vize_helpers.d.ts\n");
         }
-        // TypeScript resolves property references through mapped-type
-        // declarations. Sharing this alias bundle makes unrelated SFCs appear
-        // to own the same prop symbol, so retain only this small owner boundary
-        // in each generated module.
-        ts.push_str("// Keep public prop owners module-local for references and rename.\n");
-        crate::virtual_ts::helpers::hygiene::emit_type_helpers(
-            ts,
-            summary,
-            OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS,
-            false,
-        );
+        if options.local_component_ownership_helpers {
+            // TypeScript resolves property references through mapped-type
+            // declarations. Sharing this alias bundle makes unrelated editor
+            // SFCs appear to own the same prop symbol, so retain only this small
+            // owner boundary in each generated editor module. Batch/declaration
+            // projects keep their established fully-shared preamble.
+            ts.push_str("// Keep public prop owners module-local for references and rename.\n");
+            crate::virtual_ts::helpers::hygiene::emit_type_helpers(
+                ts,
+                summary,
+                OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS,
+                false,
+            );
+        }
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);
         ts.push('\n');
