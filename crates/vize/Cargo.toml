@@ -8,10 +8,15 @@ repository.workspace = true
 description = "Vize - High-performance Vue.js toolchain in Rust"
 publish = false
 autotests = false
+default-run = "vize"
 
 [[bin]]
 name = "vize"
 path = "src/main.rs"
+
+[[bin]]
+name = "vize-content-mapper"
+path = "src/bin/vize-content-mapper.rs"
 
 [lib]
 name = "vize"

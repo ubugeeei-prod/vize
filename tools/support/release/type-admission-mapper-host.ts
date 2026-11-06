@@ -82,10 +82,7 @@ export function validateMapperHostMetadata(
   if (index === 0) {
     const binaryPackage = packages[1];
     assert.ok(binaryPackage);
-    assert.equal(
-      record(metadata.optionalDependencies)[binaryPackage.name],
-      MAPPER_HOST_VERSION,
-    );
+    assert.equal(record(metadata.optionalDependencies)[binaryPackage.name], MAPPER_HOST_VERSION);
   }
 }
 

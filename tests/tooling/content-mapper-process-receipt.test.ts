@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -12,17 +12,17 @@ import {
 } from "../../tools/support/release/type-admission-mapper-host.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
-const proxy = path.join(root, "tools/support/compat/content-mapper/process-receipt.mjs");
+const proxy = path.join(root, "tools/support/compat/content-mapper/process-receipt.ts");
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function withDirectory(check: (directory: string) => void): () => void {
-  return () => {
+function withDirectory(check: (directory: string) => void | Promise<void>): () => Promise<void> {
+  return async () => {
     const directory = mkdtempSync(path.join(tmpdir(), "vize-mapper-process-"));
     try {
-      check(directory);
+      await check(directory);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
@@ -99,6 +99,8 @@ test(
 
     const packet = JSON.parse(readFileSync(receipt, "utf8"));
     assert.equal(packet.schema, "vize.contentMapperProcessReceipt.v1");
+    assert.equal(packet.lifecycle, "closed");
+    assert.equal(typeof packet.finishedAt, "string");
     assert.deepEqual(packet.command.file, process.execPath);
     assert.deepEqual(packet.command.args, ["-e", child]);
     assert.equal(packet.spawnError, null);
@@ -139,6 +141,7 @@ test(
     assert.equal(result.signal, null);
     const packet = JSON.parse(readFileSync(receipt, "utf8"));
     assert.equal(packet.spawnError.code, "ENOENT");
+    assert.equal(packet.lifecycle, "closed");
     assert.equal(packet.exit.code, -2);
     assert.equal(packet.exit.signal, null);
   }),
@@ -159,6 +162,42 @@ test(
     assert.equal(result.signal, "SIGTERM");
     const packet = JSON.parse(readFileSync(receipt, "utf8"));
     assert.equal(packet.spawnError, null);
+    assert.equal(packet.lifecycle, "closed");
     assert.deepEqual(packet.exit, { code: null, signal: "SIGTERM" });
+  }),
+);
+
+test(
+  "the mapper proxy durably snapshots protocol bytes before host SIGKILL teardown",
+  { skip: process.platform === "win32" },
+  withDirectory(async (directory) => {
+    const receipt = path.join(directory, "receipt.json");
+    const child = [
+      "process.stdin.once('data', (chunk) => process.stdout.write('ACK:' + chunk));",
+      "process.stdin.resume();",
+    ].join("\n");
+    const proxyProcess = spawn(process.execPath, [proxy, receipt, process.execPath, "-e", child], {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    proxyProcess.stdin.write("request\n");
+    const stdout = await new Promise<Buffer>((resolve) =>
+      proxyProcess.stdout.once("data", resolve),
+    );
+    assert.equal(stdout.toString(), "ACK:request\n");
+    proxyProcess.kill("SIGKILL");
+    const [code, signal] = await new Promise<[number | null, NodeJS.Signals | null]>((resolve) =>
+      proxyProcess.once("close", (closedCode, closedSignal) => resolve([closedCode, closedSignal])),
+    );
+    assert.equal(code, null);
+    assert.equal(signal, "SIGKILL");
+
+    const packet = JSON.parse(readFileSync(receipt, "utf8"));
+    assert.equal(packet.lifecycle, "running");
+    assert.equal(packet.finishedAt, null);
+    assert.equal(packet.exit, null);
+    assert.equal(packet.spawnError, null);
+    assert.equal(packet.streams.stdin.utf8, "request\n");
+    assert.equal(packet.streams.stdout.utf8, "ACK:request\n");
+    assert.equal(packet.streams.stderr.utf8, "");
   }),
 );

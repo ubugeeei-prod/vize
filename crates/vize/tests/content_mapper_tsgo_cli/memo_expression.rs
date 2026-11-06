@@ -43,7 +43,7 @@ fn install_observed_mapper_manifest(project: &Path, receipt: &Path) {
     let node = std::env::var_os("VIZE_TEST_NODE")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("node"));
-    let proxy = workspace_root().join("tools/support/compat/content-mapper/process-receipt.mjs");
+    let proxy = workspace_root().join("tools/support/compat/content-mapper/process-receipt.ts");
     assert!(
         proxy.is_file(),
         "missing mapper process proxy: {}",
@@ -54,7 +54,7 @@ fn install_observed_mapper_manifest(project: &Path, receipt: &Path) {
         "private": true,
         "typescript": {
             "contentMapper": {
-                "exec": [node, proxy, receipt, env!("CARGO_BIN_EXE_vize"), "content-mapper"],
+                "exec": [node, proxy, receipt, env!("CARGO_BIN_EXE_vize-content-mapper")],
                 "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
                 "dynamicConfig": true,
             },
@@ -87,21 +87,29 @@ fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output)
     );
     assert_eq!(
         packet["command"]["file"],
-        env!("CARGO_BIN_EXE_vize"),
+        env!("CARGO_BIN_EXE_vize-content-mapper"),
         "{context}"
     );
-    assert_eq!(
-        packet["command"]["args"],
-        json!(["content-mapper"]),
-        "{context}"
-    );
+    assert_eq!(packet["command"]["args"], json!([]), "{context}");
     assert_eq!(packet["spawnError"], serde_json::Value::Null, "{context}");
-    assert_eq!(packet["exit"]["code"], 0, "{context}");
-    assert_eq!(
-        packet["exit"]["signal"],
-        serde_json::Value::Null,
-        "{context}"
-    );
+    match packet["lifecycle"].as_str() {
+        Some("closed") => {
+            assert_eq!(packet["exit"]["code"], 0, "{context}");
+            assert_eq!(
+                packet["exit"]["signal"],
+                serde_json::Value::Null,
+                "{context}"
+            );
+            assert!(packet["finishedAt"].is_string(), "{context}");
+        }
+        Some("running") => {
+            // The TypeScript CLI deliberately SIGKILLs a healthy mapper on host
+            // close, so the last durable snapshot remains in the running state.
+            assert_eq!(packet["exit"], serde_json::Value::Null, "{context}");
+            assert_eq!(packet["finishedAt"], serde_json::Value::Null, "{context}");
+        }
+        state => panic!("unexpected mapper lifecycle {state:?}: {context}"),
+    }
     for name in ["stdin", "stdout", "stderr"] {
         let stream = &packet["streams"][name];
         assert_eq!(stream["complete"], true, "{name}: {context}");
@@ -124,6 +132,15 @@ fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output)
         "{context}"
     );
     assert_eq!(packet["streams"]["stderr"]["bytes"], 0, "{context}");
+    let stdin = packet["streams"]["stdin"]["utf8"].as_str().unwrap();
+    let stdout = packet["streams"]["stdout"]["utf8"].as_str().unwrap();
+    for method in ["initialize", "openProject", "transform"] {
+        assert!(
+            stdin.contains(&format!(r#""method":"{method}""#)),
+            "{context}"
+        );
+    }
+    assert!(stdout.contains(r#""result":"#), "{context}");
 }
 
 #[test]

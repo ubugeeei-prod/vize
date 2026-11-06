@@ -4,9 +4,12 @@ on:
   pull_request:
     paths:
       - .github/workflows/content-mapper-cold-start.yml
+      - crates/vize/Cargo.toml
+      - crates/vize/src/bin/vize-content-mapper.rs
+      - crates/vize/src/lib.rs
       - crates/vize/tests/content_mapper_tsgo_cli/memo_expression.rs
       - tests/tooling/content-mapper-process-receipt.test.ts
-      - tools/support/compat/content-mapper/process-receipt.mjs
+      - tools/support/compat/content-mapper/process-receipt.ts
       - tools/support/release/type-admission-mapper-host.ts
   merge_group:
   workflow_dispatch:
