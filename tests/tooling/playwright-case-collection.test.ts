@@ -22,10 +22,17 @@ test("the playground job uploads browser and visual test cases", () => {
   assert.equal(browser?.env?.TEST_CASES_JOB, playground.name);
   assert.ok(browser?.run?.includes("js-test-cases.ts capture"));
   const collect = playground.steps.find((step) => step.name === "Collect playground test cases");
+  const vrt = playground.steps.find((step) => step.name === "Run VRT");
+  assert.equal(vrt?.env?.VIZE_PLAYWRIGHT_CASES, "e2e/vrt/test-results/case-report.json");
   assert.equal(collect?.id, "cases");
   assert.equal(collect?.env?.TEST_CASES_JOB, playground.name);
   assert.equal(collect?.env?.VRT_OUTCOME, "${{ steps.vrt.outcome }}");
-  assert.match(collect?.run ?? "", /VRT_OUTCOME.*success.*-s/u);
+  assert.match(
+    collect?.run ?? "",
+    /vrt_report="playground\/e2e\/vrt\/test-results\/case-report\.json"/u,
+  );
+  assert.match(collect?.run ?? "", /VRT_OUTCOME.*success/u);
+  assert.match(collect?.run ?? "", /successful VRT produced no Playwright case receipt/u);
   assert.ok(collect?.run?.includes("test-cases.ts playwright"));
   assert.ok(collect?.run?.includes("test-cases.ts merge"));
   const upload = playground.steps[playground.steps.indexOf(collect ?? {}) + 1];

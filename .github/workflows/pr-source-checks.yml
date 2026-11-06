@@ -414,7 +414,7 @@ jobs:
           vp run --filter './playground' test:browser
       - name: Run VRT
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
-        env: { VIZE_PLAYWRIGHT_CASES: "${{ runner.temp }}/test-cases-playground-vrt-report.json" }
+        env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" }
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
@@ -427,11 +427,16 @@ jobs:
           VRT_OUTCOME: ${{ steps.vrt.outcome }}
         run: |
           packets=("$RUNNER_TEMP/test-cases-playground-browser.json")
-          if [[ "$RUN_VRT" == true && ( "$VRT_OUTCOME" == success || -s "$RUNNER_TEMP/test-cases-playground-vrt-report.json" ) ]]; then
-            node tools/support/compat/github/test-cases.ts playwright \
-              "$RUNNER_TEMP/test-cases-playground-vrt-report.json" \
-              "$RUNNER_TEMP/test-cases-playground-vrt.json"
-            packets+=("$RUNNER_TEMP/test-cases-playground-vrt.json")
+          vrt_report="playground/e2e/vrt/test-results/case-report.json"
+          if [[ "$RUN_VRT" == true ]]; then
+            if [[ -s "$vrt_report" ]]; then
+              node tools/support/compat/github/test-cases.ts playwright \
+                "$vrt_report" "$RUNNER_TEMP/test-cases-playground-vrt.json"
+              packets+=("$RUNNER_TEMP/test-cases-playground-vrt.json")
+            elif [[ "$VRT_OUTCOME" == success ]]; then
+              echo "::error::successful VRT produced no Playwright case receipt" >&2
+              exit 1
+            fi
           fi
           node tools/support/compat/github/test-cases.ts merge \
             "$RUNNER_TEMP/test-cases-playground.json" "${packets[@]}"

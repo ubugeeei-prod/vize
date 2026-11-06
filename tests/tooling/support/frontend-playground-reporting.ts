@@ -30,7 +30,7 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
   assert(vrtIndex >= 0 && previousVrt);
   assert.deepEqual(steps[vrtIndex], {
     ...previousVrt,
-    env: { VIZE_PLAYWRIGHT_CASES: "${{ runner.temp }}/test-cases-playground-vrt-report.json" },
+    env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" },
   });
   steps[vrtIndex] = structuredClone(previousVrt);
 
@@ -44,7 +44,8 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
     RUN_VRT: "${{ github.event_name == 'merge_group' }}",
     VRT_OUTCOME: "${{ steps.vrt.outcome }}",
   });
-  assert.match(String(collect?.run), /VRT_OUTCOME.*success.*-s/u);
+  assert.match(String(collect?.run), /playground\/e2e\/vrt\/test-results\/case-report\.json/u);
+  assert.match(String(collect?.run), /successful VRT produced no Playwright case receipt/u);
   assert.match(String(collect?.run), /test-cases\.ts playwright/);
   assert.match(String(collect?.run), /test-cases\.ts merge/);
   assert.deepEqual(upload, {
