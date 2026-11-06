@@ -40,14 +40,12 @@ O painel permanece como a região de referência principal; a área de configura
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/landmark-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/landmark-roles": "warn"
+    }
   },
 });
 ```

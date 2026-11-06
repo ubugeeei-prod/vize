@@ -45,14 +45,12 @@ description: "禁止在模板中直接写入应当国际化的用户可读文本
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-bare-strings-in-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-bare-strings-in-template": "warn"
+    }
   },
 });
 ```

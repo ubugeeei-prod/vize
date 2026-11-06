@@ -18,20 +18,20 @@ description: Use Vize in a Void app with @void/vue pages, workerd SSR and Void's
 npm install -D @vizejs/vite-plugin
 ```
 
-### 2. Add `vize()` to `vite.config.ts`
+### 2. Compose `vite.config.ts` with `withVue`
 
 ```ts
 import { voidVue } from "@void/vue/plugin";
-import { vize } from "@vizejs/vite-plugin";
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { voidPlugin } from "void";
-
 export default defineConfig({
-  plugins: [voidPlugin(), vize(), voidVue()],
-});
+  plugins: [voidPlugin(), voidVue()],
+}).withVue({});
 ```
 
-`voidVue()` ships its own `@vitejs/plugin-vue`. You do not need to remove it: `vize()` replaces it so that one compiler owns each SFC. If you set `exclude`, plugin-vue stays and compiles the files Vize skips.
+`voidVue()` ships its own `@vitejs/plugin-vue`. You do not need to remove it: `withVue` replaces the
+existing `vite:vue` plugin so that one compiler owns each SFC. If you set `exclude`, plugin-vue stays
+and compiles the files Vize skips.
 
 ### 3. Run Void as usual
 

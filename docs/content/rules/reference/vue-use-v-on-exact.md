@@ -54,14 +54,12 @@ The plain click handler can also run on Ctrl-click, overlapping the separate `.c
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/use-v-on-exact": "warn"
+    }
   },
 });
 ```

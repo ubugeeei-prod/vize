@@ -13,7 +13,7 @@ title: コンパイラ設定リファレンス
 
 ## コンパイラオプション
 
-以下は `defineConfig` の `compiler` に指定するオプションです。統合によっては、すべての項目を利用するわけではありません。
+以下は、直接 export する `defineConfig({ ... }).withVue({ ... })` の `compiler` に指定するオプションです。統合によっては、すべての項目を利用するわけではありません。
 
 | オプション          | 値                                                                  | 主な用途                                                                         |
 | ------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -38,18 +38,14 @@ title: コンパイラ設定リファレンス
 Vite プロジェクトでは、プラグインに直接指定したオプションが共通設定より優先されます。
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  compiler: {
+    vapor: true,
+    sourceMap: true,
+    customRenderer: true,
+    templateSyntax: "standard",
+  },
 });
 ```
 
@@ -89,7 +85,6 @@ export default defineConfig({}).withVue({
 });
 ```
 
-Vite プラグインには `vize({ whitespace: "vue2-preserve" })` と直接指定することもできます。
 Nuxt では `vize.compiler.whitespace` を使います。[Nuxt 2 からの移行](../integrations/nuxt.md#nuxt-2-からの移行)も参照してください。
 
 ## テンプレートの構文
@@ -109,13 +104,13 @@ Nuxt では `vize.compiler.whitespace` を使います。[Nuxt 2 からの移行
   standard は警告を出して空の要素に書き換え、strict はエラーにします。
   quirks は自己終了する葉ノードとして保持します。
 
-```text
+```vue
 <template>
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
@@ -176,7 +171,7 @@ const Classic = () => {
 各コンポーネントの出力先は個別に決まるため、**同じモジュール内で両方のバックエンドを使えます**。
 
 ```tsx
-// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;

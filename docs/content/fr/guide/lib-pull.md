@@ -21,7 +21,7 @@ Cela écrit la famille `rating` ainsi que tout ce qu'elle importe (`controllable
 
 Chaque tarball publié de `@vizejs/ui` et `@vizejs/composable` contient un registre versionné :
 
-```text
+```tree
 node_modules/@vizejs/ui/
   registry/
     registry.json          # éléments, fichiers, empreintes sha256, dépendances
@@ -79,14 +79,12 @@ Les fichiers copiés conservent la disposition du registre (`families/form/ratin
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    lib: {
-      uiDir: "src/ui/vendor",
-      composableDir: "src/composables/vendor",
-      // dir: "src/vendor",
-      // lockfile: "vize-lib.lock.json",
-    },
+export default defineConfig({}).withVue({
+  lib: {
+    uiDir: "src/ui/vendor",
+    composableDir: "src/composables/vendor",
+    // dir: "src/vendor",
+    // lockfile: "vize-lib.lock.json",
   },
 });
 ```

@@ -36,14 +36,12 @@ Put the item's key on the repeated real `li` child, as required by the Vue 2 con
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-for-template-key": "error"
+    }
   },
 });
 ```

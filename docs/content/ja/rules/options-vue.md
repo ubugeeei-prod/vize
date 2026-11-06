@@ -1,6 +1,7 @@
 ---
 title: Vue ルールのオプション
 ---
+
 <!-- Reviewed translation; source: rules/options-vue.md -->
 
 <span id="vue-rule-options"></span>
@@ -23,13 +24,11 @@ Vue のルールで、コンポーネント名の表記、props の変更範囲�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/html-quotes": "warn" },
-      ruleOptions: {
-        "vue/html-quotes": { style: "single", avoidEscape: true },
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/html-quotes": "warn" },
+    ruleOptions: {
+      "vue/html-quotes": { style: "single", avoidEscape: true },
     },
   },
 });
@@ -44,7 +43,7 @@ export default defineConfig({
 設定に沿った例：
 
 ```vue
-<div class='card' title="don't"></div>
+<div class="card" title="don't"></div>
 ```
 
 最初の値は `class='card'` に安全に修正しますが、`title="don't"` は変更しません。
@@ -60,12 +59,10 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/mustache-interpolation-spacing": "warn" },
-      ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/mustache-interpolation-spacing": "warn" },
+    ruleOptions: { "vue/mustache-interpolation-spacing": "never" },
   },
 });
 ```
@@ -138,19 +135,17 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/component-name-in-template-casing": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/component-name-in-template-casing": "warn",
+    },
+    ruleOptions: {
+      "vue/component-name-in-template-casing": {
+        casing: "kebab-case",
       },
-      "ruleOptions": {
-        "vue/component-name-in-template-casing": {
-          "casing": "kebab-case"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -187,19 +182,17 @@ import PrimaryButton from "./PrimaryButton.vue";
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/no-mutating-props": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/no-mutating-props": "error",
+    },
+    ruleOptions: {
+      "vue/no-mutating-props": {
+        shallowOnly: true,
       },
-      "ruleOptions": {
-        "vue/no-mutating-props": {
-          "shallowOnly": true
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -236,25 +229,17 @@ SFC ブロックの並び順を統一するためのオプションです。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/sfc-element-order": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/sfc-element-order": "warn",
+    },
+    ruleOptions: {
+      "vue/sfc-element-order": {
+        order: ["template", "script:not([setup])", "script[setup]", "i18n", "style"],
       },
-      "ruleOptions": {
-        "vue/sfc-element-order": {
-          "order": [
-            "template",
-            "script:not([setup])",
-            "script[setup]",
-            "i18n",
-            "style"
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -285,25 +270,23 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/html-self-closing": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/html-self-closing": "warn",
+    },
+    ruleOptions: {
+      "vue/html-self-closing": {
+        html: {
+          void: "always",
+          normal: "never",
+          component: "always",
+        },
+        svg: "always",
+        math: "always",
       },
-      "ruleOptions": {
-        "vue/html-self-closing": {
-          "html": {
-            "void": "always",
-            "normal": "never",
-            "component": "always"
-          },
-          "svg": "always",
-          "math": "always"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -339,17 +322,15 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-on-event-hyphenation": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-on-event-hyphenation": { "style": "always", "ignore": ["update:"] }
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-on-event-hyphenation": "warn",
+    },
+    ruleOptions: {
+      "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"] },
+    },
+  },
 });
 ```
 
@@ -382,17 +363,15 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-bind-style": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-bind-style": "longform"
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-bind-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-bind-style": "longform",
+    },
+  },
 });
 ```
 
@@ -420,17 +399,15 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-on-style": "warn"
-      },
-      "ruleOptions": {
-        "vue/v-on-style": "longform"
-      }
-    }
-  }
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-on-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-on-style": "longform",
+    },
+  },
 });
 ```
 
@@ -459,21 +436,19 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/v-slot-style": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/v-slot-style": "warn",
+    },
+    ruleOptions: {
+      "vue/v-slot-style": {
+        atComponent: "longform",
+        default: "v-slot",
+        named: "longform",
       },
-      "ruleOptions": {
-        "vue/v-slot-style": {
-          "atComponent": "longform",
-          "default": "v-slot",
-          "named": "longform"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 

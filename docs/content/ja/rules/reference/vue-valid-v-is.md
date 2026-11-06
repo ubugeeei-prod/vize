@@ -41,14 +41,12 @@ v-is の適用先・引数・値を検査します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-is": "error"
+    }
   },
 });
 ```

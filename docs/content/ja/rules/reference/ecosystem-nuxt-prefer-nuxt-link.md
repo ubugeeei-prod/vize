@@ -38,14 +38,12 @@ Nuxt の内部ページへの移動に通常の a を使っています。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/nuxt-prefer-nuxt-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/nuxt-prefer-nuxt-link": "warn"
+    }
   },
 });
 ```

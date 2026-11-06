@@ -38,14 +38,12 @@ Le `h2` apporte un niveau de titre, mais ne contient aucun texte de titre.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-has-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/heading-has-content": "warn"
+    }
   },
 });
 ```

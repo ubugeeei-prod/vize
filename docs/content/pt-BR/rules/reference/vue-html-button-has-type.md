@@ -42,14 +42,12 @@ Os botões especificam button, submit ou reset; um type vinculado é tratado com
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-button-has-type": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-button-has-type": "warn"
+    }
   },
 });
 ```

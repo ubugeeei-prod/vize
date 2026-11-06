@@ -126,7 +126,16 @@ void test("applyNavigationOrder files former More pages under the task they belo
     ["/guide/lint-execution", "Native lint execution settings"],
     ["/guide/formatter-indent-width", "Indentation width"],
     ["/rules/options", "Rule Options"],
+    ["/rules/vue", "Vue rules"],
     ["/rules/options-vue", "Vue Rule Options"],
+    ["/rules/options-events", "Event Rule Options"],
+    ["/rules/options-attributes", "Attribute Rule Options"],
+    ["/rules/options-props", "Prop Rule Options"],
+    ["/rules/type-and-script", "Type and script rules"],
+    ["/rules/options-script", "Script Rule Options"],
+    ["/rules/options-type", "Type Rule Options"],
+    ["/rules/musea-and-css", "Musea and CSS rules"],
+    ["/rules/options-musea", "Musea Rule Options"],
     ["/guide/musea-hosting", "Musea Hosting"],
     ["/integrations/mcp", "MCP Server"],
     ["/guide/doctor", "Doctor Diagnostics"],
@@ -150,8 +159,25 @@ void test("applyNavigationOrder files former More pages under the task they belo
     { title: "Compiler and integrations", labels: ["Compiler inspector"] },
     { title: "Components", labels: ["Musea hosting", "MCP server"] },
     { title: "CLI and tools", labels: ["Doctor"] },
-    { title: "Rule reference", labels: ["Overview", "Vue"] },
-    { title: "Rule options", labels: ["Overview", "Vue"] },
+    {
+      title: "Rule reference",
+      labels: [
+        "Rule options",
+        "Overview",
+        "Vue",
+        "Events",
+        "Attributes",
+        "Props",
+        "Overview",
+        "Script",
+        "Type",
+        "Overview",
+        "Musea",
+      ],
+    },
+    { title: "Vue", labels: ["Overview", "Vue", "Events", "Attributes", "Props"] },
+    { title: "Type & script", labels: ["Overview", "Script", "Type"] },
+    { title: "Musea & CSS", labels: ["Overview", "Musea"] },
     { title: "Project and architecture", labels: ["Contributing"] },
   ]);
 });
@@ -238,6 +264,7 @@ void test("applyNavigationOrder points English links at the reader's locale and 
     ["/getting-started", "Getting Started"],
     ["/guide/static-analysis", "Static Analysis"],
     ["/rules/options", "Rule Options"],
+    ["/rules/vue", "Vue rules"],
     ["/rules/options-vue", "Vue Rule Options"],
     ["/guide/doctor", "Doctor"],
   ]);
@@ -254,8 +281,8 @@ void test("applyNavigationOrder points English links at the reader's locale and 
       labels: ["静的解析"],
     },
     { title: "CLI とツール", labels: ["Doctor"] },
-    { title: "ルールリファレンス", labels: ["概要", "Vue"] },
-    { title: "ルールのオプション", labels: ["概要", "Vue"] },
+    { title: "ルールリファレンス", labels: ["ルールのオプション", "概要", "Vue"] },
+    { title: "Vue", labels: ["概要", "Vue"] },
   ]);
   assert.deepEqual(
     document
@@ -266,6 +293,7 @@ void test("applyNavigationOrder points English links at the reader's locale and 
       ["/ja/guide/static-analysis", "nav-link active"],
       ["/ja/guide/doctor", "nav-link"],
       ["/ja/rules/options", "nav-link"],
+      ["/ja/rules/vue", "nav-link"],
       ["/ja/rules/options-vue", "nav-link"],
     ],
   );

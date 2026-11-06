@@ -42,14 +42,12 @@ L’écouteur du composant personnalisé utilise `@myEvent` au lieu d’un nom d
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-event-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-event-hyphenation": "warn"
+    }
   },
 });
 ```

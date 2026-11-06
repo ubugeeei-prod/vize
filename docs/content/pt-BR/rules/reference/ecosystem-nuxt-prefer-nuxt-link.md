@@ -38,14 +38,12 @@ NuxtLink trata o mesmo destino interno por meio do roteador do Nuxt.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/nuxt-prefer-nuxt-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/nuxt-prefer-nuxt-link": "warn"
+    }
   },
 });
 ```

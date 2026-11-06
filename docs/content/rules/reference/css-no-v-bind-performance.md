@@ -40,14 +40,12 @@ The element receives the changing transform directly through its style binding.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-v-bind-performance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-v-bind-performance": "warn"
+    }
   },
 });
 ```

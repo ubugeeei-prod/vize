@@ -43,14 +43,12 @@ p はインラインの内容、table は tbody、ul は li を使います。�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/permitted-contents": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/permitted-contents": "error"
+    }
   },
 });
 ```

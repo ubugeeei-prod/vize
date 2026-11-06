@@ -83,7 +83,7 @@ existentes do Vue.
 
 ### O que a extensão usa
 
-```text
+```diagram
 VS Code
   ↕ Language Server Protocol
 vize lsp (vize_maestro)

@@ -55,7 +55,7 @@ const node = toRef(props, "node");
 
 Vize reports the missing module and the read:
 
-```text
+```diagnostic
 src/NodePanel.vue
   error:3:30 [TS2307] Cannot find module 'missing-run-data' or its corresponding type declarations.
   error:16:18 [TS2339] Property 'label' does not exist on type 'PanelNode'.
@@ -63,7 +63,7 @@ src/NodePanel.vue
 
 vue-tsc reports only the missing module:
 
-```text
+```diagnostic
 src/NodePanel.vue(3,30): error TS2307: Cannot find module 'missing-run-data' or its corresponding type declarations.
 ```
 
@@ -92,7 +92,7 @@ function beforeEnter(el: HTMLElement) {
 </template>
 ```
 
-```text
+```diagnostic
 src/Accordion.vue
   error:8:41 [TS2345] Argument of type '(el: HTMLElement) => void' is not assignable to parameter of type '(_e: Event) => unknown'.
     Types of parameters 'el' and '_e' are incompatible.
@@ -156,7 +156,7 @@ import EmptyState from "./EmptyState.vue";
 </template>
 ```
 
-```text
+```diagnostic
 src/Panel.vue
   error:7:16 [TS2339] Property 'description' does not exist on type 'Partial<$Slots>'.
 ```
@@ -180,13 +180,12 @@ same files.
 Hovering a component tag shows the component's authored props, emits, slots and model:
 
 ```typescript
-const ShortComponent: VueComponent &
-{
+const ShortComponent: VueComponent & {
   props: { label: string; count?: number };
   emits: { save: [value: string] };
   slots: { default(props: { value: string }): unknown };
-  model: { "modelValue": boolean };
-}
+  model: { modelValue: boolean };
+};
 ```
 
 Long components put one member per line. The same holds through `defineAsyncComponent` and

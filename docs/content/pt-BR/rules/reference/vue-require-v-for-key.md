@@ -38,14 +38,12 @@ Cada `<li>` repetido não tem uma chave que identifique seu item correspondente 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-v-for-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-v-for-key": "error"
+    }
   },
 });
 ```

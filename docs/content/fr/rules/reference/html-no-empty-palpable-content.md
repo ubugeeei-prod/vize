@@ -42,14 +42,12 @@ Du texte remplit le paragraphe, une interpolation fournit le contenu de l’él�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-empty-palpable-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-empty-palpable-content": "warn"
+    }
   },
 });
 ```

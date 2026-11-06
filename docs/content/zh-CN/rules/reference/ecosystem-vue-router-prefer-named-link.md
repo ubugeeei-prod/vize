@@ -38,14 +38,12 @@ RouterLink 的目标是路径字面量，而不是具名路由。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-router-prefer-named-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-router-prefer-named-link": "warn"
+    }
   },
 });
 ```

@@ -44,14 +44,12 @@ LegacyCard 为子标记使用 inline-template 属性。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-inline-template": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/no-inline-template": "error"
+    }
   },
 });
 ```

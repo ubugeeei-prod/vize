@@ -40,14 +40,12 @@ Remplacer le titre de facturation par `h2` conserve une hiérarchie de titres co
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-levels": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/heading-levels": "warn"
+    }
   },
 });
 ```

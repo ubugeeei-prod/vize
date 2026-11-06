@@ -38,14 +38,12 @@ Un paragraphe affiche la même offre sans l’élément marquee distrayant.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-distracting-elements": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-distracting-elements": "warn"
+    }
   },
 });
 ```

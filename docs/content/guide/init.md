@@ -14,14 +14,14 @@ vpx vize init
 
 It configures five things, each of which you can take or leave:
 
-| Feature          | What it wires up                                                   |
-| ---------------- | ------------------------------------------------------------------ |
-| oxlint plugin    | `oxlint-plugin-vize`, in the file your lint command actually reads |
-| vite plugin      | `@vizejs/vite-plugin` in `vite.config.*`                           |
-| nuxt module      | `@vizejs/nuxt` in `nuxt.config.*`                                  |
-| fmt              | project settings and formatter defaults, plus `vize:fmt` scripts |
+| Feature          | What it wires up                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| oxlint plugin    | `oxlint-plugin-vize`, in the file your lint command actually reads                           |
+| vite plugin      | `@vizejs/vite-plugin` in `vite.config.*`                                                     |
+| nuxt module      | `@vizejs/nuxt` in `nuxt.config.*`                                                            |
+| fmt              | project settings and formatter defaults, plus `vize:fmt` scripts                             |
 | typecheck        | the existing TypeScript project, or a new scaffold when missing, and the `vize:check` script |
-| editor extension | a `.vscode/extensions.json` recommendation                         |
+| editor extension | a `.vscode/extensions.json` recommendation                                                   |
 
 The vite plugin and the nuxt module are the same choice: `init` detects which one your project needs.
 
@@ -34,7 +34,7 @@ release availability of this setup behavior.
 Detection runs first and is printed before you are asked anything, so you can catch a wrong
 directory or a missing lockfile before any file is touched:
 
-```
+```console
 [vize init] detected in /path/to/project:
   framework:       Vite+ (vite.config.ts)
   package manager: pnpm
@@ -48,9 +48,9 @@ directory or a missing lockfile before any file is touched:
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Framework       | `nuxt.config.{ts,mts,js,mjs}` or a `nuxt` dependency means Nuxt; otherwise a `vite.config.*` means Vite; otherwise neither                                       |
 | Both present    | Nuxt wins — a Nuxt project owns its own Vite instance, so the module is the supported integration point. Override with `--vite`.                                 |
-| Neither present | The bundler feature is offered as unavailable; the other four remain choices. `init` does not invent a build setup for you.                                    |
+| Neither present | The bundler feature is offered as unavailable; the other four remain choices. `init` does not invent a build setup for you.                                      |
 | Package manager | The lockfile first (`pnpm-lock.yaml`, `bun.lockb`/`bun.lock`, `yarn.lock`, `package-lock.json`), then the `packageManager` field. A Vite+ project uses `vp add`. |
-| Language        | `tsconfig.json` or a `typescript` dependency identifies TypeScript. Selecting typecheck creates `tsconfig.json` when absent.                                |
+| Language        | `tsconfig.json` or a `typescript` dependency identifies TypeScript. Selecting typecheck creates `tsconfig.json` when absent.                                     |
 | Lint command    | `vp lint` when Vite+ is in use, otherwise the `oxlint` binary. **This decides which file the Oxlint configuration goes in.**                                     |
 | Already done    | An existing Vize config, an existing Oxlint config, an existing `lint` block, plugins already wired, and installed dependencies                                  |
 
@@ -70,22 +70,20 @@ picture.
 
 `init` therefore writes the file your lint command reads, not the one that is easiest to write:
 
-| Your project                                    | What `init` writes                                                       |
-| ----------------------------------------------- | ------------------------------------------------------------------------ |
-| uses Vite+                                      | the `lint` block in `vite.config.*`, built with `createVizeLintConfig()` |
-| does not use Vite+                              | `oxlint.config.ts` when no readable config exists; otherwise preserves the existing config |
+| Your project                                    | What `init` writes                                                                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| uses Vite+                                      | the `lint` block in `vite.config.*`, built with `createVizeLintConfig()`                                               |
+| does not use Vite+                              | `oxlint.config.ts` when no readable config exists; otherwise preserves the existing config                             |
 | uses Vite+ **and** runs `oxlint` directly       | both entry points; newly generated settings use the same preset, while an existing readable Oxlint config is preserved |
-| uses Vite+ but its Vite config cannot be edited | no lint config edit — see [When Init Refuses To Edit](#when-init-refuses-to-edit) |
+| uses Vite+ but its Vite config cannot be edited | no lint config edit — see [When Init Refuses To Edit](#when-init-refuses-to-edit)                                      |
 
 The `lint` block is emitted through `createVizeLintConfig()`, which returns a complete block so the
 `jsPlugins` entry that loads the bridge cannot go missing. The example focuses on the lint block;
 retain the imports your existing plugins need:
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { createVizeLintConfig } from "oxlint-plugin-vize";
-
 export default defineConfig({
   lint: createVizeLintConfig({
     preset: "happy-path",
@@ -93,8 +91,7 @@ export default defineConfig({
       helpLevel: "short",
     },
   }),
-  plugins: [vize()],
-});
+}).withVue({});
 ```
 
 For a project without Vite+, the equivalent `oxlint.config.ts`:
@@ -142,7 +139,7 @@ keep their detected defaults; use the negative flags below to exclude features y
 | `--nuxt`                         | Force the Nuxt module                               |
 | `--bundler` / `--no-bundler`     | The vite plugin or nuxt module, auto-detected       |
 | `--fmt` / `--no-fmt`             | `vize fmt`                                          |
-| `--typecheck` / `--no-typecheck` | `vize check`; creates `tsconfig.json` when absent  |
+| `--typecheck` / `--no-typecheck` | `vize check`; creates `tsconfig.json` when absent   |
 | `--editor` / `--no-editor`       | The `.vscode/extensions.json` recommendation        |
 | `--dry-run`                      | Print the full plan and write nothing               |
 | `--no-install`                   | Write configuration without installing dependencies |
@@ -153,7 +150,7 @@ installation. It still prompts unless automatic confirmation is enabled. For a n
 run `vpx vize init --yes --dry-run`. The example below uses an existing TypeScript configuration
 in a Vite+ project:
 
-```
+```console
 [vize init] plan:
   lint      configured Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json; writes vite.config.ts
   bundler   configured adds vize() to vite.config.ts
@@ -173,7 +170,7 @@ in a Vite+ project:
 running again with the same selection and installation options adds no duplicate plugin entry,
 script, or dependency and leaves every file byte-identical:
 
-```
+```console
 [vize init] plan:
   lint      unchanged  Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json
   bundler   unchanged  vite.config.ts already uses @vizejs/vite-plugin
@@ -201,7 +198,7 @@ This matters most when adopting Vize lint support in a Vite+ project. If the con
 automatically, because merging risks dropping settings. Existing Vize integration remains
 unchanged. The following example shows the initial-adoption refusal:
 
-```
+```console
 [vize init] lint: NOT configured — vp lint reads the `lint` block in the Vite config, but
 vite.config.ts already has a `lint` block and merging into it would risk dropping settings, so
 spread createVizeLintConfig() into it by hand
@@ -243,14 +240,14 @@ config edit. Check each feature's result rather than assuming the entire run cha
 This is checked in, applies to everyone on the project, and changes nothing on the machine that ran
 `init`. Vize also ships integrations for editors other than VS Code, which `init` lists on success:
 
-| Editor  | Integration        |
-| ------- | ------------------ |
-| VS Code | `ubugeeei.vize`    |
-| Zed     | `editors/zed`      |
-| Neovim  | `editors/nvim`     |
-| Vim     | `editors/vim`      |
-| Helix   | `editors/helix`    |
-| Emacs   | `editors/emacs`    |
+| Editor  | Integration     |
+| ------- | --------------- |
+| VS Code | `ubugeeei.vize` |
+| Zed     | `editors/zed`   |
+| Neovim  | `editors/nvim`  |
+| Vim     | `editors/vim`   |
+| Helix   | `editors/helix` |
+| Emacs   | `editors/emacs` |
 
 See [VS Code and Other Editors](../integrations/vscode.md) for per-editor instructions.
 

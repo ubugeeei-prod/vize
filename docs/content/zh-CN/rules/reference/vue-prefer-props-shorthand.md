@@ -45,14 +45,12 @@ Vue 3.4+ 的同名绑定简写省略了重复表达式；bar 等不同的来源�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-props-shorthand": "warn"
+    }
   },
 });
 ```

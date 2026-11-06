@@ -42,14 +42,12 @@ Text fills the paragraph, interpolation supplies the list item, and aria-label e
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-empty-palpable-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-empty-palpable-content": "warn"
+    }
   },
 });
 ```

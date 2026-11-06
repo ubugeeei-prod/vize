@@ -31,13 +31,8 @@ drapeau d’adhésion pour les compiler. Tout projet utilisant déjà une intég
 - `@vizejs/nuxt`
 
 ```ts
-// vite.config.ts — nothing JSX-specific is required
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 Sous le capot, les plugins appellent le point d’entrée natif/WASM `compileJsx` (exposé à partir de
@@ -225,7 +220,7 @@ const Classic = () => {
 Comme chaque composant est routé indépendamment, un **seul fichier peut mélanger les deux backends** :
 
 ```tsx
-// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;

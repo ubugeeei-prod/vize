@@ -17,7 +17,7 @@ vp install -D @vizejs/vite-plugin
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 既存の Vue プラグインの import と `vue()` を削除します。
@@ -30,7 +30,7 @@ CLI、エディタ、統合タスクは `vite.config.*` と `tsconfig.json` を�
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
 
-const config = defineConfig({
+export default defineConfig({
   server: { port: 3000 },
   lint: {
     rules: { "no-debugger": "error" },
@@ -38,14 +38,10 @@ const config = defineConfig({
   },
   fmt: { ignorePatterns: ["dist/**"] },
 }).withVue({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: { "no-console": "warn" },
-    },
-  ),
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: { "no-console": "warn" },
+  }),
   fmt: { singleQuote: true },
   entries: [
     {
@@ -54,8 +50,6 @@ const config = defineConfig({
     },
   ],
 });
-
-export default config;
 ```
 
 ルートのオブジェクトは Vue 固有の項目を含まない通常の Vite+ 設定として保ちます。
@@ -78,38 +72,41 @@ TypeScript の設定は既存の `tsconfig.json` を使います。
 }
 ```
 
-### 既存の設定を組み合わせる
+### 既存の設定を拡張する
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./vite.base.ts";
-import vueConfig from "./vue.settings.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  formatter: { singleQuote: true },
+});
 ```
 
-通常の JavaScript オブジェクトを import して共有してください。オブジェクト、Promise、関数、
-async 関数を渡せます。既存のプラグインやフックを保持し、Vue のプラグインを一度だけ組み込みます。
+ルートの Vite+ 設定は `defineConfig` に書き、Vue 設定は続く `withVue` に直接渡します。
+オブジェクト、Promise、関数、async 関数を渡せます。既存のプラグインやフックを保持し、Vue のプラグインを一度だけ組み込みます。
 独自の設定 `extends`、専用の `vize.config.*`、トップレベルの `vize:` は廃止しました。
 TypeScript 標準の `extends`・`references` は引き続き使えます。
 
-単独の `withVue(vueConfig, vpConfig)` も使えますが、引数の順序が異なるため `defineConfig` の別名ではありません。
-`withVize` は従来の config-first helper の互換名です。新しい設定には fluent API を使ってください。
+単独の `withVue` helper と `withVize` 互換名も使えますが、新しい設定では上記の
+`defineConfig({ ... }).withVue({ ... })` を直接 export してください。
 
 <span id="tasks"></span>
 
 ## 実行するタスク
 
-| コマンド | 実行するもの |
-| --- | --- |
-| `vp dev`, `vp build` | Vize で Vue をコンパイル |
-| `vp run check` | 同梱チェッカー、lint、フォーマット検査 |
-| `vp run typecheck` | 同梱チェッカーのみ |
-| `vp run lint` | Vize と Oxlint の lint |
-| `vp run lint:fix` | 両方の lint 修正 |
-| `vp run fmt` | Vue は Vize、その他は Oxfmt で書き込み |
-| `vp run fmt:check` | 書き込まずフォーマットを検査 |
-| `vp run editor:setup` | 推奨拡張機能と Vue エディター設定 |
+| コマンド              | 実行するもの                           |
+| --------------------- | -------------------------------------- |
+| `vp dev`, `vp build`  | Vize で Vue をコンパイル               |
+| `vp run check`        | 同梱チェッカー、lint、フォーマット検査 |
+| `vp run typecheck`    | 同梱チェッカーのみ                     |
+| `vp run lint`         | Vize と Oxlint の lint                 |
+| `vp run lint:fix`     | 両方の lint 修正                       |
+| `vp run fmt`          | Vue は Vize、その他は Oxfmt で書き込み |
+| `vp run fmt:check`    | 書き込まずフォーマットを検査           |
+| `vp run editor:setup` | 推奨拡張機能と Vue エディター設定      |
 
 推奨の型チェックは [Content Mapper](./content-mapper.md) です。TypeScript 7.1 は `tsc --runExternalCode --noEmit` を実行します。tsrs は同じ `tsconfig` の drop-in で、`tsrs --runExternalCode --noEmit` です。`vp run typecheck` は同梱チェッカーで、`vp run check` はそれを含みます。
 
@@ -126,7 +123,8 @@ TypeScript 標準の `extends`・`references` は引き続き使えます。
 生成タスクの名前変更や無効化は、第2引数で設定します。
 
 ```ts
-export default defineConfig({}, { tasks: { check: "verify", preview: false } });
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}, { tasks: { check: "verify", preview: false } }).withVue({});
 ```
 
 `tasks: false` ですべての生成タスクを無効化できます。
@@ -135,7 +133,8 @@ export default defineConfig({}, { tasks: { check: "verify", preview: false } });
 第2引数の `taskCache: true` で Vite+ のキャッシュを有効にできます。
 
 ```ts
-export default defineConfig({}, { taskCache: true });
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}, { taskCache: true }).withVue({});
 ```
 
 Vite+ がソース、設定の import、依存関係、ディレクトリ内のファイルを自動追跡します。
@@ -163,6 +162,7 @@ Vize は Vue ファイル、Oxfmt はその他のファイルをフォーマッ�
 ## ライブラリの型宣言とマップ
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   pack: {
     entry: ["src/index.ts"],
@@ -174,7 +174,7 @@ export default defineConfig({
       sourcemap: true,
     },
   },
-});
+}).withVue({});
 ```
 
 Vue ライブラリのバンドルには Vize の Rolldown 連携を使います。`pack.vue` を指定すると、ネイティブの型宣言生成が

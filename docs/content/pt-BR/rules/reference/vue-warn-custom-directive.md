@@ -42,14 +42,12 @@ O exemplo usa as diretivas nativas `v-if`, `v-model` e `v-on`. Uma diretiva pers
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/warn-custom-directive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/warn-custom-directive": "warn"
+    }
   },
 });
 ```

@@ -36,14 +36,12 @@ Placez la key de l'élément sur l'enfant réel `li` répété, conformément à
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-for-template-key": "error"
+    }
   },
 });
 ```

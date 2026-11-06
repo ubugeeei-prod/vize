@@ -22,13 +22,11 @@ be reported. An unchanged edit leaves file bytes untouched.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/v-on-event-hyphenation": "warn" },
-      ruleOptions: {
-        "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"], autofix: true },
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/v-on-event-hyphenation": "warn" },
+    ruleOptions: {
+      "vue/v-on-event-hyphenation": { style: "always", ignore: ["update:"], autofix: true },
     },
   },
 });

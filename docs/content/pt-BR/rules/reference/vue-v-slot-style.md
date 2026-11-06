@@ -44,14 +44,12 @@ Use `v-slot` para o slot padrão do componente e `#header` para o slot nomeado d
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-slot-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-slot-style": "warn"
+    }
   },
 });
 ```

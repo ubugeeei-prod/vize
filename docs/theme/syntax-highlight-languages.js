@@ -210,6 +210,92 @@ const vizeDocsSyntaxLanguages = ({
     return result;
   }
 
+  function highlightDiagnostic(source, store) {
+    let result = source;
+
+    result = replaceWithClass(
+      result,
+      /\b(?:error|warning|warn|help|note|Reference)(?=\s*:|\[)/gi,
+      "v-code__keyword",
+      store,
+    );
+    result = replaceWithClass(
+      result,
+      /\[(?:vize:[\w/-]+|TS\d+)\]|\b(?:TS|E)\d{4}\b/g,
+      "v-code__type",
+      store,
+    );
+    result = replaceWithClass(
+      result,
+      /(?:[A-Za-z0-9_.-]+\/)*[A-Za-z0-9_.-]+\.(?:art\.vue|vue|tsx?|jsx?|json|rs)(?::\d+(?::\d+)?)?/g,
+      "v-code__string",
+      store,
+    );
+    result = replaceWithClass(result, /[×✗⚠✓]/g, "v-code__keyword", store);
+    result = replaceWithClass(result, /[╭╰─│·^]+/g, "v-code__delimiter", store);
+    result = highlightNumbers(result, store);
+
+    return result;
+  }
+
+  function highlightConsole(source, store) {
+    let result = source;
+
+    result = replaceWithClass(
+      result,
+      /\b(?:ERROR|FAILED|NOT configured|WARN(?:ING)?|error|failed|warning)\b/gi,
+      "v-code__keyword",
+      store,
+    );
+    result = replaceWithClass(
+      result,
+      /\b(?:OK|PASS|Passed|Verified|configured|unchanged|success)\b/gi,
+      "v-code__string",
+      store,
+    );
+    result = replaceWithClass(result, /https?:\/\/[^\s]+/g, "v-code__type", store);
+    result = replaceWithClass(
+      result,
+      /(?:^|\s)(?:\.?\.?\/)?[\w@.-]+(?:\/[\w@.+-]+)+/gm,
+      "v-code__property",
+      store,
+    );
+    result = replaceWithClass(result, /\[[^\]\n]+\]/g, "v-code__section", store);
+    result = highlightNumbers(result, store);
+
+    return result;
+  }
+
+  function highlightDiagram(source, store) {
+    let result = source;
+
+    result = replaceWithClass(result, /[↕→↓↑←─│+]+/g, "v-code__delimiter", store);
+    result = replaceWithClass(
+      result,
+      /\b(?:Language Server Protocol|LSP|MCP|JSON-RPC|stdio|parser|compiler|formatter|linter|type checker)\b/gi,
+      "v-code__type",
+      store,
+    );
+    result = replaceWithClass(result, /@[\w/-]+|\bvize(?: lsp)?\b/gi, "v-code__function", store);
+
+    return result;
+  }
+
+  function highlightTree(source, store) {
+    let result = source;
+
+    result = replaceWithClass(result, /[├└│─]+|\+--|\|--/g, "v-code__delimiter", store);
+    result = replaceWithClass(
+      result,
+      /(?:^|\s)(?:\.?\.?\/)?[\w@.-]+(?:\/[\w@.+-]+)*\/?(?=\s|$)/gm,
+      "v-code__property",
+      store,
+    );
+    result = replaceWithClass(result, /#[^\n]*$/gm, "v-code__comment", store);
+
+    return result;
+  }
+
   return {
     highlightJson,
     highlightShell,
@@ -217,6 +303,10 @@ const vizeDocsSyntaxLanguages = ({
     highlightRust,
     highlightLua,
     highlightNix,
+    highlightDiagnostic,
+    highlightConsole,
+    highlightDiagram,
+    highlightTree,
   };
 };
 

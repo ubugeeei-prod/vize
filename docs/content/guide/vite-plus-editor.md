@@ -55,10 +55,8 @@ for native rules. Vue formatting is selected with the language-specific
 
 ## Native editor configuration
 
-The native language server reads `vue:` from `vite.config.*` and the project’s
-`tsconfig.json`. With Vite+, share native settings through
-`defineConfig(vpConfig).withVue(vueConfig)` while preserving the existing Vite+
-configuration:
+The native language server reads settings from `vite.config.*` and the project’s
+`tsconfig.json`. Export the direct `defineConfig({ ... }).withVue({ ... })` chain:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

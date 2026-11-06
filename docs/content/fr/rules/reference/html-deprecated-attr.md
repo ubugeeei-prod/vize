@@ -37,14 +37,12 @@ La classe et la déclaration `text-align: center` expriment l’alignement au mo
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-attr": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/deprecated-attr": "warn"
+    }
   },
 });
 ```

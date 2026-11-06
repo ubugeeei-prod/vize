@@ -43,14 +43,12 @@ Use `message`, `className` e `handleClick` diretamente. A string literal `'this.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/this-in-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/this-in-template": "warn"
+    }
   },
 });
 ```

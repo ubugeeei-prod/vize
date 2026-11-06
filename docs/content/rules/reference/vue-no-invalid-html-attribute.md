@@ -38,14 +38,12 @@ The anchor uses help, a rel value appropriate for a linked help resource.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-invalid-html-attribute": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-invalid-html-attribute": "warn"
+    }
   },
 });
 ```

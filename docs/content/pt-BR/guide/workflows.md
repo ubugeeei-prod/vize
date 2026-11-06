@@ -42,28 +42,28 @@ desenvolvedores possam isolar falhas de formatação, lint, verificação de tip
 
 ## Configurar uma vez
 
-Para alterar os valores padrão, adicione as opções nativas a `vue:` no `vite.config.*` existente. O [guia de configuração](./configuration.md) descreve a descoberta e a migração.
+Para alterar os valores padrão, passe as opções nativas diretamente para `withVue` em `vite.config.*`. O [guia de configuração](./configuration.md) descreve a descoberta e a migração.
 
 ```ts
 // vite.config.ts
-export default {
-  vue: {
-    formatter: {
-      printWidth: 100,
-    },
-    linter: {
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-      tsconfig: "tsconfig.json",
-    },
-    vite: {
-      scanPatterns: ["src/**/*.vue"],
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
   },
-};
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
 ```
 
 Veja [Configuração](./configuration.md) para escopos em monorepos, opções do compilador e resolução de tipos Vue.

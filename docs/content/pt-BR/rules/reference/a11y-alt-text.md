@@ -38,14 +38,12 @@ O controle de envio com imagem fornece apenas a URL da imagem; ele não tem text
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/alt-text": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/alt-text": "warn"
+    }
   },
 });
 ```

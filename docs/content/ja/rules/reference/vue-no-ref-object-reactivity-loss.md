@@ -44,14 +44,12 @@ const snapshot = computed(() => count.value);
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-ref-object-reactivity-loss": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-ref-object-reactivity-loss": "warn"
+    }
   },
 });
 ```

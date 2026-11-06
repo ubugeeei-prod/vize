@@ -46,14 +46,12 @@ description: "イベント名を context:event の形式に揃えます。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/scoped-event-names": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/scoped-event-names": "warn"
+    }
   },
 });
 ```

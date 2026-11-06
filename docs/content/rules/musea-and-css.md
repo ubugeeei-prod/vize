@@ -28,7 +28,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 
 ## Opt-in (6)
 
-Not in any preset. Turn them on by name in `vue.linter.rules`.
+Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.
 
 | Rule | What it checks | Auto-fix |
 | --- | --- | --- |

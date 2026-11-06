@@ -38,14 +38,12 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-unsupported-elements": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-unsupported-elements": "error"
+    }
   },
 });
 ```

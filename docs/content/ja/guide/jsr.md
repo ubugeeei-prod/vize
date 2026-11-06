@@ -9,12 +9,12 @@ description: Node・Deno・Bun で公開済みの JSR パッケージを使い�
 
 [`@vizejs/vize`](https://jsr.io/@vizejs/vize) は Vize の JavaScript API を提供します。各エントリーポイントは、同じ Vize バージョンの npm パッケージを再エクスポートします。コンパイラが使うネイティブバイナリは npm から取得します。
 
-| import | API | npm パッケージ |
-| --- | --- | --- |
-| `@vizejs/vize` | `defineConfig` と設定の型 | `vize` |
-| `@vizejs/vize/config` | 設定の読み込みと正規化 | `vize/config` |
-| `@vizejs/vize/native` | コンパイラ・linter・formatter・解析 API | `@vizejs/native` |
-| `@vizejs/vize/vite` | Vite プラグインとオプション | `@vizejs/vite-plugin` |
+| import                | API                                     | npm パッケージ        |
+| --------------------- | --------------------------------------- | --------------------- |
+| `@vizejs/vize`        | `defineConfig` と設定の型               | `vize`                |
+| `@vizejs/vize/config` | 設定の読み込みと正規化                  | `vize/config`         |
+| `@vizejs/vize/native` | コンパイラ・linter・formatter・解析 API | `@vizejs/native`      |
+| `@vizejs/vize/vite`   | Vite プラグインとオプション             | `@vizejs/vite-plugin` |
 
 ## Node.js と Bun
 
@@ -63,7 +63,7 @@ deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0
 
 成功時の出力:
 
-```text
+```console
 Verified jsr:@vizejs/vize@0.457.0 (no flags)
 ```
 

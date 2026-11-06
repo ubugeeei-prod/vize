@@ -40,14 +40,12 @@ A `track` with `kind="captions"` supplies the English captions for the same vide
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/media-has-caption": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/media-has-caption": "warn"
+    }
   },
 });
 ```

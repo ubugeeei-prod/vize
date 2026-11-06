@@ -102,7 +102,7 @@ em tempo de execução. Passar `false` sempre trata esse valor como filho bruto 
 `jsxMode: "vapor"`, portanto, não tem um significado definido, e é rejeitado com um diagnóstico em vez de
 silenciosamente ignorado:
 
-```text
+```console
 compiler.jsxCompat: "babel" is not supported with Vapor output: @vue/babel-plugin-jsx has no
 Vapor equivalent. Use jsxMode "vdom" for babel compatibility, or drop jsxCompat to use Vize's own
 Vapor semantics.

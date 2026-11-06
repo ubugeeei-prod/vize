@@ -37,14 +37,12 @@ Une classe notice et une feuille de style scoped définissent la couleur constan
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-static-inline-styles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-static-inline-styles": "warn"
+    }
   },
 });
 ```

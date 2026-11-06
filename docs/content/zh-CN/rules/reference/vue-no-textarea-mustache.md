@@ -38,14 +38,12 @@ v-model 将可编辑的 textarea 值绑定到 message。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-textarea-mustache": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-textarea-mustache": "error"
+    }
   },
 });
 ```

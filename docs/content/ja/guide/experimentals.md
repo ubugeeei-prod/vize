@@ -31,13 +31,15 @@ RFC ごとの診断、直接呼び出せる API、実装の制限、未対応の
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    experimentals: {
-      patternedTemplate: true, inTagComment: true,
-      selfComponent: true, strictSlotChildren: true,
-      serverScript: false, vapor: null, jsxVapor: {},
-    },
+export default defineConfig({}).withVue({
+  experimentals: {
+    patternedTemplate: true,
+    inTagComment: true,
+    selfComponent: true,
+    strictSlotChildren: true,
+    serverScript: false,
+    vapor: null,
+    jsxVapor: {},
   },
 });
 ```
@@ -75,13 +77,13 @@ experimentals {
 
 各キーに指定する値で、機能の有効・無効を切り替えます。
 
-| 値 | 意味 |
-| --- | --- |
-| 省略 | 無効 |
+| 値      | 意味                                                               |
+| ------- | ------------------------------------------------------------------ |
+| 省略    | 無効                                                               |
 | `false` | 無効。共有設定で有効にした機能を、個別に無効にする場合も使えます。 |
-| `null` | 無効。`null` を含む JSON 設定を生成する場合に使えます。 |
-| `true` | 有効 |
-| `{}` | 有効。将来、機能ごとの設定項目を追加できるオブジェクト形式です。 |
+| `null`  | 無効。`null` を含む JSON 設定を生成する場合に使えます。            |
+| `true`  | 有効                                                               |
+| `{}`    | 有効。将来、機能ごとの設定項目を追加できるオブジェクト形式です。   |
 
 キーの省略、`false`、`null` は無効、`true` と `{}` は有効です。
 TypeScript の型付き設定では、この四つの値だけを使ってください。
@@ -94,18 +96,12 @@ Vite プラグインに直接渡したオプションは、共有設定より優
 明示的に無効にする指定も、共有設定を上書きします。
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      experimentals: {
-        patternedTemplate: false,
-        inTagComment: true,
-      },
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    patternedTemplate: false,
+    inTagComment: true,
+  },
 });
 ```
 
@@ -122,15 +118,15 @@ export default defineConfig({
 
 ## 対応範囲と制限
 
-| 設定キー | 有効時の挙動 | 無効時の挙動 | 適用される場所 | 制限 |
-| --- | --- | --- | --- | --- |
-| `patternedTemplate` | `v-match` と、その直下にある `v-when` 分岐を解析してコンパイルします。 | `v-match`、`v-when`、`v-case` には、機能を有効にする設定が必要だと報告します。 | DOM、SSR、Vapor、SFC、WASM のコンパイル API | Canon とネイティブ Maestro は型の絞り込みと網羅性検査に対応します。Content Mapper とナビゲーションの全組み合わせの検証は未完了です。 |
-| `inTagComment` | 開始タグ内の `//` コメントを解析し、ツール向けに保持します。 | 開始タグ内の `//` を不正な構文として報告します。 | パーサー、DOM、SSR、Vapor、SFC、WASM のコンパイル API | 実行時の出力は生成しません。ブラウザーが先に解析する DOM 内のテンプレートは対象外です。 |
-| `selfComponent` | 名前が完全に一致する `<Self>` を、自身のコンポーネントとして扱います。 | `<Self>` を通常のコンポーネントタグとして扱います。 | DOM、SSR、Vapor、SFC、WASM のコンパイル API | レンダー関数と JSX は対象外です。 |
-| `strictSlotChildren` | 仮想 TypeScript コードに、スロットの子要素の型検査を生成します。 | 子要素の型検査は生成しません。 | `vize check`、LSP とプロジェクトの型検査 API | 任意のキーを許すスロットや `any` は、TypeScript の通常の許容範囲のままです。 |
-| `serverScript` | ネイティブコンパイラとの統合に `experimentalServerScript` を渡します。 | ネイティブの設定値は `false` のままです。 | このフィールドを公開するネイティブコンパイラとの統合 | ランタイムが意味を定めるまでは、統合先が挙動を定義します。 |
-| `vapor` | 安定版の設定がなければ、SFC を Vapor でコンパイルします。 | SFC は、安定版の設定または既定の方式でコンパイルします。 | Vite プラグイン、パッケージのビルド設定 | `vize({ vapor })` と `compiler.vapor` が優先します。 |
-| `jsxVapor` | 安定版の JSX 設定がなければ、JSX/TSX を Vapor でコンパイルします。 | JSX/TSX は、安定版の設定または既定の方式でコンパイルします。 | Vite プラグイン、パッケージのビルド設定 | `vize({ jsxMode })` と `compiler.jsxMode` が優先します。 |
+| 設定キー             | 有効時の挙動                                                           | 無効時の挙動                                                                   | 適用される場所                                        | 制限                                                                                                                                 |
+| -------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `patternedTemplate`  | `v-match` と、その直下にある `v-when` 分岐を解析してコンパイルします。 | `v-match`、`v-when`、`v-case` には、機能を有効にする設定が必要だと報告します。 | DOM、SSR、Vapor、SFC、WASM のコンパイル API           | Canon とネイティブ Maestro は型の絞り込みと網羅性検査に対応します。Content Mapper とナビゲーションの全組み合わせの検証は未完了です。 |
+| `inTagComment`       | 開始タグ内の `//` コメントを解析し、ツール向けに保持します。           | 開始タグ内の `//` を不正な構文として報告します。                               | パーサー、DOM、SSR、Vapor、SFC、WASM のコンパイル API | 実行時の出力は生成しません。ブラウザーが先に解析する DOM 内のテンプレートは対象外です。                                              |
+| `selfComponent`      | 名前が完全に一致する `<Self>` を、自身のコンポーネントとして扱います。 | `<Self>` を通常のコンポーネントタグとして扱います。                            | DOM、SSR、Vapor、SFC、WASM のコンパイル API           | レンダー関数と JSX は対象外です。                                                                                                    |
+| `strictSlotChildren` | 仮想 TypeScript コードに、スロットの子要素の型検査を生成します。       | 子要素の型検査は生成しません。                                                 | `vize check`、LSP とプロジェクトの型検査 API          | 任意のキーを許すスロットや `any` は、TypeScript の通常の許容範囲のままです。                                                         |
+| `serverScript`       | ネイティブコンパイラとの統合に `experimentalServerScript` を渡します。 | ネイティブの設定値は `false` のままです。                                      | このフィールドを公開するネイティブコンパイラとの統合  | ランタイムが意味を定めるまでは、統合先が挙動を定義します。                                                                           |
+| `vapor`              | 安定版の設定がなければ、SFC を Vapor でコンパイルします。              | SFC は、安定版の設定または既定の方式でコンパイルします。                       | Vite プラグイン、パッケージのビルド設定               | `vize({ vapor })` と `compiler.vapor` が優先します。                                                                                 |
+| `jsxVapor`           | 安定版の JSX 設定がなければ、JSX/TSX を Vapor でコンパイルします。     | JSX/TSX は、安定版の設定または既定の方式でコンパイルします。                   | Vite プラグイン、パッケージのビルド設定               | `vize({ jsxMode })` と `compiler.jsxMode` が優先します。                                                                             |
 
 API ごとの対応範囲、最小の検証例、低レベルのネイティブ API の使い方は、[実験機能のリファレンス](./experimentals-reference.md)を参照してください。
 
@@ -138,15 +134,15 @@ API ごとの対応範囲、最小の検証例、低レベルのネイティブ 
 
 ## 設定キーと互換名
 
-| 設定キー | 提案・実装元 | 解決先のフィールド | 互換名 |
-| --- | --- | --- | --- |
-| `patternedTemplate` | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate` | `pattenedTemplate` |
-| `inTagComment` | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments` | `intagComment` |
-| `selfComponent` | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent` | JSON の `self_component` |
-| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren` | JSON の `strict_slot_children` |
-| `serverScript` | サーバースクリプトのコンパイラ実験 | `experimentalServerScript` | JSON の `"server script"`、`server_script` |
-| `vapor` | SFC の Vapor 出力 | `compiler.vapor` の設定がない場合に適用 | なし |
-| `jsxVapor` | JSX/TSX の既定の Vapor 出力 | `compiler.jsxMode` の設定がない場合に適用 | なし |
+| 設定キー             | 提案・実装元                                           | 解決先のフィールド                        | 互換名                                     |
+| -------------------- | ------------------------------------------------------ | ----------------------------------------- | ------------------------------------------ |
+| `patternedTemplate`  | Vue RFC [#823](https://github.com/vuejs/rfcs/pull/823) | `experimentalPatternedTemplate`           | `pattenedTemplate`                         |
+| `inTagComment`       | Vue RFC [#831](https://github.com/vuejs/rfcs/pull/831) | `experimentalInTagComments`               | `intagComment`                             |
+| `selfComponent`      | Vue RFC [#833](https://github.com/vuejs/rfcs/pull/833) | `experimentalSelfComponent`               | JSON の `self_component`                   |
+| `strictSlotChildren` | Vue RFC [#734](https://github.com/vuejs/rfcs/pull/734) | `experimentalStrictSlotChildren`          | JSON の `strict_slot_children`             |
+| `serverScript`       | サーバースクリプトのコンパイラ実験                     | `experimentalServerScript`                | JSON の `"server script"`、`server_script` |
+| `vapor`              | SFC の Vapor 出力                                      | `compiler.vapor` の設定がない場合に適用   | なし                                       |
+| `jsxVapor`           | JSX/TSX の既定の Vapor 出力                            | `compiler.jsxMode` の設定がない場合に適用 | なし                                       |
 
 推奨する名前と互換名を同時に設定しないでください。
 互換名は古い設定を引き続き読み込むためにあります。両方を指定すると、互換名を解決する順序に挙動が左右されます。
@@ -161,11 +157,10 @@ API ごとの対応範囲、最小の検証例、低レベルのネイティブ 
 `patternedTemplate` は、Vue RFC #823 の `v-match` と、その直下に置く `v-when` の分岐を有効にします。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      patternedTemplate: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    patternedTemplate: true,
   },
 });
 ```
@@ -196,19 +191,19 @@ const entry = ref<Entry>({ kind: "draft", reason: "editing" });
 
 対応するパターン:
 
-| パターン | 例 | 注意事項 |
-| --- | --- | --- |
-| リテラル | `v-when="'ready'"`、`v-when="404"` | 厳密等価で比較します。 |
-| 値 | `v-when="Status.Active"` | 識別子とメンバー式は、`NaN` を含む SameValueZero で比較します。 |
-| ワイルドカード | `v-when="_"` | 新しい変数を作らずに一致します。 |
-| const による束縛 | `v-when="const value"` | `let` と `var` は使えません。 |
-| オブジェクト | `v-when="{ kind: 'ok', value: const result }"` | 余分なプロパティがあっても一致します。 |
-| オブジェクトの省略記法 | `v-when="{ kind: 'ok', const data }"` | `{ const data }` は `{ data: const data }` と同じです。 |
-| オブジェクトの残余 | `v-when="{ kind: 'error', ...const payload }"` | 残余の束縛にも `const` が必要です。単独の `...` も使えます。 |
-| 配列・タプル | `v-when="[const first, ...const rest]"` | `Array.isArray` で配列と判定される必要があります。残余があれば、追加の要素も許します。 |
-| または | `v-when="'idle' \| 'loading'"` | 左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。 |
-| as による束縛 | `v-when="{ kind: 'ok', const data } as entry"` | 入れ子の束縛に加えて、一致した値全体も束縛します。 |
-| 条件 | `v-when="{ kind: 'error', error: const e } if (e.retriable)"` | パターンが一致した後に条件を評価します。 |
+| パターン               | 例                                                            | 注意事項                                                                               |
+| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| リテラル               | `v-when="'ready'"`、`v-when="404"`                            | 厳密等価で比較します。                                                                 |
+| 値                     | `v-when="Status.Active"`                                      | 識別子とメンバー式は、`NaN` を含む SameValueZero で比較します。                        |
+| ワイルドカード         | `v-when="_"`                                                  | 新しい変数を作らずに一致します。                                                       |
+| const による束縛       | `v-when="const value"`                                        | `let` と `var` は使えません。                                                          |
+| オブジェクト           | `v-when="{ kind: 'ok', value: const result }"`                | 余分なプロパティがあっても一致します。                                                 |
+| オブジェクトの省略記法 | `v-when="{ kind: 'ok', const data }"`                         | `{ const data }` は `{ data: const data }` と同じです。                                |
+| オブジェクトの残余     | `v-when="{ kind: 'error', ...const payload }"`                | 残余の束縛にも `const` が必要です。単独の `...` も使えます。                           |
+| 配列・タプル           | `v-when="[const first, ...const rest]"`                       | `Array.isArray` で配列と判定される必要があります。残余があれば、追加の要素も許します。 |
+| または                 | `v-when="'idle' \| 'loading'"`                                | 左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。             |
+| as による束縛          | `v-when="{ kind: 'ok', const data } as entry"`                | 入れ子の束縛に加えて、一致した値全体も束縛します。                                     |
+| 条件                   | `v-when="{ kind: 'error', error: const e } if (e.retriable)"` | パターンが一致した後に条件を評価します。                                               |
 
 `v-case` は、古い Vize の実験機能との互換名として残っています。新しいテンプレートでは `v-when` を使ってください。
 RFC #823 で議論されている省略記法の候補は、Vize の公開構文ではありません。`?=`、`|=`、`~=` は使えません。
@@ -227,11 +222,10 @@ Canon は、機能を有効にすると、分岐ごとの型の絞り込み、�
 `inTagComment` は、Vue RFC #831 の開始タグの属性一覧に書いた `//` コメントを解析します。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      inTagComment: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    inTagComment: true,
   },
 });
 ```
@@ -270,11 +264,10 @@ Vize は元のテキストを、ツール向けにテンプレートのルート
 `selfComponent` は、Vue RFC #833 の `<Self>` を、自身のコンポーネントを再帰的に参照するタグとして予約します。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      selfComponent: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    selfComponent: true,
   },
 });
 ```
@@ -319,11 +312,10 @@ TypeScript（Monaco）を有効にすると、生成された子要素の型を 
 通常のテンプレートのコンパイルに、実行時の挙動は追加しません。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      strictSlotChildren: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    strictSlotChildren: true,
   },
 });
 ```
@@ -372,11 +364,10 @@ Vue テンプレートをコンパイルするだけのビルドでは、検査�
 `serverScript` は、サーバースクリプトのコンパイラ実験を明示的に検証する統合先だけで有効にしてください。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      serverScript: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    serverScript: true,
   },
 });
 ```
@@ -392,11 +383,10 @@ export default defineConfig({
 `vapor` は、安定版の `compiler.vapor` と直接渡した `vize({ vapor })` が未設定の場合に、SFC を実験的な Vapor バックエンドでコンパイルします。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      vapor: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    vapor: true,
   },
 });
 ```
@@ -411,11 +401,10 @@ Vapor をプロジェクトの通常のビルド方式として使う場合は�
 `jsxVapor` は、安定版の `compiler.jsxMode` と直接渡した `vize({ jsxMode })` が未設定の場合に、JSX/TSX ファイルの既定の出力を Vapor にします。
 
 ```ts
-export default defineConfig({
-  vue: {
-    experimentals: {
-      jsxVapor: true,
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  experimentals: {
+    jsxVapor: true,
   },
 });
 ```

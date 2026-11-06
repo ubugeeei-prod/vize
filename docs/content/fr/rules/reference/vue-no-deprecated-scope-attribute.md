@@ -38,14 +38,12 @@ La directive du slot par défaut déclare la même liaison props avec la syntaxe
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-scope-attribute": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-scope-attribute": "error"
+    }
   },
 });
 ```

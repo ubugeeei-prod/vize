@@ -38,14 +38,12 @@ A grafia first-name segue a convenção configurada de atributos de componente s
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/attribute-hyphenation": "warn"
+    }
   },
 });
 ```

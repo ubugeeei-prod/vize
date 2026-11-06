@@ -38,14 +38,12 @@ La graphie first-name respecte la convention configurée qui sépare les mots de
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/attribute-hyphenation": "warn"
+    }
   },
 });
 ```

@@ -36,14 +36,12 @@ description: "标记重复应用透传属性的组件。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-duplicate-attr-inheritance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-duplicate-attr-inheritance": "warn"
+    }
   },
 });
 ```

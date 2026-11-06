@@ -210,7 +210,7 @@ During development the gallery is served at `/__musea__/`. The [Musea guide](../
 
 Nuxt scans every `.vue` file in its component directories, and Musea art files also end in `.vue`. Keep `*.art.vue` files outside those directories and point Musea at them:
 
-```txt
+```tree
 app/components/Tag.vue
 stories/shared/Tag.art.vue
 ```
@@ -233,11 +233,9 @@ When Musea is enabled, the module also excludes `**/*.art.vue` from Nuxt's compo
 Components often rely on `NuxtLink`, `useRoute`, `useNuxtApp`, `useRuntimeConfig`, data composables or built-in Nuxt components. In a standalone Musea Vite config, add `@vizejs/musea-nuxt` and install its mocks from `previewSetup`:
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 import { nuxtMusea } from "@vizejs/musea-nuxt";
-
 export default defineConfig({
   plugins: [
     nuxtMusea({
@@ -251,7 +249,7 @@ export default defineConfig({
       previewSetup: "musea.preview.ts",
     }),
   ],
-});
+}).withVue({});
 ```
 
 ```ts

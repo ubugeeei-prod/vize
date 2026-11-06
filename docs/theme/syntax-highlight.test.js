@@ -19,6 +19,8 @@ void test("normalizeLanguage resolves docs aliases", () => {
   assert.equal(syntax.displayLanguage("bash"), "sh");
   assert.equal(syntax.normalizeLanguage("nix"), "nix");
   assert.equal(syntax.displayLanguage("nix"), "Nix");
+  assert.equal(syntax.displayLanguage("diagnostic"), "Diagnostic");
+  assert.equal(syntax.displayLanguage("output"), "Console");
 });
 
 void test("detectLanguage resolves language-prefixed classes", () => {
@@ -114,6 +116,39 @@ void test("createHighlightedHtml highlights nix expressions", () => {
   assert.match(html, /v-code__keyword/);
   assert.match(html, /v-code__property/);
   assert.match(html, /v-code__type/);
+});
+
+void test("createHighlightedHtml highlights diagnostic identity, location, and severity", () => {
+  const source = [
+    "  × [vize:vue/require-v-for-key] missing key",
+    "    ╭─[src/App.vue:9:9]",
+    '  9 │ <li v-for="item in items">',
+    "  help: add :key",
+    "src/Panel.vue(3,30): error TS2307: Cannot find module",
+  ].join("\n");
+  const html = syntax.createHighlightedHtml(source, "diagnostic");
+
+  assert.match(html, /v-code__keyword/);
+  assert.match(html, /v-code__type/);
+  assert.match(html, /v-code__string/);
+  assert.match(html, /v-code__delimiter/);
+  assert.match(html, /v-code__number/);
+  assert.equal(
+    html.replace(/<[^>]+>/g, ""),
+    source.replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
+  );
+});
+
+void test("semantic prose blocks retain useful highlighting without a plain-text fallback", () => {
+  assert.match(
+    syntax.createHighlightedHtml("Verified https://vizejs.dev in 12ms", "console"),
+    /v-code__string/,
+  );
+  assert.match(syntax.createHighlightedHtml("src/components/App.vue", "tree"), /v-code__property/);
+  assert.match(
+    syntax.createHighlightedHtml("Editor ↕ LSP → vize lsp", "diagram"),
+    /v-code__delimiter/,
+  );
 });
 
 void test("native code annotations retain source, line identity, and multiline tokens", () => {

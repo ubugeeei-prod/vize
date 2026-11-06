@@ -46,14 +46,12 @@ import { Link } from "@void/vue";
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/void-link-valid-method": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/void-link-valid-method": "warn"
+    }
   },
 });
 ```

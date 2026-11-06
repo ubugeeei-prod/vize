@@ -38,14 +38,12 @@ Mustache interpolation displays content as escaped text instead of injecting HTM
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-html": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-html": "warn"
+    }
   },
 });
 ```

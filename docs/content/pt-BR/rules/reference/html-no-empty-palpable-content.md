@@ -42,14 +42,12 @@ O texto preenche o parágrafo, a interpolação fornece o conteúdo do item de l
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-empty-palpable-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-empty-palpable-content": "warn"
+    }
   },
 });
 ```

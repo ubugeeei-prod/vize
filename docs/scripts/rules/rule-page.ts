@@ -8,14 +8,24 @@ import { owningRuleGroup, categoryTitle, type RuleLocale } from "./rule-groups.t
 import { ruleTranslator } from "./rule-translations.ts";
 
 /** Rules with typed options: the rows of the Rule Options table, which its test keeps complete. */
+const optionsLines = readFileSync(
+  resolve(import.meta.dirname, "../../content/rules/options.md"),
+  "utf8",
+).split("\n");
+const optionsHeaderIndex = optionsLines.findIndex((line) =>
+  /^\|\s*Rule\s*\|\s*Option shape\s*\|/.test(line),
+);
+if (optionsHeaderIndex === -1) throw new Error("Rule Options table header not found");
+
+const optionRows = optionsLines
+  .slice(optionsHeaderIndex + 2)
+  .findIndex((line) => line.trim() === "");
+const optionsTableEnd =
+  optionRows === -1 ? optionsLines.length : optionsHeaderIndex + 2 + optionRows;
 export const configurableRules = new Set(
-  Array.from(
-    readFileSync(resolve(import.meta.dirname, "../../content/rules/options.md"), "utf8")
-      .split("\n| Rule | Option shape |")[1]
-      .split("\n\n")[0]
-      .matchAll(/^\| `([^`]+)` \|/gm),
-    (match) => match[1],
-  ),
+  optionsLines
+    .slice(optionsHeaderIndex + 2, optionsTableEnd)
+    .flatMap((line) => /^\|\s*`([^`]+)`\s*\|/.exec(line)?.[1] ?? []),
 );
 if (configurableRules.size === 0) throw new Error("Rule Options table has no rules");
 
@@ -370,10 +380,8 @@ export function renderRulePage(rule: RuleMetadata, example: RuleExample, locale:
     "```ts",
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',
     "",
-    "export default defineConfig({",
-    "  vue: {",
-    `    linter: ${JSON.stringify(config, null, 2).split("\n").join("\n    ")},`,
-    "  },",
+    "export default defineConfig({}).withVue({",
+    `  linter: ${JSON.stringify(config, null, 2).split("\n").join("\n  ")},`,
     "});",
     "```",
     "",

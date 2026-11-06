@@ -38,14 +38,12 @@ time 元素包含人类可读的日期，却没有机器可读的 datetime 值�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/require-datetime": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/require-datetime": "warn"
+    }
   },
 });
 ```

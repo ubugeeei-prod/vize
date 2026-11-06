@@ -38,14 +38,12 @@ const enter = 13
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-deprecated-vue-config-keycodes": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-deprecated-vue-config-keycodes": "error"
+    }
   },
 });
 ```

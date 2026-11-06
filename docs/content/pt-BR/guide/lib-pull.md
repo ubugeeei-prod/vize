@@ -21,7 +21,7 @@ Isso grava a família `rating` e tudo o que ela importa (`controllable-state`, `
 
 Todo tarball publicado de `@vizejs/ui` e `@vizejs/composable` contém um registro versionado:
 
-```text
+```tree
 node_modules/@vizejs/ui/
   registry/
     registry.json          # itens, arquivos, digests sha256, dependências
@@ -79,14 +79,12 @@ continuam funcionando sem reescrita. O diretório é escolhido por:
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    lib: {
-      uiDir: "src/ui/vendor",
-      composableDir: "src/composables/vendor",
-      // dir: "src/vendor",
-      // lockfile: "vize-lib.lock.json",
-    },
+export default defineConfig({}).withVue({
+  lib: {
+    uiDir: "src/ui/vendor",
+    composableDir: "src/composables/vendor",
+    // dir: "src/vendor",
+    // lockfile: "vize-lib.lock.json",
   },
 });
 ```

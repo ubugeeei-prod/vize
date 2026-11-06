@@ -40,14 +40,12 @@ export default { model: { prop: "value", event: "input" } };
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-model-definition": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-model-definition": "error"
+    }
   },
 });
 ```

@@ -5,7 +5,7 @@ description: Share Vue settings from your existing Vite config and TypeScript pr
 
 # Configuration
 
-Keep Vue tooling settings in `vue:` in `vite.config.*` and TypeScript settings in
+Pass Vue tooling settings directly to `withVue` in `vite.config.*` and keep TypeScript settings in
 `tsconfig.json`. The CLI, Vite integration and editor extension read these project
 files. No dedicated Vize configuration is needed.
 
@@ -21,24 +21,20 @@ Use the Vize helper around your existing configuration:
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+export default defineConfig({
   server: { port: 3000 },
-};
-
-const vueConfig = {
+}).withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-`withVue` keeps the existing Vite+ options, plugins and hooks. Config objects,
+Chain `withVue` directly on the exported `defineConfig` call. It keeps the existing Vite+ options,
+plugins and hooks. Config objects,
 functions, promises and async functions are supported. An inline `vue: { ... }`
 section is equivalent. See [Shared Vue configuration](./vue-configuration.md) for
 paths, scoped entries and composition.
-
 
 ## TypeScript and Vue template checking
 
@@ -80,20 +76,15 @@ export default defineConfig({
 });
 ```
 
-## Ordinary Vite
+## Direct Vite configuration
 
-Keep the existing Vite configuration and replace the Vue compilation plugin:
+Use the same direct `withVue` chain when the project only adopts linting or formatting:
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-  vue: {
-    linter: { preset: "essential" },
-    formatter: { printWidth: 100 },
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
 });
 ```
 
@@ -128,8 +119,8 @@ and checking the result. A leftover dedicated file alongside a Vite config is an
 error, the same migration error as a dedicated-only project. `vize init` and
 `vize setup` preserve the original files and explain the migration.
 
-There is no Vize-specific `extends`. Import ordinary JavaScript objects and pass
-them to `defineConfig(vpConfig).withVue(vueConfig)` to reuse settings. Standard
+There is no Vize-specific `extends`. Keep the root and Vue settings in the direct
+`defineConfig({ ... }).withVue({ ... })` export shown above. Standard
 TypeScript `extends` and project `references` continue to work.
 
 See [Shared Vue configuration](./vue-configuration.md), the

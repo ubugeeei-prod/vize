@@ -20,7 +20,7 @@ vpx vize lib pull rating
 
 每个已发布的 `@vizejs/ui` 和 `@vizejs/composable` tarball 都包含一个带版本的注册表：
 
-```text
+```tree
 node_modules/@vizejs/ui/
   registry/
     registry.json          # 条目、文件、sha256 摘要、依赖
@@ -73,14 +73,12 @@ node_modules/@vizejs/ui/
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    lib: {
-      uiDir: "src/ui/vendor",
-      composableDir: "src/composables/vendor",
-      // dir: "src/vendor",
-      // lockfile: "vize-lib.lock.json",
-    },
+export default defineConfig({}).withVue({
+  lib: {
+    uiDir: "src/ui/vendor",
+    composableDir: "src/composables/vendor",
+    // dir: "src/vendor",
+    // lockfile: "vize-lib.lock.json",
   },
 });
 ```

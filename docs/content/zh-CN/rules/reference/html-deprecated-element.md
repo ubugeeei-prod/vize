@@ -38,14 +38,12 @@ section 和样式类替代弃用元素，同时保留内容。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-element": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/deprecated-element": "warn"
+    }
   },
 });
 ```

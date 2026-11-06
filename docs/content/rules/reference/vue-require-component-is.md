@@ -38,14 +38,12 @@ The dynamic `<component>` has no `is` target, so Vue cannot choose a component t
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-component-is": "error"
+    }
   },
 });
 ```

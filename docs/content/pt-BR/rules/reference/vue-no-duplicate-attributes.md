@@ -38,14 +38,12 @@ Os dois nomes de classe aparecem em um único atributo class.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-duplicate-attributes": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-duplicate-attributes": "error"
+    }
   },
 });
 ```

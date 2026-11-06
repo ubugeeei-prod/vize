@@ -38,14 +38,12 @@ button は元から button の役割を持つため、同じ role を重複し�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-redundant-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-redundant-roles": "warn"
+    }
   },
 });
 ```

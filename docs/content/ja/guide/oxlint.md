@@ -30,10 +30,10 @@ vp install -D oxlint oxlint-plugin-vize
 
 ## 設定するファイル
 
-| コマンド                | 読み込む設定                          |
-| ----------------------- | ------------------------------------- |
-| `vp lint`, `vp check`   | `vite.config.ts` の `lint` ブロック   |
-| `oxlint`, `oxlint-vize` | `.oxlintrc.json`（または `-c <path>`）|
+| コマンド                | 読み込む設定                           |
+| ----------------------- | -------------------------------------- |
+| `vp lint`, `vp check`   | `vite.config.ts` の `lint` ブロック    |
+| `oxlint`, `oxlint-vize` | `.oxlintrc.json`（または `-c <path>`） |
 
 > [!WARNING]
 > Vite+ は `.oxlintrc.json` を読み込みません。`.oxlintrc.json` に `jsPlugins` と `vize/*` のルールを書くと
@@ -60,10 +60,8 @@ vp install -D oxlint oxlint-plugin-vize
 スタイルやフレームワークの選択に踏み込まない、安全な Vue の基本セットが必要な場合に使います。
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { createVizeLintConfig } from "oxlint-plugin-vize";
-
 export default defineConfig({
   lint: createVizeLintConfig({
     preset: "happy-path",
@@ -74,7 +72,7 @@ export default defineConfig({
       helpLevel: "short",
     },
   }),
-});
+}).withVue({});
 ```
 
 1 つのプリセットを選んだ場合、`preset` は出力するルール設定と `settings.vize.preset` の両方を決めます。
@@ -96,22 +94,16 @@ export default defineConfig({
 `lint` 設定にまとめ直します。
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
-
 export default defineConfig({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: {
-        "no-console": "warn",
-      },
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: {
+      "no-console": "warn",
     },
-  ),
-});
+  }),
+}).withVue({});
 ```
 
 断片には `flatConfigs.recommended`、`flatConfigs.happyPath`、`flatConfigs.essential`、`flatConfigs.ecosystem`、
@@ -124,9 +116,7 @@ Vite+ の設定を使います。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: { linter: { preset: "happy-path" } },
-});
+export default defineConfig({}).withVue({ linter: { preset: "happy-path" } });
 ```
 
 生成されたタスクは `vp run lint` で実行します。既存の package script が `lint` を使う場合は

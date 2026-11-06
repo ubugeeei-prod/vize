@@ -40,14 +40,12 @@ O rótulo separado não está associado por meio de `for` nem envolve o campo.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/label-has-for": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/label-has-for": "warn"
+    }
   },
 });
 ```

@@ -40,14 +40,12 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/return-in-emits-validator": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/return-in-emits-validator": "error"
+    }
   },
 });
 ```

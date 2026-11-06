@@ -7,12 +7,12 @@ description: Use Vize's published JSR facade with Node, Deno or Bun, including i
 
 [`@vizejs/vize`](https://jsr.io/@vizejs/vize) exposes Vize's JavaScript APIs. Each entry point re-exports an npm package at the same exact Vize version. The compiler still loads the native binary from npm.
 
-| Import | API | npm package |
-| --- | --- | --- |
-| `@vizejs/vize` | `defineConfig` and configuration types | `vize` |
-| `@vizejs/vize/config` | Configuration loading and normalization | `vize/config` |
-| `@vizejs/vize/native` | Compiler, linter, formatter and analysis APIs | `@vizejs/native` |
-| `@vizejs/vize/vite` | Vite plugin and options | `@vizejs/vite-plugin` |
+| Import                | API                                           | npm package           |
+| --------------------- | --------------------------------------------- | --------------------- |
+| `@vizejs/vize`        | `defineConfig` and configuration types        | `vize`                |
+| `@vizejs/vize/config` | Configuration loading and normalization       | `vize/config`         |
+| `@vizejs/vize/native` | Compiler, linter, formatter and analysis APIs | `@vizejs/native`      |
+| `@vizejs/vize/vite`   | Vite plugin and options                       | `@vizejs/vite-plugin` |
 
 ## Node.js and Bun
 
@@ -61,7 +61,7 @@ deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0
 
 Expected output:
 
-```text
+```console
 Verified jsr:@vizejs/vize@0.457.0 (no flags)
 ```
 

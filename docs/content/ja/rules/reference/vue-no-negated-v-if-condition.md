@@ -45,14 +45,12 @@ v-else と対になる v-if を、否定した条件で始めています。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-negated-v-if-condition": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-negated-v-if-condition": "warn"
+    }
   },
 });
 ```

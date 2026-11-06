@@ -80,29 +80,31 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
   root: "apps/web",
-  vue: {
-    entries: [
-      {
-        files: ["src/trusted/**/*.vue"],
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
-  },
+}).withVue({
+  entries: [
+    {
+      files: ["src/trusted/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
 });
 ```
 
 条目接受 `basePath`、`files`、`ignores` 和 `linter`；其他部分保持项目级设置。不要将 TypeScript 项目引用放入这些条目。
 
-## 复用配置
+## 不使用自定义 `extends` 的共享设置
 
-不再提供 Vize 专用的 `extends`。使用普通 JavaScript 对象复用设置：
+不再提供 Vize 专用的 `extends`。推荐配置保持为一条直接调用链：
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./build-options.ts";
-import vueConfig from "./vue-options.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+});
 ```
 
 这不会改变标准 TypeScript `extends` 或 Vite 配置函数的行为。
@@ -149,13 +151,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -173,45 +174,30 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  vue: {
-    compiler: {
-      sourceMap: mode !== "production",
-      ssr: isSsrBuild,
-      vapor: false,
-      customRenderer: false,
-      templateSyntax: "standard",
-    },
-    vite: {
-      include: [/\.vue$/],
-      exclude: [/node_modules/],
-      scanPatterns: ["src/**/*.vue"],
-      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-    },
-    linter: {
-      enabled: command !== "build",
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-    },
-    formatter: {
-      printWidth: 100,
-      singleQuote: false,
-    },
-    languageServer: {
-      lint: true,
-      typecheck: false,
-      editor: false,
-      formatting: false,
-    },
-    musea: {
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-    },
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  build: {
+    sourcemap: mode !== "production",
+    ssr: isSsrBuild,
   },
-}));
+})).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+  },
+  linter: { enabled: true, preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
 ```
 
 ### 迁移已移除的 JSON 和 PKL 设置

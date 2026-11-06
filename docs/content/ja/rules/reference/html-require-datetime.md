@@ -38,14 +38,12 @@ time 要素には表示用の日付だけがあり、機械可読の datetime �
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/require-datetime": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/require-datetime": "warn"
+    }
   },
 });
 ```

@@ -47,28 +47,28 @@ package.json にスクリプトを登録すると、ローカルと CI で同じ
 
 ## 共通の設定を用意する
 
-既定値を変更する場合は、既存の `vite.config.*` のトップレベルの `vue` にネイティブ設定を追加します。設定の共有と移行方法は[設定ガイド](./configuration.md)を参照してください。
+既定値を変更する場合は、`vite.config.*` の `withVue` にネイティブ設定を直接渡します。設定の共有と移行方法は[設定ガイド](./configuration.md)を参照してください。
 
 ```ts
 // vite.config.ts
-export default {
-  vue: {
-    formatter: {
-      printWidth: 100,
-    },
-    linter: {
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-      tsconfig: "tsconfig.json",
-    },
-    vite: {
-      scanPatterns: ["src/**/*.vue"],
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
   },
-};
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
 ```
 
 スコープ付き Lint、TypeScript プロジェクト設定、コンパイラオプション、Vue の型解決の

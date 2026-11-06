@@ -49,14 +49,12 @@ KeepAlive 有条件地包装原生 div，而没有直接缓存 UserCard。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-non-component-keep-alive-child": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-non-component-keep-alive-child": "warn"
+    }
   },
 });
 ```

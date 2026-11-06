@@ -40,14 +40,12 @@ A separate template owns v-else, and its child paragraph owns v-for.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-use-v-else-with-v-for": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-use-v-else-with-v-for": "warn"
+    }
   },
 });
 ```

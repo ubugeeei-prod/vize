@@ -42,14 +42,12 @@ description: "詳細度が高い CSS の ID セレクターを検出します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-id-selectors": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-id-selectors": "warn"
+    }
   },
 });
 ```

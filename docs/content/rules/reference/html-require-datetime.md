@@ -38,14 +38,12 @@ The time element contains a human-readable date but no machine-readable datetime
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/require-datetime": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/require-datetime": "warn"
+    }
   },
 });
 ```

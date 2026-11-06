@@ -42,14 +42,12 @@ description: "登録が必要なカスタムディレクティブを検出しま
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/warn-custom-directive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/warn-custom-directive": "warn"
+    }
   },
 });
 ```

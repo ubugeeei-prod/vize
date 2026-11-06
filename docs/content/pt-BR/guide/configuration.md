@@ -7,7 +7,7 @@ description: Compartilhe as opções Vue na configuração Vite e no projeto Typ
 
 # Configuração
 
-Mantenha as opções das ferramentas Vue em `vue:` no `vite.config.*`, e as opções do projeto TypeScript em `tsconfig.json`. A CLI, a integração Vite e a extensão do editor leem esses arquivos. Não é necessário um arquivo de configuração específico do Vize.
+Passe as opções das ferramentas Vue diretamente para `withVue` no `vite.config.*` e mantenha as opções do projeto TypeScript em `tsconfig.json`. A CLI, a integração Vite e a extensão do editor leem esses arquivos. Não é necessário um arquivo de configuração específico do Vize.
 
 ## Preservar a configuração Vite+
 
@@ -16,20 +16,16 @@ Use o auxiliar do Vize com a configuração existente:
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+export default defineConfig({
   server: { port: 3000 },
-};
-
-const vueConfig = {
+}).withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-`withVue` preserva as opções, os plugins e os hooks existentes do Vite+. Objetos de configuração, funções, promises e funções assíncronas são aceitos. Uma seção inline `vue: { ... }` é equivalente. Veja [configuração Vue compartilhada](/guide/vue-configuration.md) (em inglês) para caminhos, escopos e composição.
+Encadeie `withVue` diretamente na chamada `defineConfig` exportada. Ele preserva as opções, os plugins e os hooks existentes do Vite+. Objetos de configuração, funções, promises e funções assíncronas são aceitos. Veja [configuração Vue compartilhada](/guide/vue-configuration.md) (em inglês) para caminhos, escopos e composição.
 
 ## TypeScript e verificação dos templates Vue
 
@@ -74,15 +70,10 @@ Veja os parâmetros em [opções de regras](/rules/options.md) e exemplos incorr
 Mantenha a configuração Vite existente e substitua o plugin de compilação Vue:
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-  vue: {
-    linter: { preset: "essential" },
-    formatter: { printWidth: 100 },
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
 });
 ```
 
@@ -106,7 +97,7 @@ As exclusões globais compartilhadas retiram arquivos da busca da CLI e do lint 
 
 `vize.config.*` e o objeto `vize:` no nível superior não são mais aceitos. Mova as opções nativas para `vue:` em `vite.config.*` e as opções do projeto TypeScript para `tsconfig.json`. Remova os arquivos específicos depois de migrar e verificar o resultado. Um arquivo específico antigo ao lado da configuração Vite é um erro, o mesmo erro de migração de um projeto que tenha apenas a configuração específica. `vize init` e `vize setup` preservam os arquivos originais e explicam como migrar.
 
-Não existe mais um `extends` específico do Vize. Importe objetos JavaScript comuns e passe-os para `defineConfig(vpConfig).withVue(vueConfig)` para reutilizar opções. O `extends` padrão do TypeScript e as referências de projeto continuam funcionando.
+Não existe mais um `extends` específico do Vize. Mantenha as opções raiz e Vue no export direto `defineConfig({ ... }).withVue({ ... })` mostrado acima. O `extends` padrão do TypeScript e as referências de projeto continuam funcionando.
 
 <span id="arquivos-de-configuração"></span>
 <span id="configuração-do-typescript"></span>

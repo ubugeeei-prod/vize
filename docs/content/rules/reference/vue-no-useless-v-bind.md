@@ -41,14 +41,12 @@ The constant value becomes a static attribute; variable and interpolated values 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-v-bind": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-v-bind": "warn"
+    }
   },
 });
 ```

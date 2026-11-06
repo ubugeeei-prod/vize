@@ -36,14 +36,12 @@ fallthrough 属性を同じコンポーネントで二重に適用する箇所�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-duplicate-attr-inheritance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-duplicate-attr-inheritance": "warn"
+    }
   },
 });
 ```

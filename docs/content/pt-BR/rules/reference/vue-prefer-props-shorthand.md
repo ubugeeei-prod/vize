@@ -45,14 +45,12 @@ A forma abreviada de vinculação de mesmo nome do Vue 3.4+ remove as expressõe
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-props-shorthand": "warn"
+    }
   },
 });
 ```

@@ -86,11 +86,9 @@ const count = toRef(props, "count");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/hydration-risk": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/hydration-risk": "warn" },
   },
 });
 ```

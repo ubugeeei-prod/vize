@@ -39,14 +39,12 @@ description: "禁止在原生 HTML 元素上使用已弃用的 `is` 属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-html-element-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-html-element-is": "error"
+    }
   },
 });
 ```

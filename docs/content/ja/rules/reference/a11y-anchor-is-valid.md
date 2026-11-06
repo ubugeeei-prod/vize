@@ -40,14 +40,12 @@ description: "リンクの href に有効な移動先を指定します。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/anchor-is-valid": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/anchor-is-valid": "warn"
+    }
   },
 });
 ```

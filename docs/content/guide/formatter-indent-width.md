@@ -20,9 +20,9 @@ export default defineConfig({}).withVue({
 
 For `<template><p>hello</p></template>`, this produces:
 
-```text
+```vue
 <template>
-   <p>hello</p>
+  <p>hello</p>
 </template>
 ```
 

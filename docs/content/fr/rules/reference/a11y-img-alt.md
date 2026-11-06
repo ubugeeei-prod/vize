@@ -38,14 +38,12 @@ L’image de l’avatar ne possède pas d’attribut `alt`.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/img-alt": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/img-alt": "warn"
+    }
   },
 });
 ```

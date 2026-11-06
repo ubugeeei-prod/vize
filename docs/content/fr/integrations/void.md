@@ -20,20 +20,20 @@ description: Utilisez Vize dans une application Void avec les pages @void/vue, l
 npm install -D @vizejs/vite-plugin
 ```
 
-### 2. Ajouter `vize()` à `vite.config.ts`
+### 2. Composer `vite.config.ts` avec `withVue`
 
 ```ts
 import { voidVue } from "@void/vue/plugin";
-import { vize } from "@vizejs/vite-plugin";
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { voidPlugin } from "void";
-
 export default defineConfig({
-  plugins: [voidPlugin(), vize(), voidVue()],
-});
+  plugins: [voidPlugin(), voidVue()],
+}).withVue({});
 ```
 
-`voidVue()` embarque son propre `@vitejs/plugin-vue`. Inutile de le retirer : `vize()` le remplace pour qu'un seul compilateur traite chaque SFC. Si vous définissez `exclude`, plugin-vue reste et compile les fichiers que Vize ignore.
+`voidVue()` embarque son propre `@vitejs/plugin-vue`. Inutile de le retirer : `withVue` remplace le
+plugin `vite:vue` existant pour qu'un seul compilateur traite chaque SFC. Si vous définissez
+`exclude`, plugin-vue reste et compile les fichiers que Vize ignore.
 
 ### 3. Lancer Void comme d'habitude
 

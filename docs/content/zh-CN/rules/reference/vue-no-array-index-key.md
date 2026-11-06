@@ -38,14 +38,12 @@ key 来自 item.id，即使位置改变，也能保持每个列表项的身份�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-array-index-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-array-index-key": "warn"
+    }
   },
 });
 ```

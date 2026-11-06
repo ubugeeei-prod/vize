@@ -56,6 +56,7 @@
     "/guide/init",
     "/guide/vite-plus",
     "/guide/migration",
+    "/guide/tool-integrations",
     "/guide/lint-execution",
     "/guide/formatter",
     "/guide/formatter-import-sorting",
@@ -91,23 +92,41 @@
   // rule pages live in one directory. The rule generator reads this table too,
   // so a rule's page, its category page and its sidebar section always agree.
   sitemap.ruleSections = [
-    { page: "/rules/vue", namespaces: ["vue"] },
-    { page: "/rules/type-and-script", namespaces: ["script", "type"] },
+    {
+      page: "/rules/vue",
+      namespaces: ["vue"],
+      extraPaths: [
+        "/rules/options-vue",
+        "/rules/options-events",
+        "/rules/options-attributes",
+        "/rules/options-props",
+      ],
+    },
+    {
+      page: "/rules/type-and-script",
+      namespaces: ["script", "type"],
+      extraPaths: ["/rules/options-script", "/rules/options-type"],
+    },
     { page: "/rules/html", namespaces: ["html"] },
     { page: "/rules/accessibility", namespaces: ["a11y"] },
     { page: "/rules/ssr", namespaces: ["ssr"] },
     { page: "/rules/vapor", namespaces: ["vapor"] },
     { page: "/rules/ecosystem", namespaces: ["ecosystem", "nuxt"] },
-    { page: "/rules/musea-and-css", namespaces: ["musea", "css"] },
+    {
+      page: "/rules/musea-and-css",
+      namespaces: ["musea", "css"],
+      extraPaths: ["/rules/options-musea"],
+    },
     { page: "/rules/petite-vue", namespaces: ["petite-vue"] },
     { page: "/rules/cross-file", directory: "/rules/project/" },
   ];
 
   // The pages a section lists, from the routes a locale publishes. A rule's
   // page slug starts with its namespace: `vue/no-v-html` is `vue-no-v-html`.
-  sitemap.sectionPaths = (section, routes) =>
-    section.paths ??
-    routes
+  sitemap.sectionPaths = (section, routes) => {
+    const available = new Set(routes);
+    const colocated = (section.extraPaths ?? []).filter((route) => available.has(route));
+    const references = routes
       .filter((route) => !operationalDiagnosticPaths.includes(route))
       .filter((route) =>
         section.directory
@@ -117,17 +136,8 @@
             ),
       )
       .sort((left, right) => left.localeCompare(right));
-
-  // Options and the ESLint map are authored in English and Japanese only.
-  const ruleOptionPaths = [
-    "/rules/options-vue",
-    "/rules/options-events",
-    "/rules/options-attributes",
-    "/rules/options-props",
-    "/rules/options-script",
-    "/rules/options-type",
-    "/rules/options-musea",
-  ];
+    return [...colocated, ...references];
+  };
 
   // `key` selects the section heading from a locale's `ui.groups`. Product
   // sections come first, then the rule reference, then the project itself.
@@ -140,6 +150,7 @@
       "/guide/vite-plus",
       "/guide/workflows",
       "/guide/migration",
+      "/guide/tool-integrations",
       "/guide/troubleshooting",
     ]),
     section("linter", [
@@ -209,14 +220,11 @@
       key: "rules",
       paths: ["/rules", "/rules/all"],
       pathsByLocale: {
-        en: ["/rules", "/rules/all", "/rules/migration"],
-        ja: ["/rules", "/rules/all", "/rules/migration"],
+        en: ["/rules", "/rules/all", "/rules/options", "/rules/migration"],
+        ja: ["/rules", "/rules/all", "/rules/options", "/rules/migration"],
       },
       // Each section collapses under its own page.
-      sections: [
-        { page: "/rules/options", paths: ruleOptionPaths, locales: ["en", "ja"] },
-        ...sitemap.ruleSections,
-      ],
+      sections: [...sitemap.ruleSections],
     },
     section("architecture", [
       "/stability",

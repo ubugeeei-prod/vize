@@ -36,14 +36,12 @@ description: "为兼容 Vue 2，禁止在组件的 `v-model` 上使用自定义�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-custom-modifiers-on-v-model": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-custom-modifiers-on-v-model": "warn"
+    }
   },
 });
 ```

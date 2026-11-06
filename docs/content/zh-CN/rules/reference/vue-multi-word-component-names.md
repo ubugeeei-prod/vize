@@ -40,14 +40,12 @@ TodoItem.vue 为同一模板使用了多个单词组成的组件名称。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/multi-word-component-names": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/multi-word-component-names": "error"
+    }
   },
 });
 ```

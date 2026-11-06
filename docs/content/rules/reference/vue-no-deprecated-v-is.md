@@ -39,14 +39,12 @@ The `is` attribute with the `vue:` prefix, or `<component :is>`, selects the com
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-is": "error"
+    }
   },
 });
 ```

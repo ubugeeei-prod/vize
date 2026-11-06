@@ -38,14 +38,12 @@ if (import.meta.client) console.log("browser");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/prefer-import-meta": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "nuxt/prefer-import-meta": "error"
+    }
   },
 });
 ```

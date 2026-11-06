@@ -7,7 +7,7 @@ description: 既存の Vite 設定と TypeScript プロジェクトで Vue の�
 
 # 設定
 
-Vue ツールの設定は `vite.config.*` の `vue:` に、TypeScript の設定は
+Vue ツールの設定は `vite.config.*` の `withVue` に直接渡し、TypeScript の設定は
 `tsconfig.json` にまとめます。CLI、Vite 連携、エディタ拡張は、同じプロジェクト設定を
 読みます。Vize 専用の設定ファイルは不要です。
 
@@ -23,26 +23,21 @@ Vize のヘルパーに既存の設定を渡します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = {
+export default defineConfig({
   server: { port: 3000 },
-};
-
-const vueConfig = {
+}).withVue({
   compiler: { sourceMap: true },
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
-};
-
-export default defineConfig(vpConfig).withVue(vueConfig);
+});
 ```
 
-`withVue` は既存の Vite+ オプション、プラグイン、フックを保ちます。
+`withVue` は export する `defineConfig` に直接つなげます。既存の Vite+ オプション、プラグイン、フックを保ちます。
 オブジェクト、設定関数、Promise、async 関数を使えます。
 `vue: { ... }` を直接書く方法も同じです。パス、スコープ、設定の合成については
 [Vue の設定を共有する](./vue-configuration.md)を参照してください。
 
 <span id="typescript-and-vue-template-checking"></span>
-
 
 ## TypeScript と Vue テンプレートの型チェック
 
@@ -86,20 +81,15 @@ export default defineConfig({
 });
 ```
 
-## 通常の Vite
+## Vite 設定に直接書く
 
-既存の Vite 設定を保ち、Vue のコンパイルプラグインを置き換えます。
+lint やフォーマットだけを導入する場合も、同じ `withVue` のチェーンに直接書きます。
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-  vue: {
-    linter: { preset: "essential" },
-    formatter: { printWidth: 100 },
-  },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
 });
 ```
 
@@ -134,8 +124,8 @@ CLI のフラグと明示的なエディタの機能スイッチは、共有設�
 Vite 設定と同じ場所に残った専用ファイルはエラーです。専用設定しかないプロジェクトと
 同じ移行エラーになります。`vize init` と `vize setup` は元のファイルを保ち、移行先を案内します。
 
-Vize 独自の `extends` はありません。共有する通常の JavaScript オブジェクトを import し、
-`defineConfig(vpConfig).withVue(vueConfig)` に渡してください。
+Vize 独自の `extends` はありません。ルート設定と Vue 設定は、上記の
+`defineConfig({ ... }).withVue({ ... })` を直接 export する形にまとめてください。
 TypeScript 標準の `extends` とプロジェクトの `references` は引き続き使えます。
 
 個別のオプションは[Vue の設定を共有する](./vue-configuration.md)、

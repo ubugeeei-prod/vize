@@ -41,15 +41,13 @@ Remova o comentário desnecessário e mantenha o elemento, deixando as verifica�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/comment-directive": "error"
-      },
-      "reportUnusedDisableDirectives": true
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/comment-directive": "error"
     },
+    "reportUnusedDisableDirectives": true
   },
 });
 ```

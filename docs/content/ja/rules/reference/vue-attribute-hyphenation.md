@@ -38,14 +38,12 @@ first-name に変更し、設定されたハイフン区切りの属性名の方
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/attribute-hyphenation": "warn"
+    }
   },
 });
 ```

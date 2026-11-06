@@ -40,14 +40,12 @@ O RouterLink aninhado não tem um destino `to`; ele não pode depender da propag
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/router-link-require-to": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/router-link-require-to": "error"
+    }
   },
 });
 ```

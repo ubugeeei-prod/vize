@@ -38,14 +38,12 @@ v-text 会替换段落内容，因此编写的后备文本无法在该指令生�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-child-content": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-child-content": "error"
+    }
   },
 });
 ```

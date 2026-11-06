@@ -38,14 +38,12 @@ A `<div>` é um elemento raiz renderizável. Este exemplo não impõe uma restri
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-template-root": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-template-root": "error"
+    }
   },
 });
 ```

@@ -63,14 +63,14 @@ Babel プラグイン固有のオプションを、Vize の設定ファイルへ
 これらは [`vize_atelier_jsx`](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_atelier_jsx) の `compile_jsx_with_babel_*` 関数へ渡す引数です。
 `jsxCompat` が `"babel"` のときにだけ適用します。
 
-| `@vue/babel-plugin-jsx` | Vize のエントリーポイント |
-| --- | --- |
-| `transformOn` | `BabelJsxOptions::transform_on` |
-| `pragma` | `compile_jsx_with_babel_pragma` |
-| `mergeProps` | `compile_jsx_with_babel_merge_props` |
-| `isCustomElement` | `BabelJsxCustomizations::is_custom_element` |
-| `enableObjectSlots` | `compile_jsx_with_babel_object_slots` |
-| 任意の組み合わせ | `compile_jsx_with_babel_customizations` |
+| `@vue/babel-plugin-jsx` | Vize のエントリーポイント                   |
+| ----------------------- | ------------------------------------------- |
+| `transformOn`           | `BabelJsxOptions::transform_on`             |
+| `pragma`                | `compile_jsx_with_babel_pragma`             |
+| `mergeProps`            | `compile_jsx_with_babel_merge_props`        |
+| `isCustomElement`       | `BabelJsxCustomizations::is_custom_element` |
+| `enableObjectSlots`     | `compile_jsx_with_babel_object_slots`       |
+| 任意の組み合わせ        | `compile_jsx_with_babel_customizations`     |
 
 次の 2 つは、この表とは別に扱います。
 
@@ -87,7 +87,7 @@ Babel プラグイン固有のオプションを、Vize の設定ファイルへ
 Babel プラグインが定義する出力は `createVNode` のツリーで、Vapor に相当する処理はありません。
 `jsxCompat: "babel"` と `jsxMode: "vapor"` を併用すると、無視するのではなく診断して拒否します。
 
-```text
+```console
 compiler.jsxCompat: "babel" is not supported with Vapor output: @vue/babel-plugin-jsx has no
 Vapor equivalent. Use jsxMode "vdom" for babel compatibility, or drop jsxCompat to use Vize's own
 Vapor semantics.
@@ -105,8 +105,8 @@ SSR コンパイルには、`transformOn` と `enableObjectSlots` のヘルパ�
 現在のコーパスでは、次の 1 項目が `deferred` です。
 互換モード自体ではなく、型解決の実装を待っています。
 
-| 行 | Babel の挙動 | 未完了の依存項目 |
-| --- | --- | --- |
+| 行                        | Babel の挙動                             | 未完了の依存項目                                                                                                                                                      |
+| ------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `options/resolve_type_on` | `{ props: { … }, name: "A" }` を付加する | 型からの props/emits 推論。[#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502) の型解決に依存する |
 
 `slots/dynamic_slot_name` は現在 `equivalent` です。
@@ -118,12 +118,12 @@ SSR コンパイルには、`transformOn` と `enableObjectSlots` のヘルパ�
 入力コーパスをプラグインでコンパイルし、その出力を正解データとしてコミットします。
 Rust のテストは、そのデータと Vize の出力を並べて保存し、入力ごとに明示的な判定を付けます。
 
-| 成果物 | 役割 |
-| --- | --- |
+| 成果物                                                            | 役割                                           |
+| ----------------------------------------------------------------- | ---------------------------------------------- |
 | `crates/vize_atelier_jsx/tests/babel_compat/fixtures/corpus.json` | 入力と、それぞれに適用するプラグインオプション |
-| `crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs` | 実際のプラグインによるコーパスの処理 |
-| `crates/vize_atelier_jsx/tests/babel_compat_oracle.rs` | Babel と Vize の出力を入力ごとに記録するテスト |
-| `crates/vize_atelier_jsx/tests/BABEL_COMPAT_INVENTORY.md` | 入力ごとの判定と合計を説明する一覧 |
+| `crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs`           | 実際のプラグインによるコーパスの処理           |
+| `crates/vize_atelier_jsx/tests/babel_compat_oracle.rs`            | Babel と Vize の出力を入力ごとに記録するテスト |
+| `crates/vize_atelier_jsx/tests/BABEL_COMPAT_INVENTORY.md`         | 入力ごとの判定と合計を説明する一覧             |
 
 詳しい判定、モジュールの形・ブロック構造・パッチフラグ・制御フローの変換に関する差異、現在の合計は、
 [`BABEL_COMPAT_INVENTORY.md`](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_atelier_jsx/tests/BABEL_COMPAT_INVENTORY%2Emd)にあります。

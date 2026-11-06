@@ -8,7 +8,7 @@ title: Referência de configuração do compilador
 
 ## Opções do compilador
 
-Essas opções pertencem a `vue.compiler` em `vite.config.*` e também podem ser definidas por `defineConfig(vpConfig).withVue(vueConfig)`. Nem toda integração usa todos os campos.
+Passe essas opções em `compiler` no export direto `defineConfig({ ... }).withVue({ ... })`. Nem toda integração usa todos os campos.
 
 | Opção               | Valores                               | Uso comum                                                                              |
 | ------------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -32,18 +32,14 @@ Essas opções pertencem a `vue.compiler` em `vite.config.*` e também podem ser
 Para projetos Vite, opções diretas de plugins sobrepõem a configuração compartilhada:
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  compiler: {
+    vapor: true,
+    sourceMap: true,
+    customRenderer: true,
+    templateSyntax: "standard",
+  },
 });
 ```
 
@@ -64,13 +60,13 @@ Os casos conhecidos são:
   modo Standard alerta e reescreve como elementos vazios, erros de modo estrito, e o modo quirk mantém
   como folhas que se fecham sozinhas.
 
-```text
+```vue
 <template>
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
@@ -133,7 +129,7 @@ const Classic = () => {
 Como cada componente é roteado de forma independente, um **único módulo pode misturar ambos os backends**:
 
 ```tsx
-// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -182,5 +178,3 @@ Quando a chave está ausente, o dialeto é detectado estruturalmente por documen
 resolvendo para o pacote petite-vue, uma importação ES inline de `petite-vue`ou uma chamada `PetiteVue.createApp`
 . Menções a petite-vue em comentários ou prosa nunca mudam o dialeto, e componentes de
 em fila única sempre usam o dialeto padrão do Vue.
-
-

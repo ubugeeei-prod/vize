@@ -42,14 +42,12 @@ Buttons specify button, submit, or reset; a bound type is treated as dynamic.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-button-has-type": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-button-has-type": "warn"
+    }
   },
 });
 ```

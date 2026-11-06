@@ -48,19 +48,18 @@ registered.
 ## Vite (`unplugin-vue-components` / `unplugin-auto-import`)
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 // vite.config.ts
 import Components from "unplugin-vue-components/vite";
 import AutoImport from "unplugin-auto-import/vite";
 import { VizeUiResolver, VizeUiComposablesResolver } from "@vizejs/ui/resolver";
 import { VizeComposableResolver } from "@vizejs/composable/resolver";
-
 export default defineConfig({
   plugins: [
-    vue(),
     Components({ resolvers: [VizeUiResolver({ prefix: "Vz" })] }),
     AutoImport({ resolvers: [VizeUiComposablesResolver(), VizeComposableResolver()] }),
   ],
-});
+}).withVue({});
 ```
 
 Prefer presets? `vizeUiImports()` and `vizeComposableImports()` return

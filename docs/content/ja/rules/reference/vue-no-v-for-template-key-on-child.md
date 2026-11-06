@@ -38,14 +38,12 @@ template の v-for に key を移し、繰り返すフラグメント全体を�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key-on-child": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-for-template-key-on-child": "error"
+    }
   },
 });
 ```

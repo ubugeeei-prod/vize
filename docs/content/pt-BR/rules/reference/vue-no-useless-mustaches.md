@@ -43,14 +43,12 @@ O texto literal é escrito diretamente; expressões com variáveis, strings de t
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-mustaches": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-mustaches": "warn"
+    }
   },
 });
 ```

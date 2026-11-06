@@ -46,14 +46,12 @@ description: "建议使用 context:event 格式的作用域事件名称。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/scoped-event-names": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/scoped-event-names": "warn"
+    }
   },
 });
 ```

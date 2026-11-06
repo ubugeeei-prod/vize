@@ -37,14 +37,12 @@ description: "禁止已弃用的 HTML 属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/deprecated-attr": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/deprecated-attr": "warn"
+    }
   },
 });
 ```

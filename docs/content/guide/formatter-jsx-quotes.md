@@ -20,9 +20,9 @@ export default defineConfig({}).withVue({
 chooses JSX attribute delimiters independently; its default is `false`. For
 example, the configuration above formats this script:
 
-```text
+```tsx
 const label = "hello";
-const view = <div title='world' />;
+const view = <div title="world" />;
 ```
 
 The preference minimizes escaping. An attribute containing an apostrophe, such

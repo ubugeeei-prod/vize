@@ -38,14 +38,12 @@ description: "要求通过 v-slot 使用的具名插槽采用 kebab-case。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/slot-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/slot-name-casing": "warn"
+    }
   },
 });
 ```

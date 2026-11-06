@@ -42,14 +42,12 @@ A aspa dentro de `my"attr` torna o nome do atributo malformado. Este exemplo pro
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-attribute-name": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-attribute-name": "error"
+    }
   },
 });
 ```

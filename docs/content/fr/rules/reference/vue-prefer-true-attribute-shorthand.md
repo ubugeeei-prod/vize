@@ -41,14 +41,12 @@ L’attribut natif utilise sa syntaxe booléenne abrégée. Les liaisons à fals
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-true-attribute-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-true-attribute-shorthand": "warn"
+    }
   },
 });
 ```

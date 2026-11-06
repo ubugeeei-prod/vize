@@ -36,14 +36,12 @@ Add `</li>` after the item's content, before the containing `ul` closes.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-end-tags": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-end-tags": "warn"
+    }
   },
 });
 ```

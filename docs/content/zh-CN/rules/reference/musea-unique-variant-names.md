@@ -40,14 +40,12 @@ description: "要求 variant 名称唯一。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "musea/unique-variant-names": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "musea/unique-variant-names": "error"
+    }
   },
 });
 ```

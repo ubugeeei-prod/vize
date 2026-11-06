@@ -14,6 +14,7 @@
       "/contributing": "貢献する",
       "/guide/vite-plus": "Vite+ 統合",
       "/guide/migration": "既存ツールから移行",
+      "/guide/tool-integrations": "既存ツールとの統合",
       "/guide/vite-plus-editor": "エディターの設定",
       "/guide/init": "プロジェクトの初期設定",
       "/guide/configuration": "概要",

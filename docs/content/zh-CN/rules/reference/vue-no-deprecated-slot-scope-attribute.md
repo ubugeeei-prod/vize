@@ -38,14 +38,12 @@ description: "禁止使用已弃用的 `slot-scope` 属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-slot-scope-attribute": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-slot-scope-attribute": "error"
+    }
   },
 });
 ```

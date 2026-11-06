@@ -42,14 +42,12 @@ La présence de chaque attribut booléen exprime le même état actif sans valeu
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-boolean-attr-value": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-boolean-attr-value": "warn"
+    }
   },
 });
 ```

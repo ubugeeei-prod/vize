@@ -66,7 +66,10 @@ const text: Record<
         "Stricter presets",
         "Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.",
       ],
-      optIn: ["Opt-in", "Not in any preset. Turn them on by name in `vue.linter.rules`."],
+      optIn: [
+        "Opt-in",
+        "Not in any preset. Turn them on by name in the `linter.rules` passed to `withVue`.",
+      ],
     },
     allLegend:
       "The Preset column names the smallest preset that turns a rule on. Rule pages list every preset. See [presets](../rules/index.md#presets) for what each one contains.",
@@ -76,7 +79,7 @@ const text: Record<
       contract: "Planned; not reported yet",
     },
     crossFileUse:
-      "Turn these checks on with `crossFile: true` in `vue.linter`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `vue.linter.rules` as `croquis/cf/<name>`, without `vize:`.",
+      "Turn these checks on with `crossFile: true` in the `linter` passed to `withVue`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `linter.rules` as `croquis/cf/<name>`, without `vize:`.",
     related:
       "[Rules overview](../rules/index.md) · [Rule options](./options.md) · [Migrating from ESLint](./migration.md)",
   },
@@ -97,7 +100,7 @@ const text: Record<
       ],
       optIn: [
         "個別に有効化",
-        "どのプリセットにも含まれません。`vue.linter.rules` でルール名を指定して有効にします。",
+        "どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。",
       ],
     },
     allLegend:
@@ -108,7 +111,7 @@ const text: Record<
       contract: "予定。まだ診断されません",
     },
     crossFileUse:
-      "`vue.linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`vue.linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。",
+      "`withVue` に渡す `linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。",
     related:
       "[ルールの概要](../rules/index.md) · [ルールのオプション](./options.md) · [ESLint からの移行](./migration.md)",
   },
@@ -127,7 +130,7 @@ const text: Record<
         "更严格的预设",
         "只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。",
       ],
-      optIn: ["按需启用", "不属于任何预设。在 `vue.linter.rules` 中按名称启用。"],
+      optIn: ["按需启用", "不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。"],
     },
     allLegend:
       "“预设”列给出启用该规则的最小预设，规则页面列出全部预设。各预设包含的内容见[预设](../rules/index.md#预设)。",
@@ -137,7 +140,7 @@ const text: Record<
       contract: "计划中；尚未报告",
     },
     crossFileUse:
-      "在 `vue.linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `vue.linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。",
+      "在传给 `withVue` 的 `linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。",
     related:
       "[规则概览](../rules/index.md) · [规则选项](./options.md) · [从 ESLint 迁移](./migration.md)",
   },
@@ -158,7 +161,7 @@ const text: Record<
       ],
       optIn: [
         "Opcionais",
-        "Não fazem parte de nenhuma predefinição. Ative pelo nome em `vue.linter.rules`.",
+        "Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.",
       ],
     },
     allLegend:
@@ -169,7 +172,7 @@ const text: Record<
       contract: "Planejada; ainda não é reportada",
     },
     crossFileUse:
-      "Ative estas verificações com `crossFile: true` em `vue.linter` ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `vue.linter.rules` como `croquis/cf/<name>`, sem `vize:`.",
+      "Ative estas verificações com `crossFile: true` em `linter`, passado a `withVue`, ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `linter.rules` como `croquis/cf/<name>`, sem `vize:`.",
     related:
       "[Visão geral das regras](../rules/index.md) · [Opções das regras](./options.md) · [Migração do ESLint](./migration.md)",
   },
@@ -190,7 +193,7 @@ const text: Record<
       ],
       optIn: [
         "À activer",
-        "Dans aucun préréglage. Activez-les par leur nom dans `vue.linter.rules`.",
+        "Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.",
       ],
     },
     allLegend:
@@ -201,7 +204,7 @@ const text: Record<
       contract: "Prévue ; pas encore signalée",
     },
     crossFileUse:
-      "Activez ces vérifications avec `crossFile: true` dans `vue.linter`, ou lancez `vize lint --cross-file`. Les diagnostics s’affichent sous la forme `vize:croquis/cf/<name>` ; configurez-les dans `vue.linter.rules` sous la forme `croquis/cf/<name>`, sans `vize:`.",
+      "Activez ces vérifications avec `crossFile: true` dans `linter`, passé à `withVue`, ou lancez `vize lint --cross-file`. Les diagnostics s’affichent sous la forme `vize:croquis/cf/<name>` ; configurez-les dans `linter.rules` sous la forme `croquis/cf/<name>`, sans `vize:`.",
     related:
       "[Vue d’ensemble des règles](../rules/index.md) · [Options des règles](./options.md) · [Migrer depuis ESLint](./migration.md)",
   },

@@ -49,14 +49,12 @@ Vue 2 と petite-vue では従来どおり報告しません。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-number-modifiers": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-on-number-modifiers": "error"
+    }
   },
 });
 ```

@@ -5,37 +5,37 @@ Keep these settings in configuration when the CLI and Vite+ tasks should follow 
 For a first run and the available command options, see [linting with the CLI](./cli.md#lint).
 To understand the cross-file reports, see [component trees and complexity](./cross-file-complexity.md).
 
-Keep native lint settings in `vue.linter` in `vite.config.*`; Vite+ task overrides can use `lint.vue`:
+Compose native lint settings through `.withVue({ linter: ... })`. Keep the root `lint` section for
+the host's Oxlint flat config:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  lint: {
-    vue: {
-      preset: "opinionated",
-      crossFile: true,
-      strictReactivity: true,
-      crossFileTree: true,
-      crossFileComplexity: true,
-      maxWarnings: 0,
-      reportUnusedDisableDirectives: true,
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "opinionated",
+    crossFile: true,
+    strictReactivity: true,
+    crossFileTree: true,
+    crossFileComplexity: true,
+    maxWarnings: 0,
+    reportUnusedDisableDirectives: true,
   },
 });
 ```
 
-| Setting | Default | Effect |
-| --- | --- | --- |
-| `preset` | `happy-path` | Select the group of enabled rules. |
-| `crossFile` | `false` | Check relationships between the selected Vue files. |
-| `crossFileTree` | `false` | Print the provide/inject tree and enable cross-file analysis. |
-| `crossFileComplexity` | `false` | Print complexity scores and hotspots and enable cross-file analysis. |
-| `strictReactivity` | `false` | Enable `type/no-reactivity-loss`, unless an explicit rule setting overrides it. |
-| `maxWarnings` | Unset | Fail when the warning count exceeds this limit; `0` permits none. |
-| `reportUnusedDisableDirectives` | `false` | Report supported disable comments that suppress no Vize finding. |
+| Setting                         | Default      | Effect                                                                          |
+| ------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| `preset`                        | `happy-path` | Select the group of enabled rules.                                              |
+| `crossFile`                     | `false`      | Check relationships between the selected Vue files.                             |
+| `crossFileTree`                 | `false`      | Print the provide/inject tree and enable cross-file analysis.                   |
+| `crossFileComplexity`           | `false`      | Print complexity scores and hotspots and enable cross-file analysis.            |
+| `strictReactivity`              | `false`      | Enable `type/no-reactivity-loss`, unless an explicit rule setting overrides it. |
+| `maxWarnings`                   | Unset        | Fail when the warning count exceeds this limit; `0` permits none.               |
+| `reportUnusedDisableDirectives` | `false`      | Report supported disable comments that suppress no Vize finding.                |
 
-For settings shared with CLI and editor, put these keys in `vue.linter`. `crossFileTree` and
+For settings shared with CLI and editor, put these keys in the `linter` object passed to
+`withVue`. `crossFileTree` and
 `crossFileComplexity` also enable cross-file analysis. Cross-file checks operate
 on the files selected for a native CLI run. The strict-reactivity switch enables
 `type/no-reactivity-loss` for both CLI and editor diagnostics; explicit rule
@@ -56,8 +56,8 @@ strings, template literals, and regular expressions does not suppress findings.
 Template comments retain the `eslint-` / `oxlint-` grammar described below;
 existing CSS `vize-disable` comments keep their style-block behavior.
 
-Vite+ lint tasks accept paths and `--fix`. Put native-only flags in `lint.vue`
-instead of passing them through to Oxlint. For example, `vp run lint -- src`
+Vite+ lint tasks accept paths and `--fix`. Put native-only settings in the `linter` object passed
+to `withVue` instead of passing them through to Oxlint. For example, `vp run lint -- src`
 runs both linters with their own configuration.
 
 <span id="unused-disable-directives"></span>
@@ -91,13 +91,12 @@ Lint reports also include failures from parsing source or loading a type-aware
 project. These diagnostic IDs are outside the preset rule catalogue. Follow the
 message and reference page to repair the input, then run lint again.
 
-| Diagnostic | Reference |
-| --- | --- |
-| `parser/template` | [Template syntax and parser recovery](../rules/reference/parser-template.md) |
-| `parser/sfc` | [Single-file component structure](../rules/reference/parser-sfc.md) |
-| `parser/jsx` | [JSX/TSX parsing and lowering](../rules/reference/parser-jsx.md) |
+| Diagnostic                   | Reference                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| `parser/template`            | [Template syntax and parser recovery](../rules/reference/parser-template.md)         |
+| `parser/sfc`                 | [Single-file component structure](../rules/reference/parser-sfc.md)                  |
+| `parser/jsx`                 | [JSX/TSX parsing and lowering](../rules/reference/parser-jsx.md)                     |
 | `type/project-configuration` | [TypeScript project configuration](../rules/reference/type-project-configuration.md) |
-
 
 ## Static class defaults
 
@@ -105,11 +104,11 @@ message and reference page to repair the input, then run lint again.
 literal `class` attribute, such as `class="button button"`. Dynamic bindings
 remain unchecked, and the rule does not apply an automatic fix.
 
-| Preset | Previous default | Current default |
-| --- | --- | --- |
-| `happy-path`, `ecosystem` | Off | Warning |
-| `opinionated`, `nuxt` | Warning | Warning |
-| `essential`, `incremental` | Off | Off |
+| Preset                     | Previous default | Current default |
+| -------------------------- | ---------------- | --------------- |
+| `happy-path`, `ecosystem`  | Off              | Warning         |
+| `opinionated`, `nuxt`      | Warning          | Warning         |
+| `essential`, `incremental` | Off              | Off             |
 
 An explicit `rules` entry can disable the warning or change its severity.
 `incremental` continues to start empty; enable this rule explicitly when adopting it.

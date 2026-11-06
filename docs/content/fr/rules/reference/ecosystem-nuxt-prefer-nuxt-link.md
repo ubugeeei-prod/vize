@@ -38,14 +38,12 @@ NuxtLink gère la même destination interne au moyen du routeur Nuxt.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/nuxt-prefer-nuxt-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/nuxt-prefer-nuxt-link": "warn"
+    }
   },
 });
 ```

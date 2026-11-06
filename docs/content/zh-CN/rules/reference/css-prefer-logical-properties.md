@@ -42,14 +42,12 @@ description: "建议使用 CSS 逻辑属性，以更好地支持国际化。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-logical-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/prefer-logical-properties": "warn"
+    }
   },
 });
 ```

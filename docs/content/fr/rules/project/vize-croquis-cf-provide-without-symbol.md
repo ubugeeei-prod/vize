@@ -110,11 +110,9 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/provide-without-symbol": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/provide-without-symbol": "warn" },
   },
 });
 ```

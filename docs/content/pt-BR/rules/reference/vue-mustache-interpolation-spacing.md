@@ -42,14 +42,12 @@ Espaços separam a expressão dos delimitadores de abertura e fechamento das cha
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/mustache-interpolation-spacing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/mustache-interpolation-spacing": "warn"
+    }
   },
 });
 ```
