@@ -222,6 +222,33 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   ]) {
     assert.match(incremental, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
+  const incrementalKani = readRepoFile(
+    "tests",
+    "davinci_test_support",
+    "src",
+    "l3_reference",
+    "incremental_proofs.rs",
+  );
+  for (const name of [
+    "retain_keeps_the_addressed_element",
+    "retain_allocates_one_missing_address",
+    "the_patched_tree_displays_the_view",
+    "allocation_is_exactly_the_inserted_delta",
+    "top_level_identities_are_retained_or_fresh",
+    "an_update_is_recompute_and_reorders_allocate_nothing",
+  ]) {
+    assert.match(
+      incrementalKani,
+      new RegExp(
+        `^#\\[kani::proof\\]\\n#\\[kani::unwind\\(\\d+\\)\\]\\n#\\[kani::solver\\(cadical\\)\\]\\nfn ${name}\\(\\)`,
+        "mu",
+      ),
+      `missing incremental Kani harness ${name}`,
+    );
+  }
+  const kaniWorkflow = readRepoFile(".github", "workflows", "davinci-kani.yml");
+  assert.match(kaniWorkflow, /incremental_proofs\.rs/u);
+  assert.match(kaniWorkflow, /L3 reference schedule, checker, and incremental laws/u);
   assert.match(
     readRepoFile("davinci", "vize_l2_to_l3", "tests", "l3_reference_fixture.rs"),
     /^    mod schedule;$/mu,
