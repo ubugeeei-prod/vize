@@ -48,11 +48,35 @@ impl HoverService {
     /// Volar and tsserver open with the code block.
     pub(super) fn decorate_corsa_hover_markdown(value: &str) -> String {
         let value = value.trim();
+        if let Some(authored) = authored_setup_type_parameter(value) {
+            return authored;
+        }
         if is_bare_type(value) {
             return Self::wrap_type_info_in_codeblock(value);
         }
         value.to_string()
     }
+}
+
+/// TypeScript names the canonical setup function as the owner of a generic
+/// parameter and prints its generated return type. Keep the authored part of
+/// that quick info while retaining any documentation after the code fence.
+fn authored_setup_type_parameter(value: &str) -> Option<String> {
+    let fenced = value.strip_prefix("```typescript\n")?;
+    let (code, documentation) = fenced.split_once("\n```")?;
+    let (authored, generated) = code.split_once(" in __setup<")?;
+    if !authored.starts_with("(type parameter) ")
+        || !generated.contains("__vize_setup_props: $SetupProps;")
+    {
+        return None;
+    }
+
+    let mut result = String::with_capacity(value.len());
+    result.push_str("```typescript\n");
+    result.push_str(authored);
+    result.push_str("\n```");
+    result.push_str(documentation);
+    Some(result)
 }
 
 fn is_bare_type(text: &str) -> bool {
@@ -80,5 +104,20 @@ mod tests {
             HoverService::decorate_corsa_hover_markdown("A component description."),
             "A component description."
         );
+    }
+
+    #[test]
+    fn setup_type_parameter_hides_generated_owner_and_return_type() {
+        let native = "```typescript\n(type parameter) T extends Item in __setup<T extends Item, K extends keyof T>(): {\n    __vize_setup_props: $SetupProps;\n}\n```\n\nThe item type.";
+        assert_eq!(
+            HoverService::decorate_corsa_hover_markdown(native),
+            "```typescript\n(type parameter) T extends Item\n```\n\nThe item type."
+        );
+    }
+
+    #[test]
+    fn authored_setup_function_hover_is_not_rewritten() {
+        let native = "```typescript\n(type parameter) T in __setup<T>(): void\n```";
+        assert_eq!(HoverService::decorate_corsa_hover_markdown(native), native);
     }
 }
