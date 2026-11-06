@@ -90,6 +90,12 @@ impl CorsaVueHoverDocument {
     }
 }
 
+impl From<CorsaVueVirtualDocument> for CorsaVueHoverDocument {
+    fn from(document: CorsaVueVirtualDocument) -> Self {
+        Self::new(Arc::new(document))
+    }
+}
+
 fn hover_rows(document: &CorsaVueVirtualDocument) -> impl Iterator<Item = ProjectionRow<'_>> + '_ {
     document
         .mapping

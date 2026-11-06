@@ -173,3 +173,91 @@ fn documentation(hover: &LspHover) -> Option<&str> {
     let documentation = documentation.trim();
     (!documentation.is_empty()).then_some(documentation)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use oxc_span::SourceType;
+    use tower_lsp::lsp_types::{Position, Url};
+    use vize_canon::{
+        CorsaSourceCatalog, CorsaVueVirtualDocument, LspPosition, virtual_ts::ProjectionMapping,
+    };
+
+    use super::*;
+    use crate::ide::DiagnosticService;
+    use crate::server::ServerState;
+
+    #[test]
+    fn shared_hover_mapping_matches_owned_nested_expression_mapping() {
+        let uri = Url::parse("file:///tmp/NestedHover.vue").unwrap();
+        let source = r#"<script setup lang="ts">
+import Child from "./Child.vue"
+const user = { profile: { labels: ["前🌸"] } }
+const index = 0
+const fallback = "unknown"
+</script>
+<template>
+  <Child :title="user.profile?.labels[index]?.trim() ?? fallback" />
+</template>
+"#;
+        let virtual_result = DiagnosticService::generate_virtual_ts(&uri, source, false, false)
+            .expect("nested expression projection");
+        let shared = HoverDocument::Shared(
+            CorsaVueVirtualDocument {
+                request_uri: "file:///tmp/NestedHover.vue.ts".into(),
+                code: virtual_result.code.clone(),
+                pre_rewrite_code: "".into(),
+                mapping: ProjectionMapping::from_spans(virtual_result.source_mappings.clone()),
+                import_source_map: virtual_result.import_source_map.clone(),
+                source_type: SourceType::from_path(Path::new("NestedHover.ts")).unwrap(),
+                virtual_suffix: ".ts",
+                dependencies: Vec::new(),
+                resolved_dependencies: Vec::new(),
+                materialized_sources: Vec::new(),
+                source_catalog: CorsaSourceCatalog::default(),
+                session_project_root: None,
+            }
+            .into(),
+        );
+        let owned = HoverDocument::Owned(Box::new(corsa_support::CanonicalVirtualDocument {
+            source_uri: uri.clone(),
+            request_uri: "file:///tmp/NestedHover.vue.ts".into(),
+            virtual_result,
+            dependencies: Vec::new(),
+            materialized_sources: Vec::new(),
+            session_project_roots: Vec::new(),
+            source_catalogs: Vec::new(),
+        }));
+        let state = ServerState::new();
+
+        for token in ["labels", "trim", "fallback"] {
+            let start = source.rfind(token).unwrap();
+            let end = start + token.len();
+            let ctx = IdeContext::testing(&state, &uri, start, source.into());
+            let owned_start = owned.source_offset_to_position(start).unwrap();
+            let owned_end = owned.source_offset_to_position(end).unwrap();
+            assert_eq!(shared.source_offset_to_position(start), Some(owned_start));
+            assert_eq!(shared.source_offset_to_position(end), Some(owned_end));
+
+            let generated = LspRange {
+                start: LspPosition {
+                    line: owned_start.0,
+                    character: owned_start.1,
+                },
+                end: LspPosition {
+                    line: owned_end.0,
+                    character: owned_end.1,
+                },
+            };
+            let expected_start = crate::ide::offset_to_position(source, start);
+            let expected_end = crate::ide::offset_to_position(source, end);
+            let expected = Range::new(
+                Position::new(expected_start.0, expected_start.1),
+                Position::new(expected_end.0, expected_end.1),
+            );
+            assert_eq!(owned.map_range(&ctx, &generated), Some(expected));
+            assert_eq!(shared.map_range(&ctx, &generated), Some(expected));
+        }
+    }
+}
