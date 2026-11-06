@@ -172,11 +172,13 @@ fn slot_param_defaults_use_binding_specific_render_prefixes() {
             ("optionValue", BindingType::Options),
         ],
     );
-    assert!(
-        output.contains(
-            "{ value = $setup.setupValue, title = $props.propValue, data = $data.dataValue, option = $options.optionValue, other = _ctx.fallback }"
-        ),
-        "{output}"
+    assert_eq!(
+        output,
+        card(
+            "default",
+            "{ value = $setup.setupValue, title = $props.propValue, data = $data.dataValue, option = $options.optionValue, other = _ctx.fallback }",
+            "value"
+        )
     );
 }
 
