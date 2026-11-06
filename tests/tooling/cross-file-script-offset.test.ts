@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
+import { currentRuleDocumentationPacket } from "./support/current-rule-documentation.ts";
 
 type Message = {
   ruleId: string;
@@ -168,22 +169,24 @@ function appPacket(packets: Packet[]): Packet {
   return packet;
 }
 function expectedFromBefore(packets: Packet[], input: Input): Packet[] {
-  const expected = structuredClone(packets);
-  // Keep the public-before packet intact; only current source uses rule leaf pages.
-  for (const packet of expected) {
-    for (const message of packet.messages) {
-      if (message.ruleId !== "vue/no-multi-spaces") continue;
-      assert.equal(message.ruleDocsPath, "docs/content/rules/vue.md");
-      for (const locale of ["", "ja/"]) {
-        assert.ok(
-          fs.existsSync(
-            path.join(root, "docs/content", locale, "rules/reference/vue-no-multi-spaces.md"),
-          ),
-          "committed current rule documentation page",
-        );
-      }
-      message.ruleDocsPath = "docs/content/rules/reference/vue-no-multi-spaces.md";
-    }
+  const expected = currentRuleDocumentationPacket(packets) as Packet[];
+  const setupBinding = "setupCafé";
+  const setupOffset = input.app.indexOf(setupBinding);
+  if (setupOffset >= 0) {
+    const start = point(input.app, bytes(input.app.slice(0, setupOffset)));
+    const end = point(input.app, bytes(input.app.slice(0, setupOffset + setupBinding.length)));
+    const packet = appPacket(expected);
+    packet.messages.push({
+      ruleId: "vue/no-unused-setup-bindings",
+      ruleDocsPath: "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+      severity: 1,
+      message: `[vize:vue/no-unused-setup-bindings] Setup binding '${setupBinding}' is never read`,
+      line: start.line,
+      column: start.column,
+      endLine: end.line,
+      endColumn: end.column,
+    });
+    packet.warningCount = Number(packet.warningCount) + 1;
   }
   for (const message of appPacket(expected).messages.filter(scriptProvide)) {
     const anchor = diagnosticAnchors(input.app, message).find(

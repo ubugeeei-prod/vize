@@ -7,6 +7,10 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.ts";
+import {
+  currentRuleDocumentationJson,
+  currentRuleDocumentationPlain,
+} from "./current-rule-documentation.ts";
 import { cases } from "./cross-file-sfc-effects/corpus.ts";
 import { checkWasm, expectedReport } from "./cross-file-sfc-effects/oracle.ts";
 
@@ -22,6 +26,47 @@ function save(name: string, value: unknown): void {
 function record(value: unknown): Record<string, unknown> {
   assert.ok(value !== null && typeof value === "object" && !Array.isArray(value));
   return value as Record<string, unknown>;
+}
+function currentExpectedJson(test: (typeof cases)[number], before: string): string {
+  const current = currentRuleDocumentationJson(before);
+  if (test.id !== "tsx-setup") return current;
+  const packets = JSON.parse(current) as {
+    file: string;
+    messages: Record<string, unknown>[];
+    errorCount: number;
+    warningCount: number;
+  }[];
+  const child = packets.find((packet) => packet.file === "Child.vue");
+  assert.ok(child);
+  child.messages.push({
+    ruleId: "vue/no-unused-setup-bindings",
+    ruleDocsPath: "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+    severity: 1,
+    message: "[vize:vue/no-unused-setup-bindings] Setup binding 'view' is never read",
+    line: 3,
+    column: 7,
+    endLine: 3,
+    endColumn: 11,
+    help: "Remove the binding or prefix its name with underscore if intentionally unused",
+  });
+  child.warningCount += 1;
+  return JSON.stringify(packets, null, 2) + (current.endsWith("\n") ? "\n" : "");
+}
+function currentExpectedPlain(test: (typeof cases)[number], before: string): string {
+  let current = expectedReport(test, currentRuleDocumentationPlain(before));
+  if (test.id !== "tsx-setup") return current;
+  const oldHeader = "Patina lint report: No problems found in 2 file(s)\n\n";
+  assert.equal(current.split(oldHeader).length, 2, "one frozen public lint header");
+  current = current.replace(
+    oldHeader,
+    "Patina lint report: 1 warning in 2 files\n\n" +
+      "Child.vue\n" +
+      "  Child.vue:3:7 warning vue/no-unused-setup-bindings Setup binding 'view' is never read\n" +
+      "    Reference: docs/content/rules/reference/vue-no-unused-setup-bindings.md\n" +
+      "    Help:\n" +
+      "      Remove the binding or prefix its name with underscore if intentionally unused\n\n",
+  );
+  return current;
 }
 function run(
   label: string,
@@ -202,7 +247,11 @@ for (const test of cases) {
     [...flags, "--format", "json", "*.vue"],
     project,
   );
-  assert.deepEqual(afterJson, beforeJson, `${test.id}: complete diagnostic packet`);
+  assert.deepEqual(
+    afterJson,
+    Buffer.from(currentExpectedJson(test, beforeJson.toString("utf8"))),
+    `${test.id}: complete diagnostic packet`,
+  );
   assert.equal(statuses.get(`${test.id}.source-json`), statuses.get(`${test.id}.public-json`));
   if (test.diagnostics) {
     const diagnostics: unknown = JSON.parse(beforeJson.toString("utf8"));
@@ -235,7 +284,7 @@ for (const test of cases) {
     ],
     project,
   );
-  const expectedPlain = expectedReport(test, beforePlain.toString("utf8"));
+  const expectedPlain = currentExpectedPlain(test, beforePlain.toString("utf8"));
   fs.writeFileSync(path.join(output, `${test.id}.expected-plain`), expectedPlain);
   assert.equal(afterPlain.toString("utf8"), expectedPlain, `${test.id}: complete report packet`);
   assert.equal(statuses.get(profileName), statuses.get(`${test.id}.public-plain`));
