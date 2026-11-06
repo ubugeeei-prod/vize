@@ -74,11 +74,13 @@ fn card(name: &str, params: &str, read: &str) -> String {
 }
 
 fn card_with_bindings(name: &str, params: &str, read: &str) -> String {
-    card(name, params, read).replacen(
-        "function ssrRender(_ctx, _push, _parent, _attrs)",
-        "function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options)",
-        1,
-    )
+    card(name, params, read)
+        .replacen(
+            "function ssrRender(_ctx, _push, _parent, _attrs)",
+            "function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options)",
+            1,
+        )
+        .into()
 }
 
 #[test]
