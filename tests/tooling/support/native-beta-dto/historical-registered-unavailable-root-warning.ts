@@ -69,7 +69,7 @@ export function observeRegisteredUnavailableRootWarning(...args: Args) {
   assert.ok(members.has(group.tid));
   assert.equal(group.code, 0);
   assert.equal(group.rawResult, "?");
-  assert.ok(Number.isSafeInteger(group.line));
+  assert.ok(typeof group.line === "number" && Number.isSafeInteger(group.line));
   for (const exit of exits.values()) {
     assert.equal(exit.code, 0);
     assert.ok(Number.isSafeInteger(exit.line));
@@ -113,7 +113,7 @@ export function observeRegisteredUnavailableRootWarning(...args: Args) {
   assert.equal(attempt.requestedBytes, historicalRootWarning.length);
   assert.equal(stderr.tid, attempt.tid);
   requireCompletedBefore(stderr, attempt);
-  requireObservedEntryBefore(attempt, group);
+  requireObservedEntryBefore(attempt, { ...group, line: group.line });
   assert.ok(micros(group.at) < micros(exits.get(attempt.tid)!.at));
 
   const completed = Buffer.from(stderr.data);

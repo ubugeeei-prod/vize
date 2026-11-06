@@ -4,7 +4,11 @@ import path from "node:path";
 import { createInterface } from "node:readline";
 import type { Syscall } from "./audit-wire-types.ts";
 import { ExecveHandoffs } from "./execve-handoff.ts";
-import { deriveMergedTrace, type MergedTraceAuthority } from "./merged-trace.ts";
+import {
+  deriveMergedTrace,
+  type MergedTraceAuthority,
+  type MergedTracePoint,
+} from "./merged-trace.ts";
 import {
   registerMergedCompletion,
   registerMergedPoint,

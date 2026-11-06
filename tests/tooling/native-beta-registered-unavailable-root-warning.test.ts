@@ -84,7 +84,7 @@ test("registered unavailable observer rejects channel, body, owner and order mut
     [
       "extra stderr",
       (args) => {
-        args[3].push({ ...args[3].find((row) => row.fd === 2)!, line: 302 });
+        args[3] = [...args[3], { ...args[3].find((row) => row.fd === 2)!, line: 302 }];
       },
     ],
     [

@@ -58,7 +58,7 @@ export const watcherSuccessor = {
   mixedSha256: "405ec9fb51f76a5928eb7c58fca93f190cf474352cb853055525e56005399c9a",
   mixedRuntimeSha256: "f42c6516ae29e776a544e282e48de674e72308e3e37626204eff5a0ec34a79ef",
   ioPath: "tests/tooling/support/native-beta-dto/native-io.ts",
-  ioSha256: "62e9d449c2a572ad8cc528332fa0bce69f79ce150b95464e0b9999713a4a5250",
+  ioSha256: "d06ef81cc255149902033e9e5646b234305a22d52d47259fa28a09cba49899d3",
   ioRuntimeSha256: "729ce9f748ac9f76bc2073eb0b7961b630fc6485b750359bea1d7d88ce7a4de1",
   completionOrderPath: "tests/tooling/support/native-beta-dto/native-completion-order.ts",
   completionOrderSha256: "b5fcbd717f1f0d377c39a904a4702cfb40412acda94f07540758049adb9340e8",
@@ -127,7 +127,7 @@ export const postAckDependencies = [
   ],
   [
     "tests/tooling/support/native-beta-dto/historical-registered-unavailable-root-warning.ts",
-    "3a4de772155deb9ea048a09918baebbb910470dc6dfe2efede0a74783e90f19a",
-    "30b9a2d5497cf70b405f7775316d344c16c31ed90fd03b5760f34e57cd051ecd",
+    "87ccb7e1d1bea08c93a58d13be2fa34750a792a8194f2295364b15c707b89905",
+    "aeefa2db9d78d0875e341900d56e8012653a3702524853d7e8020aeda1734329",
   ],
 ] as const;
