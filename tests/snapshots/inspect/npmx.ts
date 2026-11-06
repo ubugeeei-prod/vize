@@ -9,9 +9,9 @@ describe("npmx.dev inspector parity with Vue compiler", () => {
     assertInspectorCompareBudgets(npmxApp, [
       {
         target: "dom",
-        changedFiles: 220,
-        additions: 17_122,
-        removals: 23_081,
+        changedFiles: 217,
+        additions: 17_711,
+        removals: 22_946,
         officialErrors: 0,
         vizeErrors: 0,
       },
