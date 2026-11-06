@@ -784,7 +784,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
-              "ts"
+              "js"
             ],
             "selector": "linter manifest pinned authored sources"
           }
