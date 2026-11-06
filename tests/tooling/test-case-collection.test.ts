@@ -244,24 +244,51 @@ test("each test job names its case packet after itself and the report downloads 
     assert.ok(cases?.run?.includes("test-case-reporter.ts"));
     assert.ok(cases?.run?.includes(packet));
     const upload = selected.steps.find((step) => step.with?.name === artifact);
+    assert.ok(upload);
     assert.equal(upload.with?.name, artifact);
     assert.ok(upload.with?.path?.endsWith(packet));
     assert.equal(upload.with?.["if-no-files-found"], "error");
   };
-  assertNodeJob(
-    "check.yml",
-    "check-js",
-    "Test fast JS/TS workflow contracts",
-    "test-cases-check-js.json",
-    "test-cases-check-js-${{ github.run_attempt }}",
-  );
-  assertNodeJob(
-    "check.yml",
+  const assertSmallNodeJob = (
+    job: string,
+    stepName: string,
+    suite: string,
+    packet: string,
+    name: string,
+  ) => {
+    const step = workflow("check.yml").jobs[job].steps.find(
+      (candidate) => candidate.name === stepName,
+    );
+    assert.equal(step?.uses, "./.github/actions/test-small-node-cases");
+    assert.deepEqual(step?.with, { suite, job: name, packet });
+  };
+  assertSmallNodeJob("check-js", "Check fast JS/TS", "check-js", "check-js", "check-js");
+  assertSmallNodeJob(
     "node-engine-compat",
     "Check package engine matrix",
-    "test-cases-node-engine-${{ matrix.node-version }}.json",
-    "test-cases-node-engine-${{ matrix.node-version }}-${{ github.run_attempt }}",
+    "node-engine",
+    "node-engine-${{ matrix.node-version }}",
     "node-engine-compat (${{ matrix.node-version }})",
+  );
+  const smallAction = parse(
+    readRepoFile(".github", "actions", "test-small-node-cases", "action.yml"),
+  ) as {
+    runs: {
+      steps: Array<{ id?: string; env?: Record<string, string>; with?: Record<string, string> }>;
+    };
+  };
+  const runner = smallAction.runs.steps.find((step) => step.id === "cases");
+  const smallUpload = smallAction.runs.steps.find(
+    (step) => step.with?.["if-no-files-found"] === "error",
+  );
+  assert.equal(runner?.env?.TEST_CASES_JOB, "${{ inputs.job }}");
+  assert.equal(
+    runner?.env?.VIZE_TEST_CASES,
+    "${{ runner.temp }}/test-cases-${{ inputs.packet }}.json",
+  );
+  assert.equal(
+    smallUpload?.with?.name,
+    "test-cases-${{ inputs.packet }}-${{ github.run_attempt }}",
   );
   assertNodeJob(
     "pr-source-checks.yml",

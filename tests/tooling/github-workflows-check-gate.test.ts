@@ -158,7 +158,8 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.equal(ledgerUpload?.with?.["if-no-files-found"], "error");
   assert.equal(ledgerUpload?.with?.["retention-days"], 14);
   assert.equal(ledgerUpload?.if, "${{ always() }}");
-  assert.match(commands("check-js"), /vp run --workspace-root check:iteration/);
+  const smallNodeCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  assert.match(smallNodeCases, /vp run --workspace-root check:iteration/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
   const appAction = parse(readRepoFile(".github", "actions", "check-vize-apps", "action.yml")) as {
     runs: { using: string; steps: NonNullable<Job["steps"]> };
@@ -230,11 +231,11 @@ test("input selection gates work inside required jobs and keeps the planner depe
     const check = job.steps?.find((step) => {
       const invocation = step.run ?? step.uses ?? "";
       return jobName === "node-engine-compat"
-        ? invocation.startsWith("node --test") &&
-            invocation.includes(command.slice("node --test ".length))
+        ? step.uses === "./.github/actions/test-small-node-cases"
         : invocation.startsWith(command);
     });
     assert.ok(check, `${jobName} must keep its product check`);
+    if (jobName === "node-engine-compat") assert.equal(check.with?.suite, "node-engine", command);
     assert.equal(check.if, `\${{ needs.iteration-plan.outputs.${output} == 'true' }}`);
     assert.ok(
       job.steps?.some(

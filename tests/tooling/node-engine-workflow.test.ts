@@ -17,8 +17,8 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
   const setupStep = parsedJob?.steps?.find((step) =>
     step.uses?.startsWith("voidzero-dev/setup-vp@"),
   );
-  const testStep = parsedJob?.steps?.find((step) =>
-    step.run?.includes("tests/tooling/node-engine-matrix.test.ts"),
+  const testStep = parsedJob?.steps?.find(
+    (step) => step.uses === "./.github/actions/test-small-node-cases",
   );
 
   assert.deepEqual(parsedJob?.strategy?.matrix?.["node-version"], ["22", "24"]);
@@ -30,10 +30,18 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
     "cache-save": false,
     "run-install": false,
   });
-  assert.match(
-    testStep?.run ?? "",
-    /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
-  );
-  assert.ok(testStep?.run?.split(/\s+/).includes("tests/tooling/bundler-plugin-manifests.test.ts"));
+  assert.equal(testStep?.uses, "./.github/actions/test-small-node-cases");
+  assert.deepEqual(testStep?.with, {
+    suite: "node-engine",
+    job: "node-engine-compat (${{ matrix.node-version }})",
+    packet: "node-engine-${{ matrix.node-version }}",
+  });
+  const action = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  for (const file of [
+    "tests/tooling/node-engine-matrix.test.ts",
+    "tests/tooling/package-manifests.test.ts",
+    "tests/tooling/bundler-plugin-manifests.test.ts",
+  ])
+    assert.ok(action.includes(file));
   assert.doesNotMatch(job, /vscode-typescript-vue-plugin\.test\.ts/);
 });

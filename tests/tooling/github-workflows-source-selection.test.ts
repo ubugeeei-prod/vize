@@ -107,12 +107,12 @@ test("source planning uses Node and offline metadata before selecting affected p
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}",
   );
   assert.equal(js[fast]["continue-on-error"], undefined);
-  assert.equal(js[fast].run, "vp run --workspace-root check:iteration");
-  const cases = js.find((step) => step.name === "Test fast JS/TS workflow contracts");
-  assert.equal(cases?.env?.TEST_CASES_JOB, "check-js");
-  assert.match(cases?.run ?? "", /test-case-reporter\.ts/);
-  assert.match(cases?.run ?? "", /github-workflows-source-selection\.test\.ts/);
-  assert.match(cases?.run ?? "", /vp-bootstrap-cache\.test\.mjs/);
+  assert.equal(js[fast].uses, "./.github/actions/test-small-node-cases");
+  assert.deepEqual(js[fast].with, { suite: "check-js", job: "check-js", packet: "check-js" });
+  const smallCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  assert.match(smallCases, /vp run --workspace-root check:iteration/);
+  assert.match(smallCases, /github-workflows-source-selection\.test\.ts/);
+  assert.match(smallCases, /vp-bootstrap-cache\.test\.mjs/);
 });
 
 test("the existing required Rust source job runs the original three contracts with strict defaults", () => {
