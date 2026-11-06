@@ -18,16 +18,16 @@ const TEMPLATE: &str = concat!(
     r#"<component :is="map[foo]" @pick="(v) => take(v)"></component>"#,
 );
 
-fn generate() -> String {
+fn generate_source(script: &str, template: &str) -> String {
     let allocator = vize_carton::Allocator::new();
-    let (root, errors) = vize_armature::parse(&allocator, TEMPLATE);
+    let (root, errors) = vize_armature::parse(&allocator, template);
     assert!(errors.is_empty(), "template errors: {errors:?}");
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    analyzer.analyze_script_setup(SCRIPT);
+    analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
     generate_virtual_ts_with_offsets(
         &analyzer.finish(),
-        Some(SCRIPT),
+        Some(script),
         Some(&root),
         0,
         0,
@@ -36,13 +36,21 @@ fn generate() -> String {
     .code
 }
 
-fn alias(nth: usize) -> String {
-    let start = TEMPLATE
+fn generate() -> String {
+    generate_source(SCRIPT, TEMPLATE)
+}
+
+fn alias_for(template: &str, nth: usize) -> String {
+    let start = template
         .match_indices("<component")
         .nth(nth)
         .map(|(start, _)| start)
         .expect("authored component");
     cstr!("__vize_dynamic_is_{start}")
+}
+
+fn alias(nth: usize) -> String {
+    alias_for(TEMPLATE, nth)
 }
 
 #[test]
@@ -88,4 +96,82 @@ fn scope_bound_targets_declare_their_alias_inside_that_scope() {
         1
     );
     insta::assert_snapshot!(template);
+}
+
+#[test]
+fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
+    const SCRIPT: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/",
+        "dynamic-component-shadowed-guard-11601/script.ts.txt",
+    ));
+    const TEMPLATE: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/",
+        "dynamic-component-shadowed-guard-11601/template.html.txt",
+    ));
+    let code = generate_source(SCRIPT, TEMPLATE);
+    let template = &code[code
+        .find(";(function __template()")
+        .expect("template scope")..];
+    let guard_start = TEMPLATE.find("v-if=\"visible\"").expect("outer guard") + "v-if=\"".len();
+    let guard = cstr!("__vize_dynamic_guard_{guard_start}");
+    let outer_alias = alias_for(TEMPLATE, 0);
+    let inner_alias = alias_for(TEMPLATE, 1);
+    let else_guard = cstr!("{guard}_not");
+    let else_outer_alias = alias_for(TEMPLATE, 2);
+    let else_inner_alias = alias_for(TEMPLATE, 3);
+    let capture = cstr!("const {guard} = ((visible));");
+    let outer_declaration =
+        cstr!("const {outer_alias} = ({guard}) ? (map[kind]) : (undefined as never);");
+    let inner_declaration =
+        cstr!("const {inner_alias} = ({guard} && (open)) ? (map[kind]) : (undefined as never);");
+    let else_capture = cstr!("const {else_guard} = (!(visible));");
+    let else_outer_declaration =
+        cstr!("const {else_outer_alias} = ({else_guard}) ? (map[kind]) : (undefined as never);");
+    let else_inner_declaration = cstr!(
+        "const {else_inner_alias} = ({else_guard} && (open)) ? (map[kind]) : (undefined as never);"
+    );
+    let slot_start = template
+        .find("function _slot_default_")
+        .expect("slot scope");
+    let capture_start = template.find(capture.as_str()).expect("guard capture");
+    let alias_start = template
+        .find(outer_declaration.as_str())
+        .expect("captured alias declaration");
+
+    assert!(capture_start < slot_start && slot_start < alias_start);
+    assert_eq!(template.matches(capture.as_str()).count(), 1);
+    assert_eq!(template.matches(outer_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(inner_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(else_capture.as_str()).count(), 1);
+    assert_eq!(template.matches(else_outer_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches(else_inner_declaration.as_str()).count(), 2);
+    assert_eq!(template.matches("((visible)) ? (map[kind])").count(), 0);
+    assert_eq!(template.matches("(!(visible)) ? (map[kind])").count(), 0);
+}
+
+#[test]
+fn guard_without_an_intervening_rebinding_stays_inline() {
+    const SCRIPT: &str = "import Picker from './Picker.vue'\nconst state = { item: { component: Picker } as { component: typeof Picker } | undefined }\nconst rows = [1]\n";
+    const TEMPLATE: &str = concat!(
+        r#"<div v-if="state.item">"#,
+        r#"<component v-for="row in rows" :is="state.item && state.item.component"></component>"#,
+        r#"</div>"#,
+    );
+    let code = generate_source(SCRIPT, TEMPLATE);
+    let template = &code[code
+        .find(";(function __template()")
+        .expect("template scope")..];
+    let alias = alias_for(TEMPLATE, 0);
+    let declaration = cstr!(
+        "const {alias} = ((state.item)) ? (state.item && state.item.component) : (undefined as never);"
+    );
+
+    assert_eq!(
+        template.matches(declaration.as_str()).count(),
+        2,
+        "{template}"
+    );
+    assert_eq!(template.matches("const __vize_dynamic_guard_").count(), 0);
 }

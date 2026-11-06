@@ -1,0 +1,1 @@
+<Panel v-if="visible" v-slot:default="{ kind, open, visible }"><component :is="map[kind]"></component><component v-if="open" :is="map[kind]"></component></Panel><Panel v-else v-slot:default="{ kind, open, visible }"><component :is="map[kind]"></component><component v-if="open" :is="map[kind]"></component></Panel>

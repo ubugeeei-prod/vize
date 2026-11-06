@@ -13171,6 +13171,39 @@
       }
     },
     {
+      "id": "typechecker/regression/dynamic-component-shadowed-guard-11601",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "dynamic-component-shadowed-guard-11601/script.ts.txt",
+          "sha256": "2eefd5d77884114e4fb94fec30e63d7b7dd29c05a643caca8fc7d7336f6918d4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "dynamic-component-shadowed-guard-11601/template.html.txt",
+          "sha256": "560297d7b7fae14a5383685e1dbe4df3624f5a7939e88dc2080a05d0ea6825cd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "html-template",
+              "ts"
+            ],
+            "selector": "virtual_ts::dynamic_component_scope_tests::outer_guard_keeps_its_binding_identity_across_a_shadowing_slot; #11601 outer v-if and v-else guards, a shadowing slot prop, and nested inner guards are pinned and physically consumed. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/escaped-reserved-binding-11769",
       "state": "active",
       "targets": [

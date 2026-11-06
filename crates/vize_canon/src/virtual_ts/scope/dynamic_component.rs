@@ -9,10 +9,11 @@
 //! which is how `vue-tsc` checks the same element.
 
 use vize_carton::{FxHashMap, FxHashSet, String, append};
-use vize_croquis::{Croquis, ScopeKind, drawer::is_dynamic_component_alias};
+use vize_croquis::{Croquis, ScopeId, ScopeKind, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 mod generic_index;
+mod guard;
 mod homogeneous_index;
 
 /// A named value of the built-in `component`, not an authored registry tag.
@@ -69,9 +70,17 @@ pub(crate) fn is_owned_dynamic_component_alias(
 /// component-props pass; the template root declares the rest.
 #[derive(Default)]
 pub(crate) struct DynamicComponentAliases {
+    root_guards: Vec<GuardDeclaration>,
+    scoped_guards: FxHashMap<u32, Vec<GuardDeclaration>>,
+    guard_names: FxHashSet<String>,
     root: Vec<AliasDeclaration>,
     scoped: FxHashMap<u32, Vec<AliasDeclaration>>,
     scoped_starts: FxHashSet<u32>,
+}
+
+struct GuardDeclaration {
+    name: String,
+    expression: String,
 }
 
 struct AliasDeclaration {
@@ -107,7 +116,12 @@ impl DynamicComponentAliases {
             // Only a generic setup can defer an indexed entry type.
             let boxed = generic.then(|| generic_index::value(root, usage)).flatten();
             let expression = boxed.as_deref().unwrap_or(expression).trim();
-            let declaration = match &usage.vif_guard {
+            let guard = usage.vif_guard.as_ref().map(|guard| {
+                aliases
+                    .guard_reference(summary, usage, guard.as_str())
+                    .unwrap_or_else(|| String::from(guard.as_str()))
+            });
+            let declaration = match guard {
                 Some(guard) => AliasDeclaration {
                     start: usage.start,
                     comment: "// @ts-ignore Inference-only alias; authored v-if and v-bind statements own diagnostics.",
@@ -125,16 +139,7 @@ impl DynamicComponentAliases {
                     ),
                 },
             };
-            let scope = summary
-                .scopes
-                .get_scope(usage.scope_id)
-                .filter(|scope| {
-                    matches!(
-                        scope.kind,
-                        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
-                    )
-                })
-                .map(|scope| scope.id.as_u32());
+            let scope = owning_scope(summary, usage.scope_id);
             match scope {
                 Some(scope) => {
                     aliases.scoped_starts.insert(usage.start);
@@ -153,6 +158,9 @@ impl DynamicComponentAliases {
     }
 
     pub(super) fn emit_root(&self, ts: &mut String) {
+        for declaration in &self.root_guards {
+            declaration.push(ts, "  ");
+        }
         for declaration in &self.root {
             declaration.push(ts, "  ");
         }
@@ -167,10 +175,85 @@ impl DynamicComponentAliases {
         indent: &str,
         mut then: impl FnMut(&mut String, u32),
     ) {
+        for declaration in self.scoped_guards.get(&scope).into_iter().flatten() {
+            declaration.push(ts, indent);
+        }
         for declaration in self.scoped.get(&scope).into_iter().flatten() {
             declaration.push(ts, indent);
             then(ts, declaration.start);
         }
+    }
+
+    /// Replace only guard terms whose referenced bindings are rebound between
+    /// their authored evaluation scope and the alias declaration.
+    ///
+    /// Terms without an intervening rebinding remain inline so TypeScript keeps
+    /// their original control-flow narrowing. Captured terms retain the binding
+    /// identity that a slot, loop, or pattern scope would otherwise shadow.
+    fn guard_reference(
+        &mut self,
+        summary: &Croquis,
+        usage: &vize_croquis::croquis::ComponentUsage,
+        guard: &str,
+    ) -> Option<String> {
+        let origins = guard::term_origins(summary, usage, guard)?;
+        let mut rewritten = Vec::with_capacity(origins.len());
+        let mut captured = false;
+        for origin in origins {
+            if guard::term_needs_capture(summary, &origin, usage.scope_id) {
+                captured = true;
+                let name = if origin.negated {
+                    vize_carton::cstr!("__vize_dynamic_guard_{}_not", origin.start)
+                } else {
+                    vize_carton::cstr!("__vize_dynamic_guard_{}", origin.start)
+                };
+                self.collect_guard(
+                    summary,
+                    origin.scope_id,
+                    name.clone(),
+                    String::from(origin.term),
+                );
+                rewritten.push(name);
+            } else {
+                rewritten.push(String::from(origin.term));
+            }
+        }
+        captured.then(|| guard::join_strings(rewritten.as_slice()))
+    }
+
+    /// Record one identity-stable guard term in the scope that evaluated it.
+    fn collect_guard(
+        &mut self,
+        summary: &Croquis,
+        scope_id: ScopeId,
+        name: String,
+        expression: String,
+    ) {
+        if !self.guard_names.insert(name.clone()) {
+            return;
+        }
+
+        let declaration = GuardDeclaration { name, expression };
+        let scope = owning_scope(summary, scope_id);
+        match scope {
+            Some(scope) => self
+                .scoped_guards
+                .entry(scope)
+                .or_default()
+                .push(declaration),
+            None => self.root_guards.push(declaration),
+        }
+    }
+}
+
+impl GuardDeclaration {
+    fn push(&self, ts: &mut String, indent: &str) {
+        append!(
+            *ts,
+            "{indent}// @ts-ignore Inference-only guard; the authored v-if statement owns diagnostics.\n{indent}const {} = ({});\n",
+            self.name,
+            self.expression
+        );
     }
 }
 
@@ -183,6 +266,21 @@ impl AliasDeclaration {
             self.statement
         );
     }
+}
+
+/// The emitted closure owner for a semantic scope, shared by aliases and their
+/// guard captures so the two declarations cannot drift apart.
+fn owning_scope(summary: &Croquis, id: ScopeId) -> Option<u32> {
+    summary
+        .scopes
+        .get_scope(id)
+        .filter(|scope| {
+            matches!(
+                scope.kind,
+                ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+            )
+        })
+        .map(|scope| scope.id.as_u32())
 }
 
 /// The `:is` expression of the `<component>` element starting at `start`.

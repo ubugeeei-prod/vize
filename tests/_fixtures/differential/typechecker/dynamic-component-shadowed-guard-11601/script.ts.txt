@@ -1,0 +1,4 @@
+import Picker from './Picker.vue'
+import Panel from './Panel.vue'
+const map = { a: Picker }
+const visible = true
