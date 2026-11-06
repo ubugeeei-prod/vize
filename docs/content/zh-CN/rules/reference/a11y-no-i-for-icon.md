@@ -43,14 +43,12 @@ description: "禁止使用 &lt;i&gt; 元素表示图标。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-i-for-icon": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-i-for-icon": "warn"
+    }
   },
 });
 ```

@@ -42,14 +42,12 @@ The `.submit` class expresses the reusable styling hook without an ID selector.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-id-selectors": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-id-selectors": "warn"
+    }
   },
 });
 ```

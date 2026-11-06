@@ -38,14 +38,12 @@ Supprimer `accesskey` conserve le bouton Save ordinaire.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-access-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-access-key": "warn"
+    }
   },
 });
 ```

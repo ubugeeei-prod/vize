@@ -335,7 +335,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 ## 跨文件规则 (66)
 
-在 `vue.linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `vue.linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。
+在传给 `withVue` 的 `linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。
 
 | 规则 | 检查内容 | 状态 |
 | --- | --- | --- |

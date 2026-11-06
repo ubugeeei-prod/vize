@@ -39,14 +39,12 @@ sandbox 施加限制；需要脚本能力时，allow-scripts 显式允许这一�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsandboxed-iframe": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unsandboxed-iframe": "warn"
+    }
   },
 });
 ```

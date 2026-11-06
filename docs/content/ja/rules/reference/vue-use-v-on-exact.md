@@ -54,14 +54,12 @@ description: "修飾子付きのイベント操作と競合するハンドラー
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/use-v-on-exact": "warn"
+    }
   },
 });
 ```

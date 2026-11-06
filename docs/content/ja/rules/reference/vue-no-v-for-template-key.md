@@ -36,14 +36,12 @@ Vue 2 では `template` 自体が実体のある要素を描画しないため�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-for-template-key": "error"
+    }
   },
 });
 ```

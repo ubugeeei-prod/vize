@@ -38,14 +38,12 @@ description: "禁止在 &lt;template&gt; 上使用已弃用的 `scope` 属性。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-scope-attribute": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-scope-attribute": "error"
+    }
   },
 });
 ```

@@ -42,14 +42,12 @@ SFC 内の翻訳データに存在しない静的キーを検出します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-i18n-no-missing-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-i18n-no-missing-key": "warn"
+    }
   },
 });
 ```

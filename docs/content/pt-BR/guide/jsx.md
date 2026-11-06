@@ -31,13 +31,8 @@ de opt-in para compilar. Qualquer projeto que já use integração com bundler V
 - `@vizejs/nuxt`
 
 ```ts
-// vite.config.ts — nothing JSX-specific is required
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 Sob o capô, os plugins chamam o ponto nativo/WASM `compileJsx` entrada (exposto a partir de
@@ -225,7 +220,7 @@ const Classic = () => {
 Como cada componente é roteado independentemente, um **único arquivo pode misturar ambos os backends**:
 
 ```tsx
-// vite.config.ts: vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;

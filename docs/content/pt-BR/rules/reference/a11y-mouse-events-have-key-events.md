@@ -46,14 +46,12 @@ As mesmas ações da prévia são executadas ao receber e perder o foco, e o bot
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/mouse-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/mouse-events-have-key-events": "warn"
+    }
   },
 });
 ```

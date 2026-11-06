@@ -14,12 +14,10 @@ template attributes belong to `vue/attribute-hyphenation`.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "vue/prop-name-casing": "error" },
-      ruleOptions: { "vue/prop-name-casing": { casing: "snake_case" } },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/prop-name-casing": "error" },
+    ruleOptions: { "vue/prop-name-casing": { casing: "snake_case" } },
   },
 });
 ```

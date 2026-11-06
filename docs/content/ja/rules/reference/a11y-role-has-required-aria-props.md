@@ -38,14 +38,12 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/role-has-required-aria-props": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/role-has-required-aria-props": "warn"
+    }
   },
 });
 ```

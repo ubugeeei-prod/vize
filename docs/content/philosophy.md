@@ -23,7 +23,7 @@ Traditional Vue.js development requires assembling a constellation of separate t
 
 Vize unifies all of these into a single binary. One parser. One AST. One configuration surface. This eliminates redundant parsing passes, reduces configuration complexity, and ensures that all tools share a consistent understanding of your code.
 
-```
+```diagram
 @vue/compiler-sfc  +  eslint-plugin-vue  +  prettier  +  vue-tsc  +  Storybook
                               ↓
                             vize

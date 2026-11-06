@@ -38,14 +38,12 @@ a の移動先に、JavaScript を実行する javascript: スキームを使っ
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unsafe-url": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unsafe-url": "warn"
+    }
   },
 });
 ```

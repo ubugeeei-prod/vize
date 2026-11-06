@@ -45,14 +45,12 @@ Os exemplos usam index ou o marcam como intencionalmente não usado por meio de 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-vars": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unused-vars": "warn"
+    }
   },
 });
 ```

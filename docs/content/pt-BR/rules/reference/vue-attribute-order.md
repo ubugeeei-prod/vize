@@ -38,14 +38,12 @@ v-if vem primeiro, seguido de id e do manipulador de evento, conforme a ordem da
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-order": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/attribute-order": "warn"
+    }
   },
 });
 ```

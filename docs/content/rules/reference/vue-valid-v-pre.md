@@ -40,14 +40,12 @@ Bare `v-pre` leaves the subtree uncompiled, so its mustaches render as written.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-pre": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-pre": "error"
+    }
   },
 });
 ```

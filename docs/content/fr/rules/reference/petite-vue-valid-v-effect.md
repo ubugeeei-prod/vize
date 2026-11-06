@@ -45,14 +45,12 @@ Les deux valeurs de `v-effect` contiennent une expression : l’une met à jour 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/valid-v-effect": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "petite-vue/valid-v-effect": "error"
+    }
   },
 });
 ```

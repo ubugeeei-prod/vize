@@ -46,14 +46,12 @@ const c = ref(0)          // inferred Ref<number>
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/require-typed-ref": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/require-typed-ref": "warn"
+    }
   },
 });
 ```

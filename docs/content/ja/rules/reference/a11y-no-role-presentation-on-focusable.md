@@ -38,14 +38,12 @@ description: "フォーカス可能な要素への role=\"presentation\" また�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-role-presentation-on-focusable": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-role-presentation-on-focusable": "error"
+    }
   },
 });
 ```

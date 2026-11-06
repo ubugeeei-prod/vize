@@ -40,15 +40,13 @@ defineProps<{ title: string }>();
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "type/require-typed-props": "warn"
-      },
-      "typeAware": true
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "type/require-typed-props": "warn"
     },
+    "typeAware": true
   },
 });
 ```

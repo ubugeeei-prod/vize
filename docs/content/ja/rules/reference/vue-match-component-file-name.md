@@ -44,14 +44,12 @@ defineOptions({ name: "MyPanel" });
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/match-component-file-name": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/match-component-file-name": "warn"
+    }
   },
 });
 ```

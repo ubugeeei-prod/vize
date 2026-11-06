@@ -40,14 +40,12 @@ description: "警告 CSS v-bind() 的性能开销。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-v-bind-performance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-v-bind-performance": "warn"
+    }
   },
 });
 ```

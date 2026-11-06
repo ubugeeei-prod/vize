@@ -28,13 +28,8 @@ vp install -D @vizejs/vite-plugin
 ## 基本用法
 
 ```javascript
-// vite.config.js
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 就这样。用 `@vizejs/vite-plugin` 替换`@vitejs/plugin-vue`，你的项目通过 Rust 编译。
@@ -66,7 +61,7 @@ export default defineConfig({
 
 ## 共享原生设置
 
-将共享原生设置放在 `vite.config.*` 的 `vue:` 中。Vite+ 可以使用 `defineConfig(vpConfig).withVue(vueConfig)` 保留现有配置；普通 Vite 也可以直接传入插件选项。CLI 和编辑器读取同一份 Vue 设置；语法和文件发现规则见[配置指南](./configuration.md)。
+将根设置写在 `defineConfig({ ... })` 中，并把 Vue 设置直接传给 `@vizejs/vite-plugin/vite-plus` 的 `.withVue({ ... })`。直接导出这条调用链，不要使用中间变量。CLI 和编辑器读取同一份 Vue 设置；语法和文件发现规则见[配置指南](./configuration.md)。
 
 <span id="compiler-options"></span>
 
@@ -152,7 +147,7 @@ vize({ vueVersion: 2 });
 
 ### 合辑流程
 
-```
+```diagram
 .vue file
   → Armature (Parser)          — Tokenizes and parses the SFC structure
   → Croquis (Semantic Analysis) — Analyzes template expressions and bindings
@@ -212,15 +207,15 @@ Vite 通常跳过`import.meta.*`替换虚拟模块（前缀为 `\0`）。Vize �
 
 `<style lang="scss">`、`sass`、`less` 和 `stylus` 按 Vue 的顺序处理：先运行预处理器，再由 Vize 为其输出添加作用域并解析 `v-bind()`。`<style module>` 的类名映射由打包器的 CSS Modules 流水线生成。与 `@vitejs/plugin-vue` 一样，请在项目中安装预处理器包（`sass` 或 `sass-embedded`、`less`、`stylus`）。`<template lang="pug">` 由 Vize 自身编译，无需额外的包。旧版 `<template lang="jade">` 写法也可在相同场景中作为别名使用。
 
-| 场景 | scss / sass / less / stylus | pug / jade |
-| --- | --- | --- |
-| Vite | 由 Vite 预处理，Vize 为结果添加作用域 | 原生 |
-| `@vizejs/unplugin`（webpack、Rollup、Rolldown、esbuild） | webpack 使用项目的 loader；Rollup、Rolldown、esbuild 运行已安装的预处理器 | 原生 |
-| `@vizejs/rspack` | 项目的 loader（css-loader 或原生 CSS） | 原生 |
-| `vize build` | 通过 Node 运行已安装的预处理器 | 原生 |
-| `vize fmt` | 预处理器块保持原样，一个字节都不改 | 格式化 |
-| `vize lint` | 应用模板规则；样式块不会作为 CSS 进行 lint | 应用模板规则 |
-| LSP | CSS 补全和悬停（包括缩进语法）、`v-bind()` 跳转到定义、所有预处理器中的 CSS Modules 类名补全 | 标签补全和跳转到定义 |
+| 场景                                                     | scss / sass / less / stylus                                                                  | pug / jade           |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------- |
+| Vite                                                     | 由 Vite 预处理，Vize 为结果添加作用域                                                        | 原生                 |
+| `@vizejs/unplugin`（webpack、Rollup、Rolldown、esbuild） | webpack 使用项目的 loader；Rollup、Rolldown、esbuild 运行已安装的预处理器                    | 原生                 |
+| `@vizejs/rspack`                                         | 项目的 loader（css-loader 或原生 CSS）                                                       | 原生                 |
+| `vize build`                                             | 通过 Node 运行已安装的预处理器                                                               | 原生                 |
+| `vize fmt`                                               | 预处理器块保持原样，一个字节都不改                                                           | 格式化               |
+| `vize lint`                                              | 应用模板规则；样式块不会作为 CSS 进行 lint                                                   | 应用模板规则         |
+| LSP                                                      | CSS 补全和悬停（包括缩进语法）、`v-bind()` 跳转到定义、所有预处理器中的 CSS Modules 类名补全 | 标签补全和跳转到定义 |
 
 ## Nuxt 兼容性
 

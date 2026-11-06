@@ -24,7 +24,7 @@ Le développement traditionnel Vue.js nécessite d’assembler une constellation
 
 Vize unifie tous ces éléments en un seul binaire. Un seul parser. Un AST. Une surface de configuration. Cela élimine les passes d’analyse redondant, réduit la complexité de configuration et garantit que tous les outils partagent une compréhension cohérente de votre code.
 
-```
+```diagram
 @vue/compiler-sfc  +  eslint-plugin-vue  +  prettier  +  vue-tsc  +  Storybook
                               ↓
                             vize

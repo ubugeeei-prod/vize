@@ -38,14 +38,12 @@ A key pertence a uma iteração template v-for, na qual identifica cada fragment
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-template-key": "error"
+    }
   },
 });
 ```

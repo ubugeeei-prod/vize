@@ -40,14 +40,12 @@ RouterLink 使用了已移除的 tag prop 来指定 button 元素。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-router-link-tag-prop": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-router-link-tag-prop": "error"
+    }
   },
 });
 ```

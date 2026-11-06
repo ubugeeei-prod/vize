@@ -38,14 +38,12 @@ Removing the repeated role keeps the button semantics supplied by HTML.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-redundant-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-redundant-roles": "warn"
+    }
   },
 });
 ```

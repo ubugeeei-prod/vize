@@ -50,14 +50,12 @@ const error = ref(null)
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-template-ref": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/prefer-use-template-ref": "warn"
+    }
   },
 });
 ```

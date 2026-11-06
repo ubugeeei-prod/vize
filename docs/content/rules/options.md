@@ -4,7 +4,9 @@ title: Rule Options
 
 # Rule Options
 
-With Vite+, configure `vue.linter.ruleOptions` in `vite.config.ts` and run `vp run lint`. The standalone compatibility config uses the same values under `linter.ruleOptions`.
+With Vite+, configure `linter.ruleOptions` inside `withVue` in `vite.config.ts` and run
+`vp run lint`. The standalone compatibility config uses the same values under
+`linter.ruleOptions`.
 
 `linter.ruleOptions` holds typed project-local settings for rules that accept options. Unknown
 option fields are rejected, and later matching config entries replace the full option object for the
@@ -17,75 +19,73 @@ before adjusting the options below.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-globals": "error",
-        "vue/html-self-closing": "warn",
-        "musea/prefer-design-tokens": "warn"
-      },
-      "ruleOptions": {
-        "script/no-restricted-globals": {
-          "globals": [
-            {
-              "name": "process",
-              "message": "Read env via a typed helper."
-            },
-            {
-              "name": "alert"
-            }
-          ]
-        },
-        "vue/html-self-closing": {
-          "html": {
-            "void": "always",
-            "normal": "never",
-            "component": "always"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-globals": "error",
+      "vue/html-self-closing": "warn",
+      "musea/prefer-design-tokens": "warn",
+    },
+    ruleOptions: {
+      "script/no-restricted-globals": {
+        globals: [
+          {
+            name: "process",
+            message: "Read env via a typed helper.",
           },
-          "svg": "always",
-          "math": "always"
+          {
+            name: "alert",
+          },
+        ],
+      },
+      "vue/html-self-closing": {
+        html: {
+          void: "always",
+          normal: "never",
+          component: "always",
         },
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    }
-  }
+        svg: "always",
+        math: "always",
+      },
+      "musea/prefer-design-tokens": {
+        tokens: [
+          {
+            path: "color.primary",
+            value: "#3b82f6",
+            tier: "semantic",
+          },
+        ],
+      },
+    },
+  },
 });
 ```
 
-| Rule | Option shape | Defaults and behavior |
-| --- | --- | --- |
-| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate. |
-| `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list. |
-| `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
-| `script/define-macros-order` | `{ order?: string[]; defineExposeLast?: boolean }` | Defaults to `["defineProps", "defineEmits"]` and `false`. Listed macros appear first after imports and type declarations. With `defineExposeLast: true`, the last direct `defineExpose` must be the final statement in `<script setup>`; omit it from `order`. This finding requires manual repair. |
-| `vue/valid-v-on` | `{ modifiers?: string[] }` | Defaults to an empty list. Adds exact, case-sensitive custom names to the built-in modifiers; it does not enable the rule or permit a missing handler. Scoped entries replace the inherited list, and `[]` clears it. See the [complete modifier example](./reference/vue-valid-v-on.md). |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[] }` | Defaults to `PascalCase`, registered components only, and no literal globals. |
-| `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
-| `vue/prop-name-casing` | `{ casing?: "camelCase" \| "snake_case" }` | Defaults to `camelCase`. Checks declared prop names; options do not enable the rule or rename its public API. |
-| `script/define-props-destructuring` | `{ destructure?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
-| `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
-| `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
-| `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
-| `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
-| `vue/html-quotes` | `"double" \| "single"` or `{ style?: "double" \| "single"; avoidEscape?: boolean }` | Defaults to double quotes and `avoidEscape: false`. With `avoidEscape: true`, a quoted value containing the requested delimiter is left unchanged. |
-| `vue/mustache-interpolation-spacing` | `"always" \| "never"` | Defaults to `"always"`. Requires or forbids whitespace immediately inside `{{` and `}}`; both sides are fixed independently. |
-| `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | Defaults to `always` and an empty ignore list. Exempts event names containing a configured case-sensitive substring. |
-| `vue/v-bind-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; longform rewrites `.title` to `v-bind:title.prop`, preserving explicit modifiers. Object syntax such as `v-bind="attrs"` is unchanged. |
-| `vue/v-on-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether event directives use `@click` or `v-on:click`; object syntax such as `v-on="listeners"` is unchanged. |
-| `vue/v-slot-style` | `"shorthand" \| "longform"` or `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`, where `SlotStyle` also accepts `"v-slot"` | Defaults to `atComponent: "v-slot"`, `default: "shorthand"`, and `named: "shorthand"`. Bare `v-slot` is rejected for `named` because it would erase the slot name. |
-| `vue/attribute-hyphenation` | `"always" \| "never"` or `{ style?, ignore? }` | Configures whether component prop attributes should be hyphenated in templates. See [attribute options](./options-attributes.md). |
-| `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | Defaults to `false`. Permit static and dynamic named-slot modifiers with `true`; argless modifiers and references to the slot's own parameters remain invalid. |
-| `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | Off unless token data is configured and the rule is enabled or implicitly selected by a non-empty token list. `tier` defaults to `primitive`. |
-| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required. |
+| Rule                                    | Option shape                                                                                                                                                                                                                     | Defaults and behavior                                                                                                                                                                                                                                                                               |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `html/no-empty-palpable-content`        | `{ contentDirectives?: string[] }`                                                                                                                                                                                               | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate.                                                                                                                                                                      |
+| `script/no-restricted-globals`          | `{ globals?: Array<{ name: string; message?: string }> }`                                                                                                                                                                        | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list.                                                                                                                                                 |
+| `script/no-restricted-members`          | `{ members?: Array<{ object: string; property: string; message?: string }> }`                                                                                                                                                    | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help.                                                                                                                                                                                   |
+| `script/define-macros-order`            | `{ order?: string[]; defineExposeLast?: boolean }`                                                                                                                                                                               | Defaults to `["defineProps", "defineEmits"]` and `false`. Listed macros appear first after imports and type declarations. With `defineExposeLast: true`, the last direct `defineExpose` must be the final statement in `<script setup>`; omit it from `order`. This finding requires manual repair. |
+| `vue/valid-v-on`                        | `{ modifiers?: string[] }`                                                                                                                                                                                                       | Defaults to an empty list. Adds exact, case-sensitive custom names to the built-in modifiers; it does not enable the rule or permit a missing handler. Scoped entries replace the inherited list, and `[]` clears it. See the [complete modifier example](./reference/vue-valid-v-on.md).           |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[] }`                                                                                                                              | Defaults to `PascalCase`, registered components only, and no literal globals.                                                                                                                                                                                                                       |
+| `script/custom-event-name-casing`       | `{ casing?: "camelCase" \| "kebab-case" }`                                                                                                                                                                                       | Defaults to `camelCase`.                                                                                                                                                                                                                                                                            |
+| `vue/prop-name-casing`                  | `{ casing?: "camelCase" \| "snake_case" }`                                                                                                                                                                                       | Defaults to `camelCase`. Checks declared prop names; options do not enable the rule or rename its public API.                                                                                                                                                                                       |
+| `script/define-props-destructuring`     | `{ destructure?: "only-when-assigned" \| "always" \| "never" }`                                                                                                                                                                  | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity.                                                                                                                                                |
+| `vue/no-mutating-props`                 | `{ shallowOnly?: boolean }`                                                                                                                                                                                                      | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment.                                                                                                                                                                                                |
+| `vue/require-component-registration`    | `{ globals?: string[] }`                                                                                                                                                                                                         | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule.                                                                                                                                                                          |
+| `vue/sfc-element-order`                 | `{ order?: Array<string \| string[]> }`                                                                                                                                                                                          | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank.                                                                                                                                                                         |
+| `vue/html-self-closing`                 | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"`                                                                                  | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`.                                                                                                                                                                        |
+| `vue/html-quotes`                       | `"double" \| "single"` or `{ style?: "double" \| "single"; avoidEscape?: boolean }`                                                                                                                                              | Defaults to double quotes and `avoidEscape: false`. With `avoidEscape: true`, a quoted value containing the requested delimiter is left unchanged.                                                                                                                                                  |
+| `vue/mustache-interpolation-spacing`    | `"always" \| "never"`                                                                                                                                                                                                            | Defaults to `"always"`. Requires or forbids whitespace immediately inside `{{` and `}}`; both sides are fixed independently.                                                                                                                                                                        |
+| `vue/v-on-event-hyphenation`            | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }`                                                                                                                                                      | Defaults to `always` and an empty ignore list. Exempts event names containing a configured case-sensitive substring.                                                                                                                                                                                |
+| `vue/v-bind-style`                      | `"shorthand" \| "longform"`                                                                                                                                                                                                      | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; longform rewrites `.title` to `v-bind:title.prop`, preserving explicit modifiers. Object syntax such as `v-bind="attrs"` is unchanged.                                                             |
+| `vue/v-on-style`                        | `"shorthand" \| "longform"`                                                                                                                                                                                                      | Defaults to `"shorthand"`. Configures whether event directives use `@click` or `v-on:click`; object syntax such as `v-on="listeners"` is unchanged.                                                                                                                                                 |
+| `vue/v-slot-style`                      | `"shorthand" \| "longform"` or `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`, where `SlotStyle` also accepts `"v-slot"`                                                                  | Defaults to `atComponent: "v-slot"`, `default: "shorthand"`, and `named: "shorthand"`. Bare `v-slot` is rejected for `named` because it would erase the slot name.                                                                                                                                  |
+| `vue/attribute-hyphenation`             | `"always" \| "never"` or `{ style?, ignore? }`                                                                                                                                                                                   | Configures whether component prop attributes should be hyphenated in templates. See [attribute options](./options-attributes.md).                                                                                                                                                                   |
+| `vue/valid-v-slot`                      | `{ allowModifiers?: boolean }`                                                                                                                                                                                                   | Defaults to `false`. Permit static and dynamic named-slot modifiers with `true`; argless modifiers and references to the slot's own parameters remain invalid.                                                                                                                                      |
+| `musea/prefer-design-tokens`            | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }`                                                                                                                                                             | Off unless token data is configured and the rule is enabled or implicitly selected by a non-empty token list. `tier` defaults to `primitive`.                                                                                                                                                       |
+| `type/strict-boolean-expressions`       | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required.                                                                                                                                              |
 
 ## Detailed Examples
 
@@ -95,7 +95,6 @@ export default defineConfig({
 - [Vue Rule Options](./options-vue.md): component casing, prop mutation depth, SFC block order,
   self-closing tags, event names, and attribute casing.
 - [Musea Rule Options](./options-musea.md): design-token inventory configuration.
-
 
 ## `html/no-empty-palpable-content`
 
@@ -108,21 +107,17 @@ This setting does not validate sanitization or enable the rule.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "html/no-empty-palpable-content": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "html/no-empty-palpable-content": "error",
+    },
+    ruleOptions: {
+      "html/no-empty-palpable-content": {
+        contentDirectives: ["safe-html"],
       },
-      "ruleOptions": {
-        "html/no-empty-palpable-content": {
-          "contentDirectives": [
-            "safe-html"
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -152,20 +147,15 @@ For components supplied by application plugins or Musea `previewSetup`, configur
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "vue/require-component-registration": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/require-component-registration": "warn",
+    },
+    ruleOptions: {
+      "vue/require-component-registration": {
+        globals: ["MyButton", "MyIcon"],
       },
-      "ruleOptions": {
-        "vue/require-component-registration": {
-          "globals": [
-            "MyButton",
-            "MyIcon"
-          ]
-        }
-      }
     },
   },
 });

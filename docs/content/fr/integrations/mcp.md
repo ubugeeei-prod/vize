@@ -124,7 +124,7 @@ L’IA peut générer une documentation précise en inspectant les métadonnées
 
 ## Comment ça fonctionne
 
-```
+```diagram
 AI Assistant
   ↕ MCP Protocol (JSON-RPC over stdio)
 @vizejs/musea-mcp-server

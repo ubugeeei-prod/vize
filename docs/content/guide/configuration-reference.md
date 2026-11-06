@@ -92,18 +92,18 @@ options override the corresponding project defaults.
 
 These options come from the TypeScript project that owns the source file, including inherited JSONC configuration, standard package/array `extends` and project `references`. `target: "auto"` resolves the project's installed Vue package; a missing or unsupported version produces a configuration error. Numeric Vue 2 targets below 2.7 select Vue 2, exactly 2.7 selects Vue 2.7, and Vue 3.x or `99` selects the modern Vue 3 family. An explicitly supplied `vue.version` in Vite, including `"3"`, takes precedence over `target`.
 
-| Vue compiler option | Supported behavior |
-| --- | --- |
-| `target` | Select the project's Vue target as described above. |
-| `strictTemplates` | Supply defaults for the supported strict template checks; explicit options remain authoritative. |
-| `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives` | Configure the corresponding unknown template member checks. |
-| `strictVModel`, `strictCssModules`, `strictComponentAttrs` | Configure the corresponding checks. `strictComponentAttrs` is explicit; `strictTemplates` does not enable it automatically. |
-| `jsxSlots` | Configure JSX slot checking. |
-| `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs` | Configure the corresponding component/template inference. |
-| `fallthroughAttributes`, `checkRequiredFallthroughAttributes` | Configure fallthrough attribute handling and checks. |
-| `resolveStyleImports`, `resolveStyleClassNames` | Configure the supported style import/class resolution. |
-| `vapor` | Set the supported Vapor project option. |
-| `plugins` | Recognize `vue-router/volar/sfc-typed-router`; arbitrary Vue language plugins are not loaded. |
+| Vue compiler option                                                                                                                                              | Supported behavior                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `target`                                                                                                                                                         | Select the project's Vue target as described above.                                                                         |
+| `strictTemplates`                                                                                                                                                | Supply defaults for the supported strict template checks; explicit options remain authoritative.                            |
+| `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives`                                                                    | Configure the corresponding unknown template member checks.                                                                 |
+| `strictVModel`, `strictCssModules`, `strictComponentAttrs`                                                                                                       | Configure the corresponding checks. `strictComponentAttrs` is explicit; `strictTemplates` does not enable it automatically. |
+| `jsxSlots`                                                                                                                                                       | Configure JSX slot checking.                                                                                                |
+| `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs` | Configure the corresponding component/template inference.                                                                   |
+| `fallthroughAttributes`, `checkRequiredFallthroughAttributes`                                                                                                    | Configure fallthrough attribute handling and checks.                                                                        |
+| `resolveStyleImports`, `resolveStyleClassNames`                                                                                                                  | Configure the supported style import/class resolution.                                                                      |
+| `vapor`                                                                                                                                                          | Set the supported Vapor project option.                                                                                     |
+| `plugins`                                                                                                                                                        | Recognize `vue-router/volar/sfc-typed-router`; arbitrary Vue language plugins are not loaded.                               |
 
 `optionsWrapper` is unsupported. In Vue tooling it describes code prefix/suffix wrapping, not an Options API switch. Vize's existing Options API checking is controlled separately by `vue.typeChecker.optionsApi`. The mapping above is bounded support, not complete `vue-tsc` option parity.
 
@@ -119,33 +119,36 @@ Use the target package's TypeScript project for monorepo checking. Scoped compil
 and Vue lint settings can use `vue.entries`:
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   root: "apps/web",
-  vue: {
-    entries: [
-      {
-        files: ["src/trusted/**/*.vue"],
-        compiler: { whitespace: "condense" },
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
-  },
+}).withVue({
+  entries: [
+    {
+      files: ["src/trusted/**/*.vue"],
+      compiler: { whitespace: "condense" },
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
 });
 ```
 
 Entries accept `basePath`, `files`, `ignores`, `compiler` and `linter`; other sections remain
 project-wide. Do not move TypeScript project references into these entries.
 
-## Shared Bases with `extends`
+## Shared settings without custom `extends`
 
-There is no Vize-specific `extends`. Reuse ordinary JavaScript objects:
+There is no Vize-specific `extends`. Keep the recommended configuration as one direct chain:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./build-options.ts";
-import vueConfig from "./vue-options.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+});
 ```
 
 This does not change standard TypeScript `extends` or Vite config functions.
@@ -180,13 +183,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -204,45 +206,30 @@ Dedicated JSON/PKL configuration and custom `extends` are removed. Reuse ordinar
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  vue: {
-    compiler: {
-      sourceMap: mode !== "production",
-      ssr: isSsrBuild,
-      vapor: false,
-      customRenderer: false,
-      templateSyntax: "standard",
-    },
-    vite: {
-      include: [/\.vue$/],
-      exclude: [/node_modules/],
-      scanPatterns: ["src/**/*.vue"],
-      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-    },
-    linter: {
-      enabled: command !== "build",
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-    },
-    formatter: {
-      printWidth: 100,
-      singleQuote: false,
-    },
-    languageServer: {
-      lint: true,
-      typecheck: false,
-      editor: false,
-      formatting: false,
-    },
-    musea: {
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-    },
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  build: {
+    sourcemap: mode !== "production",
+    ssr: isSsrBuild,
   },
-}));
+})).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+  },
+  linter: { enabled: true, preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
 ```
 
 ### Convert retired JSON and PKL settings

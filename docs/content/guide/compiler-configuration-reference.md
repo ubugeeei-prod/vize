@@ -10,7 +10,8 @@ Standalone file discovery, scopes, and analysis settings remain in the
 
 ## Compiler Options
 
-These options live under `compiler` in `defineConfig`; not every integration consumes every field.
+Pass these options as `compiler` inside the direct `defineConfig({ ... }).withVue({ ... })` export;
+not every integration consumes every field.
 
 | Option              | Values                                                              | Common use                                                       |
 | ------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -35,18 +36,14 @@ These options live under `compiler` in `defineConfig`; not every integration con
 For Vite projects, direct plugin options override shared config:
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  compiler: {
+    vapor: true,
+    sourceMap: true,
+    customRenderer: true,
+    templateSyntax: "standard",
+  },
 });
 ```
 
@@ -87,8 +84,8 @@ export default defineConfig({}).withVue({
 });
 ```
 
-The Vite plugin also accepts `vize({ whitespace: "vue2-preserve" })`. For Nuxt, use
-`vize.compiler.whitespace`; see [migrating from Nuxt 2](../integrations/nuxt.md#migrating-from-nuxt-2).
+For Nuxt, use `vize.compiler.whitespace`; see
+[migrating from Nuxt 2](../integrations/nuxt.md#migrating-from-nuxt-2).
 
 ## Template Syntax
 
@@ -107,13 +104,13 @@ The known cases are:
   Standard mode warns and rewrites them as empty elements, strict mode errors, and quirk mode keeps
   them as self-closing leaves.
 
-```text
+```vue
 <template>
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
@@ -175,7 +172,7 @@ const Classic = () => {
 Because each component is routed independently, a **single module can mix both backends**:
 
 ```tsx
-// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;

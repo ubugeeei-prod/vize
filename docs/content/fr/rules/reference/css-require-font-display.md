@@ -45,14 +45,12 @@ La déclaration font-face définit la source de la police, mais omet sa politiqu
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/require-font-display": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/require-font-display": "warn"
+    }
   },
 });
 ```

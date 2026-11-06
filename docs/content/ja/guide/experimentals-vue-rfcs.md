@@ -22,26 +22,24 @@ Vize が現在実装している範囲と、その制限を説明します。試
 
 ## 機能を有効にする
 
-| RFC | 追加される機能 | フラグ | コンパイラーのフィールド | 対応範囲 |
-| --- | --- | --- | --- | --- |
-| [#823](https://github.com/vuejs/rfcs/pull/823) | テンプレートでのパターンマッチ（`v-match` / `v-when`） | `patternedTemplate` | `experimentalPatternedTemplate` | DOM、SSR、Vapor、`vize check`、言語サーバーの診断 |
-| [#831](https://github.com/vuejs/rfcs/pull/831) | 開始タグ内の `//` コメント | `inTagComment` | `experimentalInTagComments` | パーサーとすべてのコンパイル対象。実行時の出力はなし |
-| [#833](https://github.com/vuejs/rfcs/pull/833) | 現在のコンポーネントを表す `<Self>` | `selfComponent` | `experimentalSelfComponent` | DOM、SSR、Vapor |
-| [#734](https://github.com/vuejs/rfcs/pull/734) | スロットに渡す子要素の型チェック | `strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check` と言語サーバーのみ |
+| RFC                                            | 追加される機能                                         | フラグ               | コンパイラーのフィールド         | 対応範囲                                             |
+| ---------------------------------------------- | ------------------------------------------------------ | -------------------- | -------------------------------- | ---------------------------------------------------- |
+| [#823](https://github.com/vuejs/rfcs/pull/823) | テンプレートでのパターンマッチ（`v-match` / `v-when`） | `patternedTemplate`  | `experimentalPatternedTemplate`  | DOM、SSR、Vapor、`vize check`、言語サーバーの診断    |
+| [#831](https://github.com/vuejs/rfcs/pull/831) | 開始タグ内の `//` コメント                             | `inTagComment`       | `experimentalInTagComments`      | パーサーとすべてのコンパイル対象。実行時の出力はなし |
+| [#833](https://github.com/vuejs/rfcs/pull/833) | 現在のコンポーネントを表す `<Self>`                    | `selfComponent`      | `experimentalSelfComponent`      | DOM、SSR、Vapor                                      |
+| [#734](https://github.com/vuejs/rfcs/pull/734) | スロットに渡す子要素の型チェック                       | `strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check` と言語サーバーのみ                      |
 
 `vite.config.ts` の `vue.experimentals` でフラグを有効にします。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    experimentals: {
-      inTagComment: true,
-      patternedTemplate: true,
-      selfComponent: true,
-      strictSlotChildren: true,
-    },
+export default defineConfig({}).withVue({
+  experimentals: {
+    inTagComment: true,
+    patternedTemplate: true,
+    selfComponent: true,
+    strictSlotChildren: true,
   },
 });
 ```
@@ -112,19 +110,19 @@ const result = ref<Result>({ status: "loading" });
 - SFC の外側の `<template v-match>` にも対応します。外部の `src` テンプレートとプリプロセッサーは
   エラーになります。
 
-| パターン | 例 | 一致する条件 |
-| --- | --- | --- |
-| リテラル | `v-when="'ready'"`、`v-when="404"` | 厳密に等しい |
-| 値 | `v-when="Status.Ready"` | 識別子やメンバー式の値と等しい（SameValueZero のため `NaN` も一致） |
-| ワイルドカード | `v-when="_"` | 常に一致し、何も束縛しない |
-| const 束縛 | `v-when="const value"` | 常に一致し、`value` を束縛する |
-| オブジェクト | `v-when="{ kind: 'ok', value: const data }"` | 指定したプロパティが一致する。ほかのプロパティがあってもよい |
-| オブジェクトの省略記法 | `v-when="{ kind: 'ok', const data }"` | `{ data: const data }` と同じ |
-| オブジェクトの残り | `v-when="{ kind: 'error', ...const payload }"` | 残りの列挙可能な自身のプロパティを束縛する |
-| 配列・タプル | `v-when="[const first, ...const rest]"` | 値が配列（`Array.isArray`）。rest があれば要素が多くてもよい |
-| または | `v-when="'idle' \| 'loading'"` | いずれかの候補に一致する。左から順に試す |
-| as 束縛 | `v-when="{ kind: 'ok' } as whole"` | パターンが一致し、値全体を `whole` に束縛する |
-| ガード | `v-when="{ error: const e } if (e.retriable)"` | パターンが一致し、ガードが真になる |
+| パターン               | 例                                             | 一致する条件                                                        |
+| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| リテラル               | `v-when="'ready'"`、`v-when="404"`             | 厳密に等しい                                                        |
+| 値                     | `v-when="Status.Ready"`                        | 識別子やメンバー式の値と等しい（SameValueZero のため `NaN` も一致） |
+| ワイルドカード         | `v-when="_"`                                   | 常に一致し、何も束縛しない                                          |
+| const 束縛             | `v-when="const value"`                         | 常に一致し、`value` を束縛する                                      |
+| オブジェクト           | `v-when="{ kind: 'ok', value: const data }"`   | 指定したプロパティが一致する。ほかのプロパティがあってもよい        |
+| オブジェクトの省略記法 | `v-when="{ kind: 'ok', const data }"`          | `{ data: const data }` と同じ                                       |
+| オブジェクトの残り     | `v-when="{ kind: 'error', ...const payload }"` | 残りの列挙可能な自身のプロパティを束縛する                          |
+| 配列・タプル           | `v-when="[const first, ...const rest]"`        | 値が配列（`Array.isArray`）。rest があれば要素が多くてもよい        |
+| または                 | `v-when="'idle' \| 'loading'"`                 | いずれかの候補に一致する。左から順に試す                            |
+| as 束縛                | `v-when="{ kind: 'ok' } as whole"`             | パターンが一致し、値全体を `whole` に束縛する                       |
+| ガード                 | `v-when="{ error: const e } if (e.retriable)"` | パターンが一致し、ガードが真になる                                  |
 
 <span id="patterned-diagnostics"></span>
 
@@ -155,7 +153,7 @@ Vize は誤った使い方を、未知のディレクティブとして素通り
 <template v-match="status">
   <p v-when="_">Other</p>
   <p v-when="'ready'">Ready</p>
-  <p v-when="(_)">Again</p>
+  <p v-when="_">Again</p>
 </template>
 ```
 
@@ -194,14 +192,14 @@ Vize は誤った使い方を、未知のディレクティブとして素通り
 - 「または」の候補の中での束縛は未対応です。束縛が必要な場合は分岐を分けてください。RFC の省略記法
   `?=`、`|=`、`~=` には対応していません。
 
-| ツール | 現在の対応 |
-| --- | --- |
-| コンパイラー（DOM、SSR、Vapor） | RFC の構文すべて |
-| `vize check` | 絞り込み、網羅のエラー、到達しない分岐の警告 |
-| 言語サーバー | 構造と網羅の診断、ルートのパターン束縛のホバーと定義への移動。フラグを変えたらサーバーを再起動する |
-| Playground | Croquis と Canon のチェックボックス。型の診断全体は Monaco の TypeScript ワーカーで行う |
-| VS Code の文法 | フラグがなくても `v-when` のパターンを色分けする |
-| 未対応 | Content Mapper への振り分け、ガード・入れ子のクロージャ・「または」の束縛での名前変更と補完（[#6176](https://github.com/ubugeeei-prod/vize/issues/6176)） |
+| ツール                          | 現在の対応                                                                                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| コンパイラー（DOM、SSR、Vapor） | RFC の構文すべて                                                                                                                                          |
+| `vize check`                    | 絞り込み、網羅のエラー、到達しない分岐の警告                                                                                                              |
+| 言語サーバー                    | 構造と網羅の診断、ルートのパターン束縛のホバーと定義への移動。フラグを変えたらサーバーを再起動する                                                        |
+| Playground                      | Croquis と Canon のチェックボックス。型の診断全体は Monaco の TypeScript ワーカーで行う                                                                   |
+| VS Code の文法                  | フラグがなくても `v-when` のパターンを色分けする                                                                                                          |
+| 未対応                          | Content Mapper への振り分け、ガード・入れ子のクロージャ・「または」の束縛での名前変更と補完（[#6176](https://github.com/ubugeeei-prod/vize/issues/6176)） |
 
 上流の型ツールの受け入れ基準には、絞り込みと網羅性に加えてエディターでの移動と補完も含まれており、
 これらは対応中です。Vize 以外で仮想 TypeScript を扱うホストは、`virtualTsHelpers` をアンビエント宣言
@@ -258,12 +256,12 @@ Vize は誤った使い方を、未知のディレクティブとして素通り
 </template>
 ```
 
-| 状況 | `<Self>` の解決先 |
-| --- | --- |
+| 状況                                        | `<Self>` の解決先                      |
+| ------------------------------------------- | -------------------------------------- |
 | コンパイラーのメタデータがある SFC のビルド | メタデータにある現在のコンポーネント名 |
-| メタデータがない SFC のビルド | ファイル名から導いた名前 |
-| テンプレート API を直接使う場合 | 指定した `componentName` |
-| 名前がない場合 | 通常のコンポーネント解決 |
+| メタデータがない SFC のビルド               | ファイル名から導いた名前               |
+| テンプレート API を直接使う場合             | 指定した `componentName`               |
+| 名前がない場合                              | 通常のコンポーネント解決               |
 
 フラグを有効にすると、`<Self>` は `Self` という名前のローカルやインポートしたコンポーネントより優先され、
 それらは隠れます。インポートに `Self` という名前を付けず、別名にしてください。
@@ -288,7 +286,7 @@ SFC のファイル名がない低レベルのテンプレート呼び出しで�
 ```ts
 import { compile } from "@vizejs/native";
 
-compile("<Self :node=\"node\" />", {
+compile('<Self :node="node" />', {
   componentName: "TreeNode",
   experimentalSelfComponent: true,
 });
@@ -349,22 +347,22 @@ TypeScript がスロットの戻り値の型と比較します。合わない子
 </template>
 ```
 
-| 子要素 | 型 |
-| --- | --- |
-| `<button>` などのネイティブ要素 | `HTMLButtonElement` |
-| SVG・MathML の要素 | より狭い型がない場合は `SVGElement` または `MathMLElement` |
-| `<TabItem>` などインポートしたコンポーネント | `typeof TabItem` |
-| テキストや補間 | `string` |
-| 名前付きの `<template #footer>` | 名前付きスロットと照合 |
-| コメントや子要素を増やさないラッパー | 対象外 |
+| 子要素                                       | 型                                                         |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| `<button>` などのネイティブ要素              | `HTMLButtonElement`                                        |
+| SVG・MathML の要素                           | より狭い型がない場合は `SVGElement` または `MathMLElement` |
+| `<TabItem>` などインポートしたコンポーネント | `typeof TabItem`                                           |
+| テキストや補間                               | `string`                                                   |
+| 名前付きの `<template #footer>`              | 名前付きスロットと照合                                     |
+| コメントや子要素を増やさないラッパー         | 対象外                                                     |
 
-| スロットの戻り値の型 | 意味 |
-| --- | --- |
-| `() => HTMLInputElement` | input の子要素が 1 つ |
-| `() => HTMLInputElement[]` | input の子要素がいくつでも |
+| スロットの戻り値の型                         | 意味                                        |
+| -------------------------------------------- | ------------------------------------------- |
+| `() => HTMLInputElement`                     | input の子要素が 1 つ                       |
+| `() => HTMLInputElement[]`                   | input の子要素がいくつでも                  |
 | `() => [HTMLInputElement, HTMLInputElement]` | input の子要素がちょうど 2 つ（順番どおり） |
-| `() => (typeof TabItem)[]` | `TabItem` の子要素がいくつでも |
-| `() => [typeof TabItem, HTMLButtonElement]` | `TabItem` が 1 つ、その後にボタンが 1 つ |
+| `() => (typeof TabItem)[]`                   | `TabItem` の子要素がいくつでも              |
+| `() => [typeof TabItem, HTMLButtonElement]`  | `TabItem` が 1 つ、その後にボタンが 1 つ    |
 
 制限:
 

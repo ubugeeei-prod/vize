@@ -25,13 +25,8 @@ support:
 - `@vizejs/nuxt`
 
 ```ts
-// vite.config.ts — nothing JSX-specific is required
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 Under the hood the plugins call the native/WASM `compileJsx` entry point (exposed from
@@ -186,12 +181,10 @@ or `"vapor"` and defaults to `"vdom"`.
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    compiler: {
-      // Default every .jsx/.tsx component to Vapor output.
-      jsxMode: "vapor",
-    },
+export default defineConfig({}).withVue({
+  compiler: {
+    // Default every .jsx/.tsx component to Vapor output.
+    jsxMode: "vapor",
   },
 });
 ```
@@ -222,7 +215,7 @@ const Classic = () => {
 Because each component is routed independently, a **single file can mix both backends**:
 
 ```tsx
-// vite.config.ts: { vue: { compiler: { jsxMode: "vapor" } } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -365,12 +358,10 @@ In projects that also use React JSX, set `jsxTypecheck: false` so Vize leaves Re
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      enabled: true,
-      jsxTypecheck: true,
-    },
+export default defineConfig({}).withVue({
+  typeChecker: {
+    enabled: true,
+    jsxTypecheck: true,
   },
 });
 ```

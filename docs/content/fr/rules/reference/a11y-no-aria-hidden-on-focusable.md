@@ -38,14 +38,12 @@ Le bouton reste exposé et reçoit un libellé `Close` au lieu d’être masqué
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-aria-hidden-on-focusable": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-aria-hidden-on-focusable": "error"
+    }
   },
 });
 ```

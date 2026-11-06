@@ -40,14 +40,12 @@ A native `button` provides keyboard activation for the same `activate` handler.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/click-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/click-events-have-key-events": "warn"
+    }
   },
 });
 ```

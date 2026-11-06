@@ -43,14 +43,12 @@ Use uma referência a manipulador ou uma expressão de função, comum ou de set
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/v-on-handler-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/v-on-handler-style": "warn"
+    }
   },
 });
 ```

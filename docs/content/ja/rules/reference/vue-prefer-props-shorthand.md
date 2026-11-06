@@ -45,14 +45,12 @@ Vue 3.4 以降の同名の省略形で式を省きます。bar のように別�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-props-shorthand": "warn"
+    }
   },
 });
 ```

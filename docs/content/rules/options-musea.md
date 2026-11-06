@@ -18,29 +18,27 @@ An explicit `off` setting keeps the rule disabled, even when the token list is n
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "musea/prefer-design-tokens": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "musea/prefer-design-tokens": "warn",
+    },
+    ruleOptions: {
+      "musea/prefer-design-tokens": {
+        tokens: [
+          {
+            path: "color.primary",
+            value: "#3b82f6",
+          },
+          {
+            path: "color.danger",
+            value: "#ef4444",
+            tier: "semantic",
+          },
+        ],
       },
-      "ruleOptions": {
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6"
-            },
-            {
-              "path": "color.danger",
-              "value": "#ef4444",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 

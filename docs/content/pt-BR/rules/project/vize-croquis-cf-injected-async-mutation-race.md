@@ -172,11 +172,9 @@ watch(query, async (value, _oldValue, onCleanup) => {
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/injected-async-mutation-race": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/injected-async-mutation-race": "warn" },
   },
 });
 ```

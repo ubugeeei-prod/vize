@@ -38,14 +38,12 @@ A static class attribute expresses the same panel classes without a binding.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/prefer-static-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/prefer-static-class": "warn"
+    }
   },
 });
 ```

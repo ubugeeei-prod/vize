@@ -38,14 +38,12 @@ v-model で、編集可能な textarea の値と message を関連付けます�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-textarea-mustache": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-textarea-mustache": "error"
+    }
   },
 });
 ```

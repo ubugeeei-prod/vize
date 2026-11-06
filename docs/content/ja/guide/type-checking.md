@@ -70,11 +70,11 @@ tsrs --runExternalCode --noEmit -p tsconfig.json
 
 ## vue-tsc から移行する
 
-| 現在のコマンド                          | Vize での書き方                                                |
-| --------------------------------------- | -------------------------------------------------------------- |
-| `vue-tsc --noEmit`                      | 上のマッパーを入れて `tsc --runExternalCode --noEmit`          |
-| `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`          |
-| 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`         |
+| 現在のコマンド                          | Vize での書き方                                                                                       |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `vue-tsc --noEmit`                      | 上のマッパーを入れて `tsc --runExternalCode --noEmit`                                                 |
+| `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                                 |
+| 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                                |
 | Vue - Official 拡張機能の診断           | content mapper を有効にした TypeScript 7.1 ホスト、または [Vize の言語サーバー](./language-server.md) |
 
 ## 型チェックの方針
@@ -146,7 +146,7 @@ const emit = defineEmits<{ change: [value: number] }>();
 `vize check` はテンプレート内の 2 つの誤りを、ソース上の位置とともに報告します。
 TypeScript 7.1 や tsrs でも同じコードが、そのコンパイラーの形式で出ます。
 
-```text
+```diagnostic
 src/Counter.vue
   error:7:34 [TS2345] Argument of type 'string' is not assignable to parameter of type 'number'.
   error:7:66 [TS2551] Property 'stepp' does not exist on type ... Did you mean 'step'?
@@ -160,28 +160,26 @@ src/Counter.vue
 
 ## チェック対象
 
-| 対象                                      | デフォルト | 無効にする方法                    |
-| ----------------------------------------- | ---------- | --------------------------------- |
-| `<script>` と `<script setup>` のコード   | 有効       | `tsconfig` でファイルを除外する   |
-| テンプレートの式とバインディング          | 有効       | `--no-check-template-bindings`    |
-| 子コンポーネントに渡す props              | 有効       | `--no-check-props`                |
-| emit するイベントとその引数               | 有効       | `--no-check-emits`                |
-| Options API のテンプレートバインディング（`data`、`computed`、`methods` など） | 有効 | `vue.typeChecker.optionsApi: false` |
-| 通常の `.ts` / `.tsx` / `.d.ts`           | 有効       | `tsconfig` でファイルを除外する   |
+| 対象                                                                           | デフォルト | 無効にする方法                      |
+| ------------------------------------------------------------------------------ | ---------- | ----------------------------------- |
+| `<script>` と `<script setup>` のコード                                        | 有効       | `tsconfig` でファイルを除外する     |
+| テンプレートの式とバインディング                                               | 有効       | `--no-check-template-bindings`      |
+| 子コンポーネントに渡す props                                                   | 有効       | `--no-check-props`                  |
+| emit するイベントとその引数                                                    | 有効       | `--no-check-emits`                  |
+| Options API のテンプレートバインディング（`data`、`computed`、`methods` など） | 有効       | `vue.typeChecker.optionsApi: false` |
+| 通常の `.ts` / `.tsx` / `.d.ts`                                                | 有効       | `tsconfig` でファイルを除外する     |
 
 同じ設定は `vite.config.ts` にも書けます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    typeChecker: {
-      checkProps: true,
-      checkEmits: true,
-      checkTemplateBindings: true,
-      optionsApi: true,
-    },
+export default defineConfig({}).withVue({
+  typeChecker: {
+    checkProps: true,
+    checkEmits: true,
+    checkTemplateBindings: true,
+    optionsApi: true,
   },
 });
 ```

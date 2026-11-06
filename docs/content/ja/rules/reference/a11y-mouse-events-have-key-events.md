@@ -46,14 +46,12 @@ description: "マウス操作と対応する focus / blur 操作を用意しま�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/mouse-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/mouse-events-have-key-events": "warn"
+    }
   },
 });
 ```

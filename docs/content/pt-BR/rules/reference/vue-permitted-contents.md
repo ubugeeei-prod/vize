@@ -43,14 +43,12 @@ Os exemplos usam conteúdo inline no parágrafo, um tbody explícito e filhos li
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/permitted-contents": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/permitted-contents": "error"
+    }
   },
 });
 ```

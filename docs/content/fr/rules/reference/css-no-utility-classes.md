@@ -40,14 +40,12 @@ Un sélecteur `.my-component` propre au composant rassemble ses styles sous un n
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-utility-classes": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-utility-classes": "warn"
+    }
   },
 });
 ```

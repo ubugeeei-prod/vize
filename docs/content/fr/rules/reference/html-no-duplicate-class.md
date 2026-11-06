@@ -38,14 +38,12 @@ La liste de classes conserve une seule occurrence de `btn` et le nom distinct `p
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-duplicate-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-duplicate-class": "warn"
+    }
   },
 });
 ```

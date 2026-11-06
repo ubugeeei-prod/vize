@@ -59,14 +59,12 @@ O template pai delega a renderização a RowList e mantém um v-if; suas própri
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/max-template-complexity": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/max-template-complexity": "warn"
+    }
   },
 });
 ```

@@ -44,15 +44,13 @@ const count = toRef(state, "count");
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "type/no-reactivity-loss": "warn"
-      },
-      "typeAware": true
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "type/no-reactivity-loss": "warn"
     },
+    "typeAware": true
   },
 });
 ```

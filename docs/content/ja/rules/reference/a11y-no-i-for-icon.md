@@ -43,14 +43,12 @@ description: "アイコン用の i 要素を検出し、意味に合う要素を
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-i-for-icon": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-i-for-icon": "warn"
+    }
   },
 });
 ```

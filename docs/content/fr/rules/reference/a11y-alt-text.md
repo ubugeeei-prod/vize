@@ -38,14 +38,12 @@ Le contrôle de soumission sous forme d’image ne fournit que l’URL de son im
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/alt-text": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/alt-text": "warn"
+    }
   },
 });
 ```

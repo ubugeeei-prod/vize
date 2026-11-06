@@ -28,13 +28,8 @@ ou expor scripts de pacote como `vize:lint` e `vize:check`.
 ## Uso Básico
 
 ```javascript
-// vite.config.js
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 É isso. Substitua `@vitejs/plugin-vue` por `@vizejs/vite-plugin` e seu projeto será compilado pelo Rust.
@@ -66,7 +61,7 @@ Para projetos Vite Plus, mantenha o tipo cliente Vite Plus e anexe o pacote de p
 
 ## Compartilhar as opções nativas
 
-Coloque as opções nativas compartilhadas em `vue:` no `vite.config.*`. No Vite+, use `defineConfig(vpConfig).withVue(vueConfig)` para preservar a configuração existente. No Vite convencional, também é possível passar opções diretas ao plugin. A CLI e o editor leem as mesmas opções Vue; veja a sintaxe e a descoberta no [guia de configuração](./configuration.md).
+Coloque as opções raiz em `defineConfig({ ... })` e passe as opções Vue diretamente para `.withVue({ ... })` de `@vizejs/vite-plugin/vite-plus`. Exporte essa cadeia sem variável intermediária. A CLI e o editor leem as mesmas opções Vue; veja a sintaxe e a descoberta no [guia de configuração](./configuration.md).
 
 <span id="compiler-options"></span>
 
@@ -152,7 +147,7 @@ O plugin intercepta `.vue` solicitações de arquivo e as compila usando o pipel
 
 ### Pipeline de Compilação
 
-```
+```diagram
 .vue file
   → Armature (Parser)          — Tokenizes and parses the SFC structure
   → Croquis (Semantic Analysis) — Analyzes template expressions and bindings

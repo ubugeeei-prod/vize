@@ -70,11 +70,9 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/non-unique-id": "warn" },
-    },
+export default defineConfig({}).withVue({
+  linter: { preset: "incremental", crossFile: true,
+    rules: { "croquis/cf/non-unique-id": "warn" },
   },
 });
 ```

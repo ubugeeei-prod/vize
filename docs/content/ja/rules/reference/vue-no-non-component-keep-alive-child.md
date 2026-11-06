@@ -49,14 +49,12 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-non-component-keep-alive-child": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-non-component-keep-alive-child": "warn"
+    }
   },
 });
 ```

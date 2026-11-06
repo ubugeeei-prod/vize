@@ -38,14 +38,12 @@ The section uses the recognized `dialog` role and a label describing the date se
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-role": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-role": "error"
+    }
   },
 });
 ```

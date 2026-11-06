@@ -46,14 +46,12 @@ onMounted(() => {
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/no-vue-lifecycle-events": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/no-vue-lifecycle-events": "error"
+    }
   },
 });
 ```

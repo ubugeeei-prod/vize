@@ -163,7 +163,7 @@ actual components before answering.
 
 ## How It Works
 
-```text
+```diagram
 AI Assistant
   ↕ MCP (JSON-RPC over stdio)
 @vizejs/musea-mcp-server

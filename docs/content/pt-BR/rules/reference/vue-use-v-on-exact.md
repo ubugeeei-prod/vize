@@ -54,14 +54,12 @@ O manipulador de clique comum também pode executar em Ctrl-clique, sobrepondo-s
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/use-v-on-exact": "warn"
+    }
   },
 });
 ```

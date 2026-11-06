@@ -3,7 +3,13 @@ import path from "node:path";
 
 import "../theme/i18n/sitemap.js";
 
-type Section = { page: string; paths?: string[]; namespaces?: string[]; directory?: string };
+type Section = {
+  page: string;
+  paths?: string[];
+  extraPaths?: string[];
+  namespaces?: string[];
+  directory?: string;
+};
 type Sitemap = {
   supportedLocales: { code: string }[];
   hiddenPathPatterns: RegExp[];

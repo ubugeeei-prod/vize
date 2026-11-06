@@ -38,14 +38,12 @@ first-name 符合配置要求的连字符组件属性命名规范。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/attribute-hyphenation": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/attribute-hyphenation": "warn"
+    }
   },
 });
 ```

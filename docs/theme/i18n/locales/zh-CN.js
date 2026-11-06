@@ -14,6 +14,7 @@
       "/contributing": "贡献",
       "/guide/vite-plus": "Vite+ 集成",
       "/guide/migration": "迁移指南",
+      "/guide/tool-integrations": "现有工具集成",
       "/guide/vite-plus-editor": "编辑器设置",
       "/guide/init": "项目初始化",
       "/guide/configuration": "概述",

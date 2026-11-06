@@ -18,27 +18,25 @@ disable the rule.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-globals": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-globals": "error",
+    },
+    ruleOptions: {
+      "script/no-restricted-globals": {
+        globals: [
+          {
+            name: "process",
+            message: "Read env through useRuntimeConfig().",
+          },
+          {
+            name: "localStorage",
+          },
+        ],
       },
-      "ruleOptions": {
-        "script/no-restricted-globals": {
-          "globals": [
-            {
-              "name": "process",
-              "message": "Read env through useRuntimeConfig()."
-            },
-            {
-              "name": "localStorage"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -65,29 +63,27 @@ rule is enabled. Each entry matches a bare identifier receiver plus a static pro
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/no-restricted-members": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/no-restricted-members": "error",
+    },
+    ruleOptions: {
+      "script/no-restricted-members": {
+        members: [
+          {
+            object: "window",
+            property: "localStorage",
+            message: "Use authStorage.",
+          },
+          {
+            object: "globalThis",
+            property: "process",
+          },
+        ],
       },
-      "ruleOptions": {
-        "script/no-restricted-members": {
-          "members": [
-            {
-              "object": "window",
-              "property": "localStorage",
-              "message": "Use authStorage."
-            },
-            {
-              "object": "globalThis",
-              "property": "process"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -116,19 +112,17 @@ suffix mirrors the corresponding prop name.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "script/custom-event-name-casing": "error"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "script/custom-event-name-casing": "error",
+    },
+    ruleOptions: {
+      "script/custom-event-name-casing": {
+        casing: "kebab-case",
       },
-      "ruleOptions": {
-        "script/custom-event-name-casing": {
-          "casing": "kebab-case"
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -163,14 +157,12 @@ can reorder statements; this configuration support does not add that fixer or `d
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: { "script/define-macros-order": "warn" },
-      ruleOptions: {
-        "script/define-macros-order": {
-          order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
-        },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "script/define-macros-order": "warn" },
+    ruleOptions: {
+      "script/define-macros-order": {
+        order: ["defineOptions", "defineProps", "defineEmits", "defineSlots"],
       },
     },
   },
@@ -204,13 +196,11 @@ destructured bindings instead. Vue 3.5 preserves reactivity when destructuring p
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      preset: "incremental",
-      rules: { "script/define-props-destructuring": "warn" },
-      ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    preset: "incremental",
+    rules: { "script/define-props-destructuring": "warn" },
+    ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
   },
 });
 ```
@@ -239,4 +229,4 @@ When migrating from ESLint, use the Vize rule ID and typed options separately:
  ruleOptions: { "script/define-props-destructuring": { destructure: "always" } }
 ```
 
-Place the added entries inside `vue.linter` in the Vite+ config above.
+Place the added entries inside the `linter` object passed to `withVue` in the Vite+ config above.

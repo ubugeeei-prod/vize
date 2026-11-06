@@ -39,14 +39,12 @@ Parágrafos separados expressam os dois blocos de conteúdo sem repetir elemento
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-consecutive-br": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-consecutive-br": "warn"
+    }
   },
 });
 ```

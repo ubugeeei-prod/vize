@@ -38,14 +38,12 @@ O `h2` acrescenta um nível de título, mas não tem conteúdo de título.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/heading-has-content": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/heading-has-content": "warn"
+    }
   },
 });
 ```

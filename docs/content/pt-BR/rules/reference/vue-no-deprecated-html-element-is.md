@@ -39,14 +39,12 @@ Um componente dinâmico usa :is; a forma no elemento nativo usa explicitamente o
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-html-element-is": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-html-element-is": "error"
+    }
   },
 });
 ```

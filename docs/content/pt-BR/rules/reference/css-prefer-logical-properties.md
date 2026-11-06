@@ -42,14 +42,12 @@ Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ig
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/prefer-logical-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/prefer-logical-properties": "warn"
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ The named slot `mySlot` uses camelCase where the rule requires a hyphenated name
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/slot-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/slot-name-casing": "warn"
+    }
   },
 });
 ```

@@ -42,14 +42,12 @@ A presença de cada atributo booleano expressa o mesmo estado ativado, sem um va
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-boolean-attr-value": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-boolean-attr-value": "warn"
+    }
   },
 });
 ```

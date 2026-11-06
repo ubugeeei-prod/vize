@@ -42,14 +42,12 @@ description: "禁止使用遮蔽外层作用域变量的变量名称。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-shadow": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-template-shadow": "warn"
+    }
   },
 });
 ```

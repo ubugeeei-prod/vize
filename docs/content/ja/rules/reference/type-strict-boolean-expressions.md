@@ -44,15 +44,13 @@ if (count !== undefined && count > 0) console.log(count);
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "type/strict-boolean-expressions": "warn"
-      },
-      "typeAware": true
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "type/strict-boolean-expressions": "warn"
     },
+    "typeAware": true
   },
 });
 ```

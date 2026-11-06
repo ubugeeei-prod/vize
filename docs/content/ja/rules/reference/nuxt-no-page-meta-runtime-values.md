@@ -38,14 +38,12 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/no-page-meta-runtime-values": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "nuxt/no-page-meta-runtime-values": "error"
+    }
   },
 });
 ```

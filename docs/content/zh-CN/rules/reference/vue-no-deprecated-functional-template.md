@@ -38,14 +38,12 @@ SFC 模板使用了已移除的 functional 属性，并读取旧的 props 上下
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-functional-template": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-functional-template": "error"
+    }
   },
 });
 ```

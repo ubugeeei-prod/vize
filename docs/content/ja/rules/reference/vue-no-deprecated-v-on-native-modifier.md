@@ -41,14 +41,12 @@ description: "削除済みの v-on の .native 修飾子を検出します。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-on-native-modifier": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-on-native-modifier": "error"
+    }
   },
 });
 ```

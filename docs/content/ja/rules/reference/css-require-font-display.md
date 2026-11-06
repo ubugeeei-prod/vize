@@ -45,14 +45,12 @@ font-display: swap を追加し、代替フォントで表示した後、読み�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/require-font-display": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/require-font-display": "warn"
+    }
   },
 });
 ```

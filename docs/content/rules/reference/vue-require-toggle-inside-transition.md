@@ -42,14 +42,12 @@ The static child inside `<Transition>` has no conditional visibility or dynamic 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-toggle-inside-transition": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-toggle-inside-transition": "error"
+    }
   },
 });
 ```

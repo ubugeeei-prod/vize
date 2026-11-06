@@ -94,18 +94,18 @@ TypeScript 標準の `extends`（パッケージと配列の形式を含む）�
 
 設定はソースファイルを所有する TypeScript プロジェクトから読みます。継承した JSONC、標準のパッケージ・配列形式の `extends`、プロジェクトの `references` も保持します。`target: "auto"` はそのプロジェクトにインストールされた Vue を解決し、見つからない場合や未対応のバージョンでは設定エラーになります。2.7 未満の数値の Vue 2 ターゲットは Vue 2、2.7 は Vue 2.7、Vue 3.x と `99` は現在の Vue 3 系列を選びます。Vite に `vue.version` を明示した場合は、`"3"` も含めて `target` より優先します。
 
-| Vue compiler option | 対応する動作 |
-| --- | --- |
-| `target` | 上記の規則でプロジェクトの Vue ターゲットを選択します。 |
-| `strictTemplates` | 対応する厳密なテンプレート検査の既定値を設定します。明示した個別の設定が優先します。 |
-| `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives` | 対応する未知のテンプレート要素の検査を設定します。 |
-| `strictVModel`, `strictCssModules`, `strictComponentAttrs` | 各項目の検査を設定します。`strictComponentAttrs` は明示指定が必要で、`strictTemplates` だけでは有効になりません。 |
-| `jsxSlots` | JSX のスロット検査を設定します。 |
-| `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs` | 対応するコンポーネント・テンプレートの型推論を設定します。 |
-| `fallthroughAttributes`, `checkRequiredFallthroughAttributes` | fallthrough 属性の扱いと検査を設定します。 |
-| `resolveStyleImports`, `resolveStyleClassNames` | 対応するスタイルの import・クラス解決を設定します。 |
-| `vapor` | 対応する Vapor のプロジェクト設定です。 |
-| `plugins` | `vue-router/volar/sfc-typed-router` を認識します。任意の Vue 言語プラグインを読み込む機能ではありません。 |
+| Vue compiler option                                                                                                                                              | 対応する動作                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `target`                                                                                                                                                         | 上記の規則でプロジェクトの Vue ターゲットを選択します。                                                           |
+| `strictTemplates`                                                                                                                                                | 対応する厳密なテンプレート検査の既定値を設定します。明示した個別の設定が優先します。                              |
+| `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives`                                                                    | 対応する未知のテンプレート要素の検査を設定します。                                                                |
+| `strictVModel`, `strictCssModules`, `strictComponentAttrs`                                                                                                       | 各項目の検査を設定します。`strictComponentAttrs` は明示指定が必要で、`strictTemplates` だけでは有効になりません。 |
+| `jsxSlots`                                                                                                                                                       | JSX のスロット検査を設定します。                                                                                  |
+| `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs` | 対応するコンポーネント・テンプレートの型推論を設定します。                                                        |
+| `fallthroughAttributes`, `checkRequiredFallthroughAttributes`                                                                                                    | fallthrough 属性の扱いと検査を設定します。                                                                        |
+| `resolveStyleImports`, `resolveStyleClassNames`                                                                                                                  | 対応するスタイルの import・クラス解決を設定します。                                                               |
+| `vapor`                                                                                                                                                          | 対応する Vapor のプロジェクト設定です。                                                                           |
+| `plugins`                                                                                                                                                        | `vue-router/volar/sfc-typed-router` を認識します。任意の Vue 言語プラグインを読み込む機能ではありません。         |
 
 `optionsWrapper` は未対応です。Vue ツールではコードを前後から包む prefix/suffix を指定するもので、Options API のスイッチではありません。Vize の既存の Options API 検査は別の `vue.typeChecker.optionsApi` で設定します。ここに挙げた対応は限定的なマッピングで、すべての `vue-tsc` オプションとの同等性を示すものではありません。
 
@@ -122,33 +122,36 @@ Vue 2.7・Nuxt 2 への対応は、別途 `legacy` ビルドで有効にする�
 モノレポでは、パッケージごとの TypeScript プロジェクトと Vite 設定を使います。`vue.entries` には `name`、`basePath`、`files`、`ignores`、`compiler`、`linter` を指定でき、一致するコンパイラと Vue Lint の設定を上書きします。ネイティブの共有設定は Vite オブジェクトの `vue:` に置き、配列を Vite 設定としてエクスポートしないでください。
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   root: "apps/web",
-  vue: {
-    entries: [
-      {
-        files: ["src/trusted/**/*.vue"],
-        compiler: { whitespace: "condense" },
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
-  },
+}).withVue({
+  entries: [
+    {
+      files: ["src/trusted/**/*.vue"],
+      compiler: { whitespace: "condense" },
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
 });
 ```
 
 entry には `basePath`、`files`、`ignores`、`compiler`、`linter` を指定できます。
 その他はプロジェクト全体の設定です。TypeScript のプロジェクト参照は移さないでください。
 
-## 共有設定と extends
+## 独自の extends を使わない共有設定
 
-Vize 独自の `extends` はありません。通常の JavaScript オブジェクトを共有します。
+Vize 独自の `extends` はありません。推奨設定は一つの直接的なチェーンにまとめます。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./build-options.ts";
-import vueConfig from "./vue-options.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+});
 ```
 
 TypeScript 標準の `extends` と Vite の設定関数は引き続き利用できます。
@@ -191,13 +194,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -216,45 +218,30 @@ export default defineConfig({
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  vue: {
-    compiler: {
-      sourceMap: mode !== "production",
-      ssr: isSsrBuild,
-      vapor: false,
-      customRenderer: false,
-      templateSyntax: "standard",
-    },
-    vite: {
-      include: [/\.vue$/],
-      exclude: [/node_modules/],
-      scanPatterns: ["src/**/*.vue"],
-      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-    },
-    linter: {
-      enabled: command !== "build",
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-    },
-    formatter: {
-      printWidth: 100,
-      singleQuote: false,
-    },
-    languageServer: {
-      lint: true,
-      typecheck: false,
-      editor: false,
-      formatting: false,
-    },
-    musea: {
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-    },
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  build: {
+    sourcemap: mode !== "production",
+    ssr: isSsrBuild,
   },
-}));
+})).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+  },
+  linter: { enabled: true, preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
 ```
 
 ### 廃止された JSON・PKL 設定の移行

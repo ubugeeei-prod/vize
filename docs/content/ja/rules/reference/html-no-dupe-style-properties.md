@@ -40,14 +40,12 @@ description: "静的 style 属性内のプロパティ重複を検出します�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-dupe-style-properties": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-dupe-style-properties": "warn"
+    }
   },
 });
 ```

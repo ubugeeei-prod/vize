@@ -38,14 +38,12 @@ target=_blank の外部リンクに適切な rel を指定します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-target-blank": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-template-target-blank": "warn"
+    }
   },
 });
 ```

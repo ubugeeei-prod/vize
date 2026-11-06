@@ -40,14 +40,12 @@ else 分支和 v-for 迭代都附加在同一段落上。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-use-v-else-with-v-for": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-use-v-else-with-v-for": "warn"
+    }
   },
 });
 ```

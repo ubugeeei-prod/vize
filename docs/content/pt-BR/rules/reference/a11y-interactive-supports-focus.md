@@ -38,14 +38,12 @@ O botão nativo pode receber foco e mantém a mesma ação `open`.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/interactive-supports-focus": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/interactive-supports-focus": "warn"
+    }
   },
 });
 ```

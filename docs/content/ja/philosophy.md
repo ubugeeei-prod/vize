@@ -27,7 +27,7 @@ Vize は、Vue.js のツールチェーンを Rust で実装することで、�
 
 Vize は、これらの機能を一つのバイナリに統合することを目指します。パーサー、AST、設定を共有し、重複する解析と設定の負担を減らしながら、どのツールも同じ理解に基づいてコードを扱えるようにします。
 
-```
+```diagram
 @vue/compiler-sfc  +  eslint-plugin-vue  +  prettier  +  vue-tsc  +  Storybook
                               ↓
                             vize

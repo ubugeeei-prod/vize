@@ -38,14 +38,12 @@ description: "要求 iframe 元素具有 title 属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/iframe-has-title": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/iframe-has-title": "warn"
+    }
   },
 });
 ```

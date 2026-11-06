@@ -42,15 +42,13 @@ const value: string = "Hello";
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "type/no-unsafe-template-binding": "warn"
-      },
-      "typeAware": true
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "type/no-unsafe-template-binding": "warn"
     },
+    "typeAware": true
   },
 });
 ```

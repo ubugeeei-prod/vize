@@ -19,14 +19,14 @@ vpx vize init
 
 選べる機能は次の5つです。ビルド連携には、Vite と Nuxt の2通りがあります。
 
-| 機能 | 設定する内容 |
-| --- | --- |
-| Oxlint プラグイン | lint コマンドが読み込む設定ファイルに `oxlint-plugin-vize` を追加 |
-| Vite プラグイン | `@vizejs/vite-plugin` を `vite.config.*` に追加 |
-| Nuxt モジュール | `@vizejs/nuxt` を `nuxt.config.*` に追加 |
-| フォーマット | プロジェクトの設定と既定値を使い、`vize:fmt` スクリプトを追加 |
-| 型チェック | 既存の TypeScript 設定を使うか、なければ作成し、`vize:check` スクリプトを追加 |
-| エディター | `.vscode/extensions.json` に推奨する拡張機能を追加 |
+| 機能              | 設定する内容                                                                  |
+| ----------------- | ----------------------------------------------------------------------------- |
+| Oxlint プラグイン | lint コマンドが読み込む設定ファイルに `oxlint-plugin-vize` を追加             |
+| Vite プラグイン   | `@vizejs/vite-plugin` を `vite.config.*` に追加                               |
+| Nuxt モジュール   | `@vizejs/nuxt` を `nuxt.config.*` に追加                                      |
+| フォーマット      | プロジェクトの設定と既定値を使い、`vize:fmt` スクリプトを追加                 |
+| 型チェック        | 既存の TypeScript 設定を使うか、なければ作成し、`vize:check` スクリプトを追加 |
+| エディター        | `.vscode/extensions.json` に推奨する拡張機能を追加                            |
 
 Vite プラグインと Nuxt モジュールは、どちらも「ビルド連携」の選択肢です。
 `init` がプロジェクトを検出し、使用する連携方法を選びます。
@@ -41,7 +41,7 @@ init は既存の設定を保ちながら編集し、専用の Vize 設定ファ
 機能を選ぶ前に、プロジェクトの検出結果が表示されます。
 対象のディレクトリやパッケージマネージャーが正しいか、ファイルを変更する前に確認してください。
 
-```
+```console
 [vize init] detected in /path/to/project:
   framework:       Vite+ (vite.config.ts)
   package manager: pnpm
@@ -51,15 +51,15 @@ init は既存の設定を保ちながら編集し、専用の Vize 設定ファ
   oxlint config:   none
 ```
 
-| 検出する項目 | 判定方法 |
-| --- | --- |
-| フレームワーク | `nuxt.config.{ts,mts,js,mjs}` または `nuxt` の依存関係があれば Nuxt。それ以外で `vite.config.*` があれば Vite。どちらもなければ連携対象なし |
-| 両方ある場合 | Nuxt を優先。Nuxt が Vite の設定を管理するため、Nuxt モジュールを使います。`--vite` で Vite プラグインの選択に変更できます |
-| どちらもない場合 | ビルド連携は利用不可として表示されます。他の4機能は引き続き選べます。`init` がビルド環境を新しく作ることはありません |
+| 検出する項目           | 判定方法                                                                                                                                                                                        |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| フレームワーク         | `nuxt.config.{ts,mts,js,mjs}` または `nuxt` の依存関係があれば Nuxt。それ以外で `vite.config.*` があれば Vite。どちらもなければ連携対象なし                                                     |
+| 両方ある場合           | Nuxt を優先。Nuxt が Vite の設定を管理するため、Nuxt モジュールを使います。`--vite` で Vite プラグインの選択に変更できます                                                                      |
+| どちらもない場合       | ビルド連携は利用不可として表示されます。他の4機能は引き続き選べます。`init` がビルド環境を新しく作ることはありません                                                                            |
 | パッケージマネージャー | ロックファイルを `pnpm-lock.yaml`、`bun.lockb`／`bun.lock`、`yarn.lock`、`package-lock.json` の順に確認し、なければ `packageManager` フィールドを使います。Vite+ では既定で `vp add` を使います |
-| 言語 | `tsconfig.json` または `typescript` の依存関係があれば TypeScript と判定。型チェックを選ぶと、まだない場合は `tsconfig.json` を作成します |
-| lint コマンド | Vite+ なら `vp lint`、それ以外は `oxlint`。**この判定によって、Oxlint の設定を書き込むファイルが決まります** |
-| 設定済みの機能 | 既存の Vize 設定、Oxlint 設定、`lint` ブロック、プラグインの登録、依存パッケージの有無を確認します |
+| 言語                   | `tsconfig.json` または `typescript` の依存関係があれば TypeScript と判定。型チェックを選ぶと、まだない場合は `tsconfig.json` を作成します                                                       |
+| lint コマンド          | Vite+ なら `vp lint`、それ以外は `oxlint`。**この判定によって、Oxlint の設定を書き込むファイルが決まります**                                                                                    |
+| 設定済みの機能         | 既存の Vize 設定、Oxlint 設定、`lint` ブロック、プラグインの登録、依存パッケージの有無を確認します                                                                                              |
 
 <span id="which-lint-file-it-writes"></span>
 
@@ -67,9 +67,9 @@ init は既存の設定を保ちながら編集し、専用の Vize 設定ファ
 
 設定ファイルを作っても、実行するコマンドがそのファイルを読み込まなければ lint は有効になりません。
 
-| コマンド | 読み込む設定 |
-| --- | --- |
-| `vp lint`、`vp check` | `lint` ブロック（`vite.config.ts`） |
+| コマンド                | 読み込む設定                         |
+| ----------------------- | ------------------------------------ |
+| `vp lint`、`vp check`   | `lint` ブロック（`vite.config.ts`）  |
 | `oxlint`、`oxlint-vize` | `.oxlintrc.json`／`oxlint.config.ts` |
 
 Vite+ は `.oxlintrc.json` を読み込みません。`.oxlintrc.json` に `jsPlugins` と `vize/*` のルールを
@@ -79,22 +79,20 @@ Vite+ は `.oxlintrc.json` を読み込みません。`.oxlintrc.json` に `jsPl
 
 `init` は、プロジェクトで実行する lint コマンドに合わせて設定先を選びます。
 
-| プロジェクトの構成 | `init` が書き込む設定 |
-| --- | --- |
-| Vite+ を使用 | `lint` ブロックを `vite.config.*` に追加。`createVizeLintConfig()` で作成 |
-| Vite+ を使用しない | 読み込める設定がなければ `oxlint.config.ts` を作成。既存の設定があれば保持 |
+| プロジェクトの構成                 | `init` が書き込む設定                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Vite+ を使用                       | `lint` ブロックを `vite.config.*` に追加。`createVizeLintConfig()` で作成                      |
+| Vite+ を使用しない                 | 読み込める設定がなければ `oxlint.config.ts` を作成。既存の設定があれば保持                     |
 | Vite+ に加えて `oxlint` も直接実行 | 両方の実行方法に対応。新しく作る設定は同じプリセットを使い、読み込める既存の Oxlint 設定は保持 |
-| Vite+ の設定を安全に編集できない | lint の設定は手動で編集。[自動編集できない場合](#when-init-refuses-to-edit)を参照 |
+| Vite+ の設定を安全に編集できない   | lint の設定は手動で編集。[自動編集できない場合](#when-init-refuses-to-edit)を参照              |
 
 `lint` ブロックは `createVizeLintConfig()` で作成します。
 プラグインの読み込みに必要な `jsPlugins` を含む設定一式が返るため、その項目を追加し忘れることを防げます。
 次の例は lint の設定部分を示しています。既存のプラグインの import などは、プロジェクトの構成に合わせてください。
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { createVizeLintConfig } from "oxlint-plugin-vize";
-
 export default defineConfig({
   lint: createVizeLintConfig({
     preset: "happy-path",
@@ -102,8 +100,7 @@ export default defineConfig({
       helpLevel: "short",
     },
   }),
-  plugins: [vize()],
-});
+}).withVue({});
 ```
 
 Vite+ を使わない場合は、同じ内容を `oxlint.config.ts` に設定します。
@@ -145,26 +142,26 @@ vpx vize init --yes --lint --vite --fmt --typecheck --editor
 代わりに Nuxt モジュールの選択肢を使ってください。機能のフラグは検出結果を上書きします。
 指定していない機能は検出時の選択を引き継ぐため、不要な機能は次の表の無効化用フラグで除外します。
 
-| オプション | 動作 |
-| --- | --- |
-| `-y`、`--yes` | 対話せずに選択を承認 |
-| `--lint`／`--no-lint` | Oxlint プラグインを有効化／無効化 |
-| `--vite` | Nuxt が検出されても Vite プラグインを選択 |
-| `--nuxt` | Nuxt モジュールを選択 |
-| `--bundler`／`--no-bundler` | 自動検出された Vite または Nuxt の連携を有効化／無効化 |
-| `--fmt`／`--no-fmt` | `vize fmt` の設定を有効化／無効化 |
+| オプション                      | 動作                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| `-y`、`--yes`                   | 対話せずに選択を承認                                                       |
+| `--lint`／`--no-lint`           | Oxlint プラグインを有効化／無効化                                          |
+| `--vite`                        | Nuxt が検出されても Vite プラグインを選択                                  |
+| `--nuxt`                        | Nuxt モジュールを選択                                                      |
+| `--bundler`／`--no-bundler`     | 自動検出された Vite または Nuxt の連携を有効化／無効化                     |
+| `--fmt`／`--no-fmt`             | `vize fmt` の設定を有効化／無効化                                          |
 | `--typecheck`／`--no-typecheck` | `vize check` の設定を有効化／無効化。まだない場合は `tsconfig.json` を作成 |
-| `--editor`／`--no-editor` | `.vscode/extensions.json` の推奨設定を有効化／無効化 |
-| `--dry-run` | 変更予定を表示し、ファイルを書き込まずに終了 |
-| `--no-install` | 依存パッケージのインストールを省略。設定ファイルは書き込みます |
-| `--package-manager <PM>` | `pnpm`、`npm`、`yarn`、`bun`、`vp` のいずれかを使用 |
+| `--editor`／`--no-editor`       | `.vscode/extensions.json` の推奨設定を有効化／無効化                       |
+| `--dry-run`                     | 変更予定を表示し、ファイルを書き込まずに終了                               |
+| `--no-install`                  | 依存パッケージのインストールを省略。設定ファイルは書き込みます             |
+| `--package-manager <PM>`        | `pnpm`、`npm`、`yarn`、`bun`、`vp` のいずれかを使用                        |
 
 `--dry-run` は機能を選んだ後、変更予定を表示して終了します。ファイルの書き込みや
 依存パッケージのインストールは行いませんが、自動承認を指定しなければ通常どおり対話が必要です。
 対話できない環境で変更予定だけを確認するには、`vpx vize init --yes --dry-run` を実行してください。
 次は、既存の TypeScript 設定がある Vite+ プロジェクトでの表示例です。
 
-```
+```console
 [vize init] plan:
   lint      configured Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json; writes vite.config.ts
   bundler   configured adds vize() to vite.config.ts
@@ -185,7 +182,7 @@ vpx vize init --yes --lint --vite --fmt --typecheck --editor
 `init` で設定と依存パッケージの導入が正常に完了した後は、同じ機能とインストール設定で再実行しても、
 プラグイン、スクリプト、依存パッケージが重複して追加されることはありません。変更が不要なファイルは、そのまま保たれます。
 
-```
+```console
 [vize init] plan:
   lint      unchanged  Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json
   bundler   unchanged  vite.config.ts already uses @vizejs/vite-plugin
@@ -215,7 +212,7 @@ Vize の連携がまだ検出されていなければ、`init` は既存の設�
 自動でまとめて書き換えることを避けます。Vize の連携がすでに検出されている場合は、その設定を保持します。
 次は、新規導入時に自動編集できない場合の表示例です。
 
-```
+```console
 [vize init] lint: NOT configured — vp lint reads the `lint` block in the Vite config, but
 vite.config.ts already has a `lint` block and merging into it would risk dropping settings, so
 spread createVizeLintConfig() into it by hand
@@ -259,14 +256,14 @@ spread createVizeLintConfig() into it by hand
 このファイルをコミットすると、チーム全員が同じ推奨設定を使えます。`init` を実行した端末に
 拡張機能が自動でインストールされるわけではありません。`init` の結果には、VS Code 以外の連携方法も表示されます。
 
-| エディター | 連携方法 |
-| --- | --- |
-| VS Code | `ubugeeei.vize` |
-| Zed | `editors/zed` |
-| Neovim | `editors/nvim` |
-| Vim | `editors/vim` |
-| Helix | `editors/helix` |
-| Emacs | `editors/emacs` |
+| エディター | 連携方法        |
+| ---------- | --------------- |
+| VS Code    | `ubugeeei.vize` |
+| Zed        | `editors/zed`   |
+| Neovim     | `editors/nvim`  |
+| Vim        | `editors/vim`   |
+| Helix      | `editors/helix` |
+| Emacs      | `editors/emacs` |
 
 各エディターへの導入手順は [VS Code とその他のエディター](../integrations/vscode.md)を参照してください。
 

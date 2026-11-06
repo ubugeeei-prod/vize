@@ -39,14 +39,12 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/prefer-use-attrs": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/prefer-use-attrs": "warn"
+    }
   },
 });
 ```

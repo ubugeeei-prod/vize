@@ -38,14 +38,12 @@ O mesmo conteúdo é passado normalmente, sem o atributo inline-template.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-inline-template": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-inline-template": "error"
+    }
   },
 });
 ```

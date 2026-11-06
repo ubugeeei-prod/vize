@@ -7,7 +7,7 @@ description: "Verificações que precisam de mais de um arquivo: um pai e seus f
 
 Verificações que precisam de mais de um arquivo: um pai e seus filhos, um provider e seus injetores, ou um roteador e seus links.
 
-Ative estas verificações com `crossFile: true` em `vue.linter` ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `vue.linter.rules` como `croquis/cf/<name>`, sem `vize:`.
+Ative estas verificações com `crossFile: true` em `linter`, passado a `withVue`, ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `linter.rules` como `croquis/cf/<name>`, sem `vize:`.
 
 Cada página de regra mostra um exemplo que falha, um que passa e a configuração que ativa a regra.
 

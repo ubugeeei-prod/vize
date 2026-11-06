@@ -38,14 +38,12 @@ Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-memo": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-memo": "error"
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ O papel de caixa de seleção omite `aria-checked`, que informa o estado da caix
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/role-has-required-aria-props": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/role-has-required-aria-props": "warn"
+    }
   },
 });
 ```

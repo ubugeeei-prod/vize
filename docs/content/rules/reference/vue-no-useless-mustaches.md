@@ -43,14 +43,12 @@ Literal text is written directly; variable expressions, interpolated template st
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-mustaches": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-mustaches": "warn"
+    }
   },
 });
 ```

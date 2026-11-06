@@ -40,14 +40,12 @@ Uma div externa estável permanece como raiz, enquanto o parágrafo aninhado rec
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-root-v-if": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-root-v-if": "warn"
+    }
   },
 });
 ```

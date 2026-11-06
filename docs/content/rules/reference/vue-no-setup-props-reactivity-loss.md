@@ -43,14 +43,12 @@ const snapshot = computed(() => props.count);
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-setup-props-reactivity-loss": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-setup-props-reactivity-loss": "warn"
+    }
   },
 });
 ```

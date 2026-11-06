@@ -24,7 +24,7 @@ Vize采取了不同的做法。通过在 Rust 中重写整个Vue.js工具链，�
 
 Vize将所有这些统一成一个二元进制。一个解析器。一个AST。一个配置表面。这消除了冗余的解析通道，降低配置复杂度，并确保所有工具共享对代码的一致理解。
 
-```
+```diagram
 @vue/compiler-sfc  +  eslint-plugin-vue  +  prettier  +  vue-tsc  +  Storybook
                               ↓
                             vize

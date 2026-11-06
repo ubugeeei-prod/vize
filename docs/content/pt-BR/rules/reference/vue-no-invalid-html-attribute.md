@@ -38,14 +38,12 @@ A âncora usa help, um valor de rel apropriado para um recurso de ajuda vinculad
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-invalid-html-attribute": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-invalid-html-attribute": "warn"
+    }
   },
 });
 ```

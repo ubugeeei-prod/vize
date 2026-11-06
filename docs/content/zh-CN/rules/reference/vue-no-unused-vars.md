@@ -45,14 +45,12 @@ description: "禁止 v-for 和 v-slot 指令中未使用的变量定义。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-unused-vars": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-unused-vars": "warn"
+    }
   },
 });
 ```

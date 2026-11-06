@@ -38,14 +38,12 @@ router.push({ name: "settings" });
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-router-prefer-named-push": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-router-prefer-named-push": "warn"
+    }
   },
 });
 ```

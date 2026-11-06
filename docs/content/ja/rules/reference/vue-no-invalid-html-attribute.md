@@ -38,14 +38,12 @@ a の rel に、ヘルプへの参照を表す help を指定します。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-invalid-html-attribute": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-invalid-html-attribute": "warn"
+    }
   },
 });
 ```

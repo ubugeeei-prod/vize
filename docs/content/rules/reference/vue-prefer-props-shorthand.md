@@ -45,14 +45,12 @@ Vue 3.4+ same-name binding shorthand removes the repeated expressions; a differe
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/prefer-props-shorthand": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/prefer-props-shorthand": "warn"
+    }
   },
 });
 ```

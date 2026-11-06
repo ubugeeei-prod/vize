@@ -54,14 +54,12 @@ description: "存在带按键修饰符的处理器时，要求在 `v-on` 上使�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/use-v-on-exact": "warn"
+    }
   },
 });
 ```

@@ -51,14 +51,12 @@ Os dois seletores mantêm o escopo em um único bloco style, atendendo à conven
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/single-style-block": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/single-style-block": "warn"
+    }
   },
 });
 ```

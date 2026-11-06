@@ -36,14 +36,12 @@ description: "为兼容 Vue 2，要求将 `template v-for` 的 key 放在实际�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-v-for-template-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-v-for-template-key": "error"
+    }
   },
 });
 ```

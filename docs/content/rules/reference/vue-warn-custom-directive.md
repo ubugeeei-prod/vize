@@ -42,14 +42,12 @@ The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/warn-custom-directive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/warn-custom-directive": "warn"
+    }
   },
 });
 ```

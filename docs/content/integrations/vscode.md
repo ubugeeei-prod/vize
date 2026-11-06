@@ -81,7 +81,7 @@ existing Vue tooling.
 
 ### What the Extension Uses
 
-```text
+```diagram
 VS Code
   ↕ Language Server Protocol
 vize lsp

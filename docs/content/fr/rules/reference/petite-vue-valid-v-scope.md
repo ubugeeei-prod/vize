@@ -48,14 +48,12 @@ Un `v-scope` sans valeur utilise la portée racine. Les autres valeurs sont des 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "petite-vue/valid-v-scope": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "petite-vue/valid-v-scope": "error"
+    }
   },
 });
 ```

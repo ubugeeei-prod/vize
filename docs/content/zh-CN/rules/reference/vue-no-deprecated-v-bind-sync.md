@@ -41,14 +41,12 @@ description: "禁止在 `v-bind` 上使用已弃用的 `.sync` 修饰符。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-deprecated-v-bind-sync": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-deprecated-v-bind-sync": "error"
+    }
   },
 });
 ```

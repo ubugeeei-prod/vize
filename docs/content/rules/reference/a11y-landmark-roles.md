@@ -40,14 +40,12 @@ The dashboard remains the main landmark; the settings area becomes a named navig
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/landmark-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/landmark-roles": "warn"
+    }
   },
 });
 ```

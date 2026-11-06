@@ -38,14 +38,12 @@ description: "禁止正数 tabindex 值。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/tabindex-no-positive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/tabindex-no-positive": "warn"
+    }
   },
 });
 ```
