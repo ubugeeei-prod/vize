@@ -15,9 +15,9 @@ export const frenchRules2 = {
     "Toutes les clés statiques de la déclaration sont entre guillemets, car `update:modelValue` ne peut pas être écrit comme identifiant JavaScript sans guillemets.",
   ],
   "script/custom-event-name-casing": [
-    "Imposer camelCase aux noms des événements personnalisés émis",
+    "Imposer la casse configurée aux noms des événements personnalisés émis",
     "La chaîne émise `my-event` contient un tiret et enfreint la convention camelCase par défaut pour les noms d’événements.",
-    "La déclaration et l’appel utilisent tous deux `myEvent`, conformément à la valeur globale par défaut camelCase. Le preset `opinionated` choisit plutôt kebab-case, et les options explicites de la règle permettent de sélectionner l’un ou l’autre style.",
+    "La déclaration et l’appel utilisent tous deux `myEvent`, conformément à la valeur globale par défaut camelCase. Le preset `opinionated` choisit plutôt kebab-case, et les options explicites de la règle permettent aussi de sélectionner des noms entièrement en minuscules comme `transitionstart`.",
   ],
   "script/define-emits-declaration": [
     "Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau",

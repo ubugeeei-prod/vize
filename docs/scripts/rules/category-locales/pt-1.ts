@@ -180,9 +180,9 @@ export const portugueseRules1: Record<string, readonly [string, string, string]>
     "Todas as chaves estáticas da declaração usam aspas, pois `update:modelValue` não pode ser escrito como um identificador JavaScript sem aspas.",
   ],
   "script/custom-event-name-casing": [
-    "Exigir camelCase nos nomes de eventos personalizados emitidos",
+    "Exigir a capitalização configurada nos nomes de eventos personalizados emitidos",
     "A string emitida `my-event` contém um hífen e viola a política padrão de nomes de eventos em camelCase.",
-    "Tanto a declaração quanto a chamada usam `myEvent`, atendendo ao padrão global camelCase. O preset `opinionated` seleciona kebab-case, e as opções explícitas da regra permitem escolher qualquer um dos dois estilos.",
+    "Tanto a declaração quanto a chamada usam `myEvent`, atendendo ao padrão global camelCase. O preset `opinionated` seleciona kebab-case, e as opções explícitas da regra também permitem nomes totalmente minúsculos como `transitionstart`.",
   ],
   "script/define-emits-declaration": [
     "Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array",

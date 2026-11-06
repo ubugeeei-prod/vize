@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "Exigir camelCase nos nomes de eventos personalizados emitidos."
+description: "Exigir a capitalização configurada nos nomes de eventos personalizados emitidos."
 ---
 
 # `script/custom-event-name-casing`
 
-Exigir camelCase nos nomes de eventos personalizados emitidos.
+Exigir a capitalização configurada nos nomes de eventos personalizados emitidos.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
@@ -57,4 +57,4 @@ Depois, execute `vp run lint`.
 - [Regras de tipo e script](../type-and-script.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)

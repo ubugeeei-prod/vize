@@ -66,9 +66,9 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   [
     "script/custom-event-name-casing",
     "The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.",
-    "Both the declaration and call use `myEvent`, preserving agreement while satisfying the global camelCase default. The `opinionated` preset selects kebab-case instead, and explicit rule options can select either supported style.",
+    "Both the declaration and call use `myEvent`, preserving agreement while satisfying the global camelCase default. The `opinionated` preset selects kebab-case instead, and explicit rule options can also select lowercase names such as `transitionstart`.",
     "emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。",
-    "宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションではどちらの形式も選択できます。",
+    "宣言と呼び出しの両方を `myEvent` にそろえ、グローバルな camelCase の既定値を満たします。`opinionated` プリセットは代わりに kebab-case を選び、明示的なルールオプションでは `transitionstart` のような lowercase も選択できます。",
   ],
   [
     "script/define-emits-declaration",

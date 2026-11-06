@@ -5,9 +5,9 @@ export const chineseRules2: Record<string, readonly [string, string, string]> = 
     "声明中的所有静态键都带引号，因为 `update:modelValue` 无法写成不带引号的 JavaScript 标识符。",
   ],
   "script/custom-event-name-casing": [
-    "要求发出的自定义事件名称使用 camelCase",
+    "要求发出的自定义事件名称使用配置的大小写形式",
     "发出的字符串 `my-event` 含有连字符，违反默认的 camelCase 事件命名策略。",
-    "声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项可以选择这两种受支持的样式。",
+    "声明和调用都使用 `myEvent`，满足全局默认的 camelCase。`opinionated` 预设改用 kebab-case，显式规则选项还可以选择 `transitionstart` 这样的全小写名称。",
   ],
   "script/define-emits-declaration": [
     "要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式",

@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "Imposer camelCase aux noms des événements personnalisés émis."
+description: "Imposer la casse configurée aux noms des événements personnalisés émis."
 ---
 
 # `script/custom-event-name-casing`
 
-Imposer camelCase aux noms des événements personnalisés émis.
+Imposer la casse configurée aux noms des événements personnalisés émis.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
@@ -57,4 +57,4 @@ Lancez ensuite `vp run lint`.
 - [Règles de type et de script](../type-and-script.md)
 - [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)

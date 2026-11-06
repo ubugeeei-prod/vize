@@ -1,11 +1,11 @@
 ---
 title: "script/custom-event-name-casing"
-description: "要求发出的自定义事件名称使用 camelCase。"
+description: "要求发出的自定义事件名称使用配置的大小写形式。"
 ---
 
 # `script/custom-event-name-casing`
 
-要求发出的自定义事件名称使用 camelCase。
+要求发出的自定义事件名称使用配置的大小写形式。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
@@ -57,4 +57,4 @@ export default defineConfig({}).withVue({
 - [类型与脚本规则](../type-and-script.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L63)
