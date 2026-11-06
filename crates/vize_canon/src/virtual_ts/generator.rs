@@ -450,6 +450,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push_str("  "); // indentation (not in source)
 
                 let mut output_line = std::borrow::Cow::Borrowed(line);
+                setup_type_exports
+                    .strip_classic_modifiers(&mut output_line, line_start as u32);
 
                 // Close the `defineComponent(` wrap right after the wrapped
                 // options object's closing brace.

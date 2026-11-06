@@ -68,7 +68,7 @@ void props;
 "#;
 
 #[test]
-fn setup_value_dependent_exports_are_captured_and_reexported() {
+fn classic_value_dependent_exports_are_captured_and_reexported() {
     let virtual_ts = type_check_sfc(
         COMPONENT,
         &SfcTypeCheckOptions::new("Button.vue").with_virtual_ts(),
@@ -77,12 +77,12 @@ fn setup_value_dependent_exports_are_captured_and_reexported() {
     .expect("virtual TypeScript should be generated");
 
     assert!(
-        virtual_ts.contains("  export type ButtonNativeType"),
-        "the authored export modifier must remain for TS1184 parity:\n{virtual_ts}"
+        !virtual_ts.contains("  export type ButtonNativeType"),
+        "the classic export must not move inside __setup:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("  export interface BadgeOptions"),
-        "the authored interface export modifier must remain for TS1184 parity:\n{virtual_ts}"
+        !virtual_ts.contains("  export interface BadgeOptions"),
+        "the classic interface export must not move inside __setup:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains("type ButtonNativeType = typeof NATIVE_TYPES[number]"),
@@ -134,20 +134,20 @@ fn downstream_imports_accept_exact_types_and_reject_invalid_values() {
         .collect();
     assert_eq!(
         modifier_diagnostics.len(),
-        2,
-        "both setup exports must retain vue-tsc's TS1184 diagnostics: {diagnostics:#?}"
+        0,
+        "legal classic exports must not produce TS1184: {diagnostics:#?}"
     );
 
     let structural_failures: Vec<_> = diagnostics
         .iter()
         .filter(|diagnostic| {
-            matches!(diagnostic.code, Some(2305 | 2300 | 2614))
+            matches!(diagnostic.code, Some(1184 | 2305 | 2300 | 2614))
                 || (diagnostic.file.ends_with("consumer.ts") && diagnostic.code != Some(2322))
         })
         .collect();
     assert!(
         structural_failures.is_empty(),
-        "public type imports must remain available despite authored TS1184: {structural_failures:#?}"
+        "valid public type imports must remain diagnostic-free: {structural_failures:#?}"
     );
 
     let rejected_assignments = diagnostics

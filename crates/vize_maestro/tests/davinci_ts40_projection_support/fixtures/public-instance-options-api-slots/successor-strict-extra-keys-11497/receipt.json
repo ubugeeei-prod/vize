@@ -19,12 +19,12 @@
     "contentMapperAuthoredHits": 0
   },
   "qualification": {
-    "head": "d4f6cd3ec18e432ab518933f426cb528427ccfc3",
-    "run": 42257766023,
+    "head": "f86dffb581295eb5d991eebfd96f0864d02ff71f",
+    "run": 42278552411,
     "artifact": {
-      "id": 13523975472,
-      "name": "component-input-packets-head-d4f6cd3ec18e432ab518933f426cb528427ccfc3-42257766023",
-      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "id": 13534561430,
+      "name": "component-input-packets-head-f86dffb581295eb5d991eebfd96f0864d02ff71f-42278552411",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap",
       "sha256": "709ebab36e0cf546c639a30fa4926d95c642b9acfd2b0a730f73e7570ddf7840"
     }
   },

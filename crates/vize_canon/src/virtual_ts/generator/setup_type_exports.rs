@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 
@@ -64,6 +66,7 @@ struct SetupTypeExport {
 /// Preserves public types whose `typeof` dependencies keep them in setup scope.
 pub(super) struct SetupTypeExportsPlan {
     diagnostic_starts: Vec<u32>,
+    classic_export_starts: Vec<u32>,
     exports: Vec<SetupTypeExport>,
 }
 
@@ -93,6 +96,7 @@ impl SetupTypeExportsPlan {
         } else {
             Vec::new()
         };
+        let mut classic_export_starts = Vec::new();
         let mut exports = Vec::new();
         let mut captured_names: FxHashSet<String> = FxHashSet::default();
 
@@ -112,6 +116,9 @@ impl SetupTypeExportsPlan {
                 // the same authored name — TS2300 on code `vue-tsc` accepts.
                 if script_blocks.owns(declaration.start) {
                     continue;
+                }
+                if !has_script_setup {
+                    classic_export_starts.push(declaration.start);
                 }
 
                 let name: String = declaration.name.as_str().into();
@@ -137,9 +144,11 @@ impl SetupTypeExportsPlan {
                 });
             }
         }
+        classic_export_starts.sort_unstable();
 
         Self {
             diagnostic_starts,
+            classic_export_starts,
             exports,
         }
     }
@@ -151,6 +160,41 @@ impl SetupTypeExportsPlan {
         self.exports
             .iter()
             .any(|export| export.name.as_str() == name)
+    }
+
+    /// A lone classic script is projected through `__setup`, so remove only
+    /// its legal module modifier and restore the public declaration through the
+    /// captured artifact. Actual `<script setup>` modifiers remain for TS1184.
+    pub(super) fn strip_classic_modifiers(&self, line: &mut Cow<'_, str>, line_start: u32) {
+        let line_end = line_start.saturating_add(line.len() as u32);
+        let first = self
+            .classic_export_starts
+            .partition_point(|start| *start < line_start);
+        let last = self
+            .classic_export_starts
+            .partition_point(|start| *start < line_end);
+        if first == last {
+            return;
+        }
+
+        let original = line.as_ref();
+        let mut output = String::with_capacity(original.len());
+        let mut copied_until = 0usize;
+        for start in self
+            .classic_export_starts
+            .get(first..last)
+            .unwrap_or_default()
+        {
+            let column = (*start - line_start) as usize;
+            if original.get(column..column + "export".len()) == Some("export")
+                && let Some(kept) = original.get(copied_until..column)
+            {
+                output.push_str(kept);
+                copied_until = column + "export".len();
+            }
+        }
+        output.push_str(original.get(copied_until..).unwrap_or_default());
+        *line = Cow::Owned(output.into());
     }
 
     /// A hoisted setup type is legal in the generated module, but its authored
@@ -202,6 +246,8 @@ impl SetupTypeExportsPlan {
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use super::{ScriptBlockScopes, SetupTypeExportsPlan, exported_type_is_generic};
     use vize_croquis::{Croquis, TypeExport, TypeExportKind};
 
@@ -288,6 +334,41 @@ mod tests {
         plain.emit_diagnostic_anchors(&mut setup, &mut mappings, &|offset| offset + 10);
         assert!(setup.is_empty());
         assert!(mappings.is_empty());
+    }
+
+    #[test]
+    fn classic_script_exports_use_the_legal_capture_bridge() {
+        let source = "export type Public = typeof value;";
+        let mut summary = Croquis::new();
+        summary.type_exports.push(TypeExport {
+            name: "Public".into(),
+            kind: TypeExportKind::Type,
+            start: 0,
+            end: source.len() as u32,
+            hoisted: false,
+        });
+
+        let plan =
+            SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default(), false);
+        let mut line = Cow::Borrowed(source);
+        plan.strip_classic_modifiers(&mut line, 0);
+        assert_eq!(line, " type Public = typeof value;");
+
+        let mut fields = Vec::new();
+        let mut setup = vize_carton::String::default();
+        plan.emit_setup_artifacts(&mut setup, &mut fields);
+        assert_eq!(fields, ["__vize_exported_type_Public"]);
+        assert!(setup.contains("unknown as Public"));
+
+        let mut module = vize_carton::String::default();
+        plan.emit_module_exports(&mut module);
+        assert!(module.contains("export type Public = Awaited<ReturnType<typeof __setup>>"));
+
+        let setup_plan =
+            SetupTypeExportsPlan::new(&summary, Some(source), &ScriptBlockScopes::default(), true);
+        let mut setup_line = Cow::Borrowed(source);
+        setup_plan.strip_classic_modifiers(&mut setup_line, 0);
+        assert_eq!(setup_line, source);
     }
 
     #[test]
