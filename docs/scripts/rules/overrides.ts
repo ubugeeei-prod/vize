@@ -121,6 +121,18 @@ export const overrides: Record<string, RuleExample> = {
     script("const count = 1;"),
     "crates/vize_patina/src/rules/script/no_export_in_script_setup.rs",
   ),
+  "script/consistent-props-emits-key-quotes": pair(
+    script('const emit = defineEmits<{\n  "update:modelValue": [value: string]\n  close: []\n}>()'),
+    script(
+      'const emit = defineEmits<{\n  "update:modelValue": [value: string]\n  "close": []\n}>()\nconst props = defineProps({\n  "aria-label": String,\n  "disabled": Boolean,\n})',
+    ),
+    "crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs",
+    {
+      note: '## Formatter compatibility\n\nThis lint rule owns declaration-specific quoting. Configure Prettier, Oxfmt, and the Vize formatter with `quoteProps: "preserve"` so formatting does not remove quotes required by the rule.',
+      noteJa:
+        '## Formatter との併用\n\nこの lint ルールが宣言単位の引用符を管理します。ルールが必要とする引用符を整形時に削除しないよう、Prettier・Oxfmt・Vize formatter の `quoteProps` を `"preserve"` に設定してください。',
+    },
+  ),
   "nuxt/nuxt-config-keys-order": pair(
     script("export default defineNuxtConfig({ ssr: true, modules: [] });", false),
     script("export default defineNuxtConfig({ modules: [], ssr: true });", false),

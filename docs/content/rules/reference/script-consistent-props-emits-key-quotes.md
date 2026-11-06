@@ -13,6 +13,10 @@ Require consistent quoted keys in props and emits declarations.
 
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
+## Formatter compatibility
+
+This lint rule owns declaration-specific quoting. Configure Prettier, Oxfmt, and the Vize formatter with `quoteProps: "preserve"` so formatting does not remove quotes required by the rule.
+
 ## Bad
 
 The emits declaration mixes the necessarily quoted `update:modelValue` key with the unquoted `close` key.
@@ -64,4 +68,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L49)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L53)

@@ -11,6 +11,10 @@
 //! Computed keys and spreads are ignored because they have no authored static
 //! key whose quote style can be made consistent.
 //!
+//! Formatters should preserve authored property quotes when this rule is in
+//! use. Set `quoteProps` to `preserve` in Prettier, Oxfmt, or the Vize
+//! formatter so declaration-specific lint policy remains authoritative.
+//!
 //! ## Examples
 //!
 //! ### Invalid

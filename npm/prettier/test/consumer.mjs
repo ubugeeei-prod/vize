@@ -150,6 +150,7 @@ const config = {
   plugins: ["prettier-plugin-vize"],
   printWidth: 64,
   singleQuote: true,
+  quoteProps: "preserve",
   semi: false,
   endOfLine: "crlf",
 };
@@ -166,10 +167,14 @@ const golden =
     "\r\n",
   );
 const app = path.join(consumer, "src/App.vue");
+const declarations = path.join(consumer, "src/Declarations.vue");
 const art = path.join(consumer, "src/Example.art");
 const empty = path.join(consumer, "src/Empty.vue");
 const ignored = path.join(consumer, "ignored.vue");
 fs.writeFileSync(app, input);
+const declarationInput =
+  '<script setup lang="ts">const emit=defineEmits<{"update:modelValue":[value:string];"close":[]}>();const props=defineProps({"aria-label":String,"disabled":Boolean})</script>';
+fs.writeFileSync(declarations, declarationInput);
 fs.writeFileSync(art, '<art title="Demo"><variant name="Basic"><p>雪</p></variant></art>');
 fs.writeFileSync(empty, "");
 fs.writeFileSync(ignored, "<template>< invalid ignored bytes\r\n");
@@ -178,15 +183,33 @@ const execute = (parameters, input) => run(process.execPath, [cli, ...parameters
 assert.equal(execute(["--find-config-path", "src/App.vue"]).stdout.trim(), "prettier.config.mjs");
 assert.equal(execute(["--check", "src/App.vue"]).status, 1);
 assert.equal(
-  execute(["--write", "src/App.vue", "src/Example.art", "src/Empty.vue", "ignored.vue"]).status,
+  execute([
+    "--write",
+    "src/App.vue",
+    "src/Declarations.vue",
+    "src/Example.art",
+    "src/Empty.vue",
+    "ignored.vue",
+  ]).status,
   0,
 );
 assert.equal(fs.readFileSync(app, "utf8"), golden);
+const declarationOutput = fs.readFileSync(declarations, "utf8");
+for (const key of ['"update:modelValue"', '"close"', '"aria-label"', '"disabled"']) {
+  assert.equal(declarationOutput.includes(key), true, key);
+}
 assert.equal(fs.statSync(empty).size, 0);
 assert.deepEqual(fs.readFileSync(ignored), ignoredBytes);
 const artBytes = fs.readFileSync(art);
 assert.equal(
-  execute(["--check", "src/App.vue", "src/Example.art", "src/Empty.vue", "ignored.vue"]).status,
+  execute([
+    "--check",
+    "src/App.vue",
+    "src/Declarations.vue",
+    "src/Example.art",
+    "src/Empty.vue",
+    "ignored.vue",
+  ]).status,
   0,
 );
 assert.equal(execute(["--write", "src/App.vue", "src/Example.art"]).status, 0);

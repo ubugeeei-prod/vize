@@ -13,6 +13,10 @@ description: "统一 props 和 emits 声明中带引号的键。"
 
 适用范围：Vue SFC 中的 JS/TS 脚本；示例展示对应的 Options API 或 script setup 形式。
 
+## 格式化工具兼容性
+
+此 lint 规则负责按声明管理引号。请将 Prettier、Oxfmt 和 Vize 格式化器的 `quoteProps` 设置为 `"preserve"`，以免格式化时删除规则要求的引号。
+
 ## 错误示例
 
 emits 声明将必须带引号的 `update:modelValue` 键与不带引号的 `close` 键混合使用。
@@ -64,4 +68,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L49)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L53)

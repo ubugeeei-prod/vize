@@ -1,4 +1,7 @@
 export const frenchShared = {
+  "Formatter compatibility": "Compatibilité avec les formateurs",
+  'This lint rule owns declaration-specific quoting. Configure Prettier, Oxfmt, and the Vize formatter with `quoteProps: "preserve"` so formatting does not remove quotes required by the rule.':
+    'Cette règle de lint gère les guillemets propres à chaque déclaration. Configurez Prettier, Oxfmt et le formateur Vize avec `quoteProps: "preserve"` afin que le formatage ne retire pas les guillemets requis par la règle.',
   "Scope and limitations": "Champ d’application et limites",
   "This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.":
     "Ce contrat sans producteur actuel utilise un scénario historique d’affectation à un indice de tableau dans Vue 2.7. Vue 2 ne notifie pas les mises à jour par affectation directe à un indice ; Vue 3 suit ces affectations. Les fichiers Mauvais et Bon illustrent la correction pour Vue 2, et non un défaut de Vue 3.",

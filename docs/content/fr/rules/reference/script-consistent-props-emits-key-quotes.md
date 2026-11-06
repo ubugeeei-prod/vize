@@ -13,6 +13,10 @@ Uniformiser les clés entre guillemets dans les déclarations props et emits.
 
 Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la forme concernée de l’Options API ou de script setup.
 
+## Compatibilité avec les formateurs
+
+Cette règle de lint gère les guillemets propres à chaque déclaration. Configurez Prettier, Oxfmt et le formateur Vize avec `quoteProps: "preserve"` afin que le formatage ne retire pas les guillemets requis par la règle.
+
 ## Mauvais
 
 La déclaration emits mélange la clé `update:modelValue`, qui doit être entre guillemets, avec la clé `close` sans guillemets.
@@ -64,4 +68,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de type et de script](../type-and-script.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L49)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L53)

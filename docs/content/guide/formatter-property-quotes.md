@@ -32,6 +32,36 @@ quotes its sibling keys as well.
 The `singleQuote` setting still chooses the quote character. `quoteProps`
 controls which keys have quotes; it does not keep the original quote character.
 
+## Use with props and emits quote lint
+
+The opinionated lint preset enables
+`script/consistent-props-emits-key-quotes`. That rule applies only to props and
+emits declarations, so let lint own that narrow policy and configure formatters
+to preserve authored quotes. In Vite+, a root formatter setting is shared with
+Oxfmt and the Vize Vue formatter:
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  fmt: { quoteProps: "preserve" },
+}).withVue({
+  linter: { preset: "opinionated" },
+});
+```
+
+Prettier uses the equivalent setting in its own configuration. This also flows
+through `prettier-plugin-vize`:
+
+```json
+{
+  "quoteProps": "preserve"
+}
+```
+
+Using `preserve` prevents format-on-save from undoing the lint-compliant quotes
+without imposing consistent quoting on unrelated objects.
+
 The CLI and editor read the same `vue.formatter` settings from `vite.config.*`.
 Use `vize fmt --quote-props preserve` for a direct CLI override. The native Node
 API accepts the same three strings as `formatSfc`'s `quoteProps` option. See

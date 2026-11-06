@@ -13,6 +13,10 @@ props / emits 宣言で引用符が必須のキーがある場合、すべての
 
 適用範囲：Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。
 
+## Formatter との併用
+
+この lint ルールが宣言単位の引用符を管理します。ルールが必要とする引用符を整形時に削除しないよう、Prettier・Oxfmt・Vize formatter の `quoteProps` を `"preserve"` に設定してください。
+
 ## 悪い例
 
 emits 宣言で、引用符が必須の `update:modelValue` キーと、引用符のない `close` キーが混在しています。
@@ -64,4 +68,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L49)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L53)

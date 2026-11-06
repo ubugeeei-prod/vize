@@ -13,6 +13,10 @@ Uniformizar chaves entre aspas nas declarações de props e emits.
 
 Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante de Options API ou script setup.
 
+## Compatibilidade com formatadores
+
+Esta regra de lint controla as aspas por declaração. Configure o Prettier, o Oxfmt e o formatador Vize com `quoteProps: "preserve"` para que a formatação não remova as aspas exigidas pela regra.
+
 ## Incorreto
 
 A declaração de emits mistura a chave `update:modelValue`, que precisa de aspas, com a chave `close` sem aspas.
@@ -64,4 +68,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de tipo e script](../type-and-script.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L49)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/consistent_key_quotes.rs#L53)

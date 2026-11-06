@@ -1,4 +1,7 @@
 export const chineseShared: Record<string, string> = {
+  "Formatter compatibility": "格式化工具兼容性",
+  'This lint rule owns declaration-specific quoting. Configure Prettier, Oxfmt, and the Vize formatter with `quoteProps: "preserve"` so formatting does not remove quotes required by the rule.':
+    '此 lint 规则负责按声明管理引号。请将 Prettier、Oxfmt 和 Vize 格式化器的 `quoteProps` 设置为 `"preserve"`，以免格式化时删除规则要求的引号。',
   "Scope and limitations": "适用范围与限制",
   "This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.":
     "这个目前没有诊断实现的约定使用历史 Vue 2.7 的数组索引赋值情形。Vue 2 不会为直接的索引赋值通知更新；Vue 3 会跟踪这种赋值。错误和正确示例展示的是 Vue 2 的修复方法，并非 Vue 3 的缺陷。",
