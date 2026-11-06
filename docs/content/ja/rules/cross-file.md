@@ -7,7 +7,7 @@ description: "複数のファイルを見る必要がある検査です。親子
 
 複数のファイルを見る必要がある検査です。親子コンポーネント、provide と inject、ルーターとリンクの関係を確認します。
 
-`vue.linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`vue.linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
+`withVue` に渡す `linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
 
 各ルールのページに、診断が出る例・出ない例と、そのルールを有効にする設定があります。
 

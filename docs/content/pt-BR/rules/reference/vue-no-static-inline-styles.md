@@ -37,14 +37,12 @@ Uma classe notice e uma folha de estilo com escopo mantêm a cor constante fora 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-static-inline-styles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-static-inline-styles": "warn"
+    }
   },
 });
 ```

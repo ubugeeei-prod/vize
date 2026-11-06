@@ -41,14 +41,12 @@ One object contains the class conditions; arrays with one object and a string or
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-objects-in-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-objects-in-class": "warn"
+    }
   },
 });
 ```

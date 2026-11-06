@@ -23,7 +23,7 @@ type Sitemap = {
     key: string;
     paths: string[];
     pathsByLocale?: Record<string, string[]>;
-    sections?: Array<{ page: string; paths?: string[] }>;
+    sections?: Array<{ page: string; paths?: string[]; extraPaths?: string[] }>;
   }>;
   supportedLocales: Array<{ code: string; name: string }>;
 };
@@ -276,6 +276,7 @@ void test("the sidebar groups the pages the site actually publishes", () => {
     "/guide/vite-plus",
     "/guide/workflows",
     "/guide/migration",
+    "/guide/tool-integrations",
     "/guide/troubleshooting",
   ];
   assert.deepEqual(start.pathsByLocale, { en: authoredStartPaths, ja: authoredStartPaths });
@@ -331,7 +332,11 @@ void test("every locale labels every sidebar entry", () => {
   const navPaths = sitemap.navGroups.flatMap((group) => [
     ...group.paths,
     ...Object.values(group.pathsByLocale ?? {}).flat(),
-    ...(group.sections ?? []).flatMap((section) => [section.page, ...(section.paths ?? [])]),
+    ...(group.sections ?? []).flatMap((section) => [
+      section.page,
+      ...(section.paths ?? []),
+      ...(section.extraPaths ?? []),
+    ]),
   ]);
   assert.deepEqual(
     navPaths.filter((navPath) => !(navPath in locales.en.labels)),

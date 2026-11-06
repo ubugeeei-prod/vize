@@ -1,0 +1,19 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Card"), _attrs, {
+    default: _withCtx(({ ok = _ctx.done!==1 }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`${_ssrInterpolate(ok)}`)
+      } else {
+        return [_createTextVNode(_toDisplayString(ok))]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

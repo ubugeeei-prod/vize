@@ -98,7 +98,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 
 ## 按需启用 (16)
 
-不属于任何预设。在 `vue.linter.rules` 中按名称启用。
+不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |

@@ -86,7 +86,7 @@ function assertRuleOptionsReference(
   for (const ruleId of configurableRuleOptions) {
     assert.match(
       optionsDoc,
-      new RegExp(escapeRegExp(`| \`${ruleId}\` |`)),
+      new RegExp(`\\|\\s*${escapeRegExp(`\`${ruleId}\``)}\\s*\\|`),
       `${ruleId} must be documented in the lint rule option table`,
     );
     const section = sectionFor(optionsDoc, `## \`${ruleId}\``);
@@ -211,10 +211,10 @@ test("strict boolean rows render within the complete option and type-aware table
       expectedOptions,
       locale || "en",
     );
-    assert.match(
-      source.split("\n").find((line) => line.startsWith("| `vue/valid-v-on` |"))!,
-      /`\{ modifiers\?: string\[\] \}`/,
-    );
+    const validVOnRow = source
+      .split("\n")
+      .find((line) => /^\|\s*`vue\/valid-v-on`\s*\|/.test(line));
+    assert.match(validVOnRow!, /`\{ modifiers\?: string\[\] \}`/);
   }
   const reference = path.join(repoRoot, "docs/content/rules/reference");
   const typeRules = fs
@@ -241,9 +241,9 @@ test("strict boolean rows render within the complete option and type-aware table
 function tableRules(source: string): string[] {
   const block = source
     .split(/\n\s*\n/u)
-    .find((block) => /^\| (?:Rule|ルール) \|[^\n]*\n\| --- \|/u.test(block));
+    .find((block) => /^\|\s*(?:Rule|ルール)\s*\|[^\n]*\n\|\s*-{3,}\s*\|/u.test(block));
   assert.ok(block, "table header and separator must share a block");
-  return [...block.matchAll(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \|/gmu)].map(
+  return [...block.matchAll(/^\|\s*(?:\[)?`([^`]+)`(?:\]\([^)]*\))?\s*\|/gmu)].map(
     (match) => match[1]!,
   );
 }

@@ -38,14 +38,12 @@ A class passa para o parágrafo que é realmente renderizado, enquanto v-if perm
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-useless-template-attributes": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-useless-template-attributes": "error"
+    }
   },
 });
 ```

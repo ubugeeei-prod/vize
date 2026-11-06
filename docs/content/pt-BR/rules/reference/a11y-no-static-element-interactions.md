@@ -38,14 +38,12 @@ Um botão nativo executa a mesma ação usando um elemento interativo adequado.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-static-element-interactions": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-static-element-interactions": "warn"
+    }
   },
 });
 ```

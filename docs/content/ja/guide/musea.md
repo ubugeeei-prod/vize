@@ -54,22 +54,19 @@ export default defineConfig({
       basePath: "/__musea__",
     }),
   ],
-});
+}).withVue({});
 ```
 
-`@vitejs/plugin-vue` を使う既存の Vite+ プロジェクトからは、次の差分で移行できます。
-他の Vite オプションとプラグインは維持してください。
+`@vitejs/plugin-vue` から移行するときは、その import と `vue()` を削除します。
+他の Vite オプションとプラグインはルート設定に維持してください。
 
-```ts annotate="remove:1,2,7;add:3,4,8"
-import { defineConfig } from "vite-plus";
-import vue from "@vitejs/plugin-vue";
+```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  plugins: [vue()],
   plugins: [musea({ include: ["**/*.art.vue"] })],
-});
+}).withVue({});
 ```
 
 dev サーバーを起動して、設定した Musea のルートを開きます。
@@ -78,7 +75,7 @@ dev サーバーを起動して、設定した Musea のルートを開きます
 vp dev
 ```
 
-```txt
+```console
 http://localhost:5173/__musea__
 ```
 
@@ -94,13 +91,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -207,14 +203,14 @@ const sharedCount = ref(0);
 
 バリアントがコンポーネントの仕様の一部である場合は、art ファイルをコンポーネントの隣に置きます。
 
-```txt
+```tree
 src/components/Button.vue
 src/components/Button.art.vue
 ```
 
 多数のコンポーネントを横断する使用例をまとめる場合や、Nuxt がコンポーネントのディレクトリを自動検出する場合は、別の `stories` または `art` ディレクトリに置きます。
 
-```txt
+```tree
 src/components/Button.vue
 stories/forms/Button.art.vue
 stories/navigation/Menu.art.vue

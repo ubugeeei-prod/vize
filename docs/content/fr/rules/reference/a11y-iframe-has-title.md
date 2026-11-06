@@ -38,14 +38,12 @@ Le cadre de paiement possède une URL source, mais aucun `title` décrivant le c
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/iframe-has-title": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/iframe-has-title": "warn"
+    }
   },
 });
 ```

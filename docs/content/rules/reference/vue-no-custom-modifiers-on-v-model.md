@@ -36,14 +36,12 @@ Use the component's ordinary `v-model` contract without a custom modifier; imple
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-custom-modifiers-on-v-model": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-custom-modifiers-on-v-model": "warn"
+    }
   },
 });
 ```

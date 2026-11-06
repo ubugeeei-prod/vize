@@ -42,14 +42,12 @@ Ajouter `scoped` applique la portée du composant Vue aux mêmes sélecteur et d
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-scoped-style": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-scoped-style": "warn"
+    }
   },
 });
 ```

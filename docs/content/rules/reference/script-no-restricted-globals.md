@@ -45,14 +45,12 @@ viewStorage.write('view.scroll', String(window.scrollY))
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-restricted-globals": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-restricted-globals": "error"
+    }
   },
 });
 ```

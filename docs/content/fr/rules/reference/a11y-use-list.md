@@ -42,14 +42,12 @@ Une liste non ordonnée et ses éléments expriment les mêmes tâches avec une 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/use-list": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/use-list": "warn"
+    }
   },
 });
 ```

@@ -4,7 +4,7 @@ use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
 
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,
-    String, SurfaceParseOptions, TransformExpressions, admitted_rule, bindings, blocks_surface,
+    String, SurfaceParseOptions, TransformExpressions, admitted_rule, blocks_surface,
     bridge_supported, croquis, drops_directive, emission_supported, emit, profile,
     record_selection, select, surface_gate,
 };
@@ -87,7 +87,7 @@ fn lower_and_emit_plain(
         .options
         .binding_metadata
         .as_ref()
-        .map(bindings::binding_table);
+        .map(crate::bindings::binding_table);
     select::select_from_l2_plain(
         allocator,
         &artifact,
@@ -215,7 +215,7 @@ fn lower_and_emit<C: CaptureSink>(
         .options
         .binding_metadata
         .as_ref()
-        .map(bindings::binding_table);
+        .map(crate::bindings::binding_table);
     select::select_from_l2(
         allocator,
         &artifact,

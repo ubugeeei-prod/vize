@@ -1,6 +1,7 @@
 ---
 title: Musea のルールオプション
 ---
+
 <!-- Reviewed translation; source: rules/options-musea.md -->
 
 <span id="musea-rule-options"></span>
@@ -23,29 +24,27 @@ CLI では、空でないトークン一覧を設定すると、このルール�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "rules": {
-        "musea/prefer-design-tokens": "warn"
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "musea/prefer-design-tokens": "warn",
+    },
+    ruleOptions: {
+      "musea/prefer-design-tokens": {
+        tokens: [
+          {
+            path: "color.primary",
+            value: "#3b82f6",
+          },
+          {
+            path: "color.danger",
+            value: "#ef4444",
+            tier: "semantic",
+          },
+        ],
       },
-      "ruleOptions": {
-        "musea/prefer-design-tokens": {
-          "tokens": [
-            {
-              "path": "color.primary",
-              "value": "#3b82f6"
-            },
-            {
-              "path": "color.danger",
-              "value": "#ef4444",
-              "tier": "semantic"
-            }
-          ]
-        }
-      }
-    }
-  }
+    },
+  },
 });
 ```
 

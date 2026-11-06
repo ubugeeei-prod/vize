@@ -40,14 +40,12 @@ Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute af
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-cloak": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-cloak": "error"
+    }
   },
 });
 ```

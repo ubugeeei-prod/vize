@@ -41,14 +41,12 @@ Un seul objet contient les conditions des classes ; les tableaux comprenant un o
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-multiple-objects-in-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-multiple-objects-in-class": "warn"
+    }
   },
 });
 ```

@@ -56,10 +56,8 @@ the bridge cannot go missing. The default preset is `"happy-path"`/`"general-rec
 when you want a safe Vue baseline without taking a position on stronger style or framework choices.
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { createVizeLintConfig } from "oxlint-plugin-vize";
-
 export default defineConfig({
   lint: createVizeLintConfig({
     preset: "happy-path",
@@ -70,7 +68,7 @@ export default defineConfig({
       helpLevel: "short",
     },
   }),
-});
+}).withVue({});
 ```
 
 `preset` drives both the emitted rule map and `settings.vize.preset` when a single bundle is
@@ -94,22 +92,16 @@ For Flat Config-style composition in `vite.config.ts`, use spreadable fragments 
 back to Vite+'s object-shaped `lint` config:
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite-plus";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
-
 export default defineConfig({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: {
-        "no-console": "warn",
-      },
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: {
+      "no-console": "warn",
     },
-  ),
-});
+  }),
+}).withVue({});
 ```
 
 The exported fragments include `flatConfigs.recommended`, `flatConfigs.happyPath`,
@@ -122,9 +114,7 @@ and use its Vite+ configuration:
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: { linter: { preset: "happy-path" } },
-});
+export default defineConfig({}).withVue({ linter: { preset: "happy-path" } });
 ```
 
 Run the generated task with `vp run lint`. If a package script already uses `lint`, the generated

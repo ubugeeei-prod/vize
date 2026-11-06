@@ -38,14 +38,12 @@ Remover `autofocus` evita essa solicitação de foco automático e mantém o cam
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-autofocus": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-autofocus": "warn"
+    }
   },
 });
 ```

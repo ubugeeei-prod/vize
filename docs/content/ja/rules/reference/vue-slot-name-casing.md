@@ -38,14 +38,12 @@ description: "名前付きスロットを kebab-case に揃えます。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/slot-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/slot-name-casing": "warn"
+    }
   },
 });
 ```

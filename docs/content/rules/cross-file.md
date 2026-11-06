@@ -7,7 +7,7 @@ description: "Checks that need more than one file: a parent and its children, a 
 
 Checks that need more than one file: a parent and its children, a provider and its injectors, or a router and its links.
 
-Turn these checks on with `crossFile: true` in `vue.linter`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `vue.linter.rules` as `croquis/cf/<name>`, without `vize:`.
+Turn these checks on with `crossFile: true` in the `linter` passed to `withVue`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `linter.rules` as `croquis/cf/<name>`, without `vize:`.
 
 Each rule page shows a failing example, a passing example, and the configuration that turns the rule on.
 

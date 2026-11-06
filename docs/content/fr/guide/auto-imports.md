@@ -18,6 +18,12 @@ export default defineNuxtConfig({
 
 ```ts
 // vite.config.ts
-Components({ resolvers: [VizeUiResolver({ prefix: "Vz" })] });
-AutoImport({ resolvers: [VizeUiComposablesResolver(), VizeComposableResolver()] });
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  plugins: [
+    Components({ resolvers: [VizeUiResolver({ prefix: "Vz" })] }),
+    AutoImport({ resolvers: [VizeUiComposablesResolver(), VizeComposableResolver()] }),
+  ],
+}).withVue({});
 ```

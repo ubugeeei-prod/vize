@@ -43,14 +43,12 @@ Déclarez le slot par défaut d’un composant sur ce composant, ou son slot nom
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-slot": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-slot": "error"
+    }
   },
 });
 ```

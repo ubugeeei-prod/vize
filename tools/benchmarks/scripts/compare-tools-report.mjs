@@ -258,7 +258,7 @@ export function renderEngineClassSections(surfaces, formatMs, t = ENGINE_CLASS_T
     for (const rejected of surface.rejectedVariants ?? []) {
       lines.push(t.rejected(rejected));
       lines.push("");
-      lines.push("```text", rejected.reason.replaceAll("```", "'''"), "```", "");
+      lines.push("```diagnostic", rejected.reason.replaceAll("```", "'''"), "```", "");
     }
     const checked = surface.variants.filter((variant) => variant.correctness != null);
     if (checked.length > 0) {

@@ -18,11 +18,8 @@ can describe changes that are not in this published package.
 Configure Vue Router's file scanner before the Vue compiler plugin:
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import VueRouter from "vue-router/vite";
-import vize from "@vizejs/vite-plugin";
-
 export default defineConfig({
   plugins: [
     VueRouter({
@@ -30,9 +27,8 @@ export default defineConfig({
       dts: "typed-router.d.ts",
       experimental: { paramParsers: { dir: "src/params" } },
     }),
-    vize(),
   ],
-});
+}).withVue({});
 ```
 
 Start Vite once to generate `typed-router.d.ts`. For CI that checks before

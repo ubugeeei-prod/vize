@@ -14,6 +14,7 @@
       "/contributing": "Contributions",
       "/guide/vite-plus": "Intégration Vite+",
       "/guide/migration": "Migration",
+      "/guide/tool-integrations": "Intégrations avec les outils existants",
       "/guide/vite-plus-editor": "Configuration de l’éditeur",
       "/guide/init": "Initialisation du projet",
       "/guide/configuration": "Vue d’ensemble",

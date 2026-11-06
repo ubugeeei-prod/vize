@@ -102,7 +102,7 @@ Babel插件本身的选项在Vize中没有配置文件拼写。每个都是
 `jsxMode: "vapor"`结合没有明确的含义，并且通过诊断性而非
 默默忽视来拒绝：
 
-```text
+```console
 compiler.jsxCompat: "babel" is not supported with Vapor output: @vue/babel-plugin-jsx has no
 Vapor equivalent. Use jsxMode "vdom" for babel compatibility, or drop jsxCompat to use Vize's own
 Vapor semantics.

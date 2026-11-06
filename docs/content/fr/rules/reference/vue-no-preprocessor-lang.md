@@ -40,14 +40,12 @@ Les mêmes déclarations CSS omettent le lang du préprocesseur. C’est une cor
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-preprocessor-lang": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-preprocessor-lang": "warn"
+    }
   },
 });
 ```

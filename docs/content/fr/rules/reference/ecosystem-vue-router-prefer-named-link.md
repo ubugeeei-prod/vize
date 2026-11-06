@@ -38,14 +38,12 @@ L’objet de route lié identifie la destination par son nom de route settings.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-router-prefer-named-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-router-prefer-named-link": "warn"
+    }
   },
 });
 ```

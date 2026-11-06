@@ -38,14 +38,12 @@ tabindex に正の値 3 を指定し、通常の操作要素より先にフォ�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/tabindex-no-positive": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/tabindex-no-positive": "warn"
+    }
   },
 });
 ```

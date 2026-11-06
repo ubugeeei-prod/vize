@@ -47,14 +47,12 @@ Um único termo API é seguido pelas duas descrições, evitando a repetição d
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-duplicate-dt": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-duplicate-dt": "warn"
+    }
   },
 });
 ```

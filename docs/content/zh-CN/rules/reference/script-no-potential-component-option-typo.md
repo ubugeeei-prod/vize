@@ -38,14 +38,12 @@ export default { methods: { save() {} } };
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-potential-component-option-typo": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-potential-component-option-typo": "error"
+    }
   },
 });
 ```

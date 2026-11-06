@@ -38,14 +38,12 @@ v-text が p の内容を置き換えるため、中に書いたフォールバ�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-child-content": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-child-content": "error"
+    }
   },
 });
 ```

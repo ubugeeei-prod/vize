@@ -42,14 +42,12 @@ Uma lista não ordenada e seus itens expressam as mesmas tarefas com semântica 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/use-list": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/use-list": "warn"
+    }
   },
 });
 ```

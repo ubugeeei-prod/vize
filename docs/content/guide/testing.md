@@ -8,12 +8,12 @@ Use this guide when a Vue project produces an unexpected compiler result, a type
 warning on correct code, or a slowdown. A small reproduction and the command you ran let us
 investigate the same behavior.
 
-| You want to look into                     | Start here                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------ |
-| A template or generated-code difference   | [Compare output in the Playground](#inspect-with-the-playground)   |
-| A type error, lint, or editor problem     | [Write down the steps and diagnostic](#report-findings)            |
-| Slow type checking                        | [Measure where the time goes](#measure-performance)                |
-| Continuous testing on your own project    | [Offer your project as a test bed](#offer-your-project-as-a-test-bed) |
+| You want to look into                   | Start here                                                            |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| A template or generated-code difference | [Compare output in the Playground](#inspect-with-the-playground)      |
+| A type error, lint, or editor problem   | [Write down the steps and diagnostic](#report-findings)               |
+| Slow type checking                      | [Measure where the time goes](#measure-performance)                   |
+| Continuous testing on your own project  | [Offer your project as a test bed](#offer-your-project-as-a-test-bed) |
 
 ## Inspect with the Playground
 
@@ -47,7 +47,7 @@ covers DOM/SSR/Vapor targets, reading Virtual TS and VIR, and loading files from
 The [Support guide](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md) says where to report.
 Copy this template into your report. If you do not know an item, say so:
 
-```text
+```console
 Vize / Vue version:
 OS, Node.js, and package manager versions:
 Reproduction URL or inspector permalink:

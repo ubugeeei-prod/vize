@@ -21,7 +21,7 @@ import/plugin diffs, or follow [Getting Started](../getting-started.md).
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 > [!IMPORTANT]
@@ -39,7 +39,7 @@ Ordinary Vite projects can keep the usual plugin entry point.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { defineVizeLintConfig, flatConfigs } from "oxlint-plugin-vize";
 
-const config = defineConfig({
+export default defineConfig({
   server: { port: 3000 },
   lint: {
     rules: { "no-debugger": "error" },
@@ -47,14 +47,10 @@ const config = defineConfig({
   },
   fmt: { ignorePatterns: ["dist/**"] },
 }).withVue({
-  lint: defineVizeLintConfig(
-    ...flatConfigs.recommended,
-    ...flatConfigs.ecosystem,
-    {
-      ignorePatterns: ["dist/**"],
-      rules: { "no-console": "warn" },
-    },
-  ),
+  lint: defineVizeLintConfig(...flatConfigs.recommended, ...flatConfigs.ecosystem, {
+    ignorePatterns: ["dist/**"],
+    rules: { "no-console": "warn" },
+  }),
   fmt: { singleQuote: true },
   entries: [
     {
@@ -63,8 +59,6 @@ const config = defineConfig({
     },
   ],
 });
-
-export default config;
 ```
 
 Keep the root object as an ordinary, Vue-free Vite+ config. `.withVue()` composes
@@ -78,21 +72,21 @@ the Vue flat lint layer with that root configuration, so the root
 do not specify an alias together with its replacement. See [Shared
 Vue configuration](./vue-configuration.md) for paths and scoped entries.
 
-| Section | Owner |
-| --- | --- |
-| `vue.compile` (`compiler` alias) | Native compiler settings shared with the CLI and editor |
-| `vue.typeCheck` (`typeChecker` alias) | Native checker settings; TypeScript defaults come from `tsconfig.json` |
-| `vue.lint` (`linter` alias) | Host Oxlint settings; `settings.vize`, `vize/*` rules, and overrides project into native Vue lint |
-| `vue.fmt` (`formatter` alias) | Native Vue formatting options |
-| `vue.languageServer` | Shared language-server features |
-| `compiler` | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent |
-| `typecheck` | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
-| `lint.vue` | Native lint task options, including `typecheck`, `locale` and `helpLevel` |
-| Other `lint` fields | The installed Vite+ / Oxlint configuration |
-| `fmt.vue` | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent |
-| Other `fmt` fields | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting |
-| `pack.vue` | Native declaration and map options |
-| Other `pack` fields | The installed Vite+ / tsdown configuration |
+| Section                               | Owner                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `vue.compile` (`compiler` alias)      | Native compiler settings shared with the CLI and editor                                                            |
+| `vue.typeCheck` (`typeChecker` alias) | Native checker settings; TypeScript defaults come from `tsconfig.json`                                             |
+| `vue.lint` (`linter` alias)           | Host Oxlint settings; `settings.vize`, `vize/*` rules, and overrides project into native Vue lint                  |
+| `vue.fmt` (`formatter` alias)         | Native Vue formatting options                                                                                      |
+| `vue.languageServer`                  | Shared language-server features                                                                                    |
+| `compiler`                            | Vite+ compiler plugin controls; `false` keeps the existing Vue compiler when `vue.compiler` is absent              |
+| `typecheck`                           | Vite+ native-check task controls; `false` disables the task unless `vue.typeChecker.enabled` explicitly enables it |
+| `lint.vue`                            | Native lint task options, including `typecheck`, `locale` and `helpLevel`                                          |
+| Other `lint` fields                   | The installed Vite+ / Oxlint configuration                                                                         |
+| `fmt.vue`                             | Native formatter task options; `false` returns formatting to Oxfmt when `vue.formatter` is absent                  |
+| Other `fmt` fields                    | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting                    |
+| `pack.vue`                            | Native declaration and map options                                                                                 |
+| Other `pack` fields                   | The installed Vite+ / tsdown configuration                                                                         |
 
 Canonical `vue` settings take precedence over the corresponding task convenience
 options. Supplying `vue.lint` makes the host Oxlint block own the lint pass and
@@ -113,17 +107,19 @@ to Vite+. Other Vite+ options keep their upstream types, including future
 additions. Objects, promises, functions and async configuration functions are
 accepted, with Vite's environment forwarded to config functions.
 
-### Reuse existing configuration
+### Extend an existing configuration
 
-Import ordinary JavaScript configuration objects and add Vue settings through
-the fluent helper:
+Keep root Vite+ settings in `defineConfig` and pass Vue settings directly to the chained helper:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./vite.base.ts";
-import vueConfig from "./vue.settings.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  formatter: { singleQuote: true },
+});
 ```
 
 This preserves existing Vite+ options, plugins and hooks and injects the Vue
@@ -131,26 +127,24 @@ compiler once. There is no custom config `extends`, and dedicated `vize.config.*
 files and top-level `vize:` settings are retired. Standard TypeScript `extends`
 and `references` in `tsconfig.json` remain supported.
 
-The standalone `withVue(vueConfig, vpConfig)` helper remains supported. It is a
-Vue-first convenience function, not an alias of the config-first `defineConfig`.
-`withVize` remains a compatibility name for `defineConfig`; prefer the fluent
-API for new configuration.
+The standalone `withVue` helper and the `withVize` compatibility name remain supported, but new
+configuration should export the direct `defineConfig({ ... }).withVue({ ... })` chain shown above.
 
 ## Tasks
 
-| Command | Work |
-| --- | --- |
-| `vp run check` | Packaged typecheck, native lint, Oxlint, and both formatter checks |
-| `vp run check -- --fix` | Packaged typecheck, fix lint, and write formatting |
-| `vp run typecheck` | Packaged checker only |
-| `vp run lint` | Native lint and Oxlint, plus optional native typecheck |
-| `vp run lint:fix` | Fix through both lint engines |
-| `vp run fmt` | Vize writes Vue formatting; Oxfmt writes other files |
-| `vp run fmt:check` | Check both formatters without writing |
-| `vp run build`, `dev` | Vite+ with the Vize compiler |
-| `vp run pack` | Vite+ library bundling and configured native declarations |
-| `vp run preview`, `test` | The corresponding installed Vite+ commands |
-| `vp run editor:setup` | Recommend extensions and Vue editor defaults |
+| Command                  | Work                                                               |
+| ------------------------ | ------------------------------------------------------------------ |
+| `vp run check`           | Packaged typecheck, native lint, Oxlint, and both formatter checks |
+| `vp run check -- --fix`  | Packaged typecheck, fix lint, and write formatting                 |
+| `vp run typecheck`       | Packaged checker only                                              |
+| `vp run lint`            | Native lint and Oxlint, plus optional native typecheck             |
+| `vp run lint:fix`        | Fix through both lint engines                                      |
+| `vp run fmt`             | Vize writes Vue formatting; Oxfmt writes other files               |
+| `vp run fmt:check`       | Check both formatters without writing                              |
+| `vp run build`, `dev`    | Vite+ with the Vize compiler                                       |
+| `vp run pack`            | Vite+ library bundling and configured native declarations          |
+| `vp run preview`, `test` | The corresponding installed Vite+ commands                         |
+| `vp run editor:setup`    | Recommend extensions and Vue editor defaults                       |
 
 The recommended typecheck is the [content mapper](./content-mapper.md). TypeScript 7.1 runs `tsc --runExternalCode --noEmit`. tsrs is a drop-in of the same `tsconfig`: `tsrs --runExternalCode --noEmit`. `vp run typecheck` is the packaged checker, and `vp run check` includes it.
 
@@ -161,7 +155,8 @@ Generated tasks are uncached by default. Opt in to Vite+ caching for the read-on
 `lint`, `fmt:check`, `check`, and `typecheck` tasks:
 
 ```ts
-export default defineConfig({}, { taskCache: true });
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}, { taskCache: true }).withVue({});
 ```
 
 Vite+ automatically tracks source files, configuration imports, dependencies, and
@@ -186,10 +181,11 @@ Explicit `run.tasks` definitions take precedence. Rename or disable generated
 tasks with the optional integration argument:
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig(
   { run: { tasks: { deploy: "your-deploy-command" } } },
   { tasks: { check: "verify", preview: false } },
-);
+).withVue({});
 ```
 
 `tasks: false` disables all generated tasks.
@@ -221,6 +217,7 @@ To retain the original compiler, omit `vue.compiler` and use `compiler: false`.
 ## Library declarations and maps
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 export default defineConfig({
   pack: {
     entry: ["src/index.ts"],
@@ -232,7 +229,7 @@ export default defineConfig({
       sourcemap: true,
     },
   },
-});
+}).withVue({});
 ```
 
 Vue library bundling uses Vize's Rolldown integration. Providing `pack.vue`

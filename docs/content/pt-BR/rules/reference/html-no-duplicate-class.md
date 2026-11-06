@@ -38,14 +38,12 @@ A lista de classes mantém um token `btn` e o token distinto `primary`.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "html/no-duplicate-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "html/no-duplicate-class": "warn"
+    }
   },
 });
 ```

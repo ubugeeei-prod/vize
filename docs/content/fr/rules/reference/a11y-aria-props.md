@@ -38,14 +38,12 @@ L’attribut pris en charge `aria-label` fournit le nom du bouton.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-props": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-props": "error"
+    }
   },
 });
 ```

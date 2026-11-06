@@ -3,16 +3,24 @@
 
 use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
+use vize_atelier_core::options::{
+    BindingMetadata, BindingType, CustomElementMatcher, TemplateSyntaxMode,
+};
 use vize_l0::{Allocator, String, cstr};
 
-fn compile(source: &str, is_ts: bool, lane: SsrLane) -> String {
+fn compile_with_bindings(
+    source: &str,
+    is_ts: bool,
+    lane: SsrLane,
+    binding_metadata: Option<BindingMetadata>,
+) -> String {
     let allocator = Allocator::new();
     let (_, errors, result) = compile_ssr_on_lane(
         &allocator,
         source,
         SsrCompilerOptions {
             is_ts,
+            binding_metadata,
             ..Default::default()
         },
         TemplateSyntaxMode::Standard,
@@ -23,6 +31,10 @@ fn compile(source: &str, is_ts: bool, lane: SsrLane) -> String {
     );
     assert!(errors.is_empty(), "{source}: {errors:?}");
     cstr!("{}\n{}", result.preamble, result.code)
+}
+
+fn compile(source: &str, is_ts: bool, lane: SsrLane) -> String {
+    compile_with_bindings(source, is_ts, lane, None)
 }
 
 /// The output both emitters agree on.
@@ -36,11 +48,39 @@ fn both_lanes(source: &str, is_ts: bool) -> String {
     selected
 }
 
+fn both_lanes_with_bindings(source: &str, bindings: &[(&str, BindingType)]) -> String {
+    let metadata = || {
+        let mut metadata = BindingMetadata::default();
+        for (name, kind) in bindings {
+            metadata.bindings.insert((*name).into(), *kind);
+        }
+        metadata.is_script_setup = true;
+        metadata
+    };
+    let selected = compile_with_bindings(source, false, SsrLane::Selected, Some(metadata()));
+    assert_eq!(
+        compile_with_bindings(source, false, SsrLane::LegacyOnly, Some(metadata())),
+        selected,
+        "{source}"
+    );
+    selected
+}
+
 /// `<Card>` with one static slot `name` taking `params` and reading `read`.
 fn card(name: &str, params: &str, read: &str) -> String {
     cstr!(
         "import {{ ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent }} from \"@vue/server-renderer\"\nimport {{ createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx }} from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {{\n  _push(_ssrRenderComponent(_resolveComponent(\"Card\"), _attrs, {{\n    {name}: _withCtx(({params}, _push, _parent, _scopeId) => {{\n      if (_push) {{\n        _push(`${{_ssrInterpolate({read})}}`)\n      }} else {{\n        return [_createTextVNode(_toDisplayString({read}))]\n      }}\n    }}),\n    _: 1\n  }}, _parent))\n}}\n"
     )
+}
+
+fn card_with_bindings(name: &str, params: &str, read: &str) -> String {
+    card(name, params, read)
+        .replacen(
+            "function ssrRender(_ctx, _push, _parent, _attrs)",
+            "function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options)",
+            1,
+        )
+        .into()
 }
 
 #[test]
@@ -88,6 +128,87 @@ fn javascript_slot_params_keep_their_bytes() {
             ),
             card("default", "{ label = 'a as b' }", "label"),
             "is_ts: {is_ts}"
+        );
+    }
+}
+
+#[test]
+fn slot_param_defaults_prefix_free_identifiers_on_both_lanes() {
+    for is_ts in [false, true] {
+        assert_eq!(
+            both_lanes(
+                r#"<Card #default="{ ok = done!==1 }">{{ ok }}</Card>"#,
+                is_ts
+            ),
+            card("default", "{ ok = _ctx.done!==1 }", "ok"),
+            "is_ts: {is_ts}"
+        );
+        assert_eq!(
+            both_lanes(
+                r#"<Card #default="{ ok = function f(n) { return n ? f(n - 1) : done } }">{{ ok }}</Card>"#,
+                is_ts
+            ),
+            card(
+                "default",
+                "{ ok = function f(n) { return n ? f(n - 1) : _ctx.done } }",
+                "ok"
+            ),
+            "named function default (is_ts: {is_ts})"
+        );
+    }
+
+    assert_eq!(
+        both_lanes(
+            r#"<Card #default="{ row = fallback, active = row.active, n = Math.max(seed, 1), map = item => item.id, config = { value } }: SlotProps">{{ row }}</Card>"#,
+            true
+        ),
+        card(
+            "default",
+            "{ row = _ctx.fallback, active = row.active, n = Math.max(_ctx.seed, 1), map = (item) => item.id, config = { value: _ctx.value } }",
+            "row"
+        )
+    );
+}
+
+#[test]
+fn slot_param_defaults_use_binding_specific_render_prefixes() {
+    let output = both_lanes_with_bindings(
+        r#"<Card #default="{ value = setupValue, title = propValue, data = dataValue, option = optionValue, other = fallback }">{{ value }}</Card>"#,
+        &[
+            ("setupValue", BindingType::SetupConst),
+            ("propValue", BindingType::Props),
+            ("dataValue", BindingType::Data),
+            ("optionValue", BindingType::Options),
+        ],
+    );
+    assert_eq!(
+        output,
+        card_with_bindings(
+            "default",
+            "{ value = $setup.setupValue, title = $props.propValue, data = $data.dataValue, option = $options.optionValue, other = _ctx.fallback }",
+            "value"
+        )
+    );
+}
+
+#[test]
+fn slot_param_defaults_keep_outer_template_locals_and_authored_strings() {
+    for lane in [SsrLane::Selected, SsrLane::LegacyOnly] {
+        let output = compile(
+            r#"<Card v-for="row in rows" #default="{ item = row, text = '_ctx.row' }">{{ item }}</Card>"#,
+            false,
+            lane,
+        );
+        let signature = output
+            .lines()
+            .find(|line| line.trim_start().starts_with("default: _withCtx(("))
+            .map(str::trim);
+        assert_eq!(
+            signature,
+            Some(
+                "default: _withCtx(({ item = row, text = '_ctx.row' }, _push, _parent, _scopeId) => {"
+            ),
+            "{lane:?}: {output}"
         );
     }
 }

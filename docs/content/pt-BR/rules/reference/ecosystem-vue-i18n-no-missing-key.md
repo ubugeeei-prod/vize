@@ -42,14 +42,12 @@ O template solicita a chave auth.login, que existe nas mensagens locais.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/vue-i18n-no-missing-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-i18n-no-missing-key": "warn"
+    }
   },
 });
 ```

@@ -57,7 +57,7 @@ import RatingExample from "./components/vize/families/form/rating/examples/ratin
 
 公開されている `@vizejs/ui` と `@vizejs/composable` の tarball には、バージョン付きのレジストリが含まれています。
 
-```text
+```tree
 node_modules/@vizejs/ui/
   registry/
     registry.json          # アイテム、ファイル、sha256 ダイジェスト、依存関係
@@ -115,14 +115,12 @@ import は書き換えなしでそのまま動作します。ディレクトリ�
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    lib: {
-      uiDir: "src/ui/vendor",
-      composableDir: "src/composables/vendor",
-      // dir: "src/vendor",
-      // lockfile: "vize-lib.lock.json",
-    },
+export default defineConfig({}).withVue({
+  lib: {
+    uiDir: "src/ui/vendor",
+    composableDir: "src/composables/vendor",
+    // dir: "src/vendor",
+    // lockfile: "vize-lib.lock.json",
   },
 });
 ```

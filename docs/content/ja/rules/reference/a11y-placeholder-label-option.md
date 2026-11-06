@@ -44,14 +44,12 @@ select は `required` ですが、最初の option が Japan のため、国が�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/placeholder-label-option": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/placeholder-label-option": "warn"
+    }
   },
 });
 ```

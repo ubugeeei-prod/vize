@@ -40,14 +40,12 @@ description: "クリックで操作する要素にキーボード操作も用意
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/click-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/click-events-have-key-events": "warn"
+    }
   },
 });
 ```

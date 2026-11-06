@@ -49,14 +49,12 @@ O primeiro exemplo torna UserCard o filho condicional. O invólucro com v-show i
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-non-component-keep-alive-child": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-non-component-keep-alive-child": "warn"
+    }
   },
 });
 ```

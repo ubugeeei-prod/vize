@@ -40,22 +40,20 @@ Liste nomes explícitos de componentes fornecidos por plugins da aplicação ou 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-component-registration": "warn"
-      },
-      "ruleOptions": {
-        "vue/require-component-registration": {
-          "globals": [
-            "MyButton",
-            "MyIcon"
-          ]
-        }
-      }
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-component-registration": "warn"
     },
+    "ruleOptions": {
+      "vue/require-component-registration": {
+        "globals": [
+          "MyButton",
+          "MyIcon"
+        ]
+      }
+    }
   },
 });
 ```

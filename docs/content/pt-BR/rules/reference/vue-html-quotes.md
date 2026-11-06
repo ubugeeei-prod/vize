@@ -41,14 +41,12 @@ Tanto os atributos comuns quanto as expressões de diretivas usam aspas duplas.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-quotes": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-quotes": "warn"
+    }
   },
 });
 ```

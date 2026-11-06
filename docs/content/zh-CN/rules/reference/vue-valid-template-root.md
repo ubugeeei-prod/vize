@@ -38,14 +38,12 @@ description: "要求 `<template>` 根节点符合 Vue 3 片段语义。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-template-root": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-template-root": "error"
+    }
   },
 });
 ```

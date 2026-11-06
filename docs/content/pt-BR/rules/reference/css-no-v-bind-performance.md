@@ -40,14 +40,12 @@ O elemento recebe a transformação variável diretamente por meio da vinculaç�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "css/no-v-bind-performance": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "css/no-v-bind-performance": "warn"
+    }
   },
 });
 ```

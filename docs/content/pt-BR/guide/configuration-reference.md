@@ -80,29 +80,31 @@ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
   root: "apps/web",
-  vue: {
-    entries: [
-      {
-        files: ["src/trusted/**/*.vue"],
-        linter: { rules: { "vue/no-v-html": "off" } },
-      },
-    ],
-  },
+}).withVue({
+  entries: [
+    {
+      files: ["src/trusted/**/*.vue"],
+      linter: { rules: { "vue/no-v-html": "off" } },
+    },
+  ],
 });
 ```
 
 As entradas aceitam `basePath`, `files`, `ignores` e `linter`; as outras seções continuam sendo opções do projeto inteiro. Não mova referências de projeto TypeScript para essas entradas.
 
-## Reutilizar opções
+## Opções compartilhadas sem `extends` personalizado
 
-Não existe um `extends` específico do Vize. Reutilize objetos JavaScript comuns:
+Não existe um `extends` específico do Vize. Mantenha a configuração recomendada em uma cadeia direta:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./build-options.ts";
-import vueConfig from "./vue-options.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+});
 ```
 
 Isso não altera o `extends` padrão do TypeScript nem as funções de configuração Vite.
@@ -149,13 +151,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -173,45 +174,30 @@ As configurações dedicadas JSON/PKL e o `extends` próprio do Vize foram remov
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  vue: {
-    compiler: {
-      sourceMap: mode !== "production",
-      ssr: isSsrBuild,
-      vapor: false,
-      customRenderer: false,
-      templateSyntax: "standard",
-    },
-    vite: {
-      include: [/\.vue$/],
-      exclude: [/node_modules/],
-      scanPatterns: ["src/**/*.vue"],
-      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-    },
-    linter: {
-      enabled: command !== "build",
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-    },
-    formatter: {
-      printWidth: 100,
-      singleQuote: false,
-    },
-    languageServer: {
-      lint: true,
-      typecheck: false,
-      editor: false,
-      formatting: false,
-    },
-    musea: {
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-    },
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  build: {
+    sourcemap: mode !== "production",
+    ssr: isSsrBuild,
   },
-}));
+})).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+  },
+  linter: { enabled: true, preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
 ```
 
 ### Migrar configurações JSON e PKL removidas

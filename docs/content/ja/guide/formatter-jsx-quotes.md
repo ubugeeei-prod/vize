@@ -23,9 +23,9 @@ export default defineConfig({}).withVue({
 `jsxSingleQuote` は JSX 属性の引用符を独立して選び、既定値は `false` です。
 たとえば、上の設定ではスクリプトを次のように整形します。
 
-```text
+```tsx
 const label = "hello";
-const view = <div title='world' />;
+const view = <div title="world" />;
 ```
 
 エスケープが少なくなる引用符を優先します。

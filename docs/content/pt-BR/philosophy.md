@@ -24,7 +24,7 @@ O desenvolvimento tradicional de Vue.js requer montar uma constelação de ferra
 
 Vize unifica todos esses em um único binário. Um analisador sintético. Um AST. Uma superfície de configuração. Isso elimina passagens redundantes de análise, reduz a complexidade da configuração e garante que todas as ferramentas compartilhem uma compreensão consistente do seu código.
 
-```
+```diagram
 @vue/compiler-sfc  +  eslint-plugin-vue  +  prettier  +  vue-tsc  +  Storybook
                               ↓
                             vize

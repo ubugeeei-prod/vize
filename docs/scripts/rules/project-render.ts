@@ -62,11 +62,9 @@ function config(id: string, _ja: boolean) {
     "```ts",
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',
     "",
-    "export default defineConfig({",
-    "  vue: {",
-    '    linter: { preset: "incremental", crossFile: true,',
-    `      rules: { "${id}": "warn" },`,
-    "    },",
+    "export default defineConfig({}).withVue({",
+    '  linter: { preset: "incremental", crossFile: true,',
+    `    rules: { "${id}": "warn" },`,
     "  },",
     "});",
     "```",
@@ -297,7 +295,7 @@ function fixture(example: ProjectExample, ja: boolean) {
     lines.push(rationale, "");
     files(example[key]);
     const graph = example[`${key}Graph`];
-    if (graph) lines.push("```text", graph, "```", "");
+    if (graph) lines.push("```diagram", graph, "```", "");
   }
   return lines;
 }

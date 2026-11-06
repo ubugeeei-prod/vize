@@ -13,12 +13,12 @@ Vize は開発中です。全オプションや診断の完全な互換性を保
 
 ## 置き換えるものを選ぶ
 
-| 移行元 | 移行先 | 効果 | インストール |
-| --- | --- | --- | --- |
-| `@vitejs/plugin-vue` | Vize コンパイラ | Vite で Vue 3 SFC をコンパイル | `@vizejs/vite-plugin` |
-| `vue-tsc` の script | `tsc --runExternalCode --noEmit` | TypeScript 7.1 の content mapper | `vize` と `typescript@beta` |
-| Vue の lint script | `vp run lint` | Vize の Vue ルールと Oxlint | 同じ統合パッケージ |
-| Vue の format script | `vp run fmt` | Vue は Vize、その他は Oxfmt | 同じ統合パッケージ |
+| 移行元               | 移行先                           | 効果                             | インストール                |
+| -------------------- | -------------------------------- | -------------------------------- | --------------------------- |
+| `@vitejs/plugin-vue` | Vize コンパイラ                  | Vite で Vue 3 SFC をコンパイル   | `@vizejs/vite-plugin`       |
+| `vue-tsc` の script  | `tsc --runExternalCode --noEmit` | TypeScript 7.1 の content mapper | `vize` と `typescript@beta` |
+| Vue の lint script   | `vp run lint`                    | Vize の Vue ルールと Oxlint      | 同じ統合パッケージ          |
+| Vue の format script | `vp run fmt`                     | Vue は Vize、その他は Oxfmt      | 同じ統合パッケージ          |
 
 [tsrs](https://github.com/oxc-project/tsrs) は、その型チェックの drop-in です。同じ `tsconfig.json` で `tsrs --runExternalCode --noEmit` を実行します。lint とフォーマットのコマンドは [Vite+ の設定ヘルパー](./vite-plus.md) が生成するカスタムタスクです。組み込みの `vp lint`・`vp fmt`・`vp check` とは別に実行します。`vp run typecheck` は同梱チェッカーのままです。マッパーの設定は[型チェック](./type-checking.md)を参照してください。
 
@@ -32,19 +32,17 @@ vp install -D @vizejs/vite-plugin
 
 `vite.config.ts` を変更します。
 
-```ts annotate="remove:1,2,6;add:3,7"
-import { defineConfig } from "vite-plus";
-import vue from "@vitejs/plugin-vue";
+```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  plugins: [vue()],
-  compiler: {},
   server: { port: 3000 },
+}).withVue({
+  compiler: {},
 });
 ```
 
-設定ヘルパーが Vize コンパイラとネイティブタスクを登録します。ほかのプラグイン、エイリアス、
+`@vitejs/plugin-vue` の import と `vue()` を取り除きます。設定ヘルパーが Vize コンパイラとネイティブタスクを登録します。ほかのプラグイン、エイリアス、
 サーバー設定、テストはそのまま残してください。`compiler: {}` は既定値を使い、
 `compiler` 自体を省略することもできます。
 
@@ -75,18 +73,16 @@ vp run fmt:check
 
 <span id="vite-plugin"></span>
 
-## 通常の Vite: コンパイラだけ置き換える
+## Vite 設定: コンパイラだけ置き換える
 
-`vite` の `defineConfig` を維持し、プラグインだけ置き換えます。
+Vize に Vue コンパイルだけを任せる場合も Vite+ helper を使います。
+`@vitejs/plugin-vue` の import と `vue()` を削除してください。
 
-```ts annotate="remove:2,6;add:3,7"
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
-import vize from "@vizejs/vite-plugin";
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  plugins: [vue()],
-  plugins: [vize()],
+export default defineConfig({}).withVue({
+  compiler: {},
 });
 ```
 
@@ -95,9 +91,8 @@ vp install -D @vizejs/vite-plugin
 vp exec vite build
 ```
 
-lint・フォーマット・型チェックは既存のツールを使い続けます。
-[Vite プラグインのオプション](./vite-plugin.md#compiler-options)は `vize({ ... })` に設定します。
-まとめて実行するタスクが必要になったら、Vite+ の設定ヘルパーを導入できます。
+lint・フォーマット・型チェックは既存のツールを使い続けられます。
+[コンパイラーのオプション](./vite-plugin.md#compiler-options)は `withVue` に渡す `compiler` に設定します。
 
 ## 結果を比較してから検査コマンドを置き換える
 
@@ -134,14 +129,17 @@ lint・フォーマット・型チェックは既存のツールを使い続け�
 
 ## Vite+ を使わない場合: コマンドを 1 つずつ置き換える
 
-スクリプトを 1 つだけ置き換えて、残りはそのまま使えます。
+スクリプトを 1 つだけ置き換えて、残りはそのまま使えます。ESLint や Prettier のコマンドと
+エディター連携を残す場合は、そのツールを維持し、Vize の
+[flat config または plugin 連携](./tool-integrations.md)だけを追加してください。以下の置き換えは、
+各処理を Vize に任せたいプロジェクト向けです。
 
-| 現在のコマンド                             | 置き換え先                                 | 先に読むページ                                                   |
-| ------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------- |
-| `vue-tsc --noEmit`                         | `tsc --runExternalCode --noEmit`           | [vue-tsc から移行する](./type-checking.md#vue-tsc-から移行する)  |
-| `eslint-plugin-vue` を使う `eslint`        | `vize lint src`                            | [ESLint ルールの対応表](../rules/migration.md)                   |
-| `.vue` ファイルへの `prettier --write`     | `vize fmt --preset prettier --write src`   | [Prettier から移行する](./formatter.md#prettier-から移行する)                            |
-| Vue - Official の診断                      | `vize lsp`                                 | [言語サーバー](./language-server.md)                             |
+| 現在のコマンド                         | 置き換え先                               | 先に読むページ                                                  |
+| -------------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| `vue-tsc --noEmit`                     | `tsc --runExternalCode --noEmit`         | [vue-tsc から移行する](./type-checking.md#vue-tsc-から移行する) |
+| `eslint-plugin-vue` を使う `eslint`    | `vize lint src`                          | [ESLint ルールの対応表](../rules/migration.md)                  |
+| `.vue` ファイルへの `prettier --write` | `vize fmt --preset prettier --write src` | [Prettier から移行する](./formatter.md#prettier-から移行する)   |
+| Vue - Official の診断                  | `vize lsp`                               | [言語サーバー](./language-server.md)                            |
 
 ```json
 {
@@ -168,9 +166,9 @@ Vize がまだ実装していないルールには ESLint を使い続けるか�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-const vpConfig = { server: { port: 3000 } };
-
-export default defineConfig(vpConfig).withVue({
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
   linter: { preset: "essential" },
   formatter: { printWidth: 100 },
 });

@@ -31,13 +31,8 @@ Vize 通过**相同的编译器箱**编译 `.jsx` 和 Vue 组件 `.tsx` Vue 组�
 - `@vizejs/nuxt`
 
 ```ts
-// vite.config.ts — nothing JSX-specific is required
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize()],
-});
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({});
 ```
 
 在底层，插件调用原生/WASM `compileJsx`入口点（从
@@ -225,7 +220,7 @@ const Classic = () => {
 由于每个组件独立路由，**一个文件可以混合两个后端**：
 
 ```tsx
-// vite.config.ts: vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;

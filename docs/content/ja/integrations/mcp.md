@@ -175,7 +175,7 @@ Musea はコンポーネントのメタデータとソースリソースを公�
 
 ## 仕組み
 
-```text
+```diagram
 AI アシスタント
   ↕ MCP (JSON-RPC over stdio)
 @vizejs/musea-mcp-server

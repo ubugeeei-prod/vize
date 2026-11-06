@@ -8,42 +8,38 @@ title: 编译器配置参考
 
 ## 编译器选项
 
-这些选项属于 `vite.config.*` 的 `vue.compiler`，也可以通过 `defineConfig(vpConfig).withVue(vueConfig)` 设置。并非所有集成都使用每个选项。
+请在直接导出的 `defineConfig({ ... }).withVue({ ... })` 中把这些选项放到 `compiler` 下。并非所有集成都使用每个选项。
 
-| 选项                | 类型                                 | 常见用途                                |
-| ------------------- | ------------------------------------ | --------------------------------------- |
-| `sourceMap`         | `boolean`                            | 在 Vite 插件中启用源映射                 |
-| `ssr`               | `boolean`                            | 在不依赖Vite的SSR构建标志时编译为SSR    |
-| `vapor`             | `boolean`                            | 启用蒸汽模式编译                        |
-| `jsxMode`           | `"vdom"`或`"vapor"`                  | `.jsx`/`.tsx`组件的默认输出后端         |
-| `customRenderer`    | `boolean`                            | 将小写非HTML标签视为自定义渲染器元素    |
+| 选项                | 类型                                 | 常见用途                                          |
+| ------------------- | ------------------------------------ | ------------------------------------------------- |
+| `sourceMap`         | `boolean`                            | 在 Vite 插件中启用源映射                          |
+| `ssr`               | `boolean`                            | 在不依赖Vite的SSR构建标志时编译为SSR              |
+| `vapor`             | `boolean`                            | 启用蒸汽模式编译                                  |
+| `jsxMode`           | `"vdom"`或`"vapor"`                  | `.jsx`/`.tsx`组件的默认输出后端                   |
+| `customRenderer`    | `boolean`                            | 将小写非HTML标签视为自定义渲染器元素              |
 | `customElements`    | `string[]`                           | 作为自定义元素编译的标签模式（TresJS 用 `Tres*`） |
-| `templateSyntax`    | `"standard"`、`"strict"`或`"quirks"` | 模板语法选择警告、错误或Vue-quirk处理   |
-| `scriptExt`         | `"ts"`或`"js"`                       | 保留TS输出或在npm build命令中下编译为JS |
-| `mode`              | `"module"`或`"function"`             | 低级别编译器输出模式                    |
-| `prefixIdentifiers` | `boolean`                            | 模板标识符前缀为`_ctx`                  |
-| `hoistStatic`       | `boolean`                            | 控制静态节点起重                        |
-| `cacheHandlers`     | `boolean`                            | 控制事件处理缓存                        |
-| `comments`          | `boolean`                            | 保留模板注释；未设置时仅在开发时保留    |
-| `isTs`              | `boolean`                            | 解析脚本块作为TypeScript                |
-| `runtimeModuleName` | `string`                             | 覆盖运行时导入模块                      |
-| `runtimeGlobalName` | `string`                             | 覆盖函数/IIFE风格输出的全局运行时       |
+| `templateSyntax`    | `"standard"`、`"strict"`或`"quirks"` | 模板语法选择警告、错误或Vue-quirk处理             |
+| `scriptExt`         | `"ts"`或`"js"`                       | 保留TS输出或在npm build命令中下编译为JS           |
+| `mode`              | `"module"`或`"function"`             | 低级别编译器输出模式                              |
+| `prefixIdentifiers` | `boolean`                            | 模板标识符前缀为`_ctx`                            |
+| `hoistStatic`       | `boolean`                            | 控制静态节点起重                                  |
+| `cacheHandlers`     | `boolean`                            | 控制事件处理缓存                                  |
+| `comments`          | `boolean`                            | 保留模板注释；未设置时仅在开发时保留              |
+| `isTs`              | `boolean`                            | 解析脚本块作为TypeScript                          |
+| `runtimeModuleName` | `string`                             | 覆盖运行时导入模块                                |
+| `runtimeGlobalName` | `string`                             | 覆盖函数/IIFE风格输出的全局运行时                 |
 
 对于 Vite 项目，直接插件选项覆盖共享配置：
 
 ```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      vapor: true,
-      sourceMap: true,
-      customRenderer: true,
-      templateSyntax: "standard",
-    }),
-  ],
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+export default defineConfig({}).withVue({
+  compiler: {
+    vapor: true,
+    sourceMap: true,
+    customRenderer: true,
+    templateSyntax: "standard",
+  },
 });
 ```
 
@@ -64,13 +60,13 @@ export default defineConfig({
   标准模式会警告并重写它们为空元素、严格模式错误和个性模式保留
   它们作为自闭叶片。
 
-```text
+```vue
 <template>
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="(item in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->
-  <div v-for="item) in items">{{ item }}</div>
+  <div v-for="item in items">{{ item }}</div>
 
   <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->
   <div />
@@ -132,7 +128,7 @@ const Classic = () => {
 由于每个组件独立路由，**单个模块可以混合两个后端**：
 
 ```tsx
-// vite.config.ts : vue: { compiler: { jsxMode: "vapor" } }
+// withVue({ compiler: { jsxMode: "vapor" } }) sets the default.
 
 // No directive -> takes the configured default (Vapor here).
 export const Dashboard = () => <main>{/* ... */}</main>;
@@ -181,5 +177,3 @@ export default defineConfig({}).withVue({
 解析为petite-vue包、`petite-vue`的内联ES导入，或`PetiteVue.createApp`
 叫。评论或散文中提到小维特从不切换方言，且单排
 组件始终使用标准的Vue方言。
-
-

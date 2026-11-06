@@ -38,14 +38,12 @@ description: "要求具有交互角色的元素可获得焦点。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/interactive-supports-focus": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/interactive-supports-focus": "warn"
+    }
   },
 });
 ```

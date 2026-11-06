@@ -38,14 +38,12 @@ Remover o invólucro desnecessário deixa o parágrafo diretamente dentro da div
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-lone-template": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-lone-template": "warn"
+    }
   },
 });
 ```

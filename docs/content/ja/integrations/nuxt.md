@@ -73,19 +73,19 @@ Nuxt 3 と 4 では、モジュールが `prepare:types` の実行時に `{ "pac
 
 オプションはすべて `nuxt.config.ts` の `vize` の下に書きます。ほとんどのプロジェクトで必要になるのは、最初の 4 つです。
 
-| オプション            | 型                                      | 既定値                     | 説明                                                                                                                             |
-| --------------------- | --------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `compiler`            | `boolean \| VizeNuxtCompilerOptions`    | `true`                     | Vue SFC を Vize でコンパイルします。オブジェクトを渡すと、その内容を `@vizejs/vite-plugin` に引き継ぎます。                      |
-| `lint`                | `boolean \| VizeNuxtLintOptions`        | `true`                     | Nuxt 向けの Oxlint 設定を生成します。[lint](#lint) を参照してください。                                                          |
+| オプション            | 型                                      | 既定値                     | 説明                                                                                                                                                 |
+| --------------------- | --------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions`    | `true`                     | Vue SFC を Vize でコンパイルします。オブジェクトを渡すと、その内容を `@vizejs/vite-plugin` に引き継ぎます。                                          |
+| `lint`                | `boolean \| VizeNuxtLintOptions`        | `true`                     | Nuxt 向けの Oxlint 設定を生成します。[lint](#lint) を参照してください。                                                                              |
 | `checker`             | `boolean \| VizeNuxtLintCheckerOptions` | `false`                    | 開発サーバーと並行して lint を実行し、ターミナルとブラウザーのオーバーレイに表示します。[開発中の lint](#lint-while-developing) を参照してください。 |
-| `musea`               | `boolean \| MuseaOptions`               | `false`                    | Musea のギャラリーを配信します。[Musea](#musea) を参照してください。                                                             |
-| `ui`                  | `boolean \| VizeNuxtUiOptions`          | `false`                    | `@vizejs/ui` のコンポーネントを自動登録します。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。               |
-| `composables`         | `boolean \| VizeNuxtComposablesOptions` | `false`                    | `@vizejs/composable` の関数を自動インポートします。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。           |
-| `bridge`              | `boolean \| VizeNuxtBridgeOptions`      | `true`                     | Nuxt の自動インポート、コンポーネント解決、i18n、非同期データのキー生成を、Vize がコンパイルしたモジュールにも適用します。       |
-| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`      | `true`                     | UnoCSS が元の `.vue` ソースを読めるようにします。`originalSource: false` で無効化、`maxBytes` で 1 ファイルあたりの上限を指定します。 |
-| `dev.stylesheetLinks` | `boolean`                               | `true`                     | 開発時の SSR HTML から、重複したスタイルシートのリンクや安全でないリンクを取り除きます。                                         |
-| `compatibility`       | `VizeNuxtCompatibilityOptions`          | 自動検出                   | 検出された Nuxt と Vue のメジャーバージョンを上書きします。[Nuxt 2 と Vue 2](#nuxt-2-and-vue-2) を参照してください。             |
-| `nuxtMusea`           | `NuxtMuseaOptions`                      | `{ route: { path: "/" } }` | Musea のプレビューから見えるルート、ランタイム設定、fetch のモックを指定します。                                                 |
+| `musea`               | `boolean \| MuseaOptions`               | `false`                    | Musea のギャラリーを配信します。[Musea](#musea) を参照してください。                                                                                 |
+| `ui`                  | `boolean \| VizeNuxtUiOptions`          | `false`                    | `@vizejs/ui` のコンポーネントを自動登録します。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。                                   |
+| `composables`         | `boolean \| VizeNuxtComposablesOptions` | `false`                    | `@vizejs/composable` の関数を自動インポートします。[自動インポート](../guide/auto-imports.md#nuxt)を参照してください。                               |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`      | `true`                     | Nuxt の自動インポート、コンポーネント解決、i18n、非同期データのキー生成を、Vize がコンパイルしたモジュールにも適用します。                           |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`      | `true`                     | UnoCSS が元の `.vue` ソースを読めるようにします。`originalSource: false` で無効化、`maxBytes` で 1 ファイルあたりの上限を指定します。                |
+| `dev.stylesheetLinks` | `boolean`                               | `true`                     | 開発時の SSR HTML から、重複したスタイルシートのリンクや安全でないリンクを取り除きます。                                                             |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`          | 自動検出                   | 検出された Nuxt と Vue のメジャーバージョンを上書きします。[Nuxt 2 と Vue 2](#nuxt-2-and-vue-2) を参照してください。                                 |
+| `nuxtMusea`           | `NuxtMuseaOptions`                      | `{ route: { path: "/" } }` | Musea のプレビューから見えるルート、ランタイム設定、fetch のモックを指定します。                                                                     |
 
 ### コンパイラ
 
@@ -152,12 +152,12 @@ vp install -D oxlint oxlint-plugin-vize
 
 プロジェクトに Oxlint や Vite の設定ファイルがまだない場合は、生成したファイルを読み込む `oxlint.config.mts` もあわせて作成します。既存の設定ファイルを書き換えることはありません。その場合は、自分の設定から `.oxlint.vize.json` を読み込んでください。
 
-| オプション   | 既定値                | 説明                                                                                        |
-| ------------ | --------------------- | ------------------------------------------------------------------------------------------- |
+| オプション   | 既定値                | 説明                                                                                            |
+| ------------ | --------------------- | ----------------------------------------------------------------------------------------------- |
 | `configFile` | `".oxlint.vize.json"` | 生成する設定ファイルの出力先です。lint のルート、またはその親ディレクトリに置く必要があります。 |
-| `autoInit`   | `true`                | Oxlint や Vite の設定ファイルがないときに `oxlint.config.mts` を作成します。                |
-| `rootDir`    | Nuxt のルート         | 生成される glob の基準になるディレクトリです。                                              |
-| `devtools`   | `{ enabled: "lazy" }` | 解決後の lint 設定を Nuxt DevTools のタブに表示します。                                     |
+| `autoInit`   | `true`                | Oxlint や Vite の設定ファイルがないときに `oxlint.config.mts` を作成します。                    |
+| `rootDir`    | Nuxt のルート         | 生成される glob の基準になるディレクトリです。                                                  |
+| `devtools`   | `{ enabled: "lazy" }` | 解決後の lint 設定を Nuxt DevTools のタブに表示します。                                         |
 
 `lint` には `@nuxt/eslint-config` と同じ機能スイッチも指定できます。`standalone`（既定は `true`）、`import`（既定は `true`）、`typescript`、`stylistic`、`tooling`、`formatters`、`nuxt` です。
 
@@ -178,16 +178,16 @@ export default defineNuxtConfig({
 });
 ```
 
-| オプション    | 既定値                                    | 説明                                                         |
-| ------------- | ----------------------------------------- | ------------------------------------------------------------ |
-| `lintOnStart` | `true`                                    | 開発サーバーの起動時にプロジェクト全体を lint します。       |
-| `cache`       | `true`                                    | 起動後は、変更されたファイルだけを lint します。             |
-| `include`     | `<srcDir>/**/*.{js,jsx,ts,tsx,vue}`       | 検査の対象にするファイルです。                               |
-| `exclude`     | `**/node_modules/**` とビルドディレクトリ | 検査の対象から外すファイルとディレクトリです。               |
-| `emitWarning` | `true`                                    | 警告をターミナルに出力し、ブラウザーのオーバーレイにも表示します。 |
+| オプション    | 既定値                                    | 説明                                                                 |
+| ------------- | ----------------------------------------- | -------------------------------------------------------------------- |
+| `lintOnStart` | `true`                                    | 開発サーバーの起動時にプロジェクト全体を lint します。               |
+| `cache`       | `true`                                    | 起動後は、変更されたファイルだけを lint します。                     |
+| `include`     | `<srcDir>/**/*.{js,jsx,ts,tsx,vue}`       | 検査の対象にするファイルです。                                       |
+| `exclude`     | `**/node_modules/**` とビルドディレクトリ | 検査の対象から外すファイルとディレクトリです。                       |
+| `emitWarning` | `true`                                    | 警告をターミナルに出力し、ブラウザーのオーバーレイにも表示します。   |
 | `emitError`   | `true`                                    | エラーをターミナルに出力し、ブラウザーのオーバーレイにも表示します。 |
-| `fix`         | `false`                                   | 報告する前に、安全な修正を適用します。                       |
-| `formatter`   | `"stylish"`                               | Oxlint の出力形式です。                                      |
+| `fix`         | `false`                                   | 報告する前に、安全な修正を適用します。                               |
+| `formatter`   | `"stylish"`                               | Oxlint の出力形式です。                                              |
 
 <span id="musea"></span>
 
@@ -220,7 +220,7 @@ export default defineNuxtConfig({
 
 Nuxt はコンポーネントディレクトリ内の `.vue` ファイルをすべて走査しますが、Musea の art ファイルも拡張子は `.vue` です。`*.art.vue` はコンポーネントディレクトリの外に置き、Musea にその場所を指定してください。
 
-```txt
+```tree
 app/components/Tag.vue
 stories/shared/Tag.art.vue
 ```
@@ -243,11 +243,9 @@ Musea を有効にすると、モジュールは `**/*.art.vue` を Nuxt のコ�
 コンポーネントは `NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、データ取得のコンポーザブル、Nuxt の組み込みコンポーネントなどに依存していることがよくあります。Musea を単独の Vite 設定で動かす場合は、`@vizejs/musea-nuxt` を追加し、`previewSetup` からモックをインストールします。
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 import { nuxtMusea } from "@vizejs/musea-nuxt";
-
 export default defineConfig({
   plugins: [
     nuxtMusea({
@@ -261,7 +259,7 @@ export default defineConfig({
       previewSetup: "musea.preview.ts",
     }),
   ],
-});
+}).withVue({});
 ```
 
 ```ts
@@ -279,12 +277,8 @@ export default ((app) => {
   const i18n = createI18n({
     locale: "ja",
     messages: {
-      ja: {
-        /* ... */
-      },
-      en: {
-        /* ... */
-      },
+      ja: {/* ... */},
+      en: {/* ... */},
     },
   });
   app.use(i18n);

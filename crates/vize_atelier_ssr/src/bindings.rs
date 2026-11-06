@@ -1,9 +1,9 @@
-//! Script binding metadata projected onto the L2 expression rewriter.
+//! Script binding metadata projected onto the shared expression rewriter.
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_l1_to_l2::{BindingKind, BindingTable};
 
-pub(super) fn binding_table(metadata: &BindingMetadata) -> BindingTable {
+pub(crate) fn binding_table(metadata: &BindingMetadata) -> BindingTable {
     BindingTable::new(
         metadata
             .bindings

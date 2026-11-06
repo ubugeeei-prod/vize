@@ -42,14 +42,12 @@ Coloque `v-else-if` com uma condição imediatamente após o ramo `v-if` ou `v-e
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-else-if": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-else-if": "error"
+    }
   },
 });
 ```

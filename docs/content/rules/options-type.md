@@ -21,19 +21,17 @@ to allow. The native checker projection already uses strict checking.
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      typeAware: true,
-      rules: {
-        "type/strict-boolean-expressions": "error",
-      },
-      ruleOptions: {
-        "type/strict-boolean-expressions": {
-          allowString: false,
-          allowNumber: false,
-          allowNullableObject: false,
-        },
+export default defineConfig({}).withVue({
+  linter: {
+    typeAware: true,
+    rules: {
+      "type/strict-boolean-expressions": "error",
+    },
+    ruleOptions: {
+      "type/strict-boolean-expressions": {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
       },
     },
   },

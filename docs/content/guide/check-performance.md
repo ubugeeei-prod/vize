@@ -12,7 +12,7 @@ vpx vize check --profile
 
 The last line splits the run into phases:
 
-```text
+```diagnostic
 ✗ Type checked 1 files in 624.27ms (collect: 105.94ms, imports: 0.00ns, gen: 114.51ms, corsa: 339.05ms)
 ```
 
@@ -29,12 +29,12 @@ components to split or simplify.
 
 ## Tune the run
 
-| Symptom                                | Try                                                                  |
-| -------------------------------------- | -------------------------------------------------------------------- |
-| Uses too much memory                   | `--servers 1` runs a single TypeScript process                       |
-| Large project, idle CPU cores          | Leave `--servers` unset; it is sized from CPU count and file count  |
-| `corsa` dominates on one big project   | `--checkers 4` adds checker workers inside each process (see below) |
-| Many short runs while editing          | Keep a [`check-server`](./type-checking.md#speed-on-large-projects) running |
+| Symptom                              | Try                                                                         |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| Uses too much memory                 | `--servers 1` runs a single TypeScript process                              |
+| Large project, idle CPU cores        | Leave `--servers` unset; it is sized from CPU count and file count          |
+| `corsa` dominates on one big project | `--checkers 4` adds checker workers inside each process (see below)         |
+| Many short runs while editing        | Keep a [`check-server`](./type-checking.md#speed-on-large-projects) running |
 
 ```sh
 vpx vize check --checkers 4 --servers 1

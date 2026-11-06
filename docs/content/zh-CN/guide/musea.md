@@ -33,14 +33,10 @@ vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 ## 推荐用法：Vite 插件
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
-
 export default defineConfig({
   plugins: [
-    vize(),
     musea({
       include: ["**/*.art.vue"],
       basePath: "/__musea__",
@@ -48,7 +44,7 @@ export default defineConfig({
       previewSetup: "musea.preview.ts",
     }),
   ],
-});
+}).withVue({});
 ```
 
 运行你普通的 Vite 开发服务器，打开配置好的 Musea 路由：
@@ -57,7 +53,7 @@ export default defineConfig({
 vp dev
 ```
 
-```txt
+```console
 http://localhost:5173/__musea__
 ```
 
@@ -78,13 +74,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -92,7 +87,6 @@ export default defineConfig({
 共享选项包括 `include`、`exclude`、`basePath`、`storybookCompat` 和 `inlineArt`。将 `previewCss`、`previewSetup`、`tokensPath`、`theme` 和 `storybookOutDir` 直接传给 `musea()`。
 
 `musea-vrt` 也从同一个 Vite 配置中读取 `include`、`exclude` 和 `vrt`。`vrt.outDir` 指定快照目录；插件的 `vrt` 选项优先于对应的共享值。`vize musea new` 使用默认搜索规则创建 Art 文件，不会生成专用配置文件。
-
 
 ## 艺术档案
 
@@ -180,14 +174,14 @@ const sharedCount = ref(0);
 
 当变体是组件合同的一部分时，保持美术文件靠近组件：
 
-```txt
+```tree
 src/components/Button.vue
 src/components/Button.art.vue
 ```
 
 当设计系统拥有许多横切实例时，使用单独的`stories`或`art`目录， 或者当Nuxt组件自动发现扫描组件目录时：
 
-```txt
+```tree
 src/components/Button.vue
 stories/forms/Button.art.vue
 stories/navigation/Menu.art.vue

@@ -40,14 +40,12 @@ Um `button` nativo permite a ativação pelo teclado para o mesmo manipulador `a
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/click-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/click-events-have-key-events": "warn"
+    }
   },
 });
 ```

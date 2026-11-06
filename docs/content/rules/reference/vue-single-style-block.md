@@ -51,14 +51,12 @@ Both selectors stay scoped in one style block, satisfying the single-block conve
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/single-style-block": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/single-style-block": "warn"
+    }
   },
 });
 ```

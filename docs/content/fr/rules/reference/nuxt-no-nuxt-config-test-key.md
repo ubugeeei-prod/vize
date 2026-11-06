@@ -38,14 +38,12 @@ export default defineNuxtConfig({});
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "nuxt/no-nuxt-config-test-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "nuxt/no-nuxt-config-test-key": "error"
+    }
   },
 });
 ```

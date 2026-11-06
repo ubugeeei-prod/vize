@@ -43,14 +43,12 @@ Les exemples utilisent du contenu en ligne dans le paragraphe, un tbody explicit
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/permitted-contents": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/permitted-contents": "error"
+    }
   },
 });
 ```

@@ -83,7 +83,7 @@ existants.
 
 ### Ce que l’extension utilise
 
-```text
+```diagram
 VS Code
   ↕ Language Server Protocol
 vize lsp (vize_maestro)

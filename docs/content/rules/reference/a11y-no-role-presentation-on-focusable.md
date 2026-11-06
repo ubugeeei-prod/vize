@@ -38,14 +38,12 @@ Remove the conflicting presentation request and rely on the native link role and
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-role-presentation-on-focusable": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-role-presentation-on-focusable": "error"
+    }
   },
 });
 ```

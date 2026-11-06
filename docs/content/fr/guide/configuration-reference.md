@@ -90,16 +90,19 @@ export default defineConfig({
 
 Les entrées acceptent `basePath`, `files`, `ignores` et `linter` ; les autres sections restent communes au projet. Gardez les références de projets TypeScript dans `tsconfig.json`.
 
-## Partager des bases de configuration
+## Réglages partagés sans `extends` personnalisé
 
-Il n’existe pas de `extends` propre à Vize. Réutilisez des objets JavaScript ordinaires :
+Il n’existe pas de `extends` propre à Vize. Conservez la configuration recommandée dans une chaîne directe :
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import vpConfig from "./build-options.ts";
-import vueConfig from "./vue-options.ts";
 
-export default defineConfig(vpConfig).withVue(vueConfig);
+export default defineConfig({
+  server: { port: 3000 },
+}).withVue({
+  compiler: { sourceMap: true },
+  linter: { preset: "essential" },
+});
 ```
 
 Les `extends` TypeScript standards et les fonctions de configuration Vite restent utilisables.
@@ -142,13 +145,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -164,45 +166,30 @@ Les configurations dédiées JSON/PKL et le `extends` propre à Vize sont suppri
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig(({ command, mode, isSsrBuild }) => ({
-  vue: {
-    compiler: {
-      sourceMap: mode !== "production",
-      ssr: isSsrBuild,
-      vapor: false,
-      customRenderer: false,
-      templateSyntax: "standard",
-    },
-    vite: {
-      include: [/\.vue$/],
-      exclude: [/node_modules/],
-      scanPatterns: ["src/**/*.vue"],
-      ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
-    },
-    linter: {
-      enabled: command !== "build",
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-    },
-    formatter: {
-      printWidth: 100,
-      singleQuote: false,
-    },
-    languageServer: {
-      lint: true,
-      typecheck: false,
-      editor: false,
-      formatting: false,
-    },
-    musea: {
-      include: ["src/**/*.art.vue"],
-      basePath: "/__musea__",
-    },
+export default defineConfig(({ mode, isSsrBuild }) => ({
+  build: {
+    sourcemap: mode !== "production",
+    ssr: isSsrBuild,
   },
-}));
+})).withVue({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+  },
+  vite: {
+    include: [/\.vue$/],
+    exclude: [/node_modules/],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+  },
+  linter: { enabled: true, preset: "happy-path" },
+  typeChecker: { enabled: true, strict: true },
+  formatter: { printWidth: 100, singleQuote: false },
+  languageServer: { lint: true, typecheck: false, editor: false, formatting: false },
+  musea: { include: ["src/**/*.art.vue"], basePath: "/__musea__" },
+});
 ```
 
 ### Migrer les anciens réglages JSON et PKL

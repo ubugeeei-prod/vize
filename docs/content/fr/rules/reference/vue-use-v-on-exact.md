@@ -54,14 +54,12 @@ Le gestionnaire de clic ordinaire peut également s’exécuter lors d’un Ctrl
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/use-v-on-exact": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/use-v-on-exact": "warn"
+    }
   },
 });
 ```

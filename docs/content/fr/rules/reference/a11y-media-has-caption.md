@@ -40,14 +40,12 @@ Un `track` avec `kind="captions"` fournit les sous-titres anglais de la même vi
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/media-has-caption": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/media-has-caption": "warn"
+    }
   },
 });
 ```

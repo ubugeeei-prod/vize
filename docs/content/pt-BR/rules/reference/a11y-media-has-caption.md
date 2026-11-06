@@ -40,14 +40,12 @@ Um `track` com `kind="captions"` fornece as legendas em inglês para o mesmo ví
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/media-has-caption": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/media-has-caption": "warn"
+    }
   },
 });
 ```

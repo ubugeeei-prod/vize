@@ -20,20 +20,20 @@ O [Void](https://void.cloud) cria apps full-stack sobre o Vite e os executa no w
 npm install -D @vizejs/vite-plugin
 ```
 
-### 2. Adicione `vize()` ao `vite.config.ts`
+### 2. Componha `vite.config.ts` com `withVue`
 
 ```ts
 import { voidVue } from "@void/vue/plugin";
-import { vize } from "@vizejs/vite-plugin";
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { voidPlugin } from "void";
-
 export default defineConfig({
-  plugins: [voidPlugin(), vize(), voidVue()],
-});
+  plugins: [voidPlugin(), voidVue()],
+}).withVue({});
 ```
 
-`voidVue()` inclui seu próprio `@vitejs/plugin-vue`. Não é preciso removê-lo: `vize()` o substitui para que um único compilador cuide de cada SFC. Se você definir `exclude`, o plugin-vue permanece e compila os arquivos que o Vize ignora.
+`voidVue()` inclui seu próprio `@vitejs/plugin-vue`. Não é preciso removê-lo: `withVue` substitui o
+plugin `vite:vue` existente para que um único compilador cuide de cada SFC. Se você definir
+`exclude`, o plugin-vue permanece e compila os arquivos que o Vize ignora.
 
 ### 3. Execute o Void normalmente
 

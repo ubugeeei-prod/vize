@@ -335,7 +335,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 
 ## ファイル間ルール (66)
 
-`vue.linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`vue.linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
+`withVue` に渡す `linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
 
 | ルール | 検出する内容 | 対応状況 |
 | --- | --- | --- |

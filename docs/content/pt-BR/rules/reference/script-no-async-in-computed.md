@@ -52,14 +52,12 @@ watch(query, async (value, _oldValue, onCleanup) => {
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-async-in-computed": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-async-in-computed": "error"
+    }
   },
 });
 ```

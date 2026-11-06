@@ -46,14 +46,12 @@ Les mêmes actions d’aperçu s’exécutent lors du focus et de sa perte, et l
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/mouse-events-have-key-events": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/mouse-events-have-key-events": "warn"
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ O slot nomeado `mySlot` usa camelCase onde a regra exige um nome separado por h√
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/slot-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/slot-name-casing": "warn"
+    }
   },
 });
 ```

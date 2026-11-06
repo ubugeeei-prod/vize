@@ -41,14 +41,12 @@ Forneça um atributo e uma expressão, vincule um objeto ou use a forma abreviad
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-bind": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-bind": "error"
+    }
   },
 });
 ```

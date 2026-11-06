@@ -39,14 +39,12 @@ aria-labelledby が save-label を参照していますが、その ID の要素
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-refer-to-non-existent-id": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-refer-to-non-existent-id": "warn"
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ Un template HTML ordinaire omet lang et utilise directement le paragraphe. Cela 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-template-lang": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-template-lang": "warn"
+    }
   },
 });
 ```

@@ -43,14 +43,12 @@ A decorative span hides the icon glyph, while the separate `Delete item` text na
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/no-i-for-icon": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/no-i-for-icon": "warn"
+    }
   },
 });
 ```

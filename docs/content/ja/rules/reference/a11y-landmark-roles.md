@@ -40,14 +40,12 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/landmark-roles": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/landmark-roles": "warn"
+    }
   },
 });
 ```

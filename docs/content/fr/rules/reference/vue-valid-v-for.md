@@ -41,14 +41,12 @@ Utilisez `item in items` ou `(item, index) of items` avec une expression dâ€™itÃ
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-v-for": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-v-for": "error"
+    }
   },
 });
 ```

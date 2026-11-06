@@ -41,14 +41,12 @@ export default { setup() { return { Child }; } };
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-unstable-nested-components": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-unstable-nested-components": "warn"
+    }
   },
 });
 ```

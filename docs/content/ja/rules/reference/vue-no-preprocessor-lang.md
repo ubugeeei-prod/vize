@@ -40,14 +40,12 @@ style の lang に SCSS を指定しているため、プリプロセッサー�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-preprocessor-lang": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-preprocessor-lang": "warn"
+    }
   },
 });
 ```

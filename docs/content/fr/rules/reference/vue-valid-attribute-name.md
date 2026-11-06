@@ -42,14 +42,12 @@ Le guillemet dans `my"attr` rend le nom d’attribut mal formé. Cet exemple pro
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-attribute-name": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-attribute-name": "error"
+    }
   },
 });
 ```

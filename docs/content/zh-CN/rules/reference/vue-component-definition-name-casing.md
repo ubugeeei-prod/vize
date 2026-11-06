@@ -40,14 +40,12 @@ description: "要求组件定义名称使用 PascalCase 或 kebab-case。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/component-definition-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/component-definition-name-casing": "warn"
+    }
   },
 });
 ```

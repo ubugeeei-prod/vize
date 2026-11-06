@@ -38,14 +38,12 @@ A chave vem de item.id, preservando a identidade de cada item quando sua posi√ß√
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-array-index-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-array-index-key": "warn"
+    }
   },
 });
 ```

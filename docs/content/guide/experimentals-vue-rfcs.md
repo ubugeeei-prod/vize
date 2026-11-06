@@ -15,26 +15,24 @@ what Vize implements today and where it stops. To try one, start with
 
 ## Enable an experiment
 
-| RFC | What it adds | Flag | Compiler field | Works in |
-| --- | --- | --- | --- | --- |
-| [#823](https://github.com/vuejs/rfcs/pull/823) | `v-match` / `v-when` pattern matching in templates | `patternedTemplate` | `experimentalPatternedTemplate` | DOM, SSR, Vapor, `vize check`, LSP diagnostics |
-| [#831](https://github.com/vuejs/rfcs/pull/831) | `//` comments inside an opening tag | `inTagComment` | `experimentalInTagComments` | Parser and every compile target; no runtime output |
-| [#833](https://github.com/vuejs/rfcs/pull/833) | `<Self>` for the current component | `selfComponent` | `experimentalSelfComponent` | DOM, SSR, Vapor |
-| [#734](https://github.com/vuejs/rfcs/pull/734) | Type checks for the children passed to a slot | `strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check` and the language server only |
+| RFC                                            | What it adds                                       | Flag                 | Compiler field                   | Works in                                           |
+| ---------------------------------------------- | -------------------------------------------------- | -------------------- | -------------------------------- | -------------------------------------------------- |
+| [#823](https://github.com/vuejs/rfcs/pull/823) | `v-match` / `v-when` pattern matching in templates | `patternedTemplate`  | `experimentalPatternedTemplate`  | DOM, SSR, Vapor, `vize check`, LSP diagnostics     |
+| [#831](https://github.com/vuejs/rfcs/pull/831) | `//` comments inside an opening tag                | `inTagComment`       | `experimentalInTagComments`      | Parser and every compile target; no runtime output |
+| [#833](https://github.com/vuejs/rfcs/pull/833) | `<Self>` for the current component                 | `selfComponent`      | `experimentalSelfComponent`      | DOM, SSR, Vapor                                    |
+| [#734](https://github.com/vuejs/rfcs/pull/734) | Type checks for the children passed to a slot      | `strictSlotChildren` | `experimentalStrictSlotChildren` | `vize check` and the language server only          |
 
 Turn flags on under `vue.experimentals` in `vite.config.ts`:
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    experimentals: {
-      inTagComment: true,
-      patternedTemplate: true,
-      selfComponent: true,
-      strictSlotChildren: true,
-    },
+export default defineConfig({}).withVue({
+  experimentals: {
+    inTagComment: true,
+    patternedTemplate: true,
+    selfComponent: true,
+    strictSlotChildren: true,
   },
 });
 ```
@@ -102,19 +100,19 @@ How it behaves:
 - An outer `<template v-match>` works in SFCs too. External `src` templates and preprocessors are
   rejected.
 
-| Pattern | Example | Matches when |
-| --- | --- | --- |
-| Literal | `v-when="'ready'"`, `v-when="404"` | strictly equal |
-| Value | `v-when="Status.Ready"` | equal to an identifier or member expression (SameValueZero, so `NaN` matches) |
-| Wildcard | `v-when="_"` | always; binds nothing |
-| Const binding | `v-when="const value"` | always; binds `value` |
-| Object | `v-when="{ kind: 'ok', value: const data }"` | the listed properties match; extra properties are allowed |
-| Object shorthand | `v-when="{ kind: 'ok', const data }"` | same as `{ data: const data }` |
-| Object rest | `v-when="{ kind: 'error', ...const payload }"` | binds the remaining own enumerable properties |
-| Array / tuple | `v-when="[const first, ...const rest]"` | the value is an array (`Array.isArray`); rest allows more items |
-| Or | `v-when="'idle' \| 'loading'"` | any alternative matches, tried left to right |
-| As binding | `v-when="{ kind: 'ok' } as whole"` | the pattern matches; binds the whole value as `whole` |
-| Guard | `v-when="{ error: const e } if (e.retriable)"` | the pattern matches and the guard is truthy |
+| Pattern          | Example                                        | Matches when                                                                  |
+| ---------------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| Literal          | `v-when="'ready'"`, `v-when="404"`             | strictly equal                                                                |
+| Value            | `v-when="Status.Ready"`                        | equal to an identifier or member expression (SameValueZero, so `NaN` matches) |
+| Wildcard         | `v-when="_"`                                   | always; binds nothing                                                         |
+| Const binding    | `v-when="const value"`                         | always; binds `value`                                                         |
+| Object           | `v-when="{ kind: 'ok', value: const data }"`   | the listed properties match; extra properties are allowed                     |
+| Object shorthand | `v-when="{ kind: 'ok', const data }"`          | same as `{ data: const data }`                                                |
+| Object rest      | `v-when="{ kind: 'error', ...const payload }"` | binds the remaining own enumerable properties                                 |
+| Array / tuple    | `v-when="[const first, ...const rest]"`        | the value is an array (`Array.isArray`); rest allows more items               |
+| Or               | `v-when="'idle' \| 'loading'"`                 | any alternative matches, tried left to right                                  |
+| As binding       | `v-when="{ kind: 'ok' } as whole"`             | the pattern matches; binds the whole value as `whole`                         |
+| Guard            | `v-when="{ error: const e } if (e.retriable)"` | the pattern matches and the guard is truthy                                   |
 
 ### Patterned Diagnostics
 
@@ -143,7 +141,7 @@ An unguarded fallback must be unique and last:
 <template v-match="status">
   <p v-when="_">Other</p>
   <p v-when="'ready'">Ready</p>
-  <p v-when="(_)">Again</p>
+  <p v-when="_">Again</p>
 </template>
 ```
 
@@ -181,14 +179,14 @@ With the flag on, `vize check` understands patterns:
 - Binding inside an or-pattern alternative is also deferred; split cases that need bindings into
   separate branches. The RFC shorthands `?=`, `|=`, and `~=` are not supported.
 
-| Tool | Support today |
-| --- | --- |
-| Compiler (DOM, SSR, Vapor) | Full RFC syntax |
-| `vize check` | Narrowing, coverage errors, unreachable-branch warnings |
-| Language server | Structural and coverage diagnostics, hover and go to definition for root-pattern bindings; restart the server after changing the flag |
-| Playground | Croquis and Canon checkboxes; full type diagnostics use the Monaco TypeScript worker |
-| VS Code grammar | Highlights `v-when` patterns without the flag |
-| Not yet | Content Mapper routing, and full rename and completion for guards, nested closures, and or-pattern bindings ([#6176](https://github.com/ubugeeei-prod/vize/issues/6176)) |
+| Tool                       | Support today                                                                                                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Compiler (DOM, SSR, Vapor) | Full RFC syntax                                                                                                                                                          |
+| `vize check`               | Narrowing, coverage errors, unreachable-branch warnings                                                                                                                  |
+| Language server            | Structural and coverage diagnostics, hover and go to definition for root-pattern bindings; restart the server after changing the flag                                    |
+| Playground                 | Croquis and Canon checkboxes; full type diagnostics use the Monaco TypeScript worker                                                                                     |
+| VS Code grammar            | Highlights `v-when` patterns without the flag                                                                                                                            |
+| Not yet                    | Content Mapper routing, and full rename and completion for guards, nested closures, and or-pattern bindings ([#6176](https://github.com/ubugeeei-prod/vize/issues/6176)) |
 
 The full upstream type-tooling acceptance contract for narrowing and exhaustiveness also includes
 editor navigation and completion, which are still in progress. Virtual-TS hosts other than Vize must
@@ -241,12 +239,12 @@ recursive components easy to write:
 </template>
 ```
 
-| Context | What `<Self>` resolves to |
-| --- | --- |
+| Context                          | What `<Self>` resolves to                |
+| -------------------------------- | ---------------------------------------- |
 | SFC build with compiler metadata | the current component name from metadata |
-| SFC build without metadata | a name derived from the file name |
-| Direct template API | `componentName` when provided |
-| No name available | normal component resolution |
+| SFC build without metadata       | a name derived from the file name        |
+| Direct template API              | `componentName` when provided            |
+| No name available                | normal component resolution              |
 
 With the flag on, `<Self>` wins over a local/imported component named `Self` (which is shadowed).
 Avoid naming a component import `Self`; rename it instead:
@@ -271,7 +269,7 @@ Low-level template calls without an SFC file name must pass the name:
 ```ts
 import { compile } from "@vizejs/native";
 
-compile("<Self :node=\"node\" />", {
+compile('<Self :node="node" />', {
   componentName: "TreeNode",
   experimentalSelfComponent: true,
 });
@@ -331,22 +329,22 @@ the slot's return type. A wrong child becomes a TypeScript error:
 </template>
 ```
 
-| Child | Checked as |
-| --- | --- |
-| Native element such as `<button>` | `HTMLButtonElement` |
-| SVG or MathML element | `SVGElement` or `MathMLElement` when no narrower type is known |
-| Imported component such as `<TabItem>` | `typeof TabItem` |
-| Text or interpolation | `string` |
-| Named `<template #footer>` | against the named slot |
-| Comments and wrappers that add no child | skipped |
+| Child                                   | Checked as                                                     |
+| --------------------------------------- | -------------------------------------------------------------- |
+| Native element such as `<button>`       | `HTMLButtonElement`                                            |
+| SVG or MathML element                   | `SVGElement` or `MathMLElement` when no narrower type is known |
+| Imported component such as `<TabItem>`  | `typeof TabItem`                                               |
+| Text or interpolation                   | `string`                                                       |
+| Named `<template #footer>`              | against the named slot                                         |
+| Comments and wrappers that add no child | skipped                                                        |
 
-| Slot return type | Meaning |
-| --- | --- |
-| `() => HTMLInputElement` | one input child |
-| `() => HTMLInputElement[]` | any number of input children |
+| Slot return type                             | Meaning                              |
+| -------------------------------------------- | ------------------------------------ |
+| `() => HTMLInputElement`                     | one input child                      |
+| `() => HTMLInputElement[]`                   | any number of input children         |
 | `() => [HTMLInputElement, HTMLInputElement]` | exactly two input children, in order |
-| `() => (typeof TabItem)[]` | any number of `TabItem` children |
-| `() => [typeof TabItem, HTMLButtonElement]` | one `TabItem`, then one button |
+| `() => (typeof TabItem)[]`                   | any number of `TabItem` children     |
+| `() => [typeof TabItem, HTMLButtonElement]`  | one `TabItem`, then one button       |
 
 Limits:
 

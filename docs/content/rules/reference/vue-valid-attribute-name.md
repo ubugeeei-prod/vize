@@ -42,14 +42,12 @@ The quote inside `my"attr` makes the attribute name malformed. This example prod
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/valid-attribute-name": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/valid-attribute-name": "error"
+    }
   },
 });
 ```

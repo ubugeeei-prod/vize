@@ -40,14 +40,12 @@ Renaming the file to MyComponent.vue uses PascalCase; its template content is un
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/component-definition-name-casing": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/component-definition-name-casing": "warn"
+    }
   },
 });
 ```

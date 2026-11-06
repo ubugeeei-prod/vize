@@ -55,37 +55,37 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 
 ### 共通設定
 
-| 設定                         | 目的                                         |
-| ---------------------------- | -------------------------------------------- |
-| `vize.enable`                | 拡張機能と言語サーバーを有効にする           |
-| `vize.serverPath`            | 使用する `vize` 実行ファイルのパスを指定する |
-| `vize.lint.enable`           | lint 診断を有効にする                        |
-| `vize.typecheck.enable`      | 型情報を使う診断とバックエンド機能を有効にする |
+| 設定                         | 目的                                                 |
+| ---------------------------- | ---------------------------------------------------- |
+| `vize.enable`                | 拡張機能と言語サーバーを有効にする                   |
+| `vize.serverPath`            | 使用する `vize` 実行ファイルのパスを指定する         |
+| `vize.lint.enable`           | lint 診断を有効にする                                |
+| `vize.typecheck.enable`      | 型情報を使う診断とバックエンド機能を有効にする       |
 | `vize.editor.enable`         | ホバーや補完などのエディター機能をまとめて有効にする |
-| `vize.completion.enable`     | 補完を有効にする                             |
-| `vize.formatting.enable`     | ファイルのフォーマットを有効にする           |
-| `vize.definition.enable`     | 定義への移動を有効にする                     |
-| `vize.references.enable`     | 参照検索を有効にする                         |
-| `vize.hover.enable`          | ホバーを有効にする                           |
-| `vize.codeActions.enable`    | lint クイックフィックスを有効にする          |
-| `vize.semanticTokens.enable` | セマンティック トークンを有効にする          |
-| `vize.trace.server`          | LSP 通信をトレースする                       |
+| `vize.completion.enable`     | 補完を有効にする                                     |
+| `vize.formatting.enable`     | ファイルのフォーマットを有効にする                   |
+| `vize.definition.enable`     | 定義への移動を有効にする                             |
+| `vize.references.enable`     | 参照検索を有効にする                                 |
+| `vize.hover.enable`          | ホバーを有効にする                                   |
+| `vize.codeActions.enable`    | lint クイックフィックスを有効にする                  |
+| `vize.semanticTokens.enable` | セマンティック トークンを有効にする                  |
+| `vize.trace.server`          | LSP 通信をトレースする                               |
 
 ### 便利なコマンド
 
-| コマンド                                  | 目的                                                  |
-| ----------------------------------------- | ----------------------------------------------------- |
-| `Vize: Show Status`                       | 状態と初期設定の操作画面を開く |
-| `Vize: Enable Recommended Profile`        | lint、型チェック、およびエディター支援を有効にする    |
-| `Vize: Enable Lint-Only Profile`          | 他のツールを使用したまま診断を有効にする              |
-| `Vize: Select Language Server Executable` | ファイル選択画面で `vize.serverPath` を指定する |
-| `Vize: Disable Language Server`           | 現在の設定対象の Vize を停止する                |
-| `Vize: Restart Language Server`           | 言語サーバーを再起動する |
-| `Vize: Show Output Channel`               | 拡張機能と LSP ログを表示する                         |
+| コマンド                                  | 目的                                               |
+| ----------------------------------------- | -------------------------------------------------- |
+| `Vize: Show Status`                       | 状態と初期設定の操作画面を開く                     |
+| `Vize: Enable Recommended Profile`        | lint、型チェック、およびエディター支援を有効にする |
+| `Vize: Enable Lint-Only Profile`          | 他のツールを使用したまま診断を有効にする           |
+| `Vize: Select Language Server Executable` | ファイル選択画面で `vize.serverPath` を指定する    |
+| `Vize: Disable Language Server`           | 現在の設定対象の Vize を停止する                   |
+| `Vize: Restart Language Server`           | 言語サーバーを再起動する                           |
+| `Vize: Show Output Channel`               | 拡張機能と LSP ログを表示する                      |
 
 ### 拡張機能が使用するもの
 
-```text
+```diagram
 VS Code
   ↕ Language Server Protocol
 vize lsp

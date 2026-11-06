@@ -38,14 +38,12 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "script/no-required-prop-with-default": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "script/no-required-prop-with-default": "error"
+    }
   },
 });
 ```

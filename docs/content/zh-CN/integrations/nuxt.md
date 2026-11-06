@@ -214,7 +214,7 @@ export default defineNuxtConfig({
 
 Nuxt 会扫描组件目录中的所有 `.vue` 文件，而 Musea 的 art 文件也以 `.vue` 结尾。请把 `*.art.vue` 放在这些目录之外，并告诉 Musea 它们的位置：
 
-```txt
+```tree
 app/components/Tag.vue
 stories/shared/Tag.art.vue
 ```
@@ -237,11 +237,9 @@ export default defineNuxtConfig({
 组件常常依赖 `NuxtLink`、`useRoute`、`useNuxtApp`、`useRuntimeConfig`、数据获取类组合式函数或 Nuxt 内置组件。在独立的 Musea Vite 配置中，添加 `@vizejs/musea-nuxt`，并在 `previewSetup` 中安装它的模拟实现：
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 import { nuxtMusea } from "@vizejs/musea-nuxt";
-
 export default defineConfig({
   plugins: [
     nuxtMusea({
@@ -255,7 +253,7 @@ export default defineConfig({
       previewSetup: "musea.preview.ts",
     }),
   ],
-});
+}).withVue({});
 ```
 
 ```ts

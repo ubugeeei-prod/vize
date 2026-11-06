@@ -40,14 +40,12 @@ style 块通过 lang 选择 SCSS。这描述了不使用预处理器的预期规
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-preprocessor-lang": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-preprocessor-lang": "warn"
+    }
   },
 });
 ```

@@ -26,7 +26,7 @@ A função adiciona o compilador do Vize e as tarefas nativas de verificação. 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({});
+export default defineConfig({}).withVue({});
 ```
 
 ## 3. Compilar e verificar o aplicativo

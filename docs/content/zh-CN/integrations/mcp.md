@@ -124,7 +124,7 @@ AI可以通过MCP检查实际组件元数据，生成准确的文档。
 
 ## 工作原理
 
-```
+```diagram
 AI Assistant
   ↕ MCP Protocol (JSON-RPC over stdio)
 @vizejs/musea-mcp-server

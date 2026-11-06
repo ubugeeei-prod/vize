@@ -83,7 +83,7 @@ Vize状态栏条项会`Vize: Show Status`打开，显示配置文件切换器和
 
 ### 扩展使用情况
 
-```text
+```diagram
 VS Code
   ↕ Language Server Protocol
 vize lsp (vize_maestro)

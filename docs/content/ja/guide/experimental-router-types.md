@@ -18,11 +18,8 @@ Router の生成宣言と opt-in を含めてください。
 Vue コンパイラーの前に Vue Router のスキャナーを設定します。
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import VueRouter from "vue-router/vite";
-import vize from "@vizejs/vite-plugin";
-
 export default defineConfig({
   plugins: [
     VueRouter({
@@ -30,9 +27,8 @@ export default defineConfig({
       dts: "typed-router.d.ts",
       experimental: { paramParsers: { dir: "src/params" } },
     }),
-    vize(),
   ],
-});
+}).withVue({});
 ```
 
 Vite を一度起動すると `typed-router.d.ts` が生成されます。Vite の起動前に

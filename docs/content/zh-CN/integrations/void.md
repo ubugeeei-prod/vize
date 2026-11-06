@@ -20,20 +20,19 @@ description: 在 Void 应用中使用 Vize，支持 @void/vue 页面、workerd �
 npm install -D @vizejs/vite-plugin
 ```
 
-### 2. 在 `vite.config.ts` 中添加 `vize()`
+### 2. 使用 `withVue` 组合 `vite.config.ts`
 
 ```ts
 import { voidVue } from "@void/vue/plugin";
-import { vize } from "@vizejs/vite-plugin";
-import { defineConfig } from "vite";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { voidPlugin } from "void";
-
 export default defineConfig({
-  plugins: [voidPlugin(), vize(), voidVue()],
-});
+  plugins: [voidPlugin(), voidVue()],
+}).withVue({});
 ```
 
-`voidVue()` 自带 `@vitejs/plugin-vue`。无需移除它：`vize()` 会将其替换，使每个 SFC 只由一个编译器处理。如果设置了 `exclude`，plugin-vue 会保留，并编译 Vize 跳过的文件。
+`voidVue()` 自带 `@vitejs/plugin-vue`。无需移除它：`withVue` 会替换现有的 `vite:vue` 插件，
+使每个 SFC 只由一个编译器处理。如果设置了 `exclude`，plugin-vue 会保留，并编译 Vize 跳过的文件。
 
 ### 3. 照常运行 Void
 

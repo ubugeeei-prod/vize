@@ -33,14 +33,10 @@ vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 ## Uso recomendado: Plugin Vite
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
-
 export default defineConfig({
   plugins: [
-    vize(),
     musea({
       include: ["**/*.art.vue"],
       basePath: "/__musea__",
@@ -48,7 +44,7 @@ export default defineConfig({
       previewSetup: "musea.preview.ts",
     }),
   ],
-});
+}).withVue({});
 ```
 
 Execute seu servidor de desenvolvimento Vite normal e abra a rota Musea configurada:
@@ -57,7 +53,7 @@ Execute seu servidor de desenvolvimento Vite normal e abra a rota Musea configur
 vp dev
 ```
 
-```txt
+```console
 http://localhost:5173/__musea__
 ```
 
@@ -78,13 +74,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -92,7 +87,6 @@ export default defineConfig({
 As opções compartilhadas são `include`, `exclude`, `basePath`, `storybookCompat` e `inlineArt`. Passe `previewCss`, `previewSetup`, `tokensPath`, `theme` e `storybookOutDir` diretamente a `musea()`.
 
 `musea-vrt` também lê `include`, `exclude` e `vrt` dessa configuração Vite. `vrt.outDir` define o diretório das capturas; as opções `vrt` do plugin substituem os valores compartilhados correspondentes. `vize musea new` cria um arquivo Art com a descoberta padrão, sem gerar uma configuração específica.
-
 
 ## Arquivos de Arte
 
@@ -180,14 +174,14 @@ const sharedCount = ref(0);
 
 Mantenha os arquivos de arte próximos ao componente quando variantes fizerem parte do contrato do componente:
 
-```txt
+```tree
 src/components/Button.vue
 src/components/Button.art.vue
 ```
 
 Use um diretório `stories` ou `art` separado quando um sistema de projeto possui muitos exemplos transversais, ou quando a descoberta automática de componentes Nuxt escanear o diretório de componentes:
 
-```txt
+```tree
 src/components/Button.vue
 stories/forms/Button.art.vue
 stories/navigation/Menu.art.vue

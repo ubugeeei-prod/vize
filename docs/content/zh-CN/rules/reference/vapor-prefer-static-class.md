@@ -38,14 +38,12 @@ class 绑定对常量字符串求值，但类名并不会改变。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vapor/prefer-static-class": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vapor/prefer-static-class": "warn"
+    }
   },
 });
 ```

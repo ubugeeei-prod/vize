@@ -36,14 +36,12 @@ HTML 允许在 `ul` 结束时隐式关闭这个 `li`，但本规则要求显式�
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/html-end-tags": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/html-end-tags": "warn"
+    }
   },
 });
 ```

@@ -38,14 +38,12 @@ description: "禁止 HTML 属性使用无效的静态值。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-invalid-html-attribute": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-invalid-html-attribute": "warn"
+    }
   },
 });
 ```

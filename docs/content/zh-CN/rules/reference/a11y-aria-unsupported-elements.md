@@ -38,14 +38,12 @@ description: "禁止在不支持 ARIA 的元素上使用 ARIA 属性。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-unsupported-elements": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-unsupported-elements": "error"
+    }
   },
 });
 ```

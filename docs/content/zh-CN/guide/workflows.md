@@ -42,28 +42,28 @@ vp install -D vize
 
 ## 配置一次
 
-需要修改默认值时，在现有 `vite.config.*` 的 `vue:` 中添加原生选项。[配置指南](./configuration.md)介绍文件发现和迁移规则。
+需要修改默认值时，直接把原生选项传给 `vite.config.*` 中的 `withVue`。[配置指南](./configuration.md)介绍文件发现和迁移规则。
 
 ```ts
 // vite.config.ts
-export default {
-  vue: {
-    formatter: {
-      printWidth: 100,
-    },
-    linter: {
-      preset: "happy-path",
-    },
-    typeChecker: {
-      enabled: true,
-      strict: true,
-      tsconfig: "tsconfig.json",
-    },
-    vite: {
-      scanPatterns: ["src/**/*.vue"],
-    },
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  formatter: {
+    printWidth: 100,
   },
-};
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
 ```
 
 参见[配置](./configuration.md)中关于作用域条目、标准 TypeScript 项目、编译器选项和

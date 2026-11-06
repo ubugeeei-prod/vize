@@ -46,18 +46,19 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ include: ["**/*.art.vue"], basePath: "/__musea__" })],
-});
+}).withVue({});
 ```
 
-Replace these lines when migrating from `@vitejs/plugin-vue`; retain your other Vite options and plugins:
+When migrating from `@vitejs/plugin-vue`, remove its import and `vue()` call. Retain your other
+Vite options and plugins in the root config:
 
-```ts annotate="remove:1,2,5;add:3,4,6"
-import { defineConfig } from "vite-plus";
-import vue from "@vitejs/plugin-vue";
+```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
-  plugins: [vue()],
+
+export default defineConfig({
   plugins: [musea({ include: ["**/*.art.vue"] })],
+}).withVue({});
 ```
 
 Start the dev server and open the configured Musea route:
@@ -80,13 +81,12 @@ import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [musea({ storybookCompat: false })],
-  vue: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      inlineArt: false,
-    },
+}).withVue({
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    inlineArt: false,
   },
 });
 ```
@@ -193,7 +193,7 @@ const sharedCount = ref(0);
 
 Keep art files close to the component when variants are part of the component's contract:
 
-```txt
+```tree
 src/components/Button.vue
 src/components/Button.art.vue
 ```
@@ -201,7 +201,7 @@ src/components/Button.art.vue
 Use a separate `stories` or `art` directory when a design system owns many cross-cutting examples,
 or when Nuxt component auto-discovery scans the component directory:
 
-```txt
+```tree
 src/components/Button.vue
 stories/forms/Button.art.vue
 stories/navigation/Menu.art.vue

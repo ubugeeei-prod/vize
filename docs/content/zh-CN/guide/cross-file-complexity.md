@@ -72,12 +72,10 @@ Vize 的跨文件复杂度报告是 Croquis 生成的项目图摘要。它本身
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      rules: {
-        "vue/max-template-complexity": "warn",
-      },
+export default defineConfig({}).withVue({
+  linter: {
+    rules: {
+      "vue/max-template-complexity": "warn",
     },
   },
 });

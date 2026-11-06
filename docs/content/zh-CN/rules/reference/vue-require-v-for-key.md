@@ -38,14 +38,12 @@ description: "要求 `v-for` 指令搭配 `v-bind:key`。"
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/require-v-for-key": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/require-v-for-key": "error"
+    }
   },
 });
 ```

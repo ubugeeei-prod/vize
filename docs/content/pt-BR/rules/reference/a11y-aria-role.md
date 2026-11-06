@@ -38,14 +38,12 @@ A seção usa o papel reconhecido `dialog` e um rótulo que descreve a seleção
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "a11y/aria-role": "error"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "a11y/aria-role": "error"
+    }
   },
 });
 ```

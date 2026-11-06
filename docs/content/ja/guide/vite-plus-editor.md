@@ -37,7 +37,7 @@ Vue の言語サービスを提供する拡張機能は、ひとつに絞って�
 
 ## エディター共通のネイティブ設定
 
-ネイティブの言語サーバーは、`vite.config.*` の `vue:` と、プロジェクトの `tsconfig.json` を読み込みます。Vite+ では `defineConfig(vpConfig).withVue(vueConfig)` を使い、既存の Vite+ 設定を保ちながらネイティブ設定を共有します。
+ネイティブの言語サーバーは `vite.config.*` とプロジェクトの `tsconfig.json` を読み込みます。`defineConfig({ ... }).withVue({ ... })` のチェーンを中間変数に置かず、そのまま export してください。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

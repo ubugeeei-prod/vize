@@ -59,7 +59,7 @@ for (const path of pages) {
           const fixture = join(dir, fixed ? "fixed" : "", `${file}.txt`);
           assert.equal(body.slice(marker[0].length), read(fixture), `${path} ${name} ${file}`);
           if (!fixed) shown.add(file);
-        } else if (lang === "text" && body.includes("[TS")) {
+        } else if (lang === "diagnostic" && body.includes("[TS")) {
           assert.ok(
             [read(join(dir, "expected.txt")), optional(join(dir, "fixed/expected.txt"))].includes(
               body,
@@ -67,7 +67,7 @@ for (const path of pages) {
             `${path} ${name}: a Vize diagnostic block must match expected.txt`,
           );
           vize += 1;
-        } else if (lang === "text" && VUE_TSC_ROW.test(body)) {
+        } else if (lang === "diagnostic" && VUE_TSC_ROW.test(body)) {
           assert.ok(
             [read(join(dir, "vue-tsc.txt")), optional(join(dir, "fixed/vue-tsc.txt"))].includes(
               body,

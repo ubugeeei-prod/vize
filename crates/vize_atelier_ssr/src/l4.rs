@@ -6,7 +6,6 @@
 //! input selects the legacy AST walker explicitly under a typed reason, and a
 //! stale or inconsistent artifact is rejected rather than guessed around.
 
-mod bindings;
 mod croquis;
 mod emit;
 mod frozen_slots;

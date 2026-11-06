@@ -38,14 +38,12 @@ item.id を key に使い、位置が変わっても同じ項目に同じ key �
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "vue/no-array-index-key": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "vue/no-array-index-key": "warn"
+    }
   },
 });
 ```

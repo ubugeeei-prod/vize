@@ -38,14 +38,12 @@ NuxtLink 通过 Nuxt 路由处理相同的内部目标。
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    linter: {
-      "preset": "incremental",
-      "rules": {
-        "ecosystem/nuxt-prefer-nuxt-link": "warn"
-      }
-    },
+export default defineConfig({}).withVue({
+  linter: {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/nuxt-prefer-nuxt-link": "warn"
+    }
   },
 });
 ```

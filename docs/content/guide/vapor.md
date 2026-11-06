@@ -54,31 +54,20 @@ Compile every SFC to Vapor from `vite.config.ts`:
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
-export default defineConfig({
-  vue: {
-    compiler: { vapor: true },
-  },
+export default defineConfig({}).withVue({
+  compiler: { vapor: true },
 });
 ```
 
-With the plain Vite plugin, pass the option directly:
-
-```ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [vize({ vapor: true })],
-});
-```
+Keep this stable project-wide setting in the direct `withVue` chain shown above.
 
 In Nuxt, set `vize.compiler.vapor` in `nuxt.config.ts`; see the [Nuxt integration](../integrations/nuxt.md).
 
-| Setting                                  | Scope                       | Notes                                          |
-| ---------------------------------------- | --------------------------- | ---------------------------------------------- |
-| `<script vapor>` / `<script setup vapor>` | One SFC                     | Always wins for that file                      |
-| `vue.compiler.vapor` / `vize({ vapor })`     | Every SFC in the project    | Stable switch; `false` is an explicit opt-out  |
-| `experimentals.vapor`                    | Every SFC, as an experiment | Ignored when `vue.compiler.vapor` is set; see [Experimentals](./experimentals.md#vapor) |
+| Setting                                   | Scope                       | Notes                                                                                   |
+| ----------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------- |
+| `<script vapor>` / `<script setup vapor>` | One SFC                     | Always wins for that file                                                               |
+| `withVue({ compiler: { vapor } })`        | Every SFC in the project    | Stable switch; `false` is an explicit opt-out                                           |
+| `experimentals.vapor`                     | Every SFC, as an experiment | Ignored when `vue.compiler.vapor` is set; see [Experimentals](./experimentals.md#vapor) |
 
 ## JSX and TSX
 

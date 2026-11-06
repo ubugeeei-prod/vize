@@ -6,14 +6,16 @@ title: ESLint rule migration map
 
 The committed ESLint mapping records 252 rule IDs: 151 mapped, 2 intentional divergences, and 99 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
-Enable Vize rules under `vue.linter.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
+When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
+
+Enable Vize rules under `linter.rules` inside `withVue`. Keep JS/TS rules handled by Oxlint in the root `lint.rules` flat config. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
 ```ts annotate="remove:1,2;add:3,4,5,6"
  import vue from "eslint-plugin-vue";
  export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
  import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
- export default defineConfig({
-   vue: { linter: { rules: { "vue/attribute-order": "warn" } } },
+ export default defineConfig({}).withVue({
+   linter: { rules: { "vue/attribute-order": "warn" } },
  });
 ```
 
