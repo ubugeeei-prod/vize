@@ -4765,6 +4765,7 @@ dependencies = [
 name = "vize_l3"
 version = "0.474.0"
 dependencies = [
+ "davinci_test_support",
  "oxc_ast",
  "oxc_span",
  "serde_json",

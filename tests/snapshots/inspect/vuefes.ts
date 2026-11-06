@@ -10,17 +10,17 @@ describe("vuefes-2025 inspector parity with Vue compiler", () => {
       {
         target: "dom",
         changedFiles: 71,
-        additions: 2_077,
-        removals: 2_487,
-        officialErrors: 2,
+        additions: 3_268,
+        removals: 3_706,
+        officialErrors: 0,
         vizeErrors: 0,
       },
       {
         target: "ssr",
         changedFiles: 71,
-        additions: 3_397,
-        removals: 7_400,
-        officialErrors: 2,
+        additions: 7_575,
+        removals: 10_005,
+        officialErrors: 0,
         vizeErrors: 0,
       },
     ]);

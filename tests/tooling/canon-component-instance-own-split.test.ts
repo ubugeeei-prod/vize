@@ -370,4 +370,14 @@ void test("the current generator never remaps a whole component instance", () =>
       .includes("$ReplaceComponentProps<$ComponentInstance,"),
   );
   assert.deepEqual(stale, []);
+
+  const constructor = fs.readFileSync(
+    `${repo}crates/vize_canon/src/virtual_ts/generator/component_constructors.rs`,
+    "utf8",
+  );
+  assert.ok(
+    constructor.includes(
+      "$ComponentInstanceFor<{own}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base}",
+    ),
+  );
 });

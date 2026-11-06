@@ -231,14 +231,18 @@ export function auditCallbackOwners(directory: string) {
     }));
     if (project.comparison === "complete-before-head-packets" && !dynamicMutation) {
       assert.equal(candidate.length, before.length);
-      before.forEach((packet, index) =>
-        assertPreservedCallbackPacket(
-          packet,
-          candidate[index],
-          index === 0 ? row.files["src/Comp.vue"] : parent,
-          index === 0 ? undefined : inertBindings,
-        ),
-      );
+      before.forEach((packet, index) => {
+        try {
+          assertPreservedCallbackPacket(
+            packet,
+            candidate[index],
+            index === 0 ? row.files["src/Comp.vue"] : parent,
+            index === 0 ? undefined : inertBindings,
+          );
+        } catch (error) {
+          throw new Error(`${row.id}: preserved callback packet ${index}`, { cause: error });
+        }
+      });
       preservedPackets += before.length;
       assert.equal(
         row.observations["candidate-check"].stdout,

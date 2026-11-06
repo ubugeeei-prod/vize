@@ -51,6 +51,8 @@ jobs:
           fi
       - name: Run installed VSIX with the pinned workspace engine
         run: xvfb-run -a vp node editors/vscode/test/run-workspace-server-host.mjs
+      - name: Run installed VSIX in Restricted Mode
+        run: xvfb-run -a vp node editors/vscode/test/run-workspace-server-restricted-host.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: workspace-server-vsix-${{ github.event.pull_request.head.sha || github.sha }}
@@ -64,7 +66,9 @@ jobs:
         if: always()
         with:
           name: workspace-server-Linux-${{ github.event.pull_request.head.sha || github.sha }}
-          path: editors/vscode/.vscode-test/workspace-server/
+          path: |
+            editors/vscode/.vscode-test/workspace-server/
+            editors/vscode/.vscode-test/workspace-server-restricted/
           if-no-files-found: warn
           retention-days: 7
 
@@ -99,10 +103,14 @@ jobs:
           path: editors/vscode/dist
       - name: Verify the producer hashes and run its installed VSIX
         run: vp node editors/vscode/test/run-workspace-server-host.mjs
+      - name: Run the installed VSIX in Restricted Mode
+        run: vp node editors/vscode/test/run-workspace-server-restricted-host.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: workspace-server-Windows-${{ github.event.pull_request.head.sha || github.sha }}
-          path: editors/vscode/.vscode-test/workspace-server/
+          path: |
+            editors/vscode/.vscode-test/workspace-server/
+            editors/vscode/.vscode-test/workspace-server-restricted/
           if-no-files-found: warn
           retention-days: 7

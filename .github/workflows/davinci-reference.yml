@@ -1,0 +1,61 @@
+name: Davinci reference backends
+
+# The independent L3 reference (`davinci_test_support::l3_reference`) against
+# its committed pages, then both mounted backends against the same pages. The
+# reference laws are Kani harnesses in `davinci-kani.yml`.
+
+on:
+  schedule:
+    - cron: "11 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-reference-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  reference-backends:
+    name: L3 reference and mounted backends (TS-28)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-reference
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Install mounted runtime dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Run P3-15 reactivity lattice differential
+        run: cargo test -p vize_l3 --test lattice_reference_fixture
+      - name: Run TS-28 reference, P3-15 schedule and C-23 checker differentials
+        run: cargo test -p vize_l2_to_l3 --test l3_reference_fixture
+      - name: Run TS-28 compiled backend trace
+        run: cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace
+      - name: Run TS-30 mounted backend behavior
+        run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
+      - name: Run TS-33 upstream Vapor behavioral parity
+        run: cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity --test davinci_transition_parity
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium for the event contract
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Run TS-30 event scope and delivery in Chromium
+        run: cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture

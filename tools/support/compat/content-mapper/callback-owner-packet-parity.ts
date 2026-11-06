@@ -458,12 +458,14 @@ export function assertPreservedCallbackPacket(
   const exportLineEnd = original.indexOf("\n", exportAt);
   assert.ok(exportLineEnd >= 0, "the public Slots export retains its line boundary");
   const afterExport = Buffer.byteLength(original.slice(0, exportLineEnd + 1));
-  const range = (start: number, length: number): [number, number] => {
+  const range = (start: number, length: number, unmappedProducerTail = false): [number, number] => {
     assert.ok(Number.isSafeInteger(start) && start >= 0);
     assert.ok(Number.isSafeInteger(length) && length >= 0);
     const end = start + length;
     assert.ok(
-      end <= boundary || (relationEdits.length > 0 && start >= afterExport),
+      end <= boundary ||
+        (unmappedProducerTail && length > 0 && start >= boundary) ||
+        (relationEdits.length > 0 && start >= afterExport),
       "authored projection cannot claim the public Slots export",
     );
     for (const edit of edits) {
@@ -539,7 +541,8 @@ export function assertPreservedCallbackPacket(
     assert.ok(tuple.every(Number.isSafeInteger));
     assert.ok(tuple[2] >= 0 && tuple[3] >= 0);
     if (authored) utf8Range(authored, tuple[2], tuple[3]);
-    const [start, length] = range(tuple[0], tuple[1]);
+    const unmappedProducerTail = tuple[2] === 0 && tuple[3] === 0;
+    const [start, length] = range(tuple[0], tuple[1], unmappedProducerTail);
     return [start, length, ...tuple.slice(2)];
   });
   expected.mappings.push(...currentSource.addedMappings);

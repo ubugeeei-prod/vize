@@ -1,0 +1,79 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "producer": {
+    "sourceRevision": "28fcc198bfe1ba142bdab001ce550a70566bc22f",
+    "sourceTree": "cda1fc00b50f813fc8d3e1b50382f191fb5b6c53",
+    "pullRequestHead": "6f0a31207be9d22d0c9034d4672b9924c77040e1",
+    "binarySha256": "8308b2f3c9ed22f049e856b45a2ab90694281f85aae7285548fe26cf1d14d9d1",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42184342147,
+    "artifactId": 13486718873,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42184342147,
+    "job": 127781739992,
+    "id": 13486718873,
+    "digest": "sha256:c7c04ef9e9f3813d8dd1e7a5c200f383b404752a7c9cbac5b95a1b5f44edfce6",
+    "bytes": 430368
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-b13ee5096a47.json",
+    "bytes": 398819,
+    "sha256": "6c44e02ea3c1ad9e6bb18483359e5c0b9a764d22c661bf26bcba6a7b59825cd4"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 1882,
+      "sha256": "15ad5f78760d52c87c681138ceccac1d0db2309bed3307d008e85cfbed939137"
+    },
+    "source-use.json": {
+      "bytes": 3288,
+      "sha256": "3a48fed9c5176918a216c700fb966fe41c079b96ce1be47f0408f5c234a34619"
+    },
+    "consumer/source-launch.json": {
+      "bytes": 882,
+      "sha256": "10e48ec36c4456d90ab38a27165ec3d07b19f5be9198f873638a28ee927981da"
+    },
+    "consumer/source-protocol.json": {
+      "bytes": 456731,
+      "sha256": "f99f9730d19269b6bb76bd9000837ede8926f982b4c7ade9f5cf59a7aa6e9e1f"
+    },
+    "consumer/outcomes.json": {
+      "bytes": 802368,
+      "sha256": "b6fdc5731dba53e5984ddbbc5ee28432b29ec268118820e5f9e76683f6474c66"
+    },
+    "consumer/qualification.json": {
+      "bytes": 805862,
+      "sha256": "6c4d5c4f008ae29a35551a2a276b500fe85352b1128874f633952ae4ddf62e16"
+    },
+    "consumer/host-matrix.json": {
+      "bytes": 3797,
+      "sha256": "2cd0f69a3eeb600742f73fb6518801d1f6eb106c54761317978c6a7843801914"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified before accepting this successor population",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "hostMatrixRequired": false,
+    "totalOutcomes": 398,
+    "passedOutcomes": 318,
+    "gapCount": 80,
+    "gapPattern": "whole-packet for every 40-case LF and CRLF-Unicode transform"
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The generator elided one unused modern component instance alias from every complete transform. The exact source campaign retained all 80 postimages while semantic, protocol and mapping-geometry checks passed."
+  }
+}

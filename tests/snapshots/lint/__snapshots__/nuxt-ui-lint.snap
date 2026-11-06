@@ -76,7 +76,7 @@
     "messages": [
       {
         "ruleId": "a11y/interactive-supports-focus",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-interactive-supports-focus.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"gridcell\" must be focusable (add tabindex=\"0\")",
         "line": 385,
@@ -124,7 +124,7 @@
     "messages": [
       {
         "ruleId": "a11y/aria-role",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-aria-role.md",
         "severity": 2,
         "message": "[vize:a11y/aria-role] 'assistant' is not a valid ARIA role",
         "line": 353,
@@ -202,7 +202,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
         "line": 188,
@@ -213,7 +213,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
         "line": 189,
@@ -297,7 +297,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 63,
@@ -657,7 +657,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 253,
@@ -668,7 +668,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 280,
@@ -758,7 +758,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 547,
@@ -768,19 +768,8 @@
         "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
       },
       {
-        "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <tr> is a static element and should not have interactive event handlers",
-        "line": 547,
-        "column": 5,
-        "endLine": 566,
-        "endColumn": 6,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
         "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 646,
@@ -791,7 +780,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
-        "ruleDocsPath": "docs/content/rules/html.md",
+        "ruleDocsPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 656,
@@ -802,7 +791,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "src/runtime/components/Tabs.vue",
@@ -827,7 +816,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 135,
@@ -838,7 +827,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 135,
@@ -868,7 +857,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 91,
@@ -1108,7 +1097,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
         "line": 61,
@@ -1119,7 +1108,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleDocsPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
         "line": 65,
@@ -1130,7 +1119,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 107,
@@ -1141,7 +1130,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleDocsPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 107,
@@ -1183,7 +1172,7 @@
     "messages": [
       {
         "ruleId": "script/no-duplicate-attr-inheritance",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "ruleDocsPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
         "severity": 1,
         "message": "[vize:script/no-duplicate-attr-inheritance] Set \"inheritAttrs\" to false.",
         "line": 89,
@@ -1207,7 +1196,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleDocsPath": "docs/content/rules/reference/vue-no-unused-properties.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'src' is defined but never used",
         "line": 3,

@@ -124,6 +124,7 @@ test("the Nuxt consumer owns a complete current project and diagnostic triple", 
 
 test("the Nuxt LSP oracle checks the authored title binding, not hover alone", () => {
   const source = readRepoFile("tools/support/compat/npm/smoke-release-lsp-session.ts");
+  const refresh = readRepoFile("tools/support/compat/npm/smoke-release-lsp-file-refresh.ts");
   const viteOnly = source.slice(
     source.indexOf('if (projectShape === "vite")'),
     source.indexOf("template completion offers title"),
@@ -136,7 +137,19 @@ test("the Nuxt LSP oracle checks the authored title binding, not hover alone", (
   );
   assert.match(source, /definition of title reaches its script binding/);
   assert.match(source, /rename of title edits app\.vue/);
-  assert.match(source, /project-local Nuxt vize lsp \(hover, definition, completion, rename\)/);
+  assert.match(
+    source,
+    /project-local Nuxt vize lsp \(hover, definition, completion, rename, watched file refresh\)/,
+  );
+  assert.match(source, /runReleaseLspFileRefresh/);
+  assert.equal(refresh.includes("workspace/didRenameFiles"), false);
+  assert.match(refresh, /workspace\/didChangeWatchedFiles/);
+  assert.match(refresh, /created SFC clears its open importer/);
+  assert.match(refresh, /renamed TypeScript module invalidates the SFC/);
+  assert.match(refresh, /deleted TypeScript module invalidates the SFC/);
+  assert.match(refresh, /renamed SFC invalidates its open importer/);
+  assert.match(refresh, /deleted SFC invalidates its open importer/);
+  assert.match(refresh, /restored authored app has no stale lifecycle diagnostics/);
 });
 
 test("the packed Nuxt fixture deterministically owns the unsupported oxlint config", () => {

@@ -1,8 +1,9 @@
 //! The placement page paired with the graph-only `L3Page`.
 //!
-//! The graph page keeps the grammar the Lean reference parses; placements are
-//! an overlay, so they print on their own derived page. Parsing checks syntax
-//! only; whether a record is legal for its program is the verifier's call.
+//! The graph page keeps the grammar the independent reference parses;
+//! placements are an overlay, so they print on their own derived page. Parsing
+//! checks syntax only; whether a record is legal for its program is the
+//! verifier's call.
 
 use alloc::vec::Vec;
 use core::fmt;

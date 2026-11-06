@@ -23,7 +23,10 @@ use dependents::{
     invalidate_corsa_disk_state, versioned_open_typecheck_dependents,
 };
 #[cfg(all(test, feature = "native"))]
-use watched::{changes_invalidate_disk_project_state, user_watched_file_events};
+use watched::{
+    changes_invalidate_disk_project_state, changes_require_open_document_fallback,
+    user_watched_file_events,
+};
 
 #[cfg(feature = "native")]
 use tower_lsp::lsp_types::{
