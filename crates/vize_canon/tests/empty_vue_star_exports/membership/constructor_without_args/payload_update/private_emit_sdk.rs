@@ -89,6 +89,7 @@ mod tests {
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::listener_relations::source_before(path, current);
             let current = super::super::integrated_source::overload_before(path, current);
             authenticate(&source_before(path, current.clone()), &entry["before"]);
             for changed in [format!("{current}\n"), format!("{current}{current}")] {

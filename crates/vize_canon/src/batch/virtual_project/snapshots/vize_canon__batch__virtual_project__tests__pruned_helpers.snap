@@ -171,6 +171,10 @@ declare module "vize:virtual-ts" {
   export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 }
 declare module "vize:virtual-ts" {
+  type $ListenerMissing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
+  export type $ListenerArgs<__P, __K extends string | number | symbol, __Raw extends string | number | symbol = never> = __P extends { [__Q in __K]?: (...args: infer __A) => any } ? __A : __P extends { [__Q in __K]?: infer __H } ? [Extract<NonNullable<__H>, (...args: any) => any>] extends [never] ? $ListenerMissing<__P, __Raw> : Extract<NonNullable<__H>, (...args: any) => any> extends (...args: infer __A) => any ? __A : $ListenerMissing<__P, __Raw> : $ListenerMissing<__P, __Raw>;
+}
+declare module "vize:virtual-ts" {
 // Component usage helpers shared by every generated module in a batch project.
 export type IsAny<T> = $IsAny<T>;
 export type ComponentGlobalHtmlAttrs = $ComponentGlobalHtmlAttrs;
