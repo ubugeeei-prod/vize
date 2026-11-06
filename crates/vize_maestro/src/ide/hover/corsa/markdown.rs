@@ -64,7 +64,9 @@ impl HoverService {
 fn authored_setup_type_parameter(value: &str) -> Option<String> {
     let fenced = value.strip_prefix("```typescript\n")?;
     let (code, documentation) = fenced.split_once("\n```")?;
-    let (authored, generated) = code.split_once(" in __setup<")?;
+    let owner = setup_owner_delimiter(code)?;
+    let authored = code.get(..owner)?;
+    let generated = code.get(owner + " in __setup<".len()..)?;
     if !authored.starts_with("(type parameter) ")
         || !generated.contains("__vize_setup_props: $SetupProps;")
     {
@@ -77,6 +79,57 @@ fn authored_setup_type_parameter(value: &str) -> Option<String> {
     result.push_str("\n```");
     result.push_str(documentation);
     Some(result)
+}
+
+/// Find the generated owner outside authored TypeScript string literals. A
+/// constraint may itself contain the delimiter text, and the generated setup
+/// signature repeats that constraint after the real owner.
+fn setup_owner_delimiter(code: &str) -> Option<usize> {
+    const MARKER: &[u8] = b" in __setup<";
+    let bytes = code.as_bytes();
+    let mut quote = None;
+    let mut escaped = false;
+    let mut parentheses = 0_u32;
+    let mut brackets = 0_u32;
+    let mut braces = 0_u32;
+    let mut angles = 0_u32;
+    let mut offset = 0;
+
+    while offset < bytes.len() {
+        if let Some(delimiter) = quote {
+            if escaped {
+                escaped = false;
+            } else if bytes[offset] == b'\\' {
+                escaped = true;
+            } else if bytes[offset] == delimiter {
+                quote = None;
+            }
+            offset += 1;
+            continue;
+        }
+        if parentheses == 0
+            && brackets == 0
+            && braces == 0
+            && angles == 0
+            && bytes[offset..].starts_with(MARKER)
+        {
+            return Some(offset);
+        }
+        match bytes[offset] {
+            delimiter @ (b'\'' | b'"' | b'`') => quote = Some(delimiter),
+            b'(' => parentheses += 1,
+            b')' => parentheses = parentheses.saturating_sub(1),
+            b'[' => brackets += 1,
+            b']' => brackets = brackets.saturating_sub(1),
+            b'{' => braces += 1,
+            b'}' => braces = braces.saturating_sub(1),
+            b'<' => angles += 1,
+            b'>' => angles = angles.saturating_sub(1),
+            _ => {}
+        }
+        offset += 1;
+    }
+    None
 }
 
 fn is_bare_type(text: &str) -> bool {
@@ -112,6 +165,24 @@ mod tests {
         assert_eq!(
             HoverService::decorate_corsa_hover_markdown(native),
             "```typescript\n(type parameter) T extends Item\n```\n\nThe item type."
+        );
+    }
+
+    #[test]
+    fn setup_owner_text_inside_a_constraint_remains_authored() {
+        let native = "```typescript\n(type parameter) T extends \"before in __setup<after\" in __setup<T extends \"before in __setup<after\">(): {\n    __vize_setup_props: $SetupProps;\n}\n```";
+        assert_eq!(
+            HoverService::decorate_corsa_hover_markdown(native),
+            "```typescript\n(type parameter) T extends \"before in __setup<after\"\n```"
+        );
+    }
+
+    #[test]
+    fn nested_setup_owner_text_inside_a_constraint_remains_authored() {
+        let native = "```typescript\n(type parameter) T extends { [K in __setup<string>]: K } in __setup<T extends { [K in __setup<string>]: K }>(): {\n    __vize_setup_props: $SetupProps;\n}\n```";
+        assert_eq!(
+            HoverService::decorate_corsa_hover_markdown(native),
+            "```typescript\n(type parameter) T extends { [K in __setup<string>]: K }\n```"
         );
     }
 
