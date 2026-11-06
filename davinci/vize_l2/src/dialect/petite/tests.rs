@@ -20,6 +20,11 @@ fn scope_and_effect_keep_distinct_l2_meanings() {
     assert_eq!(scope.kind(), Kind::Scope);
     assert_eq!(scope.scope().unwrap().shape(), PetiteScopeShape::Object);
     assert!(matches!(scope.expression(), Some(ExprRef::Js(_))));
+    assert!(core::ptr::eq(
+        document.directive_at(Kind::Scope, scope.span()).unwrap(),
+        scope
+    ));
+    assert!(document.directive_at(Kind::Effect, scope.span()).is_none());
 
     let effect = directives.next().unwrap();
     assert_eq!(effect.kind(), Kind::Effect);

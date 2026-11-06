@@ -167,6 +167,21 @@ impl<'o, 'a> PetiteDocument<'o, 'a> {
         self.owner
     }
 
+    /// Resolve one authored callback frame without rescanning earlier directives.
+    #[must_use]
+    pub fn directive_at(
+        &self,
+        kind: PetiteDirectiveKind,
+        span: Span,
+    ) -> Option<&PetiteDirective<'a>> {
+        let index = self
+            .directives
+            .partition_point(|directive| directive.span.start < span.start);
+        self.directives
+            .get(index)
+            .filter(|directive| directive.kind == kind && directive.span == span)
+    }
+
     pub fn directives(&self) -> impl Iterator<Item = &PetiteDirective<'a>> {
         self.directives.iter()
     }
