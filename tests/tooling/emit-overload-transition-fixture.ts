@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
@@ -13,8 +14,9 @@ export const emitPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
 export const ownerPath =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-props.d.ts.txt";
+const preamblePath = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
 export const producerPaths = [
-  "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
+  preamblePath,
   "crates/vize_canon/src/virtual_ts/generator/emits.rs",
   "crates/vize_canon/tests/constructor_emission_projection.rs",
 ];
@@ -40,6 +42,12 @@ export function sourcePair() {
     }
     writeFileSync(path.join(destination, emitPath), before);
   }
+  const currentPreamble = readFileSync(path.join(root, preamblePath));
+  const listenerInclude = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
+  assert.equal(currentPreamble.toString().split(listenerInclude).length, 2);
+  const previousPreamble = Buffer.from(currentPreamble.toString().replace(listenerInclude, ""));
+  for (const destination of [base, head])
+    writeFileSync(path.join(destination, preamblePath), previousPreamble);
   const git = (...args: string[]) =>
     execFileSync(
       "git",
@@ -65,6 +73,7 @@ export function sourcePair() {
   git("commit", "--quiet", "-m", "test: retain the original helper image");
   const baseSha = git("rev-parse", "HEAD");
   writeFileSync(path.join(head, emitPath), after);
+  writeFileSync(path.join(head, preamblePath), currentPreamble);
   git("add", ".");
   git("commit", "--quiet", "-m", "test: retain the current helper image");
   return {
