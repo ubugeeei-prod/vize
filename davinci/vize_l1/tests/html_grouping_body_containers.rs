@@ -148,7 +148,7 @@ fn grouping_names_keep_wrong_mode_implied_end_and_vue_refusals() {
         ("<table><figure></figure></table>", "table"),
         ("<svg><figure></figure></svg>", "element"),
         ("<script><figure></figure></script>", "raw"),
-        ("<b><figure></figure></b>", "element"),
+        ("<b><figure></figure></b>", "ok"),
     ] {
         let source = cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
         let arena = Allocator::default();
@@ -157,7 +157,7 @@ fn grouping_names_keep_wrong_mode_implied_end_and_vue_refusals() {
             (expected, owner.html_structure()),
             ("implied", Err(DocumentHtmlRefusal::ImpliedEnd(_)))
                 | ("table", Err(DocumentHtmlRefusal::FosterParenting(_)))
-                | ("raw", Ok(_))
+                | ("raw" | "ok", Ok(_))
                 | ("element", Err(DocumentHtmlRefusal::UnsupportedElement(_)))
         ));
     }

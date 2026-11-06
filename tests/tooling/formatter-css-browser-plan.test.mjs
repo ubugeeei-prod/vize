@@ -10,6 +10,7 @@ import {
 
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
 const foreignContentBrowser = "tests/tooling/davinci-document-foreign-content.test.ts";
+const phrasingBrowser = "tests/tooling/davinci-document-phrasing.test.ts";
 const selectBrowser = "tests/tooling/davinci-document-select.test.ts";
 const specialTextBrowser = "tests/tooling/davinci-document-special-text.test.ts";
 const others = Array.from({ length: 40 }, (_, index) => `tests/tooling/${index}.test.mjs`);
@@ -19,6 +20,7 @@ await test("only the selected browser-owning runner needs Chromium, with complet
   for (const selectedBrowser of [
     browser,
     foreignContentBrowser,
+    phrasingBrowser,
     selectBrowser,
     specialTextBrowser,
   ]) {

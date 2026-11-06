@@ -178,16 +178,15 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
 }
 
 #[test]
-fn formatting_and_template_content_are_explicit() {
-    for body in ["<b></b>", "<template></template>"] {
-        let source = source(body);
-        let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
-        assert!(
-            matches!(owner.html_structure(), Err(Refusal::UnsupportedElement(_))),
-            "{body}"
-        );
-    }
+fn template_content_remains_explicit() {
+    let body = "<template></template>";
+    let source = source(body);
+    let allocator = Allocator::default();
+    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    assert!(matches!(
+        owner.html_structure(),
+        Err(Refusal::UnsupportedElement(_))
+    ));
 }
 
 #[test]

@@ -1,0 +1,295 @@
+[
+  {
+    "name": "semantic phrasing siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><abbr>a</abbr><bdi>ב</bdi><bdo dir=\"rtl\">x</bdo><cite>c</cite><data value=\"1\">d</data><dfn>e</dfn><kbd>k</kbd><mark>m</mark><q>q</q><samp>s</samp><sub>u</sub><sup>p</sup><time datetime=\"2026-11-06\">t</time><var>v</var></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["abbr", "html", 2, []],
+      ["bdi", "html", 2, []],
+      ["bdo", "html", 2, [["dir", "rtl"]]],
+      ["cite", "html", 2, []],
+      ["data", "html", 2, [["value", "1"]]],
+      ["dfn", "html", 2, []],
+      ["kbd", "html", 2, []],
+      ["mark", "html", 2, []],
+      ["q", "html", 2, []],
+      ["samp", "html", 2, []],
+      ["sub", "html", 2, []],
+      ["sup", "html", 2, []],
+      ["time", "html", 2, [["datetime", "2026-11-06"]]],
+      ["var", "html", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "abbr"],
+          [1, "bdi"],
+          [1, "bdo"],
+          [1, "cite"],
+          [1, "data"],
+          [1, "dfn"],
+          [1, "kbd"],
+          [1, "mark"],
+          [1, "q"],
+          [1, "samp"],
+          [1, "sub"],
+          [1, "sup"],
+          [1, "time"],
+          [1, "var"]
+        ]
+      ],
+      ["abbr", [[3, "a"]]],
+      ["bdi", [[3, "ב"]]],
+      ["bdo", [[3, "x"]]],
+      ["cite", [[3, "c"]]],
+      ["data", [[3, "d"]]],
+      ["dfn", [[3, "e"]]],
+      ["kbd", [[3, "k"]]],
+      ["mark", [[3, "m"]]],
+      ["q", [[3, "q"]]],
+      ["samp", [[3, "s"]]],
+      ["sub", [[3, "u"]]],
+      ["sup", [[3, "p"]]],
+      ["time", [[3, "t"]]],
+      ["var", [[3, "v"]]]
+    ]
+  },
+  {
+    "name": "formatting siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><a href=\"x\">a</a><b>b</b><big>g</big><code>c</code><em>e</em><font color=\"red\">f</font><i>i</i><nobr>n</nobr><s>s</s><small>m</small><strike>r</strike><strong>o</strong><tt>t</tt><u>u</u></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["a", "html", 2, [["href", "x"]]],
+      ["b", "html", 2, []],
+      ["big", "html", 2, []],
+      ["code", "html", 2, []],
+      ["em", "html", 2, []],
+      ["font", "html", 2, [["color", "red"]]],
+      ["i", "html", 2, []],
+      ["nobr", "html", 2, []],
+      ["s", "html", 2, []],
+      ["small", "html", 2, []],
+      ["strike", "html", 2, []],
+      ["strong", "html", 2, []],
+      ["tt", "html", 2, []],
+      ["u", "html", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "a"],
+          [1, "b"],
+          [1, "big"],
+          [1, "code"],
+          [1, "em"],
+          [1, "font"],
+          [1, "i"],
+          [1, "nobr"],
+          [1, "s"],
+          [1, "small"],
+          [1, "strike"],
+          [1, "strong"],
+          [1, "tt"],
+          [1, "u"]
+        ]
+      ],
+      ["a", [[3, "a"]]],
+      ["b", [[3, "b"]]],
+      ["big", [[3, "g"]]],
+      ["code", [[3, "c"]]],
+      ["em", [[3, "e"]]],
+      ["font", [[3, "f"]]],
+      ["i", [[3, "i"]]],
+      ["nobr", [[3, "n"]]],
+      ["s", [[3, "s"]]],
+      ["small", [[3, "m"]]],
+      ["strike", [[3, "r"]]],
+      ["strong", [[3, "o"]]],
+      ["tt", [[3, "t"]]],
+      ["u", [[3, "u"]]]
+    ]
+  },
+  {
+    "name": "deep formatting ancestry",
+    "source": "<!DOCTYPE html><html><head></head><body><p><a href=\"#x\"><b><i><strong>A&amp;B</strong></i></b></a><span>Z</span></p></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["p", "html", 2, []],
+      ["a", "html", 3, [["href", "#x"]]],
+      ["b", "html", 4, []],
+      ["i", "html", 5, []],
+      ["strong", "html", 6, []],
+      ["span", "html", 3, []]
+    ],
+    "nodes": [
+      ["body", [[1, "p"]]],
+      [
+        "p",
+        [
+          [1, "a"],
+          [1, "span"]
+        ]
+      ],
+      ["a", [[1, "b"]]],
+      ["b", [[1, "i"]]],
+      ["i", [[1, "strong"]]],
+      ["strong", [[3, "A&B"]]],
+      ["span", [[3, "Z"]]]
+    ]
+  },
+  {
+    "name": "folded attributes comments and text",
+    "source": "<!DOCTYPE html><html><head></head><body><ABBR DATA-X=\"a&amp;b\" data-x=ignored>雪<!--&amp;-->\nX<MARK>M</mArK></aBbR></body></html>",
+    "legacyErrors": ["DuplicateAttribute"],
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["abbr", "html", 2, [["data-x", "a&b"]]],
+      ["mark", "html", 3, []]
+    ],
+    "legacyElements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      [
+        "abbr",
+        "html",
+        2,
+        [
+          ["data-x", "a&b"],
+          ["data-x", "ignored"]
+        ]
+      ],
+      ["mark", "html", 3, []]
+    ],
+    "nodes": [
+      ["body", [[1, "abbr"]]],
+      [
+        "abbr",
+        [
+          [3, "雪"],
+          [8, "&amp;"],
+          [3, "\nX"],
+          [1, "mark"]
+        ]
+      ],
+      ["mark", [[3, "M"]]]
+    ]
+  },
+  {
+    "name": "repeated well nested formatting",
+    "source": "<!DOCTYPE html><html><head></head><body><b><b>x</b>y</b><a><span>z</span></a><nobr><em>n</em></nobr></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["b", "html", 2, []],
+      ["b", "html", 3, []],
+      ["a", "html", 2, []],
+      ["span", "html", 5, []],
+      ["nobr", "html", 2, []],
+      ["em", "html", 7, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "b"],
+          [1, "a"],
+          [1, "nobr"]
+        ]
+      ],
+      [
+        "b",
+        [
+          [1, "b"],
+          [3, "y"]
+        ]
+      ],
+      ["b", [[3, "x"]]],
+      ["a", [[1, "span"]]],
+      ["span", [[3, "z"]]],
+      ["nobr", [[1, "em"]]],
+      ["em", [[3, "n"]]]
+    ]
+  },
+  {
+    "name": "formatting in a table cell",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><strong><code>x</code></strong></td></tr></tbody></table></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["table", "html", 2, []],
+      ["tbody", "html", 3, []],
+      ["tr", "html", 4, []],
+      ["td", "html", 5, []],
+      ["strong", "html", 6, []],
+      ["code", "html", 7, []]
+    ],
+    "nodes": [
+      ["body", [[1, "table"]]],
+      ["table", [[1, "tbody"]]],
+      ["tbody", [[1, "tr"]]],
+      ["tr", [[1, "td"]]],
+      ["td", [[1, "strong"]]],
+      ["strong", [[1, "code"]]],
+      ["code", [[3, "x"]]]
+    ]
+  },
+  {
+    "name": "formatting around special text",
+    "source": "<!DOCTYPE html><html><head></head><body><b><textarea>&amp;<i></textarea></b><em><style>T&amp;<b></style></em></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["b", "html", 2, []],
+      ["textarea", "html", 3, []],
+      ["em", "html", 2, []],
+      ["style", "html", 5, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "b"],
+          [1, "em"]
+        ]
+      ],
+      ["b", [[1, "textarea"]]],
+      ["textarea", [[3, "&<i>"]]],
+      ["em", [[1, "style"]]],
+      ["style", [[3, "T&amp;<b>"]]]
+    ]
+  },
+  {
+    "name": "formatting at an SVG integration point",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><b><i>x</i></b></foreignObject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["b", "html", 4, []],
+      ["i", "html", 5, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      ["foreignObject", [[1, "b"]]],
+      ["b", [[1, "i"]]],
+      ["i", [[3, "x"]]]
+    ]
+  }
+]
