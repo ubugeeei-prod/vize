@@ -37,7 +37,8 @@ env:
   # Extra lint arguments and the tasks the profile job records.
   LINTFMT_BENCH_PROFILE_LINT_ARGS: "--no-config --preset ecosystem"
   LINTFMT_BENCH_PROFILE_TASKS: "lint"
-  LINTFMT_BENCH_BASE: ""
+  # #11672 compares the directory-lock successor against the exact no-fsync base.
+  LINTFMT_BENCH_BASE: "537bf2b2d9637ae38e5c10d59ea956cbc33a1525"
   LINTFMT_BENCH_VERIFY: "-p vize_patina -p vize_glyph"
 
 jobs:
