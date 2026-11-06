@@ -4,7 +4,10 @@ import {
   observeHistoricalTerminalStderr,
   observeUnavailableTerminalStableStderr,
 } from "./support/native-beta-dto/terminal-stderr-unavailable.ts";
-import { requireNoUnknownNativeWrites } from "./support/native-beta-dto/native-io.ts";
+import {
+  requireNoUnknownNativeWrites,
+  type NativeTimedObservation,
+} from "./support/native-beta-dto/native-io.ts";
 import {
   historicalSource,
   stableImageSha256,
@@ -134,15 +137,16 @@ function fixture() {
       { tid: 41, file: "syscalls.41", line: 28, at: at(16), raw: `${at(16)} ???( ` },
     ],
   };
+  const eof: Array<NativeTimedObservation & { fd: number }> = [
+    { tid: 43, fd: 0, at: at(9), line: 0, completion: { returnedAt: at(9), returnedBy: null } },
+  ];
   return {
     context,
     client,
     server,
     stderr,
     terminal,
-    eof: [
-      { tid: 43, fd: 0, at: at(9), line: 0, completion: { returnedAt: at(9), returnedBy: null } },
-    ],
+    eof,
   };
 }
 function observe(
@@ -238,6 +242,7 @@ test("unavailable cancellation keeps the completed stderr watch log as separate 
   assert.equal(result.completedStderr.bytes, Buffer.byteLength(header) + 32);
   assert.equal(result.attemptedStderr.rawResult, "? <unavailable>");
   assert.equal(result.attemptedStderr.deliveredBytes, null);
+  assert.ok("eofReturnOrder" in result);
   assert.equal(result.eofReturnOrder, "UNPROVEN");
   assert.equal(result.registrationPass, false);
   assert.equal(result.lifecyclePass, false);

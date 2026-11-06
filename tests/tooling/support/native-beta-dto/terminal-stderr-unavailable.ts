@@ -107,8 +107,10 @@ export function observeUnavailableTerminalStableStderr(
   } else {
     assert.notEqual(eof.tid, attempt.tid);
     assert.equal(eof.tid, group.tid);
-    assert.equal(eof.completion.returnedAt, null);
-    const upper = eof.completion.returnedBy;
+    const completion = eof.completion;
+    assert.ok(completion, "owned EOF completion bound required");
+    assert.equal(completion.returnedAt, null);
+    const upper = completion.returnedBy;
     assert.ok(upper && upper.basis === "next-same-thread-event");
     assert.equal(upper.at, group.at);
     assert.equal(upper.line, group.line);
