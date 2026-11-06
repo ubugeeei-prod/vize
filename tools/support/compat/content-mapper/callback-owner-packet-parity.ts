@@ -243,11 +243,20 @@ function listenerRelationEdits(original: string, actual: string): Edit[] {
       actual.startsWith(library, blockEnd),
       "listener relations immediately precede their owner",
     );
+    const block = actual.slice(match.index, blockEnd);
+    const preservedAt = original.indexOf(block);
+    if (preservedAt >= 0) {
+      assert.equal(
+        original.indexOf(block, preservedAt + 1),
+        -1,
+        "the preserved listener relations are unambiguous",
+      );
+      continue;
+    }
     const insertion = original.indexOf(library);
     assert.ok(insertion >= 0, "the original listener owner remains present");
     assert.equal(original.indexOf(library, insertion + 1), -1, "the listener owner is unambiguous");
     assert.equal(original.includes(`${indent}type ${missing}<`), false);
-    const block = actual.slice(match.index, blockEnd);
     edits.push({
       start: Buffer.byteLength(original.slice(0, insertion)),
       end: Buffer.byteLength(original.slice(0, insertion)),

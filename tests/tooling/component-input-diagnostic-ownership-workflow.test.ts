@@ -189,6 +189,12 @@ test("callback packets certify only the complete local listener relation transit
   const before = packet(beforeText),
     after = packet(afterText);
   assertPreservedCallbackPacket(before, after, authored);
+  const preservedBefore = packet(afterText.replace(currentSlotsExport, previousSlotsExport));
+  assertPreservedCallbackPacket(
+    { ...preservedBefore, mappings: preservedBefore.mappings.slice(0, 1) },
+    { ...after, mappings: after.mappings.slice(0, 1) },
+    "mapped",
+  );
   for (const mutation of [
     { ...after, text: after.text.replace("[__Raw] extends [never]", "[__Raw] extends [unknown]") },
     { ...after, text: after.text.replace(`${args}<__P, "onSave", never>`, "unknown[]") },
