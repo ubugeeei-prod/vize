@@ -123,7 +123,7 @@ emit('keepOriginal');
                         "column": 6,
                         "endLine": 12,
                         "endColumn": 20,
-                        "help": "Rename this emitted event to kebab-case (e.g. transition-start)."
+                        "help": "Rename this emitted event to kebab-case (e.g. my-event)."
                     }
                 ],
                 "errorCount": 2,
