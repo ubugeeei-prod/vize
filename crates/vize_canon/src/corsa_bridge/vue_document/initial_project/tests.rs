@@ -231,7 +231,6 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
         .unwrap();
     let canon_root = current.session_project_root.as_deref().unwrap();
     current
-        .host
         .source_catalog
         .extend_native_project_document_batch(canon_root, &mut current.documents);
     let bytes = read_config(&current).unwrap();

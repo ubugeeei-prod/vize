@@ -254,7 +254,6 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
             .unwrap();
             let prior_root = prior.session_project_root.as_ref().unwrap();
             prior
-                .host
                 .source_catalog
                 .extend_native_project_document_batch(prior_root, &mut prior.documents);
             client
@@ -292,7 +291,6 @@ fn actual_memberless_vue_preparation_reattaches_same_editor_owner() {
         .unwrap();
         let materialized_root = project.session_project_root.as_ref().unwrap();
         project
-            .host
             .source_catalog
             .extend_native_project_document_batch(materialized_root, &mut project.documents);
         client
