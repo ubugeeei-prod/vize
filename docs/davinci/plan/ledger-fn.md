@@ -219,6 +219,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `script/prefer-use-attrs`
 - `script/prefer-use-slots`
 - `script/require-default-prop`
+- `script/require-define-component`
 - `script/require-function-return-type`
 - `script/require-prop-type-constructor`
 - `script/require-prop-types`

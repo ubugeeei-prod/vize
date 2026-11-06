@@ -13,6 +13,7 @@ export function loadCurrentCorpus(root) {
   );
   const inverse = structuredClone(current);
   withoutDefaultBindStyle(inverse);
+  withoutDefaultPropsDestructuring(inverse);
   for (const [index, id, start, end, lspStart, lspEnd] of [
     [0, "sync", 18, 37, 18, 37],
     [2, "slot-scope", 28, 38, 28, 38],
@@ -68,5 +69,29 @@ export function withoutDefaultBindStyle(packet) {
     const kept = row[key].filter((entry) => (entry.rule_name ?? entry.code) !== "vue/v-bind-style");
     assert.equal(kept.length, row[key].length - 1, key);
     row[key] = kept;
+  }
+}
+
+// The props destructuring happy-path default was promoted after the frozen
+// correctness corpus. Remove only its three newly observed macro witnesses
+// when proving the complete historical inverse.
+export function withoutDefaultPropsDestructuring(packet) {
+  const ids = new Set(["macro-import", "macro-valid", "macro-comment"]);
+  for (const row of packet.cases) {
+    if (!ids.has(row.id)) continue;
+    for (const [field, identity] of [
+      ["diagnostics", "rule_name"],
+      ["essentialDiagnostics", "rule_name"],
+      ["baselineDiagnostics", "rule_name"],
+      ["lspDiagnostics", "code"],
+      ["baselineLspDiagnostics", "code"],
+    ]) {
+      if (!row[field]) continue;
+      const kept = row[field].filter(
+        (entry) => entry[identity] !== "script/define-props-destructuring",
+      );
+      assert.equal(kept.length, row[field].length - 1, `${row.id} / ${field}`);
+      row[field] = kept;
+    }
   }
 }

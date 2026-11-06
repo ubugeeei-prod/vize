@@ -23,7 +23,10 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
   const original = JSON.parse(
     fs.readFileSync(path.join(fixture, "original-vue-select-successor.json")),
   );
-  const focusedRules = { "script/require-define-component": "off" };
+  const focusedRules = {
+    "script/require-define-component": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
   const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   original.source = fs.readFileSync(path.join(fixture, original.sourceFile), "utf8");
   assert.equal(corpus.cases.length, 24);

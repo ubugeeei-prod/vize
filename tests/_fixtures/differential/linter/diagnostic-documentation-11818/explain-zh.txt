@@ -1845,12 +1845,12 @@ script/custom-event-name-casing · lint 规则
 文档: docs/content/rules/reference/script-custom-event-name-casing.md
 
 错误示例:
-  const emit = defineEmits(['my-event'])
-  emit('my-event')         // kebab-case → report
+  const emit = defineEmits(['transitionStart'])
+  emit('transitionStart')         // camelCase → report
 
 正确示例:
-  const emit = defineEmits(['myEvent'])
-  emit('myEvent')
+  const emit = defineEmits(['transitionstart'])
+  emit('transitionstart')
 === script/define-emits-declaration
 script/define-emits-declaration · lint 规则
 强制使用基于类型的 defineEmits<{}>() 形式，而不是运行时/数组形式
@@ -1938,7 +1938,7 @@ script/define-props-destructuring · lint 规则
 文档: docs/content/rules/reference/script-define-props-destructuring.md
 
 错误示例:
-  const props = defineProps<{ foo: string }>()
+  defineProps<{ foo: string }>()
 
 正确示例:
   const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
@@ -3254,6 +3254,37 @@ script/require-default-prop · lint 规则
       id: { type: Number, required: true },
     }
   }
+=== script/require-define-component
+script/require-define-component · lint 规则
+要求 TypeScript SFC 的默认导出使用 defineComponent()
+
+精度层级: exact
+适用范围: the syntax of <script> and <script setup> programs, without type information
+严重级别: 错误
+类别: script
+自动修复: 不支持
+文档: docs/content/rules/reference/script-require-define-component.md
+
+错误示例:
+  <script lang="ts">
+  export default {
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  }
+  </script>
+
+正确示例:
+  <script lang="ts">
+  import { defineComponent } from 'vue'
+  export default defineComponent({
+    props: { count: Number },
+    mounted() {
+      console.log(this.count)
+    }
+  })
+  </script>
 === script/require-explicit-emits
 script/require-explicit-emits · lint 规则
 要求在 defineEmits 或 emits 选项中声明所触发的事件

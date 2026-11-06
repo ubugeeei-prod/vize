@@ -18,7 +18,10 @@ await test("setup emits validators preserve compiler ownership and complete CLI 
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json"), "utf8"),
   );
-  const focusedRules = { "vue/no-unused-setup-bindings": "off" };
+  const focusedRules = {
+    "script/require-define-component": "off",
+    "vue/no-unused-setup-bindings": "off",
+  };
   const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";
   assert.equal(corpus.cases.length, 51);
   assert.equal(Object.keys(projection.linter.rules).length, 51);

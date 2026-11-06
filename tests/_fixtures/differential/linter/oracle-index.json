@@ -189,7 +189,7 @@
   },
   "linter/current-api/shared-rule-options-9876": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__shared-rule-options-9876.snap",
-    "sha256": "e09030554f0c1b0758a6106dec91268c9b61339c6c77ceeaef4dffcd71fb245f"
+    "sha256": "4fcc11e21f6c303b368ce054d23abc51704fa2a8a304c6176493060d52aabbc5"
   },
   "linter/current-api/patina-rule-guards-9870-9871": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__patina-rule-guards-9870-9871.snap",
