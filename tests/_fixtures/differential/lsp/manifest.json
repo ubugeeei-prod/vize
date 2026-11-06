@@ -3860,6 +3860,51 @@
       }
     },
     {
+      "id": "lsp/regression/setup-export-diagnostic-11497",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "setup-export-diagnostic-11497",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "1f87381395a4ac20ef610cdbac8c8004fe6159bfba359edfb309ce9ee7fbff00"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+          }
+        ]
+      },
+      "case": {
+        "path": "setup-export-diagnostic-11497/case.json",
+        "sha256": "07cbcd6910c7a3cdd79202ae6732e998d297c2eec3e6636776357597d7b769ef"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies; exact authored TS1184 source mapping in the typecheck-enabled LSP publication."
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/stylus-colors-10442",
       "state": "active",
       "targets": [

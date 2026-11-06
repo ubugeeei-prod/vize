@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "lsp/regression/setup-export-diagnostic-11497",
+  "provenance": {
+    "fixCommit": "107cfd62dd461ae6906ca817e8449d34e619cbb3",
+    "issue": 11497,
+    "witnessPath": "crates/vize/tests/check_generic_dependent_scope_cli.rs",
+    "witnessTest": "generic_alias_dependents_are_not_unused_module_copies",
+    "inputOrigin": "Minimal authored script-setup export reproduction from the issue's setup export diagnostic contract.",
+    "contractOrigin": "The exact typecheck-only TS1184 packet maps the generated setup-function diagnostic back to the authored export token."
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "1f87381395a4ac20ef610cdbac8c8004fe6159bfba359edfb309ce9ee7fbff00"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 0
+        },
+        "end": {
+          "line": 1,
+          "character": 6
+        }
+      },
+      "severity": 1,
+      "code": 1184,
+      "source": "vize/types",
+      "message": "Modifiers cannot appear here."
+    }
+  ],
+  "method": "textDocument/documentColor",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "scope": "The exact authored TS1184 publication is the regression contract; the empty color result is only a completed-request barrier."
+}
