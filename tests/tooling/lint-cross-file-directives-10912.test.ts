@@ -149,7 +149,7 @@ void test("cross-file directives share authored ranges, actual suppression, unus
         line: 4,
         column: 1,
         endLine: 4,
-        endColumn: 46,
+        endColumn: 45,
         help: "Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity.",
       });
     }
