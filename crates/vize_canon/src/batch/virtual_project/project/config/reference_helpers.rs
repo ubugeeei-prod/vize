@@ -54,6 +54,49 @@ fn plain_ts_to_vue_to_plain_ts_updates_shared_helpers() {
 }
 
 #[test]
+fn editor_projects_materialize_one_shared_helper_program() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    let first = root.join("First.vue");
+    let second = root.join("Second.vue");
+    let source = |name: &str| {
+        vize_carton::cstr!(
+            "<script setup lang=\"ts\">const {name} = 1;</script><template>{{{{ {name} }}}}</template>\n"
+        )
+    };
+    std::fs::write(&first, source("first").as_str()).unwrap();
+    std::fs::write(&second, source("second").as_str()).unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.set_editor_document_options(Default::default());
+    project
+        .register_paths(&[first.clone(), second.clone()])
+        .unwrap();
+
+    for path in [&first, &second] {
+        let generated = &project.find_by_original(path).unwrap().content;
+        assert!(generated.contains("Shared preamble hoisted"));
+        assert!(!generated.contains("type $IsUnion<"));
+    }
+
+    project.materialize().unwrap();
+    let helpers = project.shared_helpers_path();
+    assert_eq!(
+        std::fs::read_to_string(&helpers).unwrap(),
+        crate::virtual_ts::SHARED_PREAMBLE_DTS,
+    );
+    let config: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(project.generated_tsconfig_path()).unwrap()).unwrap();
+    assert!(
+        config["include"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|entry| entry == "__vize_helpers.d.ts")
+    );
+}
+
+#[test]
 fn nested_config_owns_the_same_helpers_in_cold_sharded_and_incremental_views() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path().canonicalize().unwrap();
