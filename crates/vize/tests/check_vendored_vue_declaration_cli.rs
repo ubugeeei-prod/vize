@@ -27,6 +27,21 @@ const PROBE: &str = include_str!(concat!(
 ));
 const PROBE_TAG: &str = r#"<Foo :count="'x'" />"#;
 
+const AUTHORED_VUE_TS_CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/tsconfig.json.txt"
+));
+
+const AUTHORED_VUE_TS_FOO: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/Foo.vue.txt"
+));
+
+const AUTHORED_VUE_TS_PROBE: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/authored-vue-ts-declaration-11539/Probe.vue.txt"
+));
+
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -67,6 +82,14 @@ fn vue_tsc(dir: &Path) -> Command {
 
 /// `(line, column, code)` from `vue-tsc --pretty false` and from `vize check`.
 fn diagnostics(corsa: &Path, dir: &Path) -> [Vec<(u32, u32, u32)>; 2] {
+    diagnostics_with_file_count(corsa, dir, 1)
+}
+
+fn diagnostics_with_file_count(
+    corsa: &Path,
+    dir: &Path,
+    expected_file_count: usize,
+) -> [Vec<(u32, u32, u32)>; 2] {
     let (reference_code, reference) =
         run(vue_tsc(dir).args(["--noEmit", "-p", "tsconfig.json", "--pretty", "false"]));
     let reference: Vec<(u32, u32, u32)> = reference
@@ -86,7 +109,8 @@ fn diagnostics(corsa: &Path, dir: &Path) -> [Vec<(u32, u32, u32)>; 2] {
         .args(["check", "--format", "json"])
         .output()
         .unwrap();
-    let checked = checked_report::diagnostic_sites(&output.stdout);
+    let checked =
+        checked_report::diagnostic_sites_with_file_count(&output.stdout, expected_file_count);
     // A crashed checker must not pass for a clean one.
     assert_eq!(
         reference_code,
@@ -170,6 +194,55 @@ fn consumers_of_emitted_component_declarations_report_vue_tsc_diagnostics() {
             assert_eq!(&checked, expected, "vize check {emitter} {id}");
         }
     }
+}
+
+/// #11539: an explicit authored `.vue.ts` import must use TypeScript's
+/// declaration substitution even when the sibling SFC owns a generated mirror
+/// with the same spelling.
+#[test]
+fn authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror() {
+    let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(None) else {
+        return;
+    };
+    let dir = tempfile::Builder::new()
+        .prefix("authored-vue-ts-declaration-11539-")
+        .tempdir()
+        .unwrap();
+    let producer = dir.path().join("producer");
+    project(
+        &producer,
+        AUTHORED_VUE_TS_CONFIG,
+        &[("src/Foo.vue", AUTHORED_VUE_TS_FOO)],
+    );
+    let (code, emitted) = run(Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&producer)
+        .env("CORSA_PATH", &corsa)
+        .args(["check", "--declaration", "--declaration-dir", "../emitted"])
+        .arg("src/Foo.vue"));
+    assert_eq!(code, Some(0), "{emitted}");
+
+    let consumer = dir.path().join("consumer");
+    project(
+        &consumer,
+        AUTHORED_VUE_TS_CONFIG,
+        &[
+            ("src/Probe.vue", AUTHORED_VUE_TS_PROBE),
+            ("src/Foo.vue", AUTHORED_VUE_TS_FOO),
+        ],
+    );
+    for entry in fs::read_dir(dir.path().join("emitted")).unwrap() {
+        let entry = entry.unwrap().path();
+        fs::copy(
+            &entry,
+            consumer.join("src").join(entry.file_name().unwrap()),
+        )
+        .unwrap();
+    }
+
+    let expected = vec![(6, 9, 2322)];
+    let [reference, checked] = diagnostics_with_file_count(&corsa, &consumer, 2);
+    assert_eq!(reference, expected, "vue-tsc authored .vue.ts");
+    assert_eq!(checked, expected, "vize check authored .vue.ts");
 }
 
 /// A `.ts` spelling that TypeScript substitutes with a declaration must keep

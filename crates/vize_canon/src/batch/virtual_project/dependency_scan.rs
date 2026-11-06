@@ -14,10 +14,10 @@
 //! but keep them inferred rather than adding them as ambient program roots
 //! (see [`is_declaration_file`]).
 //!
-//! Specifiers are collected from the *generated* content (always valid TS,
-//! one collector for `.vue` and script files alike) and resolved against the
-//! *original* file's directory; a `.vue.ts` spelling the import rewriter
-//! produced is folded back to `.vue` first. Resolution covers relative
+//! Specifiers are collected from valid TypeScript projections and resolved
+//! against the *original* file's directory. Only generated Vue projections
+//! fold their `.vue.ts` mirror spelling back to `.vue`; authored TypeScript
+//! keeps a literal `.vue.ts` identity. Resolution covers relative
 //! specifiers and tsconfig `paths` aliases — the shapes the monorepo defect
 //! reproduces with; bare workspace-package specifiers resolve only through
 //! their `paths` alias today.
@@ -41,14 +41,16 @@ mod package_roots;
 mod references;
 pub(super) use references::path_references;
 mod resolution;
+mod source_resolution;
 use package_roots::PackageRoots;
-#[cfg(test)]
-use resolution::probe_candidates;
 use resolution::{
     alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
     may_resolve_a_dependency,
 };
-pub(crate) use resolution::{resolve_dependency, resolve_dependency_with_inputs};
+pub(crate) use resolution::{
+    probe_candidates, resolve_dependency, resolve_dependency_with_inputs,
+    resolve_generated_dependency, resolve_generated_dependency_with_inputs,
+};
 
 type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
 
@@ -209,7 +211,7 @@ impl VirtualProject {
 
         while let Some(importer) = queue.pop() {
             vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
-            let Some((virtual_content, virtual_path, references)) =
+            let Some((virtual_content, virtual_path, references, generated_vue)) =
                 self.find_by_original(&importer).map(|file| {
                     let content = self.walked_source(file);
                     vize_carton::micro_count!("canon.dependency_scan.content.clone.calls", 1);
@@ -232,6 +234,7 @@ impl VirtualProject {
                         ),
                         file.virtual_path.clone(),
                         self.walked_references(file, content),
+                        file.source_map.sfc_map.is_some(),
                     )
                 })
             else {
@@ -319,7 +322,7 @@ impl VirtualProject {
                 let native_target = if is_reference {
                     resolution::probe_candidates(&importer_dir.join(&specifier))
                 } else {
-                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases)
+                    self.resolve_source_dependency(&importer, generated_vue, &specifier, &aliases)
                 };
                 let Some(target) = native_target else {
                     if !is_reference && let Some(resolve) = package_resolver.as_deref_mut() {

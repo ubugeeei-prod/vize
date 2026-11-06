@@ -12556,6 +12556,45 @@
       }
     },
     {
+      "id": "typechecker/regression/authored-vue-ts-declaration-11539",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "authored-vue-ts-declaration-11539/Foo.vue.txt",
+          "sha256": "a5a05e4cf723919af42c1f7d9b8f1ebe6162ea3ccd269d3a5e263d68c47c2267",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "authored-vue-ts-declaration-11539/Probe.vue.txt",
+          "sha256": "34ec07f8c72e4f9a19e81fffab802fb9a2b62813a6b19031e920165b879e5291",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "authored-vue-ts-declaration-11539/tsconfig.json.txt",
+          "sha256": "450d84bcc6cf04c2df44168559d363f6285c5b5a9eb7471efffdf11fbfa5c4af",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_vendored_vue_declaration_cli::authored_vue_ts_imports_do_not_collapse_into_the_sfc_mirror; #11539 explicit Foo.vue.ts import beside Foo.vue and an emitted Foo.vue.d.ts retains TS2322 parity with vue-tsc. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/capture-free-component-instance-11699",
       "state": "active",
       "targets": [

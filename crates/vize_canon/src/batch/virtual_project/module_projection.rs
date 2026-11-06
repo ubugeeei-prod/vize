@@ -27,7 +27,14 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
-        if !self.jsx_typecheck && !self.virtual_files.values().any(is_denied_javascript_sfc) {
+        let authored_vue_ts = self
+            .source_artifacts
+            .values()
+            .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty());
+        if !self.jsx_typecheck
+            && !authored_vue_ts
+            && !self.virtual_files.values().any(is_denied_javascript_sfc)
+        {
             self.finalize_declaration_imports();
             return;
         }
@@ -55,12 +62,7 @@ impl VirtualProject {
                         )
                         .0;
                     let resolver = |specifier: &str, mode| {
-                        let path = super::dependency_scan::resolve_dependency(
-                            specifier,
-                            file.original_path.parent()?,
-                            &self.project_root,
-                            &aliases,
-                        );
+                        let path = self.resolve_file_dependency(file, specifier, &aliases);
                         let target = path.as_ref().and_then(|path| {
                             self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(
                                 path,
@@ -75,6 +77,14 @@ impl VirtualProject {
                         // Projection must not turn an invalid authored edge valid.
                         if requires_explicit_extension(specifier, mode, &context) {
                             return None;
+                        }
+                        if let Some(path) = path.as_deref()
+                            && crate::batch::declaration_path::is_declaration_file(path)
+                        {
+                            let identity =
+                                target.map_or(path, |target| target.virtual_path.as_path());
+                            let path = crate::batch::declaration_module_path(identity);
+                            return Some(path.to_string_lossy().replace('\\', "/"));
                         }
                         let target = target?;
                         is_lowered_jsx(target)

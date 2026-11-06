@@ -5,6 +5,7 @@ use std::path::Path;
 use vize_carton::{String, cstr};
 
 use super::virtual_rewrite::append_extension;
+use crate::batch::virtual_project::dependency_scan::probe_candidates;
 use crate::batch::virtual_specifier_message::{
     AUTHORED_VUE_TS_ALIAS_SENTINEL, AUTHORED_VUE_TS_SENTINEL, MISSING_VUE_IMPORT_SENTINEL,
 };
@@ -111,8 +112,7 @@ fn missing_vue_import_is_proven_absent(
         return false;
     };
 
-    path_is_proven_absent(&candidate)
-        && path_is_proven_absent(&append_extension(&candidate, ".d.ts"))
+    probe_candidates(&candidate).is_none()
 }
 
 fn path_is_proven_absent(path: &Path) -> bool {

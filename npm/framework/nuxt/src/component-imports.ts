@@ -146,7 +146,7 @@ export function injectNuxtComponentImports(
           explicitComponentImports,
           resolved,
           specifier.localName,
-          `__nuxt_import_component_${importCounter++}_raw`,
+          `__vize_nuxt_import_component_${importCounter++}_raw`,
         );
         needsCreateClientOnly ||= result.needsCreateClientOnly;
         needsDefineAsyncComponent ||= result.needsDefineAsyncComponent;
@@ -178,7 +178,7 @@ export function injectNuxtComponentImports(
       const importKey = `${resolved.exportName}\u0000${resolved.filePath}\u0000${resolved.lazy ? "lazy" : "eager"}\u0000${resolved.mode ?? "default"}`;
       let variableName = importedComponents.get(importKey);
       if (!variableName) {
-        variableName = `__nuxt_component_${counter++}`;
+        variableName = `__vize_nuxt_component_${counter++}`;
         importedComponents.set(importKey, variableName);
         const result = addResolvedComponentBinding(
           componentImports,

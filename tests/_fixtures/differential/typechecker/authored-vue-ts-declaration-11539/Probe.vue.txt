@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Foo from "./Foo.vue.ts";
+</script>
+
+<template>
+  <Foo :count="'x'" />
+</template>
