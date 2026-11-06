@@ -69,7 +69,7 @@ type Projection = { path: string; text: string; metadata: unknown };
 export function certifyListenerRelationProjections(before: Projection[], after: Projection[]) {
   assert.equal(after.length, before.length, "listener projection inventory changed");
   const inline = "[Extract<NonNullable<__H>, (...args: any) => any>] extends [never]";
-  const shared = 'import("vize:virtual-ts").$ListenerArgs<';
+  const shared = 'import("vize/virtual-ts").$ListenerArgs<';
   const count = (text: string, marker: string) => text.split(marker).length - 1;
   let changedDocuments = 0,
     removedInlineRelations = 0,

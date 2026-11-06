@@ -6,7 +6,7 @@ import {
 } from "./template-alias-paired-11822-public.ts";
 
 const inline = "[Extract<NonNullable<__H>, (...args: any) => any>] extends [never]";
-const shared = 'import("vize:virtual-ts").$ListenerArgs<';
+const shared = 'import("vize/virtual-ts").$ListenerArgs<';
 
 void test("listener projection certification requires the named relation rewrite", () => {
   const before = [
