@@ -3,8 +3,13 @@
 use super::{LintVisitor, element_has_directive};
 use crate::context::{CallbackSite, LintContext};
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
-use vize_l0::profile;
-use vize_relief::{ElementNode, RootNode, SourceLocation, TemplateChildNode};
+use vize_l0::{CompactString, profile};
+use vize_relief::{ElementNode, RootNode, TemplateChildNode};
+
+struct PendingForget {
+    rules: Vec<CompactString>,
+    marker: (u32, u32),
+}
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Visit the root node and traverse the AST
@@ -61,18 +66,18 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Deprecated) are intentionally NOT processed here; they rely on the
     /// existing ordering that runs during the main traversal.
     pub(crate) fn prescan_suppression_directives(&mut self, root: &RootNode<'a>) {
-        let mut forget_next_child = false;
-        self.prescan_suppression_in_children(&root.children, &mut forget_next_child);
+        self.prescan_suppression_in_children(&root.children);
     }
 
-    fn prescan_suppression_in_children(
-        &mut self,
-        children: &[TemplateChildNode<'a>],
-        forget_next_child: &mut bool,
-    ) {
+    fn prescan_suppression_in_children(&mut self, children: &[TemplateChildNode<'a>]) {
         vize_l0::recursion::ensure_sufficient_stack(|| {
+            let mut forget_next_child = Vec::new();
             for (index, node) in children.iter().enumerate() {
-                self.prescan_suppression_in_child(children, index, node, forget_next_child);
+                self.prescan_suppression_in_child(children, index, node, &mut forget_next_child);
+            }
+            for pending in forget_next_child {
+                self.ctx
+                    .disable_exact_targets(&pending.rules, Vec::new(), pending.marker);
             }
         });
     }
@@ -82,7 +87,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         siblings: &[TemplateChildNode<'a>],
         index: usize,
         node: &TemplateChildNode<'a>,
-        forget_next_child: &mut bool,
+        forget_next_child: &mut Vec<PendingForget>,
     ) {
         match node {
             TemplateChildNode::Comment(comment) => {
@@ -109,49 +114,74 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                             self.ctx.pop_ignore_region(line);
                         }
                         DirectiveKind::Forget => {
-                            *forget_next_child = true;
+                            if let Some(directive) =
+                                parse_vize_directive(comment.content, line, comment.loc.span.start)
+                            {
+                                forget_next_child.push(PendingForget {
+                                    rules: forget_rules(&directive.payload),
+                                    marker: (comment.loc.span.start, comment.loc.span.end),
+                                });
+                            }
                         }
                         _ => {}
                     }
                 }
             }
             TemplateChildNode::Element(el) => {
-                if *forget_next_child {
-                    *forget_next_child = false;
-                    self.disable_forgotten_element(siblings, index, el);
+                if !forget_next_child.is_empty() {
+                    let targets = self.forgotten_element_targets(siblings, index, el);
+                    self.apply_forgotten_targets(forget_next_child, targets);
                 }
-                self.prescan_suppression_in_children(&el.children, forget_next_child);
+                self.prescan_suppression_in_children(&el.children);
             }
             TemplateChildNode::If(if_node) => {
-                if *forget_next_child {
-                    *forget_next_child = false;
-                    self.disable_loc_range(&if_node.loc);
+                if !forget_next_child.is_empty() {
+                    self.apply_forgotten_targets(
+                        forget_next_child,
+                        vec![(if_node.loc.span.start, if_node.loc.span.end)],
+                    );
                 }
                 for branch in if_node.branches.iter() {
-                    self.prescan_suppression_in_children(&branch.children, forget_next_child);
+                    self.prescan_suppression_in_children(&branch.children);
                 }
             }
             TemplateChildNode::For(for_node) => {
-                if *forget_next_child {
-                    *forget_next_child = false;
-                    self.disable_loc_range(&for_node.loc);
+                if !forget_next_child.is_empty() {
+                    self.apply_forgotten_targets(
+                        forget_next_child,
+                        vec![(for_node.loc.span.start, for_node.loc.span.end)],
+                    );
                 }
-                self.prescan_suppression_in_children(&for_node.children, forget_next_child);
+                self.prescan_suppression_in_children(&for_node.children);
+            }
+            TemplateChildNode::Text(text)
+                if !text.content.trim().is_empty() && !forget_next_child.is_empty() =>
+            {
+                self.apply_forgotten_targets(
+                    forget_next_child,
+                    vec![(text.loc.span.start, text.loc.span.end)],
+                );
+            }
+            TemplateChildNode::Interpolation(interpolation) if !forget_next_child.is_empty() => {
+                self.apply_forgotten_targets(
+                    forget_next_child,
+                    vec![(interpolation.loc.span.start, interpolation.loc.span.end)],
+                );
             }
             _ => {}
         }
     }
 
-    fn disable_forgotten_element(
-        &mut self,
+    fn forgotten_element_targets(
+        &self,
         siblings: &[TemplateChildNode<'a>],
         index: usize,
         el: &ElementNode<'a>,
-    ) {
-        self.disable_loc_range(&el.loc);
+    ) -> Vec<(u32, u32)> {
+        let mut targets = vec![(el.loc.span.start, el.loc.span.end)];
 
         if !element_has_directive(el, "if") {
-            return;
+            return targets;
         }
 
         for sibling in siblings.iter().skip(index + 1) {
@@ -159,19 +189,45 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 continue;
             };
             if element_has_directive(branch, "else-if") {
-                self.disable_loc_range(&branch.loc);
+                targets.push((branch.loc.span.start, branch.loc.span.end));
                 continue;
             }
             if element_has_directive(branch, "else") {
-                self.disable_loc_range(&branch.loc);
+                targets.push((branch.loc.span.start, branch.loc.span.end));
             }
             break;
         }
+        targets
     }
 
-    fn disable_loc_range(&mut self, loc: &SourceLocation) {
-        let start_line = self.ctx.offset_to_line(loc.span.start);
-        let end_line = self.ctx.offset_to_line(loc.span.end);
-        self.ctx.disable_all(start_line, Some(end_line));
+    fn apply_forgotten_targets(
+        &mut self,
+        pending: &mut Vec<PendingForget>,
+        targets: Vec<(u32, u32)>,
+    ) {
+        for directive in pending.drain(..) {
+            self.ctx
+                .disable_exact_targets(&directive.rules, targets.clone(), directive.marker);
+        }
     }
+}
+
+fn forget_rules(payload: &str) -> Vec<CompactString> {
+    payload
+        .split(|character: char| character == ',' || character.is_ascii_whitespace())
+        .map(|candidate| candidate.trim_matches(['"', '\'', '(', ')', '[', ']', '{', '}', ';']))
+        .filter(|candidate| looks_like_rule_id(candidate))
+        .map(CompactString::from)
+        .collect()
+}
+
+fn looks_like_rule_id(candidate: &str) -> bool {
+    let Some((namespace, name)) = candidate.split_once('/') else {
+        return false;
+    };
+    !namespace.is_empty()
+        && !name.is_empty()
+        && candidate.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'/' | b'-' | b'_' | b'@' | b'.' | b'$')
+        })
 }

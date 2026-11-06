@@ -217,6 +217,39 @@ fn canonical_vize_comment_controls_share_the_normal_template_prescan() {
 }
 
 #[test]
+fn named_vize_forget_keeps_project_peer_rules_and_same_line_siblings() {
+    let source = r#"<template>
+<!-- @vize:forget croquis/cf/duplicate-id --><p id="duplicate"></p><p id="duplicate"></p>
+</template>"#;
+    let directives = ProjectLintDirectives::from_sfc(source, "Page.vue").unwrap();
+    let first = source.find("id=").unwrap() as u32;
+    let second = source.rfind("id=").unwrap() as u32;
+
+    assert!(directives.is_disabled_at(DUPLICATE, first));
+    assert!(!directives.is_disabled_at(SPREAD, first));
+    assert!(!directives.is_disabled_at(DUPLICATE, second));
+}
+
+#[test]
+fn mixed_vize_forget_keeps_the_unused_ordinary_rule_report() {
+    let source = r#"<template>
+<!-- @vize:forget vue/require-v-for-key, croquis/cf/duplicate-id -->
+<p id="duplicate"></p>
+</template>"#;
+    let directives = ProjectLintDirectives::from_sfc(source, "Page.vue").unwrap();
+    let mut ordinary = directives.unused_named(|rule| rule == "vue/require-v-for-key");
+    assert_eq!(ordinary.len(), 1);
+
+    assert!(directives.is_disabled_at(DUPLICATE, source.find("id=").unwrap() as u32));
+    directives.reconcile_template_unused(&mut ordinary);
+    assert_eq!(ordinary.len(), 1);
+    assert_eq!(
+        ordinary[0].message,
+        "Unused @vize:forget directive (no problems were reported from 'vue/require-v-for-key')."
+    );
+}
+
+#[test]
 fn existing_plugin_rule_alias_and_authored_unicode_crlf_ranges_are_retained() {
     for original in [EDITOR, PAGE_B] {
         let source = format!("<!-- 😀 authored header -->\n{original}")

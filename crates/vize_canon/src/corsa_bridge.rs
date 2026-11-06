@@ -93,8 +93,8 @@ pub use types::{
 };
 pub use vue_document::{
     CorsaInitialVueDocument, CorsaInitialVueProject, CorsaMaterializedMappingKind,
-    CorsaMaterializedSource, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
+    CorsaMaterializedSource, CorsaVueHoverDocument, CorsaVueVirtualDependency,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
 };
 pub(crate) use vue_document::{
     CorsaProjectEnvironment, CorsaVueVirtualProject,

@@ -10,9 +10,14 @@ use vize_l0::{Allocator, SourceRoot, Span, Vec};
 use super::{Document, LexErrorCode, LexOptions, Lexer, ProfileKind, QuoteType};
 use crate::markup::entity::DecodedEntity;
 
+mod petite;
 mod sink;
 mod structure;
 
+pub use petite::{
+    DocumentPetiteDirective, DocumentPetiteDirectiveKind, DocumentPetiteDirectives,
+    DocumentPetiteRefusal, DocumentPetiteValue,
+};
 pub use structure::{
     DocumentHtmlAttribute, DocumentHtmlAttributes, DocumentHtmlChildNodes, DocumentHtmlComment,
     DocumentHtmlElement, DocumentHtmlNode, DocumentHtmlRefusal, DocumentHtmlStructure,
@@ -186,6 +191,15 @@ impl<'a> NativeDocument<'a> {
     /// HTML tree or petite-vue semantics.
     pub fn html_structure(&self) -> Result<DocumentHtmlStructure<'_, 'a>, DocumentHtmlRefusal> {
         structure::construct(self)
+    }
+
+    /// Observe original `v-scope` and `v-effect` attribute frames emitted by
+    /// this complete Document-profile run. This is the L1 petite-vue syntax
+    /// hook only: it does not grant HTML tree or L2 expression meaning.
+    pub fn petite_directives(
+        &self,
+    ) -> Result<DocumentPetiteDirectives<'_, 'a>, DocumentPetiteRefusal> {
+        petite::directives(self)
     }
 
     /// Certify only a normal complete lexical run of this original source.

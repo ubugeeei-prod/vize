@@ -135,24 +135,39 @@ test("native unused-disable configuration preserves flag precedence and all temp
       "lint.vue alias projects the same native setting",
     );
     config({ preset: "essential", reportUnusedDisableDirectives: true });
-    for (const text of [
-      "<!-- eslint-disable vue/no-v-html -->\n" + repaired,
-      "<script setup>\n// eslint-disable-next-line script/no-with-defaults\nconst value=1;\n</script>\n" +
-        repaired,
-      repaired +
-        "<style>\n/* eslint-disable-next-line css/no-important */\n.a {color:red}\n</style>\n",
-      source("<!-- vize-disable-next-line vue/no-v-html -->\n<div />"),
-      source("<!-- @vize:forget vue/no-v-html -->\n<div />"),
-      source("<!-- eslint-enable vue/no-v-html -->\n<div />"),
-      source("<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->\n<div />"),
-    ]) {
+    for (const [text, expectedStatus] of [
+      ["<!-- eslint-disable vue/no-v-html -->\n" + repaired, 1],
+      [
+        "<script setup>\n// eslint-disable-next-line script/no-with-defaults\nconst value=1;\n</script>\n" +
+          repaired,
+        0,
+      ],
+      [
+        repaired +
+          "<style>\n/* eslint-disable-next-line css/no-important */\n.a {color:red}\n</style>\n",
+        0,
+      ],
+      [source("<!-- vize-disable-next-line vue/no-v-html -->\n<div />"), 0],
+      [source("<!-- @vize:forget vue/no-v-html -->\n<div />"), 1],
+      [source("<!-- eslint-enable vue/no-v-html -->\n<div />"), 0],
+      [source("<!-- eslint-disable-next-line @typescript-eslint/no-explicit-any -->\n<div />"), 0],
+    ] as const) {
       const configured = run([], text);
       const flag = run(
         ["--no-config", "--preset", "essential", "--report-unused-disable-directives"],
         text,
       );
-      assert.equal(configured.status, 0, configured.stdout + configured.stderr);
-      assert.equal(flag.status, 0, flag.stdout + flag.stderr);
+      assert.equal(configured.status, expectedStatus, configured.stdout + configured.stderr);
+      assert.equal(flag.status, expectedStatus, flag.stdout + flag.stderr);
+      const expectedRules = expectedStatus === 1 ? [code] : [];
+      assert.deepEqual(
+        JSON.parse(configured.stdout)[0].messages.map((entry: { ruleId: string }) => entry.ruleId),
+        expectedRules,
+      );
+      assert.deepEqual(
+        JSON.parse(flag.stdout)[0].messages.map((entry: { ruleId: string }) => entry.ruleId),
+        expectedRules,
+      );
       assert.deepEqual(
         JSON.parse(configured.stdout),
         JSON.parse(flag.stdout),

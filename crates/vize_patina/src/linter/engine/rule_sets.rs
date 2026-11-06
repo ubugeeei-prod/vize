@@ -106,6 +106,8 @@ pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub sfc_scripts: Option<&'a dyn crate::linter::sfc_scripts::ScriptParses>,
     pub art_script_analysis: Option<&'a Croquis>,
+    /// Exact-node pragmas are applied after all complete-SFC producers join.
+    pub defer_exact_suppressions: bool,
     pub dialect: VueDialect,
     /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
     /// Empty on the raw-template and standalone-HTML lanes.

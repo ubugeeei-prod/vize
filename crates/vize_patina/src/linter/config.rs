@@ -196,8 +196,8 @@ impl Linter {
         self
     }
 
-    /// Report `eslint-disable` template comments that suppressed nothing, as
-    /// `vue/comment-directive` errors.
+    /// Report accepted suppression comments that suppressed no final
+    /// diagnostic, as `vue/comment-directive` errors.
     #[inline]
     pub fn with_report_unused_disable_directives(mut self, enabled: bool) -> Self {
         self.report_unused_disable_directives = enabled;
@@ -247,6 +247,22 @@ impl Linter {
             Some(set) => set.contains(rule_name),
             None => true,
         }
+    }
+
+    /// Whether this concrete lint plan could emit `rule_name`. Suppression
+    /// usage and unused reporting must consult the same selected producers.
+    pub(crate) fn can_report_suppression_rule(&self, rule_name: &str) -> bool {
+        self.is_rule_enabled(rule_name)
+            && (self.registry.has_rule(rule_name)
+                || self.script_rules.contains(&rule_name)
+                || self.css_rules.contains(&rule_name)
+                || self.musea_rules.contains(&rule_name))
+    }
+
+    /// Whether this lint plan owns unused suppression diagnostics.
+    pub(crate) fn can_report_unused_directives(&self) -> bool {
+        const RULE: &str = "vue/comment-directive";
+        self.report_unused_disable_directives && !self.disabled_rules.contains(RULE)
     }
 
     /// Get the rule registry.

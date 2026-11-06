@@ -54,7 +54,27 @@ impl LintContext<'_> {
     /// onto a different line. (#3252)
     #[inline]
     pub fn is_rule_disabled_at_offset(&self, rule_name: &str, offset: u32) -> bool {
+        if !self.defer_exact_suppressions
+            && self.exact_suppressions.is_disabled_at(rule_name, offset)
+        {
+            return true;
+        }
         self.is_disabled_at(rule_name, self.offset_to_line(offset))
+    }
+
+    /// Register one exact-node directive, including an empty target set so an
+    /// accepted directive at the end of a sibling list can be reported unused.
+    pub(crate) fn disable_exact_targets(
+        &mut self,
+        rules: &[CompactString],
+        targets: Vec<(u32, u32)>,
+        marker: (u32, u32),
+    ) {
+        self.exact_suppressions.record(
+            rules.iter().map(|rule| rule.as_str().into()).collect(),
+            targets,
+            marker,
+        );
     }
 
     /// Disable all rules starting from a line.
@@ -119,7 +139,24 @@ impl LintContext<'_> {
         &self,
         is_active: impl Fn(&str) -> bool,
     ) -> Vec<super::eslint_directive::UnusedDirective> {
-        self.inline_suppressions.unused(is_active)
+        let mut unused = self.inline_suppressions.unused(&is_active);
+        // Complete SFCs defer exact-node accounting until script, style and
+        // type-aware diagnostics have joined the final diagnostic stream.
+        if !self.defer_exact_suppressions {
+            unused.extend(self.exact_suppressions.unused(is_active));
+        }
+        unused.sort_unstable_by_key(|directive| (directive.start, directive.end));
+        unused.dedup_by(|left, right| {
+            left.start == right.start
+                && left.end == right.end
+                && left.rule == right.rule
+                && left.source == right.source
+        });
+        unused
+    }
+
+    pub(crate) fn defer_exact_suppressions(&mut self) {
+        self.defer_exact_suppressions = true;
     }
 
     /// JSX still uses the source scanner until its own comment AST is wired in.

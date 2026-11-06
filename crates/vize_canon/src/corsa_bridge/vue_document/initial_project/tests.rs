@@ -231,7 +231,6 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
         .unwrap();
     let canon_root = current.session_project_root.as_deref().unwrap();
     current
-        .host
         .source_catalog
         .extend_native_project_document_batch(canon_root, &mut current.documents);
     let bytes = read_config(&current).unwrap();
@@ -268,10 +267,10 @@ fn receipt_revalidates_whole_ordered_inputs_catalog_config_and_real_delta() {
     assert!(!receipt.matches(&current, &bytes));
     current.session_project_root = old_root;
     assert!(!receipt.matches(&current, b"foreign config bytes"));
-    let old_catalog = current.host.source_catalog.clone();
-    current.host.source_catalog = Default::default();
+    let old_catalog = current.source_catalog.clone();
+    current.source_catalog = Default::default();
     assert!(!receipt.matches(&current, &bytes));
-    current.host.source_catalog = old_catalog;
+    current.source_catalog = old_catalog;
     current.materialized_changes = Default::default();
     current
         .materialized_changes

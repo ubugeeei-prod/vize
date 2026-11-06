@@ -1,0 +1,80 @@
+[
+  {
+    "title": "Fix: Use self-closing syntax",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": { "line": 2, "character": 2 },
+          "end": { "line": 2, "character": 23 }
+        },
+        "severity": 2,
+        "code": "vue/html-self-closing",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+        },
+        "source": "vize/lint",
+        "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+      }
+    ],
+    "edit": {
+      "documentChanges": [
+        {
+          "textDocument": {
+            "uri": "${workspace}/App.vue",
+            "version": 1
+          },
+          "edits": [
+            {
+              "range": {
+                "start": { "line": 2, "character": 2 },
+                "end": { "line": 2, "character": 23 }
+              },
+              "newText": "<img src=\"/logo.png\" />"
+            }
+          ]
+        }
+      ]
+    },
+    "isPreferred": true
+  },
+  {
+    "title": "Suppress with @vize:forget (vue/html-self-closing)",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": { "line": 2, "character": 2 },
+          "end": { "line": 2, "character": 23 }
+        },
+        "severity": 2,
+        "code": "vue/html-self-closing",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+        },
+        "source": "vize/lint",
+        "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+      }
+    ],
+    "edit": {
+      "documentChanges": [
+        {
+          "textDocument": {
+            "uri": "${workspace}/App.vue",
+            "version": 1
+          },
+          "edits": [
+            {
+              "range": {
+                "start": { "line": 2, "character": 0 },
+                "end": { "line": 2, "character": 0 }
+              },
+              "newText": "  <!-- @vize:forget vue/html-self-closing -->\n"
+            }
+          ]
+        }
+      ]
+    },
+    "isPreferred": false
+  }
+]

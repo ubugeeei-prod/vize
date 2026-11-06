@@ -1,0 +1,3 @@
+<template>
+  <!-- @vize:forget vue/require-v-for-key --><li v-for="item in items">{{ item }}</li><li v-for="item in items">{{ item }}</li>
+</template>

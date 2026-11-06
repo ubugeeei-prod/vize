@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "id": "lsp/regression/precise-template-suppression-12022",
+  "provenance": {
+    "fixCommit": "46b5127bd270bd9a51f7cca9c45618f17d7f832c",
+    "inputOrigin": "Issue 12022 rule-specific suppression reproduction after applying the generated action.",
+    "contractOrigin": "Authored peer-diagnostic code-action envelope proving the selected rule does not hide another rule on the same node."
+  },
+  "documentVersion": 1,
+  "workspaceEditDocumentChanges": true,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "0ff6e146159dfb8877a12e42ad1cc63d7160221add033b76142e3969003faed2"
+    },
+    {
+      "source": "vize.config.json",
+      "runtimePath": "vize.config.json",
+      "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+    }
+  ],
+  "entry": "App.vue",
+  "method": "textDocument/codeAction",
+  "request": {
+    "params": {
+      "range": {
+        "start": { "line": 2, "character": 2 },
+        "end": { "line": 2, "character": 23 }
+      },
+      "context": {
+        "diagnostics": [
+          {
+            "range": {
+              "start": { "line": 2, "character": 2 },
+              "end": { "line": 2, "character": 23 }
+            },
+            "severity": 2,
+            "code": "vue/html-self-closing",
+            "codeDescription": {
+              "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+            },
+            "source": "vize/lint",
+            "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+          }
+        ]
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "6f5424a6e5a217bab1ac68c2ffeed73c9a4c22dd51e9b68d42658896a9d3dba1"
+  }
+}

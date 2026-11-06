@@ -1,0 +1,13 @@
+<script>
+/* eslint-disable vue/no-multiple-template-root */
+export default {}
+</script>
+
+<script setup>
+/* eslint-enable vue/no-multiple-template-root */
+</script>
+
+<template>
+  <p>one</p>
+  <p>two</p>
+</template>

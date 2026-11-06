@@ -3201,6 +3201,51 @@
       }
     },
     {
+      "id": "lsp/regression/precise-template-suppression-12022",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "precise-template-suppression-12022",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "0ff6e146159dfb8877a12e42ad1cc63d7160221add033b76142e3969003faed2"
+          },
+          {
+            "path": "vize.config.json",
+            "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+          }
+        ]
+      },
+      "case": {
+        "path": "precise-template-suppression-12022/case.json",
+        "sha256": "ed85244179077653f297deb0e55e21aeb035df5643ed1d828dfbed5f591039a5"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "typecheck": false,
+        "codeActions": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/private-setup-references-10785-crlf",
       "state": "active",
       "targets": [

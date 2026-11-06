@@ -109,6 +109,7 @@ impl Linter {
                 sfc_descriptor: Some(descriptor),
                 sfc_scripts: Some(scripts),
                 art_script_analysis: summary.as_deref().filter(|_| !fatal),
+                defer_exact_suppressions: false,
                 dialect: vize_l0::dialect::VueDialect::Vue,
                 facade_rules: super::facade::RULES,
             },

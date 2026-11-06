@@ -5,6 +5,7 @@ use vize_l0::cstr;
 
 use crate::Linter;
 use crate::context::LintContext;
+use crate::context::SuppressionSource;
 use crate::diagnostic::LintDiagnostic;
 
 const RULE: &str = "vue/comment-directive";
@@ -13,8 +14,9 @@ const RULE: &str = "vue/comment-directive";
 /// counts only when it ran in this pass: a name Vize does not run may belong to
 /// another linter.
 pub(super) fn report(linter: &Linter, ctx: &mut LintContext<'_>) {
-    // The catalogue rule owns this diagnostic. An explicit disable retires it.
-    if linter.disabled_rules.contains(RULE) {
+    // The catalogue rule owns this diagnostic. An explicit disable or a plan
+    // without that catalogue owner retires it.
+    if !linter.can_report_unused_directives() {
         return;
     }
     let unused = ctx.unused_disable_directives(|rule| {
@@ -22,11 +24,19 @@ pub(super) fn report(linter: &Linter, ctx: &mut LintContext<'_>) {
             && linter.is_rule_enabled(rule)
     });
     for directive in unused {
-        let message = match &directive.rule {
-            Some(rule) => {
+        let message = match (directive.source, &directive.rule) {
+            (SuppressionSource::Eslint, Some(rule)) => {
                 cstr!("Unused eslint-disable directive (no problems were reported from '{rule}').")
             }
-            None => "Unused eslint-disable directive (no problems were reported).".into(),
+            (SuppressionSource::Eslint, None) => {
+                "Unused eslint-disable directive (no problems were reported).".into()
+            }
+            (SuppressionSource::VizeForget, Some(rule)) => {
+                cstr!("Unused @vize:forget directive (no problems were reported from '{rule}').")
+            }
+            (SuppressionSource::VizeForget, None) => {
+                "Unused @vize:forget directive (no problems were reported).".into()
+            }
         };
         ctx.report_directive(LintDiagnostic::error(
             RULE,

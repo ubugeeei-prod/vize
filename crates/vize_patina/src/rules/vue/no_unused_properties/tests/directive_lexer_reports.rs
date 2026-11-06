@@ -74,9 +74,9 @@ fn same_line_style_directive_cannot_leak_into_script_setup() {
 }
 
 #[test]
-fn same_line_plain_script_directive_cannot_leak_into_script_setup() {
+fn same_line_plain_script_region_reaches_later_script_setup() {
     let sfc = r#"<script>/* eslint-disable vue/no-unused-properties */</script><script setup lang="ts">defineProps<{ msg: string }>();</script><template><div>hi</div></template>"#;
-    assert_msg_reported(sfc);
+    assert_eq!(owned(&lint_sfc(sfc)), Vec::new());
 }
 
 #[test]

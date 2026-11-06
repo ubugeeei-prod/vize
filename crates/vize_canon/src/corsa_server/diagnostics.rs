@@ -205,7 +205,9 @@ mod tests {
                 materialized_sources: Vec::new(),
                 source_catalog: Default::default(),
                 session_project_root: None,
-            },
+            }
+            .into(),
+            source_catalog: Default::default(),
             documents: Vec::new().into(),
             session_project_root: None,
             session_config_path: None,
@@ -331,7 +333,7 @@ mod tests {
         let source = "<script setup>const n = 1</script>\r\n<template><p>mapped</p></template>";
         let mut project = project();
         let mapped = source.find("mapped").unwrap();
-        project.host.mapping =
+        std::sync::Arc::make_mut(&mut project.host).mapping =
             crate::virtual_ts::ProjectionMapping::from_spans(vec![VizeMapping::new(
                 7..13,
                 mapped..mapped + 6,

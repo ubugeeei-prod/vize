@@ -37,10 +37,10 @@ const plans = ["css-continuation-indent-7915", "css-rule-layout-7926-7966"].flat
 });
 const refined = plans.filter((plan) => plan.qualification.reference);
 
-await test("12 exact current layouts retain all 29 original plans and independent stock output", () => {
+await test("13 exact current layouts retain all 29 original plans and independent stock CSS output", () => {
   assert.equal(plans.length, 29);
-  assert.equal(refined.length, 12);
-  assert.equal(refined.filter((plan) => plan.owner === "css-continuation-indent-7915").length, 11);
+  assert.equal(refined.length, 13);
+  assert.equal(refined.filter((plan) => plan.owner === "css-continuation-indent-7915").length, 12);
   assert.equal(refined.filter((plan) => plan.owner === "css-rule-layout-7926-7966").length, 1);
   for (const plan of refined) {
     const comparisons = multiValueComparisons(
@@ -71,7 +71,15 @@ await test("12 exact current layouts retain all 29 original plans and independen
               ? "original-tabs-four"
               : "original-four-crlf";
     const plan = refined.find((plan) => plan.fixture.id === id);
-    assert.equal(plan.qualification.expected.toString(), row.output);
+    const expected = plan.qualification.expected.toString();
+    assert.match(expected, /<button type="button" class="button">/);
+    assert.equal(
+      expected.replace(
+        '<button type="button" class="button">',
+        '<button class="button" type="button">',
+      ),
+      row.output,
+    );
   }
 });
 

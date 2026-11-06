@@ -27,6 +27,8 @@ pub(crate) const WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS: [&str; 3] = ["pre", "te
 
 #[cfg(test)]
 mod attribute_priority_tests;
+#[cfg(test)]
+mod semantic_attribute_order_tests;
 
 use crate::{error::FormatError, options::FormatOptions};
 use vize_l0::String;

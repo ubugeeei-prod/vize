@@ -6,7 +6,6 @@ fn native_documents(project: &CorsaVueVirtualProject) -> Vec<(String, String)> {
     let mut documents = project.documents.to_vec();
     if let Some(root) = project.session_project_root.as_deref() {
         project
-            .host
             .source_catalog
             .extend_native_project_documents(root, &mut documents);
     }
@@ -88,7 +87,6 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
         let primary = open(&contract, CONTRACT, &overlays);
         let importer = open(&alpha, source, &overlays);
         let retained = importer
-            .host
             .source_catalog
             .get(&beta_path)
             .expect("the separate TSX implementation is still admitted");
@@ -240,9 +238,8 @@ fn native_live_union_contains_closed_sibling_dependencies_before_a_later_query()
     assert_ne!(edited.host.code, first.host.code);
     assert!(
         !after_edit
-            .host
             .source_catalog
-            .shares_revision_with(&second.host.source_catalog)
+            .shares_revision_with(&second.source_catalog)
     );
     assert_eq!(first.documents, first_packet);
     assert_eq!(std::fs::read_to_string(&a).unwrap(), HOST);
@@ -260,9 +257,8 @@ fn native_live_union_contains_closed_sibling_dependencies_before_a_later_query()
     );
     assert!(
         !after_retirement
-            .host
             .source_catalog
-            .shares_revision_with(&second.host.source_catalog)
+            .shares_revision_with(&second.source_catalog)
     );
 }
 
@@ -311,7 +307,7 @@ fn native_union_keeps_effective_tsconfig_namespaces_and_retired_sessions_separat
     let other = open(&b, &shell, &session);
     assert_ne!(first.session_project_root, other.session_project_root);
     let mut foreign_view = Vec::new();
-    first.host.source_catalog.extend_native_project_documents(
+    first.source_catalog.extend_native_project_documents(
         other.session_project_root.as_deref().unwrap(),
         &mut foreign_view,
     );
@@ -323,9 +319,8 @@ fn native_union_keeps_effective_tsconfig_namespaces_and_retired_sessions_separat
     assert_eq!(native_documents(&other), other.documents);
     assert!(
         !first
-            .host
             .source_catalog
-            .shares_revision_with(&other.host.source_catalog)
+            .shares_revision_with(&other.source_catalog)
     );
     let independent_session = EditorMirrorSession::new();
     let independent = open(&a, &shell, &independent_session);
@@ -333,9 +328,8 @@ fn native_union_keeps_effective_tsconfig_namespaces_and_retired_sessions_separat
     assert_eq!(native_documents(&independent), independent.documents);
     assert!(
         !first
-            .host
             .source_catalog
-            .shares_revision_with(&independent.host.source_catalog)
+            .shares_revision_with(&independent.source_catalog)
     );
 }
 

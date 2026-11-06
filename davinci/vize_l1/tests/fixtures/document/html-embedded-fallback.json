@@ -1,0 +1,135 @@
+[
+  {
+    "name": "embedded fallback siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><iframe id=preview>plain fallback</iframe><noscript><div>no script</div></noscript></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["iframe", "html", 2, [["id", "preview"]]],
+      ["noscript", "html", 2, []],
+      ["div", "html", 4, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "iframe"],
+          [1, "noscript"]
+        ]
+      ],
+      ["iframe", [[3, "plain fallback"]]],
+      ["noscript", [[1, "div"]]],
+      ["div", [[3, "no script"]]]
+    ]
+  },
+  {
+    "name": "mixed case names",
+    "source": "<!DOCTYPE html><html><head></head><body><IFRAME title=empty></iFrAmE><NoScRiPt><span>fallback</span></nOsCrIpT></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["iframe", "html", 2, [["title", "empty"]]],
+      ["noscript", "html", 2, []],
+      ["span", "html", 4, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "iframe"],
+          [1, "noscript"]
+        ]
+      ],
+      ["iframe", []],
+      ["noscript", [[1, "span"]]],
+      ["span", [[3, "fallback"]]]
+    ]
+  },
+  {
+    "name": "table cell fallback",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><iframe>Cell fallback</iframe><noscript><span>Alt</span></noscript></td></tr></tbody></table></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["table", "html", 2, []],
+      ["tbody", "html", 3, []],
+      ["tr", "html", 4, []],
+      ["td", "html", 5, []],
+      ["iframe", "html", 6, []],
+      ["noscript", "html", 6, []],
+      ["span", "html", 8, []]
+    ],
+    "nodes": [
+      ["body", [[1, "table"]]],
+      ["table", [[1, "tbody"]]],
+      ["tbody", [[1, "tr"]]],
+      ["tr", [[1, "td"]]],
+      [
+        "td",
+        [
+          [1, "iframe"],
+          [1, "noscript"]
+        ]
+      ],
+      ["iframe", [[3, "Cell fallback"]]],
+      ["noscript", [[1, "span"]]],
+      ["span", [[3, "Alt"]]]
+    ]
+  },
+  {
+    "name": "foreign object fallback",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><iframe>Vector</iframe><noscript><p>Alt</p></noscript></foreignObject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["iframe", "html", 4, []],
+      ["noscript", "html", 4, []],
+      ["p", "html", 6, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      [
+        "foreignObject",
+        [
+          [1, "iframe"],
+          [1, "noscript"]
+        ]
+      ],
+      ["iframe", [[3, "Vector"]]],
+      ["noscript", [[1, "p"]]],
+      ["p", [[3, "Alt"]]]
+    ]
+  },
+  {
+    "name": "nested fallback",
+    "source": "<!DOCTYPE html><html><head></head><body><div><noscript>before<iframe title=x>frame text</iframe>after</noscript></div></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["div", "html", 2, []],
+      ["noscript", "html", 3, []],
+      ["iframe", "html", 4, [["title", "x"]]]
+    ],
+    "nodes": [
+      ["body", [[1, "div"]]],
+      ["div", [[1, "noscript"]]],
+      [
+        "noscript",
+        [
+          [3, "before"],
+          [1, "iframe"],
+          [3, "after"]
+        ]
+      ],
+      ["iframe", [[3, "frame text"]]]
+    ]
+  }
+]

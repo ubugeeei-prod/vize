@@ -1,0 +1,4 @@
+<template>
+  <!-- @vize:forget a11y/click-events-have-key-events -->
+  <div @click="handleClick">click</div>
+</template>

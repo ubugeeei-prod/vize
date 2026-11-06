@@ -166,10 +166,22 @@ const note = "/* eslint-disable vue/no-multiple-template-root */";
     assert_eq!(multi_root_reports(source), 1);
 }
 
-/// Another script block keeps its own pragmas, as the reserved-key
-/// suppression corpus records.
 #[test]
-fn open_script_disable_does_not_reach_another_script_block() {
+fn prose_mentions_inside_script_comments_are_not_directives() {
+    for marker in ["eslint", "oxlint"] {
+        let source = format!(
+            r#"<script>
+/* Documentation: {marker}-disable vue/no-multiple-template-root disables the rule. */
+export default {{}}
+</script>
+<template><p>one</p><p>two</p></template>"#
+        );
+        assert_eq!(multi_root_reports(&source), 1, "{source}");
+    }
+}
+
+#[test]
+fn open_script_disable_reaches_another_script_block() {
     let source = r#"<script setup>/* eslint-disable script/no-reserved-keys */ const marker = 1</script><script>export default { data() { return { _private: 0 } } }</script>"#;
     let reports = Linter::new()
         .with_enabled_rules(Some(vec!["script/no-reserved-keys".into()]))
@@ -178,5 +190,18 @@ fn open_script_disable_does_not_reach_another_script_block() {
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == "script/no-reserved-keys")
         .count();
-    assert_eq!(reports, 1);
+    assert_eq!(reports, 0);
+}
+
+#[test]
+fn later_script_enable_closes_an_earlier_script_disable() {
+    for marker in ["eslint", "oxlint"] {
+        for newline in ["\n", "\r\n"] {
+            let source = format!(
+                "<script>\n/* {marker}-disable vue/no-multiple-template-root */\nexport default {{}}\n</script>\n\n<script setup>\n/* {marker}-enable vue/no-multiple-template-root */\n</script>\n\n<template>\n  <p>one</p>\n  <p>two</p>\n</template>"
+            )
+            .replace('\n', newline);
+            assert_eq!(multi_root_reports(&source), 1, "{source:?}");
+        }
+    }
 }

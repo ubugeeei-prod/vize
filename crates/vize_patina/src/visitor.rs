@@ -20,8 +20,6 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
     rules: &'rules [Box<dyn Rule>],
     rule_names: &'rules [&'static str],
     run_exit_element_rules: bool,
-    /// When true, suppress all diagnostics for the next element
-    forget_next_element: bool,
     /// Optional per-rule keep mask, parallel to `rules`. When `Some`, a rule is
     /// dispatched only where its entry is `true`. Used by the JSX/TSX fallback
     /// lowering pass to skip rules already handled by the zero-cost markup IR
@@ -45,7 +43,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rules,
             rule_names,
             run_exit_element_rules,
-            forget_next_element: false,
             keep_mask: None,
             track_aria_hidden_inert: rule_names.contains(&"a11y/no-aria-hidden-on-focusable"),
         }
@@ -70,7 +67,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rules,
             rule_names,
             run_exit_element_rules,
-            forget_next_element: false,
             keep_mask: Some(keep_mask),
             track_aria_hidden_inert: rule_names.iter().enumerate().any(|(index, name)| {
                 *name == "a11y/no-aria-hidden-on-focusable"
@@ -101,12 +97,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     fn visit_child_inner(&mut self, node: &TemplateChildNode<'a>) {
         match node {
             TemplateChildNode::Element(el) => {
-                if self.forget_next_element {
-                    self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(el.loc.span.start);
-                    let end_line = self.ctx.offset_to_line(el.loc.span.end);
-                    self.ctx.disable_all(start_line, Some(end_line));
-                }
                 self.visit_element(el);
             }
             TemplateChildNode::Interpolation(interp) => {
@@ -126,21 +116,9 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 });
             }
             TemplateChildNode::If(if_node) => {
-                if self.forget_next_element {
-                    self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(if_node.loc.span.start);
-                    let end_line = self.ctx.offset_to_line(if_node.loc.span.end);
-                    self.ctx.disable_all(start_line, Some(end_line));
-                }
                 self.visit_if(if_node);
             }
             TemplateChildNode::For(for_node) => {
-                if self.forget_next_element {
-                    self.forget_next_element = false;
-                    let start_line = self.ctx.offset_to_line(for_node.loc.span.start);
-                    let end_line = self.ctx.offset_to_line(for_node.loc.span.end);
-                    self.ctx.disable_all(start_line, Some(end_line));
-                }
                 self.visit_for(for_node);
             }
             TemplateChildNode::Comment(comment) => {
@@ -215,13 +193,12 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 }
             }
             DirectiveKind::Forget => {
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
-                    if d.payload.is_empty() {
-                        self.ctx.current_rule = "vize/forget";
-                        self.ctx
-                            .warn(CompactString::from("@vize:forget requires a reason"), loc);
-                    }
-                    self.forget_next_element = true;
+                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start)
+                    && d.payload.is_empty()
+                {
+                    self.ctx.current_rule = "vize/forget";
+                    self.ctx
+                        .warn(CompactString::from("@vize:forget requires a reason"), loc);
                 }
             }
             // Docs, DevOnly, Unknown: no lint action needed

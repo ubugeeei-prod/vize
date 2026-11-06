@@ -15,6 +15,7 @@ on:
       - tests/package.json
       - tests/tooling/davinci-document-body-elements.test.ts
       - tests/tooling/davinci-document-disclosure-elements.test.ts
+      - tests/tooling/davinci-document-embedded-fallback.test.ts
       - tests/tooling/davinci-document-foreign-content.test.ts
       - tests/tooling/davinci-document-phrasing.test.ts
       - tests/tooling/davinci-document-select.test.ts
@@ -61,6 +62,8 @@ jobs:
             --test html_body_elements_legacy_oracle \
             --test html_disclosure_elements \
             --test html_disclosure_elements_legacy_oracle \
+            --test html_embedded_fallback \
+            --test html_embedded_fallback_legacy_oracle \
             --test html_foreign_content \
             --test html_foreign_content_legacy_oracle \
             --test html_phrasing \
@@ -74,6 +77,7 @@ jobs:
           vp node --test \
             tests/tooling/davinci-document-body-elements.test.ts \
             tests/tooling/davinci-document-disclosure-elements.test.ts \
+            tests/tooling/davinci-document-embedded-fallback.test.ts \
             tests/tooling/davinci-document-foreign-content.test.ts \
             tests/tooling/davinci-document-phrasing.test.ts \
             tests/tooling/davinci-document-select.test.ts \

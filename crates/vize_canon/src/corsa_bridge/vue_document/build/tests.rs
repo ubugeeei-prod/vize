@@ -149,9 +149,8 @@ fn warm_surface_matches_uncached_whole_projection_and_retains_catalog() {
         assert!(std::ptr::eq(surface, current.query_surface.get().unwrap()));
         assert!(
             first
-                .host
                 .source_catalog
-                .shares_revision_with(&warm.host.source_catalog)
+                .shares_revision_with(&warm.source_catalog)
         );
         complete_surface(current.query_surface.get().unwrap(), &fresh);
         assert_eq!(first.host.code, warm.host.code);
@@ -197,9 +196,8 @@ fn same_mtime_dependency_edit_and_overlay_close_reopen_replace_whole_surface() {
     let independent = prepare(&new_process, &host, HOST, &overlays, &[]);
     assert!(
         !reopened
-            .host
             .source_catalog
-            .shares_revision_with(&independent.host.source_catalog)
+            .shares_revision_with(&independent.source_catalog)
     );
     assert_ne!(reopened.host.request_uri, independent.host.request_uri);
 }

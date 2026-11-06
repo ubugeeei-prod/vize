@@ -76,6 +76,7 @@ impl<'a> TemplateRuleEnv<'a> {
             sfc_descriptor: None,
             sfc_scripts: None,
             art_script_analysis: None,
+            defer_exact_suppressions: false,
             dialect,
             facade_rules: &[],
         }
