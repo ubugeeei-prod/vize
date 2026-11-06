@@ -93,7 +93,7 @@ pub(super) fn emit_props_object(
         && (force_multiline
             || (if_key.is_some() && !visible.is_empty())
             || v_for_merge_arg_multiline
-            || (!for_item && pieces_have_inline_on(cx, pieces))
+            || (!for_item && pieces_have_inline_on(cx, pieces, !is_plain_element))
             || (!for_item
                 && (visible.len() + extra > 1
                     || pieces_have_named(pieces, "class")
@@ -246,7 +246,7 @@ pub(super) fn pieces_have_static_attr(pieces: &[Piece<'_>], name: &str) -> bool 
 
 /// The shipped scan reads the node's content — the padded attribute
 /// value — so `@click=" go "` is an inline handler by its spaces alone.
-fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
+fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>], is_component: bool) -> bool {
     pieces.iter().any(|piece| match piece {
         // `has_inline_handler`'s first arm: a handler the lane will cache
         // spells a `_cache[n] || (…)` slot, which the shipped layout
@@ -257,6 +257,7 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
                 cx,
                 &ExprRef::Js(js),
                 super::prefix::node_content(cx.source, js.source, js.span).text.as_str(),
+                is_component,
             ))
             || matches!(event.expression(), Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
         Piece::ModelUpdate { .. } => true,
@@ -266,17 +267,10 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
 
 /// Vue keeps an authored identifier a simple expression even when it reads
 /// `_unref(fn)`; any other method reference passed uncached is compound.
-fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str) -> bool {
+fn is_inline_value(cx: &EmitCx<'_>, expr: &ExprRef<'_>, content: &str, is_component: bool) -> bool {
     // Uncached component references keep the authored expression's layout,
     // even when TypeScript erasure turns that expression into an identifier.
-    // Codegen reads the same runtime spelling as handler emission. Preserve
-    // authored padding when TypeScript did not change the expression.
-    let erased = match expr {
-        ExprRef::Js(js) => super::props::ts_view(js, cx.scope.is_ts()).map(|view| view.into_text()),
-        _ => None,
-    };
-    let content = erased.as_deref().unwrap_or(content);
-    if cx.component_props && on::bypasses_component_cache(cx, expr) {
+    if is_component && on::bypasses_component_cache(cx, expr) {
         return !super::prefix::is_simple_identifier(content);
     }
     // Codegen reads the same runtime spelling as handler emission. Preserve

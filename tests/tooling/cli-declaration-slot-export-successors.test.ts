@@ -9,6 +9,7 @@ import {
   applyDiscriminatedJsxUnionIn,
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
 
 const originals = [
   [
@@ -71,6 +72,10 @@ assert.equal(
 const integratedTransition = JSON.parse(integratedTransitionBytes.toString("utf8")) as {
   file: { edits: Array<{ before: string; after: string }> };
 };
+const buildIntegratedOutputTransition = createBuildIntegratedOutputTransition(
+  buildConstructorSuccessor,
+  integratedTransition.file.edits,
+);
 const identity = (bytes: Buffer): Identity => ({
   sha256: createHash("sha256").update(bytes).digest("hex"),
   bytes: bytes.length,
@@ -325,13 +330,17 @@ test("the build declaration constructor adds a reversible receipt without changi
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const ownedEnvelope = overloadOutputTransition(current, "inverse");
+  const integratedEnvelope = overloadOutputTransition(current, "inverse");
+  const ownedEnvelope = buildIntegratedOutputTransition(integratedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse", buildConstructorSuccessor);
   assert.deepEqual(
     constructorTransition(previous, "forward", buildConstructorSuccessor),
     ownedEnvelope,
   );
-  assert.deepEqual(overloadOutputTransition(ownedEnvelope, "forward"), current);
+  assert.deepEqual(
+    overloadOutputTransition(buildIntegratedOutputTransition(ownedEnvelope, "forward"), "forward"),
+    current,
+  );
   for (const [bytes, direction, from, to] of [
     [previous, "forward", edit.before, edit.after],
     [ownedEnvelope, "inverse", edit.after, edit.before],
@@ -439,10 +448,14 @@ for (const [name, digest, successorDigest] of originals) {
       constructor === constructorSuccessor
         ? discriminatedOutputTransition(integratedEnvelope, "inverse")
         : integratedEnvelope;
-    const ownedEnvelope =
+    const currentEnvelope =
       constructor === constructorSuccessor
         ? integratedOutputTransition(discriminatedEnvelope, "inverse")
         : discriminatedEnvelope;
+    const ownedEnvelope =
+      constructor === buildConstructorSuccessor
+        ? buildIntegratedOutputTransition(currentEnvelope, "inverse")
+        : currentEnvelope;
     const predecessorSlot = constructor
       ? overloadOutputTransition(
           constructorTransition(ownedEnvelope, "inverse", constructor),

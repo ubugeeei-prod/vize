@@ -93,6 +93,7 @@ mod unknown_checks;
 mod unmapped_template_fallback;
 mod v_for_source_callbacks;
 mod vapor_anchors;
+mod vfor_const_listener_narrowing;
 mod vue27_render_h;
 
 pub(super) use normalization::normalize_component_check_props_tail;

@@ -315,11 +315,13 @@ runs:
         VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/native-beta-10741/node_modules/@typescript/typescript-linux-x64/lib/tsc
         VIZE_NESTED_FUNCTION_GUARD_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/nested-function-guard-11853
         VIZE_GENERIC_COMPONENT_CAST_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/generic-component-cast-11966
+        VIZE_VFOR_CONST_LISTENER_CAPTURE_DIR: ${{ runner.temp }}/native-snapshot-source/vfor-const-listener-narrowing-11973
       run: |
         set -euo pipefail
         unset VIZE_TEST_DISABLE_TSGO
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::nested_function_guard_11853::standard_tsgo_nested_function_guards_keep_listener_reads_and_real_errors --ignored --exact --nocapture
         cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::generic_component_cast_11966::standard_tsgo_accepts_generic_slots_and_emits_component_cast --ignored --exact --nocapture
+        cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::vfor_const_listener_narrowing_11973::standard_tsgo_keeps_v_for_const_narrowing_in_listener_callbacks --ignored --exact --nocapture
     - name: Test mixed script destructured static refs and authored ownership
       if: ${{ !cancelled() }}
       shell: bash

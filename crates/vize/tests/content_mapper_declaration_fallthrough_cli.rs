@@ -329,7 +329,7 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             EMIT_ONLY.into(),
             tsx_probe.into(),
             TSX_CONFIG,
-            vec![(3, 23, 2322)],
+            vec![(3, 27, 2322)],
         ),
         // vue-tsc's template fallback does not reach TSX in the same program (#11629).
         (
@@ -337,7 +337,7 @@ fn mapper_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
             EMIT_ONLY.into(),
             tsx_probe.into(),
             MIXED_CONFIG,
-            vec![(3, 23, 2322)],
+            vec![(3, 27, 2322)],
         ),
     ];
     for (id, foo, probe, config, expected) in cases {
