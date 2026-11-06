@@ -4,7 +4,10 @@ import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
 import { toolingTestCommand } from "./run-tooling-tests.mjs";
 
-const browserTest = "tests/tooling/formatter-css-rule-layout.test.mjs";
+const browserTests = [
+  "tests/tooling/formatter-css-rule-layout.test.mjs",
+  "tests/tooling/davinci-document-special-text.test.ts",
+] as const;
 
 // These erased boundary views retain the original JS property access and the
 // existing callee's validation/errors. They do not certify parsed input.
@@ -22,7 +25,8 @@ export function needsFormatterCssBrowser(
   if (!(["pr", "merge"] as readonly unknown[]).includes(tier) || (plan as TierView).tier !== tier) {
     throw new Error("CSS browser preparation does not match the execution tier");
   }
-  return (toolingTestCommand as TestCommand)(plan, available, shard).slice(2).includes(browserTest);
+  const selected = (toolingTestCommand as TestCommand)(plan, available, shard).slice(2);
+  return browserTests.some((test) => selected.includes(test));
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

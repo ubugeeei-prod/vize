@@ -75,7 +75,7 @@ fn modern_public_constructor_contract_does_not_leak_into_vue2() {
     assert!(
         modern.contains("$props: Props;")
             && modern.contains("new <$AuthoredProps = unknown, $JsxProps = unknown>(props?:")
-            && modern.contains("} & $ComponentPublicBase;"),
+            && modern.contains("}, Props, {}, $AuthoredProps, $JsxProps> & $ComponentPublicBase;"),
         "Vue 3 should separate strict public props from call-site inputs:\n{modern}"
     );
     assert!(

@@ -1,6 +1,6 @@
 //! Explicit head RCDATA/RAWTEXT ancestry from the existing owned lexer tape.
 //!
-//! Title/style text never enters body insertion rules. Slashed starts refuse:
+//! Head title/style/script text never enters body insertion rules. Slashed starts refuse:
 //! the current lexer ends its special-text state on that slash, whereas an
 //! HTML parser ignores the slash and continues reading the element's text.
 
@@ -16,7 +16,7 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 
     pub(super) fn in_head_text(&self) -> bool {
-        matches!(self.current(), Some("title" | "style"))
+        matches!(self.current(), Some("title" | "style" | "script"))
     }
 }
 

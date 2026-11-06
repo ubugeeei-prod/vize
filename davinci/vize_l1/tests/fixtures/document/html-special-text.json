@@ -1,0 +1,136 @@
+[
+  {
+    "name": "head script raw text",
+    "source": "<!DOCTYPE html><html><head><script data-x=\"a&amp;b\">if(a<b)&amp;</script></head><body></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["script", 1, [["data-x", "a&b"]]],
+      ["body", 0, []]
+    ],
+    "nodes": [
+      ["script", [[3, "if(a<b)&amp;"]]],
+      ["body", []]
+    ]
+  },
+  {
+    "name": "body special text siblings",
+    "source": "<!DOCTYPE html><html><head></head><body><div>a</div><textarea>\n&amp;<b></textarea><style>&amp;<b></style><title>&amp;<b></title><script>&amp;<b></script><span>z</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["div", 2, []],
+      ["textarea", 2, []],
+      ["style", 2, []],
+      ["title", 2, []],
+      ["script", 2, []],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "div"],
+          [1, "textarea"],
+          [1, "style"],
+          [1, "title"],
+          [1, "script"],
+          [1, "span"]
+        ]
+      ],
+      ["div", [[3, "a"]]],
+      ["textarea", [[3, "&<b>"]]],
+      ["style", [[3, "&amp;<b>"]]],
+      ["title", [[3, "&<b>"]]],
+      ["script", [[3, "&amp;<b>"]]],
+      ["span", [[3, "z"]]]
+    ]
+  },
+  {
+    "name": "textarea CRLF first newline",
+    "source": "<!DOCTYPE html><html><head></head><body><textarea>\r\nA</textarea></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["textarea", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "textarea"]]],
+      ["textarea", [[3, "A"]]]
+    ]
+  },
+  {
+    "name": "textarea keeps second newline",
+    "source": "<!DOCTYPE html><html><head></head><body><textarea>\n\nA</textarea></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["textarea", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "textarea"]]],
+      ["textarea", [[3, "\nA"]]]
+    ]
+  },
+  {
+    "name": "textarea reference newline",
+    "source": "<!DOCTYPE html><html><head></head><body><textarea>&#10;A</textarea></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["textarea", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "textarea"]]],
+      ["textarea", [[3, "A"]]]
+    ]
+  },
+  {
+    "name": "textarea comment syntax is text",
+    "source": "<!DOCTYPE html><html><head></head><body><textarea><!--x-->\nA</textarea></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["textarea", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "textarea"]]],
+      ["textarea", [[3, "<!--x-->\nA"]]]
+    ]
+  },
+  {
+    "name": "folded head title and style",
+    "source": "<!DOCTYPE html><HTML><HEAD><TITLE>A&amp;<b></tItLe><STYLE>&amp;<b></sTyLe></HEAD><BODY></BODY></HTML>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["title", 1, []],
+      ["style", 1, []],
+      ["body", 0, []]
+    ],
+    "nodes": [
+      ["title", [[3, "A&<b>"]]],
+      ["style", [[3, "&amp;<b>"]]],
+      ["body", []]
+    ]
+  },
+  {
+    "name": "script pseudo close stays raw",
+    "source": "<!DOCTYPE html><html><head></head><body><script>a</scriptx>b</script></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["script", 2, []]
+    ],
+    "nodes": [
+      ["body", [[1, "script"]]],
+      ["script", [[3, "a</scriptx>b"]]]
+    ]
+  }
+]
