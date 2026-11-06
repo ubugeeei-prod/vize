@@ -156,7 +156,12 @@
       "status": "mapped"
     },
     "vue/define-props-destructuring": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "script/define-props-destructuring",
       "patinaSeverity": "warning",
       "status": "mapped"

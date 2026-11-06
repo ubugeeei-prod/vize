@@ -1,0 +1,49 @@
+{
+  "schema": "vize.lint.define-props-destructuring-route-successors",
+  "version": 1,
+  "authority": "Additive current default-route successor for typed or runtime defineProps calls without destructured bindings. Frozen reserved-key, reserved-prop, historical provider, and original route authorities remain byte-exact.",
+  "rule": "script/define-props-destructuring",
+  "bases": {
+    "core": {
+      "path": "default-route-companions.json",
+      "sha256": "07267827ba3f3fc6cf789e6939a2b58f61758198be2527fa59ece5cae2470800"
+    },
+    "bare": {
+      "path": "bare-parent-route-successors.json",
+      "sha256": "54610b0976da6e8571d4e170cb4593bfdca4b2d8650025fa882b795f50b3aed8"
+    },
+    "producer": {
+      "path": "../../../../../crates/vize_patina/src/rules/script/define_props_destructuring.rs",
+      "sha256": "92a9aa333d98a692e9430580b52448b495af47dd801fc51ffb885b979e18fcef"
+    }
+  },
+  "routes": {
+    "default": "append in CLI source order",
+    "recommended": "append in CLI source order",
+    "essential": "absent",
+    "ecosystem": "append in CLI source order",
+    "explicitTargetOff": "append in CLI source order",
+    "incremental": "absent",
+    "n8nProjection": "absent"
+  },
+  "coreCases": [
+    {
+      "id": "unsupported-define-props",
+      "filename": "UnsupportedDefineProps.vue",
+      "sourceSha256": "a1d6bae2bf43c2584b63dd121acdfbf433a5e5979ee0dec15e642012be531808",
+      "diagnostics": [
+        {
+          "rule_name": "script/define-props-destructuring",
+          "severity": "warning",
+          "message": "Prefer destructuring the return value of defineProps().",
+          "start": 25,
+          "end": 90,
+          "help": "Use `const { prop = defaultValue } = defineProps<Props>()`; Vue 3.5+ preserves reactivity.",
+          "fix": null,
+          "labels": []
+        }
+      ]
+    }
+  ],
+  "bareCases": []
+}

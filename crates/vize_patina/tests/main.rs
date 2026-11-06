@@ -123,6 +123,7 @@ use vize_patina::{LintPreset, Linter};
 // rules have independent membership and behavior coverage, so historical rule
 // packets explicitly replay the earlier default boundary.
 const LATEST_DEFAULT_RULES: &[&str] = &[
+    "script/define-props-destructuring",
     "script/require-define-component",
     "vue/no-undefined-refs",
     "vue/no-unused-setup-bindings",

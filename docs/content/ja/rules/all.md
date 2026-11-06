@@ -143,7 +143,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | defineEmits を型による宣言形式に揃えます。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-macros-order"></span>[`script/define-macros-order`](./reference/script-define-macros-order.md) | script setup のコンパイラーマクロを一定の順に宣言します。 | `opinionated`, `nuxt` |  |
 | <span id="script-define-props-declaration"></span>[`script/define-props-declaration`](./reference/script-define-props-declaration.md) | defineProps を型による宣言形式に揃えます。 | `opinionated`, `nuxt` |  |
-| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | defineProps の分割代入スタイルを指定した方針に揃えます。 | — |  |
+| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | defineProps の分割代入スタイルを指定した方針に揃えます。 | `happy-path` |  |
 | <span id="script-no-arrow-functions-in-watch"></span>[`script/no-arrow-functions-in-watch`](./reference/script-no-arrow-functions-in-watch.md) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 | `essential` |  |
 | <span id="script-no-async-in-computed"></span>[`script/no-async-in-computed`](./reference/script-no-async-in-computed.md) | computed の getter で非同期関数を使う箇所を検出します。 | `essential` |  |
 | <span id="script-no-boolean-default"></span>[`script/no-boolean-default`](./reference/script-no-boolean-default.md) | Boolean prop の冗長な default を検出します。 | `opinionated`, `nuxt` |  |

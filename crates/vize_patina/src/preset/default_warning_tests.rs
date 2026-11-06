@@ -8,6 +8,7 @@ use std::collections::BTreeSet;
 // promoted warnings. Later default-preset additions have their own membership
 // and rule tests, so keep them out of these historical packet assertions.
 const LATER_DEFAULT_RULES: &[&str] = &[
+    "script/define-props-destructuring",
     "vue/no-undefined-refs",
     "vue/no-unused-setup-bindings",
     "vue/no-this-in-before-route-enter",

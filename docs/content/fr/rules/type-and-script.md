@@ -55,12 +55,13 @@ Règles de justesse du préréglage `essential`.
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | Imposer une utilisation valide de defineProps() (un seul appel, pas d’arguments de type et d’exécution combinés, pas de références locales). |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | Exiger que le résultat d’un appel nextTick() soit attendu, chaîné ou associé à un callback. |  |
 
-## Par défaut (6)
+## Par défaut (7)
 
 Ajoutées par `happy-path`, le préréglage par défaut.
 
 | Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
+| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | Imposer un style cohérent de déstructuration de defineProps dans &lt;script setup&gt;. |  |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | Interdire de passer plusieurs arguments à un appel de fonction de slot à portée. |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | Interdire les définitions de composants dans les fonctions setup ou de rendu. |  |
 | <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | Exiger defineComponent() pour les exports par défaut des SFC TypeScript. |  |
@@ -97,13 +98,12 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="type-no-reactivity-loss"></span>[`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | Interdire les instantanés ordinaires de valeurs réactives lors des affectations et des appels. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-template-binding"></span>[`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | Interdire les liaisons de template dont le type résolu est non sûr. | `nuxt`, `opinionated` |  |
 
-## À activer (16)
+## À activer (15)
 
 Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.
 
 | Règle | Ce qu’elle vérifie | Correction automatique |
 | --- | --- | --- |
-| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | Imposer un style cohérent de déstructuration de defineProps dans &lt;script setup&gt;. |  |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | Interdire l’utilisation de nextTick() dans les composants destinés à Vapor. |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | Interdire la déstructuration d’objets réactifs qui fait perdre la réactivité. |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Interdire les références aux variables globales de l’environnement d’exécution qui doivent passer par une couche d’encapsulation typée. |  |

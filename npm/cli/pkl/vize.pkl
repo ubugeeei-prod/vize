@@ -189,7 +189,7 @@ class ContentDirectivesOptions extends LintRuleOptionTypes.ContentDirectivesOpti
 
 /// Style for props destructuring; matches eslint-plugin-vue's default.
 class DefinePropsDestructuringOptions {
-  destructure: "only-when-assigned" | "always" | "never" = "only-when-assigned"
+  destructure: "only-when-assigned" | "always" | "never" = "always"
 }
 
 class DefineMacrosOrderOptions {

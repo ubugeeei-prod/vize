@@ -1,12 +1,13 @@
 //! script/define-props-destructuring
 //!
 //! Match Vue's props destructuring style preference. The default requires
-//! destructuring when assigned; `always` also checks bare calls and `never`
-//! preserves explicit props-object access. Vue 3.5 destructures remain reactive.
+//! destructuring for assigned and bare typed calls; `only-when-assigned` skips
+//! bare calls and `never` preserves explicit props-object access. Vue 3.5
+//! destructures remain reactive.
 //!
 //! ### Invalid
 //! ```ts
-//! const props = defineProps<{ foo: string }>()
+//! defineProps<{ foo: string }>()
 //! ```
 //!
 //! ### Valid
@@ -32,7 +33,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Use the default `only-when-assigned` props destructuring preference.
+/// Use the default `always` props destructuring preference.
 pub struct DefinePropsDestructuring;
 
 impl DefinePropsDestructuring {

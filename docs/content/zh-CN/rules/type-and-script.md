@@ -55,12 +55,13 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="script-valid-define-props"></span>[`script/valid-define-props`](./reference/script-valid-define-props.md) | 要求 defineProps() 用法有效（只调用一次、不同时提供类型和运行时参数、不引用局部变量）。 |  |
 | <span id="script-valid-next-tick"></span>[`script/valid-next-tick`](./reference/script-valid-next-tick.md) | 要求 nextTick() 调用结果被等待、链式处理，或提供回调。 |  |
 
-## 默认 (6)
+## 默认 (7)
 
 由默认预设 `happy-path` 添加。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
+| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | 要求 &lt;script setup&gt; 中的 defineProps 解构风格保持一致。 |  |
 | <span id="script-no-multiple-slot-args"></span>[`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | 禁止向作用域插槽函数调用传入多个参数。 |  |
 | <span id="script-no-unstable-nested-components"></span>[`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | 禁止在 setup 或 render 函数内定义组件。 |  |
 | <span id="script-require-define-component"></span>[`script/require-define-component`](./reference/script-require-define-component.md) | 要求 TypeScript SFC 的默认导出使用 defineComponent()。 |  |
@@ -97,13 +98,12 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="type-no-reactivity-loss"></span>[`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | 禁止赋值和调用中对响应式值取普通快照。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-template-binding"></span>[`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | 禁止解析为不安全类型的模板绑定。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (16)
+## 按需启用 (15)
 
 不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
 | 规则 | 检查内容 | 自动修复 |
 | --- | --- | --- |
-| <span id="script-define-props-destructuring"></span>[`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | 要求 &lt;script setup&gt; 中的 defineProps 解构风格保持一致。 |  |
 | <span id="script-no-next-tick"></span>[`script/no-next-tick`](./reference/script-no-next-tick.md) | 禁止面向 Vapor 的组件使用 nextTick()。 |  |
 | <span id="script-no-reactive-destructure"></span>[`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | 禁止导致响应性丢失的响应式对象解构。 |  |
 | <span id="script-no-restricted-globals"></span>[`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | 禁止直接引用必须通过类型化包装器访问的运行时环境全局变量。 |  |

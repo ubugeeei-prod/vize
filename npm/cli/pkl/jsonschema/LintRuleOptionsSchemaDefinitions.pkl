@@ -10,7 +10,7 @@ definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
     ["destructure"] = new JsonSchema {
       type = "string"
       enum = new Listing { "only-when-assigned"; "always"; "never" }
-      default = "only-when-assigned"
+      default = "always"
     }
   }
   additionalProperties = false

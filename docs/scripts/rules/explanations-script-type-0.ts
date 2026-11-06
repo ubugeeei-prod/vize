@@ -86,9 +86,9 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "script/define-props-destructuring",
-    "`defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.",
+    "The bare typed `defineProps` call declares `foo` without binding it through the default destructuring policy.",
     "The object pattern binds `foo` and `bar` directly and gives the optional `bar` a default. This relies on Vue 3.5+ reactive props destructuring; the configurable `never` mode prefers the opposite form.",
-    "`defineProps` の結果を分割代入せず、単一の `props` 変数に代入しており、既定の分割代入の推奨に従っていません。",
+    "型付きの `defineProps` を単独で呼び出し、既定の分割代入方針で `foo` を束縛していません。",
     "オブジェクトパターンで `foo` と `bar` を直接取り出し、省略可能な `bar` に既定値を付けます。Vue 3.5 以降のリアクティブな props 分割代入を前提とし、設定を `never` にした場合は逆の形式を推奨します。",
   ],
   [

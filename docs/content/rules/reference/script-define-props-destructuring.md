@@ -9,17 +9,17 @@ Enforce consistent style for defineProps destructuring in &lt;script setup&gt;.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | None | No | [Rule options](../options.md) |
+| `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form.
 
 ## Bad
 
-`defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.
+The bare typed `defineProps` call declares `foo` without binding it through the default destructuring policy.
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
-const props = defineProps<{ foo: string }>()
+defineProps<{ foo: string }>()
 </script>
 ```
 
@@ -55,4 +55,4 @@ Then run `vp run lint`.
 - [Type and script rules](../type-and-script.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L30)

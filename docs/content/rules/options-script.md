@@ -189,9 +189,9 @@ const props = defineProps<{ label: string }>();
 
 ## `script/define-props-destructuring`
 
-The default, `only-when-assigned`, requires a destructured binding when the result is assigned.
-A bare `defineProps<Props>()` is allowed. `always` also reports bare calls; `never` reports
-destructured bindings instead. Vue 3.5 preserves reactivity when destructuring props.
+The default, `always`, requires a destructured binding for assigned and bare typed calls.
+`only-when-assigned` skips bare `defineProps<Props>()` calls; `never` reports destructured
+bindings instead. Vue 3.5 preserves reactivity when destructuring props.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -200,7 +200,7 @@ export default defineConfig({}).withVue({
   linter: {
     preset: "incremental",
     rules: { "script/define-props-destructuring": "warn" },
-    ruleOptions: { "script/define-props-destructuring": { destructure: "only-when-assigned" } },
+    ruleOptions: { "script/define-props-destructuring": { destructure: "always" } },
   },
 });
 ```

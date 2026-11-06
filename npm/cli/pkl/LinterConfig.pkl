@@ -158,7 +158,7 @@ class StrictBooleanExpressionsOptions {
 
 /// Style for props destructuring; matches eslint-plugin-vue's default.
 class DefinePropsDestructuringOptions {
-  destructure: "only-when-assigned" | "always" | "never" = "only-when-assigned"
+  destructure: "only-when-assigned" | "always" | "never" = "always"
 }
 
 /// Options for `script/define-macros-order`.

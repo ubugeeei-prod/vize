@@ -443,7 +443,7 @@ fn props_destructuring_options_validate_and_merge() {
     assert!(!options.is_empty());
     assert_eq!(
         options.define_props_destructuring(),
-        Some(PropsDestructureMode::OnlyWhenAssigned)
+        Some(PropsDestructureMode::Always)
     );
     let overlay: ConfigLintRuleOptions =
         serde_json::from_str(r#"{"script/define-props-destructuring": {"destructure":"never"}}"#)

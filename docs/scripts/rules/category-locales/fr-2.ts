@@ -31,7 +31,7 @@ export const frenchRules2 = {
   ],
   "script/define-props-destructuring": [
     "Imposer un style cohérent de déstructuration de defineProps dans &lt;script setup&gt;",
-    "`defineProps` est affecté à la seule liaison `props` au lieu d’être déstructuré, contrairement à la préférence par défaut pour la déstructuration.",
+    "L’appel typé isolé à `defineProps` déclare `foo` sans le lier conformément à la politique de déstructuration par défaut.",
     "Le motif objet lie directement `foo` et `bar` et donne une valeur par défaut à `bar`, qui est facultatif. Cela repose sur la déstructuration réactive des props de Vue 3.5+ ; le mode configurable `never` préfère la forme opposée.",
   ],
   "script/no-arrow-functions-in-watch": [

@@ -71,6 +71,10 @@ function inverseLatestDefaultExpansion(name, body) {
       ],
       ["EventNameCasing::Lowercase", "EventNameCasing::CamelCase"],
       [
+        `    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DESTRUCTURING, profile_name: "patina.script_rule.define_props_destructuring", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &DefinePropsDestructuring },`,
+        `    BuiltinScriptRuleEntry { rule_name: RULE_DEFINE_PROPS_DESTRUCTURING, profile_name: "patina.script_rule.define_props_destructuring", category: "Script", fixable: false, presets: OPT_IN_SCRIPT_PRESETS, rule: &DefinePropsDestructuring },`,
+      ],
+      [
         `    BuiltinScriptRuleEntry { rule_name: RULE_REQUIRE_DEFINE_COMPONENT, profile_name: "patina.script_rule.require_define_component", category: "Script", fixable: false, presets: HAPPY_PATH_SCRIPT_PRESETS, rule: &RequireDefineComponent },\n`,
         "",
       ],
@@ -87,7 +91,7 @@ function inverseLatestDefaultExpansion(name, body) {
   }
   if (name === "tests/_fixtures/patina-eslint-vue-rule-map.json") {
     const value = canonical(body);
-    for (const rule of ["vue/no-this-in-before-route-enter"]) {
+    for (const rule of ["vue/define-props-destructuring", "vue/no-this-in-before-route-enter"]) {
       assert.deepEqual(value.entries[rule].patinaPresets, [
         "ecosystem",
         "general-recommended",
@@ -107,6 +111,7 @@ function inverseLatestDefaultExpansion(name, body) {
     const table = canonical(Buffer.from(text.slice(at)));
     const broad = ["happy_path", "ecosystem", "opinionated", "nuxt"];
     const promoted = [
+      "script/define-props-destructuring",
       "vue/no-undefined-refs",
       "vue/no-unused-setup-bindings",
       "vue/no-this-in-before-route-enter",
