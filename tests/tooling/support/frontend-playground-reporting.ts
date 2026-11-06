@@ -4,8 +4,8 @@ type Step = { name?: string; id?: string; if?: string; run?: string; [key: strin
 type Job = { steps?: Step[]; [key: string]: unknown };
 type Workflow = { jobs: Record<string, Job>; [key: string]: unknown };
 
-// #11690 records the existing browser and VRT commands without changing their
-// runner contract. Validate and invert only those reporting additions.
+// #11690 records the existing browser command and executes VRT outside the
+// task cache so its case receipt remains available to the following step.
 export function restorePlaygroundCaseReporting(workflow: Workflow, original: Workflow) {
   const target = workflow.jobs["pr-playground-test"];
   const before = original.jobs["pr-playground-test"];
@@ -31,6 +31,7 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
   assert.deepEqual(steps[vrtIndex], {
     ...previousVrt,
     env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" },
+    run: "vp exec --filter './playground' -- playwright test",
   });
   steps[vrtIndex] = structuredClone(previousVrt);
 

@@ -415,7 +415,7 @@ jobs:
       - name: Run VRT
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
         env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" }
-        run: vp run --filter './playground' test:vrt
+        run: vp exec --filter './playground' -- playwright test
         continue-on-error: true
         id: vrt
       - name: Collect playground test cases

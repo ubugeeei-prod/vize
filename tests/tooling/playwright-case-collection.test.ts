@@ -24,6 +24,7 @@ test("the playground job uploads browser and visual test cases", () => {
   const collect = playground.steps.find((step) => step.name === "Collect playground test cases");
   const vrt = playground.steps.find((step) => step.name === "Run VRT");
   assert.equal(vrt?.env?.VIZE_PLAYWRIGHT_CASES, "e2e/vrt/test-results/case-report.json");
+  assert.equal(vrt?.run, "vp exec --filter './playground' -- playwright test");
   assert.equal(collect?.id, "cases");
   assert.equal(collect?.env?.TEST_CASES_JOB, playground.name);
   assert.equal(collect?.env?.VRT_OUTCOME, "${{ steps.vrt.outcome }}");
