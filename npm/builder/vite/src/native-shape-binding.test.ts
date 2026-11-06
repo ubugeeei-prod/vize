@@ -43,9 +43,17 @@ function compile(
   };
 }
 
-/** The fallback's fast path omits the statement end, which no caller reads. */
-function span({ defaultExportEnd: _, ...shape }: ModuleOutputInfo) {
-  return shape;
+/** Compare export geometry; HMR import facts are native-only, and the fallback omits the end. */
+function span(shape: ModuleOutputInfo) {
+  return {
+    hasDefaultExport: shape.hasDefaultExport,
+    hasSfcMainDefined: shape.hasSfcMainDefined,
+    hasNamedRenderExport: shape.hasNamedRenderExport,
+    hasNamedSsrRenderExport: shape.hasNamedSsrRenderExport,
+    defaultExportStart: shape.defaultExportStart,
+    defaultExportKeywordEnd: shape.defaultExportKeywordEnd,
+    defaultExportIsSfcMain: shape.defaultExportIsSfcMain,
+  };
 }
 
 let cases = 0;

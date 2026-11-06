@@ -17,7 +17,7 @@ export function componentSource(index: number): string {
 import Peer from './${fileName(index ^ 1)}'
 ${index === 1 ? "import { useTemplateRef } from 'vue'\nconst peer = useTemplateRef('peer')\npeer.value?.publicState.toUpperCase()\n" : ""}
 Peer
-defineProps<{ label: string; file${index}?: number }>()
+const { label, file${index} } = defineProps<{ label: string; file${index}?: number }>()
 defineEmits<{ save: [value: string] }>()
 defineSlots<{ default(props: { value: string }): unknown }>()
 defineModel<number>('count')

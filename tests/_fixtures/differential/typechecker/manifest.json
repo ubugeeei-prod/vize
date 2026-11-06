@@ -14241,6 +14241,50 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-component-listener-reference-guard-share-12017",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-reference-guard-share-12017/Child.vue.txt",
+          "sha256": "4cf7df979364c5b605fce1ffa899cae7f56b0366d762b55a7bddb4954ae181b9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-reference-guard-share-12017/Probe.vue.txt",
+          "sha256": "c006b7027db8400412c365a4873424f1191b7b8418ec2b72df148956af4c2674",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-reference-guard-share-12017/package.json.txt",
+          "sha256": "2aa7f7392cac9d8b287423ae87c6d589d2b6070f85b9f54d6771c55f4b14cbaa",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-reference-guard-share-12017/tsconfig.json.txt",
+          "sha256": "3970e262d489374004ae1cd438c2651de111841699974abb5be740338473c1bd",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_listener_guard_share::guarded_reference_listener_does_not_hide_later_arrow_context; exact #12017 package, config and SFC report inputs are pinned and physically consumed. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
       "state": "active",
       "targets": [

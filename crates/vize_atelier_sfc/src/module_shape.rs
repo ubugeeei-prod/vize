@@ -1,18 +1,17 @@
 //! The shape of an emitted SFC module, so the JS plugins do not have to
 //! re-derive it by parsing that module again with oxc (#3425).
 //!
-//! `generateOutput` in the Vite plugin needs six facts about the module the
-//! compiler just produced — whether it has a default export, whether it defines
-//! `_sfc_main`, whether it exports a named `render`/`ssrRender`, and where the
-//! default export's `export default` keyword starts and ends — so it can splice
-//! in `__scopeId` and the CSS-modules assignment. It recovered them by running
-//! `parseProgram` over the emitted code, which the #3425 profile measured at
-//! ~77 ms against ~49 ms for the native compilation it post-processes. Most of
-//! that is not the parse but `jsonParseAst`, the cost of materializing oxc's AST
-//! as JavaScript objects across the NAPI boundary.
+//! Output assembly needs export geometry so it can splice in `__scopeId` and
+//! CSS-module assignments. HMR also needs the value imports that survive type
+//! elision, plus conservative side-effect, re-export and dynamic-import flags
+//! (#11619). Those consumers previously recovered the facts by parsing the
+//! finished JavaScript again. The #3425 profile measured one such `parseProgram`
+//! at ~77 ms against ~49 ms for the native compilation it post-processes; most
+//! of that was `jsonParseAst`, the cost of materializing oxc's AST as JavaScript
+//! objects across the NAPI boundary.
 //!
-//! Computing it here removes that boundary crossing entirely: the same oxc parse
-//! runs natively and only eight scalars cross.
+//! Computing the complete shape here removes that boundary crossing entirely:
+//! the existing native parse supplies compact scalars and import records.
 //!
 //! ## Why this is derived from the finished module rather than recorded while
 //! writing it
@@ -42,8 +41,10 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Comment, Declaration, ExportDefaultDeclarationKind, Program, Statement, VariableDeclaration,
+    Comment, Declaration, ExportDefaultDeclarationKind, ImportDeclarationSpecifier,
+    ImportExpression, Program, Statement, VariableDeclaration,
 };
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::{identifier::is_white_space, line_terminator::is_line_terminator};
@@ -51,6 +52,14 @@ use vize_carton::profile;
 
 /// The identifier the SFC compiler binds a component to before exporting it.
 const SFC_MAIN: &str = "_sfc_main";
+
+/// One runtime import binding in the finished emitted module.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SfcModuleImport {
+    pub source: vize_carton::String,
+    pub local: vize_carton::String,
+    pub namespace: bool,
+}
 
 /// `export default` — the keyword pair whose end the consumer splices after.
 /// What the JS side would otherwise learn by parsing the emitted module.
@@ -72,6 +81,16 @@ pub struct SfcModuleShape {
     /// Whether the default export is the bare `_sfc_main` identifier, which is
     /// what lets the consumer insert before it rather than rewriting it.
     pub default_export_is_sfc_main: bool,
+    /// Local binding exported by default, for identifiers and named declarations.
+    pub default_export_local: Option<vize_carton::String>,
+    /// Runtime import bindings after type-only imports have been excluded.
+    pub imports: Vec<SfcModuleImport>,
+    /// A bare runtime import cannot be compared without replaying its effects.
+    pub has_side_effect_import: bool,
+    /// Re-exported live bindings do not have a local value to snapshot.
+    pub has_reexport: bool,
+    /// Dynamic dependencies keep HMR reuse conservative.
+    pub has_dynamic_import: bool,
 }
 
 /// Analyze an emitted module, or `None` when it does not parse.
@@ -135,7 +154,7 @@ fn finalize(
     map: Option<serde_json::Value>,
 ) -> Finalized {
     if preserve_typescript {
-        let shape = analyze_module_shape(&code);
+        let shape = analyze_preserved_typescript_shape(&code);
         return (code, shape, map);
     }
 
@@ -160,7 +179,12 @@ fn finalize(
         map.is_some(),
     );
     let Some((stripped, reprint)) = stripped else {
-        let shape = analyze_module_shape(&code);
+        let shape = analyze_module_shape(&code).map(|mut shape| {
+            // A failed strip leaves type-only versus runtime imports unknown.
+            // Keep geometry facts, but make HMR consumers refuse the snapshot.
+            shape.has_side_effect_import = true;
+            shape
+        });
         return (code, shape, map);
     };
     let map = map.zip(reprint).and_then(|(map, reprint)| {
@@ -170,8 +194,37 @@ fn finalize(
     (stripped, shape, map)
 }
 
+/// Keep splice offsets in the preserved TypeScript bytes while deriving HMR
+/// dependency facts from the JavaScript that the host transformer will run.
+/// This is the native equivalent of the old JS-side type-erasure pass: an
+/// ordinary import used only in a type position must not become a live HMR
+/// reference after SWC removes it from the module.
+fn analyze_preserved_typescript_shape(code: &str) -> Option<SfcModuleShape> {
+    let mut shape = analyze_module_shape(code)?;
+    let Some((runtime_code, _)) =
+        crate::compile_script::typescript::strip_typescript_for_emitter_traced(code, false)
+    else {
+        // Geometry remains safe, but an unproved runtime import set must make
+        // the HMR consumer refuse its snapshot.
+        shape.has_side_effect_import = true;
+        return Some(shape);
+    };
+    let Some(runtime) = analyze_module_shape(&runtime_code) else {
+        shape.has_side_effect_import = true;
+        return Some(shape);
+    };
+    shape.imports = runtime.imports;
+    shape.has_side_effect_import = runtime.has_side_effect_import;
+    shape.has_reexport = runtime.has_reexport;
+    shape.has_dynamic_import = runtime.has_dynamic_import;
+    Some(shape)
+}
+
 fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShape> {
     let mut shape = SfcModuleShape::default();
+    let mut dynamic_imports = DynamicImports::default();
+    dynamic_imports.visit_program(program);
+    shape.has_dynamic_import = dynamic_imports.found;
     for statement in &program.body {
         match statement {
             Statement::ExportDefaultDeclaration(export) => {
@@ -182,6 +235,13 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShap
                 shape.default_export_keyword_end =
                     Some(keyword_end(code, span.start, &program.comments)?);
                 shape.default_export_is_sfc_main = exports_sfc_main(&export.declaration);
+                shape.default_export_local = default_export_local(&export.declaration);
+            }
+            Statement::ImportDeclaration(import) => collect_import(import, &mut shape),
+            Statement::ExportAllDeclaration(export) => {
+                if !export.export_kind.is_type() {
+                    shape.has_reexport = true;
+                }
             }
             Statement::VariableDeclaration(declaration) => {
                 if declares_sfc_main(declaration) {
@@ -189,6 +249,11 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShap
                 }
             }
             Statement::ExportNamedDeclaration(export) => {
+                if export.source.is_some()
+                    && !crate::compile_script::statement_sections::is_type_only_export(export)
+                {
+                    shape.has_reexport = true;
+                }
                 for name in exported_names(export) {
                     match name {
                         "render" => shape.has_named_render_export = true,
@@ -206,6 +271,53 @@ fn shape_from_program(code: &str, program: &Program<'_>) -> Option<SfcModuleShap
         }
     }
     Some(shape)
+}
+
+#[derive(Default)]
+struct DynamicImports {
+    found: bool,
+}
+
+impl<'a> Visit<'a> for DynamicImports {
+    fn visit_import_expression(&mut self, _expression: &ImportExpression<'a>) {
+        self.found = true;
+    }
+}
+
+fn collect_import(import: &oxc_ast::ast::ImportDeclaration<'_>, shape: &mut SfcModuleShape) {
+    if import.import_kind.is_type() {
+        return;
+    }
+    let source = import.source.value.as_str();
+    let Some(specifiers) = &import.specifiers else {
+        shape.has_side_effect_import = true;
+        return;
+    };
+    if specifiers.is_empty() {
+        shape.has_side_effect_import = true;
+        return;
+    }
+    for specifier in specifiers {
+        let (local, namespace) = match specifier {
+            ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                if specifier.import_kind.is_type() {
+                    continue;
+                }
+                (specifier.local.name.as_str(), false)
+            }
+            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                (specifier.local.name.as_str(), false)
+            }
+            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                (specifier.local.name.as_str(), true)
+            }
+        };
+        shape.imports.push(SfcModuleImport {
+            source: source.into(),
+            local: local.into(),
+            namespace,
+        });
+    }
 }
 
 /// End of the `export default` keyword pair starting at `start`.
@@ -240,6 +352,25 @@ fn exports_sfc_main(declaration: &ExportDefaultDeclarationKind<'_>) -> bool {
         declaration,
         ExportDefaultDeclarationKind::Identifier(identifier) if identifier.name == SFC_MAIN
     )
+}
+
+fn default_export_local(
+    declaration: &ExportDefaultDeclarationKind<'_>,
+) -> Option<vize_carton::String> {
+    match declaration {
+        ExportDefaultDeclarationKind::Identifier(identifier) => {
+            Some(identifier.name.as_str().into())
+        }
+        ExportDefaultDeclarationKind::FunctionDeclaration(function) => function
+            .id
+            .as_ref()
+            .map(|identifier| identifier.name.as_str().into()),
+        ExportDefaultDeclarationKind::ClassDeclaration(class) => class
+            .id
+            .as_ref()
+            .map(|identifier| identifier.name.as_str().into()),
+        _ => None,
+    }
 }
 
 fn declares_sfc_main(declaration: &VariableDeclaration<'_>) -> bool {
@@ -290,181 +421,4 @@ fn exported_names<'a>(
 }
 
 #[cfg(test)]
-mod tests {
-    #![expect(clippy::string_slice, reason = "tests assert by panicking")]
-    use super::{SfcModuleShape, analyze_module_shape};
-
-    fn shape(code: &str) -> SfcModuleShape {
-        analyze_module_shape(code).expect("emitted module should parse")
-    }
-
-    /// The shape the SFC compiler emits for a script-setup component: `_sfc_main`
-    /// declared, then exported by name.
-    #[test]
-    fn sfc_main_declared_then_default_exported() {
-        let code = "const _sfc_main = { name: 'X' }\nexport default _sfc_main\n";
-        let shape = shape(code);
-
-        assert!(shape.has_default_export);
-        assert!(shape.has_sfc_main_defined);
-        assert!(shape.default_export_is_sfc_main);
-        let start = shape.default_export_start.unwrap() as usize;
-        let keyword_end = shape.default_export_keyword_end.unwrap() as usize;
-        assert_eq!(&code[start..keyword_end], "export default");
-        assert_eq!(
-            &code[start..shape.default_export_end.unwrap() as usize],
-            "export default _sfc_main"
-        );
-    }
-
-    /// A default export that is not the `_sfc_main` identifier: the consumer may not
-    /// insert before it, so the flag has to distinguish the two.
-    #[test]
-    fn an_inline_default_export_is_not_sfc_main() {
-        let shape = shape("export default { name: 'X' }\n");
-        assert!(shape.has_default_export);
-        assert!(!shape.default_export_is_sfc_main);
-        assert!(!shape.has_sfc_main_defined);
-    }
-
-    /// A template-only SFC exports `render` by name and has no default export; the
-    /// consumer builds `_sfc_main` itself from that branch.
-    #[test]
-    fn a_named_render_export_is_recognized() {
-        let shape = shape("export function render(_ctx, _cache) { return null }\n");
-        assert!(shape.has_named_render_export);
-        assert!(!shape.has_default_export);
-        assert!(!shape.has_named_ssr_render_export);
-    }
-
-    #[test]
-    fn a_named_ssr_render_export_is_recognized() {
-        let shape = shape("export function ssrRender(_ctx, _push) {}\n");
-        assert!(shape.has_named_ssr_render_export);
-        assert!(!shape.has_named_render_export);
-    }
-
-    /// `export { render }` reaches the same flags as `export function render`.
-    #[test]
-    fn a_specifier_list_counts_as_a_named_export() {
-        let shape = shape("function render() {}\nexport { render }\n");
-        assert!(shape.has_named_render_export);
-    }
-
-    /// A renamed specifier is recognized by its *exported* name, which is what the
-    /// consumer's `_sfc_main.render = render` assignment refers to.
-    #[test]
-    fn a_renamed_specifier_uses_the_exported_name() {
-        let shape = shape("function _r() {}\nexport { _r as render }\n");
-        assert!(shape.has_named_render_export);
-    }
-
-    /// `export const _sfc_main = …` defines it just as a bare declaration does.
-    #[test]
-    fn an_exported_const_declares_sfc_main() {
-        let shape = shape("export const _sfc_main = {}\n");
-        assert!(shape.has_sfc_main_defined);
-    }
-
-    /// The reason this parses instead of scanning: `export default` inside a string
-    /// or a comment in the user's own `<script>` reaches the emitted module verbatim
-    /// and must not be mistaken for the real one.
-    #[test]
-    fn export_default_inside_a_string_or_comment_is_not_a_default_export() {
-        let shape = shape("const doc = 'export default {}'\n// export default {}\n");
-        assert!(!shape.has_default_export);
-        assert_eq!(shape.default_export_start, None);
-    }
-
-    /// And when both are present, the offsets point at the real statement rather
-    /// than at the first textual occurrence.
-    #[test]
-    fn offsets_skip_a_decoy_occurrence() {
-        let code =
-            "const doc = 'export default {}'\nconst _sfc_main = {}\nexport default _sfc_main\n";
-        let shape = shape(code);
-        let start = shape.default_export_start.unwrap() as usize;
-        assert_eq!(
-            &code[start..shape.default_export_end.unwrap() as usize],
-            "export default _sfc_main"
-        );
-    }
-
-    /// An unusual gap between the two keywords is measured rather than assumed, so
-    /// the splice point stays correct for a user-authored default export.
-    #[test]
-    fn the_keyword_end_measures_the_actual_gap() {
-        let code = "export   default {}\n";
-        let shape = shape(code);
-        let start = shape.default_export_start.unwrap() as usize;
-        assert_eq!(
-            &code[start..shape.default_export_keyword_end.unwrap() as usize],
-            "export   default"
-        );
-    }
-
-    /// Unparseable output yields `None` so the consumer falls back to its own
-    /// analysis rather than acting on a half-filled shape.
-    #[test]
-    fn unparseable_output_has_no_shape() {
-        assert_eq!(analyze_module_shape("const = = =\n"), None);
-    }
-
-    /// The TypeScript emit parses too, without the caller saying which it produced.
-    #[test]
-    fn the_typescript_emit_parses() {
-        let shape = shape("const _sfc_main = {} as const\nexport default _sfc_main\n");
-        assert!(shape.has_default_export);
-        assert!(shape.default_export_is_sfc_main);
-    }
-
-    #[test]
-    fn finalized_shapes_match_the_exact_output_after_typescript_stripping() {
-        use super::finalize_module_output;
-        use crate::compile_script::typescript::{ensure_javascript_output, is_plain_javascript};
-
-        for source in [
-            "const doc = '😀 export default {}'; const _sfc_main = {}; export default _sfc_main;",
-            "export function render(_ctx, _cache) { return null }",
-            "const _sfc_main: { name: string } = { name: 'X' }; export default _sfc_main;",
-            "enum Kind { X = 1 }; const _sfc_main = { kind: Kind.X }; export default _sfc_main;",
-            "const _sfc_main = {} as const; export default _sfc_main; export function ssrRender() {}",
-            "// export default decoy\nexport default { text: 'é😀' };",
-            "export const value = <number>1; export default { value };",
-        ] {
-            for preserve_typescript in [false, true] {
-                let expected_code = if preserve_typescript {
-                    source.into()
-                } else {
-                    ensure_javascript_output(source.into())
-                };
-                let expected_shape = analyze_module_shape(&expected_code);
-                let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
-                assert_eq!(code, expected_code);
-                assert_eq!(shape, expected_shape);
-                if !preserve_typescript {
-                    assert!(is_plain_javascript(&code));
-                }
-                if let Some(start) = shape.as_ref().and_then(|shape| shape.default_export_start) {
-                    let start = start as usize;
-                    assert_eq!(
-                        code.get(start..start + "export default".len()),
-                        Some("export default")
-                    );
-                }
-            }
-        }
-    }
-
-    #[test]
-    fn invalid_or_jsx_output_keeps_its_original_fallback() {
-        use super::finalize_module_output;
-        for source in ["const = = =", "export default <div />", "return {}"] {
-            for preserve_typescript in [false, true] {
-                let (code, shape) = finalize_module_output(source.into(), preserve_typescript);
-                assert_eq!(code, source);
-                assert_eq!(shape, None);
-            }
-        }
-    }
-}
+mod tests;

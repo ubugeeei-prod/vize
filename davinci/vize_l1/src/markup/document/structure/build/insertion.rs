@@ -11,6 +11,21 @@ use crate::markup::{Namespace, Profile};
 
 impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn body_start(&mut self, tag: Tag) -> Result<(), Refusal> {
+        if P::IMPLIED_END_TAGS
+            && tag.namespace == Namespace::Html
+            && matches!(tag.name, "a" | "nobr")
+            && self.in_scope(&[tag.name], &[])
+        {
+            return Err(Refusal::FormattingRecovery(tag.span));
+        }
+        if P::IMPLIED_END_TAGS
+            && tag.namespace == Namespace::Html
+            && ((tag.name == "form" && self.in_scope(&["form"], &[]))
+                || (tag.name == "button" && self.in_scope(&["button"], &[]))
+                || (heading(tag.name) && self.current().is_some_and(heading)))
+        {
+            return Err(Refusal::ImpliedEnd(tag.span));
+        }
         if P::SELECT_CONTENT_MODEL {
             self.select_start(&tag)?;
         }
@@ -203,7 +218,7 @@ pub(super) const TABLE_PARTS: [&str; 9] = [
 ];
 
 /// Admitted start tags that close an open `p` in button scope.
-const CLOSES_P: [&str; 24] = [
+const CLOSES_P: [&str; 33] = [
     "address",
     "article",
     "aside",
@@ -214,7 +229,15 @@ const CLOSES_P: [&str; 24] = [
     "dt",
     "figcaption",
     "figure",
+    "fieldset",
+    "form",
     "footer",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
     "header",
     "hgroup",
     "hr",
@@ -224,6 +247,7 @@ const CLOSES_P: [&str; 24] = [
     "nav",
     "ol",
     "p",
+    "pre",
     "search",
     "section",
     "table",
@@ -234,6 +258,57 @@ const CLOSES_P: [&str; 24] = [
 fn special(name: &str) -> bool {
     !matches!(
         name,
-        "span" | "ruby" | "rb" | "rt" | "rtc" | "rp" | "option" | "optgroup"
+        "a" | "abbr"
+            | "audio"
+            | "b"
+            | "bdi"
+            | "bdo"
+            | "big"
+            | "cite"
+            | "code"
+            | "data"
+            | "datalist"
+            | "del"
+            | "dfn"
+            | "em"
+            | "font"
+            | "i"
+            | "ins"
+            | "kbd"
+            | "label"
+            | "legend"
+            | "map"
+            | "mark"
+            | "meter"
+            | "nobr"
+            | "q"
+            | "s"
+            | "samp"
+            | "small"
+            | "span"
+            | "strike"
+            | "strong"
+            | "sub"
+            | "sup"
+            | "time"
+            | "tt"
+            | "u"
+            | "var"
+            | "ruby"
+            | "rb"
+            | "rt"
+            | "rtc"
+            | "rp"
+            | "option"
+            | "optgroup"
+            | "output"
+            | "picture"
+            | "progress"
+            | "canvas"
+            | "video"
     )
+}
+
+fn heading(name: &str) -> bool {
+    matches!(name, "h1" | "h2" | "h3" | "h4" | "h5" | "h6")
 }

@@ -133,7 +133,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
                 source: dependency.source,
                 request_uri: dependency.request_uri,
                 virtual_result: VirtualTsResult::from_projection(
-                    dependency.code.to_string(),
+                    dependency.code,
                     dependency.mapping,
                     dependency.import_source_map,
                 ),
@@ -149,7 +149,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         source_uri: ctx.uri.clone(),
         request_uri: opened.request_uri,
         virtual_result: VirtualTsResult::from_projection(
-            opened.code.to_string(),
+            opened.code,
             opened.mapping,
             opened.import_source_map,
         ),
@@ -185,7 +185,7 @@ fn map_materialized_sources_with_resolver(
                 source: materialized.source,
                 request_uri: request_uri.into(),
                 virtual_result: VirtualTsResult::from_projection(
-                    materialized.code.to_string(),
+                    materialized.code,
                     materialized.mapping,
                     materialized.import_source_map,
                 ),

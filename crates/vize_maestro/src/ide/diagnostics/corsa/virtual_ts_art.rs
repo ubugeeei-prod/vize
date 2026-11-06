@@ -152,7 +152,7 @@ impl DiagnosticService {
 
         ArtVariantGeneration {
             virtual_result: VirtualTsResult::from_projection(
-                code.to_string(),
+                code,
                 output.mapping,
                 Default::default(),
             ),

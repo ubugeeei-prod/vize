@@ -938,9 +938,15 @@ export interface MacroArtifactNapi {
 /**
  * The emitted module's shape, so the JS plugins do not re-parse it (#3425).
  *
- * Absent when the module did not parse, in which case the consumer falls back
- * to its own analysis — the behaviour before this field existed.
+ * Absent when the module did not parse, in which case consumers retain their
+ * established fallback or fail closed.
  */
+export interface ModuleImportNapi {
+  source: string;
+  local: string;
+  namespace: boolean;
+}
+
 export interface ModuleShapeNapi {
   hasDefaultExport: boolean;
   hasSfcMainDefined: boolean;
@@ -950,6 +956,11 @@ export interface ModuleShapeNapi {
   defaultExportKeywordEnd?: number;
   defaultExportEnd?: number;
   defaultExportIsSfcMain: boolean;
+  defaultExportLocal?: string;
+  imports: Array<ModuleImportNapi>;
+  hasSideEffectImport: boolean;
+  hasReexport: boolean;
+  hasDynamicImport: boolean;
 }
 
 /** No-mutating-props options for NAPI */

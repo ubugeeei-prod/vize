@@ -71,7 +71,7 @@ impl DiagnosticService {
             });
         }
         let document = CorsaDocument::from_result(VirtualTsResult {
-            code: opened.code.to_string(),
+            code: opened.code,
             source_mappings: mappings,
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

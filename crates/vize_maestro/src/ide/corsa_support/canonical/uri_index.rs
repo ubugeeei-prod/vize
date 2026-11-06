@@ -135,7 +135,7 @@ mod tests {
 
     fn result() -> VirtualTsResult {
         VirtualTsResult {
-            code: "export {};\n".to_owned(),
+            code: "export {};\n".into(),
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
             prop_default_key_links: Vec::new(),

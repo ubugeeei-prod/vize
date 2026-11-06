@@ -153,7 +153,7 @@ fn semantic_names_preserve_wrong_mode_implied_end_and_vue_refusals() {
         ("<table><article></article></table>", "table"),
         ("<svg><article></article></svg>", "element"),
         ("<script><article></article></script>", "raw"),
-        ("<b><article></article></b>", "element"),
+        ("<b><article></article></b>", "ok"),
     ] {
         let source = cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
         let arena = Allocator::default();
@@ -162,7 +162,7 @@ fn semantic_names_preserve_wrong_mode_implied_end_and_vue_refusals() {
             (expected, owner.html_structure()),
             ("implied", Err(DocumentHtmlRefusal::ImpliedEnd(_)))
                 | ("table", Err(DocumentHtmlRefusal::FosterParenting(_)))
-                | ("raw", Ok(_))
+                | ("raw" | "ok", Ok(_))
                 | ("element", Err(DocumentHtmlRefusal::UnsupportedElement(_)))
         ));
     }

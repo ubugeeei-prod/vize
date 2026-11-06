@@ -74,7 +74,7 @@
     "crates/vize_atelier_sfc/src/compile/public.rs": "2558bd4a1bfbe199d90b485459dcaf0a6e1887da",
     "crates/vize_atelier_sfc/src/compile/script_context.rs": "8f38f6395aeae0941035e84ad436c04a34fbb8cf",
     "crates/vize/src/type_projects.rs": "96073dbb55954781d825974cb3beff77b3fb9085",
-    "crates/vize_vitrine/src/napi/sfc/types.rs": "f993a06071e5512ccb460067e1a92f3f2f7f6655",
+    "crates/vize_vitrine/src/napi/sfc/types.rs": "9f76121fb52ce2eae282a3768a0f125b56a3d853",
     "crates/vize_vitrine/src/napi/sfc/types/conversions.rs": "5c313a0057306e74f031e7232f33472e86799e7a"
   }
 }

@@ -36,6 +36,9 @@ pub enum DocumentHtmlRefusal {
     UnsupportedElement(Span),
     /// A select descendant whose native content contract is unavailable.
     UnsupportedSelectContent(Span),
+    /// A formatting transition that needs the browser's active-formatting
+    /// list or adoption-agency reconstruction rather than authored nesting.
+    FormattingRecovery(Span),
     VueSyntax,
     NonHtmlToken,
     InvalidFrame(Span),
@@ -67,7 +70,8 @@ pub enum DocumentHtmlRefusal {
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
 /// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `title`/`style`/`script`/`textarea`,
-/// `select`/`option`/`optgroup`, table parts, and bounded SVG/MathML
+/// `select`/`option`/`optgroup`, table parts, headings, preformatted and form
+/// containers, bounded phrasing/media elements, and bounded SVG/MathML
 /// descendants. HTML names match without ASCII case, SVG local/attribute names
 /// receive the HTML parser's canonical adjustments, and a slash never closes a
 /// nonvoid HTML element. A slash does close a foreign element.
@@ -89,8 +93,10 @@ pub enum DocumentHtmlRefusal {
 /// slash behavior on which Chromium and the shipped parser disagree stays a
 /// typed refusal, as do foreign HTML breakouts, CDATA, annotation-xml HTML
 /// integration and markup hidden by the retained lexer's SVG-title RCDATA mode.
-/// Other raw-text elements, formatting, templates, Vue directive/interpolation
-/// syntax and implicit envelopes refuse this provider.
+/// Formatting that follows authored nesting is retained; transitions that need
+/// the active-formatting list or adoption agency explicitly refuse. Other
+/// raw-text elements, templates, Vue directive/interpolation syntax and
+/// implicit envelopes refuse this provider.
 /// Direct supported-subtree child nodes retain original text/comment callbacks;
 /// outer insertion-mode text retains typed refusals. Petite-vue remains unfinished.
 /// This view borrows the actual original lexer owner and arena.

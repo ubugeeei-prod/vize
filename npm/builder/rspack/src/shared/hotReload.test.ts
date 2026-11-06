@@ -94,9 +94,9 @@ void test("uninitialized circular imports do not prevent loading and disable sta
 
 void test("an uninitialized namespace export does not prevent loading", () => {
   const hmr = session();
-  const imports = hmrImportSnapshot(
-    "import * as dependency from './dependency'; console.log(dependency);",
-  );
+  const imports = hmrImportSnapshot({
+    imports: [{ source: "./dependency", local: "dependency", namespace: true }],
+  });
   assert.ok(imports);
   const dependency = {
     get value() {
@@ -223,10 +223,18 @@ void test("HMR history is local to each browser module lifecycle", () => {
 });
 
 void test("import snapshots copy namespace exports and exclude Vue helpers and SFC styles", () => {
-  const expression = hmrImportSnapshot(`import { ref } from 'vue';
-import './App.vue?vue&type=style&index=0&lang=css';
-import * as helpers from './helpers'; import child from './Child.vue';
-console.log(helpers, child);`);
+  const expression = hmrImportSnapshot({
+    imports: [
+      { source: "vue", local: "ref", namespace: false },
+      {
+        source: "./App.vue?vue&type=style&index=0&lang=css",
+        local: "style",
+        namespace: false,
+      },
+      { source: "./helpers", local: "helpers", namespace: true },
+      { source: "./Child.vue", local: "child", namespace: false },
+    ],
+  });
   assert.ok(expression);
   const helpers = { value: 1 };
   const child = {};
@@ -239,20 +247,22 @@ console.log(helpers, child);`);
       ["./Child.vue:child", child],
     ],
   );
-  assert.equal(hmrImportSnapshot("import './side-effect';"), null);
-  assert.equal(hmrImportSnapshot("import {"), null);
+  assert.equal(hmrImportSnapshot({ imports: [], hasSideEffectImport: true }), null);
+  assert.equal(hmrImportSnapshot(undefined), null);
 });
 
 void test("HMR metadata does not turn TypeScript-only imports into runtime dependencies", () => {
+  assert.equal(hmrImportSnapshot({ imports: [] }), "[]");
   assert.equal(
-    hmrImportSnapshot(`import { BadgeType } from './types';
-interface Props { badges: BadgeType[] }
-const props: Props = { badges: [] }; console.log(props);`),
-    "[]",
+    hmrImportSnapshot({
+      imports: [{ source: "./dependency", local: "value", namespace: false }],
+    }),
+    '[["./dependency:value", value]]',
   );
   assert.equal(
-    hmrImportSnapshot(`import type { BadgeType } from './types';
-import { value } from './dependency'; const count: BadgeType = value; console.log(count);`),
-    '[["./dependency:value", value]]',
+    hmrImportSnapshot({ imports: [] }, [
+      { source: "./asset.png", local: "asset", namespace: false },
+    ]),
+    '[["./asset.png:asset", asset]]',
   );
 });

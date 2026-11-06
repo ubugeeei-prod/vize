@@ -256,8 +256,8 @@ impl<'s, 'o, 'a> DocumentHtmlText<'s, 'o, 'a> {
 
     pub fn characters(&self) -> impl Iterator<Item = char> + 'o {
         let owner = self.tree.owner;
-        let skip_leading_lf =
-            self.parent.name == "textarea" && self.parts.start == self.parent.attributes.end + 1;
+        let skip_leading_lf = matches!(self.parent.name, "pre" | "textarea")
+            && self.parts.start == self.parent.attributes.end + 1;
         let mut first = true;
         owner
             .events

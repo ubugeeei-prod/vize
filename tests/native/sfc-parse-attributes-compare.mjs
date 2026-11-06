@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { sourceProvenance, validateProductPacket } from "./sfc-parse-attributes-source.mjs";
 import {
@@ -14,6 +15,7 @@ import {
 } from "./sfc-parse-attributes-empty-component.ts";
 
 const directory = path.resolve(process.argv[2]);
+const { parse } = createRequire(new URL("../package.json", import.meta.url))("@babel/parser");
 const base = JSON.parse(await fs.readFile(path.join(directory, "base/packets.json"), "utf8"));
 const head = JSON.parse(await fs.readFile(path.join(directory, "head/packets.json"), "utf8"));
 assert.equal(base.source, "49a98d1e72707083354b8ff11e1cec800ded28b3");
@@ -57,7 +59,7 @@ for (const fixture of fixtures) {
   for (const mode of ["omitted", "filename", "disabled", "compile"])
     assert.deepEqual(
       original(after[mode]),
-      original(attributesPacketReference(before[mode], fixture.source, mode)),
+      original(attributesPacketReference(before[mode], fixture.source, mode, after[mode], parse)),
       `${fixture.id}/${mode}: complete API packet matches its explicit source-bound reference`,
     );
   if (fixture.error) {
