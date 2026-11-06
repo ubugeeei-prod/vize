@@ -178,13 +178,8 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
 }
 
 #[test]
-fn foreign_formatting_and_template_content_are_explicit() {
-    for body in [
-        "<svg></svg>",
-        "<math></math>",
-        "<b></b>",
-        "<template></template>",
-    ] {
+fn formatting_and_template_content_are_explicit() {
+    for body in ["<b></b>", "<template></template>"] {
         let source = source(body);
         let allocator = Allocator::default();
         let owner = NativeDocument::lex_in(&allocator, root(&source));

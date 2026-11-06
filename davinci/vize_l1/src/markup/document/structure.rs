@@ -1,7 +1,7 @@
 //! Bounded HTML element ancestry from the sole original Document event tape.
 //! No Component surface, external event vectors, reparse or DOM payloads enter.
 
-use vize_l0::{Span, Vec};
+use vize_l0::{Namespace, Span, Vec};
 
 use super::{DocumentLexicalRefusal, NativeDocument};
 
@@ -15,6 +15,7 @@ pub use node::{DocumentHtmlChildNodes, DocumentHtmlComment, DocumentHtmlNode, Do
 #[derive(Debug)]
 struct Element {
     name: &'static str,
+    namespace: Namespace,
     authored_name: Span,
     opening: Span,
     closing: Option<Span>,
@@ -66,9 +67,10 @@ pub enum DocumentHtmlRefusal {
 /// `section`, `address`, `blockquote`, `figure`, `figcaption`, `hgroup`,
 /// `search`, `p`, the `ul`/`ol`/`menu`/`dl` lists and their items, ruby text
 /// (`ruby`, `rb`, `rt`, `rtc`, `rp`), `title`/`style`/`script`/`textarea`,
-/// `select`/`option`/`optgroup`,
-/// and table parts. HTML names match without ASCII case, and a slash never
-/// closes a nonvoid HTML element.
+/// `select`/`option`/`optgroup`, table parts, and bounded SVG/MathML
+/// descendants. HTML names match without ASCII case, SVG local/attribute names
+/// receive the HTML parser's canonical adjustments, and a slash never closes a
+/// nonvoid HTML element. A slash does close a foreign element.
 ///
 /// Implied end tags and the table insertion modes follow the HTML parser
 /// when they report no parse error, so an omitted `</p>`, `</li>` or `</td>`
@@ -82,8 +84,13 @@ pub enum DocumentHtmlRefusal {
 /// Select content retains the admitted ordinary HTML descendants used by
 /// customizable selects. Nested select/input recovery still refuses rather
 /// than claiming the browser's parse-error transition.
-/// Foreign content, other raw-text elements, formatting, templates, Vue
-/// directive/interpolation syntax and implicit envelopes refuse this provider.
+/// SVG `foreignObject`/`desc`/scalar-only `title` and MathML text integration
+/// points switch descendants back to HTML. Integration-point case or nonvoid
+/// slash behavior on which Chromium and the shipped parser disagree stays a
+/// typed refusal, as do foreign HTML breakouts, CDATA, annotation-xml HTML
+/// integration and markup hidden by the retained lexer's SVG-title RCDATA mode.
+/// Other raw-text elements, formatting, templates, Vue directive/interpolation
+/// syntax and implicit envelopes refuse this provider.
 /// Direct supported-subtree child nodes retain original text/comment callbacks;
 /// outer insertion-mode text retains typed refusals. Petite-vue remains unfinished.
 /// This view borrows the actual original lexer owner and arena.
@@ -163,6 +170,12 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
     #[must_use]
     pub fn name(&self) -> &'static str {
         self.element().name
+    }
+
+    /// The actual HTML, SVG or MathML namespace selected by tree construction.
+    #[must_use]
+    pub fn namespace(&self) -> Namespace {
+        self.element().namespace
     }
 
     #[must_use]

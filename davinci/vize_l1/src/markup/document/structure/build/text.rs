@@ -3,7 +3,7 @@
 use vize_l0::Span;
 
 use super::{Builder, Mode, Refusal};
-use crate::markup::Profile;
+use crate::markup::{Namespace, Profile};
 
 impl<P: Profile> Builder<'_, '_, P> {
     /// Text belongs to body content and cells; table text may only be
@@ -11,10 +11,21 @@ impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn text(&mut self, span: Span, space: bool) -> Result<(), Refusal> {
         // The shipped parser retains a literal NULL while Chromium replaces it
         // in special-text states. Do not manufacture agreement between them.
-        if matches!(
-            self.current(),
-            Some("title" | "style" | "script" | "textarea")
-        ) && self.source(span)?.contains('\0')
+        if self.current_namespace() == Some(Namespace::Html)
+            && matches!(
+                self.current(),
+                Some("title" | "style" | "script" | "textarea")
+            )
+            && self.source(span)?.contains('\0')
+        {
+            return Err(Refusal::NonHtmlToken);
+        }
+        // The retained lexer deliberately treats every `title` as RCDATA. In
+        // SVG it is an HTML integration point instead, so markup hidden inside
+        // one text callback cannot be certified as the browser's child tree.
+        if self.current_namespace() == Some(Namespace::Svg)
+            && self.current() == Some("title")
+            && self.source(span)?.contains('<')
         {
             return Err(Refusal::NonHtmlToken);
         }

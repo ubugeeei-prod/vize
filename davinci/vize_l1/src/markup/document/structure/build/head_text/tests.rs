@@ -180,14 +180,23 @@ fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
 }
 
 #[test]
-fn other_head_and_foreign_features_keep_their_existing_refusal() {
-    for head in ["<svg></svg>", "<b></b>", "<template></template>"] {
+fn foreign_head_content_and_other_unsupported_features_keep_typed_refusals() {
+    for (head, explicit_envelope) in [
+        ("<svg></svg>", true),
+        ("<b></b>", false),
+        ("<template></template>", false),
+    ] {
         let source = envelope(head, "");
         let arena = Allocator::default();
         let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
-        assert!(
-            matches!(owner.html_structure(), Err(Refusal::UnsupportedElement(_))),
-            "{source}"
-        );
+        let refusal = owner.html_structure().unwrap_err();
+        if explicit_envelope {
+            assert_eq!(refusal, Refusal::ExplicitEnvelope, "{source}");
+        } else {
+            assert!(
+                matches!(refusal, Refusal::UnsupportedElement(_)),
+                "{source}"
+            );
+        }
     }
 }

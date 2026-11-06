@@ -7,7 +7,7 @@
 //! the policy an end tag must name the current node, as in a Vue template.
 
 use super::{Builder, End, Mode, Refusal, Tag};
-use crate::markup::Profile;
+use crate::markup::{Namespace, Profile};
 
 impl<P: Profile> Builder<'_, '_, P> {
     pub(super) fn body_start(&mut self, tag: Tag) -> Result<(), Refusal> {
@@ -41,6 +41,9 @@ impl<P: Profile> Builder<'_, '_, P> {
     }
 
     pub(super) fn body_end(&mut self, end: &End) -> Result<(), Refusal> {
+        if end.namespace != Namespace::Html {
+            return self.pop_matching(end);
+        }
         if matches!(end.name, "html" | "head") {
             return Err(Refusal::ExplicitEnvelope);
         }

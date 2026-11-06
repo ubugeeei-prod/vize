@@ -58,8 +58,8 @@ direct child-node packets for `article`, `aside`, `footer`, `header`, `main`,
 and actual Chromium, including seven mixed-case/slash names, normalized
 attribute duplicates, harmless `xmlns` attributes, literal/reference CRLF/NUL,
 complete sibling and nested parent boundaries, and an existing-tag control.
-All containers require explicit matching ends; implied-end/table policies,
-foreign namespaces, formatting elements and Vue syntax remain refused.
+All containers require explicit matching ends; implied-end/table transitions,
+foreign breakouts, formatting elements and Vue syntax remain refused.
 
 `html-semantic-body-frames.json` independently records every admitted semantic
 container's exact authored opening/closing bytes and ignored-slash flag. Native
@@ -70,7 +70,7 @@ spelling; it does not infer an expected slash from a suffix of actual output.
 whole ancestry, effective attributes, direct child nodes and authored frames
 for `address`, `blockquote`, `figure`, `figcaption`, `hgroup` and `search`.
 Native Rust and actual Chromium consume the same packets. Every admitted case
-uses explicit matching ends; the existing implied-end, table, foreign,
+uses explicit matching ends; the existing implied-end, table, foreign-breakout,
 formatting and Vue-syntax refusals remain authoritative.
 
 `html-special-text.json` retains eight complete explicit-envelope sources and
@@ -100,3 +100,16 @@ options, semantic lists, tables and special text. Omitted option/group ends, hr
 separation, table-cell context, case/slashes, static duplicates, decoded values
 and outside-select nesting are explicit. Nested select/input recovery remains a
 typed refusal; the prior thirteen source packets keep their authored bytes.
+
+`html-foreign-content.json` retains fourteen complete browser packets. Ten
+bounded packets admit explicit SVG/MathML subtrees, canonical SVG element and
+attribute adjustments, foreign self-closing elements, SVG and MathML HTML
+integration points, nested foreign roots, table-cell context and original
+text/comment/reference values. Nine of those packets also match the shipped
+document parser's complete namespace/parent/direct-node tree. Four browser
+packets retain typed native refusals where that parser and Chromium disagree
+about integration-point spelling or nonvoid slashes, where HTML breakout
+recovery would move nodes, or where the retained lexer hides SVG-title markup.
+Native Rust and actual Chromium consume every complete packet; no DOM result is
+derived from native output. CDATA, annotation-xml HTML integration, arbitrary
+foreign names and complete adoption/raw-text/template policies remain open.

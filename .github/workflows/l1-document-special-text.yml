@@ -13,6 +13,7 @@ on:
       - package.json
       - pnpm-lock.yaml
       - tests/package.json
+      - tests/tooling/davinci-document-foreign-content.test.ts
       - tests/tooling/davinci-document-select.test.ts
       - tests/tooling/davinci-document-special-text.test.ts
 permissions: { contents: read }
@@ -53,6 +54,8 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$HEAD_SHA"
           cargo test --locked --profile ci -p vize_l1 \
+            --test html_foreign_content \
+            --test html_foreign_content_legacy_oracle \
             --test html_select \
             --test html_select_legacy_oracle \
             --test html_special_text \
@@ -60,5 +63,6 @@ jobs:
       - name: Compare the original packet with Chromium
         run: |
           vp node --test \
+            tests/tooling/davinci-document-foreign-content.test.ts \
             tests/tooling/davinci-document-select.test.ts \
             tests/tooling/davinci-document-special-text.test.ts

@@ -6,6 +6,7 @@ import { toolingTestCommand } from "./run-tooling-tests.mjs";
 
 const browserTests = [
   "tests/tooling/formatter-css-rule-layout.test.mjs",
+  "tests/tooling/davinci-document-foreign-content.test.ts",
   "tests/tooling/davinci-document-select.test.ts",
   "tests/tooling/davinci-document-special-text.test.ts",
 ] as const;

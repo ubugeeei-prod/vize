@@ -1,0 +1,407 @@
+[
+  {
+    "name": "svg shapes retain foreign self-closing rules",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><g><circle/><path></path><rect/></g></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["g", "svg", 3, [], "<g>", "</g>", false],
+      ["circle", "svg", 4, [], "<circle/>", null, false],
+      ["path", "svg", 4, [], "<path>", "</path>", false],
+      ["rect", "svg", 4, [], "<rect/>", null, false]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "g"]]],
+      [
+        "g",
+        [
+          [1, "circle"],
+          [1, "path"],
+          [1, "rect"]
+        ]
+      ],
+      ["circle", []],
+      ["path", []],
+      ["rect", []]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "svg adjusts local and attribute names",
+    "source": "<!DOCTYPE html><html><head></head><body><svg viewbox=\"0 0 10 10\" VIEWBOX=ignored><lineargradient gradientunits=\"userSpaceOnUse\"><fegaussianblur stddeviation=\"2\"/></lineargradient></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      [
+        "svg",
+        "svg",
+        2,
+        [["viewBox", "0 0 10 10"]],
+        "<svg viewbox=\"0 0 10 10\" VIEWBOX=ignored>",
+        "</svg>",
+        false
+      ],
+      [
+        "linearGradient",
+        "svg",
+        3,
+        [["gradientUnits", "userSpaceOnUse"]],
+        "<lineargradient gradientunits=\"userSpaceOnUse\">",
+        "</lineargradient>",
+        false
+      ],
+      [
+        "feGaussianBlur",
+        "svg",
+        4,
+        [["stdDeviation", "2"]],
+        "<fegaussianblur stddeviation=\"2\"/>",
+        null,
+        false
+      ]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "linearGradient"]]],
+      ["linearGradient", [[1, "feGaussianBlur"]]],
+      ["feGaussianBlur", []]
+    ],
+    "legacy": true,
+    "legacyErrors": ["DuplicateAttribute"]
+  },
+  {
+    "name": "foreignObject returns descendants to html",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><div class=x><span>inside</span></div></foreignObject><circle/></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["foreignObject", "svg", 3, [], "<foreignObject>", "</foreignObject>", false],
+      ["div", "html", 4, [["class", "x"]], "<div class=x>", "</div>", false],
+      ["span", "html", 5, [], "<span>", "</span>", false],
+      ["circle", "svg", 3, [], "<circle/>", null, false]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      [
+        "svg",
+        [
+          [1, "foreignObject"],
+          [1, "circle"]
+        ]
+      ],
+      ["foreignObject", [[1, "div"]]],
+      ["div", [[1, "span"]]],
+      ["span", [[3, "inside"]]],
+      ["circle", []]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "svg desc is an html integration point",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><desc><span>A&amp;</span></desc></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["desc", "svg", 3, [], "<desc>", "</desc>", false],
+      ["span", "html", 4, [], "<span>", "</span>", false]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "desc"]]],
+      ["desc", [[1, "span"]]],
+      ["span", [[3, "A&"]]]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "svg title and text retain scalar content",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><title>A&amp;雪</title><text>T&amp;</text></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["title", "svg", 3, [], "<title>", "</title>", false],
+      ["text", "svg", 3, [], "<text>", "</text>", false]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      [
+        "svg",
+        [
+          [1, "title"],
+          [1, "text"]
+        ]
+      ],
+      ["title", [[3, "A&雪"]]],
+      ["text", [[3, "T&"]]]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "mathml explicit fractions retain their namespace",
+    "source": "<!DOCTYPE html><html><head></head><body><math><mrow><mi>x</mi><mo>+</mo><mn>1</mn></mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></math></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["math", "mathml", 2, [], "<math>", "</math>", false],
+      ["mrow", "mathml", 3, [], "<mrow>", "</mrow>", false],
+      ["mi", "mathml", 4, [], "<mi>", "</mi>", false],
+      ["mo", "mathml", 4, [], "<mo>", "</mo>", false],
+      ["mn", "mathml", 4, [], "<mn>", "</mn>", false],
+      ["mfrac", "mathml", 3, [], "<mfrac>", "</mfrac>", false],
+      ["mn", "mathml", 8, [], "<mn>", "</mn>", false],
+      ["mn", "mathml", 8, [], "<mn>", "</mn>", false]
+    ],
+    "nodes": [
+      ["body", [[1, "math"]]],
+      [
+        "math",
+        [
+          [1, "mrow"],
+          [1, "mfrac"]
+        ]
+      ],
+      [
+        "mrow",
+        [
+          [1, "mi"],
+          [1, "mo"],
+          [1, "mn"]
+        ]
+      ],
+      ["mi", [[3, "x"]]],
+      ["mo", [[3, "+"]]],
+      ["mn", [[3, "1"]]],
+      [
+        "mfrac",
+        [
+          [1, "mn"],
+          [1, "mn"]
+        ]
+      ],
+      ["mn", [[3, "1"]]],
+      ["mn", [[3, "2"]]]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "mathml text integration admits html and nested svg",
+    "source": "<!DOCTYPE html><html><head></head><body><math definitionurl=x><mtext><span>A&amp;</span><svg><circle/></svg></mtext></math></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["math", "mathml", 2, [["definitionURL", "x"]], "<math definitionurl=x>", "</math>", false],
+      ["mtext", "mathml", 3, [], "<mtext>", "</mtext>", false],
+      ["span", "html", 4, [], "<span>", "</span>", false],
+      ["svg", "svg", 4, [], "<svg>", "</svg>", false],
+      ["circle", "svg", 6, [], "<circle/>", null, false]
+    ],
+    "nodes": [
+      ["body", [[1, "math"]]],
+      ["math", [[1, "mtext"]]],
+      [
+        "mtext",
+        [
+          [1, "span"],
+          [1, "svg"]
+        ]
+      ],
+      ["span", [[3, "A&"]]],
+      ["svg", [[1, "circle"]]],
+      ["circle", []]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "foreign text comments and references keep scalar boundaries",
+    "source": "<!DOCTYPE html><html><head></head><body><svg> \r\n<!--&amp;--><text>A&amp;\r\n雪</text></svg><math><mtext>🌸</mtext></math></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["text", "svg", 3, [], "<text>", "</text>", false],
+      ["math", "mathml", 2, [], "<math>", "</math>", false],
+      ["mtext", "mathml", 5, [], "<mtext>", "</mtext>", false]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "svg"],
+          [1, "math"]
+        ]
+      ],
+      [
+        "svg",
+        [
+          [3, " \n"],
+          [8, "&amp;"],
+          [1, "text"]
+        ]
+      ],
+      ["text", [[3, "A&\n雪"]]],
+      ["math", [[1, "mtext"]]],
+      ["mtext", [[3, "🌸"]]]
+    ]
+  },
+  {
+    "name": "foreign roots preserve table cell insertion mode",
+    "source": "<!DOCTYPE html><html><head></head><body><table><tbody><tr><td><svg><path/></svg><math><mi>x</mi></math></td></tr></tbody></table></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["table", "html", 2, [], "<table>", "</table>", false],
+      ["tbody", "html", 3, [], "<tbody>", "</tbody>", false],
+      ["tr", "html", 4, [], "<tr>", "</tr>", false],
+      ["td", "html", 5, [], "<td>", "</td>", false],
+      ["svg", "svg", 6, [], "<svg>", "</svg>", false],
+      ["path", "svg", 7, [], "<path/>", null, false],
+      ["math", "mathml", 6, [], "<math>", "</math>", false],
+      ["mi", "mathml", 9, [], "<mi>", "</mi>", false]
+    ],
+    "nodes": [
+      ["body", [[1, "table"]]],
+      ["table", [[1, "tbody"]]],
+      ["tbody", [[1, "tr"]]],
+      ["tr", [[1, "td"]]],
+      [
+        "td",
+        [
+          [1, "svg"],
+          [1, "math"]
+        ]
+      ],
+      ["svg", [[1, "path"]]],
+      ["path", []],
+      ["math", [[1, "mi"]]],
+      ["mi", [[3, "x"]]]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "an html integration point may start mathml",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><math><mtext>x</mtext></math></foreignObject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, [], "<html>", "</html>", false],
+      ["head", "html", 0, [], "<head>", "</head>", false],
+      ["body", "html", 0, [], "<body>", "</body>", false],
+      ["svg", "svg", 2, [], "<svg>", "</svg>", false],
+      ["foreignObject", "svg", 3, [], "<foreignObject>", "</foreignObject>", false],
+      ["math", "mathml", 4, [], "<math>", "</math>", false],
+      ["mtext", "mathml", 5, [], "<mtext>", "</mtext>", false]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      ["foreignObject", [[1, "math"]]],
+      ["math", [[1, "mtext"]]],
+      ["mtext", [[3, "x"]]]
+    ],
+    "legacy": true
+  },
+  {
+    "name": "html integration nonvoid slash disagreement remains refused",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignObject><div class=x /><span>inside</span></div></foreignObject><circle/></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["div", "html", 4, [["class", "x"]]],
+      ["span", "html", 5, []],
+      ["circle", "svg", 3, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      [
+        "svg",
+        [
+          [1, "foreignObject"],
+          [1, "circle"]
+        ]
+      ],
+      ["foreignObject", [[1, "div"]]],
+      ["div", [[1, "span"]]],
+      ["span", [[3, "inside"]]],
+      ["circle", []]
+    ],
+    "refusal": { "kind": "UnsupportedElement", "token": "div" }
+  },
+  {
+    "name": "noncanonical integration point spelling remains refused",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><foreignobject><div>x</div></foreignobject></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["foreignObject", "svg", 3, []],
+      ["div", "html", 4, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "foreignObject"]]],
+      ["foreignObject", [[1, "div"]]],
+      ["div", [[3, "x"]]]
+    ],
+    "refusal": { "kind": "UnsupportedElement", "token": "foreignobject" }
+  },
+  {
+    "name": "foreign html breakout remains an explicit refusal",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><g><div>x</div></g></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["g", "svg", 3, []],
+      ["div", "html", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "svg"],
+          [1, "div"]
+        ]
+      ],
+      ["svg", [[1, "g"]]],
+      ["g", []],
+      ["div", [[3, "x"]]]
+    ],
+    "refusal": { "kind": "UnsupportedElement", "token": "div" }
+  },
+  {
+    "name": "svg title markup hidden by the retained lexer remains refused",
+    "source": "<!DOCTYPE html><html><head></head><body><svg><title><span>x</span></title></svg></body></html>",
+    "elements": [
+      ["html", "html", null, []],
+      ["head", "html", 0, []],
+      ["body", "html", 0, []],
+      ["svg", "svg", 2, []],
+      ["title", "svg", 3, []],
+      ["span", "html", 4, []]
+    ],
+    "nodes": [
+      ["body", [[1, "svg"]]],
+      ["svg", [[1, "title"]]],
+      ["title", [[1, "span"]]],
+      ["span", [[3, "x"]]]
+    ],
+    "refusal": { "kind": "NonHtmlToken" }
+  }
+]
