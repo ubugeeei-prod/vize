@@ -45,7 +45,7 @@ const frozenExampleHashes: Readonly<Record<string, string>> = {
   "pinia-getter": "a15d1b4e53c819ab7c1edd581c55c3b3144ce68c8e0e7c8abb706b02ff622ace",
   "setup-context-violation": "2a212a98a60ae7944c7fd3008d966624132415f553012271f6ca0a2cc551e866",
   "object-identity-comparison": "28aa25a5b6b8f058645927e07a991838f548291ff3dc02e2ec5b6ea971dc0bea",
-  "watcheffect-async": "a7a9d2d56eaf6749b65151c67e816525257cd52b832e520a8ce64915f385bad7",
+  "watcheffect-async": "4af363d7b8cc110b50327e52c3e8638c06a0ceb694a708bb3ea72a52e7355dcb",
 };
 const require = createRequire(new URL("../../docs/package.json", import.meta.url));
 const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi") as {

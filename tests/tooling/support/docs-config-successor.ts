@@ -32,7 +32,11 @@ export function currentConfigExample(original: string): string {
       "\n  }," +
       source.slice(end);
   }
-  return source;
+  return source.replace(
+    /export default defineConfig\(\{\n  vue: \{\n([\s\S]*?)\n  \},\n\}\);/g,
+    (_, body: string) =>
+      `export default defineConfig({}).withVue({\n${body.replace(/^    /gm, "  ")}\n});`,
+  );
 }
 
 /** Whole rendered Markdown packets use the same finite config-only changes. */
