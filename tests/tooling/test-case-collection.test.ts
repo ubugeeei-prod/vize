@@ -228,6 +228,48 @@ test("each test job names its case packet after itself and the report downloads 
   assert.equal(packageUpload.with?.path, packageTests?.env?.VIZE_TEST_CASES);
   assert.equal(packageUpload.if, "${{ !cancelled() && steps.tests.outcome != 'skipped' }}");
   assert.equal(packageUpload.with?.["if-no-files-found"], "error");
+
+  const assertNodeJob = (
+    file: string,
+    job: string,
+    stepName: string,
+    packet: string,
+    artifact: string,
+    jobName = job,
+  ) => {
+    const selected = workflow(file).jobs[job];
+    const cases = selected.steps.find((step) => step.name === stepName);
+    assert.equal(cases?.id, "cases");
+    assert.equal(cases?.env?.TEST_CASES_JOB, selected.name ?? jobName);
+    assert.ok(cases?.run?.includes("test-case-reporter.ts"));
+    assert.ok(cases?.run?.includes(packet));
+    const upload = selected.steps[selected.steps.indexOf(cases ?? {}) + 1];
+    assert.equal(upload.with?.name, artifact);
+    assert.ok(upload.with?.path?.endsWith(packet));
+    assert.equal(upload.with?.["if-no-files-found"], "error");
+  };
+  assertNodeJob(
+    "check.yml",
+    "check-js",
+    "Test fast JS/TS workflow contracts",
+    "test-cases-check-js.json",
+    "test-cases-check-js-${{ github.run_attempt }}",
+  );
+  assertNodeJob(
+    "check.yml",
+    "node-engine-compat",
+    "Check package engine matrix",
+    "test-cases-node-engine-${{ matrix.node-version }}.json",
+    "test-cases-node-engine-${{ matrix.node-version }}-${{ github.run_attempt }}",
+    "node-engine-compat (${{ matrix.node-version }})",
+  );
+  assertNodeJob(
+    "pr-source-checks.yml",
+    "ci-selection-tests",
+    "Test CI selection when its inputs change",
+    "test-cases-ci-selection.json",
+    "test-cases-ci-selection-${{ github.run_attempt }}",
+  );
 });
 
 void test(

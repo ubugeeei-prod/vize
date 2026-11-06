@@ -128,7 +128,25 @@ jobs:
         run: vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci
       - name: Check fast JS/TS
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}
-        run: vp run --workspace-root check:iteration && node --test tests/tooling/github-workflows-source-selection.test.ts tests/tooling/vp-bootstrap-cache.test.mjs
+        run: vp run --workspace-root check:iteration
+      - name: Test fast JS/TS workflow contracts
+        id: cases
+        if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') }}
+        env: { TEST_CASES_JOB: check-js }
+        run: >-
+          node --test
+          --test-reporter=./tools/support/compat/github/test-case-reporter.ts
+          --test-reporter-destination="$RUNNER_TEMP/test-cases-check-js.json"
+          tests/tooling/github-workflows-source-selection.test.ts
+          tests/tooling/vp-bootstrap-cache.test.mjs
+      - name: Upload fast JS/TS test cases
+        if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-check-js-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-check-js.json
+          if-no-files-found: error
+          retention-days: 7
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
     # Check published APIs before tag promotion and when resuming an exact release tag.
@@ -241,8 +259,30 @@ jobs:
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
+        id: cases
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/bundler-plugin-manifests.test.ts tests/tooling/dependency-security-compat.test.ts tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/plan-check-inputs.test.ts tests/tooling/warning-budget.test.ts tests/tooling/npm-audit-command.test.ts
+        env: { TEST_CASES_JOB: "node-engine-compat (${{ matrix.node-version }})" }
+        run: >-
+          node --test
+          --test-reporter=./tools/support/compat/github/test-case-reporter.ts
+          --test-reporter-destination="$RUNNER_TEMP/test-cases-node-engine-${{ matrix.node-version }}.json"
+          tests/tooling/node-engine-matrix.test.ts
+          tests/tooling/package-manifests.test.ts
+          tests/tooling/bundler-plugin-manifests.test.ts
+          tests/tooling/dependency-security-compat.test.ts
+          tests/tooling/comparison-base.test.ts
+          tests/tooling/plan-source-checks.test.ts
+          tests/tooling/plan-check-inputs.test.ts
+          tests/tooling/warning-budget.test.ts
+          tests/tooling/npm-audit-command.test.ts
+      - name: Upload package engine test cases
+        if: ${{ !cancelled() && steps.cases.outcome != 'skipped' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-cases-node-engine-${{ matrix.node-version }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/test-cases-node-engine-${{ matrix.node-version }}.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Check content mapper helper ABI
         if: ${{ needs.iteration-plan.outputs.engines == 'true' }}
         run: node npm/cli/scripts/content-mapper-helper-abi.ts --check
