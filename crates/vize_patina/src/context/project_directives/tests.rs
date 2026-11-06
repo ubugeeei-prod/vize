@@ -133,6 +133,37 @@ fn script_file_regions_share_usage_with_their_template_scope() {
 }
 
 #[test]
+fn script_blanket_project_usage_retires_only_its_early_unused_report() {
+    let source = r#"<script setup lang="ts">
+/* eslint-disable */
+const draft = { ...initial };
+</script>
+<template><p>{{ draft.name }}</p></template>"#;
+    let directives = ProjectLintDirectives::from_sfc(source, "Editor.vue").unwrap();
+    let marker = source.find("eslint-disable").unwrap() as u32;
+    let marker_end = marker + "eslint-disable".len() as u32;
+    let mut diagnostics = vec![
+        crate::LintDiagnostic::error(
+            "vue/comment-directive",
+            "unused blanket",
+            marker,
+            marker_end,
+        ),
+        crate::LintDiagnostic::error(
+            "vue/comment-directive",
+            "peer comment",
+            marker + 1,
+            marker_end + 1,
+        ),
+    ];
+
+    assert!(directives.is_disabled_at(SPREAD, source.find("...initial").unwrap() as u32));
+    directives.reconcile_template_unused(&mut diagnostics);
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].message.as_str(), "peer comment");
+}
+
+#[test]
 fn strings_attributes_and_custom_blocks_cannot_create_directive_events() {
     let script = EDITOR.replace(
         "// eslint-disable-next-line croquis/cf/spread-breaks-reactivity -- a draft copy of the prop",

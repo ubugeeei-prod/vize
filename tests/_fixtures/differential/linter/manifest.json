@@ -3998,6 +3998,49 @@
       }
     },
     {
+      "id": "linter/precise-suppression-evidence-12041",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "precise-suppression-evidence-12041",
+        "files": [
+          {
+            "path": "CrossBlockRegion.vue.txt",
+            "role": "cross-block-region-control",
+            "sha256": "6d92add17082ec828093d6d16dcb8a2c41fdca9123b0acf4ca45875f2520fbe1"
+          },
+          {
+            "path": "RuleSpecificPeer.vue.txt",
+            "role": "rule-specific-peer-control",
+            "sha256": "658f4b96fdede30241b38da238d64a1f4b8b8f0110e5bb2f063774c9ea642178"
+          },
+          {
+            "path": "ScriptBlanketProject.vue.txt",
+            "role": "project-blanket-usage-reproduction",
+            "sha256": "53dd992a3948f7073101a702503c774754121881a5ad42e0ebe4a23b7d701633"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/prop-name-casing-options-6097",
       "state": "active",
       "targets": [
