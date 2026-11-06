@@ -179,7 +179,12 @@ fn finalize(
         map.is_some(),
     );
     let Some((stripped, reprint)) = stripped else {
-        let shape = analyze_module_shape(&code);
+        let shape = analyze_module_shape(&code).map(|mut shape| {
+            // A failed strip leaves type-only versus runtime imports unknown.
+            // Keep geometry facts, but make HMR consumers refuse the snapshot.
+            shape.has_side_effect_import = true;
+            shape
+        });
         return (code, shape, map);
     };
     let map = map.zip(reprint).and_then(|(map, reprint)| {

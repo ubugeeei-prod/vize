@@ -121,12 +121,12 @@ function moduleFacts(parsed: BabelFile): Record<string, unknown> {
   for (const node of parsed.program.body) {
     if (node.type === "ImportDeclaration") {
       const source = (node.source as { value?: unknown } | undefined)?.value;
-      assert.equal(typeof source, "string");
+      assert(typeof source === "string");
       const specifiers = node.specifiers as BabelNode[];
       if (specifiers.length === 0) hasSideEffectImport = true;
       for (const specifier of specifiers) {
         const local = (specifier.local as { name?: unknown } | undefined)?.name;
-        assert.equal(typeof local, "string");
+        assert(typeof local === "string");
         imports.push({
           source,
           local,
@@ -144,7 +144,7 @@ function moduleFacts(parsed: BabelFile): Record<string, unknown> {
       const declaration = node.declaration as BabelNode;
       if (declaration.type === "Identifier") {
         const name = declaration.name;
-        assert.equal(typeof name, "string");
+        assert(typeof name === "string");
         defaultExportLocal = name;
       }
     }

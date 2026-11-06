@@ -212,7 +212,7 @@ export function attributesPacketReference(
     if (isTypeScriptSource(source)) {
       assert(current);
       assert.equal(current.kind, "return");
-      assert.equal(typeof current.json, "string");
+      assert(typeof current.json === "string");
       const currentValue: unknown = JSON.parse(current.json);
       assert(
         currentValue !== null && typeof currentValue === "object" && !Array.isArray(currentValue),

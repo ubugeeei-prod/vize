@@ -67,6 +67,8 @@ function comparePackets(priorPackets: PlainScriptPacket[], nextPackets: PlainScr
       continue;
     }
     const shape = next.native.moduleShape;
+    // Historical packets without `imports` derive both HMR sides from candidate
+    // code. This preserves the replay but does not validate candidate-native HMR facts.
     const nextNative =
       shape &&
       typeof shape === "object" &&
