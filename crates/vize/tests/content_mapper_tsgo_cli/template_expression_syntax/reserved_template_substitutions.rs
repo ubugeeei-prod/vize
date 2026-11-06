@@ -118,3 +118,67 @@ fn composed_reserved_keys_preserve_authored_argument_diagnostics() {
         }
     }
 }
+
+#[test]
+fn escaped_reserved_binding_preserves_semantic_roles_and_authored_diagnostic() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("exact Content Mapper conformance requires {TSGO_ENV}");
+        return;
+    };
+    let fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/escaped-reserved-binding-11769");
+    let config = fixture.join("tsconfig.json.txt");
+    let original = fs::read_to_string(fixture.join("Probe.vue.txt")).unwrap();
+    let mut hosts = vec![tsgo];
+    if let Some(tsrs) = std::env::var_os("VIZE_TEST_CONTENT_MAPPER_TSRS") {
+        hosts.push(PathBuf::from(tsrs));
+    }
+    for host in hosts {
+        assert!(host.is_file(), "{}", host.display());
+        for newline in ["\n", "\r\n"] {
+            let project = tempfile::tempdir().unwrap();
+            install_mapper_manifest(project.path());
+            install_vue_package(project.path());
+            fs::copy(&config, project.path().join("tsconfig.json")).unwrap();
+            let original = original.replace('\n', newline);
+            let invalid = original.replace(r"fr\u006fm.length", r"fr\u006fm");
+            let invalid_line = invalid
+                .lines()
+                .position(|line| line.contains(r"needsNumber(fr\u006fm)"))
+                .expect("invalid escaped read line")
+                + 1;
+            let invalid_column = invalid
+                .lines()
+                .nth(invalid_line - 1)
+                .and_then(|line| line.find(r"fr\u006fm"))
+                .expect("invalid escaped read column")
+                + 1;
+            let expected = format!(
+                "Probe.vue({invalid_line},{invalid_column}): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.\n"
+            );
+            for (source, diagnostics) in [
+                (original.as_str(), ""),
+                (invalid.as_str(), expected.as_str()),
+                (original.as_str(), ""),
+            ] {
+                fs::write(project.path().join("Probe.vue"), source).unwrap();
+                let output = check_project(&host, project.path(), "tsconfig.json");
+                assert_eq!(
+                    output.status.success(),
+                    diagnostics.is_empty(),
+                    "{}",
+                    output_text(&output)
+                );
+                assert_eq!(output.stderr.as_slice(), b"", "{}", output_text(&output));
+                assert_eq!(
+                    std::str::from_utf8(&output.stdout)
+                        .unwrap()
+                        .replace('\r', ""),
+                    diagnostics,
+                    "{}",
+                    output_text(&output)
+                );
+            }
+        }
+    }
+}
