@@ -317,6 +317,7 @@ pub(super) fn preamble_before_input_and_overload(current: &str) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::constructor_emit_export::source_edits_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };

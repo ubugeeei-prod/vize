@@ -24,6 +24,7 @@ const previousNative =
   "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;";
 const namespaceImport =
   'import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };';
+const constructorFactory = "$ConstructorEmitPropsFactory";
 const forwards = `
 type $NativeEmitPropsFactory<C> = __vizeEmitTypes.$NativeEmitPropsFactory<C>;
 export type $EmitPropsFactory<C> = __vizeEmitTypes.$EmitPropsFactory<C>;
@@ -137,6 +138,18 @@ export async function emitInferenceExports(
     const file = `npm/cli/virtual-ts.d.${extension}`;
     const text = read(file);
     const actual = family(text, file);
+    const constructorFactories = actual.source.statements.filter(
+      (node): node is ts.TypeAliasDeclaration =>
+        ts.isTypeAliasDeclaration(node) && node.name.text === constructorFactory,
+    );
+    assert.equal(constructorFactories.length, 1, `${file} one constructor emit factory`);
+    assert.equal(
+      constructorFactories[0]!.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      ) ?? false,
+      true,
+      `${file} explicitly exports the cross-file constructor emit factory`,
+    );
     const first = actual.nodes[0]!;
     const last = actual.nodes.at(-1)!;
     const isForwarded =
