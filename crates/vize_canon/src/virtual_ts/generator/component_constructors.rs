@@ -114,21 +114,20 @@ pub(super) fn emit_component_constructors<'a>(
         ts.push_str(exposed_unwrap_helper(legacy_vue2, dialect));
     }
     let authored_instance = declared("$AuthoredInstance");
-    // Vue 2 still exposes the named instance through its overload. Vue 3 maps
-    // only the four owned fields inline and intersects the unmapped public
-    // base, so emitting the old whole-instance alias would be dead work and a
-    // `noUnusedLocals` diagnostic in editor projects.
-    let mut own = String::default();
-    let fields = if legacy_component {
-        if aliases.has_authored_default {
-            append!(*ts, "type $ComponentInstance = {authored_instance} & ");
-        } else {
-            ts.push_str("type $ComponentInstance = ");
-        }
-        &mut *ts
+    if aliases.has_authored_default && legacy_component {
+        append!(*ts, "type $ComponentInstance = {authored_instance} & ");
+    } else if aliases.has_authored_default {
+        append!(
+            *ts,
+            "type $ComponentInstance = Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
+        );
     } else {
-        &mut own
-    };
+        ts.push_str("type $ComponentInstance = ");
+    }
+    // Keep the public instance's anonymous object unchanged for diagnostic text.
+    // Reuse its four owned fields inline without a capturable utility lookup.
+    let mut own = String::default();
+    let fields = if legacy_component { &mut *ts } else { &mut own };
     fields.push_str("{\n");
     setup_props_plan.emit_component_props_field(
         fields,
@@ -147,16 +146,19 @@ pub(super) fn emit_component_constructors<'a>(
         );
     }
     fields.push('}');
+    if !legacy_component {
+        ts.push_str(&own);
+    }
+    ts.push_str(" & ");
+    instance_base(
+        ts,
+        legacy_vue2,
+        dialect,
+        aliases.has_exposed_type,
+        (aliases.has_root_el, aliases.has_refs),
+    );
+    ts.push_str(";\n");
     if legacy_component {
-        ts.push_str(" & ");
-        instance_base(
-            ts,
-            legacy_vue2,
-            dialect,
-            aliases.has_exposed_type,
-            (aliases.has_root_el, aliases.has_refs),
-        );
-        ts.push_str(";\n");
         ts.push_str(LEGACY_VUE2_COMPONENT_CONSTRUCTOR_STATICS);
         ts.push_str(
             "type $ComponentConstructor = {\n  new (...args: any[]): any;\n  new (...args: any[]): $ComponentInstance;\n} & $Vue2ComponentConstructorStatics;\n",
@@ -176,20 +178,6 @@ pub(super) fn emit_component_constructors<'a>(
         } else {
             String::from("{}")
         };
-        let mut component_instance_base = String::default();
-        if aliases.has_authored_default {
-            append!(
-                component_instance_base,
-                "Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & "
-            );
-        }
-        instance_base(
-            &mut component_instance_base,
-            legacy_vue2,
-            dialect,
-            aliases.has_exposed_type,
-            (aliases.has_root_el, aliases.has_refs),
-        );
         // `$ComponentInput` is a conditional on the authored type
         // parameter, so the checker defers it instead of resolving the input
         // shape while it checks the alias declaration. That matters because
@@ -205,7 +193,7 @@ pub(super) fn emit_component_constructors<'a>(
         // check; TSX binds `$JsxProps` and stays exact (#11629).
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<{own}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps> & {component_instance_base};\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\n"
         );
     }
 

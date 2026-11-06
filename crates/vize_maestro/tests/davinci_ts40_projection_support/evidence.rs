@@ -1,6 +1,5 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 
-mod owned_instance_successors;
 mod receipt;
 
 use super::{capture_fixture, load_matrix, normalize::sha256};
@@ -210,8 +209,6 @@ fn public_instance_slot_packets_remain_authenticated() {
         integrated_successor,
         discriminated_jsx_union_successor,
     );
-    let elided_instance_successor =
-        owned_instance_successors::options_api(discriminated_jsx_union_successor);
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -235,7 +232,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        elided_instance_successor
+        discriminated_jsx_union_successor
     );
 }
 
@@ -409,8 +406,6 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             integrated_successor,
             discriminated_jsx_union_successor,
         );
-        let elided_instance_successor =
-            owned_instance_successors::mixed_vue2(discriminated_jsx_union_successor);
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -424,7 +419,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            elided_instance_successor
+            discriminated_jsx_union_successor
         );
     }
 }

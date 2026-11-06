@@ -11,7 +11,6 @@ mod constructor_without_args;
 mod controls;
 mod current_generated_constructor;
 mod current_updates;
-mod elided_generated_constructor;
 mod integrated_generated_constructor;
 mod provider_roster;
 
@@ -246,7 +245,6 @@ fn expected(current_providers: bool) -> (Value, Value) {
     current_updates::apply(&mut manifest, &mut members);
     current_generated_constructor::apply(&mut manifest, &mut members);
     integrated_generated_constructor::apply(&mut manifest, &mut members);
-    elided_generated_constructor::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

@@ -96,23 +96,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   );
   assert.ok(currentTransition);
   assert.equal(currentTransition.previousSha256, transition.currentSha256);
-  const elidedReceipt = fs.readFileSync(path.join(custody, "elided-instance-11984.json"));
-  assert.equal(
-    createHash("sha256").update(elidedReceipt).digest("hex"),
-    "055b9e98a01c1b5caa676c9b22530b6df7f5a601ea2cfe02a238727eb70cab05",
-  );
-  const elided = JSON.parse(elidedReceipt.toString("utf8"));
-  assert.equal(elided.schema, "vize.experimental-router-elided-instance-transition.v1");
-  assert.equal(elided.qualificationCredit, false);
-  assert.equal(elided.previous.path, "shared-helper-preamble-20261106.json");
-  assert.equal(
-    elided.previous.sha256,
-    createHash("sha256").update(sharedHelperReceipt).digest("hex"),
-  );
-  const elidedTransition = elided.entries.find((row: { file: string }) => row.file === entry.file);
-  assert.ok(elidedTransition);
-  assert.equal(elidedTransition.previousSha256, currentTransition.currentSha256);
-  assert.equal(elidedTransition.currentSha256, entry.sha256);
+  assert.equal(currentTransition.currentSha256, entry.sha256);
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),
@@ -132,13 +116,6 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const current = bytes.toString("utf8");
   assert.equal(current.includes(successor.currentEdit.before), false);
   assert.equal(current.split(successor.currentEdit.after).length, 2);
-  assert.equal(current.includes(elided.edit.before), false);
-  assert.equal(current.split(elided.edit.after).length, 2);
-  const previous = current.replace(elided.edit.after, elided.edit.before);
-  assert.equal(
-    createHash("sha256").update(previous).digest("hex"),
-    elidedTransition.previousSha256,
-  );
   return current;
 }
 

@@ -78,12 +78,11 @@ fn test_options_api_template_bindings_use_default_instance_type() {
     );
     assert!(
         output.code.contains(
-            "> & Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase;"
+            "type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & {"
         ),
         "the public instance must retain Options API members without broadening normalized Vue members:\n{}",
         output.code
     );
-    assert_eq!(output.code.matches("type $ComponentInstance =").count(), 0);
 }
 
 /// A `namespace` the plain script declares stays resolvable from template scope
@@ -293,11 +292,10 @@ fn test_script_setup_keeps_options_separate_from_the_component_instance() {
         output.code
     );
     assert!(
-        output.code.contains("=> $ComponentInstanceFor<{\n"),
+        output.code.contains("type $ComponentInstance = {\n"),
         "the public instance must stay the normalized shape:\n{}",
         output.code
     );
-    assert_eq!(output.code.matches("type $ComponentInstance =").count(), 0);
 }
 
 /// A configured `globalTypes` entry already declares the name in the template
