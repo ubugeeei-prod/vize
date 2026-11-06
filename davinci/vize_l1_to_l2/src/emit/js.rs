@@ -90,6 +90,14 @@ fn parse_rejected_opaque<'a>(expr: &ExprRef<'a>) -> Option<&'a OpaqueExpr<'a>> {
     (opaque.reason == OpaqueReason::ParseRejected).then_some(opaque)
 }
 
+/// Whether an L2 parse rejection is nevertheless an emitter-supported raw
+/// JavaScript spelling (for example a reserved dynamic key or an expression
+/// ending in a line comment).
+#[doc(hidden)]
+pub fn parse_rejected_expression_is_raw_js(expr: &ExprRef<'_>, allow_identifier: bool) -> bool {
+    parse_rejected_original_raw_js(expr, allow_identifier).is_some()
+}
+
 fn trailing_block_comment_value_is_js(source: &str, span: Span) -> bool {
     strip_trailing_block_comments(source)
         .map(|stripped| super::js_comment::source_is_js(stripped, span.start))

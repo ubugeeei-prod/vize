@@ -233,7 +233,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.retained_index",
             retained::Retained::collect(allocator, &s2.root)
         );
-        if retained.has_parse_rejected() {
+        if retained.has_invalid_parse_rejection() {
             return VaporL3BridgeStatus::Rejected(std::vec![String::from(
                 "Error parsing JavaScript expression: invalid expression",
             )]);

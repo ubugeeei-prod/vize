@@ -301,25 +301,20 @@ export function render(_ctx) {{
             );
         }
     }
-    // With prefixing disabled, the established tolerant API preserves invalid
-    // expressions. It must terminate. With prefixing enabled, core expression
-    // validation reports them and the compiler must not emit code.
+    // Invalid expressions are fatal in both routes. Prefix-free native
+    // compilation reports the retained L2 rejection instead of emitting it.
     for expression in ["(", "x +", "[x +", "{value: x +}"] {
         let source = vize_carton::cstr!("<button :disabled=\"{expression}\"></button>");
         let allocator = Allocator::new();
-        let tolerant = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
-        let expected = vize_carton::cstr!(
-            r#"import {{ setProp as _setProp, renderEffect as _renderEffect, template as _template }} from 'vue';
-const t0 = _template("<button></button>", true)
-
-export function render(_ctx) {{
-  const n0 = t0()
-  _renderEffect(() => _setProp(n0, "disabled", {expression}))
-  return n0
-}}
-"#
+        let rejected = compile_vapor(&allocator, &source, VaporCompilerOptions::default());
+        assert_eq!(
+            rejected.error_messages,
+            std::vec![vize_carton::String::from(
+                "Error parsing JavaScript expression: invalid expression"
+            )],
+            "{expression}"
         );
-        assert_eq!(tolerant.code, expected, "{expression}");
+        assert_eq!(rejected.code, "", "{expression}");
         let (strict, diagnostics) = compile_vapor_with_diagnostics(
             &allocator,
             &source,
