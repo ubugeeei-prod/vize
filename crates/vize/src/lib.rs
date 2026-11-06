@@ -30,12 +30,6 @@ mod commands;
 mod config;
 mod profile_support;
 
-/// Run only the TypeScript content-mapper protocol server.
-#[doc(hidden)]
-pub fn run_content_mapper() {
-    commands::content_mapper::run(Default::default());
-}
-
 /// Ordered lint-plan resolution and provenance for inspector consumers.
 pub mod lint_plan;
 

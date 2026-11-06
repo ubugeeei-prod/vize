@@ -5,13 +5,11 @@ on:
     paths:
       - .github/workflows/content-mapper-cold-start.yml
       - crates/vize/Cargo.toml
-      - crates/vize/src/bin/vize-content-mapper.rs
-      - crates/vize/src/lib.rs
       - crates/vize/tests/content_mapper_tsgo_cli/memo_expression.rs
       - tests/tooling/content-mapper-process-receipt.test.ts
       - tools/support/compat/content-mapper/process-receipt.ts
       - tools/support/release/type-admission-mapper-host.ts
-  merge_group:
+  merge_group: # The merge queue deliberately reruns the full qualification.
   workflow_dispatch:
 
 concurrency:
@@ -54,14 +52,18 @@ jobs:
           proof="$RUNNER_TEMP/cold-content-mapper-host-proof"
           receipts="$RUNNER_TEMP/cold-content-mapper-receipts"
           mkdir -p "$receipts"
+          printf '{"source":"%s","runId":"%s","attempt":"%s"}\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$receipts/invocation.json"
           env -u GH_TOKEN -u GITHUB_TOKEN -u NODE_AUTH_TOKEN -u NPM_TOKEN -u NODE_OPTIONS -u NODE_PATH \
             node tools/support/release/type-admission-mapper-host.ts "$provider" "$proof"
           runtime="$provider/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
           test -x "$runtime"
-          printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime" >> "$GITHUB_ENV"
-          printf 'VIZE_TEST_MEMO_PROCESS_RECEIPT_DIR=%s\n' "$receipts" >> "$GITHUB_ENV"
-          printf 'VIZE_TEST_NODE=%s\n' "$(command -v node)" >> "$GITHUB_ENV"
-          printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV"
+          {
+            printf 'VIZE_TEST_MEMO_CONTENT_MAPPER_TSGO=%s\n' "$runtime"
+            printf 'VIZE_TEST_MEMO_PROCESS_RECEIPT_DIR=%s\n' "$receipts"
+            printf 'VIZE_TEST_NODE=%s\n' "$(command -v node)"
+            printf 'VIZE_TEST_REQUIRE_TSGO=1\n'
+          } >> "$GITHUB_ENV"
       - name: Capture the first post-build mapper process
         run: >-
           cargo test --locked -p vize --test integration --

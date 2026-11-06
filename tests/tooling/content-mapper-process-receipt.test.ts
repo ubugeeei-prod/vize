@@ -13,6 +13,14 @@ import {
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const proxy = path.join(root, "tools/support/compat/content-mapper/process-receipt.ts");
+type ProcessReceipt = {
+  lifecycle: string;
+  finishedAt: string | null;
+  exit: { code: number | null; signal: NodeJS.Signals | null } | null;
+  spawnError: unknown;
+  transport: { stdin: { ended: boolean; error: unknown } };
+  streams: Record<string, { utf8: string }>;
+};
 
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -27,6 +35,19 @@ function withDirectory(check: (directory: string) => void | Promise<void>): () =
       rmSync(directory, { recursive: true, force: true });
     }
   };
+}
+
+/** Join the detached observer after its host-facing relay has been terminated. */
+async function waitForClosedReceipt(file: string): Promise<ProcessReceipt> {
+  const deadline = Date.now() + 5_000;
+  for (;;) {
+    try {
+      const packet = JSON.parse(readFileSync(file, "utf8")) as ProcessReceipt;
+      if (packet.lifecycle === "closed") return packet;
+    } catch {}
+    assert.ok(Date.now() < deadline, `mapper observer did not close: ${file}`);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
 }
 
 test("the qualified mapper host selects exact Linux and macOS arm64 images", () => {
@@ -47,6 +68,7 @@ test("the macOS cold-start workflow runs once and retains complete process evide
           name?: string;
           if?: string;
           run?: string;
+          uses?: string;
           with?: Record<string, string>;
         }>;
       }
@@ -54,20 +76,18 @@ test("the macOS cold-start workflow runs once and retains complete process evide
   };
   const job = workflow.jobs["macos-arm64"];
   assert.equal(job["runs-on"], "blacksmith-12vcpu-macos-15");
-  const prepare = job.steps.find(
-    (step) => step.name === "Prepare the exact macOS Content Mapper host",
+  const prepare = job.steps.find((step) =>
+    step.run?.includes("tools/support/release/type-admission-mapper-host.ts"),
   );
   assert.ok(prepare?.run?.includes("@typescript/typescript-darwin-arm64/lib/tsc"));
   assert.ok(prepare?.run?.includes("VIZE_TEST_MEMO_PROCESS_RECEIPT_DIR"));
-  const capture = job.steps.find(
-    (step) => step.name === "Capture the first post-build mapper process",
+  assert.ok(prepare?.run?.includes('> "$receipts/invocation.json"'));
+  const capture = job.steps.find((step) =>
+    step.run?.includes("memo_dependencies_check_members_and_preserve_unused_controls"),
   );
-  assert.ok(capture?.run?.includes("memo_dependencies_check_members_and_preserve_unused_controls"));
   assert.ok(capture?.run?.includes("--exact --nocapture --test-threads=1"));
   assert.doesNotMatch(capture?.run ?? "", /retry|attempt|sleep/iu);
-  const upload = job.steps.find(
-    (step) => step.name === "Upload mapper process and provider receipts",
-  );
+  const upload = job.steps.find((step) => step.uses?.startsWith("actions/upload-artifact@"));
   assert.equal(upload?.if, "${{ always() }}");
   assert.ok(upload?.with?.path.includes("cold-content-mapper-receipts"));
   assert.equal(upload?.with?.["if-no-files-found"], "error");
@@ -105,6 +125,7 @@ test(
     assert.deepEqual(packet.command.args, ["-e", child]);
     assert.equal(packet.spawnError, null);
     assert.deepEqual(packet.exit, { code: 23, signal: null });
+    assert.deepEqual(packet.transport.stdin, { ended: true, error: null });
     for (const [name, value] of [
       ["stdin", "request\n"],
       ["stdout", "OUT:request\n"],
@@ -168,7 +189,7 @@ test(
 );
 
 test(
-  "the mapper proxy durably snapshots protocol bytes before host SIGKILL teardown",
+  "the mapper observer records child closure after host SIGKILL teardown",
   { skip: process.platform === "win32" },
   withDirectory(async (directory) => {
     const receipt = path.join(directory, "receipt.json");
@@ -191,11 +212,11 @@ test(
     assert.equal(code, null);
     assert.equal(signal, "SIGKILL");
 
-    const packet = JSON.parse(readFileSync(receipt, "utf8"));
-    assert.equal(packet.lifecycle, "running");
-    assert.equal(packet.finishedAt, null);
-    assert.equal(packet.exit, null);
+    const packet = await waitForClosedReceipt(receipt);
+    assert.equal(typeof packet.finishedAt, "string");
+    assert.deepEqual(packet.exit, { code: 0, signal: null });
     assert.equal(packet.spawnError, null);
+    assert.deepEqual(packet.transport.stdin, { ended: true, error: null });
     assert.equal(packet.streams.stdin.utf8, "request\n");
     assert.equal(packet.streams.stdout.utf8, "ACK:request\n");
     assert.equal(packet.streams.stderr.utf8, "");

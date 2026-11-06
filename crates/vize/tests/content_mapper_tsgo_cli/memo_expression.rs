@@ -54,7 +54,7 @@ fn install_observed_mapper_manifest(project: &Path, receipt: &Path) {
         "private": true,
         "typescript": {
             "contentMapper": {
-                "exec": [node, proxy, receipt, env!("CARGO_BIN_EXE_vize-content-mapper")],
+                "exec": [node, proxy, receipt, env!("CARGO_BIN_EXE_vize"), "content-mapper"],
                 "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
                 "dynamicConfig": true,
             },
@@ -94,13 +94,26 @@ fn decode_mapper_protocol(bytes: &[u8], context: &str) -> Vec<serde_json::Value>
 }
 
 fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output) {
-    let bytes = std::fs::read(receipt).unwrap_or_else(|error| {
-        panic!(
-            "missing mapper process receipt {}: {error}\n{}",
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+    let bytes = loop {
+        let observation = match std::fs::read(receipt) {
+            Ok(bytes) => {
+                let packet: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+                if packet["lifecycle"] == "closed" {
+                    break bytes;
+                }
+                String::from_utf8_lossy(&bytes).into_owned()
+            }
+            Err(error) => error.to_string(),
+        };
+        assert!(
+            std::time::Instant::now() < deadline,
+            "mapper observer did not close {}: {observation}\n{}",
             receipt.display(),
             output_text(output)
-        )
-    });
+        );
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    };
     let packet: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
     let context = format!(
         "{}\n{}",
@@ -113,29 +126,29 @@ fn assert_complete_mapper_receipt(receipt: &Path, output: &std::process::Output)
     );
     assert_eq!(
         packet["command"]["file"],
-        env!("CARGO_BIN_EXE_vize-content-mapper"),
+        env!("CARGO_BIN_EXE_vize"),
         "{context}"
     );
-    assert_eq!(packet["command"]["args"], json!([]), "{context}");
+    assert_eq!(
+        packet["command"]["args"],
+        json!(["content-mapper"]),
+        "{context}"
+    );
     assert_eq!(packet["spawnError"], serde_json::Value::Null, "{context}");
-    match packet["lifecycle"].as_str() {
-        Some("closed") => {
-            assert_eq!(packet["exit"]["code"], 0, "{context}");
-            assert_eq!(
-                packet["exit"]["signal"],
-                serde_json::Value::Null,
-                "{context}"
-            );
-            assert!(packet["finishedAt"].is_string(), "{context}");
-        }
-        Some("running") => {
-            // The TypeScript CLI deliberately SIGKILLs a healthy mapper on host
-            // close, so the last durable snapshot remains in the running state.
-            assert_eq!(packet["exit"], serde_json::Value::Null, "{context}");
-            assert_eq!(packet["finishedAt"], serde_json::Value::Null, "{context}");
-        }
-        state => panic!("unexpected mapper lifecycle {state:?}: {context}"),
-    }
+    assert_eq!(packet["lifecycle"], "closed", "{context}");
+    assert_eq!(packet["exit"]["code"], 0, "{context}");
+    assert_eq!(
+        packet["exit"]["signal"],
+        serde_json::Value::Null,
+        "{context}"
+    );
+    assert!(packet["finishedAt"].is_string(), "{context}");
+    assert_eq!(packet["transport"]["stdin"]["ended"], true, "{context}");
+    assert_eq!(
+        packet["transport"]["stdin"]["error"],
+        serde_json::Value::Null,
+        "{context}"
+    );
     for name in ["stdin", "stdout", "stderr"] {
         let stream = &packet["streams"][name];
         assert_eq!(stream["complete"], true, "{name}: {context}");
@@ -250,17 +263,23 @@ fn memo_dependencies_check_members_and_preserve_unused_controls() {
     };
     let fixture =
         workspace_root().join("tests/_fixtures/differential/typechecker/memo-expression-11733");
-    let retained_receipts = std::env::var_os(RECEIPT_DIR_ENV).map(PathBuf::from);
-    if let Some(directory) = &retained_receipts {
-        std::fs::create_dir_all(directory).unwrap();
-    }
+    let retained_run = std::env::var_os(RECEIPT_DIR_ENV)
+        .map(PathBuf::from)
+        .map(|directory| {
+            std::fs::create_dir_all(&directory).unwrap();
+            tempfile::Builder::new()
+                .prefix("run-")
+                .tempdir_in(directory)
+                .unwrap()
+                .keep()
+        });
     let mut cell = 0;
     for no_unused in [false, true] {
         for newline in ["\n", "\r\n"] {
             let project = tempfile::tempdir().unwrap();
             let newline_name = if newline == "\n" { "lf" } else { "crlf" };
             let receipt_name = format!("cell-{cell}-{newline_name}-unused-{no_unused}.json");
-            let receipt = retained_receipts.as_ref().map_or_else(
+            let receipt = retained_run.as_ref().map_or_else(
                 || project.path().join(&receipt_name),
                 |root| root.join(&receipt_name),
             );
