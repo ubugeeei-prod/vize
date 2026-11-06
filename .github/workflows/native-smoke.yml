@@ -272,7 +272,7 @@ jobs:
           - runner: blacksmith-32vcpu-ubuntu-2404
             target: x86_64-unknown-linux-musl
             platform: linux-x64-musl
-          - runner: blacksmith-32vcpu-ubuntu-2404-arm
+          - runner: ubuntu-22.04-arm
             target: aarch64-unknown-linux-musl
             platform: linux-arm64-musl
     steps:

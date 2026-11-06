@@ -39,7 +39,7 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
       platform: "linux-x64-musl",
     },
     {
-      runner: "blacksmith-32vcpu-ubuntu-2404-arm",
+      runner: "ubuntu-22.04-arm",
       target: "aarch64-unknown-linux-musl",
       platform: "linux-arm64-musl",
     },
