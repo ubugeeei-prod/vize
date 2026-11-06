@@ -16,7 +16,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 14,
-        "defaultExportEnd": 32
+        "defaultExportEnd": 32,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -64,7 +68,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 14,
-        "defaultExportEnd": 32
+        "defaultExportEnd": 32,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -112,7 +120,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 15,
-        "defaultExportEnd": 33
+        "defaultExportEnd": 33,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -160,7 +172,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 15,
-        "defaultExportEnd": 33
+        "defaultExportEnd": 33,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -208,7 +224,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -256,7 +276,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -304,7 +328,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 21,
-        "defaultExportEnd": 39
+        "defaultExportEnd": 39,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -352,7 +380,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 21,
-        "defaultExportEnd": 39
+        "defaultExportEnd": 39,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -400,7 +432,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 52,
-        "defaultExportEnd": 70
+        "defaultExportEnd": 70,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -448,7 +484,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 52,
-        "defaultExportEnd": 70
+        "defaultExportEnd": 70,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -496,7 +536,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 16,
-        "defaultExportEnd": 34
+        "defaultExportEnd": 34,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -544,7 +588,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 16,
-        "defaultExportEnd": 34
+        "defaultExportEnd": 34,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -592,7 +640,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 29,
-        "defaultExportEnd": 47
+        "defaultExportEnd": 47,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -640,7 +692,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 29,
-        "defaultExportEnd": 47
+        "defaultExportEnd": 47,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -688,7 +744,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -736,7 +796,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -784,7 +848,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -832,7 +900,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 0,
         "defaultExportKeywordEnd": 23,
-        "defaultExportEnd": 41
+        "defaultExportEnd": 41,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -880,7 +952,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 40,
-        "defaultExportEnd": 58
+        "defaultExportEnd": 58,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -928,7 +1004,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 40,
-        "defaultExportEnd": 58
+        "defaultExportEnd": 58,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -976,7 +1056,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 41,
-        "defaultExportEnd": 59
+        "defaultExportEnd": 59,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1024,7 +1108,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 41,
-        "defaultExportEnd": 59
+        "defaultExportEnd": 59,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1072,7 +1160,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1120,7 +1212,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1168,7 +1264,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 47,
-        "defaultExportEnd": 65
+        "defaultExportEnd": 65,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1216,7 +1316,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 47,
-        "defaultExportEnd": 65
+        "defaultExportEnd": 65,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1264,7 +1368,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 78,
-        "defaultExportEnd": 96
+        "defaultExportEnd": 96,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1312,7 +1420,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 78,
-        "defaultExportEnd": 96
+        "defaultExportEnd": 96,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1360,7 +1472,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 42,
-        "defaultExportEnd": 60
+        "defaultExportEnd": 60,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1408,7 +1524,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 42,
-        "defaultExportEnd": 60
+        "defaultExportEnd": 60,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1456,7 +1576,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 55,
-        "defaultExportEnd": 73
+        "defaultExportEnd": 73,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1504,7 +1628,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 55,
-        "defaultExportEnd": 73
+        "defaultExportEnd": 73,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1552,7 +1680,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1600,7 +1732,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1648,7 +1784,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {
@@ -1696,7 +1836,11 @@
         "defaultExportIsSfcMain": false,
         "defaultExportStart": 26,
         "defaultExportKeywordEnd": 49,
-        "defaultExportEnd": 67
+        "defaultExportEnd": 67,
+        "imports": [],
+        "hasSideEffectImport": false,
+        "hasReexport": false,
+        "hasDynamicImport": false
       },
       "wasm": {
         "descriptor": {

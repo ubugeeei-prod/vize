@@ -23,7 +23,8 @@ export function isTypeScriptSource(source: string): boolean {
 // JavaScript by the reviewed per-piece erasure (#11698): the module is no
 // longer reprinted whole, so its bytes change while it keeps every preserved
 // program node. The reference owns code, the default-export offsets and the
-// map; every other field must stay byte-for-byte equal to the preserved
+// map. The native HMR facts are reconstructed independently from the erased
+// module; every other field must stay byte-for-byte equal to the preserved
 // producer.
 export function typescriptErasureReference<T extends ErasedPacket>(
   preserved: T,
@@ -39,7 +40,11 @@ export function typescriptErasureReference<T extends ErasedPacket>(
   );
   out.code = erased.code;
   if (preserved.moduleShape) {
-    out.moduleShape = { ...preserved.moduleShape, ...defaultExportOffsets(erased.code, parsed) };
+    out.moduleShape = completeModuleShape(
+      preserved.moduleShape,
+      moduleFacts(parsed),
+      defaultExportOffsets(erased.code, parsed),
+    );
   }
   if (preserved.map != null) {
     assert.equal(typeof preserved.map, "string", "maps are serialized");
@@ -58,8 +63,125 @@ export function typescriptErasureReference<T extends ErasedPacket>(
   return out;
 }
 
+/** Add the native HMR facts using an independent Babel parse of packet code. */
+export function moduleShapeFactsReference<T extends ErasedPacket>(
+  packet: T,
+  parse: ParseModule,
+): T {
+  const out = structuredClone(packet);
+  if (out.moduleShape) {
+    out.moduleShape = completeModuleShape(
+      out.moduleShape,
+      moduleFacts(parseModule(out.code, parse)),
+    );
+  }
+  return out;
+}
+
+function completeModuleShape(
+  shape: Record<string, unknown>,
+  facts: Record<string, unknown>,
+  offsets: Record<string, number> = {},
+): Record<string, unknown> {
+  const {
+    imports: _imports,
+    hasSideEffectImport: _hasSideEffectImport,
+    hasReexport: _hasReexport,
+    hasDynamicImport: _hasDynamicImport,
+    defaultExportStart,
+    defaultExportKeywordEnd,
+    defaultExportEnd,
+    defaultExportLocal: _defaultExportLocal,
+    ...geometry
+  } = shape;
+  const { defaultExportLocal, ...hmrFacts } = facts;
+  const positions = {
+    ...(defaultExportStart === undefined ? {} : { defaultExportStart }),
+    ...(defaultExportKeywordEnd === undefined ? {} : { defaultExportKeywordEnd }),
+    ...(defaultExportEnd === undefined ? {} : { defaultExportEnd }),
+    ...offsets,
+  };
+  return {
+    ...geometry,
+    ...hmrFacts,
+    ...positions,
+    ...(defaultExportLocal === undefined ? {} : { defaultExportLocal }),
+  };
+}
+
 function parseModule(code: string, parse: ParseModule): BabelFile {
   return parse(code, { sourceType: "module", createParenthesizedExpressions: false, tokens: true });
+}
+
+function moduleFacts(parsed: BabelFile): Record<string, unknown> {
+  const imports: { source: string; local: string; namespace: boolean }[] = [];
+  let hasSideEffectImport = false;
+  let hasReexport = false;
+  let defaultExportLocal: string | undefined;
+  for (const node of parsed.program.body) {
+    if (node.type === "ImportDeclaration") {
+      const source = (node.source as { value?: unknown } | undefined)?.value;
+      assert(typeof source === "string");
+      const specifiers = node.specifiers as BabelNode[];
+      if (specifiers.length === 0) hasSideEffectImport = true;
+      for (const specifier of specifiers) {
+        const local = (specifier.local as { name?: unknown } | undefined)?.name;
+        assert(typeof local === "string");
+        imports.push({
+          source,
+          local,
+          namespace: specifier.type === "ImportNamespaceSpecifier",
+        });
+      }
+    }
+    if (
+      (node.type === "ExportNamedDeclaration" || node.type === "ExportAllDeclaration") &&
+      node.source
+    ) {
+      hasReexport = true;
+    }
+    if (node.type === "ExportDefaultDeclaration") {
+      const declaration = node.declaration as BabelNode;
+      let name: unknown;
+      if (declaration.type === "Identifier") {
+        name = declaration.name;
+      } else if (
+        declaration.type === "FunctionDeclaration" ||
+        declaration.type === "ClassDeclaration"
+      ) {
+        name = (declaration.id as { name?: unknown } | null | undefined)?.name;
+      }
+      if (name !== undefined) {
+        assert(typeof name === "string");
+        defaultExportLocal = name;
+      }
+    }
+  }
+  const facts: Record<string, unknown> = {
+    imports,
+    hasSideEffectImport,
+    hasReexport,
+    hasDynamicImport: containsDynamicImport(parsed.program),
+  };
+  if (defaultExportLocal !== undefined) facts.defaultExportLocal = defaultExportLocal;
+  return facts;
+}
+
+function containsDynamicImport(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(containsDynamicImport);
+  if (!value || typeof value !== "object") return false;
+  const node = value as Record<string, unknown>;
+  if (node.type === "ImportExpression") return true;
+  if (
+    node.type === "CallExpression" &&
+    (node.callee as Record<string, unknown> | undefined)?.type === "Import"
+  ) {
+    return true;
+  }
+  return Object.entries(node).some(
+    ([key, child]) =>
+      !POSITION_KEYS.has(key) && !COMMENT_KEYS.includes(key) && containsDynamicImport(child),
+  );
 }
 
 const POSITION_KEYS = new Set(["start", "end", "loc", "range", "extra", "tokens", "errors"]);

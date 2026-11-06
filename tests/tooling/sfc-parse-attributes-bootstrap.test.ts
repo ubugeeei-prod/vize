@@ -64,6 +64,7 @@ function requireReferenceCoverage(source: string) {
   for (const file of [
     "crates/vize_atelier_sfc/src/compile.rs",
     "crates/vize_atelier_sfc/src/compile/empty_component.rs",
+    "crates/vize_atelier_sfc/src/module_shape.rs",
     "crates/vize_vitrine/src/napi/sfc/compile.rs",
     "tests/tooling/sfc-parse-attributes-reference.test.ts",
   ])
@@ -79,6 +80,7 @@ void test("bound compiler sources trigger and execute the complete reference con
   for (const file of [
     "crates/vize_atelier_sfc/src/compile.rs",
     "crates/vize_atelier_sfc/src/compile/empty_component.rs",
+    "crates/vize_atelier_sfc/src/module_shape.rs",
     "crates/vize_vitrine/src/napi/sfc/compile.rs",
     "tests/tooling/sfc-parse-attributes-reference.test.ts",
   ]) {

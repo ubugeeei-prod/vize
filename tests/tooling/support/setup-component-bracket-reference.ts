@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { closedSetupReference, type ExposurePacket } from "./script-setup-default-expose.ts";
 import {
   isTypeScriptSource,
+  moduleShapeFactsReference,
   type ParseModule,
   typescriptErasureReference,
 } from "./typescript-erasure-reference.ts";
@@ -69,7 +70,9 @@ export function advanceRuntimeOptionReference<T extends RuntimeOptionRow>(
   const advance = (packets: ExposurePacket[], current: ExposurePacket[] | undefined) =>
     packets.map((packet, index) => {
       const closed = closedSetupReference(packet, sourceFiles[index]);
-      if (!isTypeScriptSource(sourceFiles[index])) return closed;
+      if (!isTypeScriptSource(sourceFiles[index])) {
+        return moduleShapeFactsReference(closed, parse);
+      }
       assert.ok(current?.[index], "the current row holds every TypeScript packet");
       return typescriptErasureReference(closed, current[index], parse);
     });

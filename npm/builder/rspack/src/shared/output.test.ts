@@ -74,6 +74,31 @@ export default _sfc_main;
   assert.ok(output.includes('_push("<img src=\\"" + _imports_0 + "\\">")'));
 });
 
+void test("HMR snapshots combine native and host-generated import facts", () => {
+  const code =
+    'import child from "./Child.vue";\nconst _sfc_main = { child };\nexport default _sfc_main;';
+  const shape = nativeShape(code);
+  assert.ok(shape);
+  const output = generateOutput(
+    compiledModule(code, {
+      moduleShape: {
+        ...shape,
+        imports: [{ source: "./Child.vue", local: "child", namespace: false }],
+        hasSideEffectImport: false,
+        hasReexport: false,
+        hasDynamicImport: false,
+      },
+      customBlocks: [{ type: "i18n", content: "{}", attrs: {}, index: 0 }],
+    }),
+    { requestPath: "./App.vue", hmr: true },
+  );
+  assert.ok(
+    output.includes(
+      '[["./Child.vue:child", child], ["./App.vue?vue&type=i18n&index=0:block0", block0], ["./logo.png:_imports_0", _imports_0]]',
+    ),
+  );
+});
+
 void test("output export rewrite ignores export default text inside template literals", () => {
   const output = generateOutput(
     compiledModule(
@@ -272,6 +297,10 @@ void test("template-only render output gains a default component export", () => 
         hasNamedRenderExport: true,
         hasNamedSsrRenderExport: false,
         defaultExportIsSfcMain: false,
+        imports: [],
+        hasSideEffectImport: false,
+        hasReexport: false,
+        hasDynamicImport: false,
       },
     }),
     { requestPath: "./App.vue" },

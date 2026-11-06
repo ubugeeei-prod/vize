@@ -10,6 +10,7 @@ import {
 } from "./support/plain-script-project-metadata-reference.ts";
 import { setupComponentBracketReference } from "./support/setup-component-bracket-reference.ts";
 import {
+  moduleShapeFactsReference,
   typescriptErasureReference,
   type ParseModule,
 } from "./support/typescript-erasure-reference.ts";
@@ -65,9 +66,19 @@ function comparePackets(priorPackets: PlainScriptPacket[], nextPackets: PlainScr
       unqualifiedRows.push([prior.case, prior.filename, prior.options]);
       continue;
     }
-    const erased = typescriptErasureReference(preserved, next.native, parse);
+    const shape = next.native.moduleShape;
+    // Historical packets without `imports` derive both HMR sides from candidate
+    // code. This preserves the replay but does not validate candidate-native HMR facts.
+    const nextNative =
+      shape &&
+      typeof shape === "object" &&
+      !Array.isArray(shape) &&
+      !Object.hasOwn(shape, "imports")
+        ? moduleShapeFactsReference(next.native, parse)
+        : next.native;
+    const erased = typescriptErasureReference(preserved, nextNative, parse);
     const expected = plainScriptProjectMetadataReference(prior, erased, manifest.workspaceRoot);
-    assert.deepEqual(expected, next.native);
+    assert.deepEqual(expected, nextNative);
     if (prior.case === "constant-controls" && prior.filename === "src/App.vue")
       metadataRows.push(prior.options);
   }
@@ -130,6 +141,25 @@ test("the old whole-packet comparison rejects the recorded project metadata addi
         assert.deepEqual(typescriptErasureReference(preserved, next.native, parse), next.native),
       { code: "ERR_ASSERTION" },
     );
+  }
+});
+
+test("module-shape reference retains only named default declaration locals", () => {
+  const shape = {
+    imports: [],
+    hasSideEffectImport: false,
+    hasReexport: false,
+    hasDynamicImport: false,
+    defaultExportLocal: "stale",
+  };
+  for (const [code, expected] of [
+    ["export default function Render() {}", "Render"],
+    ["export default class Component {}", "Component"],
+    ["export default function () {}", undefined],
+    ["export default class {}", undefined],
+  ] as const) {
+    const packet = moduleShapeFactsReference({ code, moduleShape: shape }, parse);
+    assert.equal(packet.moduleShape?.defaultExportLocal, expected);
   }
 });
 

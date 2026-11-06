@@ -6,7 +6,7 @@ import { rewriteSfcTemplateAssetReferences } from "@vizejs/native";
 import type { CompiledModule } from "../types/index.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
-import { hmrImportSnapshot } from "./module-output.ts";
+import { hmrImportSnapshot, type ModuleImportInfo } from "./module-output.ts";
 import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
 
 export interface GenerateOutputOptions {
@@ -34,6 +34,7 @@ export function generateOutputWithMap(
   options: GenerateOutputOptions,
 ): { code: string; map: SourceMapV3 | null } {
   const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
+  const hmrImports: ModuleImportInfo[] = [];
   const isCustomElement = compiled.isCustomElement;
   const shape = compiled.moduleShape;
   if (!shape) {
@@ -196,6 +197,7 @@ export function generateOutputWithMap(
         }
 
         const request = `${options.requestPath}?${queryParts.join("&")}`;
+        hmrImports.push({ source: request, local: `block${index}`, namespace: false });
         return (
           `import block${index} from ${JSON.stringify(request)};\n` +
           `if (typeof block${index} === 'function') block${index}(_sfc_main);`
@@ -212,6 +214,7 @@ export function generateOutputWithMap(
         let importPath = url.startsWith("~") ? url.slice(1) : url;
         const hashIdx = importPath.indexOf("#");
         if (hashIdx >= 0) importPath = importPath.slice(0, hashIdx);
+        hmrImports.push({ source: importPath, local: varName, namespace: false });
         return `import ${varName} from ${JSON.stringify(importPath)};`;
       })
       .join("\n");
@@ -233,7 +236,9 @@ export function generateOutputWithMap(
         })),
       }),
     };
-    attach(genHotReloadCode(compiled.scopeId, metadata, hmrImportSnapshot(emitted.code) ?? "null"));
+    attach(
+      genHotReloadCode(compiled.scopeId, metadata, hmrImportSnapshot(shape, hmrImports) ?? "null"),
+    );
   }
 
   return { code: emitted.code, map: emitted.map };

@@ -12,6 +12,7 @@ import { MappedModule, parseSourceMap } from "@vizejs/builder-shared/mapped-modu
 import {
   createGeneratedNameAllocator,
   hmrImportSnapshot,
+  type ModuleImportInfo,
 } from "@vizejs/builder-shared/module-output";
 import { bindDefaultExport } from "@vizejs/builder-shared/native-shape";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "@vizejs/builder-shared/hot-reload";
@@ -99,6 +100,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
     emitted.append(`\n${component}.__scopeId = ${JSON.stringify(`data-v-${scopeId}`)};`);
 
   const imports: string[] = [];
+  const hmrImports: ModuleImportInfo[] = [];
   const modules: string[] = [];
   const moduleUpdates: string[] = [];
   const moduleNames = new Set<string>();
@@ -162,6 +164,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
       imports.push(
         `import ${binding} from ${JSON.stringify(request)};\nconst ${asset.varName} = typeof ${binding} === "string" ? ${binding} : ${binding}.src;`,
       );
+      hmrImports.push({ source: request, local: binding, namespace: false });
     }
   }
   emitted.prepend(`${imports.join("\n")}\n`);
@@ -199,7 +202,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
       genHotReloadCode(
         scopeId,
         metadata,
-        hmrImportSnapshot(emitted.code) ?? "null",
+        hmrImportSnapshot(shape, hmrImports) ?? "null",
         "import.meta.turbopackHot",
         component,
       ),

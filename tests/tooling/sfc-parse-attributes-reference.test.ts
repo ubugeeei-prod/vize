@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { test } from "node:test";
 import {
   attributesPacketReference,
@@ -17,6 +18,10 @@ import {
   emptyProjectContextSupportingBlobs,
 } from "../native/sfc-empty-project-context-source.ts";
 import type { ExposurePacket } from "./support/script-setup-default-expose.ts";
+import {
+  moduleShapeFactsReference,
+  type ParseModule,
+} from "./support/typescript-erasure-reference.ts";
 
 const captured = JSON.parse(
   readFileSync(
@@ -30,17 +35,23 @@ const captured = JSON.parse(
   };
 };
 const rows = [...captured.packets, ...captured.emptySetupModules.packets];
+const fromTests = createRequire(new URL("../package.json", import.meta.url));
+const { parse } = fromTests("@babel/parser") as { parse: ParseModule };
+
+function withModuleFacts(value: Record<string, unknown>): Record<string, unknown> {
+  return moduleShapeFactsReference(value as { code: string; [key: string]: unknown }, parse);
+}
 
 test("parsed-attribute compile packets advance only the reviewed exposure reference", () => {
   assert.equal(rows.length, 6);
   assert.equal(exposureReferenceCustody.fixSource, "9157b9fa83dbdc98100be084be288f21d0d1bc18");
   for (const row of rows) {
     const before = { kind: "return", json: JSON.stringify(row.before) };
+    const current = { kind: "return", json: JSON.stringify(row.after) };
     const retained = structuredClone(before);
-    assert.deepEqual(attributesPacketReference(before, row.source, "compile"), {
-      kind: "return",
-      json: JSON.stringify(row.after),
-    });
+    const actual = attributesPacketReference(before, row.source, "compile", current, parse);
+    assert.equal(actual.kind, "return");
+    assert.deepEqual(JSON.parse(String(actual.json)), withModuleFacts(row.after));
     assert.deepEqual(before, retained);
     for (const mode of ["omitted", "filename", "disabled"]) {
       assert.deepEqual(attributesPacketReference(before, row.source, mode), before);
@@ -61,6 +72,8 @@ test("the attribute adapter still rejects unrelated whole-packet changes", () =>
       { kind: "return", json: JSON.stringify(row.before) },
       row.source,
       "compile",
+      { kind: "return", json: JSON.stringify(row.after) },
+      parse,
     );
     for (const key of ["code", "map", "moduleShape", "errors", "macroArtifacts"]) {
       const changed: Record<string, unknown> = structuredClone(row.after);
@@ -112,7 +125,12 @@ await test("only the original empty compile packet advances by the authenticated
   for (const mode of ["omitted", "filename", "disabled", "enabled"])
     assert.deepEqual(attributesPacketReference(before, "", mode), before);
   for (const source of [" ", "<!--comment-->", "<style/>", "<docs/>", "<template/>", "<script/>"])
-    assert.deepEqual(attributesPacketReference(before, source, "compile"), before);
+    assert.deepEqual(
+      JSON.parse(
+        String(attributesPacketReference(before, source, "compile", undefined, parse).json),
+      ),
+      withModuleFacts(JSON.parse(String(before.json)) as Record<string, unknown>),
+    );
   for (const field of ["code", "errors", "warnings", "styles", "moduleShape", "unknown"]) {
     const alteredBefore = JSON.parse(String(before.json)) as Record<string, unknown>;
     alteredBefore[field] = "unexpected";

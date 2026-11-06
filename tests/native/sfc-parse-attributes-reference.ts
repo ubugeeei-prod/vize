@@ -5,6 +5,12 @@ import {
   closedSetupReference,
   type ExposurePacket,
 } from "../tooling/support/script-setup-default-expose.ts";
+import {
+  isTypeScriptSource,
+  moduleShapeFactsReference,
+  type ParseModule,
+  typescriptErasureReference,
+} from "../tooling/support/typescript-erasure-reference.ts";
 import { emptyCompilePacketReference } from "./sfc-parse-attributes-empty-component.ts";
 
 export const exposureReferenceCustody = {
@@ -190,6 +196,8 @@ export function attributesPacketReference(
   packet: Record<string, unknown>,
   source: string,
   mode: string,
+  current?: Record<string, unknown>,
+  parse?: ParseModule,
 ): Record<string, unknown> {
   if (mode !== "compile" || packet.kind !== "return") return structuredClone(packet);
   if (source === "") return emptyCompilePacketReference(packet);
@@ -198,6 +206,21 @@ export function attributesPacketReference(
   assert(value !== null && typeof value === "object" && !Array.isArray(value));
   assert("code" in value && typeof value.code === "string");
   const exposure = closedSetupReference(value as ExposurePacket, source);
-  const reference = rawEmitterCompileReference(exposure, source);
+  let reference = rawEmitterCompileReference(exposure, source);
+  if (reference.moduleShape) {
+    assert.ok(parse, "module facts require the independent module parser");
+    if (isTypeScriptSource(source)) {
+      assert(current);
+      assert.equal(current.kind, "return");
+      assert(typeof current.json === "string");
+      const currentValue: unknown = JSON.parse(current.json);
+      assert(
+        currentValue !== null && typeof currentValue === "object" && !Array.isArray(currentValue),
+      );
+      reference = typescriptErasureReference(reference, currentValue as ExposurePacket, parse);
+    } else {
+      reference = moduleShapeFactsReference(reference, parse);
+    }
+  }
   return { ...packet, json: JSON.stringify(reference) };
 }
