@@ -7,7 +7,9 @@ pub(super) mod tsx_arrows;
 
 use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{
+    Declaration, ExportDefaultDeclarationKind, ImportDeclarationSpecifier, Statement,
+};
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet};
 use vize_croquis::script_parser::parse_program_for_analysis;
@@ -122,13 +124,23 @@ pub(super) fn collect_script_module_plan(
     for statement in &parsed.program.body {
         // Namespace merges, import-equals and named default declarations are
         // outside this binding set. Keep their authored utility lookup local.
-        if matches!(
+        let default_binds_type = matches!(
             statement,
-            Statement::TSModuleDeclaration(_)
-                | Statement::TSGlobalDeclaration(_)
-                | Statement::TSImportEqualsDeclaration(_)
-                | Statement::ExportDefaultDeclaration(_)
-        ) {
+            Statement::ExportDefaultDeclaration(export)
+                if matches!(
+                    &export.declaration,
+                    ExportDefaultDeclarationKind::ClassDeclaration(_)
+                        | ExportDefaultDeclarationKind::TSInterfaceDeclaration(_)
+                )
+        );
+        if default_binds_type
+            || matches!(
+                statement,
+                Statement::TSModuleDeclaration(_)
+                    | Statement::TSGlobalDeclaration(_)
+                    | Statement::TSImportEqualsDeclaration(_)
+            )
+        {
             complete_type_bindings = false;
         }
         match statement {
@@ -367,6 +379,30 @@ mod tests {
             &script[spans[0].0 as usize..spans[0].1 as usize],
             "import Chart from \"chart.js/auto/auto\";"
         );
+    }
+
+    #[test]
+    fn options_api_default_expressions_share_listener_relations() {
+        for script in [
+            "export default { name: 'ObjectComponent' };",
+            "export default defineComponent({ name: 'CallComponent' });",
+        ] {
+            let plan = collect_script_module_plan(script, false);
+
+            assert!(plan.shares_listener_relations(None), "{script}");
+        }
+    }
+
+    #[test]
+    fn named_default_types_keep_listener_relations_local() {
+        for script in [
+            "export default class Component {}",
+            "export default interface Component {}",
+        ] {
+            let plan = collect_script_module_plan(script, false);
+
+            assert!(!plan.shares_listener_relations(None), "{script}");
+        }
     }
 
     #[test]
