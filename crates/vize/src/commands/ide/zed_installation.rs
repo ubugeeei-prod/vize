@@ -54,7 +54,7 @@ pub(super) fn zed_dev_extension_dir(installed_dir: &Path) -> PathBuf {
         .join("vize")
 }
 
-fn get_zed_extensions_dir() -> Option<PathBuf> {
+pub(super) fn get_zed_extensions_dir() -> Option<PathBuf> {
     #[cfg(target_os = "macos")]
     {
         dirs::data_dir().map(|dir| dir.join("Zed/extensions/installed"))

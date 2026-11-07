@@ -11,11 +11,11 @@ use std::process::Command;
 use vize_l0::{String, cstr};
 
 mod zed_archive;
-use zed_archive::{
-    MAX_ZED_ARCHIVE_BYTES, unpack_zed_extension_archive, validate_zed_archive_member,
-};
+#[cfg(test)]
+use zed_archive::validate_zed_archive_member;
+use zed_archive::{MAX_ZED_ARCHIVE_BYTES, unpack_zed_extension_archive};
 mod zed_installation;
-use zed_installation::{zed_dev_extension_dir, zed_status, zed_uninstall};
+use zed_installation::{get_zed_extensions_dir, zed_dev_extension_dir, zed_status, zed_uninstall};
 
 mod editor_files;
 
