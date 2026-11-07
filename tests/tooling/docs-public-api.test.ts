@@ -16,6 +16,10 @@ const packages = [
     name: "@vizejs/router",
     source: new URL("../../npm/compose/router/src/", import.meta.url),
   },
+  {
+    name: "@vizejs/marquette",
+    source: new URL("../../npm/marquette/src/", import.meta.url),
+  },
 ] as const;
 
 for (const packageContract of packages) {
