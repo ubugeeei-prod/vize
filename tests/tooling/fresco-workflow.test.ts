@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
+import { globSync } from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { hostedOrBlacksmithExact, readRepoFile } from "./support/github-workflows.ts";
+import frescoConfig from "../../npm/fresco/vite.config.ts";
 import {
   planAffectedJs,
   readJsWorkspace,
 } from "../../tools/support/compat/github/plan-affected-js.ts";
+import { hostedOrBlacksmithExact, readRepoFile, root } from "./support/github-workflows.ts";
 
 const PLATFORM_MATRIX = [
   [hostedOrBlacksmithExact("ubuntu-24.04"), "linux-x64-gnu"],
@@ -209,5 +212,17 @@ test("fresco package scripts stay portable across CI shells", () => {
   for (const [name, script] of Object.entries(manifest.scripts)) {
     assert.doesNotMatch(script, /'/, `script ${name} must not rely on single-quoted arguments`);
   }
-  assert.equal(manifest.scripts.test, "vp test run");
+
+  const include = frescoConfig.test?.include;
+  assert.ok(Array.isArray(include));
+  assert.ok(include.every((pattern) => typeof pattern === "string"));
+  const discovered = globSync(include as string[], { cwd: path.join(root, "npm", "fresco") });
+  assert.ok(
+    discovered.some((file) => file.endsWith(".test.ts")),
+    "missing .test.ts discovery",
+  );
+  assert.ok(
+    discovered.some((file) => file.endsWith(".spec.ts")),
+    "missing .spec.ts discovery",
+  );
 });
