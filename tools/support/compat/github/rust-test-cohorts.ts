@@ -85,6 +85,7 @@ const definitions: Record<RustTestCohortId, Definition> = {
       "davinci_test_support",
       "vize_benchmarks",
       "vize_test_runner",
+      "vize_parcel_transformer",
     ],
   },
 };
