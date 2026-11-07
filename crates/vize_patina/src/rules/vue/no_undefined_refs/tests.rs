@@ -220,7 +220,10 @@ fn imported_base_of_exported_props_interface_is_not_assumed_closed() {
         let source = format!(
             r#"<script lang="ts">
 import type {{ BaseProps }} from './base'
-export interface Props extends Omit<BaseProps, 'modelValue'> {{
+export interface Props extends Omit<
+  BaseProps,
+  'modelValue' | 'defaultValue'
+> {{
   {prop}{optional}: boolean
 }}
 </script>
