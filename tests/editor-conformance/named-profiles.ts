@@ -117,13 +117,15 @@ assert.deepEqual(
   [...names].sort((left, right) => left.localeCompare(right)),
 );
 
-// Check the actual public native input inventory, not just a hand-picked
-// subset: a newly introduced switch must be explicitly excluded by lint/off.
+// Check the actual public native feature inventory, not just a hand-picked
+// subset. Initialization-only policy stays outside the editor feature profiles.
 const schema = fs
   .readFileSync(path.join(repository, "crates/vize_maestro/src/server/state/features.rs"), "utf8")
   .split("impl LspConfigSection")[0];
+assert.match(schema, /release_closed_project_contexts: Option<bool>/u);
 const featureKeys = [...schema.matchAll(/^\s*(?:pub\(super\)\s+)?(\w+): Option<bool>,/gm)]
   .map((match) => match[1].replace(/_([a-z0-9])/g, (_word, letter: string) => letter.toUpperCase()))
+  .filter((key) => key !== "releaseClosedProjectContexts")
   .sort((left, right) => left.localeCompare(right));
 assert.ok(featureKeys.length >= 29, "The complete current native feature schema must be present");
 for (const name of ["off", "lint"]) {

@@ -59,6 +59,7 @@ Regenerate with `node tools/commands/ci/workflow-catalog.ts`.
 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
+| Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
 | Release                                   | [`release.yml`](./release.yml)                                                             |
 
 ## Performance and profiling
