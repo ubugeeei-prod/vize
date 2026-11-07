@@ -10,7 +10,8 @@
 //! further [`ContainerFormat`] implementors with their own block rules.
 //!
 //! The opt-in stage-capture CLI uses this container's authored byte spans.
-//! Full product SFC descriptor migration remains #6837.
+//! Compatibility descriptor consumers build on this layer; descriptor policy
+//! remains outside L1.
 
 pub mod vue;
 

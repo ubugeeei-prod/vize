@@ -1,5 +1,5 @@
 //! Lossless byte-span Vue SFC block splitter for opt-in stage capture.
-//! Full product SFC descriptor migration remains #6837.
+//! Compatibility descriptor consumers build on this lossless container layer.
 
 use vize_l0::{Allocator, Span, Vec};
 
