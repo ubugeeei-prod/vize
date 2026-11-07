@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { h } from "vue";
 
 import { firstChild, mountComponent, toTreeSnapshot } from "../testing/mount.js";
@@ -10,7 +10,7 @@ import { Box } from "./Box.js";
 // (treeToRenderNodes drops falsy appearance) but part of the output tree.
 const boxDefaults = { borderDimColor: false, "aria-hidden": false };
 
-void test("renders a box node and forwards children", () => {
+test("renders a box node and forwards children", () => {
   const mounted = mountComponent(Box, {}, () => h("text", { text: "inside" }));
 
   assert.deepEqual(toTreeSnapshot(firstChild(mounted)), {
@@ -21,7 +21,7 @@ void test("renders a box node and forwards children", () => {
   mounted.unmount();
 });
 
-void test("maps layout props onto the style object", () => {
+test("maps layout props onto the style object", () => {
   const mounted = mountComponent(Box, {
     flexDirection: "column",
     justifyContent: "center",
@@ -50,7 +50,7 @@ void test("maps layout props onto the style object", () => {
   mounted.unmount();
 });
 
-void test("expands padding and margin axis shorthands per side", () => {
+test("expands padding and margin axis shorthands per side", () => {
   const mounted = mountComponent(Box, {
     padding: 1,
     paddingX: 2,
@@ -73,7 +73,7 @@ void test("expands padding and margin axis shorthands per side", () => {
   mounted.unmount();
 });
 
-void test("normalizes border style names and prefers the Ink alias", () => {
+test("normalizes border style names and prefers the Ink alias", () => {
   const withBorder = (props: Record<string, unknown>) => {
     const mounted = mountComponent(Box, props);
     const border = firstChild(mounted).props.border;
@@ -88,7 +88,7 @@ void test("normalizes border style names and prefers the Ink alias", () => {
   assert.equal(withBorder({}), undefined);
 });
 
-void test("resolves color aliases with Fresco names winning", () => {
+test("resolves color aliases with Fresco names winning", () => {
   const mounted = mountComponent(Box, {
     fg: "cyan",
     color: "red",
@@ -103,7 +103,7 @@ void test("resolves color aliases with Fresco names winning", () => {
   mounted.unmount();
 });
 
-void test("hides aria-hidden subtrees only in screen reader mode", () => {
+test("hides aria-hidden subtrees only in screen reader mode", () => {
   const visible = mountComponent(Box, { "aria-hidden": true }, () => h("text", { text: "x" }));
   assert.equal(firstChild(visible).type, "box");
   assert.equal(firstChild(visible).props["aria-hidden"], true);
@@ -116,7 +116,7 @@ void test("hides aria-hidden subtrees only in screen reader mode", () => {
   hidden.unmount();
 });
 
-void test("replaces children with the aria-label in screen reader mode", () => {
+test("replaces children with the aria-label in screen reader mode", () => {
   const mounted = mountComponent(
     Box,
     { "aria-label": "status panel" },

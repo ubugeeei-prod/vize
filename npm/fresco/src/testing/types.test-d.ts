@@ -65,7 +65,11 @@ export const keyFrame: Promise<FrescoFrameSnapshot> = input.key({
 export const textFrame: Promise<FrescoFrameSnapshot> = input.text("abc");
 export const pasteFrame: Promise<FrescoFrameSnapshot> = input.paste("pasted");
 export const resizeFrame: Promise<FrescoFrameSnapshot> = input.resize(120, 40);
-export const mouseFrame: Promise<FrescoFrameSnapshot> = input.mouse({ x: 2, y: 3, button: "left" });
+export const mouseFrame: Promise<FrescoFrameSnapshot> = input.mouse({
+  kind: "scroll-down",
+  x: 2,
+  y: 3,
+});
 export const focusFrame: Promise<FrescoFrameSnapshot> = input.focus(true);
 export const compositionStartFrame: Promise<FrescoFrameSnapshot> = input.compositionStart();
 export const compositionUpdateFrame: Promise<FrescoFrameSnapshot> = input.compositionUpdate(

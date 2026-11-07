@@ -131,7 +131,12 @@ export const keyEvent: FrescoInputEvent = {
 };
 export const pasteEvent: FrescoInputEvent = { type: "paste", text: "pasted" };
 export const resizeEvent: FrescoInputEvent = { type: "resize", width: 80, height: 24 };
-export const mouseEvent: FrescoInputEvent = { type: "mouse", button: "left", x: 2, y: 3 };
+export const mouseEvent: FrescoInputEvent = {
+  type: "mouse",
+  kind: "scroll-down",
+  x: 2,
+  y: 3,
+};
 export const focusEvent: FrescoInputEvent = { type: "focus", focused: true };
 export const compositionEvent: FrescoInputEvent = {
   type: "compositionupdate",
@@ -147,6 +152,9 @@ export const crossedEventFields: FrescoInputEvent = { type: "paste", text: "x", 
 
 // @ts-expect-error - native key event phases are closed.
 export const invalidKeyPhase: FrescoInputEvent = { ...keyEvent, eventType: "hold" };
+
+// @ts-expect-error - mouse actions are a closed native protocol.
+export const invalidMouseKind: FrescoInputEvent = { type: "mouse", kind: "wheel", x: 1, y: 2 };
 
 export function exhaustivelyNarrowInputEvent(event: FrescoInputEvent): string {
   switch (event.type) {

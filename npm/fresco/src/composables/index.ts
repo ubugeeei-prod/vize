@@ -12,6 +12,7 @@ export {
   type Key,
 } from "./useInput.js";
 export { usePaste, type UsePasteOptions } from "./usePaste.js";
+export { useMouse, type UseMouseOptions, type UseMouseReturn } from "./useMouse.js";
 export { useFocus, useFocusManager, type UseFocusOptions, type FocusManager } from "./useFocus.js";
 export { useApp, type UseAppReturn } from "./useApp.js";
 export { useIme, type UseImeOptions, type ImeManager } from "./useIme.js";
@@ -28,3 +29,11 @@ export { useCursor, type CursorPosition } from "./useCursor.js";
 export { useAnimation, type AnimationResult, type UseAnimationOptions } from "./useAnimation.js";
 export { useBoxMetrics, type BoxMetrics, type UseBoxMetricsResult } from "./useBoxMetrics.js";
 export { useIsScreenReaderEnabled } from "./useIsScreenReaderEnabled.js";
+export {
+  createVirtualViewport,
+  useVirtualViewport,
+  type VirtualScrollAlignment,
+  type VirtualViewport,
+  type VirtualViewportOptions,
+  type VirtualViewportRange,
+} from "./useVirtualViewport.js";

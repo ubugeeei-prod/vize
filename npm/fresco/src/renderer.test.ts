@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { h, nextTick, ref } from "vue";
 
 import { renderToString } from "./app.js";
 import { treeToRenderNodes } from "./renderer.js";
 import { firstChild, mountFresco, toTreeSnapshot } from "./testing/mount.js";
 
-void test("maps host element tags onto Fresco node types", () => {
+test("maps host element tags onto Fresco node types", () => {
   const mounted = mountFresco(() =>
     h("box", [h("div"), h("view"), h("text"), h("span"), h("input"), h("custom-tag")]),
   );
@@ -20,7 +20,7 @@ void test("maps host element tags onto Fresco node types", () => {
   mounted.unmount();
 });
 
-void test("mounts a component tree as the expected output tree", () => {
+test("mounts a component tree as the expected output tree", () => {
   const mounted = mountFresco(() =>
     h("box", { style: { flexDirection: "column" } }, [
       h("text", { text: "title", bold: true }),
@@ -46,7 +46,7 @@ void test("mounts a component tree as the expected output tree", () => {
   mounted.unmount();
 });
 
-void test("patches props and text reactively without remounting", async () => {
+test("patches props and text reactively without remounting", async () => {
   const label = ref<string | undefined>("first");
   const message = ref("hello");
   const mounted = mountFresco(() => h("text", { text: message.value, label: label.value }));
@@ -63,7 +63,7 @@ void test("patches props and text reactively without remounting", async () => {
   mounted.unmount();
 });
 
-void test("inserts, reorders, and removes list children through anchors", async () => {
+test("inserts, reorders, and removes list children through anchors", async () => {
   const items = ref(["a", "b"]);
   const mounted = mountFresco(() =>
     h(
@@ -92,7 +92,7 @@ void test("inserts, reorders, and removes list children through anchors", async 
   mounted.unmount();
 });
 
-void test("emits all four discriminated render variants with canonical payload fields", () => {
+test("emits all four discriminated render variants with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
       h("text", {
@@ -153,7 +153,7 @@ void test("emits all four discriminated render variants with canonical payload f
   mounted.unmount();
 });
 
-void test("normalizes wrap props into native wrap modes", () => {
+test("normalizes wrap props into native wrap modes", () => {
   const wrapOf = (wrap: unknown) => {
     const mounted = mountFresco(() => h("text", { text: "x", wrap }));
     const [node] = treeToRenderNodes(firstChild(mounted));
@@ -173,7 +173,7 @@ void test("normalizes wrap props into native wrap modes", () => {
   assert.deepEqual(wrapOf(undefined), { wrap: undefined, wrapMode: undefined });
 });
 
-void test("keeps appearance aliases and drops empty style objects", () => {
+test("keeps appearance aliases and drops empty style objects", () => {
   const mounted = mountFresco(() =>
     h("text", {
       text: "x",
@@ -196,7 +196,7 @@ void test("keeps appearance aliases and drops empty style objects", () => {
   mounted.unmount();
 });
 
-void test("renderToString renders column and row layouts deterministically", () => {
+test("renderToString renders column and row layouts deterministically", () => {
   const column = renderToString(() =>
     h("box", { style: { flexDirection: "column" } }, [
       h("text", { text: "hello" }),
@@ -214,7 +214,7 @@ void test("renderToString renders column and row layouts deterministically", () 
   assert.equal(row, "hello world");
 });
 
-void test("renderToString shows input values and falls back to placeholders", () => {
+test("renderToString shows input values and falls back to placeholders", () => {
   assert.equal(
     renderToString(() => h("input", { value: "typed", placeholder: "type here" })),
     "typed",

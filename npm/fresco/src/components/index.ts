@@ -9,6 +9,15 @@ export { Divider, type DividerProps } from "./Divider.js";
 export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
 export { Grid, type GridProps } from "./Grid.js";
 export { Card, type CardProps } from "./Card.js";
+export { default as ScrollBox } from "./ScrollBox.vue";
+export { default as ScrollBar } from "./ScrollBar.vue";
+export {
+  type ScrollBarOrientation,
+  type ScrollBarProps,
+  type ScrollBoxExposed,
+  type ScrollBoxItemSlot,
+  type ScrollBoxProps,
+} from "./scroll-types.js";
 
 // Text
 export { Text, type TextProps } from "./Text.js";

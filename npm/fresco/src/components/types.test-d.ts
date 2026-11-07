@@ -9,6 +9,8 @@
 import { h } from "vue";
 
 import { Box, type BoxProps } from "./Box.js";
+import ScrollBox from "./ScrollBox.vue";
+import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 
@@ -97,6 +99,32 @@ export const textInputRejectsBadSubmitHandler: TextInputProps = {
   onSubmit: (value: number) => value,
 };
 
+export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
+  itemCount: 100_000,
+  viewportSize: 24,
+  modelValue: 10,
+  overscan: 3,
+  focused: true,
+  wheelStep: 4,
+  showScrollbar: true,
+  followOutput: false,
+};
+
+export const scrollBoxSlotContract: ScrollBoxItemSlot = {
+  index: 10,
+  visible: true,
+  visibleStart: 10,
+  visibleEnd: 34,
+  overscanStart: 7,
+  overscanEnd: 37,
+};
+
+export const scrollBoxRejectsStringViewport: ScrollBoxProps = {
+  itemCount: 10,
+  // @ts-expect-error - viewport sizes are numeric row counts.
+  viewportSize: "5",
+};
+
 // --- Component prop contracts through h() ----------------------------------
 
 export function componentsRenderWithTypedProps() {
@@ -104,6 +132,7 @@ export function componentsRenderWithTypedProps() {
     h(Box, { flexDirection: "column", borderStyle: "round", ariaRole: "list" }),
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
+    h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
   ];
 }
 

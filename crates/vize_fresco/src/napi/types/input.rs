@@ -18,6 +18,12 @@ pub struct InputEventNapi {
     pub modifiers: Option<ModifiersNapi>,
     /// Mouse button (for mouse events)
     pub button: Option<String>,
+    /// Mouse action, including wheel direction when no button exists.
+    #[napi(
+        js_name = "mouseKind",
+        ts_type = "\"down\" | \"up\" | \"drag\" | \"moved\" | \"scroll-up\" | \"scroll-down\" | \"scroll-left\" | \"scroll-right\""
+    )]
+    pub mouse_kind: Option<String>,
     /// Mouse x position
     pub x: Option<i32>,
     /// Mouse y position
@@ -97,6 +103,7 @@ impl From<crate::input::Event> for InputEventNapi {
                             key_event_type: Some(key.kind.as_str().to_string()),
                             modifiers: Some(modifiers_from_key(&key)),
                             button: None,
+                            mouse_kind: None,
                             x: None,
                             y: None,
                             width: None,
@@ -127,6 +134,7 @@ impl From<crate::input::Event> for InputEventNapi {
                             key_event_type: Some(key.kind.as_str().to_string()),
                             modifiers: Some(modifiers_from_key(&key)),
                             button: None,
+                            mouse_kind: None,
                             x: None,
                             y: None,
                             width: None,
@@ -145,6 +153,7 @@ impl From<crate::input::Event> for InputEventNapi {
                     key_event_type: Some(key.kind.as_str().to_string()),
                     modifiers: Some(modifiers_from_key(&key)),
                     button: None,
+                    mouse_kind: None,
                     x: None,
                     y: None,
                     width: None,
@@ -154,24 +163,39 @@ impl From<crate::input::Event> for InputEventNapi {
                 }
             }
             Event::Mouse(mouse) => {
-                let button = match mouse.kind {
-                    crate::input::MouseEventKind::Down(button)
-                    | crate::input::MouseEventKind::Up(button)
-                    | crate::input::MouseEventKind::Drag(button) => match button {
-                        crate::input::MouseButton::Left => Some("left".to_string()),
-                        crate::input::MouseButton::Right => Some("right".to_string()),
-                        crate::input::MouseButton::Middle => Some("middle".to_string()),
-                    },
-                    _ => None,
+                let (mouse_kind, button) = match mouse.kind {
+                    crate::input::MouseEventKind::Down(button) => ("down", Some(button)),
+                    crate::input::MouseEventKind::Up(button) => ("up", Some(button)),
+                    crate::input::MouseEventKind::Drag(button) => ("drag", Some(button)),
+                    crate::input::MouseEventKind::Moved => ("moved", None),
+                    crate::input::MouseEventKind::ScrollUp => ("scroll-up", None),
+                    crate::input::MouseEventKind::ScrollDown => ("scroll-down", None),
+                    crate::input::MouseEventKind::ScrollLeft => ("scroll-left", None),
+                    crate::input::MouseEventKind::ScrollRight => ("scroll-right", None),
                 };
+                let button = button.map(|button| match button {
+                    crate::input::MouseButton::Left => "left".to_string(),
+                    crate::input::MouseButton::Right => "right".to_string(),
+                    crate::input::MouseButton::Middle => "middle".to_string(),
+                });
 
                 InputEventNapi {
                     event_type: "mouse".to_string(),
                     key: None,
                     char: None,
                     key_event_type: None,
-                    modifiers: None,
+                    modifiers: Some(ModifiersNapi {
+                        ctrl: mouse.modifiers.ctrl,
+                        alt: mouse.modifiers.alt,
+                        shift: mouse.modifiers.shift,
+                        meta: mouse.modifiers.meta,
+                        super_key: mouse.modifiers.super_key,
+                        hyper: mouse.modifiers.hyper,
+                        caps_lock: false,
+                        num_lock: false,
+                    }),
                     button,
+                    mouse_kind: Some(mouse_kind.to_string()),
                     x: Some(mouse.column as i32),
                     y: Some(mouse.row as i32),
                     width: None,
@@ -187,6 +211,7 @@ impl From<crate::input::Event> for InputEventNapi {
                 key_event_type: None,
                 modifiers: None,
                 button: None,
+                mouse_kind: None,
                 x: None,
                 y: None,
                 width: Some(width as i32),
@@ -201,6 +226,7 @@ impl From<crate::input::Event> for InputEventNapi {
                 key_event_type: None,
                 modifiers: None,
                 button: None,
+                mouse_kind: None,
                 x: None,
                 y: None,
                 width: None,
@@ -215,6 +241,7 @@ impl From<crate::input::Event> for InputEventNapi {
                 key_event_type: None,
                 modifiers: None,
                 button: None,
+                mouse_kind: None,
                 x: None,
                 y: None,
                 width: None,
@@ -229,6 +256,7 @@ impl From<crate::input::Event> for InputEventNapi {
                 key_event_type: None,
                 modifiers: None,
                 button: None,
+                mouse_kind: None,
                 x: None,
                 y: None,
                 width: None,

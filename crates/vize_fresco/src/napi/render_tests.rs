@@ -180,9 +180,10 @@ fn input_event_conversion_confirms_every_existing_discriminator() {
 
     let mouse = &converted[1];
     assert_eq!(mouse.button.as_deref(), Some("left"));
+    assert_eq!(mouse.mouse_kind.as_deref(), Some("down"));
     assert_eq!(mouse.x, Some(2));
     assert_eq!(mouse.y, Some(3));
-    assert!(mouse.modifiers.is_none());
+    assert!(mouse.modifiers.as_ref().is_some_and(|value| !value.ctrl));
 
     let resize = &converted[2];
     assert_eq!(resize.width, Some(80));
@@ -191,6 +192,24 @@ fn input_event_conversion_confirms_every_existing_discriminator() {
     assert_eq!(converted[3].key.as_deref(), Some("gained"));
     assert_eq!(converted[4].key.as_deref(), Some("lost"));
     assert_eq!(converted[5].text.as_deref(), Some("pasted"));
+}
+
+#[test]
+fn mouse_wheel_direction_survives_the_napi_protocol() {
+    let event = InputEventNapi::from(Event::Mouse(MouseEvent::new(
+        MouseEventKind::ScrollDown,
+        7,
+        11,
+        KeyModifiers {
+            shift: true,
+            ..KeyModifiers::NONE
+        },
+    )));
+
+    assert_eq!(event.mouse_kind.as_deref(), Some("scroll-down"));
+    assert_eq!(event.button, None);
+    assert_eq!((event.x, event.y), (Some(7), Some(11)));
+    assert!(event.modifiers.as_ref().is_some_and(|value| value.shift));
 }
 
 #[test]
