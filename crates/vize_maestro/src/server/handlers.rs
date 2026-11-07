@@ -148,6 +148,19 @@ impl LanguageServer for MaestroServer {
         if let Some(response) = server.local_hover_response(&params)? {
             return server.authored_response(Ok(response));
         }
+        #[cfg(feature = "native")]
+        {
+            let request = &params.text_document_position_params;
+            let uri = &request.text_document.uri;
+            let position = request.position;
+            let stamp = server.state.corsa_request_stamp();
+            if let Some(mut response) = server.state.cached_native_hover(uri, position, stamp) {
+                if let Some(lint) = server.get_lint_hover_at_position(uri, position) {
+                    response = Some(MaestroServer::merge_hover_with_lint(response, lint));
+                }
+                return server.authored_response(Ok(response));
+            }
+        }
         server.native_request(server.hover_request(params)).await
     }
 
