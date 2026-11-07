@@ -117,7 +117,7 @@ pub(super) async fn goto_definition(
         server
             .state
             .cache_native_definition(uri, position, stamp, response.clone());
-        return Ok(response);
+        Ok(response)
     }
 
     #[cfg(not(feature = "native"))]
