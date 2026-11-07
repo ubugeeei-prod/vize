@@ -25,9 +25,10 @@ const family = params.get("family") ?? "button";
 const composable = params.get("composable");
 const name = composable ?? family;
 const example = composable == null ? examples[family] : composables[composable];
-const theme = params.get("theme") ?? "paper";
+const requestedTheme = params.get("theme");
 const themes = [...themePresets];
-document.documentElement.dataset.vizeTheme = themes.includes(theme) ? theme : "paper";
+const theme = themes.find((preset) => preset === requestedTheme) ?? "paper";
+document.documentElement.dataset.vizeTheme = theme;
 
 if (example == null) {
   document.querySelector("#app")!.textContent = `No example exists for ${name}.`;
