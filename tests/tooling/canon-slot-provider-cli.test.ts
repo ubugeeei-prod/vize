@@ -29,6 +29,10 @@ import {
   applyStrictExtraKeysIn,
   beforeStrictExtraKeysIn,
 } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import {
+  applyEmitMemberInferIn,
+  beforeEmitMemberInferIn,
+} from "../../tools/support/compat/content-mapper/emit-member-infer-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -145,8 +149,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     }
   }
   const discriminatedSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
-  const currentSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
-  assert.equal(beforeStrictExtraKeysIn(currentSourcePreamble), discriminatedSourcePreamble);
+  const strictSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
+  const currentSourcePreamble = applyEmitMemberInferIn(strictSourcePreamble);
+  assert.equal(beforeEmitMemberInferIn(currentSourcePreamble), strictSourcePreamble);
+  assert.equal(beforeStrictExtraKeysIn(strictSourcePreamble), discriminatedSourcePreamble);
   assert.equal(
     beforeDiscriminatedJsxUnionIn(discriminatedSourcePreamble),
     integratedSourcePreamble,

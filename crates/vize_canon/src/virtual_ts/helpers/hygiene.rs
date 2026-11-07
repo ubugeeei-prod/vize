@@ -194,19 +194,19 @@ mod tests {
     }
 
     fn assert_complete_intrinsic_constraints(summary: &Croquis) {
-        assert_eq!(INFERENCE.matches("O extends PropertyKey").count(), 2);
+        assert_eq!(INFERENCE.matches("O extends PropertyKey").count(), 3);
         let mut output = String::default();
         emit_inference_helpers(&mut output, summary, INFERENCE);
         assert_eq!(
             output.matches("O extends string | number | symbol").count(),
-            2
+            3
         );
         assert_eq!(output.matches("O extends PropertyKey").count(), 0);
         assert_eq!(
             output.replacen(
                 "O extends string | number | symbol",
                 "O extends PropertyKey",
-                2
+                3
             ),
             INFERENCE,
             "owned inputs, required fields and native constructor inference stay complete"
