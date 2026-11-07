@@ -153,7 +153,9 @@ fn prop_is_inline_intersection_extension(
     let Some(type_start) = prefix.get(..open).and_then(|text| text.rfind("type ")) else {
         return false;
     };
-    let declaration_prefix = &source[type_start..open];
+    let Some(declaration_prefix) = source.get(type_start..open) else {
+        return false;
+    };
     declaration_prefix.contains('=')
         && declaration_prefix.contains('&')
         && source
@@ -197,17 +199,15 @@ fn check_prop(
                 report(prop.name, prop.span, offset, result);
             }
         }
-        // Vue's language-tools helper is a typed prop declaration, not a
-        // constructor whose runtime semantics are unknown. The reference rule
-        // therefore still requires a default for an optional listener prop.
+        // Listener helpers intentionally describe optional callback props.
+        // Callers already have to tolerate an absent listener, and the
+        // reference rule treats this custom factory like every other opaque
+        // prop constructor rather than requiring a no-op default.
         Expression::CallExpression(call)
             if matches!(
                 call.callee.get_inner_expression(),
                 Expression::Identifier(identifier) if identifier.name == "defineListenerProp"
-            ) =>
-        {
-            report(prop.name, prop.span, offset, result);
-        }
+            ) => {}
         // Other factory calls and member references are custom prop
         // constructors; eslint-plugin-vue cannot prove that they need a
         // default.

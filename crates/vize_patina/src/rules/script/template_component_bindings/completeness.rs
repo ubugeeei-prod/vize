@@ -53,7 +53,11 @@ pub(super) fn normal_setup_is_complete(program: &Program<'_>) -> bool {
                     }
                     setup_seen = true;
                 }
-                "mixins" | "extends" => return false,
+                // Vue's `$listeners` and `$scopedSlots` instance properties
+                // remain framework-owned even when a component uses mixins or
+                // extends another options object. Those composition surfaces
+                // cannot turn the reserved names into setup-owned bindings.
+                "mixins" | "extends" => {}
                 _ => {}
             }
         }

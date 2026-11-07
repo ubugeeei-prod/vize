@@ -306,9 +306,10 @@ fn authored_element_is_empty(source: &str, open: usize, close: usize) -> bool {
     else {
         return false;
     };
+    let closing_tag = cstr!("</{tag}>");
     source
         .get(close + 1..)
-        .is_some_and(|tail| tail.trim_start().starts_with(&format!("</{tag}>")))
+        .is_some_and(|tail| tail.trim_start().starts_with(closing_tag.as_str()))
 }
 
 fn authored_identifier_reference_present(source: &str, name: &str) -> bool {

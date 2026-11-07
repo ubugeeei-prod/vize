@@ -156,7 +156,9 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             if type_names.contains(&"Function") || return_type.is_none() {
                 return;
             }
-            let return_type = return_type.expect("checked above");
+            let Some(return_type) = return_type else {
+                return;
+            };
             if type_names.contains(&return_type) {
                 return;
             }

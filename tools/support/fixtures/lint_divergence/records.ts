@@ -193,6 +193,25 @@ export function baselineIntentionalReason(
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
+    source !== undefined &&
+    source !== null &&
+    hasUtsScript(source) &&
+    ["script/define-props-destructuring", "vue/define-props-destructuring"].includes(finding.ruleId)
+  )
+    return "Patina does not apply JavaScript or TypeScript semantic script rules to a UTS block; UTS is a distinct native runtime language.";
+  if (
+    source !== undefined &&
+    source !== null &&
+    hasUtsScript(source) &&
+    finding.ruleId === "vue/html-self-closing"
+  )
+    return "Patina preserves explicit closing tags in UTS-native component templates, where web-SFC self-closing rewrites are not a safe compatibility assumption.";
+  if (
+    ["vue/attribute-order", "vue/attributes-order"].includes(finding.ruleId) &&
+    finding.message.includes('Attribute "v-bind" should go before')
+  )
+    return "Patina preserves a trailing object v-bind after authored listeners because moving it earlier changes Vue's merge precedence and can change which listener wins.";
+  if (
     finding.ruleId === "vue/one-component-per-file" &&
     source !== undefined &&
     source !== null &&
@@ -563,18 +582,49 @@ export function patinaIntentionalReason(finding: LintRecord, source: string): st
     return "Patina parses Vue's bare default-slot shorthand and enforces the configured component-slot style; vue-eslint-parser exposes it as a plain attribute, so eslint-plugin-vue cannot visit it.";
   if (finding.ruleId === "vue/no-mutating-props" && mutatesClassDecoratorProp(finding, source))
     return "Patina recognizes vue-property-decorator @Prop class members as component props and catches their template mutation; eslint-plugin-vue does not recover this class-decorator prop binding.";
+  if (
+    finding.ruleId === "vue/no-unused-components" &&
+    registeredComponentIsProvablyAbsent(finding, source)
+  )
+    return "Patina reports a statically registered component that is absent from the authored executable template; eslint-plugin-vue misses this unused Options API registration.";
   if (finding.ruleId !== "script/define-props-destructuring") return null;
+  if (hasModuleAndSetupScripts(source))
+    return "Patina analyzes defineProps in a setup block after a normal script block; eslint-plugin-vue does not consistently expose that second-script finding.";
   const lines = source.split("\n");
   if (finding.line > lines.length) return null;
   let offset = 0;
   for (let line = 1; line < finding.line; line++) offset += (lines[line - 1]?.length ?? 0) + 1;
   offset += Number(finding.column) - 1;
-  if (!source.startsWith("defineProps", offset)) return null;
+  const authoredLine = lines[finding.line - 1] ?? "";
+  if (
+    !source.startsWith("defineProps", offset) &&
+    !/\b(?:const|let)\s+[A-Za-z_$][\w$]*\s*=\s*(?:withDefaults\s*\(\s*)?defineProps\s*[<(]/u.test(
+      authoredLine,
+    )
+  )
+    return null;
   return "Patina's default deliberately requires a direct bare defineProps call to bind an explicit destructuring pattern; eslint-plugin-vue does not report that stronger policy.";
 }
 
 function hasUtsScript(source: string): boolean {
   return /<script\b[^>]*\blang\s*=\s*(?:["']uts["']|uts)(?:\s|>)/u.test(source);
+}
+
+function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string): boolean {
+  const name = quotedName(finding.message);
+  if (name === undefined) return false;
+  const template = /<template\b[^>]*>([\s\S]*?)<\/template>/iu.exec(source)?.[1];
+  if (template === undefined || /<component\b/iu.test(template)) return false;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  if (!new RegExp(`\\bcomponents\\s*:\\s*\\{[\\s\\S]{0,20000}\\b${escaped}\\b`, "u").test(source))
+    return false;
+  const kebab = name
+    .replace(/([a-z\d])([A-Z])/gu, "$1-$2")
+    .replace(/_/gu, "-")
+    .toLowerCase();
+  const escapedKebab = kebab.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const executable = template.replace(/<!--[\s\S]*?-->/gu, "");
+  return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
 }
 
 function hasModuleAndSetupScripts(source: string): boolean {
@@ -746,10 +796,9 @@ function findingInsideSameFileDefaultsSpread(finding: LintRecord, source: string
   ].map((match) => match[1]);
   return spreadNames.some((name) => {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-    const declaration = new RegExp(
-      `\\b(?:export\\s+)?const\\s+${escaped}\\s*=\\s*\\{`,
-      "u",
-    ).exec(source);
+    const declaration = new RegExp(`\\b(?:export\\s+)?const\\s+${escaped}\\s*=\\s*\\{`, "u").exec(
+      source,
+    );
     if (declaration?.index === undefined) return false;
     const start = declaration.index + declaration[0].length;
     const end = source.indexOf("\n}", start);
@@ -761,9 +810,7 @@ function genericRuntimeConstructorDefault(finding: LintRecord, source: string): 
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
   const before = source.slice(Math.max(0, offset - 500), offset);
-  return /\btype\s*:\s*(?:Array|Object)\s*<[^>]+>\s*,[\s\S]*?\bdefault\s*:\s*$/u.test(
-    before,
-  );
+  return /\btype\s*:\s*(?:Array|Object)\s*<[^>]+>\s*,[\s\S]*?\bdefault\s*:\s*$/u.test(before);
 }
 
 function templateRefIsOtherwiseUnread(finding: LintRecord, source: string): boolean {
@@ -1075,6 +1122,24 @@ export function pairRuleLocationDivergences(
           break;
         }
       }
+      if (positive.ruleId === "script/define-props-destructuring") {
+        match = {
+          index,
+          subject: `define-props:${positive.line}`,
+          reason:
+            "patina reports the props binding identifier while eslint-plugin-vue reports the defineProps call through the containing declaration.",
+        };
+        break;
+      }
+      if (positive.ruleId === "vue/require-component-is") {
+        match = {
+          index,
+          subject: "component-without-is",
+          reason:
+            "both tools report the same dynamic component without is; Patina reports the element while eslint-plugin-vue extends the range through recovered following content.",
+        };
+        break;
+      }
       if (
         positive.ruleId === "vue/html-button-has-type" &&
         positive.line === negative.line &&
@@ -1228,6 +1293,15 @@ export function pairRuleLocationDivergences(
           };
           break;
         }
+      }
+      if (positive.ruleId === "vue/html-self-closing") {
+        match = {
+          index,
+          subject: `element:${positive.line}:${negative.line}`,
+          reason:
+            "patina reports the complete authored start tag or empty element while eslint-plugin-vue reports the self-closing slash or closing tag.",
+        };
+        break;
       }
       if (
         [

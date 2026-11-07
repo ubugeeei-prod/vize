@@ -136,7 +136,7 @@ const props = defineProps({
 }
 
 #[test]
-fn options_listener_prop_requires_a_default() {
+fn options_listener_prop_helper_does_not_require_a_noop_default() {
     let source = r#"
 export default {
   props: {
@@ -145,7 +145,20 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn interface_heritage_keeps_shared_optional_props_visible() {
+    let source = r#"
+interface BaseProps { class?: string }
+type MotionProps = { motion?: string }
+type ProgressiveBlurProps = BaseProps & MotionProps
+interface Props extends ProgressiveBlurProps { direction?: string }
+const props = withDefaults(defineProps<Props>(), { direction: 'bottom' })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
 }
 
 #[test]

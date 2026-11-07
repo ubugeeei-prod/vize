@@ -22,7 +22,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_l0::{cstr, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -70,8 +70,10 @@ fn authored_inside_namespace(source: &str, offset: usize, tag: &str) -> bool {
     let Some(prefix) = source.get(..offset) else {
         return false;
     };
-    let open = prefix.rmatch_indices(&format!("<{tag}")).next();
-    let close = prefix.rmatch_indices(&format!("</{tag}")).next();
+    let open_tag = cstr!("<{tag}");
+    let close_tag = cstr!("</{tag}");
+    let open = prefix.rmatch_indices(open_tag.as_str()).next();
+    let close = prefix.rmatch_indices(close_tag.as_str()).next();
     open.is_some_and(|(open, _)| close.is_none_or(|(close, _)| open > close))
 }
 

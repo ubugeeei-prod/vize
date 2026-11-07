@@ -267,4 +267,15 @@ const b = ctx.$listeners
             );
         assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
     }
+
+    #[test]
+    fn test_invalid_template_dollar_listeners_with_options_mixins() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><Child v-on=\"$listeners\" /></template><script>export default { mixins: [Locale] }</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
 }

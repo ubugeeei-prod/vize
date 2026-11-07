@@ -144,6 +144,5 @@ fn direct_value_read(expression: &Expression<'_>) -> bool {
         .get_inner_expression()
         .as_member_expression()
         .and_then(|member| member.static_property_name())
-        .as_deref()
         == Some("value")
 }
