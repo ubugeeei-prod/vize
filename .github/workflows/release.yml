@@ -402,6 +402,7 @@ jobs:
           prebuilt-server: ${{ steps.artifacts.outputs.server }}
           prebuilt-vsix: ${{ steps.artifacts.outputs.vsix }}
           expected-version: ${{ needs.version.outputs.version }}
+          expected-source-sha: ${{ needs.version.outputs.sha }}
           release-workspace: ${{ steps.artifacts.outputs.fresh }}
           release-evidence: ${{ steps.artifacts.outputs.evidence }}
       - name: Require packaged hosts on the initialized release project

@@ -14,6 +14,10 @@ inputs:
     description: Plain release version required from the prebuilt server
     required: false
     default: ""
+  expected-source-sha:
+    description: Exact checked-out source commit required by the real-server scenarios
+    required: false
+    default: ""
   release-workspace:
     description: Fresh project initialized by the packaged release CLI
     required: false
@@ -294,6 +298,7 @@ runs:
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_EMACS_ARTIFACT_DIR: ${{ runner.temp }}/emacs-native-config
         VIZE_E2E_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha || github.sha }}
       run: vp run --workspace-root test:emacs-extension:real-server
 
     - name: Retain complete Emacs Eglot configuration evidence
@@ -320,6 +325,7 @@ runs:
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_TEST_VIM_LSP_PATH: ${{ runner.temp }}/vim-lsp
         VIZE_E2E_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha || github.sha }}
       run: vp run --workspace-root test:vim-extension:real-server
 
     - name: Run the Zed scenario against the real server
