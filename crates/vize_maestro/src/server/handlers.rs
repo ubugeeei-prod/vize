@@ -332,7 +332,7 @@ impl LanguageServer for MaestroServer {
     ) -> Result<Option<PrepareRenameResponse>> {
         let server = self.for_document(&params.text_document.uri).await;
         #[cfg(feature = "native")]
-        if server.state.lsp_features().rename {
+        let cache_key = if server.state.lsp_features().rename {
             let uri = &params.text_document.uri;
             let position = params.position;
             let stamp = server.state.corsa_request_stamp();
@@ -342,16 +342,26 @@ impl LanguageServer for MaestroServer {
             {
                 return server.authored_response(Ok(response));
             }
-        }
-        server
+            Some((uri.clone(), position, stamp))
+        } else {
+            None
+        };
+        let response = server
             .native_request(server.prepare_rename_request(params))
-            .await
+            .await?;
+        #[cfg(feature = "native")]
+        if let Some((uri, position, stamp)) = cache_key {
+            server
+                .state
+                .cache_native_prepare_rename(&uri, position, stamp, response.clone());
+        }
+        Ok(response)
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
         let server = self.for_pos(&params.text_document_position).await;
         #[cfg(feature = "native")]
-        if server.state.lsp_features().rename {
+        let cache_key = if server.state.lsp_features().rename {
             let request = &params.text_document_position;
             let uri = &request.text_document.uri;
             let position = request.position;
@@ -363,10 +373,20 @@ impl LanguageServer for MaestroServer {
             {
                 return server.authored_response(Ok(response));
             }
-        }
-        server
+            Some((uri.clone(), position, params.new_name.clone(), stamp))
+        } else {
+            None
+        };
+        let response = server
             .workspace_native_request(|| server.rename_request(params.clone()))
-            .await
+            .await?;
+        #[cfg(feature = "native")]
+        if let Some((uri, position, new_name, stamp)) = cache_key {
+            server
+                .state
+                .cache_native_rename(&uri, position, new_name, stamp, response.clone());
+        }
+        Ok(response)
     }
 
     async fn semantic_tokens_full(
