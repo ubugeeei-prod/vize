@@ -334,7 +334,7 @@ const rows = [[1, 2]]
 }
 
 #[test]
-fn component_listener_references_keep_inference_outside_linear_branch_guards() {
+fn component_listener_references_guard_inference_without_outer_listener_chains() {
     let script = r#"import { reactive } from 'vue'
 import KeyPad from './KeyPad.vue'
 type Kind = 'k0' | 'k1' | 'k2' | 'k3'
@@ -422,7 +422,7 @@ const onSubmit = (value: number) => value
             .matches("// @ts-ignore Listener branch guard")
             .count(),
         0,
-        "bare listener references must keep shared inference declarations outside listener branch chains: {listeners}"
+        "bare listener references must keep contracts outside listener branch chains while inference owns its guard: {listeners}"
     );
 }
 

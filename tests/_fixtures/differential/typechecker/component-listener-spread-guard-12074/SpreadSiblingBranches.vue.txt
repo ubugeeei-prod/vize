@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+type Detail = { mode: 'primary' | 'secondary'; remark: string }
+const detail = ref<Detail | null>(null)
+const params = { show: true, loading: false }
+function onClose() {}
+</script>
+
+<template>
+    <div v-if="detail">
+        <Child
+            v-if="detail.mode === 'primary'"
+            v-bind="params"
+            :remark="detail.remark"
+            @close="onClose"
+        />
+        <Child
+            v-else
+            v-bind="params"
+            :remark="detail.remark"
+            @close="onClose"
+        />
+    </div>
+</template>

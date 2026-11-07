@@ -74,10 +74,14 @@ pub(super) fn generate_component_handler_scope(
                             scope.span.start,
                         )
                     }),
+                    // Listener contracts remain owned by their authored
+                    // branch even when a bare-reference listener has no
+                    // physical outer block.
+                    enclosing_vif_guard: vif_guards.handler,
                     // Inference may subtract only a guard that physically
                     // wraps its generated call. Bare-reference listeners keep
                     // their guard inside the callback instead (#12074).
-                    enclosing_vif_guard: vif_guards.active_outer,
+                    inference_outer_vif_guard: vif_guards.active_outer,
                     event_inference_usages: ctx.event_inference_usages,
                     event_contracts: ctx.event_contracts,
                     indent,
