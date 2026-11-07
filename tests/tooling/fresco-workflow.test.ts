@@ -204,11 +204,10 @@ test("fresco package scripts stay portable across CI shells", () => {
     scripts: Record<string, string>;
   };
 
-  // cmd.exe passes single quotes through literally, which would hand the test
-  // runner a quoted glob that matches nothing. Double quotes group on every
-  // shell the matrix uses.
+  // cmd.exe passes single quotes through literally. Keep every package script
+  // shell-neutral, and let the checked-in Vitest config own test discovery.
   for (const [name, script] of Object.entries(manifest.scripts)) {
     assert.doesNotMatch(script, /'/, `script ${name} must not rely on single-quoted arguments`);
   }
-  assert.match(manifest.scripts.test, /--test "src\/\*\*\/\*\.test\.ts"/);
+  assert.equal(manifest.scripts.test, "vp test run");
 });
