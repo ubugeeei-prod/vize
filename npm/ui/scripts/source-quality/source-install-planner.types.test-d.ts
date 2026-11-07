@@ -21,7 +21,7 @@ const output = createUiSourceInstallDryRunPlan({
   sourceFiles: [
     {
       familyName: "button",
-      sourcePath: "src/families/actions/button/button.ts",
+      sourcePath: "src/components/button/index.ts",
       destinationPath: "button.ts",
       sourceDigest: "sha256:button",
     },

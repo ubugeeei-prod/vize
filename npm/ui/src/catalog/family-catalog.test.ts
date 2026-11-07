@@ -6,7 +6,7 @@ import { test } from "vite-plus/test";
 
 import config from "../../vite.config.ts";
 import { UI_FAMILY_CATALOG_SCHEMA_VERSION, uiFamilyCatalog } from "./family-catalog.ts";
-import { assertFamilyPaths, uiFamilyRoots } from "./family-layout-test-utils.ts";
+import { assertFamilyPaths } from "./family-layout-test-utils.ts";
 
 type PackageExport = string | { readonly import: string; readonly types: string };
 
@@ -133,12 +133,12 @@ test("catalogued families match package exports and build entries", () => {
   }
 });
 
-test("public family subpaths compile from family directories directly", () => {
+test("public subpaths compile from source-owned component units", () => {
   for (const entry of stableEntries) {
     assert.match(
       entry.entryFile,
-      /^src\/families\//u,
-      `${entry.canonicalName} must compile from its family directory`,
+      /^src\/(?:components|families)\//u,
+      `${entry.canonicalName} must compile from its source unit`,
     );
     assert.notEqual(
       entry.entryFile,
@@ -186,15 +186,14 @@ test("stable catalog entries have every required artifact", async () => {
   }
 });
 
-test("new family-owned SFC primitives keep implementation and tests together", () => {
-  for (const [canonicalName, familyRoot] of uiFamilyRoots) {
-    const entry = stableEntries.find((candidate) => candidate.canonicalName === canonicalName);
+test("source units keep implementation, contracts, and tests together", () => {
+  for (const entry of stableEntries) {
+    const unitRoot = entry.entryFile.slice(0, entry.entryFile.lastIndexOf("/") + 1);
 
-    assert.ok(entry, `${canonicalName} must stay catalogued`);
-    assertFamilyPaths(canonicalName, familyRoot, "entry", [entry.entryFile]);
-    assertFamilyPaths(canonicalName, familyRoot, "behavior contract", [entry.behaviorContract]);
-    assertFamilyPaths(canonicalName, familyRoot, "source files", entry.sourceFiles);
-    assertFamilyPaths(canonicalName, familyRoot, "tests", entry.tests);
-    assertFamilyPaths(canonicalName, familyRoot, "type tests", entry.typeTests ?? []);
+    assertFamilyPaths(entry.canonicalName, unitRoot, "entry", [entry.entryFile]);
+    assertFamilyPaths(entry.canonicalName, unitRoot, "behavior contract", [entry.behaviorContract]);
+    assertFamilyPaths(entry.canonicalName, unitRoot, "source files", entry.sourceFiles);
+    assertFamilyPaths(entry.canonicalName, unitRoot, "tests", entry.tests);
+    assertFamilyPaths(entry.canonicalName, unitRoot, "type tests", entry.typeTests ?? []);
   }
 });

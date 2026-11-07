@@ -1,0 +1,272 @@
+/*
+ * Button visuals are optional. Behavior lives in button.vue; this file only
+ * consumes its typed data attributes and the public theme token contract.
+ */
+@layer vize.preset {
+  /* Component-level design decisions. Presets override only these hooks. */
+  :where([data-vize-ui="button"]) {
+    --vize-ui-button-fill: var(--vize-ui-color-accent);
+    --vize-ui-button-ink: var(--vize-ui-color-accent-contrast);
+    --vize-ui-button-radius: var(--vize-ui-radius-md);
+    --vize-ui-button-shadow: var(--vize-ui-elevation-raised);
+    --vize-ui-button-shadow-hover: var(--vize-ui-elevation-overlay);
+    --vize-ui-button-hover-strength: 90%;
+    --vize-ui-button-tint-strength: 10%;
+    --vize-ui-button-hover-lift: -1px;
+    --vize-ui-button-press-depth: 1px;
+    --vize-ui-button-press-scale: 0.985;
+
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--vize-ui-space-sm);
+    min-block-size: var(--vize-ui-size-control-md);
+    padding-inline: var(--vize-ui-space-lg);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-button-fill);
+    border-radius: var(--vize-ui-button-radius);
+    background: var(--vize-ui-button-fill);
+    color: var(--vize-ui-button-ink);
+    box-shadow: var(--vize-ui-button-shadow);
+    font-family: var(--vize-ui-type-family-sans);
+    font-size: var(--vize-ui-type-size-sm);
+    font-weight: var(--vize-ui-type-weight-medium);
+    line-height: var(--vize-ui-type-leading-tight);
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transform-origin: center;
+    transition:
+      background-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      border-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      color var(--vize-ui-motion-duration-fast, 120ms) var(--vize-ui-motion-ease-standard, ease-out),
+      box-shadow var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      scale var(--vize-ui-motion-duration-fast, 120ms) var(--vize-ui-motion-ease-standard, ease-out),
+      translate var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out);
+
+    /* Semantic tones keep behavior and authored labels palette-independent. */
+    &:where([data-tone="neutral"]) {
+      --vize-ui-button-fill: var(--vize-ui-color-neutral);
+      --vize-ui-button-ink: var(--vize-ui-color-neutral-contrast);
+    }
+
+    &:where([data-tone="danger"]) {
+      --vize-ui-button-fill: var(--vize-ui-color-danger);
+      --vize-ui-button-ink: var(--vize-ui-color-danger-contrast);
+    }
+
+    /* Variants share tone, focus, sizing, and interaction behavior. */
+    &:where([data-variant="outline"]) {
+      border-color: color-mix(
+        in oklab,
+        var(--vize-ui-button-fill) 72%,
+        var(--vize-ui-color-border)
+      );
+      background: transparent;
+      color: var(--vize-ui-button-fill);
+      box-shadow: none;
+    }
+
+    &:where([data-variant="quiet"]) {
+      border-color: transparent;
+      background: transparent;
+      color: var(--vize-ui-button-fill);
+      box-shadow: none;
+    }
+
+    /* Size is a typed API. Pointer policy may increase the physical target. */
+    &:where([data-size="sm"]) {
+      min-block-size: var(--vize-ui-size-control-sm);
+      padding-inline: var(--vize-ui-space-md);
+      font-size: var(--vize-ui-type-size-xs);
+    }
+
+    &:where([data-size="lg"]) {
+      min-block-size: var(--vize-ui-size-control-lg);
+      padding-inline: var(--vize-ui-space-xl);
+      font-size: var(--vize-ui-type-size-md);
+    }
+
+    &:where(:focus-visible) {
+      outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+      outline-offset: var(--vize-ui-focus-ring-offset);
+    }
+
+    &:where([data-state="idle"]):active {
+      scale: var(--vize-ui-button-press-scale);
+      translate: 0 var(--vize-ui-button-press-depth);
+      box-shadow: none;
+      transition-duration: var(--vize-ui-motion-duration-instant, 0ms);
+    }
+
+    &:where([data-state="disabled"], [data-state="loading"]) {
+      opacity: var(--vize-ui-opacity-disabled);
+      cursor: default;
+      box-shadow: none;
+    }
+
+    &:where([data-state="loading"]) {
+      cursor: progress;
+
+      &::before {
+        box-sizing: border-box;
+        inline-size: 0.875em;
+        block-size: 0.875em;
+        border: 0.125em solid currentColor;
+        border-inline-end-color: transparent;
+        border-radius: 50%;
+        content: "";
+        animation: button-progress 720ms linear infinite;
+      }
+    }
+
+    /* Hover motion only runs on available controls and devices that hover. */
+    @media (hover: hover) {
+      &:where([data-state="idle"]) {
+        &:hover {
+          background: color-mix(
+            in oklab,
+            var(--vize-ui-button-fill) var(--vize-ui-button-hover-strength),
+            var(--vize-ui-color-text)
+          );
+          box-shadow: var(--vize-ui-button-shadow-hover);
+          translate: 0 var(--vize-ui-button-hover-lift);
+        }
+
+        &:where([data-variant="outline"], [data-variant="quiet"]) {
+          &:hover {
+            background: color-mix(
+              in oklab,
+              var(--vize-ui-button-fill) var(--vize-ui-button-tint-strength),
+              transparent
+            );
+            color: var(--vize-ui-color-text);
+          }
+        }
+      }
+    }
+
+    /* Touch targets remain at least 44 CSS pixels regardless of visual size. */
+    @media (any-pointer: coarse) {
+      min-block-size: max(var(--vize-ui-size-control-md), 2.75rem);
+    }
+  }
+
+  /* Preset voices change geometry, typography, depth, and motion—not just hue. */
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    :where([data-vize-ui="button"]) {
+      --vize-ui-button-radius: 0.1875rem;
+      --vize-ui-button-shadow: none;
+      --vize-ui-button-shadow-hover: 0 2px 0 -1px var(--vize-ui-color-border);
+      --vize-ui-button-hover-lift: 0px;
+      --vize-ui-button-press-scale: 1;
+
+      font-weight: var(--vize-ui-type-weight-bold);
+      letter-spacing: 0.025em;
+    }
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    :where([data-vize-ui="button"]) {
+      --vize-ui-button-radius: 0.125rem;
+      --vize-ui-button-shadow: none;
+      --vize-ui-button-shadow-hover: none;
+      --vize-ui-button-hover-strength: 86%;
+      --vize-ui-button-hover-lift: 0px;
+      --vize-ui-button-press-depth: 0px;
+
+      min-block-size: var(--vize-ui-size-control-sm);
+      padding-inline: var(--vize-ui-space-md);
+      font-family: var(--vize-ui-type-family-mono);
+      letter-spacing: 0.01em;
+    }
+  }
+
+  :where([data-vize-theme~="midnight"], :host([data-vize-theme~="midnight"])) {
+    :where([data-vize-ui="button"]) {
+      --vize-ui-button-radius: 0.625rem;
+      --vize-ui-button-shadow:
+        0 1px 0 oklch(0.98 0.02 265 / 0.12) inset, 0 8px 24px oklch(0.04 0.03 270 / 0.28);
+      --vize-ui-button-shadow-hover:
+        0 1px 0 oklch(0.98 0.02 265 / 0.16) inset, 0 12px 30px oklch(0.04 0.03 270 / 0.38);
+    }
+  }
+
+  :where([data-vize-theme~="play"], :host([data-vize-theme~="play"])) {
+    :where([data-vize-ui="button"]) {
+      --vize-ui-button-radius: var(--vize-ui-radius-full);
+      --vize-ui-button-shadow:
+        0 2px 0 oklch(1 0 0 / 0.2) inset, 0 5px 0 -2px var(--vize-ui-color-border),
+        0 10px 24px oklch(0.35 0.12 330 / 0.13);
+      --vize-ui-button-shadow-hover:
+        0 2px 0 oklch(1 0 0 / 0.24) inset, 0 6px 0 -2px var(--vize-ui-color-border),
+        0 14px 30px oklch(0.35 0.12 330 / 0.17);
+      --vize-ui-button-hover-strength: 94%;
+      --vize-ui-button-hover-lift: -2px;
+      --vize-ui-button-press-depth: 2px;
+      --vize-ui-button-press-scale: 0.975;
+
+      font-weight: var(--vize-ui-type-weight-bold);
+    }
+  }
+
+  :where([data-vize-theme~="high-contrast"], :host([data-vize-theme~="high-contrast"])) {
+    :where([data-vize-ui="button"]) {
+      --vize-ui-button-radius: 0;
+      --vize-ui-button-shadow: none;
+      --vize-ui-button-shadow-hover: none;
+      --vize-ui-button-hover-lift: 0px;
+      --vize-ui-button-press-depth: 0px;
+      --vize-ui-button-press-scale: 1;
+
+      font-weight: var(--vize-ui-type-weight-bold);
+    }
+  }
+
+  @keyframes button-progress {
+    to {
+      rotate: 1turn;
+    }
+  }
+}
+
+@layer vize.policy {
+  :where([data-vize-ui="button"]) {
+    @media (prefers-reduced-motion: reduce) {
+      scale: none;
+      translate: none;
+      transition-duration: 0ms;
+
+      &:where([data-state="loading"])::before {
+        animation: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      border-color: ButtonBorder;
+      background: ButtonFace;
+      color: ButtonText;
+      box-shadow: none;
+
+      &:where([data-variant="solid"]) {
+        background: Highlight;
+        color: HighlightText;
+      }
+
+      &:focus-visible {
+        outline-color: Highlight;
+      }
+
+      &:where([data-state="disabled"], [data-state="loading"]) {
+        color: GrayText;
+        opacity: 1;
+      }
+    }
+  }
+}

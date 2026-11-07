@@ -32,7 +32,7 @@ test("discovers every SFC with the opinionated Vize contract", async () => {
   // Guard the oracle itself so an empty or misrooted listing cannot pass.
   assert.ok(expected.length > 300, `expected the package SFC inventory, got ${expected.length}`);
   for (const anchor of [
-    "src/families/actions/button/button.vue",
+    "src/components/button/button.vue",
     "src/families/menus/menu/menu-content.vue",
     "src/families/typography/text/text.vue",
   ]) {

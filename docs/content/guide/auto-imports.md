@@ -78,7 +78,7 @@ VizeComposableResolver({ source: "local", root: projectRoot, lockfile: "vize-lib
 ```
 
 Items recorded in `vize-lib.lock.json` resolve to `<root>/<dir>/<entry>` (for example
-`src/components/vize/families/actions/button/button.ts`); everything else falls back to the package
+`src/components/vize/components/button/index.ts`); everything else falls back to the package
 unless `fallback: false`. The same options exist on the Nuxt `ui` and `composables` settings.
 
 ## Keeping the catalogs in sync

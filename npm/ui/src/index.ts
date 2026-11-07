@@ -66,7 +66,7 @@ export * from "./families/overlays/alert-dialog/alert-dialog.ts";
 export * from "./families/overlays/confirm/confirm.ts";
 export * from "./families/overlays/drawer/drawer.ts";
 export * from "./families/overlays/command-palette/command-palette.ts";
-export * from "./families/actions/button/button.ts";
+export * from "./components/button/index.ts";
 export * from "./families/actions/floating-action-button/floating-action-button.ts";
 export * from "./families/actions/back-to-top/back-to-top.ts";
 export * from "./families/actions/button-group/button-group.ts";

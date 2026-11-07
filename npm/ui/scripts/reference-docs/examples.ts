@@ -26,11 +26,12 @@ export function publicExample(
   packageRoot: string,
   entry: UiFamilyCatalogEntry,
 ): string | undefined {
+  const componentUnit = entry.entryFile.startsWith("src/components/");
   const file = path.join(
     packageRoot,
     path.dirname(entry.entryFile),
     "examples",
-    `${entry.canonicalName}-basic.vue`,
+    componentUnit ? "basic.vue" : `${entry.canonicalName}-basic.vue`,
   );
   if (!existsSync(file)) return undefined;
   const byFile = new Map(

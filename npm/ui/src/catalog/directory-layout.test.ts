@@ -24,7 +24,7 @@ const rootDeterministicIdImportPattern =
 
 const grandfatheredRootSfcFiles = [] as const;
 
-test("new public SFCs live in family directories", () => {
+test("public SFCs do not leak into the source root", () => {
   assert.deepEqual(rootSfcFiles(), grandfatheredRootSfcFiles);
 });
 
@@ -38,7 +38,7 @@ test("source root keeps only package-level entrypoints", () => {
   assert.deepEqual(rootFiles, [...allowedSourceRootFiles]);
 });
 
-test("family SFCs keep area and primitive directory segments", () => {
+test("legacy family SFCs keep area and primitive directory segments", () => {
   const files = collectVueFiles(path.join(sourceRoot, "families"))
     .map((filename) => toPosixPath(path.relative(sourceRoot, filename)))
     .sort();

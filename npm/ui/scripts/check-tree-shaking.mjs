@@ -232,7 +232,7 @@ const cssOnlyEntries = [
     packageEntry: "@vizejs/ui/component-button.css",
     retainedSignature: /data-vize-ui=button/,
     rejectedSignature: /data-vize-ui=dialog-content/,
-    maximumCssGzipBytes: 1_100,
+    maximumCssGzipBytes: 1_700,
   },
   {
     name: "component-card.css",

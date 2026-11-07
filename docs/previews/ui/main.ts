@@ -1,10 +1,15 @@
 import { createApp, createSSRApp, h } from "vue";
 import { examples, composables } from "virtual:vize-ui-examples";
+import { themePresets } from "../../../npm/ui/src/families/foundations/theme/theme-constants.ts";
 import "./layers.css";
 import "@vizejs/ui/base.css";
-import "@vizejs/ui/theme-preset-paper.css";
-import "@vizejs/ui/theme-preset-signal.css";
+import "@vizejs/ui/theme-preset-headless.css";
 import "@vizejs/ui/theme-preset-atelier.css";
+import "@vizejs/ui/theme-preset-midnight.css";
+import "@vizejs/ui/theme-preset-paper.css";
+import "@vizejs/ui/theme-preset-play.css";
+import "@vizejs/ui/theme-preset-signal.css";
+import "@vizejs/ui/theme-preset-high-contrast.css";
 import "@vizejs/ui/component-button.css";
 import "@vizejs/ui/component-input.css";
 import "@vizejs/ui/component-checkbox.css";
@@ -21,7 +26,7 @@ const composable = params.get("composable");
 const name = composable ?? family;
 const example = composable == null ? examples[family] : composables[composable];
 const theme = params.get("theme") ?? "paper";
-const themes = ["paper", "signal", "atelier"];
+const themes = [...themePresets];
 document.documentElement.dataset.vizeTheme = themes.includes(theme) ? theme : "paper";
 
 if (example == null) {

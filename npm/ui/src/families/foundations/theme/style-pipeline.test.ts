@@ -88,6 +88,22 @@ test("authored nesting, layers, logical properties, and color functions compile 
   );
 });
 
+test("semantic component nesting is lowered by Lightning CSS", async () => {
+  const source = await readFile(path.resolve("src/components/button/styles.css"), "utf8");
+  const stylesheet = await readFile(path.resolve("dist/component-button.css"), "utf8");
+
+  assert.match(source, /:where\(\[data-vize-ui="button"\]\)\s*\{/u);
+  assert.match(source, /&:where\(\[data-state="idle"\]\)/u);
+  assert.doesNotMatch(source, /\.[a-z0-9-]+(?:__|--)[a-z0-9-]+/iu);
+
+  assert.doesNotMatch(stylesheet, /&/u, "Lightning CSS must lower component nesting");
+  assert.match(
+    stylesheet,
+    /:where\(\[data-vize-ui=button\]\):where\(\[data-state=idle\]\):active/u,
+  );
+  assert.match(stylesheet, /--vize-ui-button-fill/u, "public customization hooks must survive");
+});
+
 test("scoped style semantics survive the down-compile", async () => {
   const stylesheet = await readFile(path.resolve("dist/style.css"), "utf8");
 

@@ -141,7 +141,7 @@ test("CLI emits deterministic machine-readable story-testbed output", () => {
   assert.equal(info.schemaVersion, UI_STORY_TESTBED_SCHEMA_VERSION);
   assert.equal(info.command, "info");
   assert.equal(info.family.canonicalName, "button");
-  assert.equal(info.family.storyFile, "src/families/actions/button/button.art.vue");
+  assert.equal(info.family.storyFile, "src/components/button/stories/button.art.vue");
 });
 
 test("CLI check resolves source files when invoked from the repository root", () => {
