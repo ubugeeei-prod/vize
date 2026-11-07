@@ -16,6 +16,14 @@ on:
       - .github/workflows/parcel-transformer.yml
   workflow_dispatch:
     inputs:
+      publish:
+        description: Publish every native package through npm trusted publishing
+        type: boolean
+        default: false
+      version:
+        description: Exact package version override for a manual release recovery
+        type: string
+        default: ""
       default-cache-frontier:
         description: Exercise the known default development HTTP-cache frontier
         type: boolean
@@ -44,7 +52,8 @@ jobs:
     uses: parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222 # v3.0.0-alpha.2
     with:
       paths: npm/builder/parcel-native
-      publish: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+      publish: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish }}
+      version: ${{ inputs.version }}
       rust-toolchain: "1.99.1"
 
   native-consumer:
