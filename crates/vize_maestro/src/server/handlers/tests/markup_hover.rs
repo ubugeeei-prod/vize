@@ -10,6 +10,26 @@ use tower_lsp::{
 
 use super::super::MaestroServer;
 
+const CLICK_HOVER: &str = r#"**@click**
+
+_Vue event listener_
+
+**Example**
+
+```vue
+@click="handler"
+```
+
+Attaches a DOM or component event listener. The handler expression is evaluated in component scope.
+
+**Template behavior**
+- `$event` is available inside inline handler expressions.
+- Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.
+
+**Docs**
+
+[Vue Event Handling](https://vuejs.org/guide/essentials/event-handling.html)"#;
+
 #[test]
 fn resident_markup_hover_does_not_wait_for_the_native_transaction() {
     crate::runtime::block_on(async {
@@ -54,7 +74,7 @@ fn resident_markup_hover_does_not_wait_for_the_native_transaction() {
         let HoverContents::Markup(markup) = hover.contents else {
             panic!("directive hover must stay rich Markdown");
         };
-        assert!(markup.value.contains("Vue event listener"));
+        assert_eq!(markup.value, CLICK_HOVER);
         assert_eq!(server.state.canonical_bridge_request_count(), 0);
     });
 }
@@ -216,28 +236,7 @@ Boolean HTML attribute
         let HoverContents::Markup(markup) = hover.contents else {
             panic!("directive hover must stay rich Markdown");
         };
-        assert_eq!(
-            markup.value,
-            r#"**@click**
-
-_Vue event listener_
-
-**Example**
-
-```vue
-@click="handler"
-```
-
-Attaches a DOM or component event listener. The handler expression is evaluated in component scope.
-
-**Template behavior**
-- `$event` is available inside inline handler expressions.
-- Event modifiers such as `.stop`, `.prevent`, and key modifiers are compiled by Vue.
-
-**Docs**
-
-[Vue Event Handling](https://vuejs.org/guide/essentials/event-handling.html)"#
-        );
+        assert_eq!(markup.value, CLICK_HOVER);
 
         assert_eq!(routed.state.canonical_bridge_request_count(), 0);
         assert_eq!(routed.state.corsa_init_failure(), None);
