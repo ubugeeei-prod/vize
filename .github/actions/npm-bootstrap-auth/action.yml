@@ -1,0 +1,14 @@
+name: Configure npm bootstrap authentication
+description: Expose a one-time npm token only to the first-party publisher and remove it afterward
+
+inputs:
+  token:
+    description: Short-lived scope-limited token for an initial package publication
+    required: false
+    default: ""
+
+runs:
+  using: node24
+  main: main.ts
+  post: post.ts
+  post-if: always()

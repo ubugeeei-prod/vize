@@ -25,7 +25,11 @@ async function main() {
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-"));
   // The job owns this fresh workspace, so bypass Zed's interactive Restricted
   // Mode prompt and allow the packaged language server to start.
-  const { userData, shim, installed } = prepareReleaseZedProfile(session, packaged, evidence);
+  const { userData, shim, installed, vueLanguage } = prepareReleaseZedProfile(
+    session,
+    packaged,
+    evidence,
+  );
 
   const transcript = path.join(evidence, "zed.transcript.jsonl");
   fs.rmSync(transcript, { force: true });
@@ -45,6 +49,7 @@ async function main() {
       {
         client: version.stdout.trim(),
         extension: fs.realpathSync(installed),
+        vueLanguage: fs.realpathSync(vueLanguage),
         server: fs.realpathSync(server),
         workspace: fs.realpathSync(workspace),
       },
