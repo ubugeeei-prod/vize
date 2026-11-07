@@ -1,4 +1,5 @@
 use super::super::build_file_summary;
+use super::super::resolution::{path_key, project::Project};
 use super::temp_project_dir;
 
 #[test]
@@ -123,6 +124,64 @@ const props = defineProps<ParentProps>();
         ctx.bindings.bindings.get("asChild"),
         Some(&crate::types::BindingType::Props)
     );
+
+    let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
+fn prunes_unrequested_named_barrel_exports() {
+    let project = temp_project_dir("named-barrel-pruning");
+    let types = project.join("types");
+    std::fs::create_dir_all(&types).unwrap();
+    std::fs::write(
+        types.join("Selected.ts"),
+        "export interface SelectedProps { selected?: boolean }",
+    )
+    .unwrap();
+
+    let mut barrel = String::from("export type { SelectedProps } from './Selected'\n");
+    for index in 0..64 {
+        std::fs::write(
+            types.join(format!("Unrelated{index}.ts")),
+            format!("export interface Unrelated{index} {{ value?: string }}"),
+        )
+        .unwrap();
+        barrel.push_str(&format!(
+            "export type {{ Unrelated{index} }} from './Unrelated{index}'\n"
+        ));
+    }
+    let index = types.join("index.ts");
+    std::fs::write(&index, barrel).unwrap();
+
+    let parent = project.join("Parent.vue");
+    let source = r#"
+import type { SelectedProps } from "./types";
+const props = defineProps<SelectedProps>();
+"#;
+    let mut ctx = super::super::ScriptCompileContext::new(source);
+    let collected = ctx
+        .try_collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true, None)
+        .unwrap();
+    ctx.analyze();
+
+    assert!(ctx.interfaces.contains_key("SelectedProps"));
+    assert_eq!(
+        ctx.bindings.bindings.get("selected"),
+        Some(&crate::types::BindingType::Props)
+    );
+    let mut expected_dependencies = vec![
+        path_key(&index.canonicalize().unwrap()),
+        path_key(&types.join("Selected.ts").canonicalize().unwrap()),
+    ];
+    expected_dependencies.extend(
+        Project::discovery_inputs(&parent)
+            .unwrap()
+            .iter()
+            .map(|path| path_key(path)),
+    );
+    expected_dependencies.sort();
+    expected_dependencies.dedup();
+    assert_eq!(collected.dependencies, expected_dependencies);
 
     let _ = std::fs::remove_dir_all(project);
 }
