@@ -2,10 +2,16 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
-import { parse as parseToml } from "@iarna/toml";
 import { hasCheckerDependency } from "./installed.ts";
 import { readRawBlob } from "./plan.ts";
+
+const tests = createRequire(new URL("../../../../tests/package.json", import.meta.url));
+const toml = tests("@iarna/toml") as {
+  parse(source: string): unknown;
+};
+const parseToml = (source: string) => toml.parse(source);
 
 export const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 export const targets = ["lsp_named_model_transactions_cli", "lsp_bound_event_casing_cli"];

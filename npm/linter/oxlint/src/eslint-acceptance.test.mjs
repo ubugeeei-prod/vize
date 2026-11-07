@@ -8,7 +8,7 @@ import {
 } from "./reference-host-acceptance.mjs";
 
 // The workspace's declared Nuxt oracle owns these real installed consumers.
-const workspace = createRequire(new URL("../../../../package.json", import.meta.url));
+const workspace = createRequire(new URL("../package.json", import.meta.url));
 const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
 const { Linter, SourceCode } = oracle("eslint");
 const parser = oracle("vue-eslint-parser");

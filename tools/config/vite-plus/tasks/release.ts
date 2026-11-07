@@ -22,9 +22,6 @@ const releaseCommand = (name: string, ...args: string[]) =>
  * catalog readable even as the repository gains more package families.
  */
 export const releaseTasks = defineTasks({
-  changelog: noCacheTask('node tools/commands/release/regenerate-changelog.ts "$@"', {
-    forwardArguments: true,
-  }),
   // The release command owns argument parsing and confirmation before mutation.
   release: noCacheTask(releaseCommand("release", "dispatch", '"$@"'), {
     forwardArguments: true,

@@ -164,8 +164,8 @@ export async function observeKeyedTemplates(input: Packet, seams: Seams) {
         assert(file.current.map && typeof file.current.map === "object", "complete source map");
       }
     }
-  const fromRoot = createRequire(new URL("../../../package.json", import.meta.url));
-  const fromNuxt = createRequire(fromRoot.resolve("vue-computed-inlay-oracle/package.json"));
+  const fromTests = createRequire(new URL("../../package.json", import.meta.url));
+  const fromNuxt = createRequire(fromTests.resolve("vue-computed-inlay-oracle/package.json"));
   const nuxtVue = fromNuxt("vue") as Runtime;
   const nuxtCompiler = fromNuxt("vue/compiler-sfc") as Compiler;
   const nuxtRenderer = fromNuxt("vue/server-renderer") as Renderer;

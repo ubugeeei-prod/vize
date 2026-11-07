@@ -16,9 +16,9 @@ type TaskShape = {
   command: string;
 };
 
-function runWorkspaceBinary(name: string, args: string[]): SpawnSyncReturns<string> {
+function runWorkspaceBinary(name: string, args: string[], cwd = root): SpawnSyncReturns<string> {
   return spawnSync(process.platform === "win32" ? "pnpm.cmd" : "pnpm", ["exec", name, ...args], {
-    cwd: root,
+    cwd,
     encoding: "utf8",
   });
 }
@@ -53,7 +53,10 @@ function assertCommandSucceeded<
 
 test("root config generation resolves and reproduces checked-in artifacts", () => {
   const schemaTask = generationAndCliTasks["gen:schema"] as TaskShape;
-  assert.match(schemaTask.command, /--project-dir\s+npm\/cli\/pkl\b/);
+  assert.equal(
+    schemaTask.command,
+    "pnpm --dir npm/cli exec pkl eval --project-dir pkl -f json pkl/jsonschema/generate.pkl -o schemas/vize.config.schema.json",
+  );
 
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-generation-"));
   const schemaPath = path.join(tempDir, "npm", "cli", "schemas", "vize.config.schema.json");
@@ -151,11 +154,17 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
     );
     assertCommandSucceeded(pklResult, "Pkl schema generation failed");
 
-    const json2tsResult = runWorkspaceBinary("json2ts", ["-i", schemaPath, "-o", typesPath]);
+    const json2tsResult = runWorkspaceBinary(
+      "json2ts",
+      ["-i", schemaPath, "-o", typesPath],
+      path.join(root, "npm/cli"),
+    );
     retain(
       "json2ts",
       [
         process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+        "--dir",
+        "npm/cli",
         "exec",
         "json2ts",
         "-i",
@@ -177,11 +186,17 @@ test("root config generation resolves and reproduces checked-in artifacts", () =
     );
     assertCommandSucceeded(postprocessResult, "Generated declaration post-processing failed");
 
-    const formatResult = runWorkspaceBinary("oxfmt", ["--write", schemaPath, typesPath]);
+    const formatResult = runWorkspaceBinary(
+      "oxfmt",
+      ["--write", schemaPath, typesPath],
+      path.join(root, "npm/cli"),
+    );
     retain(
       "format",
       [
         process.platform === "win32" ? "pnpm.cmd" : "pnpm",
+        "--dir",
+        "npm/cli",
         "exec",
         "oxfmt",
         "--write",

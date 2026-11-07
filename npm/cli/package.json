@@ -103,6 +103,8 @@
     "@pkl-community/pkl": "catalog:repo-tooling",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
+    "json-schema-to-typescript": "catalog:repo-tooling",
+    "oxfmt": "catalog:linting",
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",

@@ -242,8 +242,8 @@ void test("the actual peer range accepts the reported nightly and stable Nuxt ho
   const manifest = JSON.parse(
     fs.readFileSync(new URL("npm/framework/nuxt/package.json", root), "utf8"),
   ) as { peerDependencies: { nuxt: string } };
-  // semver is declared by the root tooling workspace, so resolve its CLI there.
-  const semver = createRequire(new URL("package.json", root)).resolve("semver/bin/semver.js");
+  // semver belongs to the test workspace, so resolve its CLI from that manifest.
+  const semver = createRequire(new URL("tests/package.json", root)).resolve("semver/bin/semver.js");
   for (const [version, supported] of [
     ["2.16.0", true],
     ["3.19.3", true],

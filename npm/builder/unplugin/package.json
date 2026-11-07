@@ -82,9 +82,11 @@
     "unplugin": "catalog:vite-stack"
   },
   "devDependencies": {
+    "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "esbuild": "catalog:bundlers",
     "rollup": "catalog:bundlers",
+    "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-beta",

@@ -100,7 +100,7 @@
         "0": { "name": "punctuation.definition.template-expression.end.vue" }
       },
       "name": "meta.embedded.expression.vue",
-      "patterns": [{ "include": "source.ts#expression" }]
+      "patterns": [{ "include": "#vue-ts-expression" }]
     },
     "vue-ts-expression": {
       "patterns": [

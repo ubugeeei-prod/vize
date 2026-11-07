@@ -21,7 +21,6 @@ const cases = JSON.parse(input).cases as Array<{
   admit: boolean;
   keepText: boolean;
 }>;
-const rootRequire = createRequire(new URL("../../package.json", import.meta.url));
 const testsRequire = createRequire(import.meta.url);
 // Read metadata beside the exact imported ESM entry, rather than resolving a
 // second package through an ambient CJS or runner-provided dependency graph.
@@ -198,8 +197,8 @@ const actual = {
   schemaVersion: 1,
   inputSha256: createHash("sha256").update(input).digest("hex"),
   versions: {
-    jsx: rootRequire("@vue/babel-plugin-jsx/package.json").version,
-    babel: rootRequire("@babel/core/package.json").version,
+    jsx: testsRequire("@vue/babel-plugin-jsx/package.json").version,
+    babel: testsRequire("@babel/core/package.json").version,
     runtimeDom: runtimeDomVersion,
     dom: domVersion,
   },

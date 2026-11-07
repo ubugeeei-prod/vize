@@ -37,38 +37,9 @@ function workerDependencies(file: string, visited = new Set<string>()): Set<stri
   return dependencies;
 }
 
-function optimizerIncludes(file: string): Set<string> {
-  const dependencies = new Set<string>();
-  function visit(node: ts.Node) {
-    if (ts.isPropertyAssignment(node) && node.name.getText() === "optimizeDeps") {
-      assert.ok(ts.isObjectLiteralExpression(node.initializer));
-      for (const property of node.initializer.properties) {
-        if (!ts.isPropertyAssignment(property) || property.name.getText() !== "include") continue;
-        assert.ok(ts.isArrayLiteralExpression(property.initializer));
-        for (const dependency of property.initializer.elements) {
-          assert.ok(ts.isStringLiteral(dependency));
-          dependencies.add(dependency.text);
-        }
-      }
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(parse(file));
-  return dependencies;
-}
-
-void test("browser and app optimizers prepare the real highlighter worker dependencies before rendering", () => {
+void test("the plain code worker has no browser highlighter dependency", () => {
   const dependencies = workerDependencies(
     path.join(root, "playground/src/shared/codeHighlighting.worker.ts"),
   );
-  assert.deepEqual([...dependencies], ["shiki"]);
-  for (const config of ["vite.app.config.ts", "vite.test.config.ts"]) {
-    const included = optimizerIncludes(path.join(root, "playground", config));
-    for (const dependency of dependencies) {
-      assert.ok(
-        included.has(dependency),
-        `${config} must prebundle worker dependency ${dependency}`,
-      );
-    }
-  }
+  assert.deepEqual([...dependencies], []);
 });

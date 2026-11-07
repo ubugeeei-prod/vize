@@ -21,6 +21,7 @@
     "three": "catalog:content",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "yaml": "2.9.0"
   }
 }

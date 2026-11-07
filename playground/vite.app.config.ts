@@ -37,7 +37,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["monaco-editor", "shiki", "prettier/plugins/html"],
+    include: ["monaco-editor", "prettier/plugins/html"],
     exclude: ["vize-wasm"],
   },
 });

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-root-dependency-ownership-successor",
+  "sourceRevision": "c11e3f91a375ab5e56ef849aaad669e18df27ba1",
+  "sourceTree": "e199ff1bd7c8a3d818a083a4a27940b9dcc23c35",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-fresco-sfc-update-12130.json",
+    "bytes": 2039,
+    "sha256": "53fffb6c6fc9c03809fa184ba2f351af89c64849851fbfac3ad951bd83316792",
+    "gitBlob": "58de578dd2733449fb01792f206cb13b377e5255"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1115197,
+    "sha256": "d3a660986e8c1e2efcefdf139a697fc634f52ab6c378618af81d172900ee4328",
+    "gitBlob": "366b8cb99320d11ab6f826a189d41331deab05a6"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1169606,
+    "sha256": "cefa5cc8e091c5f42356e053e7c71dbb1bf778572dc8465857ba0f93e0caaa5c",
+    "gitBlob": "303ec1c99df7b1404a0626a68f1463336a4306a0"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9501,
+    "sha256": "5560a48e7c354af330e2d856db1394ee041d7d1d2b99862a8d9770d5c2432aa2",
+    "gitBlob": "24c28c3b03164b735d7b2caf9a4ffe4de228c8ae"
+  },
+  "ownerManifests": [
+    { "path": "docs/package.json", "bytes": 1231, "sha256": "327a565c5dc08e0891337c683002bf23efe7d7137b93b8ef6b123fa0535d3806", "gitBlob": "1a36c8ed8b28b14ed392c92b6ab2e29ea056c9e1" },
+    { "path": "editors/package.json", "bytes": 174, "sha256": "764e69b4547464b0e94070c0dd46ee2d9ae5a49974870d29fb1d2bdbe561a2f2", "gitBlob": "029e91724d6e845e2c1e115e687a5532e9281b51" },
+    { "path": "npm/builder/unplugin/package.json", "bytes": 2925, "sha256": "cb9e3c22719b321a0c81f34fcaccba82118073082c4738fefb0322ffdf1c03b6", "gitBlob": "97da4e60aa1567417f94439ff81f286aefb098d4" },
+    { "path": "npm/builder/vite/package.json", "bytes": 2742, "sha256": "86405a1b0f138a85a0a53c7e1b58562a45a2bd7e3adde1bd23a328dab05d7d41", "gitBlob": "2666d936aa778f225b273cb597b1264feae26183" },
+    { "path": "npm/cli/package.json", "bytes": 4362, "sha256": "11abb0e379b919dcff38cc4aed99e1a8934aab4a55d9000115cf54dc1608f5c9", "gitBlob": "dad46ee29384cc40f38cda5a425d90f102424d41" },
+    { "path": "npm/framework/nuxt-lint-config/package.json", "bytes": 1691, "sha256": "96a247a24b95b6af7a97275679fb7cd552a6e86ee8941f3411ea549db2e58c84", "gitBlob": "4a0a24564c7f2599d4e7a6192aa28b68f5a65ef1" },
+    { "path": "npm/framework/nuxt/package.json", "bytes": 2768, "sha256": "570f684abd5b212ce5c0010f85486f38ab4510a055269cb6bcd139c04d63f53a", "gitBlob": "645bdcb4b8d4810bbbc4c2f152af6d9c835432dd" },
+    { "path": "npm/linter/oxlint/package.json", "bytes": 3496, "sha256": "03fac0000aa67d7a2d5de83b87fb569796f20618544c70f2e90272375141d779", "gitBlob": "f7be37c40d08cbffc974ae2f213ccd0f0c834acd" },
+    { "path": "npm/ui/package.json", "bytes": 38362, "sha256": "9ddd2c89cacb2cf5590d037b34d8ac7d7d8c0af90426cb5bfc869ed7c818fd7c", "gitBlob": "04704e83cda8cd4d64a18e772015e2063d2cbf40" },
+    { "path": "tests/package.json", "bytes": 8723, "sha256": "95c2f82724e5e4b21ac137c99e149ad0e045cd1e8ba2c567def20d780445dbd4", "gitBlob": "927d249b7299ded6f824ed9032f618202f9bf990" },
+    { "path": "tools/benchmarks/scripts/package.json", "bytes": 1163, "sha256": "cf7c34bbdbf16c2f7d4409e0ac8642a3af57525d4b7d90312478dfcb5459c5ca", "gitBlob": "bdc821bdccf726dc67732e9ab6d25c724e9cba62" },
+    { "path": "tools/package.json", "bytes": 281, "sha256": "a5da01b504a374e94f857e11de9e79825c05b210e4eafd49fb704c00d14162f3", "gitBlob": "08d91bf21193cb9a01227ed1c496db639864365e" }
+  ],
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "cefa5cc8e091c5f42356e053e7c71dbb1bf778572dc8465857ba0f93e0caaa5c"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Move root-only development dependencies to the workspaces that execute them, retain the six root execution entry points, provide shared editor type resolution outside the extension package, and bind the complete generated resolver graph and every affected owner manifest. This record gives source provenance only."
+}

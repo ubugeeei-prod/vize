@@ -5,20 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { collectVueInputPaths } from "../../../tools/support/compat/fixtures/tool-matrix-inputs.ts";
-import {
-  resolveCommitSha,
-  writeDivergenceEvidence,
-  writeStructuralEvidence,
-  type ProjectEvidence,
-} from "./real-project-syntax-report.ts";
-import { loadPinnedShikiVueOracle } from "./shiki-vue-oracle.ts";
-import { createDivergenceArtifact, type ProjectArtifact } from "./syntax-divergence-artifact.ts";
-import {
-  applyDocumentedDivergences,
-  compareSemanticSpans,
-  validateLedger,
-  type DivergenceRecord,
-} from "./syntax-semantic-comparison.ts";
+import { writeStructuralEvidence, type ProjectEvidence } from "./real-project-syntax-report.ts";
 import { sha256, tokenizeSemanticSource } from "./syntax-semantic-divergence.ts";
 import { createSyntaxAuditDeadline } from "./syntax-audit-deadline.ts";
 import {
@@ -29,12 +16,6 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
-const ledgerPath = path.join(
-  root,
-  "tests",
-  "_fixtures",
-  "syntax-highlighter-documented-divergences.json",
-);
 
 type FixtureProject = {
   coverage: string[];
@@ -53,18 +34,10 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
   };
   assert.ok(registry.requiredToolCoverage.includes("syntax-highlighter"));
   const selection = selectProjects(registry.projects, environment);
-  if (!selection.enforced && selection.projects.length === 0) return { skipped: true };
-  const rawLedger = fs.readFileSync(ledgerPath, "utf8");
-  const ledger = JSON.parse(rawLedger) as unknown;
-  validateLedger(ledger, new Set(registry.projects.map((project) => project.id)));
+  if (!selection.enforced && selection.projects.length === 0) return { skipped: true as const };
   const vizeVue = await loadVueTextMateGrammar();
-  const oracle = await loadPinnedShikiVueOracle().catch((error: unknown) => {
-    vizeVue.registry.dispose();
-    throw error;
-  });
   let vizeArt: Awaited<ReturnType<typeof loadVueTextMateGrammar>> | null = null;
   const evidence: ProjectEvidence[] = [];
-  const projectArtifacts: ProjectArtifact[] = [];
 
   try {
     checkDeadline();
@@ -80,10 +53,6 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
         const files = collectVueInputPaths(fixtureDir, project.vueGlobs);
         assertFixtureFileCount(project, files);
         structural.fileCount = files.length;
-        const comparisonDigest = createHash("sha256");
-        const falsePositives: DivergenceRecord[] = [];
-        const falseNegatives: DivergenceRecord[] = [];
-        let semanticSpanCount = 0;
 
         for (const file of files) {
           checkDeadline();
@@ -93,63 +62,21 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
             vizeArt = await loadVueTextMateGrammar("source.art-vue");
             checkDeadline();
           }
-          const vizeGrammar = isArtVue ? (vizeArt?.grammar as TextMateGrammar) : vizeVue.grammar;
-          const vizeRoot = isArtVue ? "source.art-vue" : "source.vue";
-          const label = `${project.id}/${file}`;
-          const vize = tokenizeSemanticSource(
-            vizeGrammar,
+          const grammar = isArtVue ? (vizeArt?.grammar as TextMateGrammar) : vizeVue.grammar;
+          const rootScope = isArtVue ? "source.art-vue" : "source.vue";
+          const result = tokenizeSemanticSource(
+            grammar,
             source,
-            vizeRoot,
-            `vize:${label}`,
+            rootScope,
+            `${project.id}/${file}`,
             checkDeadline,
           );
-          const baseline = tokenizeSemanticSource(
-            oracle.grammar,
-            source,
-            oracle.rootScope,
-            `oracle:${label}`,
-            checkDeadline,
-          );
-          assert.equal(vize.lineCount, baseline.lineCount, `${label}: line count drift`);
-          const comparison = compareSemanticSpans(
-            file,
-            source,
-            vize.semanticSpans,
-            baseline.semanticSpans,
-          );
-          checkDeadline();
-          falsePositives.push(...comparison.falsePositives);
-          falseNegatives.push(...comparison.falseNegatives);
-          semanticSpanCount +=
-            comparison.shared.length +
-            comparison.falsePositives.length +
-            comparison.falseNegatives.length;
           structural.characterCount += source.length;
-          structural.lineCount += vize.lineCount;
-          structural.tokenCount += vize.tokenCount;
+          structural.lineCount += result.lineCount;
+          structural.tokenCount += result.tokenCount;
           inputDigest.update(`${JSON.stringify([file, source])}\n`);
-          tokenDigest.update(`${JSON.stringify([file, vize.tokenSha256])}\n`);
-          comparisonDigest.update(`${JSON.stringify([file, comparison.sha256])}\n`);
+          tokenDigest.update(`${JSON.stringify([file, result.tokenSha256])}\n`);
         }
-        structural.inputSha256 = inputDigest.copy().digest("hex");
-        structural.tokenSha256 = tokenDigest.copy().digest("hex");
-        const classified = applyDocumentedDivergences(
-          project.id,
-          { falseNegatives, falsePositives, sha256: "", shared: [] },
-          ledger,
-        );
-        projectArtifacts.push({
-          id: project.id,
-          revision: project.revision,
-          fileCount: files.length,
-          inputSha256: structural.inputSha256,
-          semanticSpanCount,
-          comparisonSha256: comparisonDigest.digest("hex"),
-          falsePositives: classified.falsePositives,
-          falseNegatives: classified.falseNegatives,
-          documentedDivergences: classified.documented,
-        });
-        checkDeadline();
         structural.status = "ok";
       } catch (error) {
         structural.failure = errorMessage(error);
@@ -162,7 +89,6 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
   } finally {
     vizeVue.registry.dispose();
     vizeArt?.registry.dispose();
-    oracle.registry.dispose();
   }
 
   writeStructuralEvidence(
@@ -178,27 +104,10 @@ export async function runRealProjectSyntaxAudit(environment = process.env, now =
     failures.map((project) => `${project.id}: ${project.failure}`),
     [],
   );
-  const commitSha = resolveCommitSha(environment);
-  checkDeadline();
-  const artifact = createDivergenceArtifact({
-    commitSha,
-    grammars: {
-      oracle: oracle.getEvidence(),
-      vize: [vizeVue.getEvidence(), vizeArt?.getEvidence()].filter(Boolean),
-    },
-    ledger: {
-      path: path.relative(root, ledgerPath).replaceAll("\\", "/"),
-      sha256: sha256(rawLedger),
-    },
-    projects: projectArtifacts,
-    shard: { count: selection.shardCount, index: selection.shardIndex },
-  });
-  writeDivergenceEvidence(artifact, environment);
   process.stderr.write(
-    `syntax oracle: ${artifact.summary.projectCount} project(s), ${artifact.summary.fileCount} file(s), ` +
-      `${artifact.summary.falsePositiveCount} FP, ${artifact.summary.falseNegativeCount} FN\n`,
+    `syntax grammar: ${evidence.length} project(s), ${evidence.reduce((sum, item) => sum + item.fileCount, 0)} file(s)\n`,
   );
-  return { artifact, evidence, skipped: false };
+  return { evidence, skipped: false as const };
 }
 
 function selectProjects(projects: FixtureProject[], environment: NodeJS.ProcessEnv) {

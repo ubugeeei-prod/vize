@@ -432,11 +432,6 @@ body.entry-page {
   line-height: 1.58;
 }
 
-.content pre code span[style] {
-  background: transparent !important;
-  color: var(--shiki-light, inherit) !important;
-}
-
 .content pre .v-code__token {
   transition: color 0.14s ease;
 }
@@ -509,10 +504,6 @@ body.entry-page {
 [data-theme="dark"] .content pre code {
   background: transparent !important;
   color: inherit !important;
-}
-
-[data-theme="dark"] .content pre code span[style] {
-  color: var(--shiki-dark, inherit) !important;
 }
 
 /* Nav active state */
@@ -710,8 +701,8 @@ body.entry-page .entry-content .content > h2 + p > img {
   .content .ox-api-entry__param-name,
   .content .ox-api-entry__param-type,
   .content .ox-api-entry__return-type,
-  .content code.shiki-inline.ox-api-entry__signature--highlighted,
-  .content code.shiki-inline.ox-api-module__signature--highlighted,
+  .content code.ox-api-entry__signature--highlighted,
+  .content code.ox-api-module__signature--highlighted,
   .entry-content .content > h2 + p > img
 ) {
   border-radius: 0 !important;

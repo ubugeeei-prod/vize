@@ -53,7 +53,7 @@ export const semanticNormalization = Object.freeze({
     "vue",
   ]),
   rationale:
-    "Compare Vue shell roles. Shiki 4.0.2 leaves interpolations unscoped and treats many directives as HTML attributes, so directive names normalize to attributes while embedded-language and string scopes are omitted.",
+    "Compare Vue shell roles while normalizing directive names to attributes and omitting embedded-language and string scopes.",
 });
 
 export type SemanticSpan = {

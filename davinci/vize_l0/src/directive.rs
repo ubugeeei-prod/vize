@@ -236,9 +236,9 @@ mod tests {
 
     #[test]
     fn test_parse_forget() {
-        let d = parse_vize_directive("@vize:forget shiki output is pre-escaped", 3, 50).unwrap();
+        let d = parse_vize_directive("@vize:forget rendered output is pre-escaped", 3, 50).unwrap();
         assert_eq!(d.kind, DirectiveKind::Forget);
-        assert_eq!(d.payload.as_str(), "shiki output is pre-escaped");
+        assert_eq!(d.payload.as_str(), "rendered output is pre-escaped");
         assert_eq!(d.line, 3);
     }
 

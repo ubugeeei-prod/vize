@@ -23,10 +23,8 @@ function record(value: unknown): ObjectValue {
   return value as ObjectValue;
 }
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const rootRequire = createRequire(path.join(root, "package.json"));
-const oracle = createRequire(
-  fs.realpathSync(path.join(root, "node_modules/@nuxt/eslint-config/package.json")),
-);
+const testsRequire = createRequire(path.join(root, "tests/package.json"));
+const oracle = createRequire(fs.realpathSync(testsRequire.resolve("@nuxt/eslint-config")));
 const importManifest = oracle.resolve("eslint-plugin-import-x/package.json");
 const packageRoot = path.dirname(importManifest),
   provider = createRequire(importManifest);
@@ -57,7 +55,7 @@ function assertInstalledIdentity(): void {
     hash(fs.readFileSync(path.join(root, "patches/eslint-plugin-import-x@4.17.1.patch"))),
     patchHash,
   );
-  const yaml = rootRequire("yaml") as Yaml;
+  const yaml = testsRequire("yaml") as Yaml;
   const lock = yaml.parseAllDocuments(fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8"));
   assert.equal(lock.length, 2);
   for (const document of lock) assert.deepEqual(document.errors, []);
@@ -76,11 +74,13 @@ function assertInstalledIdentity(): void {
   const parents = Object.keys(snapshots).filter((key) =>
     key.startsWith("@nuxt/eslint-config@1.16.0("),
   );
-  assert.equal(parents.length, 1);
-  const reference = record(record(snapshots[parents[0]!]).dependencies)["eslint-plugin-import-x"];
-  assert.equal(typeof reference, "string");
-  assert.ok((reference as string).startsWith("4.17.1(patch_hash=" + patchHash + ")"));
-  assert.ok("eslint-plugin-import-x@" + reference in snapshots);
+  assert.equal(parents.length, 2);
+  for (const parent of parents) {
+    const reference = record(record(snapshots[parent]).dependencies)["eslint-plugin-import-x"];
+    assert.equal(typeof reference, "string");
+    assert.ok((reference as string).startsWith("4.17.1(patch_hash=" + patchHash + ")"));
+    assert.ok("eslint-plugin-import-x@" + reference in snapshots);
+  }
 }
 async function installedPlugins(): Promise<ObjectValue[]> {
   const normalize = (value: unknown): ObjectValue => {

@@ -1,6 +1,7 @@
 use super::{Checked, Value, WORKSPACE, bound, load};
 
-const TOOLING_UPDATE: &str = "malformed-membership/provider-js-tooling-layout-update-12082.json";
+pub(super) const TOOLING_UPDATE: &str =
+    "malformed-membership/provider-js-tooling-layout-update-12082.json";
 const TOOLING_UPDATE_HASH: &str =
     "fdcfb765b733d4ce0c66169c179ec8d78ec9068bd287e12ad3cdf1c54ca2f005";
 const PARCEL_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-parcel-native-update-12011.json";

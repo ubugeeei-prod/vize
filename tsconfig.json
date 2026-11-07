@@ -14,7 +14,11 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "paths": { "playwright": ["./docs/node_modules/playwright/index.d.ts"] }
+    "paths": {
+      "playwright": ["./docs/node_modules/playwright/index.d.ts"],
+      "vscode": ["./tests/node_modules/@types/vscode/index.d.ts"],
+      "vscode-languageclient/node.js": ["./tests/node_modules/vscode-languageclient/node.d.ts"]
+    }
   },
   "files": [],
   "references": [

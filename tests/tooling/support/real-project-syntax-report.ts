@@ -5,7 +5,6 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { renderDivergenceMarkdown, type DivergenceArtifact } from "./syntax-divergence-artifact.ts";
 import type { TextMateGrammarEvidence } from "./vue-textmate.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -63,22 +62,6 @@ export function writeStructuralEvidence(
   fs.writeFileSync(
     path.join(outputDir, "syntax-highlighter-summary.json"),
     `${JSON.stringify(artifact, null, 2)}\n`,
-  );
-}
-
-export function writeDivergenceEvidence(
-  artifact: DivergenceArtifact,
-  environment: NodeJS.ProcessEnv,
-): void {
-  const outputDir = outputDirectory(environment);
-  if (outputDir == null) return;
-  fs.writeFileSync(
-    path.join(outputDir, "syntax-highlighter-divergence.json"),
-    `${JSON.stringify(artifact, null, 2)}\n`,
-  );
-  fs.writeFileSync(
-    path.join(outputDir, "syntax-highlighter-divergence.md"),
-    renderDivergenceMarkdown(artifact),
   );
 }
 

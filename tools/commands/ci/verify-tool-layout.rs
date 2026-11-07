@@ -274,6 +274,9 @@ fn visit_files(dir: &Path, files: &mut Vec<PathBuf>) -> io::Result<()> {
     }
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
+        if entry.file_name() == "node_modules" {
+            continue;
+        }
         let path = entry.path();
         if path.is_dir() {
             visit_files(&path, files)?;

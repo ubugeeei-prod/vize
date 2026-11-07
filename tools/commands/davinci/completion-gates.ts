@@ -78,10 +78,7 @@ const gateFiles = new Set([
 ]);
 
 const exemptPath = (file: string) =>
-  file.startsWith("docs/davinci/") ||
-  file === "CHANGELOG.md" ||
-  gateFiles.has(file) ||
-  capturePattern.test(file);
+  file.startsWith("docs/davinci/") || gateFiles.has(file) || capturePattern.test(file);
 
 // Other docs may keep the level codenames as aliases, but not the program name.
 const counts = (file: string, name: string) =>

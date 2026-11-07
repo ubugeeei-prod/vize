@@ -1,0 +1,9 @@
+{
+  "name": "@vizejs/editor-tooling",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/vscode": "1.75.0",
+    "vscode-languageclient": "9.0.1"
+  }
+}

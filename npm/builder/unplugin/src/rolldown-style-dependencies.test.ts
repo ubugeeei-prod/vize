@@ -37,9 +37,11 @@ function filesUnder(
 }
 
 void test("#11456 real tsdown/Rolldown builds original style src CSS into a CSS file", (t) => {
-  const requireFromWorkspace = createRequire(path.join(workspaceRoot, "package.json"));
-  const tsdown = requireFromWorkspace.resolve("tsdown");
-  const cli = requireFromWorkspace.resolve("tsdown/run");
+  const requireFromUnplugin = createRequire(
+    path.join(workspaceRoot, "npm/builder/unplugin/package.json"),
+  );
+  const tsdown = requireFromUnplugin.resolve("tsdown");
+  const cli = requireFromUnplugin.resolve("tsdown/run");
   const requireFromTsdown = createRequire(tsdown);
   const rolldown = requireFromTsdown.resolve("rolldown");
   const plugin = path.join(import.meta.dirname, "rolldown.ts");

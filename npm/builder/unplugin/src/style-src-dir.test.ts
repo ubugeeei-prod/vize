@@ -87,8 +87,11 @@ void test("#11522 the style module sits beside its src file and names its SFC", 
 });
 
 void test("#11522 tsdown compiles a src block's scss `@use` from the src file's directory", (t) => {
-  const tsdown = createRequire(path.join(workspaceRoot, "package.json")).resolve("tsdown");
-  const cli = createRequire(path.join(workspaceRoot, "package.json")).resolve("tsdown/run");
+  const requireFromUnplugin = createRequire(
+    path.join(workspaceRoot, "npm/builder/unplugin/package.json"),
+  );
+  const tsdown = requireFromUnplugin.resolve("tsdown");
+  const cli = requireFromUnplugin.resolve("tsdown/run");
   const config = (entry: string, plugins: string) =>
     `import Vize from ${JSON.stringify(pathToFileURL(path.join(import.meta.dirname, "rolldown.ts")).href)};
 import { defineConfig } from ${JSON.stringify(pathToFileURL(tsdown).href)};

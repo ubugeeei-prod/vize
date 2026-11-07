@@ -21,7 +21,6 @@ const cases = JSON.parse(input).cases as Array<{
   fileIncomplete?: boolean;
   refusal?: { kind: string; type: string; name: string | null };
 }>;
-const rootRequire = createRequire(new URL("../../package.json", import.meta.url));
 const testsRequire = createRequire(import.meta.url);
 const domVersion = JSON.parse(
   readFileSync(new URL("../package.json", import.meta.resolve("happy-dom")), "utf8"),
@@ -261,8 +260,8 @@ const actual = {
   schemaVersion: 1,
   inputSha256: createHash("sha256").update(input).digest("hex"),
   versions: {
-    jsx: rootRequire("@vue/babel-plugin-jsx/package.json").version,
-    babel: rootRequire("@babel/core/package.json").version,
+    jsx: testsRequire("@vue/babel-plugin-jsx/package.json").version,
+    babel: testsRequire("@babel/core/package.json").version,
     runtimeDom: runtimeDomVersion,
     dom: domVersion,
   },

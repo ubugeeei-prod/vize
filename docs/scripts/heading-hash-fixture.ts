@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -8,10 +7,6 @@ import { pathToFileURL } from "node:url";
 import vm from "node:vm";
 
 const require = createRequire(new URL("../package.json", import.meta.url));
-const patchFile = path.resolve(
-  import.meta.dirname,
-  "../../patches/@ox-content__vite-plugin@2.88.0.patch",
-);
 export const headingCases = [
   ["ordinary", "#ordinary"],
   ["推奨される開始点", "#%E6%8E%A8%E5%A5%A8%E3%81%95%E3%82%8C%E3%82%8B%E9%96%8B%E5%A7%8B%E7%82%B9"],
@@ -25,13 +20,35 @@ export const headingCases = [
 ] as const;
 export const missingHashes = ["#not-found", "#missing%ZZ", "#%E0%A4%A", "#"];
 
-function applyPatch(directory: string, reverse = false) {
-  const result = spawnSync(
-    "patch",
-    ["--batch", "--fuzz=0", "-p1", ...(reverse ? ["-R"] : []), "-i", patchFile],
-    { cwd: directory, encoding: "utf8" },
-  );
-  assert.equal(result.status, 0, result.stdout + result.stderr);
+function removeHeadingHashRepair(directory: string) {
+  for (const name of ["index.mjs", "index.cjs"]) {
+    const entry = path.join(directory, "dist", name);
+    let source = fs.readFileSync(entry, "utf8");
+    const repairStart = source.indexOf(
+      "// Vize docs integration: repair the native core before native asset hashing.",
+    );
+    const repairEnd = source.indexOf("async function externalizeSharedPageAssets(", repairStart);
+    assert.ok(repairStart >= 0 && repairEnd > repairStart, `${name}: heading repair function`);
+    source = source.slice(0, repairStart) + source.slice(repairEnd);
+    source = replaceExactly(
+      source,
+      "\tconst preparedPages = context.ssgOptions.bare ? generatedPages : generatedPages.map((page) => ({ ...page, html: vizeRepairSsgHashTargets(page.html) }));\n\tconst optimizedOutput = await externalizeSharedPageAssets(preparedPages, context.outDir, context.base);",
+      "\tconst optimizedOutput = await externalizeSharedPageAssets(generatedPages, context.outDir, context.base);",
+      `${name}: heading repair call`,
+    );
+    source = replaceExactly(
+      source,
+      '\t\t\t\tif (err instanceof Error && err.message.startsWith("Vize docs:")) throw err;\n',
+      "",
+      `${name}: heading repair failure propagation`,
+    );
+    fs.writeFileSync(entry, source);
+  }
+}
+
+function replaceExactly(source: string, from: string, to: string, label: string): string {
+  assert.equal(source.split(from).length, 2, label);
+  return source.replace(from, to);
 }
 
 export function verifyCoreAsset(directory: string, repaired: boolean) {
@@ -65,17 +82,16 @@ export async function buildHeadingHashFixture(output: string) {
     "2.88.0",
   );
   const installed = fs.readFileSync(path.join(originalRoot, "dist/index.mjs"), "utf8");
-  if (process.env.GITHUB_ACTIONS === "true")
-    assert(
-      installed.includes("function vizeRepairSsgHashTargets"),
-      "Actions must install the authenticated pnpm patch",
-    );
+  assert(
+    installed.includes("function vizeRepairSsgHashTargets"),
+    "the authenticated dependency patch must be installed",
+  );
   const provider = path.join(output, "provider");
   fs.mkdirSync(provider, { recursive: true });
   fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), { recursive: true });
   fs.copyFileSync(path.join(originalRoot, "package.json"), path.join(provider, "package.json"));
   fs.symlinkSync(path.resolve(originalRoot, "../.."), path.join(provider, "node_modules"), "dir");
-  if (installed.includes("function vizeRepairSsgHashTargets")) applyPatch(provider, true);
+  removeHeadingHashRepair(provider);
   const root = path.join(output, "fixture");
   fs.mkdirSync(path.join(root, "content"), { recursive: true });
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><title>SSG input</title>");
@@ -118,7 +134,10 @@ export async function buildHeadingHashFixture(output: string) {
   }
   const before = await compile("before");
   const originalCore = verifyCoreAsset(before, false);
-  applyPatch(provider);
+  fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), {
+    force: true,
+    recursive: true,
+  });
   const esm = fs.readFileSync(path.join(provider, "dist/index.mjs"), "utf8");
   const cjs = fs.readFileSync(path.join(provider, "dist/index.cjs"), "utf8");
   const extract = (source: string) =>

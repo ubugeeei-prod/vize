@@ -75,11 +75,11 @@ export const fixtureUrl = new URL(
   "../../../../davinci/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json",
   import.meta.url,
 );
-const fromRoot = createRequire(new URL("../../../../package.json", import.meta.url));
+const fromTests = createRequire(new URL("../../../../tests/package.json", import.meta.url));
 const fromUi = createRequire(new URL("../../../../npm/ui/package.json", import.meta.url));
 const fromVue = createRequire(fromUi.resolve("vue/package.json"));
-const babel = fromRoot("@babel/core") as BabelCore;
-const loadedPlugin: unknown = fromRoot("@vue/babel-plugin-jsx");
+const babel = fromTests("@babel/core") as BabelCore;
+const loadedPlugin: unknown = fromTests("@vue/babel-plugin-jsx");
 const plugin =
   typeof loadedPlugin === "object" && loadedPlugin !== null && "default" in loadedPlugin
     ? loadedPlugin.default
@@ -103,8 +103,8 @@ export function readPack(url: URL = fixtureUrl): Pack {
 }
 
 export function checkVersions(pack: Pack): void {
-  assert.equal(version(fromRoot, "@babel/core"), pack.babelVersion);
-  assert.equal(version(fromRoot, "@vue/babel-plugin-jsx"), pack.pluginVersion);
+  assert.equal(version(fromTests, "@babel/core"), pack.babelVersion);
+  assert.equal(version(fromTests, "@vue/babel-plugin-jsx"), pack.pluginVersion);
   assert.equal(version(fromVue, "vue"), pack.vueVersion);
 }
 

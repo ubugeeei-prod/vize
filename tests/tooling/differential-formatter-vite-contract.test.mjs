@@ -25,7 +25,7 @@ import {
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 void test("actual multi-document lock keeps one workspace owner and refuses duplicate or malformed documents", () => {
-  const require = createRequire(path.join(root, "package.json"));
+  const require = createRequire(path.join(root, "tests/package.json"));
   const version = require("oxfmt/package.json").version;
   const lock = qualifyReference(root, require, version);
   assert.equal(
