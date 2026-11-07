@@ -20,7 +20,7 @@ mod registered;
 mod result;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
-use paths::{IncrementalPaths, collect_project_paths};
+use paths::{IncrementalPaths, collect_project_path_snapshot};
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -221,10 +221,13 @@ impl BatchTypeChecker {
 
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
-        let paths = collect_project_paths(&self.project, self.project.source_file_policy())?;
+        let (paths, canonical_paths) =
+            collect_project_path_snapshot(&self.project, self.project.source_file_policy())?
+                .into_parts();
         self.scope_initial_installed_sources(&paths)?;
-        self.project.set_declaration_roots(&paths);
-        self.project.register_paths(&paths)?;
+        self.project.set_scanned_declaration_roots(&canonical_paths);
+        self.project
+            .register_scanned_paths(&paths, &canonical_paths)?;
         self.project.register_package_route_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
@@ -233,7 +236,7 @@ impl BatchTypeChecker {
         self.project.finalize_package_routes()?;
         self.scanned = true;
         self.incremental_paths
-            .after_project_scan(&self.project, &paths);
+            .after_project_scan(&self.project, canonical_paths);
         Ok(())
     }
 
