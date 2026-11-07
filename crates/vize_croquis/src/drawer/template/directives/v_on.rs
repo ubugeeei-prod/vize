@@ -347,9 +347,10 @@ mod tests {
                 .unwrap();
             assert_eq!(expression.vif_guard.is_some(), expected, "{template}");
             if template.contains("handler !== null") {
-                let guard = expression.vif_guard.as_deref().unwrap();
-                assert!(!guard.contains("handler !== null"), "{guard}");
-                assert!(guard.contains("typeof handler === 'function'"), "{guard}");
+                assert_eq!(
+                    expression.vif_guard.as_deref(),
+                    Some("typeof handler === 'function'")
+                );
             }
         }
     }
