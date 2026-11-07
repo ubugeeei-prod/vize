@@ -84,6 +84,7 @@ pub use jsx_codegen::{
     GeneratedJsxFile as JsxDocumentVirtualTs,
     generate_jsx_virtual_ts as generate_jsx_document_virtual_ts,
 };
+mod foreign_declarations;
 mod mapping;
 pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 mod materialize;
@@ -252,6 +253,13 @@ pub struct VirtualProject {
 
     /// Authored program files diagnosed in place instead of materialized.
     diagnostic_paths: FxHashSet<PathBuf>,
+
+    /// Canonical sources another program of the same check owns. They enter
+    /// this mirror as that program's emitted declarations, never as
+    /// projections, so nothing is checked twice.
+    foreign_sources: FxHashSet<PathBuf>,
+    /// Mirror paths of those declarations; program members like any input.
+    foreign_declaration_files: FxHashSet<PathBuf>,
 
     /// Caller-selected source roots eligible for declaration output. Inferred
     /// package dependencies participate in checking but must not be published

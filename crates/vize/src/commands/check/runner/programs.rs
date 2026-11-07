@@ -11,7 +11,10 @@ use super::default_imports::canonical_file_set;
 use super::resolve::{find_nearest_tsconfig_path, find_nearest_tsconfig_path_within};
 use crate::commands::check::{
     path_cache::CanonicalPathCache,
-    tsconfig_inputs::{TsconfigInputCache, TsconfigProgramInputs, resolve_tsconfig_program_inputs},
+    tsconfig_inputs::{
+        TsconfigInputCache, TsconfigProgramInputs, referenced_projects,
+        resolve_tsconfig_program_inputs,
+    },
 };
 
 pub(super) struct ProgramCandidate {
@@ -122,6 +125,66 @@ pub(super) fn split_program_candidates(
         .collect()
 }
 
+/// Order programs so every referenced project comes before its importers,
+/// keeping the collection order among independent programs, and return the
+/// configs other programs reference. A reference cycle keeps its collection
+/// order; its members share nothing with each other.
+pub(super) fn order_by_references(
+    candidates: Vec<ProgramCandidate>,
+    cache: &mut TsconfigInputCache,
+) -> (Vec<ProgramCandidate>, FxHashSet<PathBuf>) {
+    if candidates.len() < 2 {
+        return (candidates, FxHashSet::default());
+    }
+    let configs: Vec<Option<PathBuf>> = candidates
+        .iter()
+        .map(|candidate| candidate.tsconfig_path.clone())
+        .collect();
+    let known: FxHashSet<&Path> = configs.iter().flatten().map(PathBuf::as_path).collect();
+    let dependencies: Vec<Vec<PathBuf>> = configs
+        .iter()
+        .map(|config| {
+            config.as_deref().map_or_else(Vec::new, |config| {
+                referenced_projects(config, cache)
+                    .into_iter()
+                    .filter(|referenced| known.contains(referenced.as_path()))
+                    .collect()
+            })
+        })
+        .collect();
+    let referenced: FxHashSet<PathBuf> = dependencies.iter().flatten().cloned().collect();
+    let mut placed = Vec::with_capacity(candidates.len());
+    let mut done: FxHashSet<PathBuf> = FxHashSet::default();
+    let mut remaining: Vec<usize> = (0..candidates.len()).collect();
+    loop {
+        let before = placed.len();
+        remaining.retain(|&index| {
+            let ready = dependencies.get(index).is_some_and(|dependencies| {
+                dependencies
+                    .iter()
+                    .all(|dependency| done.contains(dependency))
+            });
+            if ready {
+                placed.push(index);
+                if let Some(config) = configs.get(index).and_then(Option::as_ref) {
+                    done.insert(config.clone());
+                }
+            }
+            !ready
+        });
+        if placed.len() == before {
+            break;
+        }
+    }
+    placed.extend(remaining);
+    let mut slots: Vec<Option<ProgramCandidate>> = candidates.into_iter().map(Some).collect();
+    let ordered = placed
+        .into_iter()
+        .filter_map(|index| slots.get_mut(index).and_then(Option::take))
+        .collect();
+    (ordered, referenced)
+}
+
 /// Whether the invocation config stays the only program. Otherwise each
 /// referenced program rebuilds its own closure from its inputs.
 pub(super) fn keeps_invocation_program(
@@ -187,5 +250,104 @@ mod tests {
                     .map(|dir| dir.join("tsconfig.json"))
             );
         }
+    }
+
+    fn candidate(tsconfig_path: Option<PathBuf>) -> ProgramCandidate {
+        ProgramCandidate {
+            files: Vec::new(),
+            inputs: Vec::new(),
+            reported: FxHashSet::default(),
+            package_routes: Vec::new(),
+            tsconfig_path,
+            rebuild_supporting_files: true,
+        }
+    }
+
+    /// `app` and `feat` import `kit`; `feat` also imports `app`. Whatever the
+    /// collection order, each referenced project precedes its importers, and
+    /// only the referenced ones emit declarations.
+    #[test]
+    fn referenced_programs_precede_their_importers() {
+        let root = tempfile::tempdir().unwrap();
+        let write = |relative: &str, content: &str| {
+            let path = root.path().join(relative);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        };
+        write("kit/tsconfig.json", r#"{"include":["src"]}"#);
+        write(
+            "app/tsconfig.json",
+            r#"{"include":["src"],"references":[{"path":"../kit"}]}"#,
+        );
+        write(
+            "feat/tsconfig.json",
+            r#"{"include":["src"],"references":[{"path":"../kit"},{"path":"../app"}]}"#,
+        );
+        write("lone/tsconfig.json", r#"{"include":["src"]}"#);
+        let config = |name: &str| {
+            crate::commands::check::tsconfig_inputs::normalize_input_path(
+                &root.path().join(name).join("tsconfig.json"),
+            )
+        };
+        let mut cache = TsconfigInputCache::default();
+        let (ordered, referenced) = order_by_references(
+            vec![
+                candidate(Some(config("feat"))),
+                candidate(Some(config("lone"))),
+                candidate(Some(config("app"))),
+                candidate(None),
+                candidate(Some(config("kit"))),
+            ],
+            &mut cache,
+        );
+        let order: Vec<_> = ordered
+            .iter()
+            .map(|candidate| {
+                candidate
+                    .tsconfig_path
+                    .as_deref()
+                    .and_then(|path| path.parent())
+                    .and_then(|dir| dir.file_name())
+                    .map(|name| name.to_string_lossy().into_owned())
+                    .unwrap_or_default()
+            })
+            .collect();
+        assert_eq!(order, ["lone", "", "kit", "app", "feat"]);
+        assert_eq!(
+            referenced,
+            FxHashSet::from_iter([config("kit"), config("app")])
+        );
+        let _ = root.close();
+    }
+
+    /// A reference cycle keeps its collection order instead of hanging.
+    #[test]
+    fn reference_cycles_keep_collection_order() {
+        let root = tempfile::tempdir().unwrap();
+        for (name, other) in [("a", "b"), ("b", "a")] {
+            let dir = root.path().join(name);
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(
+                dir.join("tsconfig.json"),
+                format!(r#"{{"include":["src"],"references":[{{"path":"../{other}"}}]}}"#),
+            )
+            .unwrap();
+        }
+        let config = |name: &str| {
+            crate::commands::check::tsconfig_inputs::normalize_input_path(
+                &root.path().join(name).join("tsconfig.json"),
+            )
+        };
+        let mut cache = TsconfigInputCache::default();
+        let (ordered, referenced) = order_by_references(
+            vec![candidate(Some(config("b"))), candidate(Some(config("a")))],
+            &mut cache,
+        );
+        let order: Vec<_> = ordered
+            .iter()
+            .map(|candidate| candidate.tsconfig_path.clone().unwrap())
+            .collect();
+        assert_eq!(order, [config("b"), config("a")]);
+        assert_eq!(referenced.len(), 2);
     }
 }

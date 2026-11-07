@@ -367,6 +367,11 @@ impl VirtualProject {
                 if !visited.insert(key.clone()) {
                     continue;
                 }
+                // Another program of this check owns the source and mirrors
+                // its declaration here; it is never projected again.
+                if self.is_foreign_source(&key) {
+                    continue;
+                }
                 // Register the canonical path: a workspace symlink is
                 // first-party where it actually lives, so it must not enter the
                 // virtual tree under `node_modules`.

@@ -164,7 +164,7 @@ fn materialized_tsconfig_preserves_ts_extension_import_policy() {
         );
 
         let declaration_config = project
-            .write_declaration_tsconfig(&case_dir.join("dist"), false)
+            .write_declaration_tsconfig(&case_dir.join("dist"), false, false)
             .unwrap();
         let value: serde_json::Value =
             serde_json::from_str(&fs::read_to_string(declaration_config).unwrap()).unwrap();

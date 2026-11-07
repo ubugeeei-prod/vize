@@ -51,6 +51,8 @@ impl VirtualProject {
             alias_rewrite_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),
             diagnostic_paths: FxHashSet::default(),
+            foreign_sources: FxHashSet::default(),
+            foreign_declaration_files: FxHashSet::default(),
             declaration_roots: None,
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             typed_router: Default::default(),
@@ -337,6 +339,9 @@ impl VirtualProject {
         let mut mirrorable_project_files: FxHashSet<PathBuf> =
             canonical_paths.iter().cloned().collect();
         mirrorable_project_files.extend(self.original_index.keys().cloned());
+        // Imports of another program's sources resolve to their mirrored
+        // declarations, so they rewrite into the mirror like any source.
+        mirrorable_project_files.extend(self.foreign_sources.iter().cloned());
         let build_context = VirtualBuildContext {
             project_root: self.project_root.as_path(),
             virtual_root: self.virtual_root.as_path(),

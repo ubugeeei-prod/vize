@@ -11,6 +11,11 @@ pub struct DeclarationEmitOptions {
     pub out_dir: PathBuf,
     /// Whether declaration maps should be emitted as well.
     pub declaration_map: bool,
+    /// Emit for another program of the same check rather than for a
+    /// consumer: `noCheck`, every program file, the mirror's own layout under
+    /// `out_dir`, and no output rewriting, so an importing program can mirror
+    /// these declarations in place of the sources they describe.
+    pub mirror_layout: bool,
 }
 
 impl DeclarationEmitOptions {
@@ -19,6 +24,17 @@ impl DeclarationEmitOptions {
         Self {
             out_dir,
             declaration_map: false,
+            mirror_layout: false,
+        }
+    }
+
+    /// Declarations another program of the same check mirrors instead of
+    /// this program's sources.
+    pub fn for_mirror(out_dir: PathBuf) -> Self {
+        Self {
+            out_dir,
+            declaration_map: false,
+            mirror_layout: true,
         }
     }
 
