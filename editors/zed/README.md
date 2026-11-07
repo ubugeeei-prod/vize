@@ -4,8 +4,9 @@ Vue diagnostics and language support powered by Vize.
 
 This extension expects the `vize` CLI to be available on `PATH`, or configured through Zed settings.
 
-The extension also registers an `Art Vue` language for `*.art.vue`, so Vize can power hover,
-completion, go-to-definition, and references there without relying on a separate Zed extension.
+The extension registers `Vue.js` for `*.vue` and `Art Vue` for `*.art.vue`, so Vize can power
+hover, completion, go-to-definition, and references in a fresh Zed profile without relying on a
+separate Vue extension.
 
 The extension lets the server discover `vue` settings in `vite.config.*` and
 `vueCompilerOptions` in `tsconfig.json`, including projects nested in a monorepo.
