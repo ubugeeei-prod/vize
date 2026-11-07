@@ -14,8 +14,14 @@ fn options() -> DescriptorOptions {
 
 #[test]
 fn descriptor_options_keep_the_established_debug_surface() {
+    let mut nonstandard = options();
+    nonstandard.template.syntax = TemplateSyntaxMode::Quirks;
     assert_eq!(
         format!("{:?}", options()),
+        "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
+    );
+    assert_eq!(
+        format!("{nonstandard:?}"),
         "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
     );
 }

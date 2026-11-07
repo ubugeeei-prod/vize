@@ -24,8 +24,10 @@ pub use crate::dialect::vue3::surface::{
 pub struct SurfaceParseOptions {
     /// Accept Vue's experimental `//` comments inside opening tag attrs.
     pub experimental_in_tag_comments: bool,
-    /// File-wide recovery policy. Native nonstandard admission remains typed;
-    /// carrying the selection here prevents a second parser-only axis.
+    /// File-wide recovery policy carried into the canonical file descriptor.
+    /// [`parse_with_options`] does not read this field: surface parsing applies
+    /// only [`Self::experimental_in_tag_comments`], while native nonstandard
+    /// admission remains typed at the descriptor boundary.
     pub syntax: TemplateSyntaxMode,
 }
 

@@ -146,6 +146,6 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
     path.join(repoRoot, "davinci/vize_l4/src/targets/ts/vue.rs"),
     "utf8",
   );
-  assert.match(target, /\.dialect\(\)[\s\S]*\.is_standard_vue_component/u);
+  assert.match(target, /\.dialect\(\)\s*\.is_standard_vue_component/u);
   assert.doesNotMatch(target, /options\.(?:version|dialect)/u);
 });
