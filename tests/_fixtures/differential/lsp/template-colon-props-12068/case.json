@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/template-colon-props-12068",
+  "provenance": {
+    "fixCommit": "41e6bc28fc17273d943f6cc4bbe27c13a3a4b363",
+    "witnessPath": "crates/vize_maestro/src/server/handlers/tests/requests/responses.rs",
+    "witnessTest": "component_prop_colon_completion_does_not_wait_for_a_type_project",
+    "inputOrigin": "reported multiline closing tag followed by AfsTextField colon completion",
+    "contractOrigin": "complete ordered resident component prop completion response"
+  },
+  "files": [
+    {
+      "runtimePath": "Parent.vue",
+      "source": "Parent.vue.txt",
+      "sha256": "2fcadf4354ed858a8c94162ab6f408d781f1d461a515b16b30061ac1b3876b69"
+    },
+    {
+      "runtimePath": "AfsTextField.vue",
+      "source": "AfsTextField.vue.txt",
+      "sha256": "fab12adfd2dc863bd9a65432f1e106272f774d4a8b9018397d1f936d33fa914f"
+    }
+  ],
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "crossFile": true,
+    "completion": true,
+    "ecosystem": false
+  },
+  "entry": "Parent.vue",
+  "documentVersion": 1,
+  "method": "textDocument/completion",
+  "request": {
+    "params": {
+      "position": {
+        "line": 7,
+        "character": 5
+      },
+      "context": {
+        "triggerKind": 2,
+        "triggerCharacter": ":"
+      }
+    }
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "db443a5ab09e64822d865c9fa59655659b28f688a54e5792f6aeedc73952262e"
+  },
+  "scope": "reported colon-trigger completion with complete resident prop items; native parity remains separate"
+}

@@ -203,6 +203,10 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
         assert(Array.isArray(request.result), "complete authored reference locations required");
         return request;
       });
+    } else if (data.method === "textDocument/completion") {
+      assert(data.request, "complete authored completion parameters required");
+      assert(Array.isArray(expected) && expected.length > 0, "whole completion list required");
+      requests = [{ ...data.request, result: expected }];
     } else if (data.method === "textDocument/hover") {
       assert(
         Array.isArray(expected) && expected.length === 2,

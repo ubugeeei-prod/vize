@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import AfsTextField from "./AfsTextField.vue";
+</script>
+<template>
+  <label>Password <span>*</span></label
+  >
+  <AfsTextField
+    : />
+</template>
