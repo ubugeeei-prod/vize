@@ -29,6 +29,7 @@ button/
 ├── styles.css              # optional native-CSS visual layer
 ├── metadata.ts             # catalogue and build metadata
 ├── button.behavior.md      # normative behavior table
+├── button.guide.md         # authored guidance in generated reference docs
 ├── examples/
 │   └── basic.vue
 ├── stories/
@@ -41,6 +42,11 @@ button/
 The names describe responsibility rather than build tooling. A reader can find
 the public SFC, its types, its visual layer, and its evidence without searching
 the rest of the repository.
+
+The guide is not a detached copy. Its path is catalogued beside the entry file,
+embedded in the generated reference page, and checked as part of the component
+unit. Examples in that page continue to come from the executable SFC under
+`examples/`.
 
 ## Styling boundary
 

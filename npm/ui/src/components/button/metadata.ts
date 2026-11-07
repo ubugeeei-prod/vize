@@ -20,6 +20,7 @@ export const buttonFamilyCatalogEntry = {
     `${root}types.ts`,
   ],
   behaviorContract: `${root}button.behavior.md`,
+  documentation: `${root}button.guide.md`,
   tests: [`${root}tests/behavior.test.ts`],
   typeTests: [`${root}tests/button.types.test-d.ts`],
   rendererFixture: "components/button/button.vue",

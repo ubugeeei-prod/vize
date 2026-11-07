@@ -10,7 +10,11 @@ import {
   renderReferenceDocs,
 } from "../../npm/ui/scripts/generate-reference-docs.ts";
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
-import { featuredExamples, publicExample } from "../../npm/ui/scripts/reference-docs/examples.ts";
+import {
+  featuredExamples,
+  publicExample,
+  publicExampleFile,
+} from "../../npm/ui/scripts/reference-docs/examples.ts";
 import {
   composableExamples,
   japaneseComposableGoals,
@@ -101,6 +105,19 @@ void test("component pages document the SFC contract extracted from source", () 
   assert.match(composable, /\| `useToggle` \| state \|/);
 });
 
+void test("component-owned guides stay attached to generated reference pages", () => {
+  const button = uiFamilyCatalog.find((entry) => entry.canonicalName === "button");
+  assert.equal(button?.documentation, "src/components/button/button.guide.md");
+
+  const page = rendered.get("guide/ui/button.md") ?? "";
+  assert.match(page, /## Design the action before the surface/);
+  assert.match(page, /## Accessibility is policy, not a preset/);
+  assert.match(page, /\| Quality gates \| behavior contract, mounted dom, type inference/);
+  assert.match(page, /\| Bundle budget \| 1,000 B JS gzip \/ 0 B CSS gzip \|/);
+  assert.match(page, /\[Nuxt\]\(\.\.\/\.\.\/integrations\/nuxt\.md\)/);
+  assert.match(page, /\[Void\]\(\.\.\/\.\.\/integrations\/void\.md\)/);
+});
+
 void test("type-only composable pages show usable imports and type contracts", () => {
   const scheduler = rendered.get("guide/composables/timeout-scheduler.md") ?? "";
   assert.match(scheduler, /import type \{ TimeoutScheduler \} from/);
@@ -121,15 +138,7 @@ void test("all maintained basic examples preserve their template and use publish
     const source = publicExample(uiRoot, entry);
     if (source == null) continue;
     examples += 1;
-    const original = readFileSync(
-      path.join(
-        uiRoot,
-        path.dirname(entry.entryFile),
-        "examples",
-        `${entry.canonicalName}-basic.vue`,
-      ),
-      "utf8",
-    );
+    const original = readFileSync(publicExampleFile(uiRoot, entry), "utf8");
     assert.equal(
       source.slice(source.indexOf("<template>")),
       original.slice(original.indexOf("<template>")),
@@ -161,8 +170,14 @@ void test("component hub guides tasks in English and Japanese and links real cap
   const ja = rendered.get("ja/guide/ui/index.md") ?? "";
   assert.match(en, /Collect user input/);
   assert.match(en, /Ask for confirmation or add context/);
+  assert.match(en, /Start with the ownership boundary/);
+  assert.match(en, /Use behavior only/);
+  assert.match(en, /Add a visual system/);
   assert.match(ja, /入力を受け取る/);
   assert.match(ja, /確認・補足を表示する/);
+  assert.match(ja, /まず、所有範囲を選ぶ/);
+  assert.match(ja, /振る舞いだけ使う/);
+  assert.match(ja, /href="\.\.\/\.\.\/\.\.\/guide\/ui\/button\.md"/);
   assert.match(en, /vp install @vizejs\/ui/);
   for (const family of featuredExamples) {
     for (const hub of [en, ja]) assert.ok(hub.includes(previewImageUrl(`${family}.png`)), family);
@@ -170,6 +185,33 @@ void test("component hub guides tasks in English and Japanese and links real cap
       (rendered.get(`guide/ui/${family}.md`) ?? "").includes(previewImageUrl(`${family}.png`)),
       family,
     );
+  }
+});
+
+void test("style guides document every visual voice and the native CSS boundary", () => {
+  const english = readFileSync(path.join(repoRoot, "docs/content/guide/ui-styles.md"), "utf8");
+  const japanese = readFileSync(path.join(repoRoot, "docs/content/ja/guide/ui-styles.md"), "utf8");
+
+  for (const guide of [english, japanese]) {
+    for (const preset of [
+      "atelier",
+      "paper",
+      "signal",
+      "midnight",
+      "play",
+      "high-contrast",
+      "headless",
+    ]) {
+      assert.ok(guide.includes(`\`${preset}\``), preset);
+    }
+    assert.match(guide, /@vizejs\/ui\/base\.css/);
+    assert.match(guide, /@vizejs\/ui\/component-button\.css/);
+    assert.match(guide, /--vize-ui-button-radius/);
+    assert.match(guide, /data-vize-ui="button"/);
+    assert.match(guide, /Lightning CSS/);
+    assert.match(guide, /Tailwind/);
+    assert.match(guide, /integrations\/nuxt\.md/);
+    assert.match(guide, /integrations\/void\.md/);
   }
 });
 

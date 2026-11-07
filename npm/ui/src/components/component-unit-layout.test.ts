@@ -31,10 +31,12 @@ function assertComponentUnit(componentName: string): void {
 
   assert.ok(catalogEntry, `${componentName} must have colocated catalogue metadata`);
   assert.equal(catalogEntry.entryFile, `${relativeRoot}/index.ts`);
+  assert.equal(catalogEntry.documentation, `${relativeRoot}/${componentName}.guide.md`);
 
   for (const filename of [
     `${componentName}.vue`,
     `${componentName}.behavior.md`,
+    `${componentName}.guide.md`,
     "index.ts",
     "metadata.ts",
     "types.ts",
@@ -58,6 +60,7 @@ function assertComponentUnit(componentName: string): void {
   const ownedPaths = [
     catalogEntry.entryFile,
     catalogEntry.behaviorContract,
+    ...(catalogEntry.documentation == null ? [] : [catalogEntry.documentation]),
     ...catalogEntry.sourceFiles,
     ...catalogEntry.tests,
     ...(catalogEntry.typeTests ?? []),

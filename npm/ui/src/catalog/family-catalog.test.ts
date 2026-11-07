@@ -150,7 +150,13 @@ test("public subpaths compile from source-owned component units", () => {
 
 test("stable catalog entries have every required artifact", async () => {
   for (const entry of stableEntries) {
-    const files = [entry.entryFile, entry.behaviorContract, ...entry.sourceFiles, ...entry.tests];
+    const files = [
+      entry.entryFile,
+      entry.behaviorContract,
+      ...(entry.documentation == null ? [] : [entry.documentation]),
+      ...entry.sourceFiles,
+      ...entry.tests,
+    ];
     for (const file of entry.typeTests ?? []) files.push(file);
 
     await Promise.all(files.map((file) => stat(path.resolve(file))));
@@ -192,6 +198,12 @@ test("source units keep implementation, contracts, and tests together", () => {
 
     assertFamilyPaths(entry.canonicalName, unitRoot, "entry", [entry.entryFile]);
     assertFamilyPaths(entry.canonicalName, unitRoot, "behavior contract", [entry.behaviorContract]);
+    assertFamilyPaths(
+      entry.canonicalName,
+      unitRoot,
+      "documentation",
+      entry.documentation == null ? [] : [entry.documentation],
+    );
     assertFamilyPaths(entry.canonicalName, unitRoot, "source files", entry.sourceFiles);
     assertFamilyPaths(entry.canonicalName, unitRoot, "tests", entry.tests);
     assertFamilyPaths(entry.canonicalName, unitRoot, "type tests", entry.typeTests ?? []);
