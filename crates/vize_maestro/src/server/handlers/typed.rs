@@ -231,8 +231,18 @@ impl MaestroServer {
 
         #[cfg(feature = "native")]
         {
+            let stamp = self.state.corsa_request_stamp();
+            if let Some(response) = self
+                .state
+                .cached_native_prepare_rename(uri, position, stamp)
+            {
+                return Ok(response);
+            }
             let corsa_bridge = self.state.get_corsa_bridge().await;
-            Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await)
+            let response = RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await;
+            self.state
+                .cache_native_prepare_rename(uri, position, stamp, response.clone());
+            Ok(response)
         }
 
         #[cfg(not(feature = "native"))]
@@ -271,8 +281,23 @@ impl MaestroServer {
 
         #[cfg(feature = "native")]
         {
+            let stamp = self.state.corsa_request_stamp();
+            if let Some(response) = self
+                .state
+                .cached_native_rename(uri, position, new_name, stamp)
+            {
+                return Ok(response);
+            }
             let corsa_bridge = self.state.get_corsa_bridge().await;
-            Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await)
+            let response = RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await;
+            self.state.cache_native_rename(
+                uri,
+                position,
+                new_name.clone(),
+                stamp,
+                response.clone(),
+            );
+            Ok(response)
         }
 
         #[cfg(not(feature = "native"))]

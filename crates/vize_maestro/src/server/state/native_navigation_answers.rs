@@ -2,7 +2,9 @@
 
 use parking_lot::RwLock;
 use std::sync::atomic::Ordering;
-use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Url};
+use tower_lsp::lsp_types::{
+    GotoDefinitionResponse, Location, Position, PrepareRenameResponse, Url, WorkspaceEdit,
+};
 
 use super::{CorsaRequestStamp, ServerState};
 
@@ -26,19 +28,22 @@ impl<Q, R> Default for ExactAnswer<Q, R> {
     }
 }
 
-impl<Q: PartialEq, R: Clone> ExactAnswer<Q, R> {
-    fn get(
+impl<Q, R: Clone> ExactAnswer<Q, R> {
+    fn get<T: ?Sized>(
         &self,
         uri: &Url,
         position: Position,
-        qualifier: &Q,
+        qualifier: &T,
         stamp: CorsaRequestStamp,
-    ) -> Option<Option<R>> {
+    ) -> Option<Option<R>>
+    where
+        Q: PartialEq<T>,
+    {
         let entry = self.entry.read();
         let entry = entry.as_ref()?;
         (entry.uri == *uri
             && entry.position == position
-            && entry.qualifier == *qualifier
+            && entry.qualifier.eq(qualifier)
             && entry.stamp == stamp)
             .then(|| entry.response.clone())
     }
@@ -74,12 +79,16 @@ impl<Q: PartialEq, R: Clone> ExactAnswer<Q, R> {
 pub(super) struct NativeNavigationAnswers {
     definition: ExactAnswer<(), GotoDefinitionResponse>,
     references: ExactAnswer<bool, Vec<Location>>,
+    prepare_rename: ExactAnswer<(), PrepareRenameResponse>,
+    rename: ExactAnswer<String, WorkspaceEdit>,
 }
 
 impl NativeNavigationAnswers {
     pub(super) fn remove(&self, uri: &Url) {
         self.definition.remove(uri);
         self.references.remove(uri);
+        self.prepare_rename.remove(uri);
+        self.rename.remove(uri);
     }
 }
 
@@ -154,6 +163,70 @@ impl ServerState {
             );
         }
     }
+
+    pub(crate) fn cached_native_prepare_rename(
+        &self,
+        uri: &Url,
+        position: Position,
+        stamp: CorsaRequestStamp,
+    ) -> Option<Option<PrepareRenameResponse>> {
+        self.can_reuse_native_answer(stamp)
+            .then(|| {
+                self.native_navigation_answers
+                    .prepare_rename
+                    .get(uri, position, &(), stamp)
+            })
+            .flatten()
+    }
+
+    pub(crate) fn cache_native_prepare_rename(
+        &self,
+        uri: &Url,
+        position: Position,
+        stamp: CorsaRequestStamp,
+        response: Option<PrepareRenameResponse>,
+    ) {
+        if self.can_reuse_native_answer(stamp) {
+            self.native_navigation_answers.prepare_rename.insert(
+                uri,
+                position,
+                (),
+                stamp,
+                response,
+            );
+        }
+    }
+
+    pub(crate) fn cached_native_rename(
+        &self,
+        uri: &Url,
+        position: Position,
+        new_name: &str,
+        stamp: CorsaRequestStamp,
+    ) -> Option<Option<WorkspaceEdit>> {
+        self.can_reuse_native_answer(stamp)
+            .then(|| {
+                self.native_navigation_answers
+                    .rename
+                    .get(uri, position, new_name, stamp)
+            })
+            .flatten()
+    }
+
+    pub(crate) fn cache_native_rename(
+        &self,
+        uri: &Url,
+        position: Position,
+        new_name: String,
+        stamp: CorsaRequestStamp,
+        response: Option<WorkspaceEdit>,
+    ) {
+        if self.can_reuse_native_answer(stamp) {
+            self.native_navigation_answers
+                .rename
+                .insert(uri, position, new_name, stamp, response);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -194,5 +267,13 @@ mod tests {
         cache.insert(&other, position, false, stamp, None);
         assert_eq!(cache.get(&other, position, &false, stamp), Some(None));
         assert_eq!(cache.get(&uri, position, &true, stamp), None);
+
+        let rename_cache = ExactAnswer::<String, Vec<Location>>::default();
+        rename_cache.insert(&uri, position, "first".to_string(), stamp, Some(Vec::new()));
+        assert_eq!(
+            rename_cache.get(&uri, position, "first", stamp),
+            Some(Some(Vec::new()))
+        );
+        assert_eq!(rename_cache.get(&uri, position, "second", stamp), None);
     }
 }

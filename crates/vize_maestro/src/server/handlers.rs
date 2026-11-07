@@ -331,6 +331,18 @@ impl LanguageServer for MaestroServer {
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
         let server = self.for_document(&params.text_document.uri).await;
+        #[cfg(feature = "native")]
+        if server.state.lsp_features().rename {
+            let uri = &params.text_document.uri;
+            let position = params.position;
+            let stamp = server.state.corsa_request_stamp();
+            if let Some(response) = server
+                .state
+                .cached_native_prepare_rename(uri, position, stamp)
+            {
+                return server.authored_response(Ok(response));
+            }
+        }
         server
             .native_request(server.prepare_rename_request(params))
             .await
@@ -338,6 +350,20 @@ impl LanguageServer for MaestroServer {
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
         let server = self.for_pos(&params.text_document_position).await;
+        #[cfg(feature = "native")]
+        if server.state.lsp_features().rename {
+            let request = &params.text_document_position;
+            let uri = &request.text_document.uri;
+            let position = request.position;
+            let stamp = server.state.corsa_request_stamp();
+            if let Some(response) =
+                server
+                    .state
+                    .cached_native_rename(uri, position, &params.new_name, stamp)
+            {
+                return server.authored_response(Ok(response));
+            }
+        }
         server
             .workspace_native_request(|| server.rename_request(params.clone()))
             .await
