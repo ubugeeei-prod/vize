@@ -7,8 +7,11 @@ import {
   initialProjectTypedSourceSha256,
   invertInitialProjectSource,
   invertResidentMarkupSource,
+  invertWarmHoverSource,
   residentMarkupTypedEntry,
   residentMarkupTypedSourceSha256,
+  warmHoverTypedEntry,
+  warmHoverTypedSourceSha256,
 } from "./css-hover-initial-project-source.ts";
 
 export type SourceTreeEntry = Readonly<{ path: string; mode: string; type: string; oid: string }>;
@@ -36,9 +39,18 @@ type ResidentMarkupLayer = Readonly<{
   changes: SourceLayer["changes"];
   initialProject: InitialProjectLayer;
 }>;
+type WarmHoverLayer = Readonly<{
+  name: "exact-warm-hover-answer";
+  reviewedRevision: string;
+  sourceSha256: string;
+  inverseSha256: string;
+  intermediateSha256: string;
+  changes: SourceLayer["changes"];
+  residentMarkup: ResidentMarkupLayer;
+}>;
 type CheckoutComposition = Readonly<{
   entries: readonly SourceTreeEntry[];
-  layer: SourceLayer | InitialProjectLayer | ResidentMarkupLayer | null;
+  layer: SourceLayer | InitialProjectLayer | ResidentMarkupLayer | WarmHoverLayer | null;
 }>;
 
 export const typedSourcePath = "crates/vize_maestro/src/server/handlers/typed.rs";
@@ -148,6 +160,53 @@ export function composeForegroundPreparationCheckout(
   if (!original || !current) return { entries: expected, layer: null };
   assert.deepEqual(original, before, "foreign original typed row");
   if (isDeepStrictEqual(current, before)) return { entries: expected, layer: null };
+  if (current.oid === warmHoverTypedEntry.oid) {
+    assert.deepEqual(current, warmHoverTypedEntry, "foreign warm-hover typed row");
+    assert.equal(typeof readSource, "function", "complete typed source reader required");
+    const resident = invertWarmHoverSource(readSource(typedSourcePath));
+    const initialProject = invertResidentMarkupSource(resident);
+    const foreground = invertInitialProjectSource(initialProject);
+    invertForegroundPreparationSource(foreground);
+    return {
+      entries: expected.map((row) => (row.path === typedSourcePath ? current : row)),
+      layer: {
+        name: "exact-warm-hover-answer",
+        reviewedRevision: "c0b85978391a7e3ce52bcfb5e2cc7e02065fd0f7",
+        sourceSha256: warmHoverTypedSourceSha256,
+        inverseSha256: originalTypedSourceSha256,
+        intermediateSha256: residentMarkupTypedSourceSha256,
+        changes: [{ path: typedSourcePath, before: residentMarkupTypedEntry, after: current }],
+        residentMarkup: {
+          name: "resident-markup-first-hover",
+          reviewedRevision: "6c486e290eec2637bac9ce93de814b658d8bba1e",
+          sourceSha256: residentMarkupTypedSourceSha256,
+          inverseSha256: originalTypedSourceSha256,
+          intermediateSha256: initialProjectTypedSourceSha256,
+          changes: [
+            {
+              path: typedSourcePath,
+              before: initialProjectTypedEntry,
+              after: residentMarkupTypedEntry,
+            },
+          ],
+          initialProject: {
+            name: "initial-canonical-project-bootstrap",
+            sourceSha256: initialProjectTypedSourceSha256,
+            inverseSha256: originalTypedSourceSha256,
+            intermediateSha256: foregroundTypedSourceSha256,
+            changes: [{ path: typedSourcePath, before, after: initialProjectTypedEntry }],
+            foregroundPreparation: {
+              name: "same-document-foreground-preparation-11347",
+              reviewedRevision: "1248e5a903c6de56f2e4630650a048744d135edf",
+              sourceSha256: reviewedTypedSourceSha256,
+              inverseSha256: originalTypedSourceSha256,
+              changes: [{ path: typedSourcePath, before, after }],
+            },
+          },
+        },
+      },
+    };
+  }
   if (current.oid === residentMarkupTypedEntry.oid) {
     assert.deepEqual(current, residentMarkupTypedEntry, "foreign resident-markup typed row");
     assert.equal(typeof readSource, "function", "complete typed source reader required");

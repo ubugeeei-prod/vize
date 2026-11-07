@@ -20,6 +20,14 @@ export const residentMarkupTypedEntry: SourceTreeEntry = Object.freeze({
   type: "blob",
   oid: "f5fdd7878687c044e9f6d948de3d874ebbeae431",
 });
+export const warmHoverTypedSourceSha256 =
+  "a9b01ada45f700fd584ae3a3cd37d4932b0ccabb4fd75aeb9f146a4038ec458e";
+export const warmHoverTypedEntry: SourceTreeEntry = Object.freeze({
+  path: "crates/vize_maestro/src/server/handlers/typed.rs",
+  mode: "100644",
+  type: "blob",
+  oid: "222ef305dd813cc7fe4ea141d3fc888925c4f52e",
+});
 const foregroundBlob = "a4b1e81960029f488921f917e46589f1d7655da9";
 const hash = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 const blob = (bytes: Uint8Array): string =>
@@ -37,6 +45,23 @@ const nativeVue = `            let stamp = self.state.corsa_request_stamp();
 const oldNativeVue = "            let corsa_bridge = self.state.get_corsa_bridge().await;\n";
 const residentMarkupDispatch = `        } else if let Some(hover) = HoverService::hover_resident_markup(&ctx) {
             Some(hover)
+`;
+const warmHoverDispatch = `            let stamp = self.state.corsa_request_stamp();
+            if let Some(cached) = self.state.cached_native_hover(uri, position, stamp) {
+                cached
+            } else {
+                let (corsa_bridge, initial) = self
+                    .state
+                    .get_corsa_bridge_for_canonical_source(ctx.uri, &ctx.content)
+                    .await;
+                ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
+                let response = HoverService::hover_with_corsa(&ctx, corsa_bridge).await;
+                self.state
+                    .cache_native_hover(uri, position, stamp, response.clone());
+                response
+            }
+`;
+const uncachedHoverDispatch = `${nativeVue}            HoverService::hover_with_corsa(&ctx, corsa_bridge).await
 `;
 
 function replaceExactly(source: string, selected: string, replacement: string): string {
@@ -79,5 +104,23 @@ export function invertResidentMarkupSource(bytes: unknown): Buffer {
     "whole resident-markup inverse differs",
   );
   assert.equal(blob(restored), initialProjectTypedEntry.oid, "whole initial-project blob differs");
+  return restored;
+}
+
+// Authenticate the exact bounded-cache integration before restoring the
+// resident-markup implementation that still performs every native query.
+export function invertWarmHoverSource(bytes: unknown): Buffer {
+  assert.ok(Buffer.isBuffer(bytes), "complete committed warm-hover bytes required");
+  assert.equal(hash(bytes), warmHoverTypedSourceSha256, "unreviewed warm-hover bytes");
+  assert.equal(blob(bytes), warmHoverTypedEntry.oid, "unreviewed warm-hover blob");
+  const pieces = bytes.toString("utf8").split(warmHoverDispatch);
+  assert.equal(pieces.length, 2, "foreign warm-hover source structure");
+  const restored = Buffer.from(pieces.join(uncachedHoverDispatch));
+  assert.equal(
+    hash(restored),
+    residentMarkupTypedSourceSha256,
+    "whole warm-hover inverse differs",
+  );
+  assert.equal(blob(restored), residentMarkupTypedEntry.oid, "whole resident-markup blob differs");
   return restored;
 }
