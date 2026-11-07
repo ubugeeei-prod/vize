@@ -190,7 +190,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
 const A = () => <List>{(item) => <li>{item}</li>}</List>;
 ### output
 import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
-import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+import { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
   _push(_ssrRenderComponent(_resolveComponent("List"), _attrs, {
@@ -198,7 +198,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
       if (_push) {
         _push(`<li>${_ssrInterpolate(item)}</li>`)
       } else {
-        return [_createElementVNode("li", null, [_createTextVNode(_toDisplayString(item))])]
+        return [_createElementVNode("li", null, _toDisplayString(item), 1 /* TEXT */)]
       }
     }),
     _: 1
@@ -253,7 +253,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
 const A = () => <List>{(rows) => rows.map((r) => <li>{r}</li>)}</List>;
 ### output
 import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
   _push(_ssrRenderComponent(_resolveComponent("List"), _attrs, {
@@ -265,7 +265,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         })
         _push(`<!--]-->`)
       } else {
-        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(rows, (r) => { return _createElementVNode("li", null, [_createTextVNode(_toDisplayString(r))]) }), 256 /* UNKEYED_FRAGMENT */))]
+        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(rows, (r) => { return _createElementVNode("li", null, _toDisplayString(r), 1 /* TEXT */) }), 256 /* UNKEYED_FRAGMENT */))]
       }
     }),
     _: 1

@@ -1,6 +1,5 @@
 ---
-source: crates/vize_atelier_ssr/src/lib.rs
-assertion_line: 552
+source: crates/vize_atelier_ssr/src/component_tests.rs
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
@@ -9,7 +8,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
       if (_push) {
         _push(`<span>${_ssrInterpolate(item.label)}</span>`)
       } else {
-        return [_createElementVNode("span", null, [_createTextVNode(_toDisplayString(item.label))])]
+        return [_createElementVNode("span", null, _toDisplayString(item.label), 1 /* TEXT */)]
       }
     }),
     _: 1

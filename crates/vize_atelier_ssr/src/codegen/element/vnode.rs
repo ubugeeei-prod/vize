@@ -9,29 +9,25 @@ use super::{
     SsrCodegenContext, String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
 
+#[derive(Default)]
+struct VNodeChildren {
+    expressions: std::vec::Vec<String>,
+    run: std::vec::Vec<String>,
+    dynamic_text: bool,
+}
+
+enum TextPart {
+    Static,
+    Dynamic,
+}
+
 impl<'a> SsrCodegenContext<'a> {
     pub(super) fn vnode_children_expression(
         &mut self,
         children: &[TemplateChildNode<'a>],
     ) -> String {
         let expressions = self.vnode_child_expressions(children);
-        let has_array_child = has_vnode_array_child(children);
-        if has_array_child && expressions.len() == 1 {
-            return expressions.into_iter().next().unwrap_or_default();
-        }
-
-        let mut out = String::from("[");
-        for (index, expr) in expressions.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_str(expr);
-        }
-        out.push(']');
-        if has_array_child {
-            out.push_str(".flat()");
-        }
-        out
+        vnode_array_expression(expressions, has_vnode_array_child(children))
     }
 
     pub(super) fn vnode_component_slot_children_expression<'node>(
@@ -51,23 +47,7 @@ impl<'a> SsrCodegenContext<'a> {
         children: &[&TemplateChildNode<'a>],
     ) -> String {
         let expressions = self.vnode_child_expressions_from_refs(children);
-        let has_array_child = has_vnode_array_child_ref(children);
-        if has_array_child && expressions.len() == 1 {
-            return expressions.into_iter().next().unwrap_or_default();
-        }
-
-        let mut out = String::from("[");
-        for (index, expr) in expressions.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            out.push_str(expr);
-        }
-        out.push(']');
-        if has_array_child {
-            out.push_str(".flat()");
-        }
-        out
+        vnode_array_expression(expressions, has_vnode_array_child_ref(children))
     }
 
     pub(super) fn vnode_child_expressions(
@@ -95,34 +75,45 @@ impl<'a> SsrCodegenContext<'a> {
     where
         'a: 'n,
     {
-        let mut expressions = std::vec::Vec::new();
-        let mut run = std::vec::Vec::new();
+        let mut parts = self.vnode_child_parts_of(children);
+        self.flush_text_run(&mut parts.run, &mut parts.expressions);
+        parts.expressions
+    }
+
+    fn vnode_child_parts_of<'n>(
+        &mut self,
+        children: impl Iterator<Item = &'n TemplateChildNode<'a>>,
+    ) -> VNodeChildren
+    where
+        'a: 'n,
+    {
+        let mut parts = VNodeChildren::default();
         for child in children {
-            if self.push_text_part(child, &mut run) {
+            if let Some(kind) = self.push_text_part(child, &mut parts.run) {
+                parts.dynamic_text |= matches!(kind, TextPart::Dynamic);
                 continue;
             }
-            self.flush_text_run(&mut run, &mut expressions);
+            self.flush_text_run(&mut parts.run, &mut parts.expressions);
             if let Some(expr) = self.vnode_child_expression(child) {
-                expressions.push(expr);
+                parts.expressions.push(expr);
             }
         }
-        self.flush_text_run(&mut run, &mut expressions);
-        expressions
+        parts
     }
 
     /// `child`'s part of a text run: `"text"` or `_toDisplayString(exp)`.
-    /// False for a child that is not text.
+    /// Return the part's kind, or None for a child that is not text.
     fn push_text_part(
         &mut self,
         child: &TemplateChildNode<'a>,
         run: &mut std::vec::Vec<String>,
-    ) -> bool {
+    ) -> Option<TextPart> {
         match child {
             TemplateChildNode::Text(text) => {
                 if !text.content.is_empty() {
                     run.push(quoted_js_string(text.content));
                 }
-                true
+                Some(TextPart::Static)
             }
             TemplateChildNode::Interpolation(interp) => {
                 self.use_core_helper(RuntimeHelper::ToDisplayString);
@@ -130,9 +121,9 @@ impl<'a> SsrCodegenContext<'a> {
                 out.push_str(&self.expression_to_string(&interp.content));
                 out.push(')');
                 run.push(out);
-                true
+                Some(TextPart::Dynamic)
             }
-            _ => false,
+            _ => None,
         }
     }
 
@@ -158,7 +149,7 @@ impl<'a> SsrCodegenContext<'a> {
             TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
                 let mut run = std::vec::Vec::new();
                 let mut expressions = std::vec::Vec::new();
-                self.push_text_part(child, &mut run);
+                let _ = self.push_text_part(child, &mut run);
                 self.flush_text_run(&mut run, &mut expressions);
                 expressions.pop()
             }
@@ -199,7 +190,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_core_helper(RuntimeHelper::CreateElementVNode);
 
         let props = self.build_plain_vnode_props_with_key(el, key);
-        let children = self.vnode_element_children_expression(&el.children);
+        let (children, dynamic_text) = self.vnode_element_children_expression(&el.children);
 
         let mut out = String::from("_createElementVNode(");
         out.push_str(&quoted_js_string(el.tag));
@@ -207,6 +198,9 @@ impl<'a> SsrCodegenContext<'a> {
         out.push_str(&props);
         out.push_str(", ");
         out.push_str(&children);
+        if dynamic_text {
+            out.push_str(", 1 /* TEXT */");
+        }
         out.push(')');
         out
     }
@@ -309,16 +303,28 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    fn vnode_element_children_expression(&mut self, children: &[TemplateChildNode<'a>]) -> String {
+    fn vnode_element_children_expression(
+        &mut self,
+        children: &[TemplateChildNode<'a>],
+    ) -> (String, bool) {
         if children.is_empty() {
-            return "null".to_compact_string();
+            return ("null".to_compact_string(), false);
         }
 
         if let [TemplateChildNode::Text(text)] = children {
-            return quoted_js_string(text.content);
+            return (quoted_js_string(text.content), false);
         }
 
-        self.vnode_children_expression(children)
+        let mut parts =
+            self.vnode_child_parts_of(vize_atelier_core::walk_probe::ssr_children(children));
+        if parts.expressions.is_empty() && !parts.run.is_empty() {
+            return (parts.run.join(" + ").into(), parts.dynamic_text);
+        }
+        self.flush_text_run(&mut parts.run, &mut parts.expressions);
+        (
+            vnode_array_expression(parts.expressions, has_vnode_array_child(children)),
+            false,
+        )
     }
 
     fn build_plain_vnode_props_with_key(&mut self, el: &ElementNode, key: Option<&str>) -> String {
@@ -410,6 +416,24 @@ impl<'a> SsrCodegenContext<'a> {
         out.push(')');
         out
     }
+}
+
+fn vnode_array_expression(expressions: std::vec::Vec<String>, has_array_child: bool) -> String {
+    if has_array_child && expressions.len() == 1 {
+        return expressions.into_iter().next().unwrap_or_default();
+    }
+    let mut out = String::from("[");
+    for (index, expr) in expressions.iter().enumerate() {
+        if index > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(expr);
+    }
+    out.push(']');
+    if has_array_child {
+        out.push_str(".flat()");
+    }
+    out
 }
 
 pub(super) fn has_vnode_array_child(children: &[TemplateChildNode]) -> bool {

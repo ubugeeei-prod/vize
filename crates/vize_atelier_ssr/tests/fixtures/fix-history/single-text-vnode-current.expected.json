@@ -1,0 +1,78 @@
+{
+  "sourceCommit": "3d69ee66328cb981e02c6eed97f4d73d5f917f0b",
+  "captureSha256": "276b2e7b94c9fa429aa08927357f7218fc37f4f53dad4ed71e4f1178a83dc13e",
+  "repeatEquality": true,
+  "options": {
+    "bindingMetadata": null,
+    "croquis": null,
+    "customElements": "default",
+    "dialect": "V3",
+    "entrypoint": "compile_ssr",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "publicOptions": {
+      "comments": false,
+      "componentName": null,
+      "customRenderer": false,
+      "experimentalInTagComments": false,
+      "experimentalPatternedTemplate": false,
+      "inline": false,
+      "isTs": false,
+      "scopeId": null,
+      "ssrCssVars": null
+    },
+    "rawTemplateSlotted": true,
+    "templateSyntax": "Standard"
+  },
+  "cases": [
+    {
+      "id": "keyed-slot-conditional",
+      "previousOutput": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<!--[-->`)\n        _ssrRenderList(_ctx.items, (item) => {\n          _push(`<!--[-->`)\n          if (item.visible) {\n            _push(`<span>${_ssrInterpolate(item.label)}</span>`)\n          } else {\n            _push(`<span>hidden</span>`)\n          }\n          _push(`<!--]-->`)\n        })\n        _push(`<!--]-->`)\n      } else {\n        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.items, (item) => { return (_openBlock(), _createBlock(_Fragment, { key: item.id }, [(item.visible) ? _createElementVNode(\"span\", null, [_createTextVNode(_toDisplayString(item.label))]) : _createElementVNode(\"span\", null, \"hidden\")], 64 /* STABLE_FRAGMENT */)) }), 128 /* KEYED_FRAGMENT */))]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      },
+      "output": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<!--[-->`)\n        _ssrRenderList(_ctx.items, (item) => {\n          _push(`<!--[-->`)\n          if (item.visible) {\n            _push(`<span>${_ssrInterpolate(item.label)}</span>`)\n          } else {\n            _push(`<span>hidden</span>`)\n          }\n          _push(`<!--]-->`)\n        })\n        _push(`<!--]-->`)\n      } else {\n        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.items, (item) => { return (_openBlock(), _createBlock(_Fragment, { key: item.id }, [(item.visible) ? _createElementVNode(\"span\", null, _toDisplayString(item.label), 1 /* TEXT */) : _createElementVNode(\"span\", null, \"hidden\")], 64 /* STABLE_FRAGMENT */)) }), 128 /* KEYED_FRAGMENT */))]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      }
+    },
+    {
+      "id": "keyed-slot-single-element",
+      "previousOutput": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<!--[-->`)\n        _ssrRenderList(_ctx.items, (item, index) => {\n          _push(`<div class=\"item\">${_ssrInterpolate(item.label)}</div>`)\n        })\n        _push(`<!--]-->`)\n      } else {\n        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.items, (item, index) => { return _createElementVNode(\"div\", { key: index, class: \"item\" }, [_createTextVNode(_toDisplayString(item.label))]) }), 128 /* KEYED_FRAGMENT */))]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      },
+      "output": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<!--[-->`)\n        _ssrRenderList(_ctx.items, (item, index) => {\n          _push(`<div class=\"item\">${_ssrInterpolate(item.label)}</div>`)\n        })\n        _push(`<!--]-->`)\n      } else {\n        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.items, (item, index) => { return _createElementVNode(\"div\", { key: index, class: \"item\" }, _toDisplayString(item.label), 1 /* TEXT */) }), 128 /* KEYED_FRAGMENT */))]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      }
+    },
+    {
+      "id": "keyed-slot-fallback",
+      "previousOutput": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _ssrRenderSlot(_ctx.$slots, \"default\", {}, () => {\n          _push(`<!--[-->`)\n          _ssrRenderList([_ctx.value], (displayed) => {\n            _push(`<!--[-->`)\n            if (displayed) {\n              _push(`<span>${_ssrInterpolate(displayed)}</span>`)\n            } else {\n              _push(`<span>empty</span>`)\n            }\n            _push(`<!--]-->`)\n          })\n          _push(`<!--]-->`)\n        }, _push, _parent, _scopeId)\n      } else {\n        return [_renderSlot(_ctx.$slots, \"default\", {}, () => [(_openBlock(true), _createBlock(_Fragment, null, _renderList([_ctx.value], (displayed) => { return (_openBlock(), _createBlock(_Fragment, { key: displayed }, [(displayed) ? _createElementVNode(\"span\", null, [_createTextVNode(_toDisplayString(displayed))]) : _createElementVNode(\"span\", null, \"empty\")], 64 /* STABLE_FRAGMENT */)) }), 128 /* KEYED_FRAGMENT */))])]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, renderSlot as _renderSlot, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      },
+      "output": {
+        "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _ssrRenderSlot(_ctx.$slots, \"default\", {}, () => {\n          _push(`<!--[-->`)\n          _ssrRenderList([_ctx.value], (displayed) => {\n            _push(`<!--[-->`)\n            if (displayed) {\n              _push(`<span>${_ssrInterpolate(displayed)}</span>`)\n            } else {\n              _push(`<span>empty</span>`)\n            }\n            _push(`<!--]-->`)\n          })\n          _push(`<!--]-->`)\n        }, _push, _parent, _scopeId)\n      } else {\n        return [_renderSlot(_ctx.$slots, \"default\", {}, () => [(_openBlock(true), _createBlock(_Fragment, null, _renderList([_ctx.value], (displayed) => { return (_openBlock(), _createBlock(_Fragment, { key: displayed }, [(displayed) ? _createElementVNode(\"span\", null, _toDisplayString(displayed), 1 /* TEXT */) : _createElementVNode(\"span\", null, \"empty\")], 64 /* STABLE_FRAGMENT */)) }), 128 /* KEYED_FRAGMENT */))])]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n",
+        "diagnostics": [],
+        "map": null,
+        "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, renderList as _renderList, renderSlot as _renderSlot, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+      }
+    }
+  ]
+}

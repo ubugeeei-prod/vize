@@ -280,6 +280,7 @@ test("product differential partitions preserve each selected command exactly onc
   assert.equal(commands.length, 3);
   assert.ok(commands[0].args.includes("davinci_ssr_corpus"));
   assert.ok(commands[1].args.includes("davinci_ssr_production_cases"));
+  assert.ok(commands[1].args.includes("slot_element_text_children"));
   assert.equal(commands[2].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
   assert.throws(() => differentialSteps("unknown", all), /unknown/);
 });

@@ -3466,6 +3466,59 @@
       }
     },
     {
+      "id": "compiler/sfc/ssr-slot-scalar-text-11610",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "ssr-slot-scalar-text-11610",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "66c5c502943361db38f4eeb24d3bc6703f0b3afc12aeeedb44c946abcb4e9aea",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-slot-scalar-text-11610/module.expected.txt",
+        "sha256": "235250c87f8d3d525741865533f4c27b4229c0699a052544883e8b26103c048d",
+        "source": "crates/vize_atelier_sfc/tests/ssr_slot_text.rs:slot_element_text_is_scalar_through_the_public_sfc_api"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); parser and codegen remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
       "targets": [
