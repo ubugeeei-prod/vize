@@ -182,7 +182,6 @@ export const toolingTestScopes = [
   {
     input: "toolingReleaseContracts",
     tests: [
-      "tests/tooling/release/release-changelog.test.ts",
       "tests/tooling/release/release-gate-concurrency.test.ts",
       "tests/tooling/release/release-package-versions.test.ts",
       "tests/tooling/release/release-platforms.test.ts",

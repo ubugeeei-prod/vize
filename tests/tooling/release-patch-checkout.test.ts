@@ -64,7 +64,10 @@ for (const autocrlf of ["true", "false"]) {
 }
 
 test("omitting the LF policy reproduces the Windows braces patch corruption", (t) => {
-  const withoutPolicy = attributes.replace(/^patches\/\*\.patch text eol=lf\r?\n/mu, "");
+  const withoutPolicy = attributes.replace(
+    /^patches\/\*\.patch text eol=lf(?: [^\r\n]+)?\r?\n/mu,
+    "",
+  );
   assert.notEqual(withoutPolicy, attributes, "the actual dependency patch policy must be present");
   const { root, sources } = checkout(t, "true", withoutPolicy);
   const original = sources.get("braces@3.0.3.patch");

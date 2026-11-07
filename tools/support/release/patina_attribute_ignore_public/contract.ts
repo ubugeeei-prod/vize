@@ -27,6 +27,31 @@ export const digest = (bytes: Uint8Array | string): string =>
   createHash("sha256").update(bytes).digest("hex");
 export const custodySha256 = "0bfb9600b5e2251e31ba59c18504cc00f6bb14c5adaaa7049cf0debff6c6aafc";
 const consumerSuccessorSha256 = "1de5f35741488845e6eab11b38ae07ae3f823e979c0b2198ce5840bdd9b08012";
+const attributeEslintOwner = "npm/linter/oxlint/src/attribute-eslint.test.ts";
+const attributeEslintCurrent = {
+  bytes: 6_195,
+  sha256: "8925d8111eedb2030d6f1f8b505cac6a1bd2ec8c73f0d5b177c1b5b1812afc94",
+  line: '  const workspace = createRequire(new URL("../package.json", import.meta.url));\n',
+};
+const attributeEslintHistorical = {
+  bytes: 6_204,
+  sha256: "023e04530bcf9ea95d52c1958fe7a0810d6fff568c1ba238b5599a3973f86ff3",
+  line: '  const workspace = createRequire(new URL("../../../../package.json", import.meta.url));\n',
+};
+
+function beforeDependencyOwnership(path: string, observed: Buffer): Buffer {
+  if (path !== attributeEslintOwner) return observed;
+  assert.equal(observed.length, attributeEslintCurrent.bytes, path);
+  assert.equal(digest(observed), attributeEslintCurrent.sha256, path);
+  const current = observed.toString("utf8");
+  assert.equal(current.split(attributeEslintCurrent.line).length, 2, path);
+  const historical = Buffer.from(
+    current.replace(attributeEslintCurrent.line, attributeEslintHistorical.line),
+  );
+  assert.equal(historical.length, attributeEslintHistorical.bytes, path);
+  assert.equal(digest(historical), attributeEslintHistorical.sha256, path);
+  return historical;
+}
 
 export function consumerSuccessor(): JsonRecord {
   const bytes = readFileSync(new URL("consumer-successor.json", import.meta.url));
@@ -111,7 +136,7 @@ export function validateSourceCopies(input: unknown, read: (path: string) => Buf
     assert(!path.startsWith("/") && !path.split("/").includes("..") && !seen.has(path));
     seen.add(path);
     const observed = read(path);
-    let historical = observed;
+    let historical = beforeDependencyOwnership(path, observed);
     if (path === successor.path) {
       historical = read(asString(asRecord(successor.historical).snapshot));
       validateCurrentConsumer(historical, observed);

@@ -77,7 +77,7 @@ try {
   assert.equal(asRecord(asRecord(asRecord(plugin).rules)[rule]).meta !== undefined, true);
   assert.equal(asRecord(asRecord(asRecord(asRecord(plugin).rules)[rule]).meta).fixable, "code");
   assert(require.cache[image], "the packed host must load the authenticated source addon");
-  const workspace = createRequire(new URL("../../../../package.json", import.meta.url));
+  const workspace = createRequire(new URL("../package.json", import.meta.url));
   const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
   const Linter = asRecord(oracle("eslint")).Linter as new () => Host;
   const parser: unknown = oracle("vue-eslint-parser");

@@ -14,10 +14,12 @@
  *   node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --write   # re-record
  */
 import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
+const testsRequire = createRequire(new URL("../../../../tests/package.json", import.meta.url));
 export const corpusPath = join(here, "fixtures", "corpus.json");
 export const recordedPath = join(here, "fixtures", "babel-output.json");
 
@@ -70,15 +72,13 @@ export async function transformCase(babel, plugin, tsSyntaxPlugin, entry) {
 
 /** Run the whole corpus, returning the recordable `{ pluginVersion, cases }`. */
 export async function runOracle() {
-  const [{ default: babel }, { default: plugin }, { default: tsSyntaxPlugin }, pluginPkg] =
-    await Promise.all([
-      import("@babel/core"),
-      import("@vue/babel-plugin-jsx"),
-      import("@babel/plugin-syntax-typescript"),
-      import("@vue/babel-plugin-jsx/package.json", { with: { type: "json" } }).then(
-        (m) => m.default,
-      ),
-    ]);
+  const babelModule = testsRequire("@babel/core");
+  const pluginModule = testsRequire("@vue/babel-plugin-jsx");
+  const tsSyntaxModule = testsRequire("@babel/plugin-syntax-typescript");
+  const babel = babelModule.default ?? babelModule;
+  const plugin = pluginModule.default ?? pluginModule;
+  const tsSyntaxPlugin = tsSyntaxModule.default ?? tsSyntaxModule;
+  const pluginPkg = testsRequire("@vue/babel-plugin-jsx/package.json");
   const corpus = readCorpus();
   const cases = {};
   for (const entry of corpus.cases) {

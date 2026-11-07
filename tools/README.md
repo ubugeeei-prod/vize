@@ -15,7 +15,7 @@ call the Rust Script command path, and new user-facing automation belongs in
 - `tools/commands/davinci`: Davinci roadmap, matrix, corpus, and budget commands.
 - `tools/commands/editors`: editor extension packaging and real-server checks.
 - `tools/commands/fixtures`: real-project and generated fixture orchestration.
-- `tools/commands/release`: release, npm, and changelog commands.
+- `tools/commands/release`: release and npm publication commands.
 - `tools/support`: shared command support modules grouped by use case.
 - `tools/support/github` and `tools/support/tasks`: strictly typed TypeScript commands for
   GitHub Actions job steps and root Vite+ tasks, run directly with `node`.

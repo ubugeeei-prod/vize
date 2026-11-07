@@ -280,12 +280,11 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         env:
-          SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "600000"
+          SYNTAX_HIGHLIGHTER_TIMEOUT_MS: "600000"
         run: |
           node --test --test-concurrency=1 \
             tests/tooling/real-project-syntax-highlighting.test.ts
-          test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.json"
-          test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-divergence.md"
+          test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"
 
       - name: Check glyph formatter corpus properties
         id: glyph

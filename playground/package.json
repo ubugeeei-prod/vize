@@ -24,7 +24,6 @@
     "@mdi/js": "catalog:content",
     "monaco-editor": "catalog:content",
     "prettier": "catalog:repo-tooling",
-    "shiki": "catalog:content",
     "typescript": "catalog:typescript",
     "vue": "3.6.0-rc.6"
   },

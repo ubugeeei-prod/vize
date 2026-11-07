@@ -58,6 +58,10 @@ fs.writeFileSync(
 const kit = resolve(path.join(root, "npm/framework/nuxt"), "@nuxt/kit");
 const c12 = resolve(kit, "c12");
 const chokidar = resolve(c12, "chokidar");
+const tools = path.join(root, "tools");
+const oracleOwner = fs.existsSync(path.join(tools, "node_modules/chokidar-braces-oracle"))
+  ? tools
+  : root;
 fs.mkdirSync(artifacts, { recursive: true });
 fs.writeFileSync(
   path.join(artifacts, "installed-consumer-census.json"),
@@ -75,8 +79,10 @@ fs.writeFileSync(
       moduleKit: identity(kit),
       kitC12: identity(c12),
       kitChokidar: identity(chokidar),
-      explicitDevOracle: fs.existsSync(path.join(root, "node_modules/chokidar-braces-oracle"))
-        ? identity(resolve(root, "chokidar-braces-oracle", "chokidar"))
+      explicitDevOracle: fs.existsSync(
+        path.join(oracleOwner, "node_modules/chokidar-braces-oracle"),
+      )
+        ? identity(resolve(oracleOwner, "chokidar-braces-oracle", "chokidar"))
         : null,
       instances: [...census.instances].sort().map(identity),
       consumers: [...census.consumers].sort().map((directory) => ({

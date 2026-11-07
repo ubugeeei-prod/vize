@@ -33,7 +33,7 @@ function record(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 const read = (filename: string) => record(JSON.parse(fs.readFileSync(filename, "utf8")));
-const require = createRequire(path.join(root, "package.json"));
+const require = createRequire(path.join(root, "tests/package.json"));
 const clientRoot = fs.realpathSync(
   path.dirname(require.resolve("vscode-languageclient/package.json")),
 );

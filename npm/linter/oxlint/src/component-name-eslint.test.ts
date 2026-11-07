@@ -110,12 +110,11 @@ try {
   const entry: unknown = await import(new URL("../dist/eslint.mjs", import.meta.url).href);
   const plugin = asRecord(asRecord(entry).default);
   assert(require.cache[image], "actual packed export loaded the authenticated current addon");
-  const workspace = createRequire(new URL("../../../../package.json", import.meta.url));
-  const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
-  const Linter = asRecord(oracle("eslint")).Linter as new () => Host;
-  const parser: unknown = oracle("vue-eslint-parser"),
-    scriptParser: unknown = oracle("@typescript-eslint/parser");
-  const officialPlugin: unknown = oracle("eslint-plugin-vue");
+  const workspace = createRequire(new URL("../package.json", import.meta.url));
+  const Linter = asRecord(workspace("eslint")).Linter as new () => Host;
+  const parser: unknown = workspace("vue-eslint-parser"),
+    scriptParser: unknown = workspace("@typescript-eslint/parser");
+  const officialPlugin: unknown = workspace("eslint-plugin-vue");
   const providers = Object.fromEntries(
     Object.entries({
       eslint: "10.13.0",
@@ -123,14 +122,14 @@ try {
       "eslint-plugin-vue": "10.9.2",
       "@typescript-eslint/parser": "8.65.0",
     }).map(([name, expected]) => {
-      const packagePath = realpathSync(oracle.resolve(name + "/package.json"));
+      const packagePath = realpathSync(workspace.resolve(name + "/package.json"));
       const version = asRecord(parseJson(readFileSync(packagePath, "utf8"))).version;
       assert.equal(version, expected);
       return [name, { version, packagePath }];
     }),
   );
   const officialDirectory = join(
-    realpathSync(oracle.resolve("eslint-plugin-vue/package.json")),
+    realpathSync(workspace.resolve("eslint-plugin-vue/package.json")),
     "..",
     "dist",
   );

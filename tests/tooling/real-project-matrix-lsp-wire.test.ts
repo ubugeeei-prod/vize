@@ -88,6 +88,20 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     run: 'node tests/differential/linter-deletion-recorder.ts "$FIXTURE_REPORT_DIR" && test -s "$FIXTURE_REPORT_DIR/linter-deletion-readiness.json"',
   });
 
+  const syntaxHighlighter = steps.find((step) => step.id === "syntax_highlighter");
+  const oldSyntaxHighlighter = oldSteps.find((step) => step.id === "syntax_highlighter");
+  assert.ok(syntaxHighlighter && oldSyntaxHighlighter);
+  assert.deepEqual(syntaxHighlighter, {
+    ...oldSyntaxHighlighter,
+    env: { SYNTAX_HIGHLIGHTER_TIMEOUT_MS: "600000" },
+    run:
+      "node --test --test-concurrency=1 \\\n" +
+      "  tests/tooling/real-project-syntax-highlighting.test.ts\n" +
+      'test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"\n',
+  });
+  syntaxHighlighter.env = oldSyntaxHighlighter.env;
+  syntaxHighlighter.run = oldSyntaxHighlighter.run;
+
   const lsp = steps.find((step) => step.id === "lsp");
   const oldLsp = oldSteps.find((step) => step.id === "lsp");
   assert.ok(lsp && oldLsp);

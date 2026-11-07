@@ -68,7 +68,7 @@ test("the merge tier retains the entire existing suite", () => {
 test("an unregistered prose path does not make the PR suite unconditional", () => {
   const f = fixture();
   try {
-    assert.deepEqual(planToolingTests(["CHANGELOG.md"], { cwd: f.cwd }).tests, []);
+    assert.deepEqual(planToolingTests(["notes.md"], { cwd: f.cwd }).tests, []);
   } finally {
     f.cleanup();
   }

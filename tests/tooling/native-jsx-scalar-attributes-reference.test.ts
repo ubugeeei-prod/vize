@@ -14,8 +14,8 @@ const pack = readPack(
     import.meta.url,
   ),
 );
-const fromRoot = createRequire(new URL("../../package.json", import.meta.url));
-const babel = fromRoot("@babel/core");
+const fromTests = createRequire(new URL("../package.json", import.meta.url));
+const babel = fromTests("@babel/core");
 
 test("scalar attributes retain a fixed independent original-source denominator", () => {
   checkVersions(pack);

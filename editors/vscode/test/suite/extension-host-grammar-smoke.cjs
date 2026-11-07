@@ -137,7 +137,7 @@ exports.runSyntaxHighlightContributionSmoke = async function runSyntaxHighlightC
   );
   assert.equal(
     vueGrammar.repository["vue-interpolation"].patterns[0].include,
-    "source.ts#expression",
+    "#vue-ts-expression",
   );
   assert.equal(
     vueGrammar.repository["vue-directive-attributes"].patterns[0].patterns[0].include,

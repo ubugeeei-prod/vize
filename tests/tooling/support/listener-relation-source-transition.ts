@@ -22,6 +22,21 @@ export type $ListenerArgs<
 > = __vizeListenerTypes.$ListenerArgs<__P, __K, __Raw>;
 `;
 
+const cliDependencyOwnershipTransition: Transition = {
+  before: {
+    bytes: 4_273,
+    sha256: "2e430bc9bbb14cbd07ae076459bf0a932d1558bb9a698b67527b4086d8988e6f",
+  },
+  after: {
+    bytes: 4_362,
+    sha256: "11abb0e379b919dcff38cc4aed99e1a8934aab4a55d9000115cf54dc1608f5c9",
+  },
+  edits: [
+    { before: "", after: '    "json-schema-to-typescript": "catalog:repo-tooling",\n' },
+    { before: "", after: '    "oxfmt": "catalog:linting",\n' },
+  ],
+};
+
 const sourceTransitions = new Map<string, Transition>([
   [
     "crates/vize_canon/src/virtual_ts/helpers/preamble.rs",
@@ -209,6 +224,16 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  if (
+    path === "npm/cli/package.json" &&
+    identity(current).sha256 === cliDependencyOwnershipTransition.after.sha256
+  ) {
+    current = inverse(
+      current,
+      cliDependencyOwnershipTransition,
+      "selected emit gate producer: CLI dependency ownership",
+    );
+  }
   if (
     path === "crates/vize_canon/src/virtual_ts/scope/component_events.rs" &&
     identity(current).sha256 === guardedInferenceTransition.after.sha256

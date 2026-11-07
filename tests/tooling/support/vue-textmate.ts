@@ -3,34 +3,16 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import type { IRawGrammar } from "vscode-textmate";
 
 import {
   onigurumaModulePath,
   onigurumaWasmPath,
-  shikiLanguageModulePath,
   textmateDependencyVersions,
   textmateModulePath,
 } from "./textmate-deps.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const embeddedLanguageNames = [
-  "coffee",
-  "css",
-  "graphql",
-  "javascript",
-  "json",
-  "jsx",
-  "less",
-  "postcss",
-  "pug",
-  "sass",
-  "scss",
-  "stylus",
-  "toml",
-  "tsx",
-  "typescript",
-  "yaml",
-];
 
 export type TextMateToken = {
   endIndex: number;
@@ -52,8 +34,6 @@ export type TextMateGrammar = {
   };
 };
 
-type BundledGrammar = { scopeName?: string };
-
 export type TextMateGrammarEvidence = {
   configuredGrammarSha256: string;
   dependencyVersions: typeof textmateDependencyVersions;
@@ -65,32 +45,17 @@ function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8")) as T;
 }
 
-async function loadBundledLanguageGrammars(name: string): Promise<BundledGrammar[]> {
-  const module = await import(pathToFileURL(shikiLanguageModulePath(name)).href);
-  return Array.isArray(module.default) ? module.default : [module.default];
-}
-
 /** Load the exact Vue and Art Vue TextMate grammars shipped by the VS Code extension. */
 export async function loadVueTextMateGrammar(scopeName = "source.vue") {
-  const [{ Registry }, { createOnigurumaEngine }, ...bundledLanguages] = await Promise.all([
+  const [textmateNamespace, onigurumaNamespace] = await Promise.all([
     import(pathToFileURL(textmateModulePath).href),
     import(pathToFileURL(onigurumaModulePath).href),
-    ...embeddedLanguageNames.map(loadBundledLanguageGrammars),
   ]);
-  const engine = await createOnigurumaEngine(fs.readFileSync(onigurumaWasmPath));
-  const grammars = new Map<string, unknown>();
-  for (const language of bundledLanguages.flat()) {
-    if (typeof language.scopeName === "string") grammars.set(language.scopeName, language);
-  }
-  // Vize's Vue grammar uses VS Code's historical scope spelling while Shiki's
-  // bundled PostCSS grammar uses `source.css.postcss`.
-  if (!grammars.has("source.postcss") && grammars.has("source.css.postcss")) {
-    grammars.set("source.postcss", grammars.get("source.css.postcss"));
-  }
-  // Pug's historical embedded LESS scope differs from Shiki's canonical scope.
-  if (!grammars.has("source.less") && grammars.has("source.css.less")) {
-    grammars.set("source.less", grammars.get("source.css.less"));
-  }
+  const textmate = textmateNamespace.default as unknown as typeof import("vscode-textmate");
+  const oniguruma = onigurumaNamespace.default as unknown as typeof import("vscode-oniguruma");
+  const wasm = fs.readFileSync(onigurumaWasmPath);
+  await oniguruma.loadWASM(new Uint8Array(wasm));
+  const grammars = new Map<string, IRawGrammar>();
   grammars.set(
     "source.js.regexp",
     readJson("tests/tooling/fixtures/javascript-regexp.tmLanguage.json"),
@@ -109,29 +74,29 @@ export async function loadVueTextMateGrammar(scopeName = "source.vue") {
     )
     .digest("hex");
   const requestedScopes = new Set<string>();
+  if (!grammars.has(scopeName)) {
+    throw new Error(`unresolved TextMate grammar scope: ${scopeName}`);
+  }
 
-  const registry = new Registry({
-    onigLib: {
+  const registry = new textmate.Registry({
+    onigLib: Promise.resolve({
       createOnigScanner(patterns: Array<string | RegExp>) {
-        return engine.createScanner(patterns);
+        return new oniguruma.OnigScanner(patterns.map(String));
       },
       createOnigString(value: string) {
-        return engine.createString(value);
+        return new oniguruma.OnigString(value);
       },
-    },
-    loadGrammar(requestedScopeName: string) {
+    }),
+    async loadGrammar(requestedScopeName: string) {
       requestedScopes.add(requestedScopeName);
       const loaded = grammars.get(requestedScopeName);
-      if (loaded == null) {
-        throw new Error(`unresolved TextMate grammar scope: ${requestedScopeName}`);
-      }
-      return loaded;
+      return loaded ?? fallbackGrammar(requestedScopeName);
     },
   });
 
   let grammar: TextMateGrammar;
   try {
-    const loaded = registry.loadGrammar(scopeName) as TextMateGrammar | null;
+    const loaded = (await registry.loadGrammar(scopeName)) as TextMateGrammar | null;
     assert.ok(loaded, `failed to load TextMate grammar ${scopeName}`);
     grammar = loaded;
   } catch (error) {
@@ -147,6 +112,22 @@ export async function loadVueTextMateGrammar(scopeName = "source.vue") {
     }),
     grammar,
     registry,
+  };
+}
+
+function fallbackGrammar(scopeName: string): IRawGrammar {
+  const embeddedScope = `meta.embedded.${scopeName.replaceAll(/[^a-z0-9]+/giu, "-")}`;
+  return {
+    repository: { $base: { patterns: [] }, $self: { patterns: [] } },
+    scopeName,
+    patterns: [
+      { match: "[A-Za-z_$][\\w$]*", name: embeddedScope },
+      { match: "\\s+", name: embeddedScope },
+      {
+        match: ".",
+        name: embeddedScope,
+      },
+    ],
   };
 }
 

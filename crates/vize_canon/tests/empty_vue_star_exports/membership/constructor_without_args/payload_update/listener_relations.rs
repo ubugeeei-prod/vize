@@ -112,6 +112,7 @@ fn inverse(current: String, transition: &Transition) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::dependency_ownership::source_before(path, current);
     let current = super::strict_extra_keys::source_before(path, current);
     TRANSITIONS
         .iter()

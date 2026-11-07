@@ -74,7 +74,7 @@ try {
   const entry: unknown = await import(new URL("../dist/eslint.mjs", import.meta.url).href);
   const plugin = asRecord(asRecord(entry).default);
   assert(require.cache[image], "the actual packed export loaded the authenticated current addon");
-  const workspace = createRequire(new URL("../../../../package.json", import.meta.url));
+  const workspace = createRequire(new URL("../package.json", import.meta.url));
   const oracle = createRequire(workspace.resolve("@nuxt/eslint-config"));
   const Linter = asRecord(oracle("eslint")).Linter as new () => Host;
   const parser: unknown = oracle("vue-eslint-parser");

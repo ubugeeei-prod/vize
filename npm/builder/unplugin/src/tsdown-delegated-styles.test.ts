@@ -14,9 +14,11 @@ import vizeRolldown from "./rolldown.ts";
 import { writeFakePreprocessors } from "./test/fake-preprocessors.ts";
 import { workspaceRoot } from "./test/helpers.ts";
 
-const requireFromWorkspace = createRequire(path.join(workspaceRoot, "package.json"));
-const tsdown = requireFromWorkspace.resolve("tsdown");
-const cli = requireFromWorkspace.resolve("tsdown/run");
+const requireFromUnplugin = createRequire(
+  path.join(workspaceRoot, "npm/builder/unplugin/package.json"),
+);
+const tsdown = requireFromUnplugin.resolve("tsdown");
+const cli = requireFromUnplugin.resolve("tsdown/run");
 const requireFromTsdown = createRequire(tsdown);
 const rolldownEntry = requireFromTsdown.resolve("rolldown");
 const requireFromCssPlugin = createRequire(requireFromTsdown.resolve("@tsdown/css"));

@@ -201,7 +201,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
     directivePatterns[3]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
     "#vue-ts-expression",
   );
-  assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "source.ts#expression");
+  assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "#vue-ts-expression");
   assert.equal(repository["vue-template-pug"]?.patterns?.[1]?.patterns?.[0]?.include, "text.pug");
   assert.equal(repository["vue-script-tsx"]?.patterns?.[1]?.patterns?.[0]?.include, "source.tsx");
   assert.equal(

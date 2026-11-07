@@ -71,11 +71,6 @@ fn publish() -> Result<(), String> {
         false,
     )?;
     append_lint_summary(&mut summary, &report_dir)?;
-    append_nonempty_file_or_line(
-        &mut summary,
-        &report_dir.join("syntax-highlighter-divergence.md"),
-        "No syntax-highlighter divergence report was produced.",
-    )?;
     append_unique_typecheck_divergence(&mut summary, &report_dir)?;
     append_json_line_or(
         &mut summary,

@@ -1,7 +1,8 @@
 use super::{Checked, Value, bound, load};
 
-const FRESCO_UPDATE: &str = "malformed-membership/provider-fresco-sfc-update-12130.json";
-const FRESCO_UPDATE_HASH: &str = "53fffb6c6fc9c03809fa184ba2f351af89c64849851fbfac3ad951bd83316792";
+pub(super) const FRESCO_UPDATE: &str = "malformed-membership/provider-fresco-sfc-update-12130.json";
+pub(super) const FRESCO_UPDATE_HASH: &str =
+    "53fffb6c6fc9c03809fa184ba2f351af89c64849851fbfac3ad951bd83316792";
 pub(super) const TOOLING_UPDATE: &str =
     "malformed-membership/provider-js-tooling-layout-update-12082.json";
 pub(super) const TOOLING_UPDATE_HASH: &str =

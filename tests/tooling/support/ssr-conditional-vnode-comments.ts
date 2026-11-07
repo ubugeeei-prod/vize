@@ -77,8 +77,8 @@ export async function observeConditionalComments(input: Packet, seams: Seams) {
     input.files.map((file) => file.name),
     ["Inner", "App"],
   );
-  const root = createRequire(new URL("../../../package.json", import.meta.url));
-  const fromVue = createRequire(root.resolve("vue-computed-inlay-oracle/package.json"));
+  const tests = createRequire(new URL("../../package.json", import.meta.url));
+  const fromVue = createRequire(tests.resolve("vue-computed-inlay-oracle/package.json"));
   const vue: Runtime = fromVue("vue");
   const compiler: Compiler = fromVue("vue/compiler-sfc");
   const renderer: Renderer = fromVue("vue/server-renderer");

@@ -217,7 +217,7 @@ test("semantic tokenizer fails closed on unknown scopes, malformed spans, and ti
   );
   const timestamps = [0, 0, 0, 2];
   const deadline = createSyntaxAuditDeadline(
-    { SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "1" },
+    { SYNTAX_HIGHLIGHTER_TIMEOUT_MS: "1" },
     () => timestamps.shift() ?? 2,
   );
   assert.throws(
@@ -229,7 +229,7 @@ test("semantic tokenizer fails closed on unknown scopes, malformed spans, and ti
         "deadline.vue",
         deadline,
       ),
-    /syntax oracle shard exceeded 1ms/,
+    /syntax grammar shard exceeded 1ms/,
   );
 });
 

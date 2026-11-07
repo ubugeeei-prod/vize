@@ -6,6 +6,7 @@ import { advisoryId, verifyInstalledForge } from "../../support/security/node-fo
 import { assertCleanAuditReport } from "../../support/security/npm-audit-findings.ts";
 import { verifyInstalledBraces } from "../../support/security/braces-proof.ts";
 import { bracesAdvisoryId } from "../../support/security/braces-lock.ts";
+import { verifyDependencyIntegrity } from "../../support/security/dependency-integrity.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const result = spawnSync(
@@ -29,6 +30,7 @@ try {
   assertCleanAuditReport(report, result.status);
   const proof = verifyInstalledForge(root);
   const braces = verifyInstalledBraces(root);
+  const dependencies = verifyDependencyIntegrity(root);
   console.log(
     "npm-audit: verified upstream Node listhen Forge source",
     JSON.stringify({ advisory: advisoryId, ...proof }),
@@ -41,6 +43,7 @@ try {
   console.log(
     "npm-audit: upstream Braces remains 3.0.3; detached npm fixture installs and external browser/CDN copies are outside this root pnpm proof",
   );
+  console.log("npm-audit: verified transitive dependency integrity", JSON.stringify(dependencies));
 } catch (error) {
   console.error("npm-audit: unresolved finding or invalid source attestation:", error);
   process.exit(result.status || 1);

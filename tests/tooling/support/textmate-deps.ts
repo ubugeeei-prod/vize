@@ -4,22 +4,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const rootRequire = createRequire(path.join(root, "package.json"));
-const shikiPackageJsonPath = rootRequire.resolve("shiki/package.json");
-const shikiRequire = createRequire(shikiPackageJsonPath);
+const testsRequire = createRequire(path.join(root, "tests/package.json"));
 
-export const textmateModulePath = shikiRequire.resolve("@shikijs/vscode-textmate");
-export const onigurumaModulePath = shikiRequire.resolve("@shikijs/engine-oniguruma");
-export const onigurumaWasmPath = path.join(path.dirname(shikiPackageJsonPath), "dist", "onig.wasm");
+export const textmateModulePath = testsRequire.resolve("vscode-textmate");
+export const onigurumaModulePath = testsRequire.resolve("vscode-oniguruma");
+const onigurumaPackageJsonPath = testsRequire.resolve("vscode-oniguruma/package.json");
+export const onigurumaWasmPath = path.join(
+  path.dirname(onigurumaPackageJsonPath),
+  "release/onig.wasm",
+);
 export const textmateDependencyVersions = {
-  engineOniguruma: packageVersion(onigurumaModulePath, "@shikijs/engine-oniguruma"),
-  shiki: JSON.parse(fs.readFileSync(shikiPackageJsonPath, "utf8")).version as string,
-  vscodeTextmate: packageVersion(textmateModulePath, "@shikijs/vscode-textmate"),
+  vscodeOniguruma: packageVersion(onigurumaModulePath, "vscode-oniguruma"),
+  vscodeTextmate: packageVersion(textmateModulePath, "vscode-textmate"),
 };
-
-export function shikiLanguageModulePath(name: string): string {
-  return shikiRequire.resolve(`@shikijs/langs/${name}`);
-}
 
 function packageVersion(modulePath: string, expectedName: string): string {
   let directory = path.dirname(modulePath);

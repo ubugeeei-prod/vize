@@ -5,11 +5,10 @@ import { runRealProjectSyntaxAudit } from "./support/real-project-syntax-audit.t
 import { tokenizeSemanticSource } from "./support/syntax-semantic-divergence.ts";
 import { auditTextMateSource, loadVueTextMateGrammar } from "./support/vue-textmate.ts";
 
-test("shipped and pinned oracle grammars tokenize every selected real-project Vue file", async () => {
+test("the shipped grammar tokenizes every selected real-project Vue file", async () => {
   const result = await runRealProjectSyntaxAudit();
   if (result.skipped) return;
-  assert.ok(result.artifact);
-  assert.ok(result.artifact.summary.projectCount > 0);
+  assert.ok(result.evidence.length > 0);
 });
 
 test("real-project syntax budget includes grammar startup", async () => {
@@ -20,11 +19,11 @@ test("real-project syntax budget includes grammar startup", async () => {
         {
           FIXTURE_SHARD_COUNT: "1",
           FIXTURE_SHARD_INDEX: "0",
-          SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS: "1",
+          SYNTAX_HIGHLIGHTER_TIMEOUT_MS: "1",
         },
         () => timestamps.shift() ?? 2,
       ),
-    /syntax oracle shard exceeded 1ms/,
+    /syntax grammar shard exceeded 1ms/,
   );
 });
 
