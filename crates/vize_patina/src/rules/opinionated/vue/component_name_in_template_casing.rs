@@ -23,8 +23,10 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::Croquis;
 use vize_croquis::croquis::TemplateComponentRegistrations;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case, to_pascal_case};
-use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::ElementNode;
+
+use super::component_registration::options_api_registers;
 
 mod fix;
 
@@ -190,6 +192,7 @@ fn check_element<'a>(
                     &analysis.template_component_registrations;
                 registrations.contains(&name, analysis.bindings.is_script_setup)
             })
+            && !options_api_registers(ctx, tag)
         {
             return;
         }
@@ -204,7 +207,17 @@ fn check_element<'a>(
             ctx.t("vue/component-name-in-template-casing.help_kebab"),
         ),
     };
-    let span = element.loc.span;
+    let open_start = element.loc.span.start;
+    let open_end = open_start.saturating_add(1 + tag.len() as u32);
+    let span = if ctx
+        .source
+        .get(open_start as usize..open_end as usize)
+        .is_some_and(|authored| authored.strip_prefix('<') == Some(tag))
+    {
+        Span::new(open_start, open_end)
+    } else {
+        element.loc.span
+    };
     let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
     if let Some(processed) = ctx.help_level().process(&help) {
         diagnostic = diagnostic.with_help(processed);

@@ -21,9 +21,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::MarkupElement;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_l0::is_native_tag;
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-true-attribute-shorthand",
@@ -35,6 +35,23 @@ static META: RuleMeta = RuleMeta {
 
 /// Prefer the shorthand for a boolean attribute bound to `true`.
 pub struct PreferTrueAttributeShorthand;
+
+fn is_custom_component(element: &ElementNode<'_>) -> bool {
+    element.tag_type == ElementType::Component
+        || !is_native_tag(element.tag)
+        || element.props.iter().any(|prop| match prop {
+            PropNode::Attribute(attribute) => attribute.name == "is",
+            PropNode::Directive(directive) => {
+                directive.name == "is"
+                    || (directive.name == "bind"
+                        && matches!(
+                            directive.arg.as_ref(),
+                            Some(ExpressionNode::Simple(arg))
+                                if arg.is_static && arg.content == "is"
+                        ))
+            }
+        })
+}
 
 impl Rule for PreferTrueAttributeShorthand {
     fn meta(&self) -> &'static RuleMeta {
@@ -58,7 +75,7 @@ impl Rule for PreferTrueAttributeShorthand {
             return;
         }
         let name = arg.content;
-        if !MarkupElement::new(element).is_component() {
+        if !is_custom_component(element) {
             return;
         }
         let is_true =
@@ -123,6 +140,16 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn reports_lowercase_single_word_component_true_binding() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<avatar :member="user" :avatar-only="true" :with-background="true" />"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 2);
     }
 
     #[test]

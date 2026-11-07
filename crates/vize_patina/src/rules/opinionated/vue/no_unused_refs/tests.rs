@@ -123,10 +123,9 @@ const setRef = (el) => {}
 }
 
 #[test]
-fn test_skip_when_no_script_block() {
-    // No script to correlate against: report nothing (conservative).
+fn test_reports_when_no_script_block_can_use_the_ref() {
     let sfc = r#"<template><input ref="orphan" /></template>"#;
-    assert_eq!(warnings(sfc), 0);
+    assert_eq!(warnings(sfc), 1);
 }
 
 #[test]
@@ -165,6 +164,32 @@ fn test_valid_ref_used_in_template_refs_expression() {
 <script setup>
 const x = 1
 </script>"#;
+    assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn test_template_static_refs_use_does_not_hide_another_dead_ref() {
+    let sfc = r#"<template>
+  <button ref="calendar" @click="$refs.calendar.open()" />
+  <input ref="inlineCalendar" />
+</template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert!(findings[0].message.contains("inlineCalendar"));
+}
+
+#[test]
+fn test_template_static_refs_use_keeps_the_named_ref() {
+    let sfc = r#"<template>
+  <button ref="calendar" @click="$refs.calendar.open()" />
+</template>
+<script>export default {}</script>"#;
     assert_eq!(warnings(sfc), 0);
 }
 

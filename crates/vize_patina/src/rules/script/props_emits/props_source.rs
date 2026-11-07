@@ -34,6 +34,7 @@ pub(crate) struct PropDescriptor<'a> {
     pub(crate) name: &'a str,
     pub(crate) key: &'a PropertyKey<'a>,
     pub(crate) value: &'a Expression<'a>,
+    pub(crate) shorthand: bool,
     /// Complete written prop entry, matching Vue's declaration diagnostics.
     pub(crate) span: Span,
 }
@@ -69,6 +70,7 @@ impl<'a> PropsSource<'a> {
                     name,
                     key: &property.key,
                     value: &property.value,
+                    shorthand: property.shorthand,
                     span: property.span(),
                 })
             })

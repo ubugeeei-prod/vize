@@ -121,20 +121,29 @@ impl ScriptRule for NoUnusedEmitDeclarations {
         {
             // Collect every event name emitted through the captured function.
             let mut used = FxHashSet::default();
-            let mut collector = EmittedCollector {
-                emit_name: declaration.binding,
-                used: &mut used,
-                direct_callees: Vec::new(),
-                escaped: false,
-            };
-            collector.visit_program(program);
+            let mut escaped = false;
+            if let Some(binding) = declaration.binding {
+                let mut collector = EmittedCollector {
+                    emit_name: binding,
+                    source,
+                    used: &mut used,
+                    direct_callees: Vec::new(),
+                    escaped: false,
+                };
+                collector.visit_program(program);
+                escaped = collector.escaped;
+            }
             // `useClose(emit)`, `const saved = emit`, or `return emit` can emit
             // any declared event. The rule cannot see which, so none are unused.
-            if !collector.escaped {
+            if !escaped {
                 // Top-level `<script setup>` bindings are template-visible, so emit
                 // calls in template expressions count as usage too (#3209).
                 if let Some(template) = sfc.template_source {
-                    collect_template_emitted_events(template, declaration.binding, &mut used);
+                    collect_template_emitted_events(
+                        template,
+                        declaration.binding.unwrap_or(""),
+                        &mut used,
+                    );
                 }
 
                 for event in &declaration.events {
@@ -287,31 +296,39 @@ struct DeclaredEvent {
 
 /// The resolved `const <binding> = defineEmits(...)` declaration.
 struct EmitDeclaration<'a> {
-    binding: &'a str,
+    binding: Option<&'a str>,
     events: Vec<DeclaredEvent>,
 }
 
-/// Find the first top-level `const <id> = defineEmits(...)` and collect the
-/// declared event names. Returns `None` when there is no such assigned
-/// `defineEmits` call (an unassigned call cannot be tracked).
+/// Find the first top-level `defineEmits(...)` and collect the declared event
+/// names. The captured binding is optional: an unassigned macro cannot be
+/// called from script, but its declarations can still be used through the
+/// template-only `$emit` helper.
 fn find_emit_declaration<'a>(program: &'a Program<'a>) -> Option<EmitDeclaration<'a>> {
     for statement in &program.body {
-        let Statement::VariableDeclaration(declaration) = statement else {
-            continue;
-        };
-        for declarator in &declaration.declarations {
-            let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-                continue;
-            };
-            let Some(call) = declarator.init.as_ref().and_then(unwrap_call) else {
-                continue;
-            };
-            if !is_define_emits(call) {
-                continue;
+        if let Statement::VariableDeclaration(declaration) = statement {
+            for declarator in &declaration.declarations {
+                let BindingPattern::BindingIdentifier(id) = &declarator.id else {
+                    continue;
+                };
+                let Some(call) = declarator.init.as_ref().and_then(unwrap_call) else {
+                    continue;
+                };
+                if !is_define_emits(call) {
+                    continue;
+                }
+                return Some(EmitDeclaration {
+                    binding: Some(id.name.as_str()),
+                    events: collect_declared_events(call),
+                });
             }
+        } else if let Statement::ExpressionStatement(expression) = statement
+            && let Some(call) = unwrap_call(&expression.expression)
+            && is_define_emits(call)
+        {
             let events = collect_declared_events(call);
             return Some(EmitDeclaration {
-                binding: id.name.as_str(),
+                binding: None,
                 events,
             });
         }
@@ -373,7 +390,7 @@ fn collect_event_from_signature(member: &TSSignature<'_>, events: &mut Vec<Decla
             if let Some(name) = property_key_name(&property.key) {
                 events.push(DeclaredEvent {
                     name: CompactString::new(name),
-                    span: property.key.span(),
+                    span: property.span,
                 });
             }
         }
@@ -381,7 +398,7 @@ fn collect_event_from_signature(member: &TSSignature<'_>, events: &mut Vec<Decla
             if let Some(name) = property_key_name(&method.key) {
                 events.push(DeclaredEvent {
                     name: CompactString::new(name),
-                    span: method.key.span(),
+                    span: method.span,
                 });
             }
         }
@@ -393,7 +410,7 @@ fn collect_event_from_signature(member: &TSSignature<'_>, events: &mut Vec<Decla
             {
                 events.push(DeclaredEvent {
                     name: CompactString::new(string.value.as_str()),
-                    span: string.span,
+                    span: call_signature.span,
                 });
             }
         }
@@ -406,6 +423,7 @@ fn collect_event_from_signature(member: &TSSignature<'_>, events: &mut Vec<Decla
 /// that direct callee means the function value escaped.
 struct EmittedCollector<'a, 'set> {
     emit_name: &'a str,
+    source: &'a str,
     used: &'set mut FxHashSet<CompactString>,
     direct_callees: Vec<Span>,
     escaped: bool,
@@ -430,6 +448,13 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
                 .direct_callees
                 .iter()
                 .any(|callee| callee.start == it.span.start && callee.end == it.span.end)
+            // `emit.bind(null, 'event')` is not recognized as an emitted event
+            // by eslint-plugin-vue, but the member access alone also does not
+            // make the captured function an opaque escape.
+            && !self
+                .source
+                .get(it.span.end as usize..)
+                .is_some_and(|tail| tail.starts_with(".bind") || tail.starts_with("?.bind"))
         {
             self.escaped = true;
         }

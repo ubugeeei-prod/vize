@@ -203,7 +203,7 @@ fn static_name(expression: &Expression<'_>) -> Option<(String, Span)> {
             template.span,
         )),
         Expression::NumericLiteral(literal) => {
-            Some((literal.value.to_string().into(), literal.span))
+            Some((literal.value.to_compact_string(), literal.span))
         }
         Expression::BooleanLiteral(literal) => Some((
             if literal.value { "true" } else { "false" }.into(),

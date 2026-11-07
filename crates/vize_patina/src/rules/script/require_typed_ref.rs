@@ -39,7 +39,7 @@
 //! const c = ref(0)          // inferred Ref<number>
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
@@ -91,6 +91,19 @@ impl ScriptRule for RequireTypedRef {
             annotated_initializer: None,
         };
         visitor.visit_program(program);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if !sfc.typescript_jsx {
+            self.check_program(program, source, offset, result);
+        }
     }
 }
 
@@ -202,6 +215,7 @@ fn is_null_or_undefined(expression: &Expression<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::RequireTypedRef;
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -281,6 +295,17 @@ mod tests {
         assert_eq!(result.warning_count, 1);
         let call_start = source.find("ref()").unwrap() as u32 + 100;
         assert_eq!(result.diagnostics[0].start, call_start);
+    }
+
+    #[test]
+    fn test_vue_tsx_block_matches_upstream_exclusion() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-typed-ref".into()]))
+            .lint_sfc(
+                "<script setup lang=\"tsx\">import { ref } from 'vue'; const input = ref()</script>",
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 0);
     }
 }
 

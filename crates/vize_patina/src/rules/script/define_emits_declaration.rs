@@ -29,7 +29,7 @@
 //! const emit = defineEmits<Emits>()
 //! ```
 
-use oxc_ast::ast::{Argument, CallExpression, Expression, Program, Statement};
+use oxc_ast::ast::{CallExpression, Expression, Program, Statement};
 use oxc_span::Span;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -83,7 +83,7 @@ impl ScriptRule for DefineEmitsDeclaration {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if sfc.is_script_setup {
+        if sfc.is_script_setup && sfc.typescript {
             self.check_program(program, source, offset, result);
         }
     }
@@ -144,15 +144,11 @@ fn runtime_define_emits(call: &CallExpression<'_>) -> Option<Span> {
     }
 }
 
-/// Whether the call carries a runtime argument (an array or object literal),
-/// i.e. the runtime/array form of `defineEmits`.
+/// Whether the call carries any runtime argument. Runtime declarations are
+/// often imported identifiers (`defineEmits(buttonEmits)`), not only inline
+/// arrays or objects.
 fn has_runtime_argument(call: &CallExpression<'_>) -> bool {
-    call.arguments.iter().any(|argument| {
-        matches!(
-            argument,
-            Argument::ArrayExpression(_) | Argument::ObjectExpression(_)
-        )
-    })
+    !call.arguments.is_empty()
 }
 
 fn report(result: &mut ScriptLintResult, offset: usize, span: Span) {
@@ -207,6 +203,12 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_imported_runtime_declaration() {
+        let result = lint("const emit = defineEmits(buttonEmits)");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
     fn test_invalid_bare_expression_statement() {
         let result = lint("defineEmits(['change'])");
         assert_eq!(result.warning_count, 1);
@@ -246,6 +248,17 @@ mod tests {
             .with_enabled_rules(Some(vec!["script/define-emits-declaration".into()]))
             .lint_sfc(
                 "<script lang=\"ts\">const value = defineEmits(['change'])</script>",
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_javascript_script_setup_is_not_a_type_based_context() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/define-emits-declaration".into()]))
+            .lint_sfc(
+                "<script setup>const emit = defineEmits(['change'])</script>",
                 "Probe.vue",
             );
         assert_eq!(result.warning_count, 0);

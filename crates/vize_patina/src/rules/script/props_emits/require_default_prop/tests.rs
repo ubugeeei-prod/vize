@@ -136,12 +136,70 @@ const props = defineProps({
 
 #[test]
 fn test_define_props_type_based_is_ignored() {
-    // No runtime descriptor exists, so nothing is checked.
+    // Upstream intentionally checks typed props only when defaults are made
+    // explicit through destructuring or `withDefaults`.
     let source = r#"
 const props = defineProps<{ name?: string }>()
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_typed_destructure_requires_defaults_for_optional_non_boolean_props() {
+    let source = r#"
+interface Props {
+  title?: string
+  enabled?: boolean
+  count: number
+}
+const { title, enabled, count } = defineProps<Props>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "title?: string"
+    );
+}
+
+#[test]
+fn test_typed_destructure_and_with_defaults_honor_declared_defaults() {
+    let destructure = r#"
+const { title = '' } = defineProps<{ title?: string }>()
+"#;
+    assert_eq!(create_linter().lint(destructure, 0).error_count, 0);
+
+    let wrapper = r#"
+const props = withDefaults(defineProps<{
+  title?: string
+  count?: number
+}>(), { title: '' })
+"#;
+    let result = create_linter().lint(wrapper, 0);
+    assert_eq!(result.error_count, 1);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &wrapper[diagnostic.start as usize..diagnostic.end as usize],
+        "count?: number"
+    );
+}
+
+#[test]
+fn test_runtime_custom_constructors_and_shorthand_are_ignored_like_upstream() {
+    let source = r#"
+const custom = {}
+export default {
+  props: {
+    shorthand,
+    call: makeType(),
+    member: custom.Type,
+    unknown: CustomType
+  }
+}
+"#;
+    assert_eq!(create_linter().lint(source, 0).error_count, 0);
 }
 
 #[test]

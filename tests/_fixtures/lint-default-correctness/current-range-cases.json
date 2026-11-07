@@ -169,7 +169,7 @@
           "severity": "error",
           "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3",
           "start": 28,
-          "end": 45,
+          "end": 33,
           "help": null,
           "labels": [],
           "fix": null
@@ -184,7 +184,7 @@
             },
             "end": {
               "line": 0,
-              "character": 45
+              "character": 33
             }
           },
           "severity": 1,

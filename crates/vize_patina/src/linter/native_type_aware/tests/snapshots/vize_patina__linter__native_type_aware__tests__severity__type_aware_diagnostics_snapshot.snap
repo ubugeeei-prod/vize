@@ -31,6 +31,15 @@ expression: diagnostics
         ),
     ),
     (
+        "script/no-unused-emit-declarations",
+        "The 'save' event is declared but never emitted.",
+        85,
+        91,
+        Some(
+            "Emit this event via the captured emit function, or remove it from the defineEmits declaration.",
+        ),
+    ),
+    (
         "script/require-prop-types",
         "Prop 'msg' should define a type.",
         64,

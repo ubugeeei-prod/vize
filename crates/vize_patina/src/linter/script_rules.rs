@@ -334,6 +334,7 @@ pub(crate) fn append_builtin_script_rules_for_source(
             parsed.as_ref(),
             SfcScriptContext {
                 typescript: is_typescript_filename(result.filename.as_str()),
+                typescript_jsx: result.filename.ends_with(".tsx"),
                 ..SfcScriptContext::default()
             },
             None,

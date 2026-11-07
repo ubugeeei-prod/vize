@@ -20,7 +20,6 @@
 //! To stay sound in the few cases the text test cannot resolve, the rule reports
 //! nothing for the file when:
 //!
-//! - there is no `<script>` / `<script setup>` block to correlate against;
 //! - a script or the template uses `$refs` opaquely — a computed access
 //!   `$refs[expr]`, or `$refs` passed / destructured / iterated as a whole object
 //!   — since any ref could then be reached without its name appearing literally.
@@ -94,10 +93,6 @@ impl Rule for NoUnusedRefs {
         // Resolve which refs are unused while the descriptor borrow is held, then
         // drop it so diagnostics can be reported through `&mut ctx`.
         let unused: Vec<TemplateRef> = {
-            // This rule only makes sense against a script block to correlate
-            // with. Without one there is nothing that could "use" the ref, and
-            // we also cannot observe `$refs` / `useTemplateRef` resolution, so
-            // stay quiet.
             let Some(descriptor) = ctx.sfc_descriptor() else {
                 return;
             };
@@ -111,10 +106,6 @@ impl Rule for NoUnusedRefs {
                 .as_ref()
                 .map(|block| block.content.as_ref())
                 .unwrap_or("");
-            if script.is_empty() && script_setup.is_empty() {
-                return;
-            }
-
             // Opaque `$refs` usage in script (computed access or whole-object
             // handling) can reach any ref without naming it; bail out to avoid
             // false positives.
@@ -122,17 +113,16 @@ impl Rule for NoUnusedRefs {
                 return;
             }
 
-            // Any `$refs` in the *template* means refs may be consumed there
-            // (e.g. `{{ $refs.x.value }}`) rather than in `<script>`. Resolving
-            // those against the per-ref check is unreliable across the separate
-            // passes, so treat the presence of template `$refs` as a reason to
-            // stay quiet for the whole file.
+            // A dynamic or whole-object `$refs` use in the template can reach
+            // any name. Static member reads, however, only keep that exact ref
+            // alive; one `$refs.calendar` must not hide an unrelated dead
+            // `ref="inlineCalendar"`.
             let template_src = descriptor
                 .template
                 .as_ref()
                 .map(|block| block.content.as_ref())
                 .unwrap_or("");
-            if mentions_refs_token(template_src) {
+            if has_opaque_refs_access(template_src) {
                 return;
             }
 
@@ -140,7 +130,8 @@ impl Rule for NoUnusedRefs {
             refs.into_iter()
                 .filter(|template_ref| {
                     let name = template_ref.name.as_str();
-                    !binding_uses_template_ref(ctx, name)
+                    !template_uses_static_ref(template_src, name)
+                        && !binding_uses_template_ref(ctx, name)
                         && !scripts.is_some_and(|scripts| {
                             scripts.script().is_some_and(|parsed| {
                                 program_uses_template_ref(&parsed.program, name)
@@ -370,16 +361,18 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
     }
 }
 
-/// Whether `source` contains a `$refs` token at all (used to gate on template
-/// `$refs` access, which this rule does not attempt to resolve).
-fn mentions_refs_token(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    source.match_indices("$refs").any(|(index, _)| {
-        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
-        // `$` cannot follow an identifier char in a real `$refs`, but guard the
-        // alphanumeric/underscore case anyway to avoid matching `x$refs`.
-        !before.is_some_and(|b| b.is_ascii_alphanumeric() || b == b'_')
-    })
+fn template_uses_static_ref(source: &str, name: &str) -> bool {
+    let mut needle = CompactString::with_capacity("$refs.".len() + name.len());
+    needle.push_str("$refs.");
+    needle.push_str(name);
+    source
+        .match_indices(needle.as_str())
+        .any(|(index, matched)| {
+            let before = index.checked_sub(1).and_then(|i| source.as_bytes().get(i));
+            let after = source.as_bytes().get(index + matched.len());
+            !before.is_some_and(|byte| byte.is_ascii_alphanumeric() || *byte == b'_')
+                && !after.is_some_and(|byte| byte.is_ascii_alphanumeric() || *byte == b'_')
+        })
 }
 
 /// Whether `source` references `$refs` in a way whose target cannot be resolved

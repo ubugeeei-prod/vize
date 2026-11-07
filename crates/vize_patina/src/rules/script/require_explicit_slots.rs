@@ -18,20 +18,9 @@
 //! enumerable, a `<slot name="footer" />` rendered by the template but absent
 //! from that set is reported at the `<slot>` element.
 //!
-//! Both sides are deliberately conservative, in opposite ways:
-//!
-//! * The declaration must be a single `defineSlots<{ ... }>()` type literal.
-//!   Anything the rule cannot enumerate — `defineSlots<Slots>()`, an index
-//!   signature, a computed key — reports nothing, because a name missing from a
-//!   half-read set is not evidence that it is undeclared. See
-//!   [`declared::DeclaredSlots`].
-//! * The rendered set must be fully static. One `<slot :name="x" />` anywhere
-//!   makes the whole template unreadable for this purpose and the rule reports
-//!   nothing for the component. See [`template::RenderedSlots`].
-//!
-//! Both leave real problems unreported, which is the tolerable direction: this
-//! half *creates* findings from template evidence, so an over-match would be a
-//! diagnostic on correct code. [`template`] documents the over-match probes.
+//! A dynamic `:name` is skipped because it cannot be compared statically, but
+//! does not hide other static outlets. A type form that cannot be enumerated
+//! contributes no known declarations, matching eslint-plugin-vue.
 //!
 //! ## Examples
 //!
@@ -110,7 +99,7 @@ impl ScriptRule for RequireExplicitSlots {
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        source: &str,
+        _source: &str,
         _offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -119,12 +108,9 @@ impl ScriptRule for RequireExplicitSlots {
             return;
         }
         // With both script kinds, run once from script setup. A normal-script
-        // SlotsType declaration is not yet enumerable here, so stay quiet
-        // instead of inventing missing-slot reports.
+        // The regular-script `SlotsType` declaration is handled when it is the
+        // sole script block. With both script kinds, run once from setup.
         if !sfc.sole_script_block && !sfc.is_script_setup {
-            return;
-        }
-        if !sfc.is_script_setup && source.contains("SlotsType") {
             return;
         }
         let slots = declared::collect(program);
@@ -132,7 +118,11 @@ impl ScriptRule for RequireExplicitSlots {
             DeclaredSlots::Absent => {
                 check_template(&vize_l0::FxHashSet::default(), sfc, result);
             }
-            DeclaredSlots::Unknown => {}
+            // eslint-plugin-vue cannot resolve imported/referenced types here;
+            // such a declaration contributes no statically known slot names.
+            DeclaredSlots::Unknown => {
+                check_template(&vize_l0::FxHashSet::default(), sfc, result);
+            }
             DeclaredSlots::Known(names) => {
                 check_template(names, sfc, result);
             }
@@ -150,9 +140,7 @@ fn check_template(
     else {
         return;
     };
-    let RenderedSlots::Known(rendered) = template::collect_rendered_slots(root, source) else {
-        return;
-    };
+    let RenderedSlots::Known(rendered) = template::collect_rendered_slots(root, source);
     for slot in rendered {
         if !declared.contains(&slot.name) {
             report_undeclared_slot(&slot, template_offset, result);

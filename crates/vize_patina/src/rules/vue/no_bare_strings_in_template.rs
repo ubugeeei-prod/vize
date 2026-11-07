@@ -42,6 +42,7 @@ use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{
     MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule,
+    MarkupText,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
@@ -69,21 +70,7 @@ const COMMON_TARGET_ATTRIBUTES: &[&str] = &[
 pub struct NoBareStringsInTemplate;
 
 impl NoBareStringsInTemplate {
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        // Bare text content of the element (direct text children only; nested
-        // elements are visited on their own).
-        element.walk_children(&mut |child| {
-            if let MarkupNode::Text(text) = child
-                && has_bare_string(text.content())
-            {
-                ctx.warn_at_with_help(
-                    ctx.t("vue/no-bare-strings-in-template.message"),
-                    text.range(),
-                    ctx.t("vue/no-bare-strings-in-template.help"),
-                );
-            }
-        });
-
+    fn check_bindings(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // Bare string in a user-facing static attribute. Bound attributes
         // (`:title="..."`) are directives, so they are skipped here.
         element.walk_bindings(&mut |binding| {
@@ -110,6 +97,28 @@ impl NoBareStringsInTemplate {
             }
         });
     }
+
+    fn check_text(ctx: &mut LintContext<'_>, text: &MarkupText<'_>) {
+        if has_bare_string(text.content()) {
+            ctx.warn_at_with_help(
+                ctx.t("vue/no-bare-strings-in-template.message"),
+                text.range(),
+                ctx.t("vue/no-bare-strings-in-template.help"),
+            );
+        }
+    }
+
+    fn check_element_legacy(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        // The legacy Relief visitor has no text callback, so keep its direct
+        // child projection here. The unified markup lane uses `enter_text` and
+        // therefore also sees text at the document root.
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Text(text) = child {
+                Self::check_text(ctx, &text);
+            }
+        });
+        Self::check_bindings(ctx, element);
+    }
 }
 
 impl MarkupRule for NoBareStringsInTemplate {
@@ -118,7 +127,23 @@ impl MarkupRule for NoBareStringsInTemplate {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        Self::check_element(ctx.lint(), element);
+        // JSX diagnostics follow authored source order: attributes precede
+        // children. Vue keeps the legacy visitor's element-exit ordering below.
+        if ctx.is_jsx() {
+            Self::check_bindings(ctx.lint(), element);
+        }
+    }
+
+    fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if ctx.is_template() {
+            Self::check_element_legacy(ctx.lint(), element);
+        }
+    }
+
+    fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
+        if ctx.is_jsx() {
+            Self::check_text(ctx.lint(), text);
+        }
     }
 }
 
@@ -138,8 +163,8 @@ impl Rule for NoBareStringsInTemplate {
         true
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+    fn exit_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element_legacy(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -169,10 +194,10 @@ fn value_range(source: &str, binding: MarkupBinding<'_>) -> ByteRange {
     let Some(equal) = authored.find('=') else {
         return range;
     };
-    let whitespace = authored[equal + 1..]
-        .bytes()
-        .take_while(u8::is_ascii_whitespace)
-        .count();
+    let Some(value) = authored.get(equal + 1..) else {
+        return range;
+    };
+    let whitespace = value.bytes().take_while(u8::is_ascii_whitespace).count();
     ByteRange::new(range.start + (equal + 1 + whitespace) as u32, range.end)
 }
 

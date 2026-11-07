@@ -25,6 +25,7 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::NoBareStringsInTemplate));
+    linter.registry.mark_has_exit_element_rules();
     linter
 }
 

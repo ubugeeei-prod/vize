@@ -62,6 +62,10 @@ pub struct SfcScriptContext<'a> {
     /// parsed as TypeScript, so rules that only make sense with type syntax
     /// read this instead of the parse result.
     pub typescript: bool,
+    /// Whether the TypeScript block/file uses the TSX dialect. A few upstream
+    /// rules intentionally require an exact `lang="ts"` SFC block and do not
+    /// run for `lang="tsx"`.
+    pub typescript_jsx: bool,
     /// Raw `<template>` block content, when the SFC declares a template.
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled

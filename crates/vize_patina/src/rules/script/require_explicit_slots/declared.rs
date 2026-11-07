@@ -1,7 +1,13 @@
 //! What a single script block declares about its slots.
 
-use oxc_ast::ast::{CallExpression, Expression, Program, PropertyKey, TSSignature, TSType};
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_ast::ast::{
+    CallExpression, Expression, Program, PropertyKey, TSAsExpression, TSSignature, TSType,
+    TSTypeName,
+};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_ts_as_expression},
+};
 use vize_l0::{CompactString, FxHashSet};
 
 /// The slot contract the script states.
@@ -39,20 +45,33 @@ struct SlotsVisitor {
 
 impl<'a> Visit<'a> for SlotsVisitor {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Expression::Identifier(callee) = &it.callee {
-            match callee.name.as_str() {
-                "defineSlots" => {
-                    // A second `defineSlots` is invalid Vue; which one wins is
-                    // not ours to guess, so the set stops being known.
-                    self.declared = match self.declared {
-                        DeclaredSlots::Absent => declared_from_call(it),
-                        _ => DeclaredSlots::Unknown,
-                    };
-                }
-                _ => {}
-            }
+        if let Expression::Identifier(callee) = &it.callee
+            && callee.name == "defineSlots"
+        {
+            self.merge(declared_from_call(it));
         }
         walk_call_expression(self, it);
+    }
+
+    fn visit_ts_as_expression(&mut self, it: &TSAsExpression<'a>) {
+        if let Some(declared) = slots_type_declaration(&it.type_annotation) {
+            self.merge(declared);
+        }
+        walk_ts_as_expression(self, it);
+    }
+}
+
+impl SlotsVisitor {
+    fn merge(&mut self, next: DeclaredSlots) {
+        let current = std::mem::replace(&mut self.declared, DeclaredSlots::Absent);
+        self.declared = match (current, next) {
+            (DeclaredSlots::Absent | DeclaredSlots::Unknown, next) => next,
+            (current, DeclaredSlots::Absent | DeclaredSlots::Unknown) => current,
+            (DeclaredSlots::Known(mut current), DeclaredSlots::Known(next)) => {
+                current.extend(next);
+                DeclaredSlots::Known(current)
+            }
+        };
     }
 }
 
@@ -67,18 +86,59 @@ fn declared_from_call(call: &CallExpression<'_>) -> DeclaredSlots {
     let Some(type_arguments) = call.type_arguments.as_ref() else {
         return DeclaredSlots::Unknown;
     };
-    let [TSType::TSTypeLiteral(literal)] = type_arguments.params.as_slice() else {
+    let [ty] = type_arguments.params.as_slice() else {
         return DeclaredSlots::Unknown;
     };
+    declared_from_type(ty)
+}
+
+fn slots_type_declaration(ty: &TSType<'_>) -> Option<DeclaredSlots> {
+    let TSType::TSTypeReference(reference) = ty else {
+        return None;
+    };
+    let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
+        return None;
+    };
+    if identifier.name != "SlotsType" {
+        return None;
+    }
+    let Some(arguments) = &reference.type_arguments else {
+        return Some(DeclaredSlots::Unknown);
+    };
+    let [ty] = arguments.params.as_slice() else {
+        return Some(DeclaredSlots::Unknown);
+    };
+    Some(declared_from_type(ty))
+}
+
+fn declared_from_type(ty: &TSType<'_>) -> DeclaredSlots {
+    match ty {
+        TSType::TSTypeLiteral(literal) => declared_from_members(&literal.members),
+        TSType::TSIntersectionType(intersection) => {
+            let mut names = FxHashSet::default();
+            for ty in &intersection.types {
+                if let DeclaredSlots::Known(part) = declared_from_type(ty) {
+                    names.extend(part);
+                }
+            }
+            DeclaredSlots::Known(names)
+        }
+        _ => DeclaredSlots::Unknown,
+    }
+}
+
+fn declared_from_members(members: &[TSSignature<'_>]) -> DeclaredSlots {
     let mut names = FxHashSet::default();
-    for member in &literal.members {
+    for member in members {
         let key = match member {
             TSSignature::TSPropertySignature(property) if !property.computed => &property.key,
             TSSignature::TSMethodSignature(method) if !method.computed => &method.key,
-            _ => return DeclaredSlots::Unknown,
+            // Index signatures and unresolved/computed members contribute no
+            // enumerable name, but do not erase explicit siblings.
+            _ => continue,
         };
         let Some(name) = property_key_name(key) else {
-            return DeclaredSlots::Unknown;
+            continue;
         };
         names.insert(CompactString::new(name));
     }

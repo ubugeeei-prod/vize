@@ -24,7 +24,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::opinionated::vue::authored_element::closing;
 use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
-use vize_relief::{ElementNode, ElementType, Namespace};
+use vize_relief::{ElementNode, ElementType, ExpressionNode, Namespace, PropNode};
 
 mod fix;
 
@@ -145,6 +145,15 @@ fn check_element<'a>(
     options: HtmlSelfClosingOptions,
     allow_vuetify_tags: bool,
 ) {
+    // eslint-plugin-vue intentionally leaves direct template roots alone: making
+    // the only root self-closing can turn a component template into an empty one.
+    if ctx.filename.ends_with(".vue")
+        && ctx.element_stack.len() == 1
+        && ctx.sfc_descriptor().is_none()
+    {
+        return;
+    }
+
     let tag = element.tag;
     if allow_vuetify_tags && is_vuetify_tag(tag) {
         return;
@@ -218,7 +227,10 @@ fn report(
 
 fn authored_empty(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
     let Some(close) = closing(ctx.source, element) else {
-        return element.children.is_empty();
+        // Do not infer emptiness from a recovered parser node. Invalid or
+        // mismatched end tags can leave a node with no children even though the
+        // authored range is not provably empty.
+        return !ctx.filename.ends_with(".vue") && element.children.is_empty();
     };
     ctx.source
         .get(element.loc.span.end as usize..close.start)
@@ -277,8 +289,9 @@ fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
         return SelfClosingElementKind::Math;
     }
 
-    if (element.tag_type == ElementType::Component || is_component_like_tag(tag))
-        && !is_nuxt_builtin_component(tag)
+    if element.tag_type == ElementType::Component
+        || has_component_cast(element)
+        || !is_html_element_name(tag)
     {
         return SelfClosingElementKind::Component;
     }
@@ -300,8 +313,19 @@ fn is_html_element_name(tag: &str) -> bool {
     is_html_tag(&tag.to_lowercase())
 }
 
-fn is_component_like_tag(tag: &str) -> bool {
-    tag.contains('-') || tag.chars().next().is_some_and(char::is_uppercase)
+fn has_component_cast(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attribute) => attribute.name == "is",
+        PropNode::Directive(directive) => {
+            directive.name == "is"
+                || (directive.name == "bind"
+                    && matches!(
+                        directive.arg.as_ref(),
+                        Some(ExpressionNode::Simple(arg))
+                            if arg.is_static && arg.content == "is"
+                    ))
+        }
+    })
 }
 
 fn authored_self_closing(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
@@ -321,30 +345,6 @@ fn authored_self_closing(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bo
         }
     }
     false
-}
-
-fn is_nuxt_builtin_component(tag: &str) -> bool {
-    matches!(
-        tag,
-        "nuxt"
-            | "nuxt-child"
-            | "nuxt-page"
-            | "nuxt-layout"
-            | "nuxt-link"
-            | "nuxt-loading-indicator"
-            | "nuxt-error-boundary"
-            | "client-only"
-            | "no-ssr"
-            | "Nuxt"
-            | "NuxtChild"
-            | "NuxtPage"
-            | "NuxtLayout"
-            | "NuxtLink"
-            | "NuxtLoadingIndicator"
-            | "NuxtErrorBoundary"
-            | "ClientOnly"
-            | "NoSsr"
-    )
 }
 
 /// Matches the Vuetify `v-*` tag convention (e.g. `v-btn`, `v-dialog`).

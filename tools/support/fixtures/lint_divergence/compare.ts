@@ -11,6 +11,7 @@ import {
   groupByIdentity,
   outsideBaselineSurface,
   pairRuleLocationDivergences,
+  patinaIntentionalReason,
   recordValue,
   type LintRecord,
 } from "./records.ts";
@@ -139,7 +140,7 @@ export function compareLintFindings(
     else if (status === "intentional-divergence")
       intentionalDivergences.push({ ...finding, reason: get(entry, "reason") });
     else if (status === "mapped") {
-      const reason = baselineIntentionalReason(finding);
+      const reason = baselineIntentionalReason(finding, sourceFor(finding.file));
       if (reason !== null) intentionalDivergences.push({ ...finding, reason });
       else {
         const target = get(entry, "patinaRule");
@@ -208,6 +209,14 @@ export function compareLintFindings(
     falsePositives.push(...candidates.slice(common));
     falseNegatives.push(...expected.slice(common));
   }
+  for (let index = falsePositives.length - 1; index >= 0; index--) {
+    const finding = falsePositives[index];
+    const source = sources.get(finding.file) ?? null;
+    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    if (reason === null) continue;
+    falsePositives.splice(index, 1);
+    intentionalDivergences.push({ ...recordValue(finding), reason });
+  }
   const ruleLocationDivergences = sortValues(
     pairRuleLocationDivergences(falsePositives, falseNegatives),
   );
@@ -220,8 +229,7 @@ export function compareLintFindings(
     ).length,
     patinaFindingCount:
       comparablePatina.length + patinaOnlyRuleFindings.length + patinaOutsideBaselineSurface.length,
-    baselineFindingCount:
-      comparableBaseline.length + unimplemented.length + intentionalDivergences.length,
+    baselineFindingCount: baseline.findings.length,
     comparableBaselineCount: comparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,

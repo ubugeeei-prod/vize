@@ -105,83 +105,90 @@ fn static_style_findings(source: &str) -> StyleFindings {
         return StyleFindings::None;
     }
     match expression.get_inner_expression() {
-        Expression::ObjectExpression(object) if object_is_fully_static(object) => {
-            StyleFindings::Whole
-        }
-        Expression::ArrayExpression(array)
-            if array.elements.iter().all(|element| {
-                let Some(expression) = element.as_expression() else {
-                    return false;
-                };
-                matches!(expression.get_inner_expression(), Expression::ObjectExpression(object) if object_is_fully_static(object))
-            }) =>
-        {
-            StyleFindings::Whole
-        }
-        Expression::ObjectExpression(object) => {
-            let properties = static_properties(object);
-            if properties.is_empty() {
-                StyleFindings::None
-            } else {
-                StyleFindings::Properties(properties)
-            }
-        }
+        Expression::ObjectExpression(object) => findings_for_objects([&**object], true),
         Expression::ArrayExpression(array) => {
-            let properties = array
-                .elements
-                .iter()
-                .filter_map(|element| element.as_expression())
-                .filter_map(|expression| match expression.get_inner_expression() {
-                    Expression::ObjectExpression(object) => Some(static_properties(object)),
-                    _ => None,
-                })
-                .flatten()
-                .collect::<Vec<_>>();
-            if properties.is_empty() {
-                StyleFindings::None
-            } else {
-                StyleFindings::Properties(properties)
+            let mut objects = Vec::new();
+            let mut complete = true;
+            for element in &array.elements {
+                let Some(expression) = element.as_expression() else {
+                    complete = false;
+                    break;
+                };
+                let Expression::ObjectExpression(object) = expression.get_inner_expression() else {
+                    complete = false;
+                    break;
+                };
+                objects.push(&**object);
             }
+            findings_for_objects(objects, complete)
         }
         _ => StyleFindings::None,
     }
 }
 
-fn static_properties(object: &oxc_ast::ast::ObjectExpression<'_>) -> Vec<oxc_span::Span> {
-    object
-        .properties
-        .iter()
-        .filter_map(|property| {
+fn findings_for_objects<'a>(
+    objects: impl IntoIterator<Item = &'a oxc_ast::ast::ObjectExpression<'a>>,
+    complete: bool,
+) -> StyleFindings {
+    let mut properties = Vec::new();
+    for object in objects {
+        for property in &object.properties {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
-                return None;
+                return findings_from_properties(properties);
             };
-            (!property.computed
-                && matches!(
-                    property.key,
-                    PropertyKey::StaticIdentifier(_)
-                        | PropertyKey::StringLiteral(_)
-                        | PropertyKey::NumericLiteral(_)
-                )
-                && value_is_static(&property.value))
-            .then_some(property.span)
-        })
-        .collect()
-}
-
-fn object_is_fully_static(object: &oxc_ast::ast::ObjectExpression<'_>) -> bool {
-    object.properties.iter().all(|property| {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            return false;
-        };
-        !property.computed
-            && matches!(
+            if property.computed {
+                return findings_from_properties(properties);
+            }
+            if matches!(
                 property.key,
                 PropertyKey::StaticIdentifier(_)
                     | PropertyKey::StringLiteral(_)
                     | PropertyKey::NumericLiteral(_)
-            )
-            && value_is_static(&property.value)
-    })
+            ) && value_is_static(&property.value)
+            {
+                properties.push(property.span);
+            } else {
+                // Upstream finishes this object, collecting later static
+                // properties, but does not inspect following array entries.
+                let remaining = object
+                    .properties
+                    .iter()
+                    .skip_while(|candidate| candidate.span() != property.span)
+                    .skip(1);
+                for candidate in remaining {
+                    let ObjectPropertyKind::ObjectProperty(candidate) = candidate else {
+                        break;
+                    };
+                    if candidate.computed {
+                        break;
+                    }
+                    if matches!(
+                        candidate.key,
+                        PropertyKey::StaticIdentifier(_)
+                            | PropertyKey::StringLiteral(_)
+                            | PropertyKey::NumericLiteral(_)
+                    ) && value_is_static(&candidate.value)
+                    {
+                        properties.push(candidate.span);
+                    }
+                }
+                return findings_from_properties(properties);
+            }
+        }
+    }
+    if complete {
+        StyleFindings::Whole
+    } else {
+        findings_from_properties(properties)
+    }
+}
+
+fn findings_from_properties(properties: Vec<oxc_span::Span>) -> StyleFindings {
+    if properties.is_empty() {
+        StyleFindings::None
+    } else {
+        StyleFindings::Properties(properties)
+    }
 }
 
 fn value_is_static(value: &Expression<'_>) -> bool {
@@ -290,5 +297,14 @@ mod tests {
         let start = source.find(property).unwrap() as u32;
         assert_eq!(result.diagnostics[0].start, start);
         assert_eq!(result.diagnostics[0].end, start + property.len() as u32);
+    }
+
+    #[test]
+    fn stops_before_static_properties_after_a_computed_key() {
+        let result = create_linter().lint_template(
+            r#"<div :style="{ [wide ? 'width' : 'minWidth']: width, outline: 'none' }" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 }

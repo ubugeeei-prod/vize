@@ -119,6 +119,10 @@ fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
             || props.get(index + 1).is_some_and(is_attribute_or_binding))
 }
 
+fn legacy_slot_attribute(prop: &PropNode<'_>, name: &str) -> bool {
+    matches!(prop, PropNode::Attribute(attribute) if attribute.name == name)
+}
+
 pub struct AttributeOrder;
 
 impl Rule for AttributeOrder {
@@ -159,8 +163,13 @@ impl Rule for AttributeOrder {
                 AttrCategory::from_prop(prop)
             };
 
-            if let Some(highest_category_value) = highest_category
-                && category < highest_category_value
+            let legacy_slot_after_scope = legacy_slot_attribute(prop, "slot")
+                && element.props.get(..index).is_some_and(|props| {
+                    props
+                        .iter()
+                        .any(|previous| legacy_slot_attribute(previous, "slot-scope"))
+                });
+            if highest_category.is_some_and(|highest| category < highest) || legacy_slot_after_scope
             {
                 let loc = match prop {
                     PropNode::Attribute(attr) => &attr.loc,
@@ -303,6 +312,10 @@ mod tests {
             r#"<div slot="header" class="panel"></div><div class="panel" slot-scope="scope"></div>"#,
             "test.vue",
         );
+        assert_eq!(result.warning_count, 1);
+
+        let result =
+            linter.lint_template(r#"<template slot-scope="props" slot="item" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

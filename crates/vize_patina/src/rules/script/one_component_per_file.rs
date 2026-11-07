@@ -22,7 +22,7 @@
 //! ```
 
 use super::component_options::component_definitions;
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::Program;
 use oxc_span::Span;
@@ -54,6 +54,28 @@ impl ScriptRule for OneComponentPerFile {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        // Local defineComponent values are ordinary template-visible bindings
+        // in script setup, not additional exported component definitions.
+        if sfc.is_script_setup {
+            return;
+        }
         let definitions = component_definitions(program);
         if definitions.len() < 2 {
             return;

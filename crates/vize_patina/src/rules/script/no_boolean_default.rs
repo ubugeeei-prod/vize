@@ -48,9 +48,10 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::GetSpan;
 use vize_l0::FxHashMap;
+
+use super::props_emits::typed_prop_defaults::collect_setup_props;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-boolean-default",
@@ -84,23 +85,19 @@ impl ScriptRule for NoBooleanDefault {
         {
             check_props_object(props, offset, result);
         }
-        DefinePropsVisitor { offset, result }.visit_program(program);
-    }
-}
-
-struct DefinePropsVisitor<'result> {
-    offset: usize,
-    result: &'result mut ScriptLintResult,
-}
-
-impl<'a> Visit<'a> for DefinePropsVisitor<'_> {
-    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineProps")
-            && let Some(Argument::ObjectExpression(props)) = call.arguments.first()
-        {
-            check_props_object(props, self.offset, self.result);
+        for declaration in collect_setup_props(program) {
+            if let Some(props) = declaration.runtime {
+                check_setup_props_object(props, &declaration, offset, result);
+            }
+            for prop in &declaration.typed {
+                if !prop.boolean {
+                    continue;
+                }
+                for default in declaration.default_spans(&prop.name) {
+                    report(default, offset, result);
+                }
+            }
         }
-        walk_call_expression(self, call);
     }
 }
 
@@ -122,6 +119,39 @@ fn check_props_object(props: &ObjectExpression<'_>, offset: usize, result: &mut 
             continue;
         }
         if let Some(default) = find_property(declaration, "default") {
+            report(default.value.span(), offset, result);
+        }
+    }
+}
+
+fn check_setup_props_object(
+    props: &ObjectExpression<'_>,
+    declaration: &super::props_emits::typed_prop_defaults::SetupPropsDeclaration<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    for property in &props.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+        let Some(name) = property_key_name(&property.key) else {
+            continue;
+        };
+        let value = property.value.get_inner_expression();
+        let boolean = matches!(value, Expression::Identifier(identifier) if identifier.name == "Boolean")
+            || matches!(value, Expression::ObjectExpression(object) if prop_type_is_boolean(object));
+        if !boolean {
+            continue;
+        }
+        if let Expression::ObjectExpression(object) = value
+            && let Some(default) = find_property(object, "default")
+        {
+            report(default.value.span(), offset, result);
+        }
+        for default in declaration.default_spans(name) {
             report(default, offset, result);
         }
     }
@@ -156,8 +186,7 @@ fn find_property<'a>(
     None
 }
 
-fn report(default: &ObjectProperty<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let span = default.value.span();
+fn report(span: oxc_span::Span, offset: usize, result: &mut ScriptLintResult) {
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
     let diagnostic = LintDiagnostic::warn(

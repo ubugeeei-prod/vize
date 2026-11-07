@@ -32,17 +32,10 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Disallow multiple spaces
+#[derive(Default)]
 pub struct NoMultiSpaces {
     /// Ignore properties (v-if, v-for expressions)
     pub ignore_properties: bool,
-}
-
-impl Default for NoMultiSpaces {
-    fn default() -> Self {
-        Self {
-            ignore_properties: false,
-        }
-    }
 }
 
 impl Rule for NoMultiSpaces {
@@ -138,12 +131,18 @@ impl NoMultiSpaces {
     fn check_expression(&self, ctx: &mut LintContext<'_>, start: usize, expression: &[u8]) {
         let mut cursor = 0;
         while cursor < expression.len() {
-            if !matches!(expression[cursor], b' ' | b'\t') {
+            if !expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
+            {
                 cursor += 1;
                 continue;
             }
             let run_start = cursor;
-            while cursor < expression.len() && matches!(expression[cursor], b' ' | b'\t') {
+            while expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
+            {
                 cursor += 1;
             }
             let starts_line = run_start == 0

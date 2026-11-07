@@ -1,5 +1,13 @@
 import path from "node:path";
-import { byteOrder, get, requiredString, unsigned, type Json, type Integer } from "./value.ts";
+import {
+  byteOrder,
+  get,
+  requiredString,
+  unsigned,
+  type Json,
+  type JsonObject,
+  type Integer,
+} from "./value.ts";
 
 export interface LintRecord {
   file: string;
@@ -12,7 +20,7 @@ export interface LintRecord {
   endColumn: Integer;
   message: string;
 }
-export function recordValue(record: LintRecord): Json {
+export function recordValue(record: LintRecord): JsonObject {
   return { ...record };
 }
 export function normalizePath(value: string, cwd: string, label: string): string {
@@ -178,13 +186,167 @@ export function groupByIdentity(records: LintRecord[]): Map<string, LintRecord[]
   return groups;
 }
 const quotedName = (message: string): string | undefined => /'([^']*)'/.exec(message)?.[1];
-export function baselineIntentionalReason(finding: LintRecord): string | null {
+export function baselineIntentionalReason(
+  finding: LintRecord,
+  source?: string | null,
+): string | null {
   const name = quotedName(finding.message)?.replace(/^(?:v-bind:|:)/, "");
-  return finding.ruleId === "vue/attribute-hyphenation" &&
+  if (
+    finding.ruleId === "vue/require-explicit-slots" &&
+    source !== undefined &&
+    source !== null &&
+    importedUppercaseSlotRange(finding, source)
+  )
+    return "eslint-plugin-vue treats an imported uppercase <Slot> component as a slot outlet case-insensitively; Patina reports only the nested lowercase <slot> outlet that Vue actually renders as a slot.";
+  if (
+    finding.ruleId === "vue/no-useless-mustaches" &&
+    source !== undefined &&
+    source !== null &&
+    whitespaceOnlyMustache(finding, source)
+  )
+    return "Patina keeps whitespace-only string interpolations because replacing them with static whitespace can be removed by Vue's whitespace condensing and change the rendered output.";
+  if (
+    finding.ruleId === "vue/html-quotes" &&
+    source !== undefined &&
+    source !== null &&
+    directiveValueHoldsDoubleQuote(finding, source)
+  )
+    return "Patina applies avoidEscape to directive expressions: changing this single-quoted binding to double quotes would require escaping the JavaScript string delimiters that the formatter emits.";
+  if (
+    finding.ruleId === "vue/attribute-hyphenation" &&
     name !== undefined &&
     /^(?:aria|data)[A-Z]/.test(name)
-    ? "Vize keeps camelCase aria*/data* names on components: type checkers read hyphenated aria-*/data-* names as fallthrough attributes, so hyphenating them would drop the prop type check."
-    : null;
+  )
+    return "Vize keeps camelCase aria*/data* names on components: type checkers read hyphenated aria-*/data-* names as fallthrough attributes, so hyphenating them would drop the prop type check.";
+  if (
+    finding.ruleId === "vue/no-v-text-v-html-on-component" &&
+    source !== undefined &&
+    source !== null &&
+    dynamicComponentIsNativeOnly(finding, source)
+  )
+    return "Patina proves that this dynamic <component :is> expression can only select native elements, so v-text/v-html cannot overwrite a Vue component render tree.";
+  return null;
+}
+
+function directiveValueHoldsDoubleQuote(finding: LintRecord, source: string): boolean {
+  if (finding.line !== finding.endLine) return false;
+  const line = source.split("\n")[Number(finding.line) - 1];
+  if (line === undefined) return false;
+  const start = Number(finding.column) - 1,
+    end = Number(finding.endColumn) - 1,
+    value = line.slice(start, end);
+  if (!value.startsWith("'") || !value.endsWith("'") || !value.slice(1, -1).includes('"'))
+    return false;
+  return /(?:^|\s)(?:v-[^\s=]+|[:@#][^\s=]+)\s*=\s*$/u.test(line.slice(0, start));
+}
+
+function importedUppercaseSlotRange(finding: LintRecord, source: string): boolean {
+  const lines = source.split("\n");
+  const startLine = lines[Number(finding.line) - 1];
+  if (startLine === undefined || !startLine.slice(Number(finding.column) - 1).startsWith("<Slot"))
+    return false;
+  return lines
+    .slice(Number(finding.line) - 1, Number(finding.endLine))
+    .join("\n")
+    .includes("<slot");
+}
+
+function whitespaceOnlyMustache(finding: LintRecord, source: string): boolean {
+  if (finding.line !== finding.endLine) return false;
+  const line = source.split("\n")[Number(finding.line) - 1];
+  if (line === undefined) return false;
+  const authored = line.slice(Number(finding.column) - 1, Number(finding.endColumn) - 1);
+  const match = /^\{\{\s*(['"`])([\s\S]*?)\1\s*\}\}$/u.exec(authored);
+  return match !== null && match[2].length > 0 && /^(?:\s|\\[tnrfv ])+$/u.test(match[2]);
+}
+
+function dynamicComponentIsNativeOnly(finding: LintRecord, source: string): boolean {
+  const lines = source.split("\n");
+  if (finding.line > lines.length) return false;
+  let offset = 0;
+  for (let line = 1; line < finding.line; line++) offset += (lines[line - 1]?.length ?? 0) + 1;
+  offset += Number(finding.column) - 1;
+  const start = source.lastIndexOf("<component", offset);
+  if (start < 0) return false;
+  const end = source.indexOf(">", offset);
+  if (end < 0) return false;
+  const opening = source.slice(start, end);
+  const binding = /(?:^|\s)(?::is|v-bind:is)\s*=\s*(["'])(.*?)\1/s.exec(opening)?.[2];
+  if (binding === undefined) return false;
+  const values = [...binding.matchAll(/(["'])(.*?)\1/g)].map((match) => match[2]);
+  if (values.length === 0) return false;
+  const native = new Set([
+    "a",
+    "article",
+    "aside",
+    "button",
+    "div",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "header",
+    "img",
+    "input",
+    "label",
+    "li",
+    "main",
+    "nav",
+    "ol",
+    "option",
+    "p",
+    "section",
+    "select",
+    "small",
+    "span",
+    "strong",
+    "svg",
+    "table",
+    "tbody",
+    "td",
+    "textarea",
+    "th",
+    "thead",
+    "tr",
+    "ul",
+  ]);
+  return values.every((value) => native.has(value));
+}
+export function patinaIntentionalReason(finding: LintRecord, source: string): string | null {
+  if (
+    finding.ruleId === "script/require-default-prop" &&
+    findingInsideReferencedPropsObject(finding, source)
+  )
+    return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound default-prop coverage.";
+  if (finding.ruleId !== "script/define-props-destructuring") return null;
+  const lines = source.split("\n");
+  if (finding.line > lines.length) return null;
+  let offset = 0;
+  for (let line = 1; line < finding.line; line++) offset += (lines[line - 1]?.length ?? 0) + 1;
+  offset += Number(finding.column) - 1;
+  if (!source.startsWith("defineProps", offset)) return null;
+  if (/\bwithDefaults\s*\(\s*$/u.test(source.slice(0, offset))) return null;
+  return "Patina's default deliberately requires a direct bare defineProps call to bind an explicit destructuring pattern; eslint-plugin-vue does not report that stronger policy.";
+}
+
+function findingInsideReferencedPropsObject(finding: LintRecord, source: string): boolean {
+  const lines = source.split("\n");
+  if (finding.line > lines.length) return false;
+  let offset = 0;
+  for (let line = 1; line < finding.line; line++) offset += (lines[line - 1]?.length ?? 0) + 1;
+  offset += Number(finding.column) - 1;
+  const candidates = [
+    ...source.slice(0, offset).matchAll(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*\{/gu),
+  ].reverse();
+  return candidates.some((match) => {
+    if (match.index === undefined || offset - match.index > 20_000) return false;
+    const name = match[1];
+    return new RegExp(`\\bprops\\s*:\\s*${name}\\b`, "u").test(source.slice(offset));
+  });
 }
 export function outsideBaselineSurface(finding: LintRecord, source: string): boolean {
   const tagStart = source.indexOf("<template"),
@@ -285,6 +447,26 @@ export function pairRuleLocationDivergences(
             "patina reports the v-for directive range while eslint-plugin-vue reports the owning element range.",
         };
         break;
+      }
+      if (
+        positive.ruleId === "script/require-explicit-slots" &&
+        (negative.line < positive.line ||
+          (negative.line === positive.line && negative.column <= positive.column)) &&
+        (negative.endLine > positive.endLine ||
+          (negative.endLine === positive.endLine && negative.endColumn >= positive.endColumn))
+      ) {
+        const slot =
+          /^\[?vize:[^\]]+\]?\s*Slot '([^']+)'/u.exec(positive.message)?.[1] ??
+          /^Slot '([^']+)'/u.exec(positive.message)?.[1];
+        if (slot !== undefined) {
+          match = {
+            index,
+            subject: `slot:${slot}`,
+            reason:
+              "patina reports the actual lowercase <slot> outlet while eslint-plugin-vue can anchor the enclosing imported <Slot> component case-insensitively.",
+          };
+          break;
+        }
       }
     }
     if (!match) {

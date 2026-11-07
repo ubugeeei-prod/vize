@@ -27,6 +27,8 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::cstr;
 use vize_relief::{ElementNode, ElementType, RootNode, SourceLocation, TemplateChildNode};
 
+use super::authored_closing;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/html-end-tags",
     description: "Require end tags on HTML elements that may omit them",
@@ -176,7 +178,11 @@ fn element_extent(
         };
     }
     if can_omit_end_tag(element.tag) {
-        report_missing(ctx, element, inner.end);
+        // Parser recovery may auto-close `<p>` before a custom component even
+        // when the source later carries a real `</p>`. Trust authored evidence.
+        if authored_closing::find(ctx.source, element.loc.span.end, element.tag).is_none() {
+            report_missing(ctx, element, inner.end);
+        }
     }
     Extent {
         end: inner.end,

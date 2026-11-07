@@ -82,10 +82,7 @@ test("preset filtering can be waived, and the coverage gap can be measured", () 
 
 test("the baseline mirrors Patina's stronger defineProps destructuring default", () => {
   const actual = selectComparableRules(readRuleMap(), null).rules;
-  assert.deepEqual(actual["vue/define-props-destructuring"], [
-    "warn",
-    { destructure: "always" },
-  ]);
+  assert.deepEqual(actual["vue/define-props-destructuring"], ["warn", { destructure: "always" }]);
   assert.deepEqual(actual["vue/match-component-file-name"], [
     "warn",
     { extensions: ["jsx", "vue"] },

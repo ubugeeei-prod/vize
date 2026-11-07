@@ -38,6 +38,14 @@ impl ScriptRule for RequireExpose {
         true
     }
 
+    fn runs_on_script_setup(&self) -> bool {
+        // `eslint-plugin-vue` deliberately does not treat local
+        // `defineComponent({...})` calls inside `<script setup>` as component
+        // definitions for this rule. The SFC itself uses `defineExpose`, which
+        // is a different API and is outside `vue/require-expose`.
+        false
+    }
+
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,

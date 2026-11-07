@@ -22,6 +22,44 @@ fn test_invalid_kebab_case() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<my-component />"#, "test.vue");
     assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 0);
+    assert_eq!(result.diagnostics[0].end, 13);
+}
+
+#[test]
+fn options_api_shorthand_registration_is_checked_in_an_sfc() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    let source = r#"<template><popover /></template>
+<script>
+import { Popover } from 'vux'
+export default { components: { Popover } }
+</script>"#;
+    let result = Linter::with_registry(registry).lint_sfc(source, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/component-name-in-template-casing")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_registration_survives_a_fatal_template_recovery() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    let source = r#"<template><p><popover><div /></popover></p></template>
+<script>
+import { Popover } from 'vux'
+export default { components: { Popover } }
+</script>"#;
+    let result = Linter::with_registry(registry).lint_sfc(source, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/component-name-in-template-casing")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
 }
 
 #[test]

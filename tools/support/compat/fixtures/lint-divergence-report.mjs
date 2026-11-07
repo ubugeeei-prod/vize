@@ -92,7 +92,8 @@ async function measureProject(context) {
     process.stdout.write(`Skipped ${project.id}: fixture is not hydrated\n`);
     return null;
   }
-  const files = collectVueInputPaths(cwd, project.vueGlobs);
+  const excluded = new Set(project.lintDivergenceExcludePaths ?? []);
+  const files = collectVueInputPaths(cwd, project.vueGlobs).filter((file) => !excluded.has(file));
   if (project.expectedVueFileCount === 0 && files.length !== 0) {
     throw new Error(`${project.id} matched ${files.length} Vue files, expected 0`);
   }
@@ -153,14 +154,8 @@ async function measureProject(context) {
  */
 function runPatina(context, cwd, files) {
   const { args, launch, project } = context;
-  const commandArgs = [
-    ...launch.prefix,
-    "lint",
-    ...project.vueGlobs,
-    "--format",
-    "json",
-    "--no-config",
-  ];
+  const inputs = (project.lintDivergenceExcludePaths?.length ?? 0) > 0 ? files : project.vueGlobs;
+  const commandArgs = [...launch.prefix, "lint", ...inputs, "--format", "json", "--no-config"];
   if (args.preset != null) commandArgs.push("--preset", args.preset);
   const result = spawnSync(launch.command, commandArgs, {
     cwd,

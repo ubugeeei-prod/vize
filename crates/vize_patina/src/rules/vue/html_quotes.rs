@@ -119,10 +119,41 @@ impl Rule for HtmlQuotes {
             self.report(ctx, range, expected);
         }
     }
+
+    fn run_on_sfc(&self, ctx: &mut LintContext<'_>) {
+        let expected = self.style.quote();
+        let content_start = {
+            let Some(descriptor) = ctx.sfc_descriptor() else {
+                return;
+            };
+            descriptor.template.as_ref().map(|block| block.loc.start)
+        };
+        for range in sfc_template_attribute_values(ctx.source, content_start) {
+            if range.quote == Some(expected)
+                || (self.avoid_escape
+                    && range.quote.is_some()
+                    && holds(ctx.source, range, expected))
+            {
+                continue;
+            }
+            self.report(ctx, range, expected);
+        }
+    }
 }
 
 impl HtmlQuotes {
     fn report(&self, ctx: &mut LintContext<'_>, range: ValueRange, expected: u8) {
+        let diagnostic = self.diagnostic(ctx, ctx.source, range, expected);
+        ctx.report(diagnostic);
+    }
+
+    fn diagnostic(
+        &self,
+        ctx: &LintContext<'_>,
+        source: &str,
+        range: ValueRange,
+        expected: u8,
+    ) -> LintDiagnostic {
         let message = match self.style {
             HtmlQuotesOption::Double => ctx.t("vue/html-quotes.message_double"),
             HtmlQuotesOption::Single => ctx.t("vue/html-quotes.message_single"),
@@ -135,11 +166,79 @@ impl HtmlQuotes {
         };
         let mut diagnostic =
             LintDiagnostic::warn(META.name, message, range.start, range.end).with_help(help);
-        if let Some(fix) = quote_fix(ctx.source, range, expected, fix_message) {
+        if let Some(fix) = quote_fix(source, range, expected, fix_message) {
             diagnostic = diagnostic.with_fix(fix);
         }
-        ctx.report(diagnostic);
+        diagnostic
     }
+}
+
+fn sfc_template_attribute_values(source: &str, content_start: Option<usize>) -> Vec<ValueRange> {
+    let Some(content_start) = content_start.filter(|start| *start <= source.len()) else {
+        return Vec::new();
+    };
+    let Some(tag_start) = source
+        .get(..content_start)
+        .and_then(|prefix| prefix.rfind("<template"))
+    else {
+        return Vec::new();
+    };
+    let bytes = source.as_bytes();
+    let mut cursor = tag_start + "<template".len();
+    let mut ranges = Vec::new();
+    while cursor < content_start {
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if cursor >= content_start || matches!(bytes.get(cursor), Some(b'>') | Some(b'/')) {
+            break;
+        }
+        while cursor < content_start
+            && !bytes.get(cursor).is_some_and(|byte| {
+                byte.is_ascii_whitespace() || matches!(byte, b'=' | b'>' | b'/')
+            })
+        {
+            cursor += 1;
+        }
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if bytes.get(cursor) != Some(&b'=') {
+            continue;
+        }
+        cursor += 1;
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        let start = cursor;
+        let quote = bytes
+            .get(cursor)
+            .copied()
+            .filter(|byte| matches!(byte, b'\'' | b'"'));
+        if let Some(delimiter) = quote {
+            cursor += 1;
+            while cursor < content_start && bytes.get(cursor) != Some(&delimiter) {
+                cursor += 1;
+            }
+            if cursor < content_start {
+                cursor += 1;
+            }
+        } else {
+            while cursor < content_start
+                && !bytes
+                    .get(cursor)
+                    .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'>' | b'/'))
+            {
+                cursor += 1;
+            }
+        }
+        if start < cursor
+            && let (Ok(start), Ok(end)) = (u32::try_from(start), u32::try_from(cursor))
+        {
+            ranges.push(ValueRange { start, end, quote });
+        }
+    }
+    ranges
 }
 
 /// Whether the value already contains the quote it would have to be enclosed by.

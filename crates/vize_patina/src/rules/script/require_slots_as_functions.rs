@@ -115,13 +115,13 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
 
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
         self.bind_pattern(&declarator.id, Kind::NotSlot);
-        if let Some(init) = &declarator.init {
-            if let Some(origin) = self.slot_function_origin(init) {
-                if let BindingPattern::BindingIdentifier(identifier) = &declarator.id {
-                    self.bind(identifier.name.as_str(), Kind::SlotFn(origin));
-                } else {
-                    self.report(origin);
-                }
+        if let Some(init) = &declarator.init
+            && let Some(origin) = self.slot_function_origin(init)
+        {
+            if let BindingPattern::BindingIdentifier(identifier) = &declarator.id {
+                self.bind(identifier.name.as_str(), Kind::SlotFn(origin));
+            } else {
+                self.report(origin);
             }
         }
         walk_variable_declarator(self, declarator);

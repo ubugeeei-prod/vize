@@ -231,3 +231,20 @@ fn test_options_api_typescript_slot_requires_slots_type() {
         lint_sfc("<template><slot /></template><script lang=\"ts\">export default {}</script>");
     assert_eq!(result.warning_count, 1);
 }
+
+#[test]
+fn test_options_api_slots_type_declares_inline_slot_names() {
+    let valid = r#"
+<template><slot name="footer" /></template>
+<script lang="ts">
+import { defineComponent, SlotsType } from 'vue'
+export default defineComponent({
+  slots: Object as SlotsType<{ footer(): unknown }>
+})
+</script>
+"#;
+    assert_eq!(lint_sfc(valid).warning_count, 0);
+
+    let invalid = valid.replace("name=\"footer\"", "name=\"header\"");
+    assert_eq!(lint_sfc(&invalid).warning_count, 1);
+}

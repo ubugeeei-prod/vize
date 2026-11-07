@@ -27,6 +27,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/html-quotes",
     "vue/match-component-file-name",
     "vue/multi-word-component-names",
     "vue/no-array-index-key",

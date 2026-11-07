@@ -152,9 +152,9 @@ impl<'a> Visit<'a> for DefinePropsDestructuringVisitor<'a, '_> {
 
     fn visit_expression_statement(&mut self, it: &ExpressionStatement<'a>) {
         if self.mode == PropsDestructureMode::Always
-            && define_props_call(&it.expression, self.program, self.source).is_some()
+            && let Some(call) = define_props_call(&it.expression, self.program, self.source)
         {
-            self.prefer_destructuring(it.expression.span());
+            self.prefer_destructuring(call.call_span);
         }
         walk_expression_statement(self, it);
     }
@@ -380,5 +380,18 @@ mod tests {
         ] {
             assert_eq!(always_linter().lint(source, 0).warning_count, 1, "{source}");
         }
+    }
+
+    #[test]
+    fn always_reports_the_inner_define_props_call_in_a_bare_wrapper() {
+        let source = "withDefaults(defineProps<{ label?: string }>(), { label: '' })";
+        let result = always_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+        let start = source.find("defineProps").unwrap() as u32;
+        let end = source.find(">(),").unwrap() as u32 + 3;
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (start, end)
+        );
     }
 }

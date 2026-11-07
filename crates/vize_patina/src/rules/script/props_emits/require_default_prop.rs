@@ -17,8 +17,8 @@
 //! options/props objects, and the `<script setup>` runtime form
 //! `defineProps({ ... })`. The array shorthand (`props: ['x']` /
 //! `defineProps(['x'])`) declares neither type nor default and is left to
-//! `require-prop-types`. The type-based `defineProps<{...}>()` form is not a
-//! runtime declaration and is not checked.
+//! `require-prop-types`. Type-based props are checked when `withDefaults` or a
+//! destructuring pattern makes the component's default contract explicit.
 //!
 //! Port of [`vue/require-default-prop`](https://eslint.vuejs.org/rules/require-default-prop.html).
 //!
@@ -52,7 +52,8 @@ use oxc_span::Span;
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::props_source::{PropDescriptor, PropsSource, collect_options_props};
+use super::typed_prop_defaults::collect_setup_props;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -81,9 +82,32 @@ impl ScriptRule for RequireDefaultProp {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
+        if let Some(source) = collect_options_props(program) {
             for prop in source.object_props() {
-                check_prop(prop, offset, result);
+                check_prop(prop, false, offset, result);
+            }
+        }
+
+        for declaration in collect_setup_props(program) {
+            if let Some(runtime) = declaration.runtime {
+                let source = PropsSource::Object(runtime);
+                for prop in source.object_props() {
+                    check_prop(
+                        prop,
+                        declaration.uses_destructure && declaration.has_default(prop.name),
+                        offset,
+                        result,
+                    );
+                }
+            }
+            if !declaration.uses_with_defaults && !declaration.uses_destructure {
+                continue;
+            }
+            for prop in &declaration.typed {
+                if prop.required || prop.boolean || declaration.has_default(&prop.name) {
+                    continue;
+                }
+                report(&prop.name, prop.span, offset, result);
             }
         }
     }
@@ -91,11 +115,19 @@ impl ScriptRule for RequireDefaultProp {
 
 /// Flag an object-descriptor prop that is optional, not Boolean-typed, and
 /// declares no `default`.
-fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintResult) {
+fn check_prop(
+    prop: PropDescriptor<'_>,
+    has_destructure_default: bool,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if prop.shorthand || has_destructure_default {
+        return;
+    }
     // Only object-descriptor props can carry `required`/`default`/`type`. A
     // shorthand prop value (`name: String`) is by definition optional with no
     // default, so it is flagged too — unless its shorthand type is Boolean.
-    match prop.value {
+    match prop.value.get_inner_expression() {
         Expression::ObjectExpression(descriptor) => {
             if descriptor_required_true(descriptor)
                 || descriptor_has_default(descriptor)
@@ -105,13 +137,21 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             }
             report(prop.name, prop.span, offset, result);
         }
-        value => {
-            // Shorthand `name: <type>`: a Boolean shorthand defaults to false.
-            if expression_is_boolean(value) {
+        Expression::Identifier(identifier) => {
+            if identifier.name == "Boolean" {
                 return;
             }
-            report(prop.name, prop.span, offset, result);
+            if matches!(
+                identifier.name.as_str(),
+                "String" | "Number" | "Function" | "Object" | "Array" | "Symbol"
+            ) {
+                report(prop.name, prop.span, offset, result);
+            }
         }
+        // Factory calls and member references are custom prop constructors;
+        // eslint-plugin-vue cannot prove that they need a default.
+        Expression::CallExpression(_) | Expression::StaticMemberExpression(_) => {}
+        _ => report(prop.name, prop.span, offset, result),
     }
 }
 

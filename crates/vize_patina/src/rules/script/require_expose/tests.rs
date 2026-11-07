@@ -1,6 +1,6 @@
 use super::{MESSAGE, RequireExpose};
 use crate::diagnostic::Severity;
-use crate::rules::script::{ScriptLintResult, ScriptLinter};
+use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule};
 
 const RULE: &str = super::RULE;
 
@@ -144,4 +144,5 @@ fn stays_opt_in() {
         .expect(RULE);
     assert_eq!(meta.default_severity, Severity::Warning);
     assert!(meta.presets.is_empty());
+    assert!(!RequireExpose.runs_on_script_setup());
 }

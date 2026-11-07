@@ -144,9 +144,12 @@ impl Visitor<'_> {
     }
 
     fn access_element(&self, element: &ArrayExpressionElement<'_>) -> Option<bool> {
-        element
-            .as_expression()
-            .and_then(|expr| self.access_scope(expr))
+        match element {
+            ArrayExpressionElement::SpreadElement(spread) => self.access_scope(&spread.argument),
+            _ => element
+                .as_expression()
+                .and_then(|expr| self.access_scope(expr)),
+        }
     }
 
     fn access_property(&self, property: &ObjectPropertyKind<'_>) -> Option<bool> {

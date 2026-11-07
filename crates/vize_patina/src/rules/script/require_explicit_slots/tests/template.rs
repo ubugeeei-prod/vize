@@ -203,9 +203,7 @@ defineSlots<{ default(): unknown }>();
 }
 
 #[test]
-fn ignores_the_whole_component_when_one_slot_name_is_dynamic() {
-    // `:name` is resolved at runtime, so the rendered set is unknown and even
-    // the statically undeclared `footer` must not be reported.
+fn skips_only_the_dynamic_slot_name() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ default(): unknown }>();
 const which = 'footer';
@@ -215,48 +213,80 @@ const which = 'footer';
   <div><slot :name="which" /><slot name="footer" /></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
 }
 
 #[test]
-fn ignores_the_whole_component_when_a_slot_spreads_a_bound_object() {
-    // An argument-less `v-bind` can supply `name`.
+fn treats_an_argumentless_v_bind_slot_as_the_declared_default_outlet() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ default(): unknown }>();
 const attrs = { name: 'footer' };
 </script>
 
 <template>
-  <div><slot v-bind="attrs" /><slot name="footer" /></div>
+  <div><slot v-bind="attrs" /></div>
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
 #[test]
-fn ignores_a_declaration_that_cannot_be_enumerated() {
-    // `defineSlots<Slots>()` names a type this rule does not resolve, so the
-    // declared set is unknown and a missing name proves nothing.
+fn an_unresolved_declaration_contributes_no_known_slot_names() {
     let sfc = r#"<script setup lang="ts">
 type Slots = { default(): unknown; footer(): unknown };
 defineSlots<Slots>();
 </script>
 
 <template>
-  <div><slot name="footer" /></div>
+  <div><slot name="other" /></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="other" />"#, "other")]
+    );
 }
 
 #[test]
-fn ignores_a_declaration_with_an_index_signature() {
+fn an_index_signature_contributes_no_known_slot_names() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ [name: string]: () => unknown }>();
 </script>
 
 <template>
   <div><slot name="footer" /></div>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
+}
+
+#[test]
+fn an_intersection_keeps_inline_slot_names() {
+    let sfc = r#"<script setup lang="ts">
+defineSlots<ImportedSlots & { default(): unknown }>();
+</script>
+
+<template>
+  <slot />
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn accepts_a_string_literal_bound_slot_name() {
+    let sfc = r#"<script setup lang="ts">
+defineSlots<{ footer(): unknown }>();
+</script>
+
+<template>
+  <slot :name="'footer'" />
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());

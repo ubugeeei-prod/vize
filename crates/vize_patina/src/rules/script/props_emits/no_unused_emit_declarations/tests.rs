@@ -63,14 +63,28 @@ function onClick() {
 }
 
 #[test]
-fn test_unassigned_define_emits_not_tracked() {
-    // Without a binding we cannot track usage, so nothing is reported even
-    // though no emit call exists.
+fn test_unassigned_define_emits_reports_unused_declarations() {
     let source = r#"
 defineEmits(['change', 'update'])
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 2);
+}
+
+#[test]
+fn test_unassigned_define_emits_counts_template_dollar_emit() {
+    let sfc = r#"<script setup lang="ts">
+defineEmits<{ save: []; cancel: [] }>();
+</script>
+<template><button @click="$emit('save')" /></template>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert!(diagnostics[0].message.contains("cancel"));
 }
 
 #[test]
@@ -125,6 +139,16 @@ const handlers = { emit }
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_emit_bind_does_not_count_as_emitting_or_escaping() {
+    let source = r#"
+const emit = defineEmits<{ save: [value: boolean] }>()
+const handlers = { save: emit.bind(null, 'save') }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
 }
 
 #[test]

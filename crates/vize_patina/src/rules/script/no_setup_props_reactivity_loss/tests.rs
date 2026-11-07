@@ -142,6 +142,14 @@ fn reports_script_setup_copies() {
 }
 
 #[test]
+fn reports_props_read_through_an_array_spread() {
+    let result = lint(
+        "const props = defineProps<{ values?: string[] }>();\nconst values = ref([...(props.values ?? [])]);",
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn allows_nested_reads_and_non_vue_objects() {
     let source = r#"
         export default {

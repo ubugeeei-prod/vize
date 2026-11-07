@@ -163,6 +163,49 @@ const props = defineProps({
 }
 
 #[test]
+fn test_invalid_runtime_define_props_destructure_default() {
+    let source = r#"
+const { active = false } = defineProps({ active: Boolean })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+    let start = source.find("false").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (start, start + 5)
+    );
+}
+
+#[test]
+fn test_invalid_typed_boolean_defaults() {
+    let destructure = r#"
+interface Props { active?: boolean; label?: string }
+const { active = false, label = '' } = defineProps<Props>()
+"#;
+    let result = create_linter().lint(destructure, 0);
+    assert_eq!(result.warning_count, 1);
+    let start = destructure.find("false").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (start, start + 5)
+    );
+
+    let wrapper = r#"
+const props = withDefaults(defineProps<{ active?: boolean; count?: number }>(), {
+  active: true,
+  count: 0
+})
+"#;
+    let result = create_linter().lint(wrapper, 0);
+    assert_eq!(result.warning_count, 1);
+    let start = wrapper.find("true").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (start, start + 4)
+    );
+}
+
+#[test]
 fn test_invalid_identifier_bound_options() {
     let source = r#"
 const component = {

@@ -59,8 +59,8 @@ pub fn cli_packet(case: &Value, filename: &str) -> Value {
         .unwrap()
         .iter()
         .map(|diagnostic| {
-            let start = position(source, diagnostic["start"].as_u64().unwrap(), false);
-            let end = position(source, diagnostic["end"].as_u64().unwrap(), false);
+            let start = position(source, diagnostic["start"].as_u64().unwrap(), true);
+            let end = position(source, diagnostic["end"].as_u64().unwrap(), true);
             json!({
                 "ruleId": RULE,
                 "ruleDocsPath": "docs/content/rules/reference/vue-require-component-registration.md",
