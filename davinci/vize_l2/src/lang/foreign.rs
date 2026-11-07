@@ -1,8 +1,5 @@
-//! [`ForeignExpr`] - the non-JS expression dialect payload.
-//!
-//! Retained neutral-IR payload for opaque expression dialects and historical
-//! folio codecs. No non-JavaScript authoring dialect is currently shipped.
-//! Source spans remain exact without invoking the JavaScript parser.
+// Language-owned implementation included by `expr::foreign` so the existing
+// public type identity remains stable.
 
 use vize_l0::{Span, Vec};
 

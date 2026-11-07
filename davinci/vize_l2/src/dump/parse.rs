@@ -24,7 +24,6 @@ use crate::dump::codec::Grammar;
 use crate::dump::owned::{Binding, Op};
 
 mod binding_line;
-#[path = "../lang/dump/parse.rs"]
 mod expr_token;
 mod frame;
 mod line;

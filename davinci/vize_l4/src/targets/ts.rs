@@ -10,7 +10,6 @@ use vize_l2::lang::js::JsxFile;
 
 mod mapping;
 pub use mapping::MappingError;
-#[path = "../framework/vue.rs"]
 pub mod vue;
 
 const MODULE_SUFFIX: &str = "\n;\nexport {};\n";

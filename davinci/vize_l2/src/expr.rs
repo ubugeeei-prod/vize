@@ -40,7 +40,6 @@
 
 pub mod capability;
 pub mod filter;
-#[path = "lang/foreign.rs"]
 pub mod foreign;
 pub mod js;
 pub mod opaque;

@@ -16,7 +16,6 @@ use crate::dump::Page;
 use crate::op::{Attribute as IrAttribute, DynamicName, Namespace, Op as IrOp, Region};
 
 mod binding;
-#[path = "../lang/dump/owned.rs"]
 mod expr;
 
 pub use crate::dump::owned::binding::{

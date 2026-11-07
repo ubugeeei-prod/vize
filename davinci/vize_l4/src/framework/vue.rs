@@ -1,8 +1,5 @@
-//! Original setup Modules and resolved Vue interpolation reads, without a context shim.
-//!
-//! This target consumes the actual native SFC custody receipt. Its selected
-//! Programs, Component and expression observations stay borrowed throughout
-//! emission and diagnostic mapping. It does not parse or walk an AST again.
+// Framework-owned implementation included by `targets::ts::vue` so the
+// existing public type identity remains stable.
 
 use alloc::vec::Vec;
 use vize_l0::{Span, config::VueVersion, line_index::utf16_offset};
