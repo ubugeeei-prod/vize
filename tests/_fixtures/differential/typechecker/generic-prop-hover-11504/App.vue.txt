@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import List from "./List.vue";
+const nums = [1, 2, 3];
+const words = ["one", "two"];
+</script>
+<template>
+  <List :items="nums" />
+  <List :items="words" />
+</template>

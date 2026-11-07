@@ -2,7 +2,7 @@
 
 use tower_lsp::lsp_types::Url;
 
-use super::component_attribute_position;
+use super::{component_attribute_position, instantiated_component_attribute_position};
 use crate::ide::corsa_support::canonical_dependency_tests::host_document;
 use crate::ide::{IdeContext, position_to_offset};
 use crate::server::ServerState;
@@ -99,4 +99,32 @@ fn ordinary_values_events_models_and_native_dom_leave_this_attribute_guard() {
         let ctx = IdeContext::new(&state, &uri, source.find(prefix).unwrap() + within).unwrap();
         assert_eq!(component_attribute_position(&ctx, &document), None);
     }
+}
+
+#[test]
+fn component_prop_call_key_exposes_the_contextual_hover_position() {
+    let source = r#"<script setup lang="ts">
+import List from "./List.vue";
+const nums = [1, 2, 3];
+</script>
+<template><List :items="nums" /></template>
+"#;
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+    let document = host_document(&uri, source);
+    let offset = source.find("items=\"nums\"").unwrap() + 1;
+    let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+    let (line, character) = instantiated_component_attribute_position(&ctx, &document)
+        .expect("contextually typed component prop key");
+    let generated = position_to_offset(&document.virtual_result.code, line, character).unwrap();
+    assert_eq!(
+        document
+            .virtual_result
+            .code
+            .get(generated.saturating_sub(1)..generated + "items".len() + 1),
+        Some("\"items\"")
+    );
 }

@@ -44,6 +44,23 @@ impl CorsaVueHoverDocument {
         Some(LineBreaks::Lsp.offset_to_position(&self.document.code, generated))
     }
 
+    /// Locate the contextually typed object key in the component checker call.
+    ///
+    /// Generic component navigation deliberately uses an open props anchor, so
+    /// its direct quick info can be `unknown`. The checker call repeats the
+    /// authored key under the fully inferred generic signature; this position
+    /// exposes that instantiated type without changing diagnostic ownership.
+    pub fn instantiated_component_prop_position(&self, source_offset: usize) -> Option<(u32, u32)> {
+        let offset = crate::virtual_ts::instantiated_component_prop_key_offset(
+            &self.document.code,
+            self.document.mapping.spans(),
+            self.document.mapping.semantic_links(),
+            &self.document.import_source_map,
+            source_offset,
+        )?;
+        Some(LineBreaks::Lsp.offset_to_position(&self.document.code, offset))
+    }
+
     /// Map a Corsa hover range back to authored byte offsets.
     pub fn range_to_source_offsets(&self, range: &LspRange) -> Option<(usize, usize)> {
         let generated_start_post = LineBreaks::Lsp.position_to_offset(

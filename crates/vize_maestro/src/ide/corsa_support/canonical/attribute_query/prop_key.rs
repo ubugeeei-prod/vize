@@ -30,6 +30,24 @@ pub(super) fn source_position(
     native
 }
 
+pub(super) fn instantiated_source_position(
+    source: &str,
+    result: &VirtualTsResult,
+    offset: usize,
+) -> Option<(u32, u32)> {
+    if !source.is_char_boundary(offset) {
+        return None;
+    }
+    let generated = vize_canon::virtual_ts::instantiated_component_prop_key_offset(
+        &result.code,
+        &result.source_mappings,
+        &result.semantic_links,
+        &result.import_source_map,
+        offset,
+    )?;
+    Some(crate::ide::offset_to_position(&result.code, generated))
+}
+
 fn authored_range(
     source: &str,
     result: &VirtualTsResult,

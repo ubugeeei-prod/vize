@@ -38,6 +38,10 @@ pub use generic_parameters::{GenericParameters, authored_generic_range};
 mod helpers;
 pub use helpers::shared_types::SHARED_VIRTUAL_TYPE_EXPORTS;
 mod import_meta;
+#[cfg(feature = "native")]
+mod instantiated_component_prop;
+#[cfg(feature = "native")]
+pub use instantiated_component_prop::instantiated_component_prop_key_offset;
 pub mod incremental;
 #[cfg(test)]
 mod interface_extends_tests;

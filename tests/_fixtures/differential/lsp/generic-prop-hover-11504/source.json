@@ -1,0 +1,11 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/11504",
+  "originalSha256": {
+    "App.vue.txt": "8022f5930039a7bec0d0229cf8e6949958cdb995a8b6f60d2b07aa5d1350941a",
+    "List.vue.txt": "2ef61c11dcb8fd12d05207f21c736c34d1b69a436d204670f64f3e0482528a28"
+  },
+  "expectedSha256": {
+    "hover.expected.json": "87e75671352e8a4a0f17ce27e52d16af3852a904c87db2b3ab9729bc07bf3b4d"
+  },
+  "scope": "The generic component prop hover uses TypeScript's contextual call-site instantiation independently for number and string consumers while retaining the declared fallback when native quick info stays unknown."
+}
