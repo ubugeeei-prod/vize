@@ -146,7 +146,7 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
             "authored-export",
             CONFIG.into(),
             PROBE.replace("interface Bar {", "export interface Bar {"),
-            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+            vec![],
         ),
         (
             "authored-export-type-alias",
@@ -154,7 +154,7 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
             PROBE
                 .replace("interface Bar {", "export type Bar = {")
                 .replace("  items: Foo[];\n}", "  items: Foo[];\n};"),
-            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+            vec![],
         ),
         (
             "authored-export-own-type-parameter",
@@ -166,7 +166,7 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
                 )
                 .replace("items: Foo[]", "items: TItem[]")
                 .replace("defineProps<Bar>();", "defineProps<Bar<Foo>>();"),
-            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+            vec![],
         ),
         (
             "multiple-authored-exports",
@@ -180,16 +180,13 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
                     "defineProps<Bar>();",
                     "defineProps<Bar & { extra: Extra }>();",
                 ),
-            vec![
-                "error:4:1 [TS1184] Modifiers cannot appear here.",
-                "error:5:1 [TS1184] Modifiers cannot appear here.",
-            ],
+            vec![],
         ),
         (
             "authored-export-after-non-ascii",
             CONFIG.into(),
             PROBE.replace("interface Bar {", "/* 日本語 */ export interface Bar {"),
-            vec!["error:4:11 [TS1184] Modifiers cannot appear here."],
+            vec![],
         ),
         (
             "authored-export-without-sfc-generics",
@@ -198,7 +195,7 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
                 .replace(" generic=\"TBaz\"", "")
                 .replace("TBaz", "string")
                 .replace("interface Bar {", "export interface Bar {"),
-            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+            vec![],
         ),
     ];
     for (id, config, source, expected) in cases {

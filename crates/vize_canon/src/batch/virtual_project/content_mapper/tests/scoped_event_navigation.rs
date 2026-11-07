@@ -46,13 +46,13 @@ const handleConfirm = (value: "conditional") => value;
         .text
         .find("const __vize_emit_props_")
         .expect("handler inference");
-    let direct_inference = result.text[handler_inference..]
-        .find("= (undefined as unknown as __ConditionalGenericChild_")
-        .expect("direct handler inference");
+    let guarded_inference = result.text[handler_inference..]
+        .find("if ((conditionalValue)) return (undefined as unknown as __ConditionalGenericChild_")
+        .expect("guarded handler inference");
     let inferred_value = result.text[handler_inference..]
         .find("\"value\": conditionalValue")
         .expect("inferred value");
-    assert!(direct_inference < inferred_value, "{}", result.text);
+    assert!(guarded_inference < inferred_value, "{}", result.text);
 
     let original = source.find("@confirm").unwrap() + 1;
     assert!(result.mappings.iter().any(|mapping| {

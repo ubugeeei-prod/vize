@@ -30,13 +30,19 @@ use event_targets::{
     vnode_hook_signature,
 };
 
+#[derive(Clone, Copy)]
+pub(super) struct EventVifGuards<'a> {
+    pub(super) handler: Option<&'a str>,
+    pub(super) active_outer: Option<&'a str>,
+}
+
 pub(super) fn generate_event_handler_scope(
     ts: &mut String,
     mappings: &mut ScopeMappings<'_>,
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
-    enclosing_vif_guard: Option<&str>,
+    vif_guards: EventVifGuards<'_>,
     indents: (&str, &str),
 ) {
     let (indent, inner_indent) = indents;
@@ -83,7 +89,7 @@ pub(super) fn generate_event_handler_scope(
                     event_listener_type: None,
                     event_name_src_range: None,
                     return_single_expression: false,
-                    enclosing_vif_guard,
+                    enclosing_vif_guard: vif_guards.handler,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -143,7 +149,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
-                    enclosing_vif_guard,
+                    enclosing_vif_guard: vif_guards.handler,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -159,7 +165,7 @@ pub(super) fn generate_event_handler_scope(
             ctx,
             scope,
             data,
-            enclosing_vif_guard,
+            vif_guards,
             (indent, inner_indent),
         );
     } else if let Some((event_type, listener_args)) = (!data.event_name_is_dynamic)
@@ -218,7 +224,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
-                    enclosing_vif_guard,
+                    enclosing_vif_guard: vif_guards.handler,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -271,7 +277,7 @@ pub(super) fn generate_event_handler_scope(
                         data.event_name.as_str(),
                     ),
                     return_single_expression: false,
-                    enclosing_vif_guard,
+                    enclosing_vif_guard: vif_guards.handler,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
@@ -303,7 +309,7 @@ pub(super) fn generate_event_handler_scope(
                     event_listener_type: None,
                     event_name_src_range: None,
                     return_single_expression: false,
-                    enclosing_vif_guard,
+                    enclosing_vif_guard: vif_guards.handler,
                     template_binding_access: ctx.template_binding_access,
                     template_offset: ctx.template_offset,
                     indent: inner_indent,
