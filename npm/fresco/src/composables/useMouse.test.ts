@@ -64,3 +64,17 @@ test("keeps getter-only activation separate from imperative enablement", () => {
   mounted.unmount();
   lastMouseEvent.value = null;
 });
+
+test("can stop an unscoped mouse subscription", () => {
+  const kinds: string[] = [];
+  const controls = useMouse((event) => {
+    if (event.kind) kinds.push(event.kind);
+  });
+
+  lastMouseEvent.value = { type: "mouse", kind: "scroll-up", x: 1, y: 2 };
+  controls.stop();
+  lastMouseEvent.value = { type: "mouse", kind: "scroll-down", x: 1, y: 3 };
+
+  assert.deepEqual(kinds, ["scroll-up"]);
+  lastMouseEvent.value = null;
+});

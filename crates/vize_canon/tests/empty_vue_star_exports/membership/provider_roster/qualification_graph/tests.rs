@@ -113,4 +113,18 @@ fn foreign_manifests_and_unreviewed_bytes_are_refused() {
         verify(&input, &rehashed, &lock),
         Err("exact Fresco resolver fixed point")
     );
+
+    let nested = String::from_utf8(input.lock.clone())
+        .unwrap()
+        .replacen("\n  npm/fresco:\n", "\n    npm/fresco:\n", 1)
+        .into_bytes();
+    let mut rebound = input.update.clone();
+    let nested_hash = support::hash(&nested);
+    rebound["finalQualificationLock"]["bytes"] = json!(nested.len());
+    rebound["finalQualificationLock"]["sha256"] = json!(nested_hash);
+    rebound["resolver"]["fixedPointSha256"] = json!(nested_hash);
+    assert_eq!(
+        verify(&input, &rebound, &nested),
+        Err("one exact Fresco importer")
+    );
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 import { h } from "vue";
 
+import { treeToScreenReaderString } from "../accessibility.js";
 import { firstChild, mountComponent, toTreeSnapshot } from "../testing/mount.js";
 import { Box } from "./Box.js";
 
@@ -129,5 +130,19 @@ test("replaces children with the aria-label in screen reader mode", () => {
     props: { style: {}, "aria-label": "status panel", ...boxDefaults },
     children: [{ type: "text", props: { text: "status panel" } }],
   });
+  mounted.unmount();
+});
+
+test("omits nullish and false aria state values from screen reader output", () => {
+  const mounted = mountComponent(
+    Box,
+    {
+      ariaRole: "list",
+      ariaState: { disabled: null, expanded: undefined, selected: true, busy: false },
+    },
+    () => h("text", { text: "item" }),
+  );
+
+  assert.equal(treeToScreenReaderString(firstChild(mounted)), "list: (selected) item");
   mounted.unmount();
 });

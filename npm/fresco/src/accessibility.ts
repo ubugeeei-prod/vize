@@ -124,7 +124,7 @@ export function treeToScreenReaderString(
   const state = ariaState(node);
   if (state) {
     const stateDescription = Object.entries(state)
-      .filter(([, value]) => value !== false && value !== undefined)
+      .filter(([, value]) => value !== false && value !== undefined && value !== null)
       .map(([key, value]) => (value === true ? key : `${key}: ${String(value)}`))
       .join(", ");
 

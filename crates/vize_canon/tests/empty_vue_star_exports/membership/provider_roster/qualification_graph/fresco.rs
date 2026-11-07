@@ -81,7 +81,7 @@ pub(super) fn verify_fresco_update(
         return Err("one declared Fresco SFC test toolchain");
     }
     let lock = std::str::from_utf8(graph.lock).map_err(|_| "UTF-8 pnpm lockfile")?;
-    if lock.matches("  npm/fresco:\n").count() != 1 {
+    if lock.matches("\n  npm/fresco:\n").count() != 1 {
         return Err("one exact Fresco importer");
     }
     Ok(())

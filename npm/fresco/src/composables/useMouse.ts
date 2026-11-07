@@ -15,6 +15,8 @@ export interface UseMouseReturn {
   enable: () => void;
   /** Stop delivering normalized mouse events. */
   disable: () => void;
+  /** Unsubscribe the handler from the shared mouse event stream. */
+  stop: () => void;
 }
 
 /** Subscribe to normalized mouse actions, including wheel direction. */
@@ -26,7 +28,7 @@ export function useMouse(
   const locallyEnabled = ref(externalIsActive ? true : (options.isActive ?? true));
   const isActive = computed(() => locallyEnabled.value && (externalIsActive?.value ?? true));
 
-  watch(
+  const stop = watch(
     lastMouseEvent,
     (event) => {
       if (event && isActive.value) handler(event);
@@ -42,5 +44,6 @@ export function useMouse(
     disable: () => {
       locallyEnabled.value = false;
     },
+    stop,
   };
 }

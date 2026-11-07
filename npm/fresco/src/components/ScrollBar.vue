@@ -17,12 +17,24 @@ const {
   thumbFg,
 } = defineProps<ScrollBarProps>();
 
-const cells = computed(() => {
-  const trackLength = Math.max(0, Math.floor(length ?? viewportSize));
-  if (trackLength === 0) return [];
-  const boundedViewportSize = Math.max(0, Math.floor(viewportSize));
-  const boundedItemCount = Math.max(0, Math.floor(itemCount));
+function nonNegativeInteger(value: number): number {
+  const floored = Math.floor(value);
+  return Number.isSafeInteger(floored) && floored >= 0 ? floored : 0;
+}
+
+const metrics = computed(() => {
+  const trackLength = nonNegativeInteger(length ?? viewportSize);
+  const boundedViewportSize = nonNegativeInteger(viewportSize);
+  const boundedItemCount = nonNegativeInteger(itemCount);
   const maxOffset = Math.max(0, boundedItemCount - boundedViewportSize);
+  const boundedOffset = Number.isFinite(offset) ? Math.min(maxOffset, Math.max(0, offset)) : 0;
+  return { trackLength, boundedViewportSize, boundedItemCount, maxOffset, boundedOffset };
+});
+
+const cells = computed(() => {
+  const { trackLength, boundedViewportSize, boundedItemCount, maxOffset, boundedOffset } =
+    metrics.value;
+  if (trackLength === 0) return [];
   const thumbSize =
     maxOffset === 0
       ? trackLength
@@ -31,8 +43,7 @@ const cells = computed(() => {
           Math.min(trackLength, Math.floor((trackLength * boundedViewportSize) / boundedItemCount)),
         );
   const travel = trackLength - thumbSize;
-  const thumbStart =
-    maxOffset === 0 ? 0 : Math.round((Math.min(maxOffset, offset) / maxOffset) * travel);
+  const thumbStart = maxOffset === 0 ? 0 : Math.round((boundedOffset / maxOffset) * travel);
   return Array.from({ length: trackLength }, (_, position) => ({
     position,
     symbol: position >= thumbStart && position < thumbStart + thumbSize ? thumb : track,
@@ -43,13 +54,14 @@ const cells = computed(() => {
 const ariaState = computed(() => ({
   orientation,
   valueMin: 0,
-  valueMax: Math.max(0, itemCount - viewportSize),
-  valueNow: offset,
+  valueMax: metrics.value.maxOffset,
+  valueNow: metrics.value.boundedOffset,
 }));
 const accessibilityProps = computed(() => ({
   ariaRole: "scrollbar" as const,
   ariaState: ariaState.value,
 }));
+const cellAccessibilityProps = { ariaHidden: true } as const;
 </script>
 
 <template>
@@ -59,6 +71,7 @@ const accessibilityProps = computed(() => ({
       :key="cell.position"
       :content="cell.symbol"
       :fg="cell.thumb ? (thumbFg ?? fg) : fg"
+      v-bind="cellAccessibilityProps"
     />
   </Box>
 </template>

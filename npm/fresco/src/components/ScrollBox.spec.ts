@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { h, nextTick, ref } from "vue";
 import { test } from "vitest";
+import { treeToScreenReaderString } from "../accessibility.js";
 import { createVirtualViewport } from "../composables/useVirtualViewport.js";
 import { findNodes, firstChild, mountComponent, renderTui } from "../testing/index.js";
 import ScrollBar from "./ScrollBar.vue";
@@ -23,11 +24,40 @@ test("scrollbar maps a bounded offset onto its track", () => {
     valueMax: 90,
     valueNow: 45,
   });
+  const glyphNodes = root.children.filter((node) => typeof node.props.text === "string");
   assert.deepEqual(
-    root.children.flatMap((node) => (typeof node.props.text === "string" ? [node.props.text] : [])),
+    glyphNodes.map((node) => node.props.text),
     ["│", "│", "█", "│", "│"],
   );
+  assert.ok(glyphNodes.every((node) => node.props["aria-hidden"] === true));
+  assert.doesNotMatch(treeToScreenReaderString(root), /[│█]/u);
   mounted.unmount();
+});
+
+test("scrollbar normalizes invalid offsets and fractional bounds", () => {
+  for (const offset of [-5, Number.NaN]) {
+    const mounted = mountComponent(ScrollBar, {
+      itemCount: 10.9,
+      viewportSize: 2.9,
+      offset,
+      length: 4,
+    });
+    const root = firstChild(mounted);
+
+    assert.deepEqual(root.props["aria-state"], {
+      orientation: "vertical",
+      valueMin: 0,
+      valueMax: 8,
+      valueNow: 0,
+    });
+    assert.deepEqual(
+      root.children.flatMap((node) =>
+        typeof node.props.text === "string" ? [node.props.text] : [],
+      ),
+      ["█", "│", "│", "│"],
+    );
+    mounted.unmount();
+  }
 });
 
 test("100k items retain only viewport plus overscan and scroll by keyboard and wheel", async () => {
