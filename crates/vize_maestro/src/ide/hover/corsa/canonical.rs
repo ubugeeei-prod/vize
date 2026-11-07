@@ -154,6 +154,7 @@ pub(super) async fn hover(
         && !is_unknown_prop_hover(&instantiated)
     {
         hover = instantiated;
+        normalize_instantiated_prop_hover(&mut hover);
         query_position = position;
     }
     // Native quick info can omit JSDoc after a mapped type. Follow the
@@ -221,6 +222,40 @@ fn is_unknown_prop_hover(hover: &LspHover) -> bool {
             .is_some_and(|(_, ty)| ty.trim() == "unknown")
 }
 
+/// TypeScript's platform packages disagree about quoting a string-literal key
+/// when it is also a legal identifier. Keep the public hover stable while
+/// preserving quotes for keys that actually require them.
+fn normalize_instantiated_prop_hover(hover: &mut LspHover) {
+    let LspHoverContents::Markup(content) = &mut hover.contents else {
+        return;
+    };
+    let prefix = "```typescript\n(property) ";
+    let Some(signature) = content.value.strip_prefix(prefix) else {
+        return;
+    };
+    let Some(quoted) = signature.strip_prefix('"') else {
+        return;
+    };
+    let Some(name_end) = quoted.find("\":") else {
+        return;
+    };
+    let Some(name) = quoted.get(..name_end) else {
+        return;
+    };
+    let mut characters = name.chars();
+    if !characters.next().is_some_and(|character| {
+        character == '_' || character == '$' || character.is_ascii_alphabetic()
+    }) || !characters
+        .all(|character| character == '_' || character == '$' || character.is_ascii_alphanumeric())
+    {
+        return;
+    }
+    let quote_start = prefix.len();
+    let quote_end = quote_start + 1 + name.len();
+    content.value.remove(quote_end);
+    content.value.remove(quote_start);
+}
+
 fn documentation(hover: &LspHover) -> Option<&str> {
     let LspHoverContents::Markup(content) = &hover.contents else {
         return None;
@@ -279,6 +314,30 @@ mod tests {
         ] {
             assert!(!is_unknown_prop_hover(&markup_hover(value)), "{value}");
         }
+    }
+
+    #[test]
+    fn contextual_identifier_keys_have_one_cross_platform_signature() {
+        let mut identifier =
+            markup_hover("```typescript\n(property) \"items\": number[]\n```\n\nDocumentation");
+        normalize_instantiated_prop_hover(&mut identifier);
+        let LspHoverContents::Markup(content) = identifier.contents else {
+            panic!("markup hover");
+        };
+        assert_eq!(
+            content.value,
+            "```typescript\n(property) items: number[]\n```\n\nDocumentation"
+        );
+
+        let mut literal = markup_hover("```typescript\n(property) \"item-kind\": string\n```");
+        normalize_instantiated_prop_hover(&mut literal);
+        let LspHoverContents::Markup(content) = literal.contents else {
+            panic!("markup hover");
+        };
+        assert_eq!(
+            content.value,
+            "```typescript\n(property) \"item-kind\": string\n```"
+        );
     }
 
     #[test]

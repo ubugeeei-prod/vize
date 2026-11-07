@@ -33,7 +33,7 @@
   "entry": "App.vue",
   "expected": {
     "source": "responses.expected.json",
-    "sha256": "3530dc44cfe823fe22946e84d4126ca2649e6f43679d682f1bc84795c64befab"
+    "sha256": "a460e7321a0413d288d719fcc39a00133327c9c8f13f9abada2c9244e4513dc0"
   },
   "method": "textDocument/hover",
   "scope": "Whole native-backed prop hovers for two independent instantiations of one generic component."

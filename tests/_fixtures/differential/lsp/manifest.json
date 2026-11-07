@@ -2416,7 +2416,7 @@
       },
       "case": {
         "path": "generic-prop-hover-11504/case.json",
-        "sha256": "a4f39159b44721ec538cd8fd731af9052a4d0b18d705c5488704dab2672a88eb"
+        "sha256": "2bd2abbf774a5c5438d5e52c874f4bdab119b0043081ac468d73aeb5c9993f40"
       },
       "requestCount": 2,
       "initializationOptions": {
