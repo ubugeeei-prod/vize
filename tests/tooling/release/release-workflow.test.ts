@@ -209,6 +209,19 @@ test("npm resume preserves the trusted workflow and restores only the selected r
   assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
+test("release npm artifacts install their tools-owned helper dependencies", () => {
+  const action = parse(
+    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+  ) as {
+    runs: { steps: Array<{ name?: string; run?: string }> };
+  };
+  const install = action.runs.steps.find((step) => step.name === "Install native package tooling");
+  assert.equal(
+    install?.run,
+    "vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...' --filter '@vize/tools'",
+  );
+});
+
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
   const prePublish = (name: string) =>
     name.startsWith("build-") || name.startsWith("smoke") || name === "tag";
