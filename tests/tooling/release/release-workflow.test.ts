@@ -36,6 +36,7 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   env: Record<string, string>;
   jobs: Record<string, Job>;
 };
+const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 const needs = (job: string) => [workflow.jobs[job]?.needs ?? []].flat();
 const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
@@ -206,7 +207,7 @@ test("npm resume preserves the trusted workflow and restores only the selected r
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
   const prePublish = (name: string) =>
-    name.startsWith("build-") || name === "smoke" || name === "tag";
+    name.startsWith("build-") || name.startsWith("smoke") || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
     // dispatch-verify only dispatches release-verify.yml and checks nothing out.
     if (name === "version" || name === "dispatch-verify") continue;
@@ -221,7 +222,7 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
           : `${"${{"} needs.version.outputs.${ref} }}`;
     assert.equal(checkout?.with?.ref, expected, name);
   }
-  for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
+  for (const gate of ["smoke", "smoke-editor-artifacts", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
   }
   // Platform editor packaging is never a release gate.
@@ -232,6 +233,49 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   for (const build of ["build-cli", "build-native", "build-packages", "build-wasm"]) {
     assert.deepEqual(needs(build), ["version"], build);
   }
+});
+
+test("release editor hosts consume the packed candidate before the tag exists", () => {
+  const job = workflow.jobs["smoke-editor-artifacts"] as Job & { if?: string };
+  assert.deepEqual(needs("smoke-editor-artifacts"), [
+    "version",
+    "build-cli",
+    "build-editor-extensions",
+  ]);
+  assert.equal(job.if, "needs.version.outputs.ref != ''");
+  assert.ok((job["timeout-minutes"] ?? 0) >= 45);
+  const serialized = JSON.stringify(job.steps);
+  assert.match(serialized, /"name":"cli-x86_64-unknown-linux-gnu"/);
+  assert.match(serialized, /"name":"editor-extensions"/);
+  assert.match(serialized, /vize-x86_64-unknown-linux-gnu\.tar\.gz/);
+  assert.match(serialized, /vize \$RELEASE_VERSION/);
+  assert.match(serialized, /for editor in zed nvim vim helix emacs/);
+  assert.match(serialized, /target\/source-editors\/\$editor/);
+  assert.match(serialized, /\$\{editor\}-vize-extension\.tar\.gz/);
+  assert.match(serialized, /init .*--typecheck --editor --no-install/);
+  assert.match(serialized, /project-links\.txt/);
+  assert.match(serialized, /workspace-links\.txt/);
+  assert.match(serialized, /vue\/require-v-for-key/);
+  const host = job.steps?.find((step) => step.uses === "./.github/actions/vscode-host-smoke");
+  assert.equal(host?.with?.["prebuilt-server"], "${{ steps.artifacts.outputs.server }}");
+  assert.equal(host?.with?.["prebuilt-vsix"], "${{ steps.artifacts.outputs.vsix }}");
+  assert.equal(host?.with?.["expected-version"], "${{ needs.version.outputs.version }}");
+});
+
+test("release editor hosts install the supplied CLI and VSIX without rebuilding them", () => {
+  assert.match(editorHostAction, /prebuilt-server:/);
+  assert.match(editorHostAction, /prebuilt-vsix:/);
+  assert.match(
+    editorHostAction,
+    /if: inputs\.prebuilt-server == ''[\s\S]*cargo build --profile ci -p vize/,
+  );
+  assert.match(editorHostAction, /install -m 0755 "\$PREBUILT_SERVER" target\/ci\/vize/);
+  assert.match(editorHostAction, /target\/ci\/vize --version[\s\S]*vize \$EXPECTED_VERSION/);
+  assert.match(
+    editorHostAction,
+    /install -m 0644 "\$PREBUILT_VSIX" editors\/vscode\/dist\/vize\.vsix/,
+  );
+  assert.match(editorHostAction, /vp node editors\/vscode\/test\/run-extension-host-real\.mjs/);
 });
 
 test("registries publish in parallel behind one credential-free smoke", () => {
