@@ -12,6 +12,7 @@ import {
 import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
+  env?: Record<string, unknown>;
   id?: string;
   name?: string;
   if?: string;
@@ -133,14 +134,28 @@ test("release Zed settings trust the isolated worktree and opt Vize into Vue", (
 
 test("release Zed profile changes run in the actual pinned editor before merge", () => {
   const host = parse(releaseZedHost) as {
-    on: { pull_request: { paths: string[] } };
+    on: { pull_request: { paths: string[] }; workflow_dispatch: unknown };
     jobs: Record<string, Job>;
   };
+  assert.ok("workflow_dispatch" in host.on);
+  assert.ok(host.on.pull_request.paths.includes("editors/zed/**"));
   assert.ok(host.on.pull_request.paths.includes("tests/editor-conformance/release-zed*"));
-  const serialized = JSON.stringify(host.jobs.zed.steps);
-  assert.match(serialized, /cargo build --profile ci -p vize/);
-  assert.match(serialized, /zed-linux-x86_64\.tar\.gz/);
-  assert.match(serialized, /node tests\/editor-conformance\/release-zed\.ts/);
+  const steps = host.jobs.zed.steps ?? [];
+  const build = steps.findIndex((step) => step.name === "Build the candidate server");
+  const editor = steps.findIndex((step) => step.name === "Install the pinned Zed editor");
+  const smoke = steps.findIndex((step) => step.name === "Run the packaged extension in actual Zed");
+  assert.ok(build >= 0 && editor > build && smoke > editor);
+  assert.match(steps[build]?.run ?? "", /cargo build --profile ci -p vize/);
+  assert.equal(
+    steps[editor]?.env?.ZED_SHA256,
+    "719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd",
+  );
+  assert.match(steps[editor]?.run ?? "", /download-artifact\.sh[\s\S]*"\$ZED_SHA256"/);
+  assert.equal(steps[smoke]?.env?.VIZE_SERVER_PATH, "${{ github.workspace }}/target/ci/vize");
+  assert.match(
+    steps[smoke]?.run ?? "",
+    /xvfb-run -a node tests\/editor-conformance\/release-zed\.ts/,
+  );
 });
 
 test("release Zed smoke prepares its packaged profile and retains failure evidence", (t) => {
@@ -154,6 +169,7 @@ test("release Zed smoke prepares its packaged profile and retains failure eviden
     path.join(packaged, "extension.toml"),
     [
       'id = "vize"',
+      "# [grammars.vue] is documented before its real section",
       "",
       "[grammars.vue]",
       'repository = "https://github.com/tree-sitter-grammars/tree-sitter-vue"',
@@ -176,6 +192,7 @@ test("release Zed smoke prepares its packaged profile and retains failure eviden
     fs.readFileSync(path.join(profile.installed, "extension.toml"), "utf8"),
     [
       'id = "vize"',
+      "# [grammars.vue] is documented before its real section",
       "",
       "[grammars.vue]",
       'repository = "https://github.com/tree-sitter-grammars/tree-sitter-vue"',
@@ -192,6 +209,10 @@ test("release Zed smoke prepares its packaged profile and retains failure eviden
   assert.match(
     fs.readFileSync(path.join(profile.vueLanguage, "extension.toml"), "utf8"),
     /^id = "vue"[\s\S]*^languages = \["languages\/vue"\]$/mu,
+  );
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(profile.vueLanguage, "extension.toml"), "utf8"),
+    /documented before/,
   );
   assert.equal(
     fs.readFileSync(path.join(profile.vueLanguage, "grammars", "vue.wasm"), "utf8"),

@@ -62,7 +62,7 @@ function installVueLanguageFixture(packaged: string, extensions: string, evidenc
   );
 
   const packagedManifest = fs.readFileSync(path.join(packaged, "extension.toml"), "utf8");
-  const grammar = packagedManifest.match(/\[grammars\.vue\][\s\S]*?(?=\n\[|$)/u)?.[0];
+  const grammar = packagedManifest.match(/^\[grammars\.vue\][\s\S]*?(?=\n\[|(?![\s\S]))/mu)?.[0];
   if (!grammar) throw new Error("packaged Zed extension does not declare the Vue grammar");
   const manifest = [
     'id = "vue"',
