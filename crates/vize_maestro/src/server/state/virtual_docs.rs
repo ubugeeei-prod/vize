@@ -18,6 +18,29 @@ use art::{
     generate_art_script_setup_virtual_doc,
 };
 
+#[cfg(feature = "retained-program")]
+fn petite_semantic_reuse(
+    allocator: &vize_l0::Allocator,
+    root: &vize_relief::RootNode<'_>,
+    content: &str,
+) -> Option<vize_croquis::drawer::TemplateSemanticReuse> {
+    let owner = vize_l1::markup::document::NativeDocument::lex_in(
+        allocator,
+        vize_l0::SourceRoot::new(content).ok()?,
+    );
+    let document = vize_l2::dialect::petite::PetiteDocument::lower_in(allocator, &owner).ok()?;
+    vize_croquis::drawer::collect_petite_semantic_reuse(root, &document)
+}
+
+#[cfg(not(feature = "retained-program"))]
+fn petite_semantic_reuse(
+    _allocator: &vize_l0::Allocator,
+    _root: &vize_relief::RootNode<'_>,
+    _content: &str,
+) -> Option<vize_croquis::drawer::TemplateSemanticReuse> {
+    None
+}
+
 fn script_projection<'a>(
     descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
 ) -> (Option<&'a str>, bool, u32) {
@@ -111,20 +134,24 @@ impl ServerState {
 
     /// Generate and cache virtual documents for standalone HTML files.
     fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
-        use crate::virtual_code::{VirtualDocuments, project_template_fragment};
+        use crate::virtual_code::{
+            VirtualDocuments, project_petite_template_fragment, project_template_fragment,
+        };
 
         let allocator = vize_l0::Allocator::new();
         let (ast, _errors) = vize_armature::parse(&allocator, content);
         let base_uri = uri.path();
-        let template_doc = project_template_fragment(
-            None,
-            false,
-            0,
-            None,
-            &ast,
-            0,
-            vize_l0::cstr!("{base_uri}.__template.ts").to_string(),
-        );
+        let template_uri = vize_l0::cstr!("{base_uri}.__template.ts").to_string();
+        let reuse = self
+            .document_dialect(uri, content)
+            .is_petite_vue()
+            .then(|| petite_semantic_reuse(&allocator, &ast, content))
+            .flatten();
+        let template_doc = if let Some(reuse) = reuse {
+            project_petite_template_fragment(None, false, 0, None, &ast, 0, template_uri, reuse)
+        } else {
+            project_template_fragment(None, false, 0, None, &ast, 0, template_uri)
+        };
 
         let mut docs = VirtualDocuments::new();
         docs.template = Some(template_doc);
