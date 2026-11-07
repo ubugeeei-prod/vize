@@ -35,6 +35,14 @@ pub(super) fn emit_setup_artifacts(
 /// `__U` does; the latter keeps a plain `{ value }` object free of the
 /// assertion's intersection.
 const NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T> = [T] extends [import('vue').Ref] ? __U<T> : [Extract<T, import('vue').Ref>] extends [never] ? __U<T> : (NonNullable<T> & import('vue').Ref<unknown> & { value: __U<T> })['value'];\n";
+/// Vue's generic template locals use the distributive `DistributeRef<T>`
+/// contract once an authored expression narrows them. Applying that contract
+/// to every generic setup binding leaves unrelated conditional-object locals
+/// unresolved, so keep it on the `__UN` path only (#11589).
+///
+/// The defaulted `__R` protects projects whose missing or temporary Vue
+/// declarations resolve `Ref` to `any`; those projects must retain `T`.
+const GENERIC_NARROWED_REF_UNWRAP_HELPER: &str = "    type __UN<T, __R = import('vue').Ref<any>> = 0 extends (1 & __R) ? T : T extends import('vue').Ref<infer __V> ? __V : T;\n";
 
 pub(super) struct TemplateRefUnwraps {
     setup_bindings: Vec<String>,
@@ -297,7 +305,11 @@ impl TemplateRefUnwraps {
             self.hoist_shared_preamble,
         ));
         if !self.narrowed_bindings.is_empty() {
-            ts.push_str(NARROWED_REF_UNWRAP_HELPER);
+            ts.push_str(if has_generic_param && !self.legacy_helpers {
+                GENERIC_NARROWED_REF_UNWRAP_HELPER
+            } else {
+                NARROWED_REF_UNWRAP_HELPER
+            });
         }
         for name in &self.setup_bindings {
             let unwrap = self.unwrap_prefix(name);
