@@ -11,7 +11,6 @@ fn test_event_handler_scope() {
             has_implicit_event: true,
             param_names: vize_carton::smallvec![],
             handler_expression: None,
-            handler_vif_guard: None,
             target_component: None,
         },
         0,

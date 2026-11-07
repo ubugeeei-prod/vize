@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineEmits<{ (e: 'act', value: string): void }>();
+</script>
+<template><div /></template>

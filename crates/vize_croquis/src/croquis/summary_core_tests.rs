@@ -60,7 +60,6 @@ fn semantic_summary_collects_core_croquis_counts() {
             has_implicit_event: true,
             param_names: smallvec![],
             handler_expression: Some(CompactString::new("onClick($event)")),
-            handler_vif_guard: None,
             target_component: None,
         },
         41,

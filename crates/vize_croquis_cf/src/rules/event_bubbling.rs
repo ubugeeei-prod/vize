@@ -426,7 +426,6 @@ mod tests {
                 has_implicit_event: false,
                 param_names: Default::default(),
                 handler_expression: Some(CompactString::new("onSave")),
-                handler_vif_guard: None,
                 target_component: None,
             },
             0,

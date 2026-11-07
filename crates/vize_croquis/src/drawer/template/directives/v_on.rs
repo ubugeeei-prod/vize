@@ -75,6 +75,11 @@ impl Drawer {
             let handler_vif_guard = handler_binding.as_ref().and_then(|name| {
                 self.handler_vif_guard(self.croquis.scopes.current_id(), name.as_str())
             });
+            let expression_vif_guard = if handler_binding.is_some() {
+                handler_vif_guard
+            } else {
+                self.current_vif_guard()
+            };
             let has_implicit_event = matches!(shape, EventHandlerExpression::Inline);
             let params = match shape {
                 EventHandlerExpression::Callback { params, .. } => params,
@@ -96,7 +101,6 @@ impl Drawer {
                     has_implicit_event,
                     param_names: params.into_iter().collect(),
                     handler_expression: Some(CompactString::new(content)),
-                    handler_vif_guard,
                     target_component,
                 },
                 dir.loc.span.start,
@@ -112,7 +116,7 @@ impl Drawer {
                         start: location.span.start,
                         end: location.span.end,
                         scope_id: self.croquis.scopes.current_id(),
-                        vif_guard: self.current_vif_guard(),
+                        vif_guard: expression_vif_guard,
                     });
             }
             let previous_count = scope_vars.len();
@@ -158,7 +162,7 @@ impl Drawer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Analyzer, AnalyzerOptions, ScopeData, ScopeKind, TemplateExpressionKind};
+    use crate::{Analyzer, AnalyzerOptions, ScopeKind, TemplateExpressionKind};
     use vize_carton::{Allocator, cstr};
 
     #[test]
@@ -336,17 +340,14 @@ mod tests {
             analyzer.analyze_script_setup(script);
             analyzer.analyze_template(&root);
             let summary = analyzer.finish();
-            let data = summary
-                .scopes
+            let expression = summary
+                .template_expressions
                 .iter()
-                .find_map(|scope| match scope.data() {
-                    ScopeData::EventHandler(data) => Some(data),
-                    _ => None,
-                })
+                .find(|expression| expression.kind == TemplateExpressionKind::VOn)
                 .unwrap();
-            assert_eq!(data.handler_vif_guard.is_some(), expected, "{template}");
+            assert_eq!(expression.vif_guard.is_some(), expected, "{template}");
             if template.contains("handler !== null") {
-                let guard = data.handler_vif_guard.as_deref().unwrap();
+                let guard = expression.vif_guard.as_deref().unwrap();
                 assert!(!guard.contains("handler !== null"), "{guard}");
                 assert!(guard.contains("typeof handler === 'function'"), "{guard}");
             }

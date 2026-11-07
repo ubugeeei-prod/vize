@@ -15,9 +15,7 @@ use crate::virtual_ts::expressions::{
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{String, append, cstr, profile};
-use vize_croquis::drawer::{
-    EventHandlerExpression, classify_event_handler, classify_event_handler_with_identifier,
-};
+use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 use vize_croquis::{Scope, ScopeData, ScopeKind};
 
 pub(super) fn generate_scope_node(
@@ -200,13 +198,6 @@ pub(super) fn generate_scope_node(
                     )
                 })
             });
-            let has_standalone_listener_binding = expressions.is_some_and(|expressions| {
-                expressions.iter().any(|expression| {
-                    classify_event_handler_with_identifier(expression.content.as_str())
-                        .1
-                        .is_some()
-                })
-            });
             let common_guard =
                 expressions.and_then(|exprs| super::vif_guard::common_vif_guard_prefix(exprs));
             let enclosing_guard = if has_deferred_callback {
@@ -229,15 +220,7 @@ pub(super) fn generate_scope_node(
                     .flatten()
                     .and_then(|guard| callback_vif_guard_for_v_for_aliases(guard, &v_for_aliases))
             } else if has_listener_reference {
-                data.target_component.as_ref().and_then(|_| {
-                    if has_standalone_listener_binding {
-                        data.handler_vif_guard
-                            .as_ref()
-                            .map(|guard| String::from(guard.as_str()))
-                    } else {
-                        common_guard
-                    }
-                })
+                data.target_component.as_ref().and(common_guard)
             } else {
                 None
             }

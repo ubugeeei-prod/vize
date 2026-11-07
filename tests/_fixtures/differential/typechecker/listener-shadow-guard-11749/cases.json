@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "issue": 11749,
+  "sourceIssue": 11747,
+  "reportedVersion": "0.674.0",
+  "reporter": "ubugeeei",
+  "inputs": ["Row.vue", "Shadowed.vue", "Callable.vue", "tsconfig.json"],
+  "expectedDiagnostics": {
+    "Shadowed.vue": [{ "line": 8, "column": 52, "code": 2322 }],
+    "Callable.vue": []
+  }
+}
