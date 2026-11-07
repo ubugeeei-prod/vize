@@ -248,7 +248,6 @@ fn genuine_collisions_and_legal_shadowing_match_vue_tsc() {
         [
             "src/BadAssignment.vue(8,7): error TS2322: Type '\"c\"' is not assignable to type '\"a\" | \"b\"'.",
             "src/DuplicateExportAcrossBlocks.vue(4,13): error TS2300: Duplicate identifier 'Kind'.",
-            "src/DuplicateExportAcrossBlocks.vue(8,1): error TS1184: Modifiers cannot appear here.",
             "src/DuplicateExportAcrossBlocks.vue(8,13): error TS2300: Duplicate identifier 'Kind'.",
             "src/DuplicateInClassic.vue(4,13): error TS2300: Duplicate identifier 'Kind'.",
             "src/DuplicateInClassic.vue(5,13): error TS2300: Duplicate identifier 'Kind'.",

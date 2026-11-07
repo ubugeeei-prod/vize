@@ -1,0 +1,15 @@
+<script setup lang="ts">
+defineProps<{
+    show: boolean
+    remark: string
+    loading: boolean
+}>()
+defineEmits<{
+    change: [value: string]
+    close: []
+}>()
+</script>
+
+<template>
+    <div v-if="show">{{ remark }}</div>
+</template>
