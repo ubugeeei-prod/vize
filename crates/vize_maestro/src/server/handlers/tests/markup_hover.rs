@@ -1,7 +1,7 @@
 //! Rich authored markup hover must not enter type-project routing.
 
 use tower_lsp::{
-    LspService,
+    LanguageServer, LspService,
     lsp_types::{
         HoverContents, HoverParams, Position, TextDocumentIdentifier, TextDocumentPositionParams,
         Url,
@@ -9,6 +9,55 @@ use tower_lsp::{
 };
 
 use super::super::MaestroServer;
+
+#[test]
+fn resident_markup_hover_does_not_wait_for_the_native_transaction() {
+    crate::runtime::block_on(async {
+        let project = crate::test_support::tempdir().unwrap();
+        let (service, _socket) = LspService::new(MaestroServer::new);
+        let server = service.inner();
+        server
+            .state
+            .apply_lsp_initialization_options(Some(&serde_json::json!({
+                "hover": true,
+                "typecheck": true,
+                "lint": false,
+                "ecosystem": false
+            })));
+        let source = "<template><button @click=\"save\">Save</button></template>";
+        let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+        std::fs::write(uri.to_file_path().unwrap(), source).unwrap();
+        server
+            .state
+            .documents
+            .open(uri.clone(), source.into(), 1, "vue".into());
+        server.state.update_virtual_docs(&uri, source);
+        server.state.set_corsa_disk_watcher_registered();
+
+        let offset = source.find("@click").unwrap() + 2;
+        let (line, character) = crate::ide::offset_to_position(source, offset);
+        let params = HoverParams {
+            text_document_position_params: TextDocumentPositionParams {
+                text_document: TextDocumentIdentifier { uri },
+                position: Position::new(line, character),
+            },
+            work_done_progress_params: Default::default(),
+        };
+
+        let _native = server.state.corsa_request_scope().await;
+        let hover =
+            crate::runtime::timeout(std::time::Duration::from_secs(3), server.hover(params))
+                .await
+                .expect("resident markup must bypass a held native transaction")
+                .unwrap()
+                .expect("resident directive hover");
+        let HoverContents::Markup(markup) = hover.contents else {
+            panic!("directive hover must stay rich Markdown");
+        };
+        assert!(markup.value.contains("Vue event listener"));
+        assert_eq!(server.state.canonical_bridge_request_count(), 0);
+    });
+}
 
 #[test]
 fn typecheck_sessions_keep_native_markup_under_the_live_backend() {
