@@ -93,6 +93,7 @@
         "properties": {
           "level": { "type": "string", "pattern": "^l[0-4]$" },
           "step": { "type": "string" },
+          "scope": { "type": "string", "enum": ["step", "walk"] },
           "nanos": { "type": "integer", "minimum": 0 }
         }
       }

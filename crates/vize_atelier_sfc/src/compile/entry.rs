@@ -6,7 +6,7 @@ use crate::types::{
 use root_match::compile_sfc_inner;
 pub use root_match::prepare_root_patterned_template;
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
-use vize_l0::dump::capture::StageCapture;
+use vize_l0::dump::capture::{CaptureClock, StageCapture};
 
 /// Compile against the immutable project selected by the host. Omitting a
 /// project retains ordinary nearest-config discovery for filesystem inputs.
@@ -236,7 +236,7 @@ pub fn compile_sfc_for_adapter_with_stage_capture(
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
 ) -> Result<(SfcCompileResult, StageCapture), SfcError> {
-    compile_sfc_for_adapter_with_project_and_stage_capture(
+    compile_sfc_for_adapter_with_project_stage_capture_and_clock(
         descriptor,
         options,
         template_syntax,
@@ -245,6 +245,36 @@ pub fn compile_sfc_for_adapter_with_stage_capture(
         script_output,
         experimental_options,
         None,
+        None,
+    )
+}
+
+/// Capture the adapter result using a monotonic clock supplied by its host.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "adapter inputs with host timing authority"
+)]
+pub fn compile_sfc_for_adapter_with_stage_capture_and_clock(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+    clock: CaptureClock,
+) -> Result<(SfcCompileResult, StageCapture), SfcError> {
+    compile_sfc_for_adapter_with_project_stage_capture_and_clock(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        None,
+        Some(clock),
     )
 }
 
@@ -264,7 +294,38 @@ pub fn compile_sfc_for_adapter_with_project_and_stage_capture(
     experimental_options: SfcCompileExperimentalOptions,
     project: Option<&crate::script::SfcTypeProject>,
 ) -> Result<(SfcCompileResult, StageCapture), SfcError> {
-    let mut capture = StageCapture::new("sfc");
+    compile_sfc_for_adapter_with_project_stage_capture_and_clock(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        project,
+        None,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one internal capture constructor for project and clock authority"
+)]
+fn compile_sfc_for_adapter_with_project_stage_capture_and_clock(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+    project: Option<&crate::script::SfcTypeProject>,
+    clock: Option<CaptureClock>,
+) -> Result<(SfcCompileResult, StageCapture), SfcError> {
+    let mut capture = match clock {
+        Some(clock) => StageCapture::new_with_clock("sfc", clock),
+        None => StageCapture::new("sfc"),
+    };
     let result = compile_sfc_inner(
         descriptor,
         options,

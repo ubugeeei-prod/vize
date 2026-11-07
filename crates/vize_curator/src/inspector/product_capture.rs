@@ -53,6 +53,7 @@ struct Page<'a> {
 struct Timing<'a> {
     level: &'static str,
     step: &'a str,
+    scope: &'static str,
     nanos: u64,
 }
 
@@ -141,6 +142,7 @@ pub fn product_capture_value(
                 .map(|timing| Timing {
                     level: timing.level.id(),
                     step: timing.step,
+                    scope: timing.scope.as_str(),
                     nanos: timing.nanos,
                 })
                 .collect()
@@ -234,6 +236,21 @@ mod tests {
         assert_eq!(value["outcome"]["kind"], "legacy");
         assert_eq!(value["outcome"]["reason"], "unsupported");
         assert!(value["pages"].as_array().unwrap().is_empty());
+    }
+
+    #[test]
+    fn timing_scope_distinguishes_steps_from_fused_walks() {
+        let mut capture = StageCapture::new("dom");
+        capture.timing(Level::L2, "hoist-static", || 7);
+        capture.walk_timing(Level::L2, "hoist-static", || 11);
+        capture.timing_channel_observed();
+        capture.finish(|| CaptureOutcome::Accepted);
+
+        let value = product_capture_value("compile-sfc", source(), &capture);
+        assert_eq!(value["timings"][0]["scope"], "step");
+        assert_eq!(value["timings"][0]["nanos"], 7);
+        assert_eq!(value["timings"][1]["scope"], "walk");
+        assert_eq!(value["timings"][1]["nanos"], 11);
     }
 
     #[test]

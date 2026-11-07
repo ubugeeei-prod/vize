@@ -5,5 +5,6 @@
 
 include!("../dialect/vue/emit/budget.rs");
 
+mod capture;
 mod preflight;
 mod slot_scope;

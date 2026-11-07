@@ -82,6 +82,40 @@ describe("same-run product stage feed", () => {
     expect(ladder.l4Pages).toEqual([{ step: "emit", text: "export function ssrRender() {}" }]);
   });
 
+  it("keeps step and fused-walk timings in separate product channels", () => {
+    const product = capture("dom");
+    product.observed.timings = true;
+    product.pages = [
+      { level: "l1", step: "parse", text: "<div>hello</div>" },
+      { level: "l2", step: "lower", text: "ops=1\n" },
+      {
+        level: "l2",
+        step: "plan",
+        text: "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+      },
+      { level: "l2", step: "hoist-static", text: "ops=1\n" },
+      { level: "l4", step: "emit", text: "export default {}" },
+    ];
+    product.timings = [
+      { level: "l1", step: "parse", scope: "step", nanos: 1_000 },
+      { level: "l2", step: "lower", scope: "step", nanos: 2_000 },
+      { level: "l2", step: "hoist-static", scope: "step", nanos: 3_000 },
+      { level: "l2", step: "hoist-static", scope: "walk", nanos: 4_000 },
+    ];
+    const negotiated = negotiateProductCapture(product, "dom");
+    expect(negotiated.ok).toBe(true);
+    if (!negotiated.ok) return;
+    const ladder = buildProductLadder(negotiated.feed, result);
+    expect(ladder.timeline.map(({ key, nanos }) => [key, nanos])).toEqual([
+      ["l1/parse", 1_000],
+      ["l2/lower", 2_000],
+      ["l2/hoist-static", 3_000],
+    ]);
+    expect(ladder.walks).toEqual([
+      { index: 0, passes: ["hoist-static"], fusable: true, nanos: 4_000 },
+    ]);
+  });
+
   it("shows target and fallback reason without invented stages", () => {
     const fallback = negotiateProductCapture(capture("ssr", "legacy"), "ssr");
     expect(fallback.ok && fallback.feed.outcome).toEqual({
@@ -94,6 +128,16 @@ describe("same-run product stage feed", () => {
   it("fails closed on target, version, or impossible fallback pages", () => {
     expect(negotiateProductCapture(capture("ssr"), "dom").ok).toBe(false);
     expect(negotiateProductCapture({ ...capture("dom"), schema_version: 1 }, "dom").ok).toBe(false);
+    expect(
+      negotiateProductCapture(
+        {
+          ...capture("dom"),
+          observed: { timings: true, remarks: false },
+          timings: [{ level: "l1", step: "parse", scope: "pipeline", nanos: 1 }],
+        },
+        "dom",
+      ).ok,
+    ).toBe(false);
     expect(
       negotiateProductCapture({ ...capture("dom", "legacy"), pages: capture("dom").pages }, "dom")
         .ok,
