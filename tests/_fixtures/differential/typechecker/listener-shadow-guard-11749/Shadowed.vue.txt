@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Row from './Row.vue';
+const handlers: (number | ((value: string) => void))[] = [123];
+const handler = Math.random() ? 1 : (value: string) => { void value; };
+</script>
+<template>
+<template v-if="typeof handler === 'number'"><div /></template>
+<template v-else><Row v-for="handler in handlers" @act="handler" /></template>
+</template>

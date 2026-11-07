@@ -6,8 +6,10 @@
 //! - Simple handler reference tracking
 
 use crate::drawer::Drawer;
-use crate::drawer::helpers::{EventHandlerExpression, classify_event_handler};
-use crate::scope::EventHandlerScopeData;
+use crate::drawer::helpers::{
+    EventHandlerExpression, classify_event_handler_with_identifier, extract_identifiers_oxc,
+};
+use crate::scope::{EventHandlerScopeData, ScopeId};
 use vize_carton::{CompactString, profile};
 use vize_relief::ExpressionNode;
 
@@ -58,17 +60,25 @@ impl Drawer {
             // Every named listener runs in a handler scope. Whether its body
             // contains parentheses, semicolons or nested callbacks cannot change
             // that ownership; statement bodies must never become `void (body)`.
-            let shape = if self
+            let (shape, handler_binding) = if self
                 .template_semantic_reuse
                 .as_ref()
                 .is_some_and(|reuse| reuse.is_inline_handler(exp))
             {
-                EventHandlerExpression::Inline
+                (EventHandlerExpression::Inline, None)
             } else {
                 profile!(
                     "croquis.template.event.classify",
-                    classify_event_handler(content)
+                    classify_event_handler_with_identifier(content)
                 )
+            };
+            let handler_vif_guard = handler_binding.as_ref().and_then(|name| {
+                self.handler_vif_guard(self.croquis.scopes.current_id(), name.as_str())
+            });
+            let expression_vif_guard = if handler_binding.is_some() {
+                handler_vif_guard
+            } else {
+                self.current_vif_guard()
             };
             let has_implicit_event = matches!(shape, EventHandlerExpression::Inline);
             let params = match shape {
@@ -106,7 +116,7 @@ impl Drawer {
                         start: location.span.start,
                         end: location.span.end,
                         scope_id: self.croquis.scopes.current_id(),
-                        vif_guard: self.current_vif_guard(),
+                        vif_guard: expression_vif_guard,
                     });
             }
             let previous_count = scope_vars.len();
@@ -126,6 +136,38 @@ impl Drawer {
             scope_vars.truncate(previous_count);
             self.croquis.scopes.exit_scope();
         }
+    }
+
+    fn handler_vif_guard(&mut self, listener_scope: ScopeId, name: &str) -> Option<CompactString> {
+        if self.vif_guard_stack.is_empty() {
+            return None;
+        }
+
+        let mut listener_owner = None;
+        let mut replay = Vec::new();
+
+        for (guard, guard_scope) in self.vif_guard_stack.iter().zip(&self.vif_guard_scope_stack) {
+            let references_binding = match self.ident_cache.get(guard.as_str()) {
+                Some(identifiers) => identifiers.iter().any(|identifier| identifier == name),
+                None => {
+                    let identifiers = extract_identifiers_oxc(guard.as_str());
+                    let references = identifiers.iter().any(|identifier| identifier == name);
+                    self.ident_cache.insert(guard.clone(), identifiers);
+                    references
+                }
+            };
+            if references_binding {
+                let listener_owner = *listener_owner.get_or_insert_with(|| {
+                    self.croquis.scopes.binding_scope_from(listener_scope, name)
+                });
+                if self.croquis.scopes.binding_scope_from(*guard_scope, name) != listener_owner {
+                    continue;
+                }
+            }
+            replay.push(guard.as_str());
+        }
+
+        (!replay.is_empty()).then(|| CompactString::new(replay.join(" && ")))
     }
 }
 
@@ -272,6 +314,56 @@ mod tests {
                 !scope.bindings().any(|(name, _)| name == "$event"),
                 "{body}"
             );
+        }
+    }
+
+    #[test]
+    fn listener_guards_retain_binding_identity_across_v_for_shadowing() {
+        let script = "const handlers: (number | (() => void))[] = []; const handler = () => {}; const ready = true;";
+        let cases = [
+            (
+                "<template v-if=\"typeof handler === 'number'\"><div></div></template><template v-else><Row v-for=\"handler in handlers\" @act=\"handler\" /></template>",
+                false,
+            ),
+            (
+                "<Row v-if=\"typeof handler === 'function'\" v-for=\"handler in handlers\" @act=\"handler\" />",
+                false,
+            ),
+            (
+                "<template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template>",
+                true,
+            ),
+            (
+                "<div v-if=\"ready\"><template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template></div>",
+                true,
+            ),
+            (
+                "<div v-if=\"handler !== null\"><template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template></div>",
+                true,
+            ),
+            ("<div v-if=\"ready\"><Row @act=\"handler\" /></div>", true),
+        ];
+
+        for (template, expected) in cases {
+            let allocator = Allocator::new();
+            let (root, errors) = vize_armature::parse(&allocator, template);
+            assert!(errors.is_empty(), "{template}: {errors:?}");
+            let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+            analyzer.analyze_script_setup(script);
+            analyzer.analyze_template(&root);
+            let summary = analyzer.finish();
+            let expression = summary
+                .template_expressions
+                .iter()
+                .find(|expression| expression.kind == TemplateExpressionKind::VOn)
+                .unwrap();
+            assert_eq!(expression.vif_guard.is_some(), expected, "{template}");
+            if template.contains("handler !== null") {
+                assert_eq!(
+                    expression.vif_guard.as_deref(),
+                    Some("(typeof handler === 'function')")
+                );
+            }
         }
     }
 }

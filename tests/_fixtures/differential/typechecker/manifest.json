@@ -12161,6 +12161,56 @@
       }
     },
     {
+      "id": "typechecker/listener-shadow-guard-11749",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "content_mapper_tsgo_cli::component_listener_narrowing_11730::shadowed_listener_guard_keeps_binding_identity",
+      "inputs": [
+        {
+          "file": "Row.vue",
+          "path": "listener-shadow-guard-11749/Row.vue.txt",
+          "sha256": "a46388700dec60ff795cc03d9629908034875d37ae50c87810f572a01d1db9a8"
+        },
+        {
+          "file": "Shadowed.vue",
+          "path": "listener-shadow-guard-11749/Shadowed.vue.txt",
+          "sha256": "cfafc58c546759e8f4756f21f4f8a24fcb7b04188e9cb628c9f5b58104197b82"
+        },
+        {
+          "file": "Callable.vue",
+          "path": "listener-shadow-guard-11749/Callable.vue.txt",
+          "sha256": "cc8b17a8d86c4d70a6492340e17c0d17ea60029876ca8f34473a2550853352c4"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "listener-shadow-guard-11749/tsconfig.json.txt",
+          "sha256": "c0c7682747ec64e37853842ee710442fec6ccd8af7bfb8ab7449b0845164a372"
+        },
+        {
+          "file": "cases.json",
+          "path": "listener-shadow-guard-11749/cases.json",
+          "sha256": "49144da01b21bf445710249371f5701b06f13c75b5747f65fb9d21e0e32971b5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Required source CLI content-mapper protocol; an outer same-name guard cannot narrow a shadowing v-for listener binding, while a callable inner-binding control remains clean."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/loose-listener-context-11600",
       "state": "active",
       "targets": [
