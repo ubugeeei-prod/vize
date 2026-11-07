@@ -271,7 +271,7 @@ jobs:
 
   smoke-editor-artifacts:
     name: Smoke release editor hosts
-    needs: [version, build-cli, build-editor-extensions]
+    needs: [version, build-cli, build-packages, build-editor-extensions]
     if: needs.version.outputs.ref != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -286,6 +286,10 @@ jobs:
         with:
           name: editor-extensions
           path: ${{ runner.temp }}/release-editors
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-packages
+          path: npm
       - name: Install the exact release artifacts and initialize a fresh project
         id: artifacts
         env:
@@ -300,7 +304,9 @@ jobs:
           tar -xzf "$RUNNER_TEMP/release-cli/vize-x86_64-unknown-linux-gnu.tar.gz" \
             -C "$install_root/cli"
           server="$install_root/cli/vize"
+          init_cli="$GITHUB_WORKSPACE/npm/cli/bin/vize"
           test -x "$server"
+          test -f "$init_cli"
           test "$("$server" --version)" = "vize $RELEASE_VERSION"
 
           for editor in zed nvim vim helix emacs; do
@@ -330,7 +336,7 @@ jobs:
           <template><ul><li v-for="item in items">{{ item }}</li></ul></template>
           `);
           JS
-          "$server" init "$fresh" --yes --no-lint --vite --fmt --typecheck --editor --no-install \
+          node "$init_cli" init "$fresh" --yes --no-lint --vite --fmt --typecheck --editor --no-install \
             | tee "$evidence/init.txt"
           test -f "$fresh/.vscode/extensions.json"
           grep -F 'ubugeeei.vize' "$fresh/.vscode/extensions.json"
@@ -347,7 +353,8 @@ jobs:
             echo "fresh release project refers to the source checkout" >&2
             exit 1
           fi
-          sha256sum "$server" "$vsix" "$RUNNER_TEMP/release-editors/"*.tar.gz \
+          sha256sum "$server" "$init_cli" "$GITHUB_WORKSPACE/npm/cli/dist/cli.mjs" \
+            "$vsix" "$RUNNER_TEMP/release-editors/"*.tar.gz \
             > "$evidence/artifacts.sha256"
           find "$fresh" -type f -print | LC_ALL=C sort > "$evidence/project-files.txt"
           printf 'server=%s\n' "$server" >> "$GITHUB_OUTPUT"
