@@ -9,7 +9,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 use super::super::slot_names::slot_argument_name;
 use super::bounds::element_subtree_end;
 use super::scopes::{ElementDirectiveState, ForScopeInfo};
-use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_offset};
+use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_span};
 
 impl Drawer {
     pub(super) fn collect_element_directive_state(
@@ -47,8 +47,8 @@ impl Drawer {
                                 &aliases,
                                 &self.template_source,
                             );
-                            let source_offset =
-                                v_for_source_offset(exp, &aliases, &self.template_source);
+                            let source_span =
+                                v_for_source_span(exp, &aliases, &self.template_source);
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
                             let source_identifiers =
                                 self.template_semantic_reuse.as_ref().and_then(|reuse| {
@@ -57,7 +57,7 @@ impl Drawer {
                             state.for_scope = Some(ForScopeInfo {
                                 aliases,
                                 alias_offsets,
-                                source_offset,
+                                source_span,
                                 start: el.loc.span.start,
                                 end,
                                 source_identifiers,

@@ -11,6 +11,7 @@ mod module_exports;
 mod occurrences;
 mod options;
 mod script;
+mod source_offsets;
 mod template;
 mod template_references;
 mod template_semantic_reuse;
@@ -40,3 +41,4 @@ pub use helpers::{
     retained_binding_declarations, strip_js_comments, strip_js_comments_with_offsets,
 };
 pub use options::DrawerOptions;
+pub use source_offsets::{AuthoredSourceOffsets, attribute_source_offset, text_source_offset};

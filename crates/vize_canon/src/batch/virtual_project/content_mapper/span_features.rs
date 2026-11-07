@@ -1,6 +1,7 @@
 //! TypeScript Content Mapper protocol-v1 feature bits.
 
 use super::{ContentMapperSpan, ContentMapperSpanKind};
+use vize_l0::FxHashMap;
 
 /// TypeScript Content Mapper protocol-v1 feature bits.
 ///
@@ -206,18 +207,15 @@ pub(super) fn content_mapper_span_features(
 /// and otherwise contributes `var` hover text beside the proxy's `const` text.
 /// Its navigation and diagnostic ownership remain unchanged.
 pub(super) fn retain_template_hover_owner(generated: &str, spans: &mut [ContentMapperSpan]) {
-    let owners = spans
-        .iter()
-        .filter(|span| {
-            span.0[5] == CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
-                && is_template_hover_projection(generated, span.0[0])
-        })
-        .map(|span| (span.0[2], span.0[3], span.0[0]))
-        .collect::<Vec<_>>();
+    let mut owners = FxHashMap::default();
+    for span in spans.iter().filter(|span| {
+        span.0[5] == CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
+            && is_template_hover_projection(generated, span.0[0])
+    }) {
+        owners.entry((span.0[2], span.0[3])).or_insert(span.0[0]);
+    }
     for span in spans {
-        if let Some((_, _, owner)) = owners
-            .iter()
-            .find(|(start, length, _)| (*start, *length) == (span.0[2], span.0[3]))
+        if let Some(owner) = owners.get(&(span.0[2], span.0[3]))
             && span.0[0] != *owner
         {
             span.0[5] &= !CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER;
