@@ -349,7 +349,7 @@ mod tests {
             if template.contains("handler !== null") {
                 assert_eq!(
                     expression.vif_guard.as_deref(),
-                    Some("typeof handler === 'function'")
+                    Some("(typeof handler === 'function')")
                 );
             }
         }
