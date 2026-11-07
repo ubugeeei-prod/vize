@@ -213,8 +213,23 @@ fn private_scoping_preserves_preloaded_authored_package_bindings() {
     }]);
     let before = owner.project.package_routes_snapshot();
     assert_eq!(before.len(), 1);
-    owner.scope_initial_installed_sources(&[selected]).unwrap();
+    let canonical = vize_carton::path::canonicalize_non_verbatim(&selected);
+    owner
+        .scope_initial_installed_sources(&[selected], &[canonical])
+        .unwrap();
     assert_eq!(owner.project.package_routes_snapshot(), before);
+}
+
+#[test]
+fn missing_installed_inputs_do_not_claim_private_storage() {
+    let root = tempfile::tempdir().unwrap();
+    let missing = root.path().join("node_modules/missing/index.ts");
+    let mut owner = checker(root.path());
+
+    owner.scan_paths(&[missing]).unwrap();
+
+    assert!(owner.owned_storage.is_none());
+    assert!(owner.project.is_empty());
 }
 
 #[test]

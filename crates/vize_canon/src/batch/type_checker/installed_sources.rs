@@ -52,21 +52,30 @@ impl BatchTypeChecker {
 }
 
 impl BatchTypeChecker {
-    pub(super) fn scope_initial_installed_sources(
+    pub(super) fn scope_initial_installed_sources<P>(
         &mut self,
-        paths: &[std::path::PathBuf],
-    ) -> CorsaResult<()> {
+        logical_paths: &[P],
+        canonical_paths: &[PathBuf],
+    ) -> CorsaResult<()>
+    where
+        P: AsRef<Path> + Sync,
+    {
         if self.scanned || self.owned_storage.is_some() {
             return Ok(());
         }
+        debug_assert_eq!(logical_paths.len(), canonical_paths.len());
         let project_root = self.project.project_root();
-        let installed = paths.par_iter().any(|path| {
-            if path.is_absolute() {
-                is_installed_source(project_root, path)
-            } else {
-                is_installed_source(project_root, &project_root.join(path))
-            }
-        });
+        let installed = logical_paths
+            .par_iter()
+            .zip(canonical_paths.par_iter())
+            .any(|(logical, canonical)| {
+                let logical = logical.as_ref();
+                if logical.is_absolute() {
+                    is_installed_source_pair(project_root, logical, canonical)
+                } else {
+                    is_installed_source_pair(project_root, &project_root.join(logical), canonical)
+                }
+            });
         if self.scope_persistent_initial_storage(installed)? || !installed {
             return Ok(());
         }
@@ -105,12 +114,15 @@ impl BatchTypeChecker {
 /// declaration that a shared tsconfig lists from a hoisted workspace root,
 /// therefore keeps the persistent namespace, with its skipped rewrites and its
 /// incremental build info.
+#[cfg(test)]
 fn is_installed_source(project_root: &Path, path: &Path) -> bool {
-    installed_below_root(project_root, path)
-        || installed_below_root(
-            project_root,
-            &vize_carton::path::canonicalize_non_verbatim(path),
-        )
+    let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+    is_installed_source_pair(project_root, path, &canonical)
+}
+
+fn is_installed_source_pair(project_root: &Path, logical: &Path, canonical: &Path) -> bool {
+    installed_below_root(project_root, logical)
+        || installed_canonical_below_root(project_root, canonical)
 }
 
 /// Every `node_modules` segment is tried, so a project that itself lives
@@ -125,6 +137,20 @@ fn installed_below_root(project_root: &Path, path: &Path) -> bool {
         .any(|(installed_at, _)| {
             let prefix = path.components().take(installed_at).collect::<PathBuf>();
             vize_carton::path::canonicalize_non_verbatim(&prefix).starts_with(project_root)
+        })
+}
+
+/// Canonical identities need no further realpath call. Their prefixes already
+/// describe physical ownership, so a lexical containment check is sufficient.
+fn installed_canonical_below_root(project_root: &Path, path: &Path) -> bool {
+    path.components()
+        .enumerate()
+        .filter(|(_, part)| is_node_modules_component(part.as_os_str()))
+        .any(|(installed_at, _)| {
+            path.components()
+                .take(installed_at)
+                .collect::<PathBuf>()
+                .starts_with(project_root)
         })
 }
 
