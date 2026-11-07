@@ -1,4 +1,5 @@
-//! Original ordinary static attributes must exhaust before an Element body.
+// JavaScript-native header policy included by `file::region::native::body::header`
+// so its existing internal type identity remains stable.
 
 use super::super::{
     NativeVisibility, attribute_value::PreparedAttributes, conditional::ObservedConditional,
