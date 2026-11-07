@@ -327,15 +327,8 @@ jobs:
           path: ${{ runner.temp }}/imported-type-project/
           if-no-files-found: error
           retention-days: 14
-      - name: Collect UI conformance test cases
-        id: conformance-cases
+      - name: Collect and upload UI conformance test cases
         if: ${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
-        run: node tools/support/compat/github/job-test-cases.ts finalize
-      - name: Upload UI conformance test cases
-        if: ${{ !cancelled() && steps.conformance-cases.outcome == 'success' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/collect-job-test-cases
         with:
-          name: test-cases-js-conformance-${{ matrix.surface }}-${{ github.run_attempt }}
-          path: ${{ env.VIZE_TEST_CASES }}
-          if-no-files-found: error
-          retention-days: 7
+          artifact: test-cases-js-conformance-${{ matrix.surface }}-${{ github.run_attempt }}

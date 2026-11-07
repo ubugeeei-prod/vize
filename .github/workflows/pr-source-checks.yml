@@ -339,18 +339,11 @@ jobs:
       - name: Execute original selected-template DOM modules
         if: ${{ matrix.lane == 'selected-template' }}
         uses: ./.github/actions/test-native-selected-template
-      - name: Collect native runtime test cases
-        id: native-cases
+      - name: Collect and upload native runtime test cases
         if: ${{ !cancelled() && matrix.lane != 'none' }}
-        run: node tools/support/compat/github/job-test-cases.ts finalize
-      - name: Upload native runtime test cases
-        if: ${{ !cancelled() && steps.native-cases.outcome == 'success' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/collect-job-test-cases
         with:
-          name: test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}
-          path: ${{ env.VIZE_TEST_CASES }}
-          if-no-files-found: error
-          retention-days: 7
+          artifact: test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}

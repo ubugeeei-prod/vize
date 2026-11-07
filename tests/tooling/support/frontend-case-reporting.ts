@@ -94,3 +94,35 @@ export function restoreNodeEngineCasePacket(job: Job, original: Job) {
     packet: "node-engine-${{ matrix.node-version }}",
   });
 }
+
+export function restoreNativeRuntimeCasePacket(job: Job, original: Job) {
+  assert.deepEqual(job.env, {
+    ...(original.env as Record<string, string>),
+    TEST_CASES_JOB: "Native runtime (${{ matrix.lane }})",
+    VIZE_TEST_CASES: "test-cases-native-${{ matrix.lane }}.json",
+  });
+  job.env = structuredClone(original.env);
+  const steps = job.steps;
+  assert(steps);
+  const additions = [
+    {
+      name: "Prepare native runtime test case capture",
+      if: "${{ matrix.lane != 'none' }}",
+      run: 'node tools/support/compat/github/job-test-cases.ts setup "$RUNNER_TEMP/native-test-cases-${{ matrix.lane }}"',
+    },
+    {
+      name: "Collect and upload native runtime test cases",
+      if: "${{ !cancelled() && matrix.lane != 'none' }}",
+      uses: "./.github/actions/collect-job-test-cases",
+      with: {
+        artifact: "test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}",
+      },
+    },
+  ];
+  for (const expected of additions) {
+    const selected = selectedStep(job, expected.name);
+    assert.deepEqual(selected.step, expected);
+    steps.splice(selected.index, 1);
+  }
+  assert.deepEqual(job, original);
+}

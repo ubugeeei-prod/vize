@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { cargoTestPackages } from "../../tools/support/compat/github/job-test-cases.ts";
+import {
+  cargoTestPackages,
+  jobTestShell,
+} from "../../tools/support/compat/github/job-test-cases.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
@@ -29,28 +36,45 @@ test("cargo test package owners are retained for the stable output bridge", () =
   assert.throws(() => cargoTestPackages(["test", "-p"]), /requires a package/u);
 });
 
+test("the Node job shim preserves PID and transport through filtered environments", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-job-test-shim-"));
+  const shim = path.join(directory, "node");
+  try {
+    const values = {
+      VIZE_JOB_TEST_CASE_PARTIALS: path.join(directory, "partials"),
+      VIZE_JOB_TEST_CASE_TOOL: path.join(directory, "missing-tool.ts"),
+      VIZE_JOB_TEST_CASE_NODE: process.execPath,
+      VIZE_JOB_TEST_CASE_VP: path.join(directory, "vp"),
+      VIZE_JOB_TEST_CASE_CARGO: path.join(directory, "cargo"),
+      VIZE_TEST_CASES_ROOT: directory,
+    };
+    fs.writeFileSync(shim, jobTestShell("node", values), { mode: 0o755 });
+    const result = spawnSync(shim, ["-e", "process.stdout.write(String(process.ppid))"], {
+      encoding: "utf8",
+      env: { PATH: process.env.PATH ?? "" },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, String(process.pid));
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("every selected native runtime lane uploads one merged case packet", () => {
   const job = workflow("pr-source-checks.yml").jobs["pr-native-runtime"];
   assert.equal(job.env?.TEST_CASES_JOB, "Native runtime (${{ matrix.lane }})");
-  assert.equal(
-    job.env?.VIZE_TEST_CASES,
-    "test-cases-native-${{ matrix.lane }}.json",
-  );
+  assert.equal(job.env?.VIZE_TEST_CASES, "test-cases-native-${{ matrix.lane }}.json");
   const prepare = job.steps.find(
     (step) => step.name === "Prepare native runtime test case capture",
   );
-  const collect = job.steps.find((step) => step.name === "Collect native runtime test cases");
-  const upload = job.steps.find((step) => step.name === "Upload native runtime test cases");
+  const collect = job.steps.find(
+    (step) => step.name === "Collect and upload native runtime test cases",
+  );
   assert.match(prepare?.run ?? "", /job-test-cases\.ts setup/u);
-  assert.equal(collect?.id, "native-cases");
   assert.equal(collect?.if, "${{ !cancelled() && matrix.lane != 'none' }}");
-  assert.equal(collect?.run, "node tools/support/compat/github/job-test-cases.ts finalize");
-  assert.equal(upload?.if, "${{ !cancelled() && steps.native-cases.outcome == 'success' }}");
-  assert.deepEqual(upload?.with, {
-    name: "test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}",
-    path: "${{ env.VIZE_TEST_CASES }}",
-    "if-no-files-found": "error",
-    "retention-days": 7,
+  assert.equal(collect?.uses, "./.github/actions/collect-job-test-cases");
+  assert.deepEqual(collect?.with, {
+    artifact: "test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}",
   });
   assert.ok(job.steps.indexOf(prepare ?? {}) < job.steps.indexOf(collect ?? {}));
 });
@@ -61,14 +85,13 @@ test("UI conformance reports its node and package-runner cases", () => {
   const prepare = job.steps.find(
     (step) => step.name === "Prepare UI conformance test case capture",
   );
-  const collect = job.steps.find((step) => step.name === "Collect UI conformance test cases");
-  const upload = job.steps.find((step) => step.name === "Upload UI conformance test cases");
+  const collect = job.steps.find(
+    (step) => step.name === "Collect and upload UI conformance test cases",
+  );
   assert.match(prepare?.if ?? "", /matrix\.surface == 'ui'/u);
-  assert.equal(collect?.id, "conformance-cases");
-  assert.match(collect?.run ?? "", /job-test-cases\.ts finalize/u);
+  assert.equal(collect?.uses, "./.github/actions/collect-job-test-cases");
   assert.equal(
-    upload?.with?.name,
+    collect?.with?.artifact,
     "test-cases-js-conformance-${{ matrix.surface }}-${{ github.run_attempt }}",
   );
-  assert.equal(upload?.with?.path, "${{ env.VIZE_TEST_CASES }}");
 });

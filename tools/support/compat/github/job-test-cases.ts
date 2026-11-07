@@ -7,6 +7,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -22,9 +23,11 @@ import {
 import { runRustCaseCommand } from "./rust-test-cases.ts";
 import {
   mergePackets,
+  ownedPath,
   packet,
   parsePacket,
   vitestCases,
+  type TestCase,
   type TestCasePacket,
 } from "./test-cases.ts";
 
@@ -60,9 +63,40 @@ function run(command: string, args: readonly string[]): number {
   return result.status ?? 1;
 }
 
-function writeVitestPacket(report: string, destination: string): void {
-  if (!existsSync(report)) return;
+function hasContent(file: string): boolean {
+  return existsSync(file) && statSync(file).size > 0;
+}
+
+function writeVitestPacket(report: string, destination: string): boolean {
+  if (!hasContent(report)) return false;
   const cases = vitestCases(parseJson(readFileSync(report, "utf8")), root);
+  writeFileSync(destination, `${JSON.stringify(packet(process.env, cases))}\n`);
+  return true;
+}
+
+function commandOwner(args: readonly string[]): string {
+  const candidate = args.find((argument) =>
+    /(?:^|\/)[^/]+\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(argument.split("\\").join("/")),
+  );
+  return candidate ? ownedPath(path.resolve(process.cwd(), candidate), root) : "package.json";
+}
+
+function writeFallbackPacket(
+  destination: string,
+  args: readonly string[],
+  status: number,
+  label: string,
+): void {
+  if (hasContent(destination)) return;
+  const plain = plainNodeTestCase(args, root, status);
+  const owner = plain?.path ?? commandOwner(args);
+  const cases: TestCase[] = [
+    plain ?? {
+      path: owner,
+      name: `${owner} › ${label}`,
+      outcome: status === 0 ? "passed" : "failed",
+    },
+  ];
   writeFileSync(destination, `${JSON.stringify(packet(process.env, cases))}\n`);
 }
 
@@ -73,11 +107,9 @@ function execNode(args: readonly string[]): void {
     nodeTestArguments(args, reporter, destination) ??
     wrappedNodeArguments(args, reporter, destination, vitestReport);
   const status = run(environment("VIZE_JOB_TEST_CASE_NODE"), rewritten ?? args);
-  writeVitestPacket(vitestReport, destination);
-  if (!rewritten) {
-    const plain = plainNodeTestCase(args, root, status);
-    if (plain) writeFileSync(destination, `${JSON.stringify(packet(process.env, [plain]))}\n`);
-  }
+  const wroteVitest = writeVitestPacket(vitestReport, destination);
+  if (rewritten || plainNodeTestCase(args, root, status))
+    if (!wroteVitest) writeFallbackPacket(destination, args, status, "test command");
   process.exitCode = status;
 }
 
@@ -92,11 +124,10 @@ function execVp(args: readonly string[]): void {
     rewritten = vitestArguments(args, report);
   }
   const status = run(environment("VIZE_JOB_TEST_CASE_VP"), rewritten ?? args);
-  writeVitestPacket(report, destination);
-  if (!rewritten && args[0] === "node") {
-    const plain = plainNodeTestCase(args.slice(1), root, status);
-    if (plain) writeFileSync(destination, `${JSON.stringify(packet(process.env, [plain]))}\n`);
-  }
+  const wroteVitest = writeVitestPacket(report, destination);
+  const nodeArgs = args[0] === "node" ? args.slice(1) : args;
+  if (rewritten || (args[0] === "node" && plainNodeTestCase(nodeArgs, root, status)))
+    if (!wroteVitest) writeFallbackPacket(destination, nodeArgs, status, "test command");
   process.exitCode = status;
 }
 
@@ -133,8 +164,56 @@ async function execCargo(args: readonly string[]): Promise<void> {
   });
 }
 
-function shell(tool: "node" | "vp" | "cargo"): string {
-  return `#!/bin/bash\nexec "$VIZE_JOB_TEST_CASE_NODE" "$VIZE_JOB_TEST_CASE_TOOL" exec-${tool} -- "$@"\n`;
+function shellValue(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+type CaptureEnvironment = Readonly<Record<string, string>>;
+
+/** A persistent job shim that remains valid through task-runner env filtering. */
+export function jobTestShell(tool: "node" | "vp" | "cargo", values: CaptureEnvironment): string {
+  const restore = Object.entries(values)
+    .map(([name, value]) => `export ${name}=${shellValue(value)}`)
+    .join("\n");
+  const capture = `exec "$VIZE_JOB_TEST_CASE_NODE" "$VIZE_JOB_TEST_CASE_TOOL" exec-${tool} -- "$@"`;
+  if (tool === "cargo")
+    return `#!/bin/bash\n${restore}\nif [[ "\${1-}" == "test" ]]; then ${capture}; fi\nexec "$VIZE_JOB_TEST_CASE_CARGO" "$@"\n`;
+  if (tool === "vp")
+    return `#!/bin/bash\n${restore}\nif [[ "\${1-}" == "test" && "\${2-}" == "run" ]]; then ${capture}; fi\nexec "$VIZE_JOB_TEST_CASE_VP" "$@"\n`;
+  return `#!/bin/bash
+${restore}
+script=""
+previous=""
+after=()
+for argument in "$@"; do
+  if [[ -n "$previous" ]]; then previous=""; continue; fi
+  if [[ -z "$script" ]]; then
+    case "$argument" in
+      -e|--eval|-p|--print|-r|--require|--import|--loader|--experimental-loader|--test-reporter|--test-reporter-destination)
+        previous=1
+        continue
+        ;;
+    esac
+    if [[ "$argument" == "--test" ]]; then ${capture}; fi
+    if [[ "$argument" == -* ]]; then continue; fi
+    script="$argument"
+    continue
+  fi
+  after+=("$argument")
+done
+normalized="\${script//\\\\//}"
+base="\${normalized##*/}"
+capture_script=0
+if [[ "$normalized" != */node_modules/* ]]; then
+  if [[ "$base" =~ \\.(test|spec)\\.[cm]?[jt]sx?$ || "$base" =~ ^(test|tests|run-tests|run-host|host)\\.[cm]?[jt]sx?$ || "$base" =~ -judge\\.[cm]?[jt]sx?$ || "$normalized" == */test/* || "$normalized" == */tests/* || "$normalized" == */support/compat/parcel/run.ts ]]; then
+    capture_script=1
+  fi
+fi
+if [[ "$base" == "vp" && "\${after[0]-}" == "test" && "\${after[1]-}" == "run" ]]; then capture_script=1; fi
+if [[ ( "$base" == "tsx" || ( "$base" == "cli.mjs" && "$normalized" == */tsx/* ) ) && " \${after[*]-} " == *" --test "* ]]; then capture_script=1; fi
+if [[ "$capture_script" == 1 ]]; then ${capture}; fi
+exec "$VIZE_JOB_TEST_CASE_NODE" "$@"
+`;
 }
 
 function setup(directory: string): void {
@@ -143,8 +222,6 @@ function setup(directory: string): void {
   mkdirSync(partials, { recursive: true });
   mkdirSync(bin, { recursive: true });
   const tools = { node: process.execPath, vp: executable("vp"), cargo: executable("cargo") };
-  for (const name of Object.keys(tools) as Array<keyof typeof tools>)
-    writeFileSync(path.join(bin, name), shell(name), { mode: 0o755 });
   const githubEnvironment = environment("GITHUB_ENV");
   const values = {
     VIZE_JOB_TEST_CASE_PARTIALS: partials,
@@ -154,6 +231,8 @@ function setup(directory: string): void {
     VIZE_JOB_TEST_CASE_CARGO: tools.cargo,
     VIZE_TEST_CASES_ROOT: root,
   };
+  for (const name of Object.keys(tools) as Array<keyof typeof tools>)
+    writeFileSync(path.join(bin, name), jobTestShell(name, values), { mode: 0o755 });
   for (const [name, value] of Object.entries(values))
     appendFileSync(githubEnvironment, `${name}=${value}\n`);
   appendFileSync(environment("GITHUB_PATH"), `${bin}\n`);
@@ -162,7 +241,7 @@ function setup(directory: string): void {
 function finalize(): void {
   const directory = environment("VIZE_JOB_TEST_CASE_PARTIALS");
   const reports = readdirSync(directory)
-    .filter((name) => name.endsWith(".packet.json"))
+    .filter((name) => name.endsWith(".packet.json") && statSync(path.join(directory, name)).size)
     .sort()
     .map((name) => {
       const file = path.join(directory, name);
