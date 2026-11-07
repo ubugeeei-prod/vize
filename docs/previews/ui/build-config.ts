@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 
 import { uiFamilyCatalog } from "../../../npm/ui/src/catalog/family-catalog.ts";
+import { themePresets } from "../../../npm/ui/src/families/foundations/theme/theme-constants.ts";
 import { publicExample, publicPackage } from "../../../npm/ui/scripts/reference-docs/examples.ts";
 import { COMPOSABLE_CATALOG } from "../../../npm/compose/core/src/catalog.ts";
 import {
@@ -36,17 +37,14 @@ export async function previewBuildConfig() {
   const themeRoot = path.join(uiRoot, "src/families/foundations/theme");
   const css = new Map<string, string>([
     ["base.css", path.join(themeRoot, "theme.css")],
-    ...["paper", "signal", "atelier"].map((preset): [string, string] => [
+    ...themePresets.map((preset): [string, string] => [
       `theme-preset-${preset}.css`,
       path.join(themeRoot, `theme-preset-${preset}.css`),
     ]),
     ...["button", "input", "checkbox", "switch", "tabs", "dialog", "alert", "card"].map(
       (family): [string, string] => {
         const entry = uiFamilyCatalog.find((item) => item.canonicalName === family)!;
-        return [
-          `component-${family}.css`,
-          path.join(uiRoot, path.dirname(entry.entryFile), `${family}-visual.css`),
-        ];
+        return [`component-${family}.css`, componentStylesheet(entry.entryFile, family)];
       },
     ),
   ]);
@@ -105,4 +103,12 @@ export async function previewBuildConfig() {
       chunkSizeWarningLimit: 1000,
     },
   };
+}
+
+function componentStylesheet(entryFile: string, family: string): string {
+  const directory = path.join(uiRoot, path.dirname(entryFile));
+  return path.join(
+    directory,
+    entryFile.startsWith("src/components/") ? "styles.css" : `${family}-visual.css`,
+  );
 }

@@ -69,6 +69,8 @@ pub enum ReportError {
     },
     #[error("schema violation at `{path}`: value does not equal const `{expected}`")]
     SchemaConst { path: Box<str>, expected: Box<str> },
+    #[error("schema violation at `{path}`: value is not one of `{expected}`")]
+    SchemaEnum { path: Box<str>, expected: Box<str> },
     #[error("schema violation at `{path}`: missing required property `{property}`")]
     SchemaRequired { path: Box<str>, property: Box<str> },
     #[error("schema violation at `{path}`: unexpected property `{property}`")]
@@ -115,6 +117,10 @@ impl From<SchemaError> for ReportError {
                 found: found.into(),
             },
             SchemaError::Const { path, expected } => Self::SchemaConst {
+                path: path.as_str().into(),
+                expected: expected.as_str().into(),
+            },
+            SchemaError::Enum { path, expected } => Self::SchemaEnum {
                 path: path.as_str().into(),
                 expected: expected.as_str().into(),
             },

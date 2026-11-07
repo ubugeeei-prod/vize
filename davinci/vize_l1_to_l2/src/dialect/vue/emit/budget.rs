@@ -1,11 +1,8 @@
 // Vue-aware emission entry policy; included by the compatibility module.
 use vize_l0::dump::capture::{CaptureSink, NoCapture};
-use vize_l0::dump::{Dump, Mode as DumpMode};
-use vize_l0::level::Level;
 use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
-use vize_l0::{Allocator, String, ensure_sufficient_stack};
+use vize_l0::{Allocator, ensure_sufficient_stack};
 use vize_l1::markup::{SurfaceParseOptions, parse_with_options};
-use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::NoProvenance;
 
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
@@ -286,14 +283,14 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
     observer: &mut O,
     capture: &mut C,
 ) -> Result<DomEmitObservation, EmitError> {
-    let EmitInvocation {
-        options,
-        strict_slot_params,
-        no_slotted,
-        development,
-        preflight,
-    } = invocation;
     if !C::RECORDING {
+        let EmitInvocation {
+            options,
+            strict_slot_params,
+            no_slotted,
+            development,
+            preflight,
+        } = invocation;
         return emit_dom_source_with_options_and_observer(
             allocator,
             source,
@@ -306,54 +303,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             preflight,
         );
     }
-    ensure_sufficient_stack(|| {
-        let (tree, errors) = parse_with_options(
-            allocator,
-            source,
-            SurfaceParseOptions {
-                experimental_in_tag_comments: options.experimental_in_tag_comments,
-                ..SurfaceParseOptions::default()
-            },
-        );
-        if let Some(preflight) = preflight
-            && !preflight.check(Some((&tree, &errors)))
-        {
-            return Err(EmitError::Diagnostics);
-        }
-        capture.page(Level::L1, "parse", || {
-            let mut text = String::default();
-            vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
-            text
-        });
-        let mut lowered = lower_with_caps_and_comment_policy::<NoProvenance>(
-            allocator,
-            &tree,
-            &errors,
-            caps,
-            options.comments,
-            options.custom_element_patterns,
-            options.custom_element_predicate,
-        );
-        capture.page(Level::L2, "lower", || {
-            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
-        });
-        let mut profile = TransformProfile::DEFAULT;
-        if !options.hoist_static {
-            profile = profile.without_static_analysis();
-        }
-        let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        capture.page(Level::L2, "facts", || vize_l0::cstr!("{facts:#?}"));
-        let emitted = emit_dom_observed(
-            &lowered,
-            &facts,
-            options,
-            strict_slot_params,
-            no_slotted,
-            development,
-        )?;
-        capture.page(Level::L4, "emit", || emitted.emit.assembled());
-        Ok(emitted)
-    })
+    capture::emit_dom_source_captured(allocator, source, caps, invocation, observer, capture)
 }
 
 /// Capture pages from the exact source-to-DOM emission that returns `emit`.

@@ -54,6 +54,7 @@ pub mod file;
 pub mod lang;
 pub mod op;
 pub mod provenance;
+pub mod registry;
 pub mod resolution;
 pub mod scope;
 pub mod summary;

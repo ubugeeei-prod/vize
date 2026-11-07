@@ -40,11 +40,7 @@ impl VueDialect {
 /// structurally with [`detect_petite_vue_document`].
 #[inline]
 pub fn standalone_html_dialect(configured: Option<VueDialect>, content: &str) -> VueDialect {
-    match configured {
-        Some(dialect) => dialect,
-        None if detect_petite_vue_document(content) => VueDialect::PetiteVue,
-        None => VueDialect::Vue,
-    }
+    crate::registry::standalone_html_dialect(configured, content)
 }
 
 /// Returns true when a module specifier resolves to the petite-vue package.

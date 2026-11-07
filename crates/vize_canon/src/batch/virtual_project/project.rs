@@ -307,7 +307,7 @@ impl VirtualProject {
         )
     }
 
-    fn register_prevalidated_paths(
+    pub(crate) fn register_prevalidated_paths(
         &mut self,
         valid_paths: Vec<&Path>,
         canonical_paths: &[PathBuf],

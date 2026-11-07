@@ -123,7 +123,7 @@ test("local mode resolves pulled families from vize-lib.lock.json and falls back
   const local = VizeUiResolver({ source: "local", root });
   assert.deepEqual(local.resolve("Button"), {
     name: "Button",
-    from: `${root.split(path.sep).join("/")}/src/components/vize/families/actions/button/button.ts`,
+    from: `${root.split(path.sep).join("/")}/src/components/vize/components/button/index.ts`,
   });
   assert.deepEqual(local.resolve("Switch"), { name: "Switch", from: "@vizejs/ui/switch" });
   const strict = VizeUiResolver({

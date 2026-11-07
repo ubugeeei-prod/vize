@@ -1,10 +1,15 @@
 import { createApp, createSSRApp, h } from "vue";
 import { examples, composables } from "virtual:vize-ui-examples";
+import { themePresets } from "../../../npm/ui/src/families/foundations/theme/theme-constants.ts";
 import "./layers.css";
 import "@vizejs/ui/base.css";
-import "@vizejs/ui/theme-preset-paper.css";
-import "@vizejs/ui/theme-preset-signal.css";
+import "@vizejs/ui/theme-preset-headless.css";
 import "@vizejs/ui/theme-preset-atelier.css";
+import "@vizejs/ui/theme-preset-midnight.css";
+import "@vizejs/ui/theme-preset-paper.css";
+import "@vizejs/ui/theme-preset-play.css";
+import "@vizejs/ui/theme-preset-signal.css";
+import "@vizejs/ui/theme-preset-high-contrast.css";
 import "@vizejs/ui/component-button.css";
 import "@vizejs/ui/component-input.css";
 import "@vizejs/ui/component-checkbox.css";
@@ -20,9 +25,10 @@ const family = params.get("family") ?? "button";
 const composable = params.get("composable");
 const name = composable ?? family;
 const example = composable == null ? examples[family] : composables[composable];
-const theme = params.get("theme") ?? "paper";
-const themes = ["paper", "signal", "atelier"];
-document.documentElement.dataset.vizeTheme = themes.includes(theme) ? theme : "paper";
+const requestedTheme = params.get("theme");
+const themes = [...themePresets];
+const theme = themes.find((preset) => preset === requestedTheme) ?? "paper";
+document.documentElement.dataset.vizeTheme = theme;
 
 if (example == null) {
   document.querySelector("#app")!.textContent = `No example exists for ${name}.`;

@@ -4,10 +4,21 @@ use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomEleme
 use vize_atelier_sfc::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError,
     SfcScriptOutputMode, compile_sfc_for_adapter_with_experimental_options as compile_ordinary,
-    compile_sfc_for_adapter_with_stage_capture as compile_captured,
+    compile_sfc_for_adapter_with_stage_capture_and_clock as compile_captured,
 };
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
 use vize_l0::Span;
+use wasm_bindgen::prelude::wasm_bindgen;
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = performance, js_name = now)]
+    fn performance_now() -> f64;
+}
+
+fn host_clock_ns() -> u64 {
+    (performance_now() * 1_000_000.0) as u64
+}
 
 pub(super) fn compile_sfc_product(
     descriptor: &SfcDescriptor,
@@ -40,6 +51,7 @@ pub(super) fn compile_sfc_product(
         codegen_options,
         script_output,
         experimental_options,
+        host_clock_ns,
     )?;
     let template = descriptor.template.as_ref();
     let authored_syntax = template

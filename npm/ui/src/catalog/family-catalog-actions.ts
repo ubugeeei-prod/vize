@@ -3,37 +3,10 @@ import {
   componentQualityGates,
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
-
-const buttonFamilyRoot = "src/families/actions/button/";
+import { buttonFamilyCatalogEntry } from "../components/button/metadata.ts";
 
 export const actionFamilyCatalog = [
-  {
-    canonicalName: "button",
-    title: "Button",
-    packageSubpath: "./button",
-    entryFile: `${buttonFamilyRoot}button.ts`,
-    sourceFiles: [
-      `${buttonFamilyRoot}button.vue`,
-      `${buttonFamilyRoot}button.ts`,
-      `${buttonFamilyRoot}button-visual.css`,
-      `${buttonFamilyRoot}button-keyboard.ts`,
-    ],
-    behaviorContract: `${buttonFamilyRoot}button.behavior.md`,
-    tests: [`${buttonFamilyRoot}button.test.ts`],
-    rendererFixture: "families/actions/button/button.vue",
-    qualityGates: componentQualityGates,
-    bundleBudget: {
-      exportName: "Button",
-      retainedSignature: 'data-vize-ui":(?:`button`|"button"|\'button\')',
-      maximumJavaScriptGzipBytes: 1_000,
-      maximumCssGzipBytes: 0,
-    },
-    aliases: ["action-button", "button primitive"],
-    upstreamCoverage: ["shadcn/ui Button", "Reka UI Primitive", "React Aria Button"],
-    dependencies: ["primitive", "press"],
-    maturity: "stable",
-    owner: catalogOwner,
-  },
+  buttonFamilyCatalogEntry,
   {
     canonicalName: "button-group",
     title: "Button Group",

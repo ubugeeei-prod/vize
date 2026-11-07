@@ -8,11 +8,18 @@ import { parseStoryArt, storyVariantModuleId } from "../../scripts/story-variant
 import { renderAndHydrate } from "../testing/ssr-hydration.ts";
 import { uiStoryTestbedInventory } from "./story-testbed-inventory.ts";
 
-const storySources = import.meta.glob<string>("../families/**/*.art.vue", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-});
+const storySources = {
+  ...import.meta.glob<string>("../components/*/stories/*.art.vue", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }),
+  ...import.meta.glob<string>("../families/**/*.art.vue", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }),
+};
 
 const readyStories = uiStoryTestbedInventory.filter((entry) =>
   entry.artifacts.some(

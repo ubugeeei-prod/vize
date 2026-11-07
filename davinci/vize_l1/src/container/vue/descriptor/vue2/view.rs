@@ -2,7 +2,6 @@ use super::super::{TemplateNamePair, TemplateSelection};
 use super::Vue2DescriptorObservation;
 use crate::dialect::vue2::surface::ComponentParse;
 use crate::markup::parse::SurfaceParseOptions;
-use vize_l0::config::VueVersion;
 use vize_l0::{SourceBlock, Span};
 
 /// This original envelope's actual Component and splitter-selected frame.
@@ -83,7 +82,7 @@ pub(super) fn frame<'o, 'a>(
     owner: &'o Vue2DescriptorObservation<'a>,
 ) -> Option<(&'o TemplateSelection<'a>, &'o TemplateNamePair)> {
     let root = owner.root?;
-    if !owner.dialect.is_standard_vue_component(VueVersion::V2)
+    if !crate::registry::is_standard_vue2_component(owner.dialect)
         || owner.options.template != SurfaceParseOptions::default()
         || !core::ptr::eq(root.source(), owner.source())
     {

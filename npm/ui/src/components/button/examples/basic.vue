@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { Button } from "../button.ts";
+import { Button } from "../index.ts";
 
 const saves = ref(0);
 </script>
@@ -10,10 +10,10 @@ const saves = ref(0);
 <template>
   <div>
     <Button type="button" @press="() => (saves += 1)">Save draft</Button>
-    <Button v-slot="{ loading }" type="button" loading>
+    <Button v-slot="{ loading }" type="button" variant="outline" tone="neutral" loading>
       {{ loading ? "Uploading…" : "Upload" }}
     </Button>
-    <Button type="button" disabled>Publish</Button>
+    <Button type="button" variant="quiet" tone="danger" disabled>Publish</Button>
     <output>Saved {{ saves }} times</output>
   </div>
 </template>

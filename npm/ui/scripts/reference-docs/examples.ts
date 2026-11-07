@@ -21,17 +21,23 @@ export function publicPackage(entry: UiFamilyCatalogEntry): string {
   return `@vizejs/ui${entry.packageSubpath === "." ? "" : entry.packageSubpath.slice(1)}`;
 }
 
+/** Canonical colocated example consumed by docs, previews, and source tests. */
+export function publicExampleFile(packageRoot: string, entry: UiFamilyCatalogEntry): string {
+  const componentUnit = entry.entryFile.startsWith("src/components/");
+  return path.join(
+    packageRoot,
+    path.dirname(entry.entryFile),
+    "examples",
+    componentUnit ? "basic.vue" : `${entry.canonicalName}-basic.vue`,
+  );
+}
+
 /** Keep the entire real SFC; replace only catalog-owned module specifiers. */
 export function publicExample(
   packageRoot: string,
   entry: UiFamilyCatalogEntry,
 ): string | undefined {
-  const file = path.join(
-    packageRoot,
-    path.dirname(entry.entryFile),
-    "examples",
-    `${entry.canonicalName}-basic.vue`,
-  );
+  const file = publicExampleFile(packageRoot, entry);
   if (!existsSync(file)) return undefined;
   const byFile = new Map(
     uiFamilyCatalog.map((family) => [

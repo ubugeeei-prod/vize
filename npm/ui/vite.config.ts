@@ -7,6 +7,7 @@ import { defineConfig } from "vite-plus";
 
 import { uiStoryVariants } from "./scripts/story-variants.ts";
 import { uiFamilyCatalog } from "./src/catalog/family-catalog.ts";
+import { buttonStyleAsset } from "./src/components/button/metadata.ts";
 
 /**
  * Declared browser floor for the packaged stylesheet.
@@ -82,8 +83,7 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/navigation/breadcrumb/breadcrumb-visual.css",
   },
   {
-    fileName: "component-button.css",
-    source: "src/families/actions/button/button-visual.css",
+    ...buttonStyleAsset,
   },
   {
     fileName: "component-card.css",

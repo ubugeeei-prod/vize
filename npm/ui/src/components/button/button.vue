@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from "vue";
 
-import { getButtonKeyboardAction } from "./button-keyboard.ts";
-import type { ButtonKeyboardPhase } from "./button-keyboard.ts";
-import type { PrimitiveAs, PrimitiveElement } from "../../foundations/primitive/primitive.ts";
+import { getButtonKeyboardAction } from "./keyboard.ts";
+import type { ButtonKeyboardPhase } from "./keyboard.ts";
+import type { ButtonProps, ButtonSlotProps } from "./types.ts";
+import type { PrimitiveElement } from "../../families/foundations/primitive/primitive.ts";
 
 const {
   as = "button",
@@ -11,42 +12,10 @@ const {
   type = "button",
   disabled = false,
   loading = false,
-} = defineProps<{
-  /**
-   * Native element, custom element, or component to render.
-   *
-   * @default "button"
-   */
-  readonly as?: PrimitiveAs;
-
-  /**
-   * Whether the rendered target already implements native button semantics.
-   *
-   * @default true when `as` is "button"; otherwise false
-   */
-  readonly native?: boolean;
-
-  /**
-   * Native button submission behavior.
-   *
-   * @default "button"
-   */
-  readonly type?: "button" | "reset" | "submit";
-
-  /**
-   * Remove the control from activation and sequential keyboard focus.
-   *
-   * @default false
-   */
-  readonly disabled?: boolean;
-
-  /**
-   * Announce in-progress work and prevent repeated activation while preserving focus.
-   *
-   * @default false
-   */
-  readonly loading?: boolean;
-}>();
+  variant = "solid",
+  tone = "accent",
+  size = "md",
+} = defineProps<ButtonProps>();
 
 const emit = defineEmits<{
   /**
@@ -59,11 +28,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   /** Renders the button contents with current availability state. */
-  default(props: {
-    readonly disabled: boolean;
-    readonly loading: boolean;
-    readonly unavailable: boolean;
-  }): unknown;
+  default(props: ButtonSlotProps): unknown;
 }>();
 
 const element = useTemplateRef<PrimitiveElement>("element");
@@ -136,6 +101,9 @@ defineExpose({ element, focus });
     :aria-busy="loading ? 'true' : undefined"
     data-vize-ui="button"
     :data-state="disabled ? 'disabled' : loading ? 'loading' : 'idle'"
+    :data-variant="variant"
+    :data-tone="tone"
+    :data-size="size"
     @click="onClick"
     @keydown="onKeydown"
     @keyup="onKeyup"

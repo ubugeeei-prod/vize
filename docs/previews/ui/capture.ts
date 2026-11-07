@@ -5,6 +5,7 @@ import { saveScreenshot } from "./screenshot-file.ts";
 import type { Browser } from "playwright";
 
 import { featuredExamples } from "../../../npm/ui/scripts/reference-docs/examples.ts";
+import { themePresets } from "../../../npm/ui/src/families/foundations/theme/theme-constants.ts";
 import { previewExamples } from "./build-config.ts";
 
 /** Browser evidence is generated from the same SFC source shown in the docs. */
@@ -28,6 +29,11 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
     interactions: string;
     narrowViewport: number;
     browserDiagnostics: string[];
+  }> = [];
+  const presetScreenshots: Array<{
+    preset: string;
+    screenshot: string;
+    screenshotSha256: string;
   }> = [];
   try {
     for (const family of featuredExamples) {
@@ -108,7 +114,7 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
         browserDiagnostics: [],
       });
     }
-    await page.goto(`${baseUrl}index.html?family=button`, { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}index.html?family=button&theme=paper`, { waitUntil: "networkidle" });
     const palette = () =>
       page.getByRole("button", { name: "Save draft" }).evaluate((element) => {
         const style = getComputedStyle(element);
@@ -124,10 +130,28 @@ export async function captureUiPreviews(browser: Browser, baseUrl: string, outpu
     await page.getByRole("combobox", { name: "Style preset" }).selectOption("signal");
     assert.equal(await page.locator("html").getAttribute("data-vize-theme"), "signal");
     assert.notDeepEqual(await palette(), paper, "preset changes the actual component styles");
+
+    for (const preset of themePresets) {
+      await page.goto(`${baseUrl}index.html?family=button&theme=${preset}`, {
+        waitUntil: "networkidle",
+      });
+      await page.waitForSelector('html[data-preview-ready="button"]');
+      assert.equal(await page.locator("html").getAttribute("data-vize-theme"), preset);
+      const screenshot = saveScreenshot(
+        outputRoot,
+        `button-${preset}`,
+        await page.screenshot({ fullPage: true }),
+      );
+      presetScreenshots.push({
+        preset,
+        screenshot: screenshot.file,
+        screenshotSha256: screenshot.sha256,
+      });
+    }
     assert.deepEqual(errors, []);
     writeFileSync(
       path.join(outputRoot, "browser-evidence.json"),
-      `${JSON.stringify({ schema: "vize.ui-docs-browser-evidence", browserVersion: browser.version(), availableBasicExamples: previewExamples.length, examples: receipts, source: "workspace catalog entry sources", screenshots: "actual Playwright Chromium rendering" }, null, 2)}\n`,
+      `${JSON.stringify({ schema: "vize.ui-docs-browser-evidence", browserVersion: browser.version(), availableBasicExamples: previewExamples.length, examples: receipts, presetScreenshots, source: "workspace catalog entry sources", screenshots: "actual Playwright Chromium rendering" }, null, 2)}\n`,
     );
     process.stdout.write(
       `Verified and captured ${receipts.length} component examples in Chromium\n`,

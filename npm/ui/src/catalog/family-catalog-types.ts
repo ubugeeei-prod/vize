@@ -52,6 +52,9 @@ export interface UiFamilyCatalogEntry {
   /** Normative behavior table for this family. */
   readonly behaviorContract: `src/${string}.behavior.md`;
 
+  /** Authored usage guidance embedded in the generated reference page. */
+  readonly documentation?: `src/${string}.guide.md`;
+
   /** Runtime or mounted-DOM tests that exercise behavior. */
   readonly tests: readonly `src/${string}.test.ts`[];
 

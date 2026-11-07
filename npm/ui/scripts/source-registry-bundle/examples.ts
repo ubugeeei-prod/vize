@@ -8,10 +8,10 @@ import type { LibRegistryExample } from "./types.ts";
 export const EXAMPLES_DIRECTORY = "examples";
 
 /**
- * Family that owns an example file: examples are named `<family>-<slug>.vue`
- * (or `<family>.vue`), and when several families share one directory the
- * longest matching family name wins (`icon-button-basic.vue` belongs to
- * `icon-button`, not `icon`).
+ * Family that owns a legacy shared-directory example file: examples are named
+ * `<family>-<slug>.vue` (or `<family>.vue`), and the longest matching family
+ * name wins (`icon-button-basic.vue` belongs to `icon-button`, not `icon`).
+ * Dedicated component units own every Vue example in their local directory.
  */
 export function exampleOwner(fileName: string, families: readonly string[]): string | null {
   const stem = fileName.replace(/\.vue$/, "");
@@ -41,7 +41,7 @@ export interface CollectedExamples {
 }
 
 /**
- * Collect the `<entry dir>/examples/<family>-*.vue` files of one item.
+ * Collect the canonical examples owned by one item.
  *
  * Examples are unstyled usage demos: every relative import must resolve to
  * a file of the item's registry closure (so a pulled example runs against the
@@ -59,8 +59,11 @@ export function collectExamples(
   const directory = path.posix.join(path.posix.dirname(entry), EXAMPLES_DIRECTORY);
   const absolute = path.join(sourceRoot, ...directory.split("/"));
   if (!existsSync(absolute)) return { examples: [], bytes: new Map() };
+  const componentUnit = entry.startsWith("components/");
   const names = readdirSync(absolute)
-    .filter((name) => name.endsWith(".vue") && exampleOwner(name, siblings) === family)
+    .filter(
+      (name) => name.endsWith(".vue") && (componentUnit || exampleOwner(name, siblings) === family),
+    )
     .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
   const bytes = new Map<string, Uint8Array>();
   const examples = names.map((name): LibRegistryExample => {

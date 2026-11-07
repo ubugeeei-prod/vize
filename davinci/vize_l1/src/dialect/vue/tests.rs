@@ -102,3 +102,63 @@ fn lowering_compatibility_name_is_the_shared_descriptor() {
         assert_eq!(parser_caps.needs_sugar(), version != VueVersion::V3);
     }
 }
+
+#[test]
+fn composed_tables_match_the_pre_registry_capability_matrix() {
+    let flags = |caps: LegacyDialectCapabilities| {
+        [
+            caps.supports_filters,
+            caps.space_separated_filter_args,
+            caps.v_repeat_syntax,
+            caps.v_with_directive,
+            caps.v_component_directive,
+            caps.computed_dollar_get_set,
+            caps.attr_value_interpolation,
+            caps.scoped_slot_attrs,
+            caps.raw_html_interpolation,
+            caps.v2_event_sugar,
+        ]
+    };
+    let expected = [
+        (
+            VueVersion::V0_10,
+            DirectiveArgStyle::Clause,
+            [true, true, true, true, true, true, true, false, true, false],
+        ),
+        (
+            VueVersion::V0_11,
+            DirectiveArgStyle::Clause,
+            [
+                true, true, true, true, true, false, true, false, true, false,
+            ],
+        ),
+        (
+            VueVersion::V1,
+            DirectiveArgStyle::Colon,
+            [
+                true, true, false, false, false, false, true, false, true, false,
+            ],
+        ),
+        (
+            VueVersion::V2,
+            DirectiveArgStyle::Colon,
+            [
+                true, false, false, false, false, false, false, true, false, true,
+            ],
+        ),
+        (
+            VueVersion::V2_7,
+            DirectiveArgStyle::Colon,
+            [
+                true, false, false, false, false, false, false, true, false, true,
+            ],
+        ),
+        (VueVersion::V3, DirectiveArgStyle::Colon, [false; 10]),
+    ];
+
+    for (version, directive_arg_style, expected_flags) in expected {
+        let caps = LegacyDialectCapabilities::for_dialect(version);
+        assert_eq!(caps.directive_arg_style, directive_arg_style, "{version:?}");
+        assert_eq!(flags(caps), expected_flags, "{version:?}");
+    }
+}

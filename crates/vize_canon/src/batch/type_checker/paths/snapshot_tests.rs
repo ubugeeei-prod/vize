@@ -1,6 +1,21 @@
 use std::fs;
 
-use super::{IncrementalPaths, VirtualProject};
+use super::{IncrementalPaths, VirtualProject, collect_explicit_path_snapshot};
+
+#[test]
+fn explicit_snapshot_filters_missing_paths_and_pairs_canonical_identities() {
+    let root = tempfile::tempdir().unwrap();
+    let root = root.path().canonicalize().unwrap();
+    let source = root.join("source.ts");
+    fs::write(&source, "export const value = 1;").unwrap();
+    let missing = root.join("missing.ts");
+    let inputs = [source.clone(), missing];
+
+    let (logical, canonical) = collect_explicit_path_snapshot(&inputs).into_parts();
+
+    assert_eq!(logical, [source.as_path()]);
+    assert_eq!(canonical, [source]);
+}
 
 #[test]
 fn source_stamps_describe_registered_bytes_not_a_later_disk_revision() {
@@ -31,7 +46,7 @@ fn source_stamps_describe_registered_bytes_not_a_later_disk_revision() {
             .set_times(fs::FileTimes::new().set_modified(modified))
             .unwrap();
         let mut paths = IncrementalPaths::new();
-        paths.after_explicit_scan(&project, std::slice::from_ref(&path));
+        paths.after_explicit_scan(&project, vec![path.clone()]);
         assert_eq!(
             paths.effective_changes(&root, std::slice::from_ref(&path)),
             [path]
@@ -50,7 +65,7 @@ fn committing_one_source_cannot_acknowledge_an_unobserved_dependency_edit() {
     let mut project = VirtualProject::new(&root).unwrap();
     project.register_paths(&[a.clone(), b.clone()]).unwrap();
     let mut paths = IncrementalPaths::new();
-    paths.after_explicit_scan(&project, &[a.clone(), b.clone()]);
+    paths.after_explicit_scan(&project, vec![a.clone(), b.clone()]);
 
     fs::write(&a, "export const a = 2;").unwrap();
     project.register_path(&a).unwrap();
@@ -78,7 +93,7 @@ fn a_deleted_registered_source_stays_changed_until_removed_from_the_graph() {
     let mut project = VirtualProject::new(&root).unwrap();
     project.register_path(&path).unwrap();
     let mut paths = IncrementalPaths::new();
-    paths.after_explicit_scan(&project, std::slice::from_ref(&path));
+    paths.after_explicit_scan(&project, vec![path.clone()]);
     fs::remove_file(&path).unwrap();
     paths.commit_project_snapshot(&project);
     assert_eq!(
