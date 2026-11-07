@@ -76,7 +76,8 @@
     "react-dom": "19.2.5",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "yaml": "catalog:"
   },
   "peerDependencies": {
     "next": "^16.4.3",
