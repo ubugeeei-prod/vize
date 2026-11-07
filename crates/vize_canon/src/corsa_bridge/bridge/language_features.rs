@@ -21,9 +21,11 @@ impl CorsaBridge {
         let uri = uri.to_owned();
         let result = self
             .with_client(move |client| {
-                client
-                    .hover_raw(uri.as_str(), line, character)
-                    .map_err(CorsaBridgeError::CommunicationError)
+                vize_l0::profile!("canon.editor.hover_transport", {
+                    client
+                        .hover_raw(uri.as_str(), line, character)
+                        .map_err(CorsaBridgeError::CommunicationError)
+                })
             })
             .await?;
 
@@ -31,7 +33,10 @@ impl CorsaBridge {
             timer.record(&self.profiler);
         }
 
-        result.map(parse_json_value::<LspHover>).transpose()
+        vize_l0::profile!(
+            "canon.editor.hover_decode",
+            result.map(parse_json_value::<LspHover>).transpose()
+        )
     }
 
     /// Get definition location for a symbol at a position.

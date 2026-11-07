@@ -80,24 +80,6 @@ impl CorsaBridge {
         Ok(())
     }
 
-    /// Queue exactly the old borrowed native inputs while sharing only cached
-    /// URI/code storage; the worker owns the payload even if its caller drops.
-    pub(in crate::corsa_bridge) async fn open_native_document_batch(
-        &self,
-        owned: super::super::vue_document::CorsaNativeDocumentBatch,
-    ) -> Result<(), CorsaBridgeError> {
-        let cache_len = self
-            .with_client(move |client| {
-                client
-                    .did_open_immutable_batch(&owned)
-                    .map_err(CorsaBridgeError::CommunicationError)?;
-                Ok(client.diagnostics_cache_len())
-            })
-            .await?;
-        self.cache_stats.set_entries(cache_len as u64);
-        Ok(())
-    }
-
     pub async fn update_virtual_document(
         &self,
         uri: &str,

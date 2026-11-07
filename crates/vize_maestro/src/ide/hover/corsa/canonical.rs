@@ -84,6 +84,8 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, "typed hover skipped: no initialized Corsa bridge");
         return None;
     };
+    let profiler = vize_l0::profiler::global_profiler();
+    let started = profiler.is_enabled().then(std::time::Instant::now);
     let opened = if ctx.has_initial_canonical_document(bridge) {
         corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
             .await
@@ -93,6 +95,9 @@ pub(super) async fn hover(
             .await
             .map(|document| document.map(HoverDocument::Shared))
     };
+    if let Some(started) = started {
+        profiler.record("maestro.hover.canonical.open", started.elapsed());
+    }
     let document = match opened {
         Ok(Some(document)) => document,
         Ok(None) => {
@@ -104,11 +109,19 @@ pub(super) async fn hover(
             return None;
         }
     };
-    let Some((line, character)) = document.source_offset_to_position(ctx.offset) else {
+    let Some((line, character)) = vize_l0::profile!(
+        "maestro.hover.canonical.map_to_generated",
+        document.source_offset_to_position(ctx.offset)
+    ) else {
         tracing::info!(uri = %ctx.uri, offset = ctx.offset, "typed hover skipped: offset has no generated position");
         return None;
     };
-    let mut hover = match bridge.hover(document.request_uri(), line, character).await {
+    let started = profiler.is_enabled().then(std::time::Instant::now);
+    let response = bridge.hover(document.request_uri(), line, character).await;
+    if let Some(started) = started {
+        profiler.record("maestro.hover.canonical.backend", started.elapsed());
+    }
+    let mut hover = match response {
         Ok(Some(hover)) => hover,
         Ok(None) => return Some(Answer::Empty),
         Err(error) => {
@@ -150,13 +163,15 @@ pub(super) async fn hover(
             }
         }
     }
-    let mapped_range = hover
-        .range
-        .as_ref()
-        .and_then(|range| document.map_range(ctx, range));
-    let mut converted = HoverService::convert_lsp_hover(hover);
-    converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
-    Some(Answer::Hover(converted))
+    vize_l0::profile!("maestro.hover.canonical.present", {
+        let mapped_range = hover
+            .range
+            .as_ref()
+            .and_then(|range| document.map_range(ctx, range));
+        let mut converted = HoverService::convert_lsp_hover(hover);
+        converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
+        Some(Answer::Hover(converted))
+    })
 }
 
 fn documentation(hover: &LspHover) -> Option<&str> {
