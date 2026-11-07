@@ -10,13 +10,7 @@ const offset = ref(0);
 <template>
   <Box flex-direction="column">
     <Text :bold="true">100k bounded virtual rows</Text>
-    <ScrollBox
-      v-model="offset"
-      :item-count
-      :viewport-size="12"
-      :overscan="2"
-      :focused="true"
-    >
+    <ScrollBox v-model="offset" :item-count :viewport-size="12" :overscan="2" :focused="true">
       <template #default="{ index }">
         <Text :content="`row ${index}`" />
       </template>
