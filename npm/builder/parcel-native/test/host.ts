@@ -52,7 +52,7 @@ try {
     .join("\n");
   assert.match(javascript, /from-native-parcel/u);
   assert.match(javascript, /vize-style-/u);
-  assert.match(javascript, /rebeccapurple/u);
+  assert.match(javascript, /--parcel-fixture-message/u);
   assert.doesNotMatch(javascript, /<template>/u);
 } finally {
   fs.rmSync(output, { recursive: true, force: true });

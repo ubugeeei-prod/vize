@@ -11,6 +11,6 @@ const message: string = "from-native-parcel";
 
 <style scoped>
 .message {
-  color: rebeccapurple;
+  color: var(--parcel-fixture-message);
 }
 </style>

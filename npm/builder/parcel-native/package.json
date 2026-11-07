@@ -29,13 +29,14 @@
     "build:debug": "cargo build -p vize_parcel_transformer",
     "check": "cargo check -p vize_parcel_transformer",
     "test": "cargo test -p vize_parcel_transformer",
-    "test:host": "cargo build -p vize_parcel_transformer && node test/host.mjs"
+    "test:host": "cargo build -p vize_parcel_transformer && node test/host.ts"
   },
   "devDependencies": {
     "parcel": "3.0.0-alpha.2",
     "vue": "catalog:vue-stable"
   },
   "engines": {
+    "node": ">=22.18.0",
     "parcel": "^3.0.0-0"
   },
   "metadata": {
