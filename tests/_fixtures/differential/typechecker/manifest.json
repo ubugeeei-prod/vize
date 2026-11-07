@@ -13521,6 +13521,40 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-setup-local-declaration-11498",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-setup-local-declaration-11498/SetupLocal.vue.txt",
+          "sha256": "6b97bbbb8d0bf49522bc16d36bca3aa7a6cdae917ab6156ab397fba0deae1b42",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-setup-local-declaration-11498/tsconfig.json.txt",
+          "sha256": "3cd857a7f8c822f9b0b13bba47e4b77c76f7d3a76dbe59da4b64e29e23e552b2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_props::declaration_emit::declaration_emit_preserves_generic_type_parameters; reported #11498 generic component whose props interface depends on a setup-local generic alias and must emit declarations without TS4060. Input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/imported-mark-raw-callback",
       "state": "active",
       "targets": [

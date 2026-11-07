@@ -77,14 +77,14 @@ impl ImportSourceMap {
 
     /// Normal module rewrites own one range buffer instead of also duplicating
     /// their end adjustments. Legacy adjustment-only callers remain supported.
-    pub(super) fn for_rewrites(count: usize) -> Self {
+    pub(crate) fn for_rewrites(count: usize) -> Self {
         Self {
             adjustments: Vec::new(),
             replacement_ranges: Vec::with_capacity(count),
         }
     }
 
-    pub(super) fn record_replacement(&mut self, start: u32, end: u32, length: u32) {
+    pub(crate) fn record_replacement(&mut self, start: u32, end: u32, length: u32) {
         self.replacement_ranges.push(ReplacementRange {
             original_start: start,
             original_end: end,
@@ -95,7 +95,7 @@ impl ImportSourceMap {
 
     /// The writer replaces literals right to left. Publish their actual virtual
     /// coordinates in source order, applying each shift at its exclusive end.
-    pub(super) fn finish_descending_replacements(&mut self) {
+    pub(crate) fn finish_descending_replacements(&mut self) {
         self.replacement_ranges.reverse();
         let mut delta = 0_i64;
         for range in &mut self.replacement_ranges {
