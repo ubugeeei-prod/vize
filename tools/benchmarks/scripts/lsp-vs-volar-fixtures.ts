@@ -313,7 +313,7 @@ export function prepareFixture(
 
 /** `name`'s pin in the workspace catalog `catalog` of pnpm-workspace.yaml. */
 export function catalogVersion(workspaceYaml: string, catalog: string, name: string): string {
-  const lines = workspaceYaml.split("\n");
+  const lines = workspaceYaml.split(/\r?\n/);
   const start = lines.indexOf(`  ${catalog}:`);
   if (start < 0) throw new Error(`pnpm-workspace.yaml has no catalog ${catalog}`);
   for (const line of lines.slice(start + 1)) {
