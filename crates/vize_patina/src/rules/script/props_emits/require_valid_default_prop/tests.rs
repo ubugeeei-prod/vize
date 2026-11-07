@@ -301,7 +301,10 @@ const props = defineProps({
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
-    assert!(result.diagnostics[0].message.contains("object"));
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Type of the default value for 'item' prop must be an object."
+    );
 }
 
 #[test]

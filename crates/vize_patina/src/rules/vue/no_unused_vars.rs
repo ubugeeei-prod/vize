@@ -614,7 +614,10 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
-        assert!(messages[0].contains("unused"), "{messages:?}");
+        assert_eq!(
+            messages,
+            ["Slot prop 'unused' from slot 'default' is defined but never used"]
+        );
     }
 
     #[test]
@@ -629,7 +632,7 @@ mod tests {
             result
                 .diagnostics
                 .iter()
-                .all(|diagnostic| !diagnostic.message.contains("index")),
+                .all(|diagnostic| diagnostic.rule_name != "vue/no-unused-vars"),
             "{:?}",
             result.diagnostics
         );
@@ -651,8 +654,13 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(messages.len(), 2, "{:?}", result.diagnostics);
-        assert!(messages.iter().any(|message| message.contains("unused")));
-        assert!(messages.iter().any(|message| message.contains("index")));
+        assert_eq!(
+            messages,
+            [
+                "Slot prop 'unused' from slot 'default' is defined but never used",
+                "Key variable 'index' is defined by v-for but never used",
+            ]
+        );
     }
 
     #[test]
@@ -670,7 +678,10 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
-        assert!(messages[0].contains("index"), "{messages:?}");
+        assert_eq!(
+            messages,
+            ["Key variable 'index' is defined by v-for but never used"]
+        );
     }
 
     #[test]
@@ -688,6 +699,9 @@ mod tests {
             .map(|diagnostic| diagnostic.message.as_str())
             .collect();
         assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
-        assert!(messages[0].contains("index"), "{messages:?}");
+        assert_eq!(
+            messages,
+            ["Key variable 'index' is defined by v-for but never used"]
+        );
     }
 }

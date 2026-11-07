@@ -118,7 +118,10 @@ export default {
         .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
         .collect();
     assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
-    assert!(findings[0].message.contains("dead"));
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'dead' is never referenced in <script>"
+    );
 }
 
 #[test]
@@ -212,7 +215,10 @@ export default {
         .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
         .collect();
     assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
-    assert!(findings[0].message.contains("dead"));
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'dead' is never referenced in <script>"
+    );
 }
 
 #[test]
@@ -289,7 +295,10 @@ fn test_template_static_refs_use_does_not_hide_another_dead_ref() {
         .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
         .collect();
     assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
-    assert!(findings[0].message.contains("inlineCalendar"));
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'inlineCalendar' is never referenced in <script>"
+    );
 }
 
 #[test]

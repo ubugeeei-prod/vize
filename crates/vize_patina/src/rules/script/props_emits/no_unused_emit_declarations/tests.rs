@@ -84,7 +84,10 @@ defineEmits<{ save: []; cancel: [] }>();
         .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
         .collect();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert!(diagnostics[0].message.contains("cancel"));
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'cancel' event is declared but never emitted."
+    );
 }
 
 #[test]
@@ -103,7 +106,10 @@ defineEmits<{ (e: "save" | "cancel" | "delete"): void }>();
         .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
         .collect();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert!(diagnostics[0].message.contains("delete"));
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'delete' event is declared but never emitted."
+    );
 }
 
 #[test]
@@ -247,7 +253,10 @@ emit('update:modelValue', value)
         .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
         .collect();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert!(diagnostics[0].message.contains("unused"));
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'unused' event is declared but never emitted."
+    );
     let expected = sfc.find("  unused: []").unwrap() as u32 + 2;
     assert_eq!(diagnostics[0].start, expected);
 }
@@ -313,7 +322,10 @@ export default {
         .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
         .collect();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert!(diagnostics[0].message.contains("cancel"));
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'cancel' event is declared but never emitted."
+    );
 }
 
 #[test]
@@ -408,7 +420,10 @@ export default { emits: ['click', dynamic] }
         .map(|diagnostic| diagnostic.message.as_str())
         .collect();
     assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
-    assert!(messages[0].contains("click"), "{messages:?}");
+    assert_eq!(
+        messages,
+        ["The 'click' event is declared but never emitted."]
+    );
 }
 
 #[test]
@@ -441,5 +456,8 @@ export default {
         .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
         .collect();
     assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
-    assert!(diagnostics[0].message.contains("save"));
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'save' event is declared but never emitted."
+    );
 }

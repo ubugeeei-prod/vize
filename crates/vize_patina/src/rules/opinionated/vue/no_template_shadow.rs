@@ -129,7 +129,10 @@ const items = []
             "test.vue",
         );
         assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
-        assert!(result.diagnostics[0].message.contains("item"));
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Variable 'item' shadows a variable in an outer scope"
+        );
     }
 
     #[test]
