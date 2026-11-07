@@ -31,6 +31,7 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
 };
 const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
 const releaseZed = readRepoFile("tests", "editor-conformance", "release-zed.ts");
+const releaseZedHost = readRepoFile(".github", "workflows", "release-zed-host.yml");
 
 test("release editor hosts consume the packed candidate before the tag exists", () => {
   const job = workflow.jobs["smoke-editor-artifacts"]!;
@@ -122,10 +123,24 @@ test("release Zed settings trust the isolated worktree and opt Vize into Vue", (
 
   assert.equal(settings.session?.trust_all_worktrees, true);
   assert.deepEqual(settings.languages?.["Vue.js"]?.language_servers, ["vize", "..."]);
+  assert.equal(settings.auto_install_extensions?.vue, false);
+  assert.equal(settings.auto_update_extensions?.vue, false);
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(evidence, "zed-settings.json"), "utf8")),
     settings,
   );
+});
+
+test("release Zed profile changes run in the actual pinned editor before merge", () => {
+  const host = parse(releaseZedHost) as {
+    on: { pull_request: { paths: string[] } };
+    jobs: Record<string, Job>;
+  };
+  assert.ok(host.on.pull_request.paths.includes("tests/editor-conformance/release-zed*"));
+  const serialized = JSON.stringify(host.jobs.host.steps);
+  assert.match(serialized, /cargo build --profile ci -p vize/);
+  assert.match(serialized, /zed-linux-x86_64\.tar\.gz/);
+  assert.match(serialized, /node tests\/editor-conformance\/release-zed\.ts/);
 });
 
 test("release Zed smoke prepares its packaged profile and retains failure evidence", (t) => {
@@ -133,8 +148,24 @@ test("release Zed smoke prepares its packaged profile and retains failure eviden
   t.after(() => fs.rmSync(temporary, { force: true, recursive: true }));
   const packaged = path.join(temporary, "packaged");
   const evidence = path.join(temporary, "evidence");
-  fs.mkdirSync(packaged);
-  fs.writeFileSync(path.join(packaged, "extension.toml"), 'id = "vize"\n');
+  fs.mkdirSync(path.join(packaged, "grammars"), { recursive: true });
+  fs.mkdirSync(path.join(packaged, "languages", "art-vue"), { recursive: true });
+  fs.writeFileSync(
+    path.join(packaged, "extension.toml"),
+    [
+      'id = "vize"',
+      "",
+      "[grammars.vue]",
+      'repository = "https://github.com/tree-sitter-grammars/tree-sitter-vue"',
+      'rev = "fixture"',
+      "",
+    ].join("\n"),
+  );
+  fs.writeFileSync(path.join(packaged, "grammars", "vue.wasm"), "fixture grammar");
+  fs.writeFileSync(
+    path.join(packaged, "languages", "art-vue", "config.toml"),
+    'name = "Art Vue"\npath_suffixes = ["art.vue"]\n',
+  );
 
   const profile = prepareReleaseZedProfile(path.join(temporary, "session"), packaged, evidence);
   const generated = JSON.parse(
@@ -143,10 +174,29 @@ test("release Zed smoke prepares its packaged profile and retains failure eviden
   assert.equal(generated.session?.trust_all_worktrees, true);
   assert.equal(
     fs.readFileSync(path.join(profile.installed, "extension.toml"), "utf8"),
-    'id = "vize"\n',
+    [
+      'id = "vize"',
+      "",
+      "[grammars.vue]",
+      'repository = "https://github.com/tree-sitter-grammars/tree-sitter-vue"',
+      'rev = "fixture"',
+      "",
+    ].join("\n"),
   );
   assert.ok(fs.statSync(profile.shim).isDirectory());
   assert.ok(fs.existsSync(path.join(profile.userData, "extensions", "installed", ".rescan")));
+  assert.equal(
+    fs.readFileSync(path.join(profile.vueLanguage, "languages", "vue", "config.toml"), "utf8"),
+    'name = "Vue.js"\npath_suffixes = ["vue"]\n',
+  );
+  assert.match(
+    fs.readFileSync(path.join(profile.vueLanguage, "extension.toml"), "utf8"),
+    /^id = "vue"[\s\S]*^languages = \["languages\/vue"\]$/mu,
+  );
+  assert.equal(
+    fs.readFileSync(path.join(profile.vueLanguage, "grammars", "vue.wasm"), "utf8"),
+    "fixture grammar",
+  );
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(evidence, "zed-settings.json"), "utf8")),
     generated,

@@ -1,0 +1,126 @@
+name: Release Zed host
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-zed-host.yml"
+      - ".github/actions/vscode-host-smoke/download-artifact.sh"
+      - "editors/zed/**"
+      - "tests/editor-conformance/release-zed*"
+      - "tests/tooling/release/release-editor-host-workflow.test.ts"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: release-zed-host-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  host:
+    name: Packaged extension in actual Zed
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, targets: wasm32-wasip2 }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: release-zed-host
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build the candidate server
+        run: cargo build --profile ci -p vize
+      - name: Install the pinned Zed extension packager
+        env:
+          VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
+          ZED_EXTENSION_CLI_SHA: 9ee3c503a4bbbc6b4a0f8a789acca4871d773223
+          ZED_EXTENSION_CLI_SHA256: a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM --kill-after=10s 300s \
+            bash .github/actions/vscode-host-smoke/download-artifact.sh \
+            "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension" \
+            "${RUNNER_TEMP}/zed-extension" "${ZED_EXTENSION_CLI_SHA256}"
+          chmod +x "${RUNNER_TEMP}/zed-extension"
+      - name: Package the candidate Zed extension
+        working-directory: editors/zed
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"
+          mkdir -p "${RUNNER_TEMP}/zed-extension-output"
+          "${RUNNER_TEMP}/zed-extension" \
+            --source-dir . \
+            --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
+            --output-dir "${RUNNER_TEMP}/zed-extension-output"
+          mkdir -p "${RUNNER_TEMP}/zed-extension-installed"
+          tar -xzf "${RUNNER_TEMP}/zed-extension-output/archive.tar.gz" \
+            -C "${RUNNER_TEMP}/zed-extension-installed"
+      - name: Install the pinned Zed editor
+        env:
+          ZED_VERSION: 1.27.0
+          ZED_SHA256: 719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/zed-linux-x86_64.tar.gz"
+          bash .github/actions/vscode-host-smoke/download-artifact.sh \
+            "https://github.com/zed-industries/zed/releases/download/v${ZED_VERSION}/zed-linux-x86_64.tar.gz" \
+            "$archive" "$ZED_SHA256"
+          mkdir -p "${RUNNER_TEMP}/zed"
+          tar -xzf "$archive" -C "${RUNNER_TEMP}/zed"
+          "${RUNNER_TEMP}/zed/zed.app/bin/zed" --version
+      - name: Prepare the release-shaped project
+        run: |
+          set -euo pipefail
+          project="${RUNNER_TEMP}/release-zed-project"
+          cp -R editors/vscode/test-fixtures/extension-host/real-vue "$project"
+          node --input-type=module - "$project" <<'JS'
+          import fs from "node:fs";
+          import path from "node:path";
+          const root = process.argv[2];
+          fs.writeFileSync(path.join(root, "package.json"), `${JSON.stringify({
+            name: "vize-release-zed-smoke",
+            version: "0.0.0",
+            private: true,
+            type: "module",
+            dependencies: { vue: "3.5.34" },
+            devDependencies: { typescript: "6.0.3", vite: "8.0.0" },
+          }, null, 2)}\n`);
+          fs.writeFileSync(path.join(root, "src/Lint.vue"), `<script setup lang="ts">
+          const items = [1, 2]
+          </script>
+          <template><ul><li v-for="item in items">{{ item }}</li></ul></template>
+          `);
+          JS
+          target/ci/vize init "$project" \
+            --yes --no-lint --vite --fmt --typecheck --editor --no-install
+          npm install --prefix "$project" --ignore-scripts --no-audit --no-fund \
+            --package-lock=false --save=false vue@3.5.34 typescript@6.0.3
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Ensure xvfb is available
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            vize-ci-apt-retry sudo apt-get update
+            vize-ci-apt-retry sudo apt-get install -y xvfb
+          fi
+      - name: Run the packaged extension in actual Zed
+        env:
+          VIZE_RELEASE_ZED_EVIDENCE: ${{ runner.temp }}/release-zed-evidence
+          VIZE_RELEASE_ZED_EXTENSION: ${{ runner.temp }}/zed-extension-installed
+          VIZE_RELEASE_ZED_WORKSPACE: ${{ runner.temp }}/release-zed-project
+          VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+          VIZE_TEST_ZED_PATH: ${{ runner.temp }}/zed/zed.app/bin/zed
+        run: xvfb-run -a node tests/editor-conformance/release-zed.ts
+      - name: Retain Zed host evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-zed-host-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-zed-evidence
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
