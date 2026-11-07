@@ -41,7 +41,6 @@ const owed = [
   "vize_l1_to_l2/src/native_vue2/element.rs",
   "vize_l1_to_l2/src/pass/legacy.rs",
   "vize_l1_to_l2/src/pass/plan.rs",
-  "vize_l2/src/file/region/native/body/header.rs",
 ];
 
 function rustFiles(root: string): string[] {
