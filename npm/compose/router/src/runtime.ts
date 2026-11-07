@@ -92,6 +92,7 @@ export function createRouteManifest<const Routes extends readonly RouteDefinitio
       path: route.path,
       component: route.component,
       meta: route.meta ?? {},
+      ...(route.errorComponent === undefined ? {} : { errorComponent: route.errorComponent }),
     })),
   };
 }
@@ -203,6 +204,11 @@ function validateRoutes(routes: readonly RouteDefinition[]): void {
     if (!route.component.endsWith(".vue")) {
       throw new Error(
         `[${ROUTER_ERROR.invalidComponent}] Route ${route.name} must use a .vue component`,
+      );
+    }
+    if (route.errorComponent !== undefined && !route.errorComponent.endsWith(".vue")) {
+      throw new Error(
+        `[${ROUTER_ERROR.invalidComponent}] Route ${route.name} error boundary must use a .vue component`,
       );
     }
     if (names.has(route.name)) {

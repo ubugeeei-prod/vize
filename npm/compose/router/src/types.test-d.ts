@@ -1,6 +1,7 @@
 /** Compile-only assertions for typed router contracts. */
 
 import {
+  createRouter,
   createRouterMatcher,
   defineRoutes,
   type RouteNames,
@@ -41,5 +42,17 @@ router.resolve("missing", {});
 router.resolve("user", {});
 // @ts-expect-error route params are strings after URL decoding.
 router.resolve("user", { id: 42 });
+// @ts-expect-error query values must be serializable URL scalars or scalar arrays.
+router.resolve("user", { id: "42" }, { query: { filter: { active: true } } });
 // @ts-expect-error route components must be source-owned Vue files.
 defineRoutes([{ name: "bad", path: "/", component: "./render.ts" }] as const);
+
+const navigation = createRouter(routes);
+void navigation.navigate({ name: "home", params: {} });
+void navigation.navigate({ name: "user", params: { id: "42" }, query: { tab: "activity" } });
+// @ts-expect-error named navigation preserves required path params.
+void navigation.navigate({ name: "user", params: {} });
+// @ts-expect-error named navigation rejects unknown route names.
+void navigation.navigate({ name: "missing", params: {} });
+// @ts-expect-error named navigation rejects non-serializable query values.
+void navigation.navigate({ name: "user", params: { id: "42" }, query: { since: new Date() } });
