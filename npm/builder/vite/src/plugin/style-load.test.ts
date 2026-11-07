@@ -102,7 +102,7 @@ for (const isProduction of [false, true]) {
   const stock = official.compileStyle({
     source: result.styles[0].content,
     filename: headPath,
-    id: isProduction ? headPath : scopeId,
+    id: scopeId,
     isProd: isProduction,
   });
   assert.deepEqual(stock.errors, []);

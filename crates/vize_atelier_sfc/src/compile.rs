@@ -92,19 +92,13 @@ fn compile_sfc_inner(
             &mut options.template,
             &descriptor.css_vars,
             &scope_id,
-            filename,
             None,
         );
     }
     let compiled_styles = profile!(
         "atelier.sfc.styles",
         compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
-            .with_css_var_names(
-                &descriptor.css_vars,
-                &scope_id,
-                filename,
-                options.template.is_prod
-            )
+            .with_css_var_names(&descriptor.css_vars, &scope_id, options.template.is_prod)
     );
     if !compiled_styles.css.is_empty() {
         css = Some(compiled_styles.css.clone());
@@ -249,7 +243,6 @@ fn compile_sfc_inner(
                         &mut template_opts,
                         &descriptor.css_vars,
                         &scope_id,
-                        filename,
                         options_api_bindings.as_ref(),
                     );
                 }
@@ -545,7 +538,6 @@ fn compile_sfc_inner(
                     &mut template_opts,
                     &descriptor.css_vars,
                     &scope_id,
-                    filename,
                     Some(&script_bindings),
                 );
             }
@@ -694,7 +686,8 @@ fn compile_sfc_inner(
             &compiled_styles.css_modules,
             &setup_css_module_names,
             &scope_id,
-            filename,
+            &scope_id,
+            filename.ends_with(".art.vue"),
             options.template.is_prod,
             &crate::compile_script::runtime_imports::RuntimeModule::new(
                 codegen_options.runtime_module_name.as_str()

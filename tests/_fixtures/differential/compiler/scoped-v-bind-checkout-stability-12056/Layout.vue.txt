@@ -1,0 +1,11 @@
+<script setup>
+const color = "red"
+</script>
+
+<template>
+  <div class="box">x</div>
+</template>
+
+<style scoped>
+.box { color: v-bind(color); }
+</style>

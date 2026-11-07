@@ -78,6 +78,7 @@ pub fn compile_script_setup_inline(
         &[],
         scope_id,
         scope_id,
+        scope_id.ends_with(".art.vue"),
         false,
         &RuntimeModule::new("vue"),
         None,
@@ -106,6 +107,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
     setup_css_module_names: &[String],
     scope_id: &str,
     css_vars_id: &str,
+    preserve_runtime_erased_macros: bool,
     is_prod: bool,
     runtime: &RuntimeModule<'_>,
     mut trace: Option<&mut SetupTrace>,
@@ -113,7 +115,6 @@ pub(crate) fn compile_script_setup_inline_with_context(
     // Extract user imports and setup lines from script content once; await detection
     // and output assembly share the same split. `setup_program` (when provided
     // by the parse-once pipeline) skips re-parsing `content` here.
-    let preserve_runtime_erased_macros = css_vars_id.ends_with(".art.vue");
     let (user_imports, setup_lines, ts_declarations) = profile!(
         "atelier.script_inline.parse_sections",
         match trace.as_deref_mut() {

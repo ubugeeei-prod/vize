@@ -56,7 +56,6 @@ impl CompiledStyles {
         mut self,
         vars: &[std::borrow::Cow<'_, str>],
         scope_id: &str,
-        filename: &str,
         is_prod: bool,
     ) -> Self {
         if is_prod {
@@ -67,7 +66,7 @@ impl CompiledStyles {
                 );
                 let to = vize_carton::cstr!(
                     "var(--{})",
-                    crate::css::prod_scoped_v_bind_name(filename, expression)
+                    crate::css::prod_scoped_v_bind_name(scope_id, expression)
                 );
                 self.css = self.css.replace(from.as_str(), to.as_str()).into();
             }
