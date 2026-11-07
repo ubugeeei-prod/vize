@@ -51,21 +51,26 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "check": "vp check src vite.config.ts && tsc --noEmit -p tsconfig.json",
+    "check": "vp check src vite.config.ts && vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json",
     "check:fix": "vp check --fix src vite.config.ts",
-    "check:types": "tsc --noEmit -p tsconfig.json",
+    "check:types": "vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "vp exec tsx --test \"src/**/*.test.ts\""
+    "test": "vp test run"
   },
   "dependencies": {
     "@vizejs/fresco-native": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "@vitejs/plugin-vue": "catalog:vite-stack",
+    "@vue/compiler-sfc": "catalog:vue-stable",
+    "happy-dom": "catalog:testing",
     "tsx": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vitest": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-tsc": "catalog:typescript"
   },
   "peerDependencies": {
     "vue": "^3.4.0"

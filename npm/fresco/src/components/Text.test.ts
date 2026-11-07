@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 import { firstChild, mountComponent, toTreeSnapshot } from "../testing/mount.js";
 import { ErrorText, InfoText, MutedText, SuccessText, Text, WarningText } from "./Text.js";
@@ -18,7 +18,7 @@ const textDefaults = {
   "aria-hidden": false,
 };
 
-void test("renders the content prop as a single text node", () => {
+test("renders the content prop as a single text node", () => {
   const mounted = mountComponent(Text, { content: "hello" });
 
   assert.deepEqual(toTreeSnapshot(firstChild(mounted)), {
@@ -28,7 +28,7 @@ void test("renders the content prop as a single text node", () => {
   mounted.unmount();
 });
 
-void test("stringifies slot children and prefers content over the slot", () => {
+test("stringifies slot children and prefers content over the slot", () => {
   const slotted = mountComponent(Text, {}, () => ["count: ", 42]);
   assert.equal(firstChild(slotted).props.text, "count: 42");
   slotted.unmount();
@@ -38,7 +38,7 @@ void test("stringifies slot children and prefers content over the slot", () => {
   both.unmount();
 });
 
-void test("passes styling flags and wrap mode through to the node", () => {
+test("passes styling flags and wrap mode through to the node", () => {
   const mounted = mountComponent(Text, {
     content: "styled",
     bold: true,
@@ -65,7 +65,7 @@ void test("passes styling flags and wrap mode through to the node", () => {
   mounted.unmount();
 });
 
-void test("resolves color and dim aliases", () => {
+test("resolves color and dim aliases", () => {
   const propsOf = (props: Record<string, unknown>) => {
     const mounted = mountComponent(Text, { content: "x", ...props });
     const node = firstChild(mounted).props;
@@ -86,7 +86,7 @@ void test("resolves color and dim aliases", () => {
   assert.deepEqual(propsOf({ dimColor: true }), { fg: undefined, bg: undefined, dim: true });
 });
 
-void test("honors aria props in screen reader mode", () => {
+test("honors aria props in screen reader mode", () => {
   const hidden = mountComponent(Text, { content: "x", "aria-hidden": true }, undefined, {
     screenReader: true,
   });
@@ -104,7 +104,7 @@ void test("honors aria props in screen reader mode", () => {
   plain.unmount();
 });
 
-void test("convenience variants preset color and dim styling", () => {
+test("convenience variants preset color and dim styling", () => {
   const nodeFor = (component: typeof ErrorText) => {
     const mounted = mountComponent(component, { content: "msg" });
     const { fg, dim, text } = firstChild(mounted).props;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { defineComponent, h, nextTick, ref } from "vue";
 
 import { Static, TextInput } from "../components/index.js";
@@ -16,7 +16,7 @@ import {
   renderTui,
 } from "./index.js";
 
-void test("renderTui records initial and explicit frame snapshots", async () => {
+test("renderTui records initial and explicit frame snapshots", async () => {
   const label = ref("ready");
   const rendered = renderTui(() =>
     h("box", { style: { flexDirection: "column" } }, [h("text", { text: label.value })]),
@@ -49,7 +49,7 @@ void test("renderTui records initial and explicit frame snapshots", async () => 
   rendered.unmount();
 });
 
-void test("frame snapshots preserve Static output above the live frame", async () => {
+test("frame snapshots preserve Static output above the live frame", async () => {
   const items = ref(["one"]);
   const rendered = renderTui(() =>
     h("box", { style: { flexDirection: "column" } }, [
@@ -70,7 +70,7 @@ void test("frame snapshots preserve Static output above the live frame", async (
   rendered.unmount();
 });
 
-void test("input driver records TextInput key and paste frames", async () => {
+test("input driver records TextInput key and paste frames", async () => {
   const value = ref("");
   const submitted: string[] = [];
   const rendered = renderTui(() =>
@@ -100,7 +100,7 @@ void test("input driver records TextInput key and paste frames", async () => {
   rendered.unmount();
 });
 
-void test("resize input updates the provided app dimensions", async () => {
+test("resize input updates the provided app dimensions", async () => {
   const SizeProbe = defineComponent({
     name: "SizeProbe",
     setup() {
@@ -116,7 +116,7 @@ void test("resize input updates the provided app dimensions", async () => {
   rendered.unmount();
 });
 
-void test("semantic queries find role, name, description, state, text, and test-id nodes", () => {
+test("semantic queries find role, name, description, state, text, and test-id nodes", () => {
   const rendered = renderTui(() =>
     h("box", { style: { flexDirection: "column" } }, [
       h(

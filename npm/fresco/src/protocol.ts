@@ -211,11 +211,23 @@ export interface ResizeEvent {
   height: number;
 }
 
+export type FrescoMouseEventKind =
+  | "down"
+  | "up"
+  | "drag"
+  | "moved"
+  | "scroll-up"
+  | "scroll-down"
+  | "scroll-left"
+  | "scroll-right";
+
 export interface MouseEvent {
   type: "mouse";
+  kind?: FrescoMouseEventKind;
   button?: string;
   x: number;
   y: number;
+  modifiers?: FrescoModifiers;
 }
 
 export interface FocusEvent {
