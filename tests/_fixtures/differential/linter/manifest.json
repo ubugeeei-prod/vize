@@ -4119,6 +4119,48 @@
       }
     },
     {
+      "id": "linter/real-project-rule-accuracy-12069",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "real-project-rule-accuracy-12069",
+        "files": [
+          {
+            "path": "OptionsEmits.vue.txt",
+            "role": "real-project-options-emits-reproduction",
+            "sha256": "0308057e9f56eeaf6edb6108bca8284ed122b72a42adc9ae839201626db9ef18"
+          },
+          {
+            "path": "SemanticRefs.vue.txt",
+            "role": "real-project-semantic-template-ref-reproduction",
+            "sha256": "17f7e8dc645a788b51015b90515ec1092f383820e11092f253ccace3832789da"
+          },
+          {
+            "path": "TemplateScopes.vue.txt",
+            "role": "real-project-template-scope-and-style-reproduction",
+            "sha256": "70d9c21706e6fb5db81a47d8cc6de1445cf076c26cd2a2d8dfae656928affb5f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/regression/closed-link-component-20261105",
       "state": "active",
       "targets": [
