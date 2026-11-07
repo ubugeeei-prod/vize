@@ -59,6 +59,7 @@ fn retained_js_carrier_and_ast_are_the_original_once_parsed_payload() {
         [Op::Interpolation(Box::new_in(
             InterpolationOp {
                 expression: ExprRef::Js(js),
+                raw_html: false,
                 span: Span::new(0, 9),
             },
             &&a,

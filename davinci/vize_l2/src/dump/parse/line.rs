@@ -239,9 +239,13 @@ fn text(rest: &str, line_no: usize) -> Result<Item, DumpError> {
 }
 
 fn interpolation(rest: &str, line_no: usize, jsx_child: bool) -> Result<Item, DumpError> {
+    let (raw_html, rest) = rest
+        .strip_prefix("raw-html ")
+        .map_or((false, rest), |rest| (true, rest));
     let (expression, tail) = take_expr(rest, line_no)?;
     let payload = Interpolation {
         expression,
+        raw_html,
         span: tail_span(tail, line_no)?,
     };
     Ok(Item::Op(if jsx_child {

@@ -14,7 +14,7 @@ on:
       - ".cargo/**"
       - "crates/**"
       - "davinci/**"
-      - "vendor/**"
+      - "upstream/forks/**"
       - "tools/benchmarks/crates/**"
       - "tests/davinci_test_support/**"
       - "tests/vize_test_runner/**"

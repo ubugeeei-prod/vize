@@ -39,7 +39,7 @@ const requireBlacksmithCli = [
 
 const missingIdDiagnostic = [
   "BLACKSMITH_TESTBOX_ID is unset.",
-  "Use the guarded lifecycle in CONTRIBUTING.md. It clears stale ids before warmup:",
+  "Use the guarded lifecycle in .github/CONTRIBUTING.md. It clears stale ids before warmup:",
   "  unset BLACKSMITH_TESTBOX_ID",
   '  "$VIZE_BLACKSMITH_BIN" auth login',
   `  ${pushCurrentBranchCommand}`,

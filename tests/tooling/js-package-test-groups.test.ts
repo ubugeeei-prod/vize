@@ -269,7 +269,7 @@ void test("group tasks keep the full set's preparation, wrapper, order and concu
   }
   assert.equal(
     command("build:oxlint-qualification"),
-    `${native} && ${runPackageScriptDirectly("build", ["./npm/oxlint"])}`,
+    `${native} && ${runPackageScriptDirectly("build", ["./npm/linter/oxlint"])}`,
   );
 });
 
@@ -310,7 +310,7 @@ void test("PR CI runs each affected group once and keeps qualification and confo
     (step) => step.run === "vp run --workspace-root build:oxlint-qualification",
   );
   const qualify = qualification.findIndex(
-    (step) => step.run === "node npm/oxlint/scripts/check-project-transport.mjs",
+    (step) => step.run === "node npm/linter/oxlint/scripts/check-project-transport.mjs",
   );
   assert.ok(build >= 0 && build < qualify, "the job builds the addon and bundles it qualifies");
 
@@ -392,7 +392,7 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   for (const [group, packages] of [
     ["ui-conformance", ["./npm/ui", "./npm/cli"]],
     ["fresco-conformance", ["./npm/fresco-native"]],
-    ["original-project", ["./npm/oxlint"]],
+    ["original-project", ["./npm/linter/oxlint"]],
   ] as const) {
     assert.deepEqual(
       jsInstallFilters(group),

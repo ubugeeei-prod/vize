@@ -50,21 +50,20 @@ impl VirtualProject {
         let aliases = self.dependency_alias_map();
         let mut inputs = Vec::new();
         for file in self.virtual_files_sorted() {
-            let Some(source) = self
-                .pre_rewrite_code
-                .get(&file.virtual_path)
-                .or_else(|| self.original_contents.get(&file.virtual_path))
-            else {
+            let Some(source) = self.pre_rewrite_code(file).or_else(|| {
+                self.original_content_for_virtual(&file.virtual_path)
+                    .map(std::borrow::Cow::Borrowed)
+            }) else {
                 continue;
             };
             let Some(source_type) = super::build::source_type_for_path(&file.virtual_path) else {
                 continue;
             };
             let occurrences = match facts.as_deref_mut() {
-                Some(facts) => facts.collect_occurrences(source, source_type),
+                Some(facts) => facts.collect_occurrences(&source, source_type),
                 None => self
                     .rewriter
-                    .collect_all_specifier_occurrences(source, source_type),
+                    .collect_all_specifier_occurrences(&source, source_type),
             };
             for (specifier, _) in occurrences {
                 let resolved = self.resolve_file_dependency_with_inputs(file, &specifier, &aliases);
@@ -168,7 +167,7 @@ impl VirtualProject {
                     Some(facts) => self
                         .rewriter
                         .rewrite_with_alias_resolver_and_missing_vue_policy_cached(
-                            source,
+                            &source,
                             source_type,
                             file.original_path.parent(),
                             &resolver,
@@ -178,7 +177,7 @@ impl VirtualProject {
                     None => self
                         .rewriter
                         .rewrite_with_alias_resolver_and_missing_vue_policy(
-                            source,
+                            &source,
                             source_type,
                             file.original_path.parent(),
                             &resolver,
@@ -189,10 +188,7 @@ impl VirtualProject {
             })
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
-            }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 
@@ -244,7 +240,7 @@ impl VirtualProject {
     ) -> Option<(PathBuf, VueDocumentVirtualTs)> {
         let source = vize_carton::path::canonicalize_non_verbatim(source);
         let file = self.find_by_original(&source)?;
-        let pre_rewrite_code = self.pre_rewrite_code.get(&file.virtual_path)?.clone();
+        let pre_rewrite_code = vize_carton::String::from(self.pre_rewrite_code(file)?.as_ref());
         let path = self.preferred_materialized_path_for_original(&source)?;
         self.find_by_diagnostic_virtual(&path)?;
         let map = file.source_map.sfc_map.as_ref()?;

@@ -27,9 +27,7 @@
   {
     "name": "export",
     "script": "const local = 'fixed';\ndeclare const label: typeof local;\nexport type Label = typeof label;\nconst exact: Label = local;",
-    "expected": [
-      "src/App.vue(4,1): error TS1184: Modifiers cannot appear here."
-    ]
+    "expected": []
   },
   {
     "name": "async",
@@ -125,7 +123,6 @@
     "script": "const local = 'fixed';\ndeclare const label: typeof local;\nexport type Label = typeof label;\ndefineExpose({ label });",
     "consumer": "import type { Label } from './App.vue';\nconst wrong: Label = 'other';\nconst exact: Label = 'fixed';\n",
     "expected": [
-      "src/App.vue(4,1): error TS1184: Modifiers cannot appear here.",
       "src/consumer.ts(2,7): error TS2322: Type '\"other\"' is not assignable to type '\"fixed\"'."
     ]
   }

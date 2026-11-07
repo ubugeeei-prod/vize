@@ -18,7 +18,10 @@ import { retainHtmlProcess } from "./support/oxlint-installed-html-packets.ts";
 import { verifyStockArchives } from "./support/oxlint-installed-html-stock.ts";
 import type { HtmlCampaignPlan } from "./support/oxlint-installed-html-types.ts";
 import { runtimeOverrides } from "../../tools/support/release/public_acceptance/installed.ts";
-import { fixtures, finishCapture } from "../../npm/oxlint/src/test-support/html-cli-oracles.mjs";
+import {
+  fixtures,
+  finishCapture,
+} from "../../npm/linter/oxlint/src/test-support/html-cli-oracles.mjs";
 
 const plan = (): HtmlCampaignPlan => ({
   schema: "vize.oxlint.installed-html-campaign-v1",

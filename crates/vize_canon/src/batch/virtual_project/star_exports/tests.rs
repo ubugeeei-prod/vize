@@ -50,7 +50,7 @@ fn owner_packet(project: &VirtualProject, name: &str) -> serde_json::Value {
                 "path": path, "original": file.original_path, "code": file.content,
                 "map": format!("{:?}", file.source_map),
                 "authored": project.original_contents.get(path),
-                "preRewrite": project.pre_rewrite_code.get(path),
+                "preRewrite": project.pre_rewrite_code(file).map(|code| code.into_owned()),
             })
         })
         .collect::<Vec<_>>();

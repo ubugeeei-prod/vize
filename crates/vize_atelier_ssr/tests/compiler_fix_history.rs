@@ -5,7 +5,10 @@
 
 use serde_json::Value;
 
+mod support;
+
 use davinci_test_support::ssr_fix_history as fixtures;
+use support::slot_vnode_text_history as text_history;
 
 const EXPECTED: &str = include_str!("fixtures/fix-history/capture-22dec/first.stdout.json");
 
@@ -16,6 +19,15 @@ fn three_history_fixes_preserve_complete_ssr_outputs() {
         fixtures::options().expect("original defaults must be admitted"),
         expected.get("options").expect("captured options").clone(),
         "default SSR options differ from the captured historical workload"
+    );
+    let current = text_history::read(
+        include_str!("fixtures/fix-history/single-text-vnode-current.expected.json"),
+        &[
+            "keyed-slot-conditional",
+            "keyed-slot-single-element",
+            "keyed-slot-fallback",
+        ],
+        &expected["options"],
     );
     let cases = expected
         .get("cases")
@@ -30,7 +42,12 @@ fn three_history_fixes_preserve_complete_ssr_outputs() {
         );
         assert_eq!(
             fixtures::observe(source).expect("serialize complete output"),
-            expected.get("output").expect("captured output").clone(),
+            text_history::output(
+                &current,
+                id,
+                expected.get("output").expect("captured output")
+            )
+            .clone(),
             "complete SSR output changed for {id}"
         );
     }

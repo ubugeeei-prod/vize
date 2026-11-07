@@ -46,6 +46,11 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         content,
         preserve_declaration_spelling,
     )?;
+    let authored_identity = rewritten.source_map.is_empty() && rewritten.code.as_str() == content;
+    if authored_identity {
+        vize_carton::micro_count!("canon.source.identity_shared.files", 1);
+        vize_carton::micro_count!("canon.source.identity_shared.bytes", content.len());
+    }
 
     Ok(RegisteredFile {
         diagnostic_route: Default::default(),
@@ -59,7 +64,7 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
             virtual_path,
         },
         extra_virtual_files: Vec::new(),
-        pre_rewrite_code: None,
+        pre_rewrite_code: false,
         authored_vue_ts_specifiers: Default::default(),
         passthrough_files: collect_passthrough_modules(
             path,
@@ -72,6 +77,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         typed_router_import: false,
         empty_module_exports: false,
         module_exports: None,
-        original_content: retain_source_content(source),
+        original_content: (!authored_identity).then(|| retain_source_content(source)),
     })
 }

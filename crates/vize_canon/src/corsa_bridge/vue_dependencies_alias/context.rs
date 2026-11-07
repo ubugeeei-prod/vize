@@ -66,6 +66,13 @@ pub(in crate::corsa_bridge) struct AliasContext {
 }
 
 impl AliasContext {
+    /// What this revision's mirror project retains on the heap, by family.
+    pub(in crate::corsa_bridge) fn retained_bytes(
+        &self,
+    ) -> Option<crate::batch::virtual_project::RetainedBytes> {
+        self.mirror.as_ref().map(VirtualProject::retained_bytes)
+    }
+
     #[cfg(test)]
     pub(in crate::corsa_bridge) fn for_host(
         source_path: &Path,

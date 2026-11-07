@@ -79,8 +79,15 @@ impl ServerState {
         stamp: CorsaRequestStamp,
         response: Option<Hover>,
     ) {
+        // A miss can be transient while the project is starting or being
+        // synchronized. Reusing it would suppress hover after the backend
+        // becomes ready without an authored document edit.
+        let Some(response) = response else {
+            return;
+        };
         if self.corsa_disk_watcher_registered.load(Ordering::Acquire) && stamp.is_current(self) {
-            self.native_hover.insert(uri, position, stamp, response);
+            self.native_hover
+                .insert(uri, position, stamp, Some(response));
         }
     }
 }
@@ -99,7 +106,7 @@ mod tests {
     }
 
     #[test]
-    fn cache_is_exact_bounded_and_distinguishes_an_empty_answer() {
+    fn cache_is_exact_bounded_and_server_does_not_retain_a_transient_miss() {
         let state = ServerState::new();
         let cache = NativeHoverCache::default();
         let uri = Url::parse("file:///workspace/App.vue").unwrap();
@@ -127,5 +134,15 @@ mod tests {
         cache.insert(&other, position, stamp, None);
         assert_eq!(cache.get(&other, position, stamp), Some(None));
         assert_eq!(cache.get(&uri, position, stamp), None);
+
+        state.set_corsa_disk_watcher_registered();
+        let current = state.corsa_request_stamp();
+        state.cache_native_hover(&other, position, current, None);
+        assert_eq!(state.cached_native_hover(&other, position, current), None);
+        state.cache_native_hover(&other, position, current, response("ready"));
+        assert_eq!(
+            state.cached_native_hover(&other, position, current),
+            Some(response("ready"))
+        );
     }
 }

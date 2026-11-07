@@ -56,57 +56,57 @@
   },
   {
     "comment": "eslint-disable rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "eslint-disable-line rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "eslint-disable-next-line rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "eslint-enable rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "oxlint-disable rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "oxlint-disable-line rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "oxlint-disable-next-line rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "oxlint-enable rule",
-    "ssrCodeSha256": "48424ae6afe3125071fdc2a80424c42b0edb023a396c6fd179edaa5a7ff5d4d0",
+    "ssrCodeSha256": "346a9de7190fd1267f080470bfb2c89c57adffab31ac8daecc6083a4a7499ca0",
     "html": "<div><h1>Speaker</h1><section><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "ordinary",
-    "ssrCodeSha256": "afd771fef7a8cd4b72e20e07c229f11686842ef0cadac4c31ac60771e620d817",
+    "ssrCodeSha256": "f1e041f728a8574382ca3b490b3493fb4927cd3fe8ce3de3fa83c7935d99224f",
     "html": "<div><h1>Speaker</h1><section><!-- ordinary --><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "eslint-disableish",
-    "ssrCodeSha256": "6df1d67d00780d0c7f11936b6db634c9c8848b0db448402db5b8015c67a32b06",
+    "ssrCodeSha256": "f1538aa6155faba1758758f2d8f701c42ae65838e0f4de45a2c26b25cab51855",
     "html": "<div><h1>Speaker</h1><section><!-- eslint-disableish --><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   },
   {
     "comment": "note eslint-disable",
-    "ssrCodeSha256": "be86c46aa8352e4820d7b84c5beb0ba8a8da120d79247e7017d2db5c867fbb09",
+    "ssrCodeSha256": "6c4e7404da4c41a92c4ca3acb5f3528de37b1e7c304c783b6d01e7d518d77501",
     "html": "<div><h1>Speaker</h1><section><!-- note eslint-disable --><!--[--><article><img src=\"/session.png\"><p>Session</p></article><!--]--></section><section><!--[--><article><img src=\"/lightning.png\"><p>Lightning Talk</p></article><!--]--></section></div>"
   }
 ]

@@ -22,6 +22,7 @@ fn reason_keyword(reason: OpaqueReason) -> &'static str {
         OpaqueReason::MultiStatement => "multi-statement",
         OpaqueReason::NestingRefused => "nesting-refused",
         OpaqueReason::ParseRejected => "parse-rejected",
+        OpaqueReason::DirectiveClause => "directive-clause",
         OpaqueReason::Compound => "compound",
         OpaqueReason::SourceCoordinates => "source-coordinates",
     }
@@ -62,6 +63,7 @@ fn every_expression_variant_is_matched_without_a_wildcard() {
         OpaqueReason::MultiStatement,
         OpaqueReason::NestingRefused,
         OpaqueReason::ParseRejected,
+        OpaqueReason::DirectiveClause,
         OpaqueReason::Compound,
         OpaqueReason::SourceCoordinates,
     ];

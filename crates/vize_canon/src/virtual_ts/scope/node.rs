@@ -1,7 +1,7 @@
 use super::children::generate_child_scopes;
 use super::context::ScopeGenContext;
 use super::emit::{append_v_for_comment, emit_v_for_loop_open};
-use super::event_scope::generate_event_handler_scope;
+use super::event_scope::{EventVifGuards, generate_event_handler_scope};
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{
@@ -244,7 +244,10 @@ pub(super) fn generate_scope_node(
                 ctx,
                 scope,
                 data,
-                enclosing_guard.as_deref(),
+                EventVifGuards {
+                    handler: enclosing_guard.as_deref(),
+                    active_outer: outer_guard,
+                },
                 (handler_indent.as_str(), handler_inner_indent.as_str()),
             );
             if outer_guard.is_some() {

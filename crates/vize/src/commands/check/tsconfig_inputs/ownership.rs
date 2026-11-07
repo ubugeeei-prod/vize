@@ -101,6 +101,82 @@ pub(crate) fn resolve_tsconfig_for_files(
     }
 }
 
+/// An authored import a referenced project owns, with that project's config.
+pub(crate) struct ForeignSource {
+    pub(crate) path: PathBuf,
+    pub(crate) owner: PathBuf,
+}
+
+/// Split authored imports into those this program reports and those a
+/// referenced project owns. `tsc -b` checks the latter in their owning
+/// project alone, so an importing program neither reports them nor checks
+/// them without the owner's ambient declarations (#11642); it can mirror the
+/// owner's emitted declarations instead (#12102). A program without
+/// references owns everything.
+pub(crate) fn partition_program_owned_sources(
+    tsconfig_path: Option<&Path>,
+    files: Vec<PathBuf>,
+    include_jsx: bool,
+    cache: &mut TsconfigInputCache,
+) -> (Vec<PathBuf>, Vec<ForeignSource>) {
+    let Some(tsconfig_path) = tsconfig_path else {
+        return (files, Vec::new());
+    };
+    let projects = cache.project_paths(tsconfig_path);
+    let (Some(root_project), true) = (projects.first(), projects.len() > 1) else {
+        return (files, Vec::new());
+    };
+    let root_project = root_project.clone();
+    let mut owned = Vec::new();
+    let mut foreign = Vec::new();
+    for file in files {
+        let normalized = normalize_input_path(&file);
+        if is_nuxt_import_manifest_path(&normalized) {
+            owned.push(file);
+            continue;
+        }
+        let effective = cache.effective_config_for_source(
+            tsconfig_path,
+            &normalized,
+            source_kind(&normalized, include_jsx),
+        );
+        if effective == root_project {
+            owned.push(file);
+        } else {
+            foreign.push(ForeignSource {
+                path: file,
+                owner: effective,
+            });
+        }
+    }
+    (owned, foreign)
+}
+
+/// Keep only the authored imports this program reports; see
+/// [`partition_program_owned_sources`].
+pub(crate) fn retain_program_owned_sources(
+    tsconfig_path: Option<&Path>,
+    files: &mut Vec<PathBuf>,
+    include_jsx: bool,
+    cache: &mut TsconfigInputCache,
+) {
+    let (owned, _) =
+        partition_program_owned_sources(tsconfig_path, std::mem::take(files), include_jsx, cache);
+    *files = owned;
+}
+
+/// The projects `tsconfig_path` references, transitively, without itself.
+pub(crate) fn referenced_projects(
+    tsconfig_path: &Path,
+    cache: &mut TsconfigInputCache,
+) -> Vec<PathBuf> {
+    let mut projects = cache.project_paths(tsconfig_path);
+    if !projects.is_empty() {
+        projects.remove(0);
+    }
+    projects
+}
+
 fn source_kind(path: &Path, include_jsx: bool) -> TsconfigSourceKind {
     match path.extension().and_then(|extension| extension.to_str()) {
         Some("js" | "mjs" | "cjs") => TsconfigSourceKind::JavaScript,

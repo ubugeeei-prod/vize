@@ -111,6 +111,7 @@ mod check_server_cli;
 mod check_server_reuse_cli;
 mod check_sfc_import_suppressions_cli;
 mod check_sfc_string_blocks_cli;
+mod check_shared_declarations;
 mod check_slot_outlet_union_cli;
 mod check_symlinked_node_modules_cli;
 mod check_template_emit_cli;

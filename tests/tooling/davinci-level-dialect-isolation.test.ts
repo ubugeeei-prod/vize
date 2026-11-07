@@ -12,37 +12,26 @@ import { maskRustSource } from "./davinci-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crates = ["vize_l1_to_l2", "vize_l2", "vize_l2_to_l3", "vize_l3", "vize_l4"];
-const dialectModules = new Set(["dialect", "markup", "lang", "framework"]);
+const registryCrates = [
+  "vize_l0",
+  "vize_l1",
+  "vize_l1_to_l2",
+  "vize_l2",
+  "vize_l2_to_l3",
+  "vize_l3",
+  "vize_l4",
+];
+const dialectModules = new Set(["dialect", "markup", "lang", "framework", "registry"]);
 // #6829: L4 keeps one target per framework runtime.
 const frameworkTargets = new Set(["vize_l4/src/targets/vue2.rs", "vize_l4/src/targets/vue2"]);
 const policy =
   /\b(?:dialect|vue[0-3]|petite|quirks|LegacyCaps|LegacyDialectCapabilities|LegacyVueVersion|VueVersion|VueDialect)\b/u;
 const moduleDeclaration = /^\s*(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*;/gmu;
+const concreteDialectVariantPath =
+  /\b(?:VueVersion|VueDialect|TemplateSyntaxMode)\s*::\s*(?:[A-Za-z_]\w*|\*|\{[^{}]*\})/u;
 
 // Core files that still reference dialect policy. Remove an entry when its file is fixed.
-const owed = [
-  "vize_l1_to_l2/src/emit/budget.rs",
-  "vize_l1_to_l2/src/emit/budget/preflight.rs",
-  "vize_l1_to_l2/src/emit/budget/slot_scope.rs",
-  "vize_l1_to_l2/src/emit/entry.rs",
-  "vize_l1_to_l2/src/lib.rs",
-  "vize_l1_to_l2/src/lower.rs",
-  "vize_l1_to_l2/src/lower/caps.rs",
-  "vize_l1_to_l2/src/lower/cx.rs",
-  "vize_l1_to_l2/src/lower/expr.rs",
-  "vize_l1_to_l2/src/lower/foreign.rs",
-  "vize_l1_to_l2/src/lower/forop.rs",
-  "vize_l1_to_l2/src/lower/frozen.rs",
-  "vize_l1_to_l2/src/native/element.rs",
-  "vize_l1_to_l2/src/native/pattern.rs",
-  "vize_l1_to_l2/src/native_file/selected_scoped.rs",
-  "vize_l1_to_l2/src/native_vue2.rs",
-  "vize_l1_to_l2/src/native_vue2/children.rs",
-  "vize_l1_to_l2/src/native_vue2/element.rs",
-  "vize_l1_to_l2/src/pass/legacy.rs",
-  "vize_l1_to_l2/src/pass/plan.rs",
-  "vize_l2/src/file/region/native/body/header.rs",
-];
+const owed: string[] = [];
 
 function rustFiles(root: string): string[] {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
@@ -97,6 +86,7 @@ test("the owed list only shrinks", () => {
 
 test("dialect modules, test code and module declarations are exempt; code is not", () => {
   assert.equal(isCoreFile("vize_l2/src/lang/js.rs"), false);
+  assert.equal(isCoreFile("vize_l2/src/registry.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/dialect/vue2.rs"), false);
   assert.equal(isCoreFile("vize_l4/src/targets/vue2/emit.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/decision/tests.rs"), false);
@@ -110,6 +100,20 @@ test("dialect modules, test code and module declarations are exempt; code is not
   assert.equal(referencesDialect("use crate::dialect::vue3::VueDirectives;\n"), true);
   assert.equal(referencesDialect("if version != VueVersion::V3 {}\n"), true);
   assert.equal(referencesDialect("fn f(caps: LegacyCaps) {}\n"), true);
+});
+
+test("dialect variant rematches include direct, glob and selected imports", () => {
+  for (const rematch of [
+    "VueVersion::V3",
+    "use crate::VueDialect::*;",
+    "use crate::TemplateSyntaxMode::Html as Markup;",
+    "use crate::VueVersion::{V2, V3 as Current};",
+  ])
+    assert.match(rematch, concreteDialectVariantPath);
+  assert.doesNotMatch(
+    "use crate::registry::{capabilities as dialect_capabilities};",
+    concreteDialectVariantPath,
+  );
 });
 
 test("one L0 file descriptor owns every input axis and legacy types only re-export it", () => {
@@ -138,6 +142,69 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
     path.join(repoRoot, "davinci/vize_l4/src/framework/vue.rs"),
     "utf8",
   );
-  assert.match(target, /\.dialect\(\)\s*\.is_standard_vue_component/u);
+  assert.match(target, /registry::TargetOptions::for_file\(/u);
+  assert.match(target, /\.descriptor\(\)\.dialect\(\)/u);
   assert.doesNotMatch(target, /options\.(?:version|dialect)/u);
+});
+
+test("each level has one registry and policy consumers do not rematch variants", () => {
+  for (const crate of registryCrates) {
+    const root = path.join(repoRoot, "davinci", crate, "src");
+    assert.ok(fs.existsSync(path.join(root, "registry.rs")), `${crate} has no registry.rs`);
+    assert.match(
+      fs.readFileSync(path.join(root, "lib.rs"), "utf8"),
+      /pub mod registry;/u,
+      `${crate} does not expose its registry`,
+    );
+  }
+
+  const consumers = [
+    "vize_l1/src/container/vue/descriptor/policy.rs",
+    "vize_l1/src/container/vue/descriptor/vue1/view.rs",
+    "vize_l1/src/container/vue/descriptor/vue2/view.rs",
+    "vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
+    "vize_l2/src/lang/js/file/native/scoped.rs",
+    "vize_l4/src/framework/vue.rs",
+  ];
+  for (const relative of consumers) {
+    const source = maskRustSource(
+      fs.readFileSync(path.join(repoRoot, "davinci", relative), "utf8"),
+    );
+    assert.match(source, /registry::/u, `${relative} does not use its level registry`);
+    assert.doesNotMatch(
+      source,
+      concreteDialectVariantPath,
+      `${relative} rematches a concrete dialect variant`,
+    );
+  }
+
+  const featureRoot = path.join(repoRoot, "davinci/vize_l1/src/dialect/vue/feature");
+  const featureModule = fs.readFileSync(path.join(featureRoot, "mod.rs"), "utf8");
+  for (const feature of [
+    "attribute",
+    "component",
+    "computed",
+    "directive",
+    "event",
+    "filters",
+    "inheritance",
+    "repeat",
+    "slot_scope",
+    "triple_mustache",
+  ]) {
+    assert.ok(
+      fs.existsSync(path.join(featureRoot, `${feature}.rs`)),
+      `missing Vue feature ${feature}`,
+    );
+    assert.ok(
+      featureModule.includes(`pub mod ${feature};`),
+      `Vue feature ${feature} is not exposed`,
+    );
+  }
+
+  for (const version of ["vue0.rs", "vue1.rs", "vue2.rs", "vue3.rs"])
+    assert.ok(
+      fs.existsSync(path.join(repoRoot, "davinci/vize_l1/src/dialect", version)),
+      `missing Vue version table ${version}`,
+    );
 });

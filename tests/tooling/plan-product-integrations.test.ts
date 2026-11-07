@@ -37,6 +37,10 @@ test("Nuxt checks its source adapters while its native dependency remains pinned
   assert.equal(native.nuxt, false);
   assert.equal(native["musea-native"], true);
   assert.equal(native["musea-browser"], false);
+  assert.equal(
+    planProductIntegrations(["upstream/forks/lightningcss/src/lib.rs"])["musea-native"],
+    true,
+  );
 });
 
 test("Musea source and fixture edits retain native and Chromium assertions", () => {

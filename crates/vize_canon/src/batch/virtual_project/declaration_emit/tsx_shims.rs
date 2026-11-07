@@ -3,7 +3,7 @@
 
 use std::path::Path;
 
-use crate::batch::import_rewriter::{ImportSourceMap, OffsetAdjustment, RewriteResult};
+use crate::batch::import_rewriter::{ImportSourceMap, RewriteResult};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
@@ -25,45 +25,64 @@ pub(super) fn rewrite_tsx_vue_shim_specifiers(
     source: &str,
     source_type: SourceType,
     source_dir: &Path,
+    serialize_setup_scoped_props: bool,
 ) -> Option<RewriteResult> {
-    if !source.contains(".vue.ts") {
-        return None;
+    let mut rewrites = if source.contains(".vue.ts") {
+        let allocator = Allocator::default();
+        let parser = Parser::new(&allocator, source, source_type);
+        let result = parser.parse();
+        let mut collector = ModuleSpecifierCollector::default();
+        collector.visit_program(&result.program);
+        collector
+            .specifiers
+            .into_iter()
+            .filter_map(|(start, end, path)| {
+                rewrite_tsx_vue_shim_specifier(path.as_str(), source_dir)
+                    .map(|rewrite| (start, end, rewrite))
+            })
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+
+    if serialize_setup_scoped_props && let Some(start) = source.find(SETUP_SCOPED_PROPS_INPUT) {
+        rewrites.push((
+            start as u32,
+            (start + SETUP_SCOPED_PROPS_INPUT.len()) as u32,
+            SETUP_SCOPED_PROPS_DECLARATION.into(),
+        ));
     }
-
-    let allocator = Allocator::default();
-    let parser = Parser::new(&allocator, source, source_type);
-    let result = parser.parse();
-    let mut collector = ModuleSpecifierCollector::default();
-    collector.visit_program(&result.program);
-
-    let mut rewrites = collector
-        .specifiers
-        .into_iter()
-        .filter_map(|(start, end, path)| {
-            rewrite_tsx_vue_shim_specifier(path.as_str(), source_dir)
-                .map(|rewrite| (start, end, rewrite))
-        })
-        .collect::<Vec<_>>();
     if rewrites.is_empty() {
         return None;
     }
 
     rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
     let mut output = source.to_compact_string();
-    let mut adjustments = Vec::new();
+    let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
     for (start, end, new_path) in rewrites {
         output.replace_range(start as usize..end as usize, new_path.as_str());
-        adjustments.push(OffsetAdjustment {
-            original_offset: end,
-            adjustment: new_path.len() as i32 - (end - start) as i32,
-        });
+        source_map.record_replacement(
+            start,
+            end,
+            new_path.len() as u32,
+            source.get(start as usize..end as usize).unwrap_or_default(),
+        );
     }
-    adjustments.reverse();
+    source_map.finish_descending_replacements();
     Some(RewriteResult {
         code: output,
-        source_map: ImportSourceMap::new(adjustments),
+        source_map,
     })
 }
+
+const SETUP_SCOPED_PROPS_INPUT: &str =
+    "  const __vize_setup_props = undefined as unknown as $SetupProps;";
+
+// A setup-local interface cannot be named from __setup's declaration return
+// type (TS4060). Declaration input alone uses this distributive homomorphic
+// projection so TypeScript serializes each branch without changing the normal
+// checking surface, diagnostics, or editor projections.
+const SETUP_SCOPED_PROPS_DECLARATION: &str = "  const __vize_setup_props = undefined as unknown as $IsAny<$SetupProps> extends true ? $SetupProps : unknown extends $SetupProps ? $SetupProps : $SetupProps extends infer $PropBranch ? $PropBranch extends (...args: any[]) => any ? $PropBranch : { [K in keyof $PropBranch]: $PropBranch[K] } : never;";
 
 fn rewrite_tsx_vue_shim_specifier(path: &str, source_dir: &Path) -> Option<String> {
     if !(path.starts_with("./") || path.starts_with("../")) {
@@ -138,5 +157,38 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
             self.push(lit);
         }
         walk::walk_ts_module_declaration_name(self, name);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn setup_scoped_props_are_serialized_only_for_declaration_input() {
+        let source = cstr!("before\n{SETUP_SCOPED_PROPS_INPUT}\nafter\n");
+        assert!(
+            rewrite_tsx_vue_shim_specifiers(&source, SourceType::ts(), Path::new("."), false)
+                .is_none()
+        );
+
+        let rewritten =
+            rewrite_tsx_vue_shim_specifiers(&source, SourceType::ts(), Path::new("."), true)
+                .expect("declaration input should serialize setup-local props");
+
+        let original_start = source.find(SETUP_SCOPED_PROPS_INPUT).unwrap() as u32;
+        let generated_start = rewritten.code.find(SETUP_SCOPED_PROPS_DECLARATION).unwrap() as u32;
+        assert_eq!(
+            rewritten
+                .source_map
+                .get_original_offset(generated_start + 16),
+            original_start
+        );
+        assert_eq!(
+            rewritten
+                .source_map
+                .get_original_offset(rewritten.code.find("after").unwrap() as u32),
+            source.find("after").unwrap() as u32
+        );
     }
 }

@@ -13,8 +13,8 @@ import { verifyStockArchives } from "./oxlint-installed-html-stock.ts";
 import { installedBarePlugin } from "./oxlint-installed-html-plugin.ts";
 import { exactPath, sha256 } from "./n8n-installed-authority.ts";
 import { validateNativeJournal } from "./n8n-installed-cli.ts";
-import { snapshot } from "../../../npm/oxlint/src/test-support/html-cli-oracles.mjs";
-import { presentationInputs } from "../../../npm/oxlint/src/cli/presentation-context.ts";
+import { snapshot } from "../../../npm/linter/oxlint/src/test-support/html-cli-oracles.mjs";
+import { presentationInputs } from "../../../npm/linter/oxlint/src/cli/presentation-context.ts";
 import type { HtmlCampaignPlan, HtmlCapture, HtmlProcess } from "./oxlint-installed-html-types.ts";
 
 function files(directory: string): Array<{ path: string; bytes: number; sha256: string }> {

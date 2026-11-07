@@ -13,7 +13,7 @@ export function jsInstallFilters(group: string): string[] {
       : group === "ui-conformance"
         ? ["./npm/ui", "./npm/cli"]
         : group === "original-project"
-          ? ["./npm/oxlint"]
+          ? ["./npm/linter/oxlint"]
           : [];
   if (!packages.length) throw new Error(`unknown JS check group: ${group}`);
   const root = JSON.parse(readFileSync("package.json", "utf8"));

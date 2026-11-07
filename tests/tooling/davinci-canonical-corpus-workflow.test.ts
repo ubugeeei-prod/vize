@@ -52,7 +52,7 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tests/_fixtures/differential/lint/authored/Original.vue",
     "docs/davinci/plan/reach-budgets.toml",
     "package.json",
-    "vendor/lightningcss/src/lib.rs",
+    "upstream/forks/lightningcss/src/lib.rs",
     "crates/vize_curator/src/lib.rs",
     "tests/davinci_test_support/Cargo.toml",
     "tests/davinci_test_support/src/corpus.rs",

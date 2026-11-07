@@ -9,15 +9,39 @@ fn supported_vue3_standard_dom_options_enter_l2() {
 }
 
 #[test]
-fn legacy_dialects_stay_on_the_compatibility_lane() {
-    assert!(!supported(DomCompilerOptions {
-        dialect: VueVersion::V2,
-        ..Default::default()
-    }));
-    assert!(!supported(DomCompilerOptions {
-        dialect: VueVersion::V2_7,
-        ..Default::default()
-    }));
+fn every_vue_dialect_enters_l2() {
+    for dialect in [
+        VueVersion::V0_10,
+        VueVersion::V0_11,
+        VueVersion::V1,
+        VueVersion::V2,
+        VueVersion::V2_7,
+        VueVersion::V3,
+    ] {
+        assert!(supported(DomCompilerOptions {
+            dialect,
+            ..Default::default()
+        }));
+    }
+}
+
+#[test]
+fn every_template_syntax_mode_enters_l2() {
+    for syntax in [
+        TemplateSyntaxMode::Standard,
+        TemplateSyntaxMode::Strict,
+        TemplateSyntaxMode::Quirks,
+    ] {
+        assert!(l2_emit_supported(
+            &DomCompilerOptions::default(),
+            &CodegenOptions::default(),
+            &CustomElementMatcher::default(),
+            syntax,
+            false,
+            super::L2EmitSelection::Allowed,
+            false,
+        ));
+    }
 }
 
 #[test]

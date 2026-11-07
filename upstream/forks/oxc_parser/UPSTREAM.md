@@ -1,0 +1,98 @@
+# Pinned OXC parser source
+
+Copied without source changes from official OXC commit
+`fc702c1fa9f0412d06ec6908b58cd395b826cf7f` (oxc_parser 0.142.0):
+https://github.com/oxc-project/oxc/tree/fc702c1fa9f0412d06ec6908b58cd395b826cf7f/crates/oxc_parser
+
+The adjacent LICENSE is the exact upstream MIT license at the same revision.
+Reproduce this source-copy commit with:
+
+`vp node tools/support/dependencies/upstream-oxc-parser.ts VERIFIED_OXC_CLONE`
+
+Following commits normalize standalone manifest dependencies and apply the
+reviewed PURE recovery correction. Supporting OXC crates stay at the original
+official pinned revision and share one AST/allocator/span identity.
+
+Recursive array expressions and TypeScript tuple types preserve their entire
+original parser bodies while using the existing pinned stacker stack-headroom
+guard. The tuple guard also covers nested tuple descent reached by expression
+type-argument speculation. No grammar, diagnostics or depth refusal is added.
+
+The shared expression type-argument parser also memoizes failed speculative
+probes by source position and grammar context across rewinds. This bounds the
+nested malformed-generic allocation reported in Vize
+[#7421](https://github.com/ubugeeei-prod/vize/issues/7421) and
+[#7444](https://github.com/ubugeeei-prod/vize/issues/7444), which affect both
+legacy JS/TS consumers and native admission. Exact campaign reproducers live
+in `tests/fuzz/regressions/l1_program/type-argument-*.*.input`; legacy TSX
+integration tests assert their diagnostic result and arena allocation ceiling.
+
+Failed type-argument and arrow probes share the existing table with disjoint
+one-word keys, avoiding another table initialization/drop for ordinary parses.
+The type-argument key retains all grammar-context bits.
+
+Expression type-argument probes also lazily retain the last raw `>` offset in
+the immutable parser source. An opener with no later `>` cannot close a valid
+type-argument list, so it returns before checkpointing or recursive parsing.
+This bounds impossible trailing probes in the Vize
+[#10401](https://github.com/ubugeeei-prod/vize/issues/10401) slow unit without
+changing the shared expression guard or refusing any valid generic syntax.
+The source fact survives rewinds and is reset by each parser constructor.
+Raw `>` bytes inside strings, comments, templates or JSX only retain the old
+parser path. Private state tests assert that an impossible probe does no work;
+the exact artifact is retained in the expression fuzz regression corpus.
+
+Vize publishes this unofficial fork as `vize_oxc_parser`, synchronized with the
+Vize workspace version. Its Rust library remains `oxc_parser`, and consumers
+use a direct `path` plus exact `version` dependency with the `package` alias.
+This preserves the admission/observation APIs outside the repository without
+relying on a root-only Cargo patch. The fork is published before its consumers;
+Cargo replaces the local path with the registry identity for published crates.
+Supporting Oxc crates retain the original pinned revision and registry version.
+Upstream source retains its own formatting and lint policy; Vize's workspace
+continues to compile and test the fork; its crate-level Clippy policy preserves
+upstream style without changing first-party check commands.
+
+The unpublished `upstream/forks/oxc_parser_compat` package re-exports this same fork
+under the upstream package identity for transitive Git dependencies such as
+`oxc_formatter::parse_for_format`. The repository patch retains parser safety
+in those paths; published Vize consumers use the direct fork dependency and
+do not rely on that patch. The adapter contains no parser implementation.
+
+The original lexer now retains whether it decoded legacy numeric or string
+literal spellings forbidden in a strict module. The private boolean follows
+both lexer checkpoint/rewind paths and is exposed only from the immutable
+original admitted Program observation. Ordinary ASTs, diagnostics and syntax
+admission remain unchanged; the receipt does not certify general semantics.
+Native setup eligibility consumes it without another source scan or AST walk.
+
+The complete original array-element callback now uses direct pinned
+`stacker = "=0.1.25"` with 512 KiB headroom and 4 MiB growth segments for the
+authenticated Vize #7805 Program reproducer. Empty arrays leave the original
+delimited list before that callback; nonempty arrays check each element,
+including flat scalars and elisions. Token, grammar, recovery and diagnostic
+work stay on the same parser. The complete original tuple body retains the
+same guard. These guards cover array and tuple descent only;
+other recursive grammar paths, unsupported stacker targets and hostile-input
+quotas remain separate. The original source is retained in the Program fuzz
+regressions and seeded in all eight explicit source profiles.
+
+Vize adds the direct original-source `parse_v_for_parameters()` goal for Patina
+[#8849](https://github.com/ubugeeei-prod/vize/issues/8849). It reuses the pinned
+lexer and formal-parameter parser while allowing Vue-only omitted tuple alias
+positions. Original AST spans, regex/comment boundaries, complete-input checks,
+and rest-last/trailing-comma errors remain under that parser; ordinary JavaScript
+and `parse_slot_parameters()` explicitly keep elisions disabled. Focused parser
+API tests and public native template-scope controls cover this fork addition.
+
+Expression type-argument transactions also share proven fatal type/assignment
+subproblems across distinct overlapping probes (#10845, #10682). The original
+production bodies remain intact. Sharing is scoped to reversible probes, keyed
+by full grammar and lexer state, and fenced by nontransactional state revisions;
+committed parses and successful productions are never replaced. The first failed
+type-argument probe enables this table, preserving ordinary successful-generic
+fast paths. A reused failure restores its end-token and trivia state before the
+owning probe rewinds. Private tests compare complete Program/expression packets
+with sharing disabled and count the exact original input's repeated work.
+The immutable source audit retains before/after source profiles, complete packets
+and original sanitizer resource limits. See `tests/fuzz/ISSUE-10845.md`.

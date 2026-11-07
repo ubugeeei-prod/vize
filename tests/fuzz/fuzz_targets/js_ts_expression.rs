@@ -30,11 +30,35 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_atelier_core::steps::expression::expression_is_safe_to_parse;
 
+const MAX_FUZZ_RAW_ARRAY_DEPTH: usize = 256;
+
+/// Keep malformed delimiter streams from reaching the recursive parser when
+/// the product guard interprets an earlier token as an unterminated literal.
+/// This intentionally over-counts brackets inside invalid literals: the fuzz
+/// target should keep exploring their smaller forms without spending seconds
+/// on thousands of recursive array productions hidden behind that recovery.
+fn has_excessive_raw_array_depth(source: &str) -> bool {
+    let mut depth = 0usize;
+    for byte in source.bytes() {
+        match byte {
+            b'[' => {
+                depth += 1;
+                if depth > MAX_FUZZ_RAW_ARRAY_DEPTH {
+                    return true;
+                }
+            }
+            b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+    }
+    false
+}
+
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {
         return;
     };
-    if !expression_is_safe_to_parse(source) {
+    if !expression_is_safe_to_parse(source) || has_excessive_raw_array_depth(source) {
         return;
     }
 

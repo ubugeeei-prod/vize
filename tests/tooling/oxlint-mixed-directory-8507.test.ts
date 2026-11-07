@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   expectedRow,
   expectedStockVueRow,
-} from "../../npm/oxlint/src/test-support/mixed-directory-8507-assertions.mjs";
+} from "../../npm/linter/oxlint/src/test-support/mixed-directory-8507-assertions.mjs";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const corpus = path.join(root, "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507");
@@ -40,7 +40,7 @@ await test("the exact 1.81 source ledger covers all fourteen pinned original ren
   );
   assert.equal(evidence.official181SourceCommit, "0b4e2e67f4193e7ebfcc64982275eb583ae82c83");
   assert.equal(evidence.official181Tag, "oxlint_v1.81.0");
-  const vendor = path.join(root, "vendor/oxlint_html_renderer186");
+  const vendor = path.join(root, "upstream/forks/oxlint_html_renderer186");
   const pinned = JSON.parse(fs.readFileSync(path.join(vendor, "UPSTREAM.json"), "utf8"));
   assert.equal(evidence.wholeKernelSourceProof.length, 14);
   assert.deepEqual(

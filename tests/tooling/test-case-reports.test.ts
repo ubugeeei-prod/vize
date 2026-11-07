@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   jsPackageRoot,
   nodeTestArguments,
+  plainNodeTestCase,
   vitestArguments,
   wrappedNodeArguments,
 } from "../../tools/support/compat/github/js-test-cases.ts";
@@ -255,6 +256,27 @@ test("node and vitest reports use the same case packet", () => {
       "/tmp/vitest.json",
     ),
     null,
+  );
+});
+
+test("plain Node assertion scripts produce command-level cases", () => {
+  assert.deepEqual(plainNodeTestCase(["npm/oxlint/src/html-binding.test.mjs"], root, 0), {
+    path: "npm/oxlint/src/html-binding.test.mjs",
+    name: "npm/oxlint/src/html-binding.test.mjs › plain test command",
+    outcome: "passed",
+  });
+  assert.equal(plainNodeTestCase(["npm/native/scripts/build-ci.mjs"], root, 0), null);
+  assert.equal(plainNodeTestCase(["node_modules/dependency/src/hidden.test.ts"], root, 0), null);
+  assert.equal(
+    plainNodeTestCase(["tests/tooling/support/native-attribute-values-7502-judge.ts"], root, 0)
+      ?.outcome,
+    "passed",
+  );
+  assert.equal(plainNodeTestCase(["-e", "process.exit(0)"], root, 0), null);
+  assert.equal(plainNodeTestCase(["--test", "src/file.test.ts"], root, 0), null);
+  assert.equal(
+    plainNodeTestCase(["npm/oxlint/src/html-binding.test.mjs"], root, 1)?.outcome,
+    "failed",
   );
 });
 

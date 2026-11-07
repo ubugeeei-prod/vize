@@ -81,7 +81,7 @@ impl VirtualProject {
         out_dir: Option<&Path>,
         declaration_map: bool,
     ) -> CorsaResult<()> {
-        self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None, false)
+        self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None, false, false)
     }
 
     /// Write a shard config including only its virtual paths and shared stubs.
@@ -99,6 +99,7 @@ impl VirtualProject {
             false,
             Some(include_virtual_paths),
             false,
+            false,
         )?;
         Ok(config_path)
     }
@@ -110,12 +111,14 @@ impl VirtualProject {
         declaration_map: bool,
         include_virtual_paths: Option<&[&Path]>,
         preserved_arbitrary_extensions: bool,
+        mirror_layout: bool,
     ) -> CorsaResult<()> {
         let mut tsconfig = self.generate_tsconfig_value(
             out_dir,
             declaration_map,
             include_virtual_paths,
             preserved_arbitrary_extensions,
+            mirror_layout,
         )?;
         self.write_generated_config(path, &mut tsconfig)
     }
@@ -126,6 +129,7 @@ impl VirtualProject {
         declaration_map: bool,
         include_virtual_paths: Option<&[&Path]>,
         preserved_arbitrary_extensions: bool,
+        mirror_layout: bool,
     ) -> CorsaResult<Value> {
         let mut config = Map::new();
         let original_tsconfig = self.resolved_tsconfig_path();
@@ -214,14 +218,24 @@ impl VirtualProject {
             compiler_options.insert("declaration".into(), Value::Bool(true));
             compiler_options.insert("emitDeclarationOnly".into(), Value::Bool(true));
             compiler_options.insert("declarationMap".into(), Value::Bool(declaration_map));
+            if mirror_layout {
+                // Another program of this check mirrors the outputs in place
+                // of the sources: no checking, and `out_dir` repeats the
+                // mirror's own layout so every path maps back one to one.
+                compiler_options.insert("noCheck".into(), Value::Bool(true));
+            }
             // Honor a configured `rootDir` (see [`path_rebase`]) and fall back
             // to inference when nothing is configured.
-            let desired_root_dir = path_rebase::root_dir_into_mirror(
-                &self.project_root,
-                &self.virtual_root,
-                original_root_dir.as_deref(),
-            )
-            .unwrap_or_else(|| self.common_virtual_source_dir());
+            let desired_root_dir = if mirror_layout {
+                self.virtual_root.clone()
+            } else {
+                path_rebase::root_dir_into_mirror(
+                    &self.project_root,
+                    &self.virtual_root,
+                    original_root_dir.as_deref(),
+                )
+                .unwrap_or_else(|| self.common_virtual_source_dir())
+            };
             // A workspace-package source is part of the declaration program so
             // its public type can flow into the caller's output, but it is not
             // one of the caller-selected declaration roots. TypeScript still
@@ -229,11 +243,13 @@ impl VirtualProject {
             // when such an inferred source sits outside the configured root.
             // The output finalizer restores the configured layout and removes
             // declarations for those inferred dependencies after emit.
-            let has_inferred_source_outside_root = self.virtual_files.values().any(|file| {
-                let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
-                !self.is_declaration_root(&original)
-                    && !file.virtual_path.starts_with(&desired_root_dir)
-            });
+            let has_inferred_source_outside_root = !mirror_layout
+                && self.virtual_files.values().any(|file| {
+                    let original =
+                        vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+                    !self.is_declaration_root(&original)
+                        && !file.virtual_path.starts_with(&desired_root_dir)
+                });
             let root_dir = if has_inferred_source_outside_root {
                 self.common_virtual_source_dir()
             } else {
@@ -332,6 +348,13 @@ impl VirtualProject {
         }
         if include_js {
             includes.extend(self.javascript_passthrough_files().filter_map(relative));
+        }
+        if paths.is_none() {
+            includes.extend(
+                self.foreign_declaration_files
+                    .iter()
+                    .filter_map(|path| relative(path)),
+            );
         }
         self.push_stub_include_paths(&mut includes);
         if self.uses_shared_helpers() {

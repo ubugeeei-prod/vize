@@ -15,7 +15,7 @@ function fixture() {
     "@vizejs/nuxt": "npm/framework/nuxt",
     "@vizejs/nuxt-lint-config": "npm/framework/nuxt-lint-config",
     "@vizejs/native": "npm/native",
-    "oxlint-plugin-vize": "npm/oxlint",
+    "oxlint-plugin-vize": "npm/linter/oxlint",
     vize: "npm/cli",
   };
   const writePackage = (target: string, name: string, version = "0.0.0") => {

@@ -245,7 +245,7 @@ void test("public native evidence remains reachable after prior build or package
     "${{ success() && job.status == 'success' && (inputs.partition == 'all' || inputs.partition == 'original-project') }}",
   );
   assert.equal(qualification.shell, "bash");
-  assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
+  assert.equal(qualification.run, "node npm/linter/oxlint/scripts/check-project-transport.mjs");
   assert.equal(qualification["continue-on-error"], undefined);
   assert.equal(qualification.id, "original-project-qualification");
   assert.equal(upload.if, "${{ always() }}");
@@ -286,7 +286,7 @@ void test("public native evidence remains reachable after prior build or package
     "${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}",
   );
   assert.equal(cleanup.shell, "bash");
-  assert.equal(cleanup.run, "node npm/oxlint/scripts/project-native-staging.ts --cleanup");
+  assert.equal(cleanup.run, "node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup");
   assert.deepEqual(cleanup.env, {
     VIZE_OXLINT_STAGING_DIRECTORY:
       "${{ steps.original-project-qualification.outputs.staging-directory }}",
@@ -387,7 +387,7 @@ if(args[0]==='exec' && args[1]==='napi') {
     const generated = spawnSync(
       process.execPath,
       [
-        join(originalPackage, "scripts/verify-generated-contract.mjs"),
+        join(originalPackage, "scripts/verify-generated-contract.ts"),
         "--package-dir",
         packageDir,
         "--profile",

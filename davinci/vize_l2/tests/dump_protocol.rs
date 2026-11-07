@@ -59,6 +59,7 @@ fn tree(base: u32) -> Page {
                         source: String::from("[l2-dump-v2]"),
                         span: span(27, 42),
                     },
+                    raw_html: false,
                     span: span(27, 42),
                 }),
                 Op::Comment(Comment {
@@ -71,6 +72,7 @@ fn tree(base: u32) -> Page {
                         source: String::from("[disegno]"),
                         span: span(60, 78),
                     },
+                    raw_html: false,
                     span: span(60, 78),
                 }),
                 Op::Interpolation(Interpolation {
@@ -79,6 +81,7 @@ fn tree(base: u32) -> Page {
                         source: String::from("[s2-provenance-folio]"),
                         span: span(78, 100),
                     },
+                    raw_html: false,
                     span: span(78, 100),
                 }),
             ],

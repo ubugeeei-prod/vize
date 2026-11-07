@@ -13,7 +13,7 @@ passing test is a contract violation.
 | B5  | SSR default   | isolated requests | renders byte-identical default badge markup without request-global state                        | `renders byte-identical label badge markup across isolated SSR requests` |
 | B6  | SSR custom    | render            | renders custom host markup with strict hooks and no default role, tabindex, or `aria-hidden`    | `renders custom server markup without implicit accessibility attributes` |
 | B7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                       | `scripts/check-renderers.ts`                                             |
-| B8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Badge, emit no CSS, and stay within gzip budget          | `scripts/check-tree-shaking.mjs`                                         |
+| B8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Badge, emit no CSS, and stay within gzip budget          | `scripts/check-tree-shaking.ts`                                          |
 
 ## Props
 

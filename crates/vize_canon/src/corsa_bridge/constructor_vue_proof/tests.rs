@@ -45,7 +45,7 @@ fn request() -> UsageRequest {
         component_source: expected(),
         component_reference: anchor(),
         vue_module: anchor(),
-        hosts: [anchor(), anchor()],
+        hosts: [anchor()],
     }
 }
 

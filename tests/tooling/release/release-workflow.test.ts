@@ -206,7 +206,7 @@ test("npm resume preserves the trusted workflow and restores only the selected r
 
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
   const prePublish = (name: string) =>
-    name.startsWith("build-") || name === "smoke" || name === "tag";
+    name.startsWith("build-") || name.startsWith("smoke") || name === "tag";
   for (const [name, job] of Object.entries(workflow.jobs)) {
     // dispatch-verify only dispatches release-verify.yml and checks nothing out.
     if (name === "version" || name === "dispatch-verify") continue;
@@ -221,7 +221,7 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
           : `${"${{"} needs.version.outputs.${ref} }}`;
     assert.equal(checkout?.with?.ref, expected, name);
   }
-  for (const gate of ["smoke", "build-cli", "build-editor-extensions"]) {
+  for (const gate of ["smoke", "smoke-editor-artifacts", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
   }
   // Platform editor packaging is never a release gate.
@@ -426,7 +426,7 @@ test("the stamp reaches every tracked non-private npm and editor manifest", asyn
 
 test("the stamp rewrites aliased fork pins and keeps upstream versions", () => {
   const input =
-    '[workspace.package]\nversion = "0.430.0"\n[workspace.dependencies]\noxc_parser = { package = "vize_oxc_parser", version = "=0.430.0", path = "vendor/oxc_parser" }\noxc_ast = { version = "=0.142.0" }\n';
+    '[workspace.package]\nversion = "0.430.0"\n[workspace.dependencies]\noxc_parser = { package = "vize_oxc_parser", version = "=0.430.0", path = "upstream/forks/oxc_parser" }\noxc_ast = { version = "=0.142.0" }\n';
   assert.equal(
     updateWorkspaceManifestVersions(input, "0.430.0", "0.430.1"),
     input.replaceAll("0.430.0", "0.430.1"),

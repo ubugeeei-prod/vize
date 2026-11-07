@@ -382,6 +382,7 @@ jobs:
             write('receipt.json', receipt);
           }
           JS
+      - uses: ./.github/actions/qualify-content-mapper-provider-closure
       - name: Preserve whole owner calibration observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -641,7 +642,6 @@ jobs:
             ${{ runner.temp }}/official-css-options/
             !${{ runner.temp }}/official-css-options/**/node_modules
             !${{ runner.temp }}/official-css-options/**/node_modules/**
-
   router-experimental:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)
     uses: ./.github/workflows/content-mapper-reported-q16.yml

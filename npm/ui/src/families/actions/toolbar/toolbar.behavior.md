@@ -17,7 +17,7 @@ tree-shaking gate. A row without a passing test is a bug in the family contract.
 | T10 | `toolbar-item.vue` | provider boundary | items fail loudly when rendered outside a matching toolbar provider                         | `items require a matching toolbar provider`                           |
 | T11 | both               | SSR/hydration     | server markup is deterministic and hydrates without replacing the root or drifting tabindex | `toolbar-ssr.test.ts`, `runtime-conformance.test.ts`                  |
 | T12 | public types       | invalid contract  | TypeScript rejects unsupported orientation, direction, native button type, and item values  | `src/families/actions/toolbar/toolbar.types.test-d.ts`                |
-| T13 | root/subpath       | consumer bundle   | root and subpath consumers retain only Toolbar, emit no CSS, and stay within gzip budget    | `scripts/check-tree-shaking.mjs`                                      |
+| T13 | root/subpath       | consumer bundle   | root and subpath consumers retain only Toolbar, emit no CSS, and stay within gzip budget    | `scripts/check-tree-shaking.ts`                                       |
 
 ## Contract
 

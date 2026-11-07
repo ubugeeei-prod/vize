@@ -8,7 +8,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
       if (_push) {
         _push(`<div style="${_ssrRenderStyle({ backgroundImage: `url(${speaker.avatarUrl})` })}">${_ssrInterpolate(speaker.name)}</div>`)
       } else {
-        return [_createElementVNode("div", { style: { backgroundImage: `url(${speaker.avatarUrl})` } }, [_createTextVNode(_toDisplayString(speaker.name))])]
+        return [_createElementVNode("div", { style: { backgroundImage: `url(${speaker.avatarUrl})` } }, _toDisplayString(speaker.name), 1 /* TEXT */)]
       }
     }),
     _: 1

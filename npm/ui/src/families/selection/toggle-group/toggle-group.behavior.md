@@ -12,7 +12,7 @@ Every row is proven by the named mounted-DOM, SSR, type, renderer, size, and tre
 | G7  | item without provider        | setup                  | item setup throws the shared missing-context diagnostic                                               | `items require a matching group provider`                           |
 | G8  | SSR and hydration            | isolated requests      | renders byte-identical markup and hydrates without diagnostics or node replacement                    | `src/families/selection/toggle-group/toggle-group-ssr.test.ts`      |
 | G9  | DOM/SSR/Vapor                | compile                | authored root, item, and consumer SFCs compile in every renderer lane without fallback                | `scripts/check-renderers.ts`                                        |
-| G10 | root/subpath consumer bundle | production build       | root and subpath imports retain only the toggle-group contract, emit no CSS, and stay in budget       | `scripts/check-tree-shaking.mjs`                                    |
+| G10 | root/subpath consumer bundle | production build       | root and subpath imports retain only the toggle-group contract, emit no CSS, and stay in budget       | `scripts/check-tree-shaking.ts`                                     |
 
 | Surface             | Contract                                                                    | Default        |
 | ------------------- | --------------------------------------------------------------------------- | -------------- |

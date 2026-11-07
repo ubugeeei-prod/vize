@@ -1,5 +1,6 @@
 import * as native from "@vizejs/native";
 import type { TypeProjectContext } from "../sfc-types.ts";
+import { filesystemPathIdentities } from "./path-identity.ts";
 
 interface ProjectWatchApi {
   typeProjectInputs(
@@ -43,5 +44,10 @@ export function typeProjectDependencyRoots(
   file: string,
   api: ProjectWatchApi = native,
 ): string[] {
-  return watched.has(cache) ? api.typeProjectOwners(file) : [];
+  if (!watched.has(cache)) return [];
+  const owners = new Set<string>();
+  for (const identity of filesystemPathIdentities(file)) {
+    for (const owner of api.typeProjectOwners(identity)) owners.add(owner);
+  }
+  return [...owners];
 }

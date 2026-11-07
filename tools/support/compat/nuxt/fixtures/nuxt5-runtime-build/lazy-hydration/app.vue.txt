@@ -1,0 +1,7 @@
+<template>
+  <main id="lazy">
+    <LazyHydrated hydrate-on-visible />
+    <LazyHydrated :hydrate-after="2000" />
+    <LazyHydrated hydrate-never />
+  </main>
+</template>

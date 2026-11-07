@@ -135,7 +135,8 @@ async function main() {
     cwd: repository,
     encoding: "utf8",
   }).trim();
-  if (process.env.GITHUB_SHA) assert.equal(sourceSha, process.env.GITHUB_SHA);
+  const expectedSourceSha = process.env.VIZE_EXPECTED_SOURCE_SHA || process.env.GITHUB_SHA;
+  if (expectedSourceSha) assert.equal(sourceSha, expectedSourceSha);
   const binaryHash = createHash("sha256").update(fs.readFileSync(server)).digest("hex");
   const output = path.resolve(
     process.env.VIZE_EMACS_ARTIFACT_DIR ??
@@ -144,6 +145,10 @@ async function main() {
   fs.mkdirSync(output, { recursive: true });
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eglot-native-"));
   const workspace = path.join(session, "workspace");
+  const initializedWorkspace = process.env.VIZE_E2E_WORKSPACE;
+  if (initializedWorkspace && initializedWorkspace !== "") {
+    fs.cpSync(fs.realpathSync(initializedWorkspace), workspace, { recursive: true });
+  }
   prepareWorkspace(workspace);
   const bin = path.join(session, "bin");
   fs.mkdirSync(bin);

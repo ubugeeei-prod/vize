@@ -16,6 +16,7 @@ import {
   SCRIPT_BROKEN,
   TEMPLATE_CLEAN,
   plantProbes,
+  REQUEST_KINDS,
   type RequestSpec,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-fixtures.ts";
 import {
@@ -25,7 +26,11 @@ import {
   psTimeSeconds,
   readTree,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-metrics.ts";
-import { markdown, summarize } from "../../tools/benchmarks/scripts/lsp-vs-volar-report.ts";
+import {
+  markdown,
+  performanceTargets,
+  summarize,
+} from "../../tools/benchmarks/scripts/lsp-vs-volar-report.ts";
 import { judge, runSession } from "../../tools/benchmarks/scripts/lsp-vs-volar-session.ts";
 import { OpenDocument } from "../../tools/benchmarks/scripts/lsp-vs-volar-text.ts";
 import { session } from "./support/lsp-vs-volar-sessions.ts";
@@ -253,6 +258,44 @@ test("reports exclude failed samples from latency and say so", () => {
   assert.match(text, /- volar 3, round 1: cycle 1/);
 });
 
+test("performance targets require every correct p50 and p99 plus cold and warm memory", () => {
+  const candidate = session("vize head", 1, true);
+  const reference = session("volar 3", 10, true);
+  for (const value of [candidate, reference]) {
+    const fast = value.kind === "vize";
+    const requestMs = fast ? 1 : 10;
+    value.cold.totalMs = fast ? 1 : 100;
+    value.cold.reading.rssBytes = (fast ? 1 : 10) * 1048576;
+    value.cold.reading.pssBytes = (fast ? 1 : 10) * 1048576;
+    value.warm.peakRssBytes = (fast ? 1 : 10) * 1048576;
+    value.warm.peakPssBytes = (fast ? 1 : 10) * 1048576;
+    value.edits.push(
+      { ...value.edits[0], probe: "template", ms: fast ? 1 : 10 },
+      { ...value.edits[0], phase: "repair", ms: fast ? 1 : 10 },
+    );
+    value.requests = REQUEST_KINDS.map((kind) => ({
+      cycle: 1,
+      kind,
+      name: kind,
+      ms: requestMs,
+      ok: true,
+      size: 1,
+    }));
+  }
+  const summaries = summarize([candidate, reference]);
+  const [target] = performanceTargets(summaries);
+  assert.equal(target?.met, true);
+  assert.equal(target?.coldSpeedup, 100);
+  assert.equal(target?.warmMemoryReduction, 10);
+  assert.ok(target?.operations.every((operation) => operation.met));
+
+  candidate.requests[0].ok = false;
+  const [failed] = performanceTargets(summarize([candidate, reference]));
+  assert.equal(failed?.met, false);
+  assert.ok(failed?.missing.includes("accuracy"));
+  assert.match(markdown("fixture", summaries, [candidate, reference], {}), /cold wall/u);
+});
+
 test("the workflow keeps evidence after failure and measures the checked-out source", () => {
   const workflow = readFileSync(
     new URL("../../.github/workflows/lsp-vs-volar.yml", import.meta.url),
@@ -263,6 +306,16 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));
   assert.match(upload ?? "", /^        if: always\(\)$/m);
   assert.match(workflow, /--meta "head=\$\(git rev-parse HEAD\)"/);
+  assert.match(
+    workflow,
+    /\[ "\$GITHUB_EVENT_NAME" = pull_request \] && \[ "\$JOB" = scale-giant-sfc \]/,
+  );
+  assert.match(workflow, /--rounds "\$rounds" --cycles "\$cycles"/);
+  assert.match(workflow, /--vize "head-tsrs-fast=\$RUNNER_TEMP\/vize-head"/);
+  assert.match(workflow, /head-tsrs-fast:CORSA_PATH=\$tsrs_fast/);
+  assert.match(workflow, /export TSRS_FAST=1/);
+  assert.match(workflow, /exec "%s" "\$@"/);
+  assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
   // Versions come from the workspace catalog, not from the workflow.
   assert.doesNotMatch(workflow, /@vue\/language-server@\d/);
 });

@@ -12,7 +12,10 @@ import {
   newCompilerCssApiCases,
   onlyCompilerCssChanges,
 } from "../differential/compiler-css-api.ts";
-import { cssBindingProducerPaths } from "../differential/compiler-css-api-registry.ts";
+import {
+  cssBindingProducerPaths,
+  historicalCompilerCssPath,
+} from "../differential/compiler-css-api-registry.ts";
 import {
   analyzeLegacyFix,
   failingProducts,
@@ -45,7 +48,7 @@ const side = (side, file) =>
     ? from(baseline, file)
     : file === manifestPath
       ? cssOnly
-      : cssBindingProducerPaths.includes(file)
+      : cssBindingProducerPaths.map(historicalCompilerCssPath).includes(file)
         ? from(fixed, file)
         : read(file);
 const compilerDialectCoverage = {
@@ -200,7 +203,6 @@ await test("binding source gate admits only actual newly registered exact source
   for (const extra of [
     "crates/vize_atelier_sfc/src/style.rs",
     "crates/vize_atelier_ssr/src/compile.rs",
-    "vendor/lightningcss/src/printer.rs",
   ]) {
     assert.equal(onlyCompilerCssChanges([...cssBindingProducerPaths, extra], admitted), false);
     assert.deepEqual(
@@ -212,7 +214,9 @@ await test("binding source gate admits only actual newly registered exact source
     for (const file of cssBindingProducerPaths)
       assert.throws(() =>
         newCompilerCssApiCases(before.cssApiCases, current.cssApiCases, (which, name) =>
-          which === actual && name === file ? Buffer.from("foreign") : side(which, name),
+          which === actual && name === historicalCompilerCssPath(file)
+            ? Buffer.from("foreign")
+            : side(which, name),
         ),
       );
 });

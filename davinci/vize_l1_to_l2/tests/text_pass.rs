@@ -60,26 +60,31 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
                 text: String::from("Hi "),
                 span: span_of(source, "Hi "),
                 dynamic: false,
+                raw_html: false,
             },
             TextPart {
                 text: String::from("name"),
                 span: span_of(source, "{{ name }}"),
                 dynamic: true,
+                raw_html: false,
             },
             TextPart {
                 text: String::from("! You have "),
                 span: span_of(source, "! You have "),
                 dynamic: false,
+                raw_html: false,
             },
             TextPart {
                 text: String::from("n"),
                 span: span_of(source, "{{ n }}"),
                 dynamic: true,
+                raw_html: false,
             },
             TextPart {
                 text: String::from(" new mails."),
                 span: span_of(source, " new  mails."),
                 dynamic: false,
+                raw_html: false,
             },
         ];
         assert_eq!(

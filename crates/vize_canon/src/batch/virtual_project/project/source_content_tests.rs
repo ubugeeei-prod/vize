@@ -51,7 +51,7 @@ impl ReadCapture {
         Self(paths.to_vec())
     }
 
-    fn assert_retained(&self, project: &VirtualProject) {
+    fn assert_retention_policy(&self, project: &VirtualProject) {
         let snapshots = {
             let allocations = READ_ALLOCATIONS.get().unwrap().lock().unwrap();
             self.0
@@ -63,13 +63,21 @@ impl ReadCapture {
         for (path, reads) in snapshots {
             assert_eq!(reads.len(), 1, "one filesystem allocation per fixture path");
             let file = project.find_by_original(&path).unwrap();
-            let source = &project.original_contents[&file.virtual_path];
-            assert_eq!(
-                (source.as_ptr() as usize, source.len(), source.capacity()),
-                reads[0],
-                "the successful filesystem route must retain its own read allocation: {}",
-                path.display(),
-            );
+            if let Some(source) = project.original_contents.get(&file.virtual_path) {
+                assert_eq!(
+                    (source.as_ptr() as usize, source.len(), source.capacity()),
+                    reads[0],
+                    "non-identity sources retain their filesystem allocation: {}",
+                    path.display(),
+                );
+            } else {
+                assert!(file.source_map.is_authored_identity());
+                assert_eq!(
+                    project.original_content_for_virtual(&file.virtual_path),
+                    Some(file.content.as_str())
+                );
+                assert_ne!(file.content.as_ptr() as usize, reads[0].0);
+            }
         }
     }
 }
@@ -134,8 +142,16 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
 fn project_observation(project: &VirtualProject) -> std::string::String {
     let mut originals = project.original_contents.iter().collect::<Vec<_>>();
     originals.sort_by_key(|(path, _)| *path);
-    let mut pre_rewrite = project.pre_rewrite_code.iter().collect::<Vec<_>>();
-    pre_rewrite.sort_by_key(|(path, _)| *path);
+    let mut pre_rewrite = project
+        .virtual_files
+        .iter()
+        .filter_map(|(path, file)| {
+            project
+                .pre_rewrite_code(file)
+                .map(|code| (path.clone(), code.into_owned()))
+        })
+        .collect::<Vec<_>>();
+    pre_rewrite.sort_by(|left, right| left.0.cmp(&right.0));
     let mut passthrough = project.passthrough_files.iter().collect::<Vec<_>>();
     passthrough.sort_by_key(|(path, _)| *path);
     format!(
@@ -173,7 +189,7 @@ fn owned_source_read_capture_failure_releases_only_its_fixture_lease() {
         let capture = ReadCapture::new(&paths);
         let project = VirtualProject::new(&root).unwrap();
         // No read occurred: retain the first assertion failure, including cleanup.
-        capture.assert_retained(&project);
+        capture.assert_retention_policy(&project);
     });
     assert!(failure.is_err());
     let _next_lease = ReadCapture::new(&paths);
@@ -202,7 +218,61 @@ fn owned_source_conversion_reuses_long_buffers_and_inlines_short_capacity() {
 }
 
 #[test]
-fn owned_source_real_builders_retain_large_input_allocation_and_whole_outputs() {
+fn identity_source_moves_into_original_storage_only_when_rewritten() {
+    let fixture = tempfile::TempDir::new().unwrap();
+    let root = vize_carton::path::canonicalize_non_verbatim(fixture.path());
+    let path = root.join("identity.ts");
+    let source = format!("/*{}*/\nexport const value = 1;\n", "x".repeat(1024));
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path_with_content(&path, &source).unwrap();
+    let virtual_path = project
+        .find_by_original(&path)
+        .unwrap()
+        .virtual_path
+        .clone();
+    let identity_pointer = project
+        .find_by_virtual(&virtual_path)
+        .unwrap()
+        .content
+        .as_ptr();
+
+    assert!(!project.original_contents.contains_key(&virtual_path));
+    assert_eq!(
+        project.original_content_for_virtual(&virtual_path),
+        Some(source.as_str())
+    );
+
+    project.replace_virtual_content(
+        &virtual_path,
+        "export const value = 2;\n".into(),
+        crate::batch::ImportSourceMap::new(vec![crate::batch::OffsetAdjustment {
+            original_offset: 21,
+            adjustment: 0,
+        }]),
+    );
+
+    let authored = &project.original_contents[&virtual_path];
+    assert_eq!(authored.as_ptr(), identity_pointer);
+    assert_eq!(authored, source.as_str());
+    assert_eq!(
+        project.original_content_for_virtual(&virtual_path),
+        Some(source.as_str())
+    );
+
+    project.replace_virtual_content(
+        &virtual_path,
+        source.as_str().into(),
+        crate::batch::ImportSourceMap::empty(),
+    );
+    assert!(!project.original_contents.contains_key(&virtual_path));
+    assert_eq!(
+        project.original_content_for_virtual(&virtual_path),
+        Some(source.as_str())
+    );
+}
+
+#[test]
+fn owned_source_real_builders_share_identity_scripts_and_retain_generated_sources() {
     let fixture = tempfile::TempDir::new().unwrap();
     let root = vize_carton::path::canonicalize_non_verbatim(fixture.path());
     for (extension, jsx) in [
@@ -227,24 +297,44 @@ fn owned_source_real_builders_retain_large_input_allocation_and_whole_outputs() 
                 project.path_build_context(&path, None),
             )
             .unwrap();
-            // This is the old constructor's real duplicate while input is alive.
-            assert_ne!(borrowed.original_content.as_ptr(), pointer);
+            if let Some(original) = &borrowed.original_content {
+                assert_ne!(original.as_ptr(), pointer);
+            } else {
+                assert!(borrowed.file.source_map.is_authored_identity());
+                assert_eq!(borrowed.file.content.as_str(), source);
+            }
             let owned = build_registered_file(
                 &path,
                 Cow::Owned(source),
                 project.path_build_context(&path, None),
             )
             .unwrap();
-            assert_eq!(owned.original_content.as_ptr(), pointer);
-            assert_eq!(owned.original_content.len(), length);
-            assert_eq!(owned.original_content.capacity(), capacity);
+            if let Some(original) = &owned.original_content {
+                assert_eq!(original.as_ptr(), pointer);
+                assert_eq!(original.len(), length);
+                assert_eq!(original.capacity(), capacity);
+            } else {
+                assert!(owned.file.source_map.is_authored_identity());
+                assert_eq!(owned.file.content, borrowed.file.content);
+            }
             assert_registered_equal(&borrowed, &owned);
             project.absorb_registered_file(owned).unwrap();
-            let retained = project.original_contents.values().next().unwrap();
-            assert_eq!(retained.as_ptr(), pointer);
-            assert_eq!(retained.len(), length);
+            let file = project.find_by_original(&path).unwrap();
+            let retained = project.original_contents.get(&file.virtual_path);
+            if let Some(retained) = retained {
+                assert_eq!(retained.as_ptr(), pointer);
+                assert_eq!(retained.len(), length);
+            } else {
+                assert!(file.source_map.is_authored_identity());
+                assert_eq!(
+                    project.original_content_for_virtual(&file.virtual_path),
+                    Some(file.content.as_str())
+                );
+            }
             eprintln!(
-                "owned-read-buffer extension={extension} jsx={jsx} source_bytes={length} capacity={capacity} retained_input_pointer=true borrowed_original_duplicate_bytes={length}"
+                "owned-read-buffer extension={extension} jsx={jsx} source_bytes={length} capacity={capacity} retained_input_pointer={} identity_shared_bytes={}",
+                retained.is_some(),
+                if retained.is_none() { length } else { 0 }
             );
         }
     }
@@ -292,7 +382,7 @@ fn owned_source_all_four_filesystem_read_routes_match_borrowed_revision() {
                 _ => assert!(project.register_canonical_paths_lenient(&paths)),
             }
             assert_eq!(project_observation(&project), expected);
-            allocation_capture.assert_retained(&project);
+            allocation_capture.assert_retention_policy(&project);
         }
     }
     for extension in ["ts", "d.ts", "tsx"] {
@@ -307,7 +397,7 @@ fn owned_source_all_four_filesystem_read_routes_match_borrowed_revision() {
         let mut owned = VirtualProject::new(&root).unwrap();
         owned.register_ts_file(&path).unwrap();
         assert_eq!(project_observation(&owned), project_observation(&borrowed));
-        allocation_capture.assert_retained(&owned);
+        allocation_capture.assert_retention_policy(&owned);
     }
 }
 
@@ -330,8 +420,8 @@ fn owned_source_borrowed_unsaved_text_and_replacement_remain_independent_of_disk
         unsaved.clear();
         let file = project.find_by_original(&path).unwrap();
         assert_eq!(
-            project.original_contents[&file.virtual_path].as_str(),
-            expected
+            project.original_content_for_virtual(&file.virtual_path),
+            Some(expected.as_str())
         );
     }
 }

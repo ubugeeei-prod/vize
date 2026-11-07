@@ -44,7 +44,7 @@ covers DOM/SSR/Vapor targets, reading Virtual TS and VIR, and loading files from
 
 ## Report Findings
 
-The [Support guide](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md) says where to report.
+The [Support guide](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md) says where to report.
 Copy this template into your report. If you do not know an item, say so:
 
 ```console

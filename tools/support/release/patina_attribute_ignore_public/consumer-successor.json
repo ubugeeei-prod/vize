@@ -1,6 +1,6 @@
 {
   "schema": "vize.patina-attribute-ignore-public.consumer-successor.v1",
-  "sourceCustodySha256": "a033d844772d6109143c4faf4ca94c1aef054e474af467358d72f70fdccec670",
+  "sourceCustodySha256": "0bfb9600b5e2251e31ba59c18504cc00f6bb14c5adaaa7049cf0debff6c6aafc",
   "originalSource": "a70648d367c4fb93510ab001813c7235dae8a5c0",
   "path": "crates/vize/tests/lint_attribute_hyphenation_ignore.rs",
   "historical": {

@@ -1,6 +1,6 @@
 ---
 title: Existing Tool Integrations
-description: Use Vize through ESLint, Prettier, Babel, tsserver, or any LSP editor without replacing the rest of your toolchain.
+description: Use Vize through Parcel, ESLint, Prettier, Babel, tsserver, or any LSP editor without replacing the rest of your toolchain.
 ---
 
 # Existing Tool Integrations
@@ -11,18 +11,81 @@ format edit, or editor feature is not produced twice.
 
 ## Choose one starting point
 
-| Keep this workflow | Add this Vize surface | Availability |
-| --- | --- | --- |
-| `eslint` | [`eslint-plugin-vize`](#eslint-flat-config) | Experimental; workspace only |
-| `prettier` | [`prettier-plugin-vize`](#prettier) | Experimental; workspace only |
-| Babel for JSX or TSX | [`@vizejs/babel-plugin`](#babel) | Compatibility preview on npm |
+| Keep this workflow                  | Add this Vize surface                                                  | Availability                 |
+| ----------------------------------- | ---------------------------------------------------------------------- | ---------------------------- |
+| Parcel 2 builds                     | [`@vizejs/parcel-transformer`](#parcel)                                | Experimental; workspace only |
+| `eslint`                            | [`eslint-plugin-vize`](#eslint-flat-config)                            | Experimental; workspace only |
+| `prettier`                          | [`prettier-plugin-vize`](#prettier)                                    | Experimental; workspace only |
+| Babel for JSX or TSX                | [`@vizejs/babel-plugin`](#babel)                                       | Compatibility preview on npm |
 | TypeScript 5.7–6.x language service | [`@vizejs/typescript-vue-plugin`](#typescript-language-service-plugin) | Experimental; workspace only |
-| Any editor with an LSP client | [`vize lsp`](#editors-other-than-vs-code) | Available in the `vize` CLI |
+| Any editor with an LSP client       | [`vize lsp`](#editors-other-than-vs-code)                              | Available in the `vize` CLI  |
 
 Workspace-only packages are implemented and tested in this repository but cannot yet be installed
 from the npm registry. Their examples document the intended configuration for evaluation from a
 checkout and for their first public release. See [package support tiers](../stability.md#package-support-tiers)
 before adopting a preview integration.
+
+## Parcel
+
+Use `@vizejs/parcel-transformer` when Parcel 2 owns the application build. This integration
+compiles complete Vue SFCs; it is separate from the Babel JSX/TSX plugin and does not start the Vize
+type checker. It currently supports Parcel `^2.16.4`. The package does not have a supported npm
+release yet, but its intended installation after the first public release is:
+
+```bash
+npm install --save-dev parcel @vizejs/parcel-transformer
+npm install vue
+```
+
+Register the SFC transformer, its named component pipeline, and the CSS continuation in
+`.parcelrc`:
+
+```json
+{
+  "extends": "@parcel/config-default",
+  "reporters": ["./vize-parcel-dev-cache.cjs", "..."],
+  "transformers": {
+    "*.vue": ["@vizejs/parcel-transformer"],
+    "vize-component:*.vue": ["@vizejs/parcel-transformer"],
+    "*.css": ["@vizejs/parcel-transformer/style", "..."]
+  }
+}
+```
+
+Create `vize-parcel-dev-cache.cjs` beside `.parcelrc`:
+
+```js
+module.exports = require("@vizejs/parcel-transformer/dev-cache");
+```
+
+Parcel validates reporter package names before resolving package exports, so the relative
+CommonJS adapter loads the public reporter subpath. Keep it before `"..."`: during development it
+prevents a rapid compile-error recovery from reusing a stale bundle timestamp.
+
+Configure compiler controls in `.vizerc.parcel.json`, or use the
+`"@vizejs/parcel-transformer"` key in `package.json`:
+
+```json
+{
+  "compiler": {
+    "customElements": ["my-element"],
+    "templateSyntax": "standard"
+  },
+  "transformAssetUrls": true
+}
+```
+
+The transformer supports inline JavaScript and TypeScript, template asset URLs, scoped CSS,
+external style blocks, host preprocessors, source maps, browser builds, and native SSR builds.
+Install the corresponding Parcel transformer and preprocessor when using Sass, Less, or Stylus;
+Vize does not download those providers. Parcel supplies filenames, production mode, targets,
+source-map settings, and scope identity, so those values are not Vize options.
+
+Vapor output is opt-in with `"compiler": { "vapor": true }` and requires a compatible Vue runtime.
+SFC CSS modules, external script or template blocks, custom blocks, and emitted macro artifacts are
+currently rejected explicitly. Use Parcel's normal support for separate `.module.css` imports.
+Development HMR conservatively reloads a changed component, so edits to an inline SFC can reset
+local component state.
 
 ## ESLint flat config
 
@@ -136,6 +199,8 @@ language server already owns type checking, completion, and navigation.
 
 ## Avoid duplicate owners
 
+- Use the Parcel transformer when Parcel owns the SFC build. Do not send the same Vue entry through
+  both Parcel and Vite.
 - Choose `eslint-plugin-vize` or the native Vize lint command for the same Vize rule set.
 - Choose `prettier-plugin-vize` or `vize fmt` for the same files.
 - Choose one primary Vue language server. Use the lint-only profile when keeping Vue - Official.

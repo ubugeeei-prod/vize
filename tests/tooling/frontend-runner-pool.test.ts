@@ -8,6 +8,7 @@ import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts
 import {
   restoreCheckJsCasePacket,
   restoreHistoryToolchainSelection,
+  restoreNativeRuntimeCasePacket,
   restoreNodeEngineCasePacket,
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
@@ -222,6 +223,10 @@ test("the seven runner selectors and exact runtime steps preserve every original
       restoreEmptyPrToolingBuild(restored, before);
       restoreToolingCasePacketJob(restored, before);
       restorePlaygroundCaseReporting(restored, before);
+      restoreNativeRuntimeCasePacket(
+        restored.jobs["pr-native-runtime"],
+        before.jobs["pr-native-runtime"],
+      );
     }
     for (const id of specification.jobs) {
       const original = before.jobs[id],

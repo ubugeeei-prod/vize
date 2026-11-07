@@ -76,6 +76,7 @@ mod release_opaque_slot_hosts;
 mod required_default_props;
 mod sequence_prop_expressions;
 mod setup_custom_properties;
+mod setup_type_exports;
 mod sfc_syntax_error_module;
 mod shared_helper_shadowing;
 mod single_required_camel_prop;

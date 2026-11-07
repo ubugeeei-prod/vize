@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
+import { guardedInferenceEdits } from "../../tools/support/compat/content-mapper/callback-owner-current-source.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 import {
   beforeStaticListenerSource,
@@ -78,6 +79,40 @@ void test("current callback packets retain every field under exact d9 and static
   for (const newline of ["\n", "\r\n"]) {
     const { before, after, source } = fixture(newline);
     assertPreservedCallbackPacket(before, after, source);
+  }
+});
+void test("guarded listener inference is certified as one exact source edit", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    const prefix = `// 日本 🧭${newline}`;
+    const direct =
+      `  const __vize_emit_props_0 = ` +
+      `(undefined as unknown as __Comp_0_emit_resolver)(Comp)({${newline}` +
+      `    // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.${newline}` +
+      `    "value": state.value,${newline}` +
+      `  });${newline}`;
+    const guarded =
+      `  const __vize_emit_props_0 = (() => {${newline}` +
+      `    // @ts-ignore Inference-only guard; authored binding checks own diagnostics.${newline}` +
+      `    if ((state.value)) return ` +
+      `(undefined as unknown as __Comp_0_emit_resolver)(Comp)({${newline}` +
+      `      // @ts-ignore Inference-only prop; the canonical component-props call owns diagnostics.${newline}` +
+      `      "value": state.value,${newline}` +
+      `    });${newline}` +
+      `    return undefined as never;${newline}` +
+      `  })();${newline}`;
+    const before = prefix + direct + `void state;${newline}`;
+    const after = prefix + guarded + `void state;${newline}`;
+    const edits = guardedInferenceEdits(before, after);
+    assert.equal(edits.length, 1);
+    let actual = Buffer.from(before);
+    for (const edit of [...edits].sort((left, right) => right.start - left.start)) {
+      actual = Buffer.concat([
+        actual.subarray(0, edit.start),
+        edit.replacement,
+        actual.subarray(edit.end),
+      ]);
+    }
+    assert.equal(actual.toString(), after);
   }
 });
 void test("the real callback entry refuses unknown producers, code, tuple fields and suppression changes", () => {

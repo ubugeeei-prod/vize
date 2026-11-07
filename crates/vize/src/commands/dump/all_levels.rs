@@ -5,6 +5,8 @@
 mod page_files;
 
 use std::path::Path;
+use std::sync::OnceLock;
+use std::time::Instant;
 
 use page_files::write_pages;
 
@@ -18,7 +20,7 @@ use vize_atelier_dom::{
 };
 use vize_atelier_sfc::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-    compile_sfc_for_adapter_with_stage_capture, parse_sfc,
+    compile_sfc_for_adapter_with_stage_capture_and_clock, parse_sfc,
 };
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
 use vize_l0::{
@@ -127,7 +129,7 @@ pub(super) fn run(args: &DumpArgs) {
 
 fn compile_raw(source: &str) -> StageCapture {
     let allocator = Allocator::default();
-    let mut capture = StageCapture::new("dom");
+    let mut capture = StageCapture::new_with_clock("dom", host_clock_ns);
     let _ = compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture(
         &allocator,
         source,
@@ -219,7 +221,7 @@ fn compile_sfc<'a>(
     options.parse.filename = path_text.into();
     options.template.ssr = pipeline == Pipeline::Ssr;
     options.vapor = pipeline == Pipeline::Vapor;
-    let (_, capture) = compile_sfc_for_adapter_with_stage_capture(
+    let (_, capture) = compile_sfc_for_adapter_with_stage_capture_and_clock(
         &descriptor,
         options,
         TemplateSyntaxMode::Standard,
@@ -227,6 +229,7 @@ fn compile_sfc<'a>(
         CodegenOptions::default(),
         SfcScriptOutputMode::SeparateTemplate,
         SfcCompileExperimentalOptions::default(),
+        host_clock_ns,
     )
     .unwrap_or_else(|error| fail(path, error.message.as_str()));
     (
@@ -239,6 +242,11 @@ fn compile_sfc<'a>(
             template_span,
         },
     )
+}
+
+fn host_clock_ns() -> u64 {
+    static START: OnceLock<Instant> = OnceLock::new();
+    u64::try_from(START.get_or_init(Instant::now).elapsed().as_nanos()).unwrap_or(u64::MAX)
 }
 
 fn write_json(path: &Path, value: &Value, source: &Path) {

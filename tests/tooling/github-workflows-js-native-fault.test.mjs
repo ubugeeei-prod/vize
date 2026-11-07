@@ -403,8 +403,8 @@ void test("only an explicit label observes the frozen original failure; mandator
     full.run,
     "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js",
   );
-  assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
-  assert.equal(cleanup.run, "node npm/oxlint/scripts/project-native-staging.ts --cleanup");
+  assert.equal(qualification.run, "node npm/linter/oxlint/scripts/check-project-transport.mjs");
+  assert.equal(cleanup.run, "node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup");
   assert.equal(fault.if, "${{ always() }}");
   assert.equal(fault.with.path, "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json");
 });

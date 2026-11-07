@@ -148,6 +148,7 @@ fn lower_child<'a>(
             Ok(Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression,
+                    raw_html: false,
                     span: interpolation.loc.span,
                 },
                 &allocator,
@@ -168,6 +169,7 @@ fn lower_child<'a>(
             Ok(Op::JsxChildValue(Box::new_in(
                 InterpolationOp {
                     expression,
+                    raw_html: false,
                     span: compound.loc.span,
                 },
                 &allocator,

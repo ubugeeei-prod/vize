@@ -81,6 +81,7 @@ corsa = { workspace = true, optional = true }
 corsa_lsp = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
 sha2.workspace = true
+xxhash-rust.workspace = true
 tempfile = { workspace = true, optional = true }
 
 [target.'cfg(unix)'.dependencies]

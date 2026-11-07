@@ -97,7 +97,7 @@ test("language-facing change classes are present in docs, contribution guide, an
     "architecture",
     "language-engineering-practices.md",
   );
-  const contributing = readRepoFile("CONTRIBUTING.md");
+  const contributing = readRepoFile(".github/CONTRIBUTING.md");
   const pullRequestTemplate = readRepoFile(".github", "PULL_REQUEST_TEMPLATE.md");
 
   for (const changeClass of [

@@ -841,6 +841,54 @@
       }
     },
     {
+      "id": "lsp/fix-history/template-colon-props-12068",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-colon-props-12068",
+        "files": [
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "2fcadf4354ed858a8c94162ab6f408d781f1d461a515b16b30061ac1b3876b69"
+          },
+          {
+            "path": "AfsTextField.vue.txt",
+            "sha256": "fab12adfd2dc863bd9a65432f1e106272f774d4a8b9018397d1f936d33fa914f"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-colon-props-12068/case.json",
+        "sha256": "1272b49a10b541ce27f03be5470fb198076f5fbe5ba934ad838e43e1d873875f"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true,
+        "completion": true,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/workspace-symbol-qualification-11153",
       "state": "active",
       "targets": [
@@ -2320,6 +2368,55 @@
       "case": {
         "path": "generic-attribute-rename-11515/case.json",
         "sha256": "2d971436db5420200e053a8bede6bd524d6ad85454a79d53b25c6ca334cf7d70"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/generic-prop-hover-11504",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "generic-prop-hover-11504",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "8022f5930039a7bec0d0229cf8e6949958cdb995a8b6f60d2b07aa5d1350941a"
+          },
+          {
+            "path": "List.vue.txt",
+            "sha256": "2ef61c11dcb8fd12d05207f21c736c34d1b69a436d204670f64f3e0482528a28"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "generic-prop-hover-11504/case.json",
+        "sha256": "2bd2abbf774a5c5438d5e52c874f4bdab119b0043081ac468d73aeb5c9993f40"
       },
       "requestCount": 2,
       "initializationOptions": {
@@ -3905,13 +4002,13 @@
       }
     },
     {
-      "id": "lsp/regression/setup-export-diagnostic-11497",
+      "id": "lsp/regression/setup-type-exports-12073",
       "state": "active",
       "targets": [
         "stdio"
       ],
       "inputs": {
-        "root": "setup-export-diagnostic-11497",
+        "root": "setup-type-exports-12073",
         "files": [
           {
             "path": "App.vue.txt",
@@ -3924,8 +4021,8 @@
         ]
       },
       "case": {
-        "path": "setup-export-diagnostic-11497/case.json",
-        "sha256": "3bff7394a0e790684257ad6fb8f5ddc3dec0a73f44e485c5c5831c6cd79d68ef"
+        "path": "setup-type-exports-12073/case.json",
+        "sha256": "e05dd632744ec5adcde09d815228ce313812305f3e3720959b49a50c1064df73"
       },
       "requestCount": 1,
       "initializationOptions": {

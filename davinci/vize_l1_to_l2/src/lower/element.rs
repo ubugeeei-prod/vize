@@ -93,6 +93,31 @@ pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a>
     analyzed
 }
 
+/// Whether a later plain attribute replaces this one under the historical
+/// parser's case-insensitive attribute-map semantics.
+pub(super) fn static_attribute_is_shadowed(
+    cx: &Cx<'_, impl ProvenanceSink>,
+    element: &Element<'_>,
+    analyzed: &Analyzed<'_>,
+    index: usize,
+) -> bool {
+    if !cx.caps.duplicate_static_attrs_keep_last {
+        return false;
+    }
+    let Some(attr) = element.open.attrs.get(index) else {
+        return false;
+    };
+    element
+        .open
+        .attrs
+        .iter()
+        .zip(&analyzed.forms)
+        .skip(index + 1)
+        .any(|(later, form)| {
+            matches!(form, AttrForm::Static) && later.name.text.eq_ignore_ascii_case(attr.name.text)
+        })
+}
+
 /// The structural reading the lowering gives one element's attributes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Structure {
@@ -323,6 +348,11 @@ pub(crate) fn element_core<'a>(
                 String::default,
                 attr_span(cx, attr),
             );
+            continue;
+        }
+        if matches!(form, AttrForm::Static)
+            && static_attribute_is_shadowed(cx, element, analyzed, index)
+        {
             continue;
         }
         match form {

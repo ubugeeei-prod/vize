@@ -334,7 +334,7 @@ const rows = [[1, 2]]
 }
 
 #[test]
-fn component_listener_references_keep_inference_outside_linear_branch_guards() {
+fn component_listener_references_guard_inference_without_outer_listener_chains() {
     let script = r#"import { reactive } from 'vue'
 import KeyPad from './KeyPad.vue'
 type Kind = 'k0' | 'k1' | 'k2' | 'k3'
@@ -413,8 +413,8 @@ const onSubmit = (value: number) => value
     for index in 0..4 {
         let condition = format!("state.kind === 'k{index}'");
         assert!(
-            listeners.matches(condition.as_str()).count() <= 7,
-            "each branch condition is emitted once in the shared chain and at most once per listener callback: {condition}\n{listeners}"
+            listeners.matches(condition.as_str()).count() <= 8,
+            "each branch condition is emitted only for the guarded inference calls and listener callbacks: {condition}\n{listeners}"
         );
     }
     assert_eq!(
@@ -422,7 +422,7 @@ const onSubmit = (value: number) => value
             .matches("// @ts-ignore Listener branch guard")
             .count(),
         0,
-        "bare listener references must keep shared inference declarations outside listener branch chains: {listeners}"
+        "bare listener references must keep contracts outside listener branch chains while inference owns its guard: {listeners}"
     );
 }
 

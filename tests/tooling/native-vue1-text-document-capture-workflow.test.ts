@@ -122,7 +122,7 @@ test("actual historical selectors run every full qualification and fail closed f
     "davinci/vize_l1/src/dialect/vue1/surface/body.rs",
     "davinci/vize_l1/src/embed/syntax/borrowed.rs",
     "davinci/vize_l0/src/source_frame.rs",
-    "vendor/oxc_parser/src/lib.rs",
+    "upstream/forks/oxc_parser/src/lib.rs",
     "tests/tooling/native-vue1-text-document-oracle.test.ts",
     "tests/tooling/native-vue1-text-document-capture-workflow.test.ts",
     "tests/tooling/support/vue1-pinned-getter.ts",

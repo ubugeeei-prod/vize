@@ -15,9 +15,9 @@ on:
   workflow_dispatch:
     inputs:
       fixtures:
-        description: Space-separated fixture ids (misskey, n8n, scale-1k, scale-5k, scale-20k, scale-monorepo)
+        description: Space-separated fixture ids (scale-1k, scale-5k, scale-20k, scale-giant-sfc, scale-monorepo)
         required: true
-        default: "misskey n8n"
+        default: "scale-1k scale-giant-sfc scale-monorepo"
       compare_ref:
         description: Optional branch or SHA built as a second vize row (the "before" of a perf change)
         required: false
@@ -97,7 +97,7 @@ jobs:
       # same machine with the same build, and rounds interleave the sizes.
       - id: plan
         env:
-          FIXTURES: ${{ inputs.fixtures || 'misskey n8n' }}
+          FIXTURES: ${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}
         run: |
           args=()
           for id in $FIXTURES; do args+=(--fixture "$id"); done
@@ -154,14 +154,16 @@ jobs:
         run: |
           # One source of truth: the workspace catalog pins vue-tsc (same release
           # train as @vue/language-server), TypeScript and the Corsa runtime.
+          # The typecheck-host manifest owns the experimental tsrs pin.
           pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
           vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
-          test -n "$vue" && test -n "$ts" && test -n "$corsa"
+          tsrs=$(node -p 'require("./tools/benchmarks/typecheck-hosts/package.json").dependencies.tsrs')
+          test -n "$vue" && test -n "$ts" && test -n "$corsa" && test -n "$tsrs"
           mkdir "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
           echo '{"private":true}' > package.json
           npm install --no-audit --no-fund "@vue/language-server@$vue" "@vue/typescript-plugin@$vue" \
-            "typescript@$ts" "@typescript/typescript-linux-x64@$corsa"
-          node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
+            "typescript@$ts" "@typescript/typescript-linux-x64@$corsa" "tsrs@$tsrs"
+          node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64", "tsrs"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
 
       - name: Stage the tsserver plugin row (this commit's plugin and native addon)
         if: ${{ env.TSSERVER_PLUGIN == 'true' }}
@@ -191,10 +193,30 @@ jobs:
           FIXTURE_IDS: ${{ matrix.job.ids }}
         run: |
           tools="$RUNNER_TEMP/tools/node_modules"
-          args=(--vize "head=$RUNNER_TEMP/vize-head")
+          rounds="$ROUNDS"
+          cycles="$CYCLES"
+          # Keep the 10,000-block SFC in PR correctness coverage without making
+          # every benchmark change repeat its full dispatch-only sample budget.
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] && [ "$JOB" = scale-giant-sfc ]; then
+            rounds=1
+            cycles=1
+          fi
+          tsrs_fast="$RUNNER_TEMP/tsrs-fast"
+          printf '#!/bin/sh\nexport TSRS_FAST=1\nexec "%s" "$@"\n' "$tools/.bin/tsrs" > "$tsrs_fast"
+          chmod +x "$tsrs_fast"
+          args=(
+            --vize "head=$RUNNER_TEMP/vize-head"
+            --vize "head-tsrs-fast=$RUNNER_TEMP/vize-head"
+            --vize-env "head-tsrs-fast:CORSA_PATH=$tsrs_fast"
+          )
           for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
           if [ -n "$COMPARE_REF" ]; then
-            args+=(--vize "compare=$RUNNER_TEMP/vize-compare" --meta "compare=$COMPARE_REF")
+            args+=(
+              --vize "compare=$RUNNER_TEMP/vize-compare"
+              --vize "compare-tsrs-fast=$RUNNER_TEMP/vize-compare"
+              --vize-env "compare-tsrs-fast:CORSA_PATH=$tsrs_fast"
+              --meta "compare=$COMPARE_REF"
+            )
           fi
           if [ -n "$TSGO_MAPPER" ]; then
             # The mapper row reads the project's own TypeScript native host, not vize's pin.
@@ -204,7 +226,10 @@ jobs:
           fi
           for assignment in $VIZE_ENV; do
             args+=(--vize-env "head:$assignment" --meta "env=$assignment")
-            if [ -n "$COMPARE_REF" ]; then args+=(--vize-env "compare:$assignment"); fi
+            args+=(--vize-env "head-tsrs-fast:$assignment")
+            if [ -n "$COMPARE_REF" ]; then
+              args+=(--vize-env "compare:$assignment" --vize-env "compare-tsrs-fast:$assignment")
+            fi
           done
           if [ "$TSSERVER_PLUGIN" = true ]; then
             args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
@@ -215,8 +240,9 @@ jobs:
           free -g; df -h /tmp "$RUNNER_TEMP"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
-            --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
+            --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$rounds" --cycles "$cycles" \
             --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
+            --meta "rounds=$rounds" --meta "cycles=$cycles" \
             --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
           cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
 

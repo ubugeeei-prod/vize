@@ -6,6 +6,7 @@ import { previewImageUrl } from "../../../../docs/previews/ui/screenshot-file.ts
 
 export function uiHub(locale: string, linkPrefix: string): string {
   const ja = locale === "ja";
+  const vaporLink = locale === "en" || ja ? "../vapor.md" : "/guide/vapor";
   const title = (family: string) =>
     uiFamilyCatalog.find((entry) => entry.canonicalName === family)!.title;
   const goals: [string, string[]][] = [
@@ -51,7 +52,56 @@ export function uiHub(locale: string, linkPrefix: string): string {
         `<a href="${linkPrefix}${family}.md" style="display:block;color:inherit;text-decoration:none"><img src="${previewImageUrl(`${family}.png`)}" alt="${title(family)} browser-rendered example" loading="lazy" style="width:100%;border:1px solid #8885;border-radius:8px" /><strong>${title(family)}</strong></a>`,
     )
     .join("\n");
+  const paths = ja
+    ? [
+        [
+          "振る舞いだけ使う",
+          "コンポーネントを import します。CSS は不要です。",
+          `${linkPrefix}button.md`,
+        ],
+        [
+          "見た目も導入する",
+          "7 つのプリセットから選び、必要な CSS だけ読み込みます。",
+          "../ui-styles.md",
+        ],
+        [
+          "ソースを所有する",
+          "SFC 一式を取得し、公開契約を保ったまま変更できます。",
+          "../lib-pull.md",
+        ],
+        ["フレームワークに統合する", "Nuxt、Void、SSR、Vapor の導入経路を選びます。", vaporLink],
+      ]
+    : [
+        [
+          "Use behavior only",
+          "Import a component. No stylesheet or utility framework is required.",
+          `${linkPrefix}button.md`,
+        ],
+        [
+          "Add a visual system",
+          "Choose one of seven voices and load CSS only for the components in use.",
+          "../ui-styles.md",
+        ],
+        [
+          "Own the source",
+          "Pull the complete SFC unit and customize it without abandoning its contract.",
+          "../lib-pull.md",
+        ],
+        [
+          "Integrate a framework",
+          "Choose the Nuxt, Void, SSR, or Vapor path for the application.",
+          vaporLink,
+        ],
+      ];
   return blocks(
+    ja ? "## まず、所有範囲を選ぶ" : "## Start with the ownership boundary",
+    ja
+      ? "振る舞い、見た目、ソース所有は独立しています。後から移行できるので、今必要な範囲だけ選べます。"
+      : "Behavior, visuals, and source ownership are independent. Start with only the layer you need; the public contract lets you move between them later.",
+    `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px">\n${paths.map(([label, description, href]) => `<a href="${href}" style="display:block;padding:18px;border:1px solid #8885;border-radius:12px;color:inherit;text-decoration:none"><strong>${label}</strong><p>${description}</p></a>`).join("\n")}\n</div>`,
+    ja
+      ? "Nuxt では [Nuxt 統合](../../integrations/nuxt.md)、Void では [Void 統合](../../integrations/void.md)を使います。どちらも同じ公開コンポーネントと CSS エクスポートを利用します。"
+      : "Use the [Nuxt integration](../../integrations/nuxt.md) or [Void integration](../../integrations/void.md) around the same public component and CSS exports.",
     ja ? "## 作りたい画面から選ぶ" : "## Choose what you want to build",
     ja
       ? "リンク先では、公開 API から import する Vue の使用例をコピーし、プレビューを操作して試せます。props・イベント・スロットの仕様も確認できます。"

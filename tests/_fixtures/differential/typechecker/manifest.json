@@ -3584,7 +3584,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
+        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
       },
       "inputs": [
         {
@@ -3636,7 +3636,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
+        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
       },
       "inputs": [
         {
@@ -13521,6 +13521,108 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-prop-hover-11504",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-prop-hover-11504/App.vue.txt",
+          "sha256": "8022f5930039a7bec0d0229cf8e6949958cdb995a8b6f60d2b07aa5d1350941a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-prop-hover-11504/List.vue.txt",
+          "sha256": "2ef61c11dcb8fd12d05207f21c736c34d1b69a436d204670f64f3e0482528a28",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-prop-hover-11504/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lsp_generic_prop_hover_cli::generic_prop_hover_uses_the_instantiated_type_at_the_call_site; #11504 reported generic component receives independent number and string arrays. Input-only batch registration for the shared Canon source change; no batch diagnostic behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/generic-setup-local-declaration-11498",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-setup-local-declaration-11498/SetupLocal.vue.txt",
+          "sha256": "6b97bbbb8d0bf49522bc16d36bca3aa7a6cdae917ab6156ab397fba0deae1b42",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-setup-local-declaration-11498/tsconfig.json.txt",
+          "sha256": "3cd857a7f8c822f9b0b13bba47e4b77c76f7d3a76dbe59da4b64e29e23e552b2",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "generic_props::declaration_emit::declaration_emit_preserves_generic_type_parameters; reported #11498 generic component whose props interface depends on a setup-local generic alias and must emit declarations without TS4060. Input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/guarded-listener-packet-12089",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-spread-guard-12074/SpreadSiblingBranches.vue.txt",
+          "sha256": "3dbd40abdbc6266429bff35a24766e2b35a0f4b6ba4b36cf85b8506a6467df95",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_listener_guard_share::guarded_spread_props_keep_narrowing_for_bare_listener_inference; two guarded sibling branches reuse one bare listener while keeping branch-owned contracts and guarded emit-props inference. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/imported-mark-raw-callback",
       "state": "active",
       "targets": [
@@ -14335,6 +14437,65 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-component-listener-spread-guard-12074",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-spread-guard-12074/Child.vue.txt",
+          "sha256": "ecda0729fdba38ed280b8287aab3d93ee1cc888990a36b8d5c2e6f49a528bfc1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/NoSpreadBareRef.vue.txt",
+          "sha256": "b52a97543f78455ae57757bb0a1017c2ec1139068af67f2120639e5d328d375c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/SpreadBareRef.vue.txt",
+          "sha256": "d813fe885b0cb9790ba02963c56dbb27be31d1d2be9487b00279fe2ea08141d6",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/SpreadInline.vue.txt",
+          "sha256": "59283de01d36db0d229da46114bcf8b49470e39a975ebb35c8092626ab7ede55",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/SpreadNoListener.vue.txt",
+          "sha256": "f1cb88bbb95dfe5f7971b0f683623dc40aadad7d87a4646ebeec16943aa7907c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/package.json.txt",
+          "sha256": "db3e58118ccedc2b3bc5849abe65853d4c1fecd4f897a2e6e9265ccd05fd6e41",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-listener-spread-guard-12074/tsconfig.json.txt",
+          "sha256": "d377c2664e484549ae84c7ea5dd1e6d8182c0fd8ad08bbd2997486d7965462c9",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_listener_guard_share::guarded_spread_props_keep_narrowing_for_bare_listener_inference; exact #12074 package, config, failing SFC and three control inputs are pinned and physically consumed. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-declaration-unused-aliases-11365",
       "state": "active",
       "targets": [
@@ -14826,6 +14987,50 @@
       }
     },
     {
+      "id": "typechecker/regression/reported-setup-type-exports-12073",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "setup-type-exports-12073/ExportedInterfaceUnused.vue.txt",
+          "sha256": "5100eb544258c8c5e57eb6ea0280aae1c45ba04bd52d55051704435fa878c6e8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-type-exports-12073/ExportedType.vue.txt",
+          "sha256": "b85767a765ca4b2fde41a5c5e7c06715fdae830a342ccd9066437ca6d41fe9f8",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-type-exports-12073/package.json.txt",
+          "sha256": "db3e58118ccedc2b3bc5849abe65853d4c1fecd4f897a2e6e9265ccd05fd6e41",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-type-exports-12073/tsconfig.json.txt",
+          "sha256": "d377c2664e484549ae84c7ea5dd1e6d8182c0fd8ad08bbd2997486d7965462c9",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::setup_type_exports::setup_type_only_exports_have_no_modifier_diagnostics; exact #12073 package, config and both SFC report inputs are pinned and physically consumed. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/reported-slot-index-event-11367",
       "state": "active",
       "targets": [
@@ -15000,7 +15205,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies and check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; generic and non-generic authored setup exports retain TS1184, while checkUnknownProps rejects an undeclared boolean attribute on a one-required-prop component without emits. Input-only registration, no native parity claim."
+            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies and check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; generic and non-generic authored setup type exports stay legal, while checkUnknownProps rejects an undeclared boolean attribute on a one-required-prop component without emits. Input-only registration, no native parity claim."
           }
         ]
       }

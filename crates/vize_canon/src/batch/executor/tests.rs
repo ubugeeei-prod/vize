@@ -159,7 +159,7 @@ fn collects_emitted_declaration_outputs() {
     fs::write(out_dir.join("App.vue.d.ts"), "export {};\n").unwrap();
     fs::write(out_dir.join("skip.js"), "").unwrap();
 
-    let files = collect_declaration_outputs(&out_dir).unwrap();
+    let files = collect_declaration_outputs(&out_dir, true).unwrap();
 
     assert_eq!(files.len(), 1);
     assert_eq!(files[0].path, out_dir.join("App.vue.d.ts"));

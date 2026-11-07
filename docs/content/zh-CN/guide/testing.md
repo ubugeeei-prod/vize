@@ -43,7 +43,7 @@ Vue编译器、类型校验与`vue-tsc`、lint 和格式化器快照、SSR 代�
   小项目）这仍然显示了问题所在。使用游乐场检查员链接非常有效。
 - 修复报告、复制品、基准测试结果和兼容性发现均有帮助。参见
   [贡献](../contributing.md)导游和
-  [支持](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md)。
+  [支持](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md)。
 
 ## 绩效衡量
 

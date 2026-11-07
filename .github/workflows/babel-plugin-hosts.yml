@@ -5,7 +5,7 @@ on:
     branches: [ci/babel-native-integration]
   pull_request:
     paths:
-      - npm/babel/**
+      - npm/builder/babel/**
       - crates/vize_atelier_jsx/**
       - crates/vize_atelier_sfc/**
       - crates/vize_atelier_vapor/**
@@ -45,13 +45,13 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Install frozen source and exact isolated host graphs
         run: |
-          node tools/support/github/vp-install.ts --filter './npm/babel...' --filter './npm/native...'
-          npm ci --prefix npm/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
-          npm ci --prefix npm/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
+          node tools/support/github/vp-install.ts --filter './npm/builder/babel...' --filter './npm/native...'
+          npm ci --prefix npm/builder/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
+          npm ci --prefix npm/builder/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
           for runtime in vdom vapor-rc9 vapor-rc11; do
-            npm ci --prefix "npm/babel/test/runtime/fixtures/$runtime" --ignore-scripts --no-audit --no-fund
+            npm ci --prefix "npm/builder/babel/test/runtime/fixtures/$runtime" --ignore-scripts --no-audit --no-fund
           done
-          node npm/babel/test/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium
+          node npm/builder/babel/test/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium
       - name: Build the actual source compiler and both public package entrypoints
         run: |
           set -euo pipefail
@@ -62,8 +62,8 @@ jobs:
           node --version > "$RUNNER_TEMP/babel-plugin/node-version.txt"
           vp run --workspace-root build:native:test
           GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
-          vp run --no-cache --filter './npm/babel' build
-          (cd npm/babel && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/babel-plugin/packed" --json) > "$RUNNER_TEMP/babel-plugin/pack.json"
+          vp run --no-cache --filter './npm/builder/babel' build
+          (cd npm/builder/babel && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/babel-plugin/packed" --json) > "$RUNNER_TEMP/babel-plugin/pack.json"
           sha256sum "$RUNNER_TEMP/babel-plugin/packed/"*.tgz > "$RUNNER_TEMP/babel-plugin/packed.sha256"
           cp npm/native/.artifacts/native/build-token-receipt.json "$RUNNER_TEMP/babel-plugin/"
       - name: Check actual packed Babel 7 and 8 ESM and CommonJS consumers
@@ -73,7 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/packed-hosts.test.ts
+          node npm/native/scripts/test-preparation.mjs node --test npm/builder/babel/test/packed-hosts.test.ts
       - name: Measure complete host transforms and the real native-call boundary
         if: always()
         env:
@@ -82,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node npm/babel/test/profile-host.ts
+          node npm/native/scripts/test-preparation.mjs node npm/builder/babel/test/profile-host.ts
       - name: Qualify eight supported client SSR and hydration rows
         if: always()
         env:
@@ -92,7 +92,7 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/runtime-renderers.test.ts
+          node npm/native/scripts/test-preparation.mjs node --test npm/builder/babel/test/runtime-renderers.test.ts
       - name: Qualify additive actual native CSSOM and HTML style guards
         if: always()
         env:
@@ -101,10 +101,10 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
-          node npm/native/scripts/test-preparation.mjs node --test npm/babel/test/style-guards.test.ts
+          node npm/native/scripts/test-preparation.mjs node --test npm/builder/babel/test/style-guards.test.ts
       - name: Check package source and declarations
         if: always()
-        run: vp run --filter './npm/babel' check
+        run: vp run --filter './npm/builder/babel' check
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -114,7 +114,7 @@ jobs:
             !${{ runner.temp }}/babel-plugin/**/node_modules/**
             npm/native/.artifacts/native/build-token-receipt.json
             npm/native/*.node
-            npm/babel/test/hosts/fixtures/babel7/package-lock.json
-            npm/babel/test/hosts/fixtures/babel8/package-lock.json
+            npm/builder/babel/test/hosts/fixtures/babel7/package-lock.json
+            npm/builder/babel/test/hosts/fixtures/babel8/package-lock.json
           if-no-files-found: error
           retention-days: 14

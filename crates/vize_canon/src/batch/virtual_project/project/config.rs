@@ -186,6 +186,16 @@ impl VirtualProject {
         self.declaration_roots = Some(roots);
     }
 
+    /// Set declaration roots from discovery that already verified and
+    /// canonicalized every source path.
+    pub(crate) fn set_prevalidated_declaration_roots(&mut self, canonical_paths: &[PathBuf]) {
+        let roots = canonical_paths.iter().cloned().collect();
+        if self.declaration_roots.as_ref() != Some(&roots) {
+            self.mark_incremental_config_file();
+        }
+        self.declaration_roots = Some(roots);
+    }
+
     pub(crate) fn is_declaration_root(&self, original_path: &Path) -> bool {
         self.declaration_roots
             .as_ref()

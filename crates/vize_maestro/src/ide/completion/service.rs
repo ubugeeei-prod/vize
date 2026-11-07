@@ -28,6 +28,14 @@ use crate::ide::{IdeContext, ecosystem};
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::CompletionService {
+    /// Resident component props are complete at a `:` prefix and do not need a
+    /// TypeScript project or native request transaction.
+    pub(crate) fn complete_resident_component_props(
+        ctx: &IdeContext<'_>,
+    ) -> Option<CompletionResponse> {
+        template::complete_resident_component_props(ctx).map(CompletionResponse::Array)
+    }
+
     /// Get completions for the given context.
     pub fn complete(ctx: &IdeContext) -> Option<CompletionResponse> {
         // Art file: route by cursor position within art structure

@@ -20,7 +20,7 @@ mod registered;
 mod result;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
-use paths::{IncrementalPaths, collect_project_paths};
+use paths::{IncrementalPaths, collect_explicit_path_snapshot, collect_project_path_snapshot};
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -82,6 +82,9 @@ pub struct BatchTypeChecker {
     persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
     // Owner and context leases both outlive the executor.
     _persistent_storage_leases: Option<(std::fs::File, std::fs::File)>,
+    /// Another program's emitted declarations, mirrored once the scan has
+    /// settled this project's mirror root (#12102).
+    foreign_declarations: Vec<(PathBuf, PathBuf)>,
 }
 
 impl BatchTypeChecker {
@@ -202,10 +205,34 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
-        self.scope_initial_installed_sources(paths)?;
+        let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
+        self.scan_explicit_snapshot(valid_paths, canonical_paths, false)
+    }
+
+    /// Scan explicit files and report diagnostics for the same canonical set.
+    ///
+    /// The check server uses this combined entry point so its cold request does
+    /// one filesystem validation and realpath pass per source instead of
+    /// rediscovering both identities when it installs the diagnostic filter.
+    pub(crate) fn scan_paths_with_diagnostics(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
+        self.scan_explicit_snapshot(valid_paths, canonical_paths, true)
+    }
+
+    fn scan_explicit_snapshot(
+        &mut self,
+        valid_paths: Vec<&Path>,
+        canonical_paths: Vec<PathBuf>,
+        install_diagnostic_paths: bool,
+    ) -> CorsaResult<()> {
+        self.scope_initial_installed_sources(&valid_paths, &canonical_paths)?;
+        self.project
+            .register_foreign_declarations(&self.foreign_declarations)?;
         let previous_sources = self.project.registered_original_paths_sorted();
-        self.project.set_declaration_roots(paths);
-        self.project.register_paths(paths)?;
+        self.project
+            .set_prevalidated_declaration_roots(&canonical_paths);
+        self.project
+            .register_prevalidated_paths(valid_paths, &canonical_paths)?;
         self.project.register_package_route_targets()?;
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
@@ -213,18 +240,28 @@ impl BatchTypeChecker {
         self.project.register_reachable_dependencies()?;
         self.project.prune_unowned_sources(previous_sources);
         self.project.finalize_package_routes()?;
+        if install_diagnostic_paths {
+            self.project
+                .set_prevalidated_diagnostic_paths(&canonical_paths);
+        }
         self.scanned = true;
         self.incremental_paths
-            .after_explicit_scan(&self.project, paths);
+            .after_explicit_scan(&self.project, canonical_paths);
         Ok(())
     }
 
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
-        let paths = collect_project_paths(&self.project, self.project.source_file_policy())?;
-        self.scope_initial_installed_sources(&paths)?;
-        self.project.set_declaration_roots(&paths);
-        self.project.register_paths(&paths)?;
+        let (paths, canonical_paths) =
+            collect_project_path_snapshot(&self.project, self.project.source_file_policy())?
+                .into_parts();
+        self.scope_initial_installed_sources(&paths, &canonical_paths)?;
+        self.project
+            .register_foreign_declarations(&self.foreign_declarations)?;
+        self.project
+            .set_prevalidated_declaration_roots(&canonical_paths);
+        self.project
+            .register_scanned_paths(&paths, &canonical_paths)?;
         self.project.register_package_route_targets()?;
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
@@ -233,7 +270,7 @@ impl BatchTypeChecker {
         self.project.finalize_package_routes()?;
         self.scanned = true;
         self.incremental_paths
-            .after_project_scan(&self.project, &paths);
+            .after_project_scan(&self.project, canonical_paths);
         Ok(())
     }
 
@@ -250,6 +287,20 @@ impl BatchTypeChecker {
         paths: impl IntoIterator<Item = PathBuf>,
     ) -> CorsaResult<()> {
         self.project.adopt_diagnostic_sources(paths)
+    }
+
+    /// Mirror another program's emitted declarations in place of the sources
+    /// they describe. They register during the scan, once installed-source
+    /// scoping has settled the mirror root. See
+    /// [`VirtualProject::register_foreign_declarations`].
+    pub fn set_foreign_declarations(&mut self, declarations: Vec<(PathBuf, PathBuf)>) {
+        self.foreign_declarations = declarations;
+    }
+
+    /// The declarations a mirror-layout [`Self::emit_declarations`] produced
+    /// for this program's own sources, keyed by authored source path.
+    pub fn emitted_mirror_declarations(&self, out_dir: &Path) -> Vec<(PathBuf, PathBuf)> {
+        self.project.emitted_mirror_declarations(out_dir)
     }
 
     /// The directory this checker materializes into.

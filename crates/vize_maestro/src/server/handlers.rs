@@ -1,6 +1,8 @@
 //! LSP protocol handler implementations.
 
+mod completion;
 mod formatting;
+mod hover;
 mod inlay_hint;
 mod linked_editing;
 mod properties;
@@ -33,14 +35,15 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::MaestroServer;
-use crate::ide::position_to_offset;
-
 #[cfg(feature = "native")]
 use crate::ide::CompletionService;
+use crate::ide::position_to_offset;
 
 mod call_hierarchy;
 mod navigation;
 mod references;
+mod rename;
+mod resident_completion;
 mod signature_help;
 use call_hierarchy::{
     CHIncomingParams, CHIncomingResponse, CHItems, CHOutgoingParams, CHOutgoingResponse,
@@ -145,9 +148,24 @@ impl LanguageServer for MaestroServer {
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let server = self.for_pos(&params.text_document_position_params).await;
-        if let Some(response) = server.local_hover_response(&params)? {
-            return server.authored_response(Ok(response));
+        if crate::utils::is_jsx_path(
+            params
+                .text_document_position_params
+                .text_document
+                .uri
+                .path(),
+        ) {
+            if let Some(response) = server.local_hover_response(&params)? {
+                return server.authored_response(Ok(response));
+            }
+            return server.native_request(server.hover_request(params)).await;
         }
+        let ctx = match server.prepare_hover(&params)? {
+            hover::PreparedHover::Response(response) => {
+                return server.authored_response(Ok(response));
+            }
+            hover::PreparedHover::Backend(ctx) => ctx,
+        };
         #[cfg(feature = "native")]
         {
             let request = &params.text_document_position_params;
@@ -161,17 +179,15 @@ impl LanguageServer for MaestroServer {
                 return server.authored_response(Ok(response));
             }
         }
-        server.native_request(server.hover_request(params)).await
+        let position = params.text_document_position_params.position;
+        server
+            .native_request(server.prepared_hover_request(ctx, position))
+            .await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let server = self.for_pos(&params.text_document_position).await;
-        if let Some(response) = server.local_completion_response(&params)? {
-            return server.authored_response(Ok(response));
-        }
-        server
-            .native_request(server.completion_request(params))
-            .await
+        server.completion_response(params).await
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
@@ -331,16 +347,12 @@ impl LanguageServer for MaestroServer {
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
         let server = self.for_document(&params.text_document.uri).await;
-        server
-            .native_request(server.prepare_rename_request(params))
-            .await
+        server.cached_prepare_rename_response(params).await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
         let server = self.for_pos(&params.text_document_position).await;
-        server
-            .workspace_native_request(|| server.rename_request(params.clone()))
-            .await
+        server.cached_rename_response(params).await
     }
 
     async fn semantic_tokens_full(

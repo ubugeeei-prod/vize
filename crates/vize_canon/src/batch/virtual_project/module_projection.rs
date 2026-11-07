@@ -1,24 +1,44 @@
 //! Resolve lowered module identities after the authored graph is registered.
 
+use std::borrow::Cow;
 use std::path::Path;
 
 use rayon::prelude::*;
-use vize_carton::{FxHashSet, String};
+use vize_carton::FxHashSet;
 
 use super::{VirtualFile, VirtualProject};
 use crate::batch::import_rewriter::{VirtualProjectRewriteOptions, apply_captured_vue_stars};
 use crate::{PackageResolutionContext, PackageResolutionMode};
 
 impl VirtualProject {
+    /// The projection text the rewriter read for `file`, when this project
+    /// keeps it for module resolution: the materialized code with every
+    /// rewritten module literal restored, or that code itself when nothing
+    /// was rewritten.
+    pub(super) fn pre_rewrite_code<'a>(&'a self, file: &'a VirtualFile) -> Option<Cow<'a, str>> {
+        if !self.pre_rewrite_sources.contains(&file.virtual_path) {
+            return None;
+        }
+        Some(
+            file.source_map
+                .import_map
+                .pre_rewrite_text(&file.content)
+                .map_or(Cow::Borrowed(file.content.as_str()), |restored| {
+                    Cow::Owned(restored.into())
+                }),
+        )
+    }
+
     /// Module graph edges are resolved from the pre-rewrite projection. A
     /// previous materialized path must never become the next source identity.
-    pub(super) fn module_source(&self, file: &VirtualFile) -> Option<&String> {
-        self.pre_rewrite_code.get(&file.virtual_path).or_else(|| {
+    pub(super) fn module_source<'a>(&'a self, file: &'a VirtualFile) -> Option<Cow<'a, str>> {
+        self.pre_rewrite_code(file).or_else(|| {
             file.source_map
                 .sfc_map
                 .is_none()
-                .then(|| self.original_contents.get(&file.virtual_path))
+                .then(|| self.original_content_for_virtual(&file.virtual_path))
                 .flatten()
+                .map(Cow::Borrowed)
         })
     }
 
@@ -103,7 +123,7 @@ impl VirtualProject {
                     let (rewritten, stars) = if file.source_map.sfc_map.is_some() {
                         self.rewriter
                             .rewrite_generated_for_virtual_project_with_captured_stars(
-                                source,
+                                &source,
                                 source_type,
                                 roots,
                                 file.original_path.parent(),
@@ -112,7 +132,7 @@ impl VirtualProject {
                     } else {
                         self.rewriter
                             .rewrite_for_virtual_project_with_captured_stars(
-                                source,
+                                &source,
                                 source_type,
                                 roots,
                                 file.original_path.parent(),
@@ -132,13 +152,15 @@ impl VirtualProject {
             )
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites.into_iter().flatten() {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                if file.content != rewritten.code {
-                    self.incremental_materialized_candidates.insert(path);
-                }
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
+            if self
+                .virtual_files
+                .get(&path)
+                .is_some_and(|file| file.content != rewritten.code)
+            {
+                self.incremental_materialized_candidates
+                    .insert(path.clone());
             }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 
@@ -188,7 +210,7 @@ impl VirtualProject {
                     );
                     return Some((file.virtual_path.clone(), rewritten));
                 }
-                let source = self.original_contents.get(&file.virtual_path)?;
+                let source = self.original_content_for_virtual(&file.virtual_path)?;
                 if !crate::batch::import_rewriter::source_may_contain_relative_specifier(source) {
                     return None;
                 }
@@ -222,13 +244,15 @@ impl VirtualProject {
             })
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                if file.content != rewritten.code {
-                    self.incremental_materialized_candidates.insert(path);
-                }
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
+            if self
+                .virtual_files
+                .get(&path)
+                .is_some_and(|file| file.content != rewritten.code)
+            {
+                self.incremental_materialized_candidates
+                    .insert(path.clone());
             }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 }

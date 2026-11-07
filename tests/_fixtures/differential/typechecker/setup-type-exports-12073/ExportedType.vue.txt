@@ -1,0 +1,15 @@
+<script setup lang="ts">
+export type Item = {
+    title: string
+}
+
+defineProps<{
+    items: Item[]
+}>()
+</script>
+
+<template>
+    <ul>
+        <li v-for="item in items" :key="item.title">{{ item.title }}</li>
+    </ul>
+</template>

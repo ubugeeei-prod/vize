@@ -230,10 +230,10 @@ impl VirtualProject {
                     (
                         vize_carton::micro_span!(
                             "canon.dependency_scan.content.clone",
-                            content.clone()
+                            vize_carton::String::from(content.as_ref())
                         ),
                         file.virtual_path.clone(),
-                        self.walked_references(file, content),
+                        self.walked_references(file, &content),
                         file.source_map.sfc_map.is_some(),
                     )
                 })
@@ -365,6 +365,11 @@ impl VirtualProject {
                 // like out-of-root barrels; omitting them loses their types.
                 dependency_targets.insert(key.clone());
                 if !visited.insert(key.clone()) {
+                    continue;
+                }
+                // Another program of this check owns the source and mirrors
+                // its declaration here; it is never projected again.
+                if self.is_foreign_source(&key) {
                     continue;
                 }
                 // Register the canonical path: a workspace symlink is

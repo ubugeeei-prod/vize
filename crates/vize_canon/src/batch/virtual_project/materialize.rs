@@ -274,6 +274,7 @@ impl VirtualProject {
                     false,
                     Some(includes.as_slice()),
                     preserved_arbitrary_extensions,
+                    false,
                 )
             } else {
                 self.write_tsconfig_file(&path, None, false)
@@ -295,15 +296,22 @@ impl VirtualProject {
         Ok(())
     }
 
-    /// Write a declaration-emitting tsconfig and return its path.
+    /// Write a declaration-emitting tsconfig and return its path. A mirror
+    /// layout emits every program file under `out_dir` exactly as the mirror
+    /// lays it out, without checking, for another program of the same check.
     pub fn write_declaration_tsconfig(
         &self,
         out_dir: &Path,
         declaration_map: bool,
+        mirror_layout: bool,
     ) -> CorsaResult<PathBuf> {
         let config_path = self
             .generated_tsconfig_path()
-            .with_file_name("tsconfig.declaration.json");
+            .with_file_name(if mirror_layout {
+                "tsconfig.mirror-declaration.json"
+            } else {
+                "tsconfig.declaration.json"
+            });
         self.rewrite_tsx_vue_declaration_inputs()?;
         let include_paths = self.declaration_emit_include_paths();
         profile!(
@@ -312,8 +320,9 @@ impl VirtualProject {
                 &config_path,
                 Some(out_dir),
                 declaration_map,
-                Some(&include_paths),
+                (!mirror_layout).then_some(include_paths.as_slice()),
                 false,
+                mirror_layout,
             )
         )?;
         Ok(config_path)

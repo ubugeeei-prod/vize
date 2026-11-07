@@ -3,7 +3,7 @@ export const cssMapProducerPaths = [
   "crates/vize_atelier_sfc/src/css/parser.rs",
   "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
   "crates/vize_atelier_sfc/src/css/parser/source_map.rs",
-  "vendor/lightningcss/src/printer.rs",
+  "upstream/forks/lightningcss/src/printer.rs",
 ] as const;
 
 export const cssBindingProducerPaths = [
@@ -13,6 +13,10 @@ export const cssBindingProducerPaths = [
   "crates/vize_croquis/src/sfc.rs",
   "crates/vize_croquis/src/sfc/css_transform.rs",
 ] as const;
+
+export function historicalCompilerCssPath(path: string) {
+  return path.replace(/^upstream\/forks\//u, "vendor/");
+}
 
 type Spec = {
   id: string;

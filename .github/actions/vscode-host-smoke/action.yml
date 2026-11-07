@@ -1,6 +1,32 @@
 name: Editor real-server end-to-end
 description: Run VS Code, Zed, Neovim, Vim, and Helix real-server scenarios plus packaged specs
 
+inputs:
+  prebuilt-server:
+    description: Optional exact release binary to install instead of building from source
+    required: false
+    default: ""
+  prebuilt-vsix:
+    description: Optional exact release VSIX to install in the real VS Code host
+    required: false
+    default: ""
+  expected-version:
+    description: Plain release version required from the prebuilt server
+    required: false
+    default: ""
+  expected-source-sha:
+    description: Exact checked-out source commit required by the real-server scenarios
+    required: false
+    default: ""
+  release-workspace:
+    description: Fresh project initialized by the packaged release CLI
+    required: false
+    default: ""
+  release-evidence:
+    description: Directory that retains packaged-host identity and diagnostic evidence
+    required: false
+    default: ""
+
 runs:
   using: composite
   steps:
@@ -68,6 +94,24 @@ runs:
           --source-dir . \
           --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
           --output-dir "${RUNNER_TEMP}/zed-extension-output"
+        mkdir -p "${RUNNER_TEMP}/zed-extension-installed"
+        tar -xzf "${RUNNER_TEMP}/zed-extension-output/archive.tar.gz" \
+          -C "${RUNNER_TEMP}/zed-extension-installed"
+
+    - name: Install pinned Zed editor
+      shell: bash
+      env:
+        ZED_VERSION: 1.27.0
+        ZED_SHA256: 719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd
+      run: |
+        set -euo pipefail
+        archive="${RUNNER_TEMP}/zed-linux-x86_64.tar.gz"
+        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+          "https://github.com/zed-industries/zed/releases/download/v${ZED_VERSION}/zed-linux-x86_64.tar.gz" \
+          "$archive" "$ZED_SHA256"
+        mkdir -p "${RUNNER_TEMP}/zed"
+        tar -xzf "$archive" -C "${RUNNER_TEMP}/zed"
+        "${RUNNER_TEMP}/zed/zed.app/bin/zed" --version
 
     - name: Install pinned Helix
       shell: bash
@@ -85,8 +129,23 @@ runs:
         "${RUNNER_TEMP}/helix/hx" --version
 
     - name: Build vize CLI
+      if: inputs.prebuilt-server == ''
       shell: bash
       run: cargo build --profile ci -p vize
+
+    - name: Install and verify the supplied release CLI
+      if: inputs.prebuilt-server != ''
+      shell: bash
+      env:
+        PREBUILT_SERVER: ${{ inputs.prebuilt-server }}
+        EXPECTED_VERSION: ${{ inputs.expected-version }}
+      run: |
+        set -euo pipefail
+        test -n "$EXPECTED_VERSION"
+        test -f "$PREBUILT_SERVER"
+        mkdir -p target/ci
+        install -m 0755 "$PREBUILT_SERVER" target/ci/vize
+        test "$(target/ci/vize --version)" = "vize $EXPECTED_VERSION"
 
     - name: Check the Helix package with the official CLI
       shell: bash
@@ -170,6 +229,18 @@ runs:
         VIZE_TEST_VSCODE_VERSION: "1.107.1"
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host
 
+    - name: Restore and verify the supplied release VSIX
+      if: inputs.prebuilt-vsix != ''
+      shell: bash
+      env:
+        PREBUILT_VSIX: ${{ inputs.prebuilt-vsix }}
+      run: |
+        set -euo pipefail
+        test -f "$PREBUILT_VSIX"
+        mkdir -p editors/vscode/dist
+        install -m 0644 "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+        cmp "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+
     - name: Run VS Code host smoke against the real server
       shell: bash
       env:
@@ -178,7 +249,16 @@ runs:
         VIZE_TEST_VSCODE_VERSION: "1.107.1"
         VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
         VIZE_REAL_HOST_ARTIFACT_DIR: ${{ github.workspace }}/editors/vscode/.vscode-test/host-smoke-real/failure
-      run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+        PREBUILT_VSIX: ${{ inputs.prebuilt-vsix }}
+        VIZE_RELEASE_HOST_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_RELEASE_HOST_EVIDENCE: ${{ inputs.release-evidence }}
+      run: |
+        set -euo pipefail
+        if [ -n "$PREBUILT_VSIX" ]; then
+          xvfb-run -a vp node editors/vscode/test/run-extension-host-real.mjs
+        else
+          xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+        fi
 
     - name: Retain the real host failure before fixture cleanup
       if: ${{ always() }}
@@ -217,6 +297,8 @@ runs:
       env:
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_EMACS_ARTIFACT_DIR: ${{ runner.temp }}/emacs-native-config
+        VIZE_E2E_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha || github.sha }}
       run: vp run --workspace-root test:emacs-extension:real-server
 
     - name: Retain complete Emacs Eglot configuration evidence
@@ -233,6 +315,7 @@ runs:
       env:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+        VIZE_E2E_WORKSPACE: ${{ inputs.release-workspace }}
       run: vp run --workspace-root test:nvim-extension:real-server
 
     - name: Run the Vim scenario against the real server
@@ -241,6 +324,8 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_TEST_VIM_LSP_PATH: ${{ runner.temp }}/vim-lsp
+        VIZE_E2E_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_EXPECTED_SOURCE_SHA: ${{ inputs.expected-source-sha || github.sha }}
       run: vp run --workspace-root test:vim-extension:real-server
 
     - name: Run the Zed scenario against the real server
@@ -256,3 +341,14 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
       run: vp run --workspace-root test:helix-extension:real-server
+
+    - name: Run actual Zed with the packaged release extension
+      if: inputs.release-workspace != ''
+      shell: bash
+      env:
+        VIZE_RELEASE_ZED_EVIDENCE: ${{ inputs.release-evidence }}/hosts/zed
+        VIZE_RELEASE_ZED_EXTENSION: ${{ runner.temp }}/zed-extension-installed
+        VIZE_RELEASE_ZED_WORKSPACE: ${{ inputs.release-workspace }}
+        VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
+        VIZE_TEST_ZED_PATH: ${{ runner.temp }}/zed/zed.app/bin/zed
+      run: xvfb-run -a node tests/editor-conformance/release-zed.ts

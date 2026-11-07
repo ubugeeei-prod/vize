@@ -1,8 +1,16 @@
-//! P2-11 witness: legacy dialect compiles stay on compatibility after the DOM
-//! lane flag deletion, while stale flag values no longer select the old lane.
+//! Historical Vue dialects and parser quirks use the production L2 emitter.
+//! The differential override keeps the retired lane available only as a byte
+//! oracle for this test.
+
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    reason = "differential fixtures own strings and install a shared profiler"
+)]
 
 use std::{ffi::OsString, sync::Arc};
-use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
+use vize_atelier_core::options::{CodegenMode, CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{
     DomCompilerOptions,
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
@@ -12,21 +20,139 @@ use vize_l0::config::VueVersion;
 use vize_l0::profiler::{CounterSummary, Profiler, ProfilerScope};
 
 #[test]
-fn legacy_dialect_stays_on_compatibility_after_flag_deletion() {
-    let _env_lock = lock_env();
-    let (result, counters) = compile_with_l2_profiler(
-        r#"<button @click.native="go">{{ label | cap }}</button>"#,
-        DomCompilerOptions {
-            dialect: VueVersion::V2,
-            ..Default::default()
-        },
-    );
+fn historical_dialects_and_quirks_match_the_compatibility_lane_byte_for_byte() {
+    let cases = [
+        (
+            "vue-0.10-repeat",
+            VueVersion::V0_10,
+            TemplateSyntaxMode::Standard,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/vue0-10-repeat.html"
+            ),
+        ),
+        (
+            "vue-0.11-repeat",
+            VueVersion::V0_11,
+            TemplateSyntaxMode::Standard,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/vue0-11-repeat.html"
+            ),
+        ),
+        (
+            "vue-1-list",
+            VueVersion::V1,
+            TemplateSyntaxMode::Standard,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/vue1-list.html"
+            ),
+        ),
+        (
+            "vue-1-attribute-interpolation",
+            VueVersion::V1,
+            TemplateSyntaxMode::Standard,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/vue1-attribute-interpolation.html"
+            ),
+        ),
+        (
+            "vue-1-raw-html",
+            VueVersion::V1,
+            TemplateSyntaxMode::Standard,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/vue1-raw-html.html"
+            ),
+        ),
+        (
+            "vue-1-raw-html-with-text",
+            VueVersion::V1,
+            TemplateSyntaxMode::Standard,
+            "<div>before {{{ html }}} after</div>",
+        ),
+        (
+            "vue-1-mixed-escaped-and-raw-html",
+            VueVersion::V1,
+            TemplateSyntaxMode::Standard,
+            "<div>{{ escaped }} {{{ html }}}</div>",
+        ),
+        (
+            "vue-2-filter-and-event-sugar",
+            VueVersion::V2,
+            TemplateSyntaxMode::Standard,
+            r#"<button @click.native="go">{{ label | cap }}</button>"#,
+        ),
+        (
+            "vue-2-duplicate-static-class",
+            VueVersion::V2,
+            TemplateSyntaxMode::Standard,
+            r#"<h4 :class="item.is_premium ? 'premium' : ''" class="" class="shop_title ellipsis">{{ item.name }}</h4>"#,
+        ),
+        (
+            "vue-2.7-slot-scope",
+            VueVersion::V2_7,
+            TemplateSyntaxMode::Standard,
+            r#"<Comp><template slot-scope="props">{{ props.label }}</template></Comp>"#,
+        ),
+        (
+            "quirks-adjacent-attributes",
+            VueVersion::V3,
+            TemplateSyntaxMode::Quirks,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/quirks-adjacent-attributes.html"
+            ),
+        ),
+        (
+            "quirks-void-close",
+            VueVersion::V3,
+            TemplateSyntaxMode::Quirks,
+            include_str!(
+                "../../../tests/_fixtures/differential/dialect-inputs/generated/quirks-void-close.html"
+            ),
+        ),
+        (
+            "quirks-authored-nesting",
+            VueVersion::V3,
+            TemplateSyntaxMode::Quirks,
+            "<button><span><button>share</button></span></button>",
+        ),
+    ];
 
-    assert_compatibility_sections_without_l2_profile(
-        &result,
-        &counters,
-        "legacy dialect compiles must not enter the L2 production selector",
-    );
+    for (name, dialect, syntax, source) in cases {
+        for (lane, mode, prefix_identifiers) in [
+            ("function", CodegenMode::Function, false),
+            ("module-prefixed", CodegenMode::Module, true),
+        ] {
+            let options = DomCompilerOptions {
+                dialect,
+                mode,
+                prefix_identifiers,
+                ..Default::default()
+            };
+            let compatibility = vize_atelier_dom::differential::with_legacy_lane(|| {
+                compile_result(source, options.clone(), syntax)
+            });
+            let (native, counters) = compile_with_l2_profiler(source, options, syntax);
+            let refusal = vize_atelier_dom::differential::take_emit_refusal();
+            assert_eq!(
+                native.errors, compatibility.errors,
+                "{name}/{lane}: diagnostics"
+            );
+            assert_eq!(
+                native.preamble, compatibility.preamble,
+                "{name}/{lane}: preamble\nnative code:\n{}\ncompatibility code:\n{}",
+                native.code, compatibility.code
+            );
+            assert_eq!(native.code, compatibility.code, "{name}/{lane}: code");
+            assert_eq!(
+                native.sections, compatibility.sections,
+                "{name}/{lane}: sections"
+            );
+            assert_eq!(
+                counter_total(&counters, "l2.dom.accepted"),
+                Some(1),
+                "{name}/{lane}: native selector; refusal={refusal:?}; counters={counters:?}"
+            );
+        }
+    }
 }
 
 #[test]
@@ -36,6 +162,7 @@ fn removed_dom_lane_flag_does_not_disarm_vue3_l2_selection() {
     let (result, counters) = compile_with_l2_profiler(
         r#"<button @click="go">{{ label }}</button>"#,
         DomCompilerOptions::default(),
+        TemplateSyntaxMode::Standard,
     );
 
     assert!(
@@ -53,52 +180,47 @@ fn removed_dom_lane_flag_name() -> &'static str {
     concat!("VIZE", "_DAVINCI", "_DOM")
 }
 
+#[derive(Debug, PartialEq, Eq)]
 struct Compiled {
+    errors: String,
+    preamble: String,
+    code: String,
     sections: Option<vize_atelier_core::CodegenSections>,
-}
-
-fn assert_compatibility_sections_without_l2_profile(
-    result: &Compiled,
-    counters: &CounterSummary,
-    l2_message: &str,
-) {
-    assert!(
-        result.sections.is_some(),
-        "the compatibility lane must keep codegen sections available"
-    );
-    assert_eq!(
-        counter_total(counters, "l2.dom.files"),
-        None,
-        "{l2_message}"
-    );
 }
 
 fn compile_with_l2_profiler(
     source: &str,
     options: DomCompilerOptions,
+    syntax: TemplateSyntaxMode,
 ) -> (Compiled, CounterSummary) {
     let profiler = Arc::new(Profiler::new());
     profiler.clear();
     profiler.set_enabled(true);
     let _scope = ProfilerScope::install(&profiler);
-    let result = compile(source, options);
+    let result = compile_result(source, options, syntax);
     let counters = profiler.counter_summary();
     (result, counters)
 }
 
-fn compile(source: &str, options: DomCompilerOptions) -> Compiled {
+fn compile_result(
+    source: &str,
+    options: DomCompilerOptions,
+    syntax: TemplateSyntaxMode,
+) -> Compiled {
     let allocator = Allocator::new();
     let (_, errors, result) =
         compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options(
             &allocator,
             source,
             options,
-            TemplateSyntaxMode::Standard,
+            syntax,
             None,
             CodegenOptions::default(),
         );
-    assert!(errors.is_empty(), "compile errors: {errors:?}");
     Compiled {
+        errors: format!("{errors:?}"),
+        preamble: result.result.preamble.to_string(),
+        code: result.result.code.to_string(),
         sections: result.sections,
     }
 }

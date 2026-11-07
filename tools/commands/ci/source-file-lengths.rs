@@ -239,6 +239,7 @@ fn is_excluded_path(path: &str) -> bool {
         || path.starts_with("tools/benchmarks/results/")
         || path.starts_with("tools/commands/")
         || path.starts_with("tools/support/")
+        || path.starts_with("upstream/forks/")
         || path == "npm/cli/schemas/vize.config.schema.json"
         || path == "npm/cli/src/types/generated.ts"
         || path == "docs/davinci/plan/croquis-consumption.md"

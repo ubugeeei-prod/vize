@@ -58,7 +58,7 @@ const workspace = [
   { name: "@vizejs/fresco-native", path: "npm/fresco-native", dependencies: [] },
   { name: "@vizejs/cli", path: "npm/cli", dependencies: ["@vizejs/native"] },
   { name: "@vizejs/ui", path: "npm/ui", dependencies: ["@vizejs/native"] },
-  { name: "@vizejs/oxlint", path: "npm/oxlint", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/oxlint", path: "npm/linter/oxlint", dependencies: ["@vizejs/native"] },
   { name: "@vizejs/fresco", path: "npm/fresco", dependencies: ["@vizejs/fresco-native"] },
 ];
 
@@ -129,6 +129,10 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
 test("Rust source affects JS only through a source-built native package", () => {
   const leaf = planAffectedRust(metadata, ["crates/vize_curator/src/lib.rs"]);
   assert.deepEqual(planAffectedJs(workspace, ["crates/vize_curator/src/lib.rs"], leaf).groups, []);
+  assert.deepEqual(
+    planAffectedJs(workspace, ["upstream/forks/oxc_parser/src/lib.rs"], leaf).groups,
+    [],
+  );
   const compiler = planAffectedRust(metadata, ["crates/vize_armature/src/lib.rs"]);
   const selected = planAffectedJs(workspace, ["crates/vize_armature/src/lib.rs"], compiler);
   assert.deepEqual(selected.groups, ["builders", "ui", "oxlint"]);
@@ -141,7 +145,9 @@ test("JS workspace edges include transitive consumers and exclude unrelated grou
   assert.deepEqual(plan.packages, ["npm/fresco", "npm/fresco-native"]);
   assert.deepEqual(plan.groups, ["ui"]);
   assert.deepEqual(plan.conformance, { fresco: true, ui: false });
-  assert.deepEqual(planAffectedJs(workspace, ["npm/oxlint/src/index.ts"]).groups, ["oxlint"]);
+  assert.deepEqual(planAffectedJs(workspace, ["npm/linter/oxlint/src/index.ts"]).groups, [
+    "oxlint",
+  ]);
   assert.equal(planAffectedJs(workspace, ["npm/deleted/index.ts"]).scope, "workspace");
   assert.equal(planAffectedJs(workspace, ["pnpm-lock.yaml"]).scope, "workspace");
 });
@@ -152,7 +158,7 @@ test("actual workspace manifests retain native consumers without duplicate fixtu
   const plan = planAffectedJs(packages, ["npm/native/index.js"]);
   assert.ok(plan.packages.includes("npm/builder/vite"));
   assert.ok(plan.packages.includes("npm/framework/nuxt"));
-  assert.ok(plan.packages.includes("npm/oxlint"));
+  assert.ok(plan.packages.includes("npm/linter/oxlint"));
 });
 
 test("prose and tooling-only paths do not create affected product dependencies", () => {
@@ -278,6 +284,7 @@ test("product differential partitions preserve each selected command exactly onc
   assert.equal(commands.length, 3);
   assert.ok(commands[0].args.includes("davinci_ssr_corpus"));
   assert.ok(commands[1].args.includes("davinci_ssr_production_cases"));
+  assert.ok(commands[1].args.includes("slot_element_text_children"));
   assert.equal(commands[2].env?.VIZE_VUE_RUNTIME_PRODUCTION, "1");
   assert.throws(() => differentialSteps("unknown", all), /unknown/);
 });

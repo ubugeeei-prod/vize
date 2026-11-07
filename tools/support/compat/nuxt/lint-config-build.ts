@@ -43,7 +43,7 @@ fs.cpSync(inputDir, path.join(output, "original-inputs"), { recursive: true });
 const packages: readonly (readonly [string, string])[] = [
   ["@vizejs/nuxt", "npm/framework/nuxt"],
   ["@vizejs/nuxt-lint-config", "npm/framework/nuxt-lint-config"],
-  ["oxlint-plugin-vize", "npm/oxlint"],
+  ["oxlint-plugin-vize", "npm/linter/oxlint"],
 ];
 for (const [name, source] of packages) {
   const target = path.join(output, "current-source-pack", name);

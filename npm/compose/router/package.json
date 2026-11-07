@@ -39,6 +39,7 @@
   },
   "scripts": {
     "build": "vp pack",
+    "bench": "vp exec node --test src/benchmark.test.ts",
     "dev": "vp pack --watch",
     "test": "vp exec node --test 'src/**/*.test.ts'",
     "check": "vp check src vite.config.ts && vp exec tsc --noEmit -p tsconfig.json",

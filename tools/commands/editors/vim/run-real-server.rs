@@ -43,7 +43,11 @@ fn run() -> Result<(), String> {
     let workspace = session.join("real-vue");
     let error_path = session.join("vim-errors.log");
     let verbose_path = session.join("vim-verbose.log");
-    editor_e2e::prepare_real_vue_workspace(&workspace, false)?;
+    if let Some(initialized) = env::var_os("VIZE_E2E_WORKSPACE").filter(|path| !path.is_empty()) {
+        copy_dir_contents(&PathBuf::from(initialized), &workspace)?;
+    } else {
+        editor_e2e::prepare_real_vue_workspace(&workspace, false)?;
+    }
     let result = Command::new(vim)
         .arg("-Nu")
         .arg("NONE")
@@ -87,6 +91,27 @@ fn run() -> Result<(), String> {
         .map_err(|error| format!("failed to run Vim configuration scenario: {error}"))?;
     if !configuration.success() {
         return Err("Vim configuration scenario failed".to_string());
+    }
+    Ok(())
+}
+
+fn copy_dir_contents(from: &std::path::Path, to: &std::path::Path) -> Result<(), String> {
+    fs::create_dir_all(to).map_err(|error| format!("cannot create {}: {error}", to.display()))?;
+    for entry in
+        fs::read_dir(from).map_err(|error| format!("cannot read {}: {error}", from.display()))?
+    {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let target = to.join(entry.file_name());
+        if entry
+            .file_type()
+            .map_err(|error| error.to_string())?
+            .is_dir()
+        {
+            copy_dir_contents(&entry.path(), &target)?;
+        } else {
+            fs::copy(entry.path(), &target)
+                .map_err(|error| format!("cannot copy {}: {error}", target.display()))?;
+        }
     }
     Ok(())
 }

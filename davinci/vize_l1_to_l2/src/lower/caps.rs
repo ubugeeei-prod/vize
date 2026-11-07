@@ -1,3 +1,6 @@
 //! Compatibility path for the compact dialect capability projection.
+//!
+//! The implementation is owned by the Vue legalization policy while this
+//! ordinary child module preserves the existing internal module identity.
 
-pub use crate::dialect::LegacyCaps;
+include!("../dialect/vue/lower/caps.rs");

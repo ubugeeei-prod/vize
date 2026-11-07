@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/prettier-plugin.yml
-      - npm/prettier/**
+      - npm/formatter/prettier/**
       - npm/native/**
       - crates/vize_glyph/**
       - crates/vize_vitrine/src/napi/format.rs
@@ -41,24 +41,24 @@ jobs:
           { key: prettier-plugin-native, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/setup-rust-script
       - name: Install frozen package and native build dependencies
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/prettier...' --filter './npm/native...'
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/formatter/prettier...' --filter './npm/native...'
       - name: Build exact source binding and package exports
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test "$(node -p 'process.versions.node')" = 24.14.0
           vp run --workspace-root build:native:test
-          cd npm/prettier
+          cd npm/formatter/prettier
           vp check src test vite.config.ts
           vp pack
       - name: Check real host options, complete goldens, AST/render semantics and format counts
-        run: node npm/native/scripts/test-preparation.mjs node --test npm/prettier/src/plugin.test.ts
+        run: node npm/native/scripts/test-preparation.mjs node --test npm/formatter/prettier/src/plugin.test.ts
       - name: Install the tarball in a fresh consumer and exercise actual CLI and configuration
-        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --expected-node 24.14.0 --output "$RUNNER_TEMP/prettier-source-consumer"
+        run: node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 24.14.0 --output "$RUNNER_TEMP/prettier-source-consumer"
       - name: Install the declared minimum Node consumer runtime
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "22.0.0", package-manager-cache: false }
       - name: Qualify the same tarball and native image on Node 22.0.0
-        run: node npm/native/scripts/test-preparation.mjs node npm/prettier/test/consumer.mjs --mode source-native --expected-node 22.0.0 --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" --output "$RUNNER_TEMP/prettier-node22-consumer"
+        run: node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 22.0.0 --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" --output "$RUNNER_TEMP/prettier-node22-consumer"
       - name: Compare installed runtime identity and complete output across consumers
         shell: bash
         run: |

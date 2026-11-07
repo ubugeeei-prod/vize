@@ -21,7 +21,7 @@ test("actual native setup inputs qualify affected source capture while prose sta
     "tests/tooling/native-sfc-primitive-setup-reference.test.ts",
     "tests/tooling/support/native-sfc-setup-reference.ts",
     ".github/actions/test-native-js-setup/action.yml",
-    "vendor/oxc_parser/src/lexer/string.rs",
+    "upstream/forks/oxc_parser/src/lexer/string.rs",
   ]) {
     assert(nativeSetupCaptureRequired([path]), path);
     assert(planNativeRuntime([path]).matrix.lane.includes("setup"), path);

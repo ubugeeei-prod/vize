@@ -131,7 +131,7 @@ test("release workflow publishes the Nuxt module with its runtime lint dependenc
     fs.readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8"),
   ) as { env: Record<string, string> };
   const published = workflow.env.RELEASE_JS_PACKAGES.split(" ");
-  for (const dir of ["npm/framework/nuxt", "npm/framework/nuxt-lint-config", "npm/oxlint"]) {
+  for (const dir of ["npm/framework/nuxt", "npm/framework/nuxt-lint-config", "npm/linter/oxlint"]) {
     assert.ok(published.includes(dir), `${dir} must be released`);
   }
 });

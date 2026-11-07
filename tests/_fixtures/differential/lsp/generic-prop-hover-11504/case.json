@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "id": "lsp/regression/generic-prop-hover-11504",
+  "provenance": {
+    "fixCommit": "d0b5ffabb151f0ec5b7bff3a93efcd3b22f23a8f",
+    "issue": 11504,
+    "inputOrigin": "Issue 11504 generic List component consumed with independently inferred number and string arrays.",
+    "contractOrigin": "Whole native-backed prop hovers expose each call site's instantiated generic type without weakening the declared fallback."
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "8022f5930039a7bec0d0229cf8e6949958cdb995a8b6f60d2b07aa5d1350941a"
+    },
+    {
+      "source": "List.vue.txt",
+      "runtimePath": "List.vue",
+      "sha256": "2ef61c11dcb8fd12d05207f21c736c34d1b69a436d204670f64f3e0482528a28"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "a460e7321a0413d288d719fcc39a00133327c9c8f13f9abada2c9244e4513dc0"
+  },
+  "method": "textDocument/hover",
+  "scope": "Whole native-backed prop hovers for two independent instantiations of one generic component."
+}

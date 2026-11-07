@@ -14,7 +14,7 @@ use super::{
     path_cache::CanonicalPathCache,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput, JsonProgramResult},
-    tsconfig_inputs::{TsconfigInputCache, tsconfig_allows_js},
+    tsconfig_inputs::{TsconfigInputCache, partition_program_owned_sources, tsconfig_allows_js},
 };
 
 mod collect;
@@ -32,6 +32,7 @@ mod overlap;
 mod program_inputs;
 mod programs;
 mod resolve;
+mod shared_declarations;
 #[cfg(unix)]
 mod socket;
 #[cfg(unix)]
@@ -147,6 +148,7 @@ fn prepare_candidate(
     canonical_paths: &mut CanonicalPathCache,
     package_route_resolver: &mut vize_canon::PackageRouteResolver,
     import_session: &mut LocalImportSession,
+    shared: &shared_declarations::SharedDeclarations,
 ) -> Result<ProgramPreparation, vize_l0::String> {
     let initial_root = candidate
         .tsconfig_path
@@ -250,11 +252,28 @@ fn prepare_candidate(
             excluded_explicit_inputs: true,
         });
     }
+    // A referenced project's source is reported by its own program (#11642),
+    // and enters this one as the declaration that program emitted (#12102).
+    let (authored_imports, foreign_sources) = partition_program_owned_sources(
+        program_tsconfig_path.as_deref(),
+        authored_imports,
+        jsx_typecheck,
+        cache,
+    );
     candidate.reported.extend(
         authored_imports
             .into_iter()
             .map(|path| canonical_paths.canonicalize(&path)),
     );
+    let mut foreign_declarations = Vec::new();
+    let mut declared = vize_l0::FxHashSet::default();
+    for source in foreign_sources {
+        let canonical = canonical_paths.canonicalize(&source.path);
+        if let Some(declaration) = shared.declaration_for(&source.owner, &canonical) {
+            foreign_declarations.push((source.path, declaration.to_path_buf()));
+            declared.insert(canonical);
+        }
+    }
     if !args.patterns.is_empty()
         && let Some(program_tsconfig_path) = program_tsconfig_path.as_deref()
     {
@@ -302,6 +321,13 @@ fn prepare_candidate(
         &explicit_program_declarations,
         &project_root,
     );
+    // The declared sources still shaped the project root above, so their
+    // declarations mirror where their projections would have.
+    if !declared.is_empty() {
+        candidate
+            .files
+            .retain(|file| !declared.contains(&canonical_paths.canonicalize(file)));
+    }
     if candidate.files.is_empty() {
         return Ok(ProgramPreparation {
             execution: None,
@@ -332,6 +358,7 @@ fn prepare_candidate(
             package_route_resolver: package_route_resolver.clone(),
             discover_global_component_declarations,
             ensure_included_sources: args.patterns.is_empty(),
+            foreign_declarations,
         },
         settings,
     )?;

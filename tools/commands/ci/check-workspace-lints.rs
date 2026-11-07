@@ -34,7 +34,7 @@ fn run(check: bool) -> Result<(), String> {
     // must not impose Vize's panic-free implementation contract on upstream source.
     let members: Vec<_> = workspace_members(&root)
         .into_iter()
-        .filter(|member| member != "vendor/oxc_parser" && member != "vendor/oxc_formatter" && member != "vendor/oxlint_html_renderer186" && member != "vendor/lightningcss" && member != "vendor/parcel_sourcemap")
+        .filter(|member| member != "upstream/forks/oxc_parser" && member != "upstream/forks/oxc_formatter" && member != "upstream/forks/oxlint_html_renderer186" && member != "upstream/forks/lightningcss" && member != "upstream/forks/parcel_sourcemap")
         .collect();
     if members.is_empty() {
         return Err("no workspace members found in Cargo.toml".into());

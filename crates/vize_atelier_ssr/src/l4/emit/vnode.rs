@@ -27,6 +27,7 @@ pub(super) fn array(expressions: &[String]) -> String {
 struct Children {
     expressions: std::vec::Vec<String>,
     run: std::vec::Vec<String>,
+    dynamic_text: bool,
 }
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -47,6 +48,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// The VNode expressions of the region at the cursor, up to its close.
     pub(super) fn vnode_region(&mut self) -> Result<std::vec::Vec<String>> {
+        let children = self.vnode_region_children()?;
+        Ok(self.finish_children(children))
+    }
+
+    fn vnode_region_children(&mut self) -> Result<Children> {
         let mut children = Children::default();
         while let Some(segment) = self.segments.get(self.pos) {
             if super::region::is_close(segment.kind) {
@@ -54,7 +60,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             self.vnode_child(&mut children)?;
         }
-        Ok(self.finish_children(children))
+        Ok(children)
     }
 
     /// Close the open text run into one `_createTextVNode(...)`.
@@ -93,6 +99,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             (Kind::DynamicText, Source::Interpolation(interpolation)) => {
                 self.pos += 1;
+                children.dynamic_text = true;
                 match text::compound_parts(self.facts.texts, &segment, interpolation)? {
                     Some(parts) => {
                         for part in parts {
@@ -191,8 +198,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let attached = attached.as_slice();
         self.ctx.use_core_helper(RuntimeHelper::CreateElementVNode);
         let props = self.vnode_element_props(attached, key)?;
-        let children = match self.direct_children(self.pos)?.as_slice() {
-            [] => "null".to_compact_string(),
+        let (children, dynamic_text) = match self.direct_children(self.pos)?.as_slice() {
+            [] => ("null".to_compact_string(), false),
             [only]
                 if self
                     .segments
@@ -204,16 +211,26 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
                 let decoded = decode_ssr_static_text(content);
                 text::admit_decoded(content, &decoded)?;
-                quoted_js_string(&decoded)
+                (quoted_js_string(&decoded), false)
             }
-            _ => array(&self.vnode_region()?),
+            _ => {
+                let parts = self.vnode_region_children()?;
+                if parts.expressions.is_empty() && !parts.run.is_empty() {
+                    (parts.run.join(" + ").into(), parts.dynamic_text)
+                } else {
+                    (array(&self.finish_children(parts)), false)
+                }
+            }
         };
         self.close(
             Kind::CloseElement,
             |source| matches!(source, Source::Element(closed) if core::ptr::eq(*closed, element)),
         )?;
         let tag = quoted_js_string(tag);
-        Ok(cstr!("_createElementVNode({tag}, {props}, {children})"))
+        let text_flag = if dynamic_text { ", 1 /* TEXT */" } else { "" };
+        Ok(cstr!(
+            "_createElementVNode({tag}, {props}, {children}{text_flag})"
+        ))
     }
 
     /// `_createVNode(callee, props, slots)`.

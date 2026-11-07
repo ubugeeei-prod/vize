@@ -32,7 +32,7 @@ const musea =
 // Rust's transitive dependencies are deliberately conservative here; unrelated
 // docs, tooling, and other JS integrations never start a native browser build.
 const museaNative =
-  /^(crates\/|davinci\/|vendor\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$|npm\/(native|cli)\/|npm\/builder\/(vite|unplugin|shared)\/|tools\/commands\/build\/|tools\/support\/build\/|tools\/support\/command-runtime\.ts$|tools\/support\/github\/build-napi-package\.ts$|\.github\/actions\/setup-rust|tests\/package\.json$)/;
+  /^(crates\/|davinci\/|upstream\/forks\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$|npm\/(native|cli)\/|npm\/builder\/(vite|unplugin|shared)\/|tools\/commands\/build\/|tools\/support\/build\/|tools\/support\/command-runtime\.ts$|tools\/support\/github\/build-napi-package\.ts$|\.github\/actions\/setup-rust|tests\/package\.json$)/;
 
 export function planProductIntegrations(paths: readonly string[]): ProductIntegrationPlan {
   const plan = { ...NONE };

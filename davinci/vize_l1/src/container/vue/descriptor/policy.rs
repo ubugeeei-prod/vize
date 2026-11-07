@@ -1,6 +1,5 @@
 //! Classify each original block at its existing emission event, without rescanning.
 
-use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, SourceRoot, Span, Vec};
 
 use super::super::scan::MatchedClose;
@@ -25,7 +24,7 @@ impl<'a> Policy<'a> {
         source: &'a str,
         options: DescriptorOptions,
     ) -> Self {
-        Self::at_version(allocator, source, options, VueVersion::V3)
+        Self::at_profile(allocator, source, options, crate::registry::VUE3_COMPONENT)
     }
 
     pub(super) fn new_vue2(
@@ -33,7 +32,7 @@ impl<'a> Policy<'a> {
         source: &'a str,
         options: DescriptorOptions,
     ) -> Self {
-        Self::at_version(allocator, source, options, VueVersion::V2)
+        Self::at_profile(allocator, source, options, crate::registry::VUE2_COMPONENT)
     }
 
     pub(super) fn new_vue1(
@@ -41,14 +40,14 @@ impl<'a> Policy<'a> {
         source: &'a str,
         options: DescriptorOptions,
     ) -> Self {
-        Self::at_version(allocator, source, options, VueVersion::V1)
+        Self::at_profile(allocator, source, options, crate::registry::VUE1_COMPONENT)
     }
 
-    fn at_version(
+    fn at_profile(
         allocator: &'a Allocator,
         source: &'a str,
         options: DescriptorOptions,
-        required: VueVersion,
+        profile: crate::registry::ComponentProfile,
     ) -> Self {
         let mut state = Self {
             root: SourceRoot::new(source).ok(),
@@ -59,14 +58,20 @@ impl<'a> Policy<'a> {
             styles: Vec::new_in(&allocator),
         };
         for (unsupported, code) in [
-            (options.version != required, Code::UnsupportedVersion),
-            (options.dialect != VueDialect::Vue, Code::UnsupportedDialect),
+            (
+                !profile.accepts_version(options.version),
+                Code::UnsupportedVersion,
+            ),
+            (
+                !profile.accepts_framework(options.dialect),
+                Code::UnsupportedDialect,
+            ),
             (
                 options.template.experimental_in_tag_comments,
                 Code::UnsupportedOptions,
             ),
             (
-                options.template.syntax != vize_l0::TemplateSyntaxMode::Standard,
+                !profile.accepts_syntax(options.template.syntax),
                 Code::UnsupportedOptions,
             ),
         ] {

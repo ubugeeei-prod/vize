@@ -13,6 +13,9 @@ import type { ScaleKind } from "./scale-project-generator.ts";
 import type { Provenance, ToolId } from "./typecheck-scaling-tools.ts";
 
 export const GROWTH_LIMIT = 1.5;
+export const MAPPER_SPEEDUP_TARGET = 100;
+export const MAPPER_MEMORY_TARGET = 10;
+export const TSRS_WALL_TARGET_MS = 500;
 
 export type Sample = {
   wallMs: number;
@@ -76,6 +79,20 @@ export type Row = {
   checkTimeS: number | null;
 };
 
+export type PerformanceTarget = {
+  kind: ScaleKind;
+  sfcs: number;
+  diagnosticParity: boolean;
+  mapperWarmSpeedup: number | null;
+  mapperColdSpeedup: number | null;
+  mapperWarmMemoryReduction: number | null;
+  mapperColdMemoryReduction: number | null;
+  tsrsWarmMs: number | null;
+  tsrsColdMs: number | null;
+  met: boolean;
+  missing: string[];
+};
+
 /** Warm medians; the cold run never enters them. A refused cell has no numbers. */
 export function rowOf(cell: Cell): Row {
   const runs = cell.refused ? [] : cell.runs;
@@ -89,6 +106,76 @@ export function rowOf(cell: Cell): Row {
     instantiations: of("instantiations"),
     checkTimeS: of("checkTimeS"),
   };
+}
+
+const sampleFingerprint = (cell: Cell | undefined): string | null =>
+  cell != null && cell.refused == null && cell.runs.length > 0
+    ? (cell.runs[0]?.fingerprint ?? null)
+    : null;
+
+/**
+ * The public performance targets compare the same host on the same corpus.
+ * A target is never eligible when either lane was refused or their complete
+ * diagnostic fingerprints differ.
+ */
+export function performanceTargets(cells: Cell[]): PerformanceTarget[] {
+  const keys = [
+    ...new Set(
+      cells
+        .filter((cell) => cell.tool === "tsc-vize-mapper")
+        .map((cell) => `${cell.kind}:${cell.sfcs}`),
+    ),
+  ];
+  return keys.map((key) => {
+    const [kind, sfcsText] = key.split(":") as [ScaleKind, string];
+    const sfcs = Number(sfcsText);
+    const find = (tool: Cell["tool"]) =>
+      cells.find((cell) => cell.kind === kind && cell.sfcs === sfcs && cell.tool === tool);
+    const vize = find("tsc-vize-mapper");
+    const reference = find("tsc-vue-mapper");
+    const tsrs = find("tsrs-fast-parallel-vize-mapper");
+    const vizeRow = vize ? rowOf(vize) : null;
+    const referenceRow = reference ? rowOf(reference) : null;
+    const tsrsRow = tsrs ? rowOf(tsrs) : null;
+    const divide = (
+      numerator: number | null | undefined,
+      denominator: number | null | undefined,
+    ) =>
+      numerator != null && denominator != null && denominator > 0 ? numerator / denominator : null;
+    const diagnosticParity =
+      sampleFingerprint(vize) != null &&
+      sampleFingerprint(vize) === sampleFingerprint(reference) &&
+      sampleFingerprint(vize) === sampleFingerprint(tsrs);
+    const mapperWarmSpeedup = divide(referenceRow?.wallMs, vizeRow?.wallMs);
+    const mapperColdSpeedup = divide(reference?.cold?.wallMs, vize?.cold?.wallMs);
+    const mapperWarmMemoryReduction = divide(referenceRow?.rssKb, vizeRow?.rssKb);
+    const mapperColdMemoryReduction = divide(reference?.cold?.maxRssKb, vize?.cold?.maxRssKb);
+    const tsrsWarmMs = tsrsRow?.wallMs ?? null;
+    const tsrsColdMs = tsrs?.cold?.wallMs ?? null;
+    const missing: string[] = [];
+    if (!diagnosticParity) missing.push("diagnostic parity");
+    if ((mapperWarmSpeedup ?? 0) < MAPPER_SPEEDUP_TARGET) missing.push("warm mapper 100x");
+    if ((mapperColdSpeedup ?? 0) < MAPPER_SPEEDUP_TARGET) missing.push("cold mapper 100x");
+    if ((mapperWarmMemoryReduction ?? 0) < MAPPER_MEMORY_TARGET) missing.push("warm memory 10x");
+    if ((mapperColdMemoryReduction ?? 0) < MAPPER_MEMORY_TARGET) missing.push("cold memory 10x");
+    if ((tsrsWarmMs ?? Number.POSITIVE_INFINITY) > TSRS_WALL_TARGET_MS)
+      missing.push("warm tsrs 500ms");
+    if ((tsrsColdMs ?? Number.POSITIVE_INFINITY) > TSRS_WALL_TARGET_MS)
+      missing.push("cold tsrs 500ms");
+    return {
+      kind,
+      sfcs,
+      diagnosticParity,
+      mapperWarmSpeedup,
+      mapperColdSpeedup,
+      mapperWarmMemoryReduction,
+      mapperColdMemoryReduction,
+      tsrsWarmMs,
+      tsrsColdMs,
+      met: missing.length === 0,
+      missing,
+    };
+  });
 }
 
 type Metric = "wallMs" | "cpuMs" | "rssKb";
@@ -173,6 +260,7 @@ const times = (value: number | null) => (value == null ? "n/a" : `×${value.toFi
 export function renderSummary(results: ScalingResults): string {
   const rows = results.cells.map(rowOf);
   const growth = growthOf(rows);
+  const targets = performanceTargets(results.cells);
   const refused = results.cells.filter((cell) => cell.refused);
   const lines = [
     "# Type-check scaling",
@@ -234,6 +322,24 @@ export function renderSummary(results: ScalingResults): string {
       "",
       ...header("monorepo"),
       ...monorepo.map(line),
+      "",
+    );
+  }
+  if (targets.length > 0) {
+    lines.push(
+      "## Performance targets",
+      "",
+      `The target is at least ${MAPPER_SPEEDUP_TARGET}x lower mapper wall time and ${MAPPER_MEMORY_TARGET}x lower peak memory than the reference mapper on the same TypeScript host, plus tsrs --fast --checkers=max at or below ${TSRS_WALL_TARGET_MS} ms. Cold and warm observations must both pass, and complete diagnostic fingerprints must match. A miss remains visible and is never averaged with another corpus.`,
+      "",
+      "| Corpus | Diagnostics | Mapper wall warm / cold | Memory warm / cold | tsrs warm / cold | Verdict |",
+      "| --- | --- | ---: | ---: | ---: | --- |",
+      ...targets.map((target) => {
+        const corpus = `${target.kind} ${target.sfcs.toLocaleString("en-US")} SFCs`;
+        const mapper = `${times(target.mapperWarmSpeedup)} / ${times(target.mapperColdSpeedup)}`;
+        const memory = `${times(target.mapperWarmMemoryReduction)} / ${times(target.mapperColdMemoryReduction)}`;
+        const tsrs = `${fixed(target.tsrsWarmMs, 0)} ms / ${fixed(target.tsrsColdMs, 0)} ms`;
+        return `| ${corpus} | ${target.diagnosticParity ? "exact" : "**mismatch / refused**"} | ${mapper} | ${memory} | ${tsrs} | ${target.met ? "**met**" : `miss: ${target.missing.join(", ")}`} |`;
+      }),
       "",
     );
   }

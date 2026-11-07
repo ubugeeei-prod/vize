@@ -7,6 +7,11 @@ use crate::file::{FileArtifact, FileIssueKind, RejectedFile, ScriptUnitId};
 use vize_l0::Span;
 use vize_l1::{embed::syntax::NativeSyntax, markup::NativeTemplateComponent};
 
+// The implementation is included from its compatibility module to retain the
+// existing type identity. Keep an ordinary, disabled declaration here so
+// rustfmt still discovers the language-owned source file.
+#[cfg(any())]
+mod header;
 mod program;
 mod scoped;
 mod setup;

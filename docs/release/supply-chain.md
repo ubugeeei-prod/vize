@@ -180,6 +180,6 @@ once a maintained verification surface exists for those registries.
 
 If `cosign verify-blob` fails for an artifact you downloaded from
 [GitHub Releases](https://github.com/ubugeeei-prod/vize/releases), follow the
-disclosure process in [`SECURITY.md`](../../SECURITY.md). Do not open a public
+disclosure process in [`SECURITY.md`](../../.github/SECURITY.md). Do not open a public
 tracker entry with the failure details until the maintainers have confirmed whether
 the artifact set should be revoked.

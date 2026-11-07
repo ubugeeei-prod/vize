@@ -14,7 +14,7 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packageDir = path.join(root, "npm/fresco-native");
-const verifier = path.join(packageDir, "scripts/verify-generated-contract.mjs");
+const verifier = path.join(packageDir, "scripts/verify-generated-contract.ts");
 
 function declarationFiles(directory: string, prefix = ""): string[] {
   const found: string[] = [];
@@ -60,7 +60,7 @@ test("fresco-native ships one generated declaration and exposes strict contract 
   assert.equal(manifest.types, "index.d.ts");
   assert.equal(
     manifest.scripts?.["check:generated"],
-    "node ./scripts/verify-generated-contract.mjs --profile ci",
+    "node ./scripts/verify-generated-contract.ts --profile ci",
   );
   assert.equal(manifest.scripts?.["check:types"], "node ./scripts/verify-consumer-types.ts");
   assert.deepEqual(JSON.parse(readRepoFile("npm", "fresco-native", "scripts", "package.json")), {

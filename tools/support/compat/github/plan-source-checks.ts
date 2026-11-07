@@ -90,7 +90,7 @@ export function planSourceChecks(
       continue;
     }
     if (
-      /^(crates\/|davinci\/|vendor\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+      /^(crates\/|davinci\/|upstream\/forks\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
         path,
       )
     ) {

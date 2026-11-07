@@ -67,10 +67,14 @@ extern crate std;
 
 pub mod dialect;
 pub mod emit;
+#[cfg(any())]
+mod lang;
 pub use emit::{exceptional_for_binding_names, rewrite_for_alias_expressions};
 pub mod exemptions;
 mod expression_coordinates;
 mod js_compat;
+mod policy;
+pub use policy::*;
 pub mod key;
 pub use js_compat::js_module_compatible;
 pub mod lower;
@@ -79,6 +83,7 @@ pub mod native_file;
 pub mod native_vue2;
 pub mod partial;
 pub mod pass;
+pub mod registry;
 pub mod vue_file;
 
 /// Croquis reactivity facts the L2 transform rewrite reads (P3-17).
@@ -92,10 +97,12 @@ pub use emit::{
     emit_dom_source_observed_with_options_captured,
     emit_dom_source_observed_with_options_captured_and_slot_scope,
     emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax,
     emit_dom_source_sfc_observed_with_options, emit_dom_source_sfc_with_options,
     emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
     emit_dom_source_with_options_captured, emit_dom_source_with_options_captured_and_slot_scope,
-    emit_dom_source_with_options_captured_slot_scope_and_environment, emit_dom_with_options,
+    emit_dom_source_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_with_options_captured_slot_scope_environment_and_syntax, emit_dom_with_options,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use emit::{
@@ -103,14 +110,14 @@ pub use emit::{
     emit_dom_source_patch_facts_observed_with_options,
 };
 pub use lower::{
-    ForeignDialect, LegacyCaps, Lowered, LoweringFeatures, OpFamily, lower,
-    lower_preserving_comments, lower_source_block, lower_source_block_with_caps,
-    lower_source_block_with_foreign_expressions, lower_style_block, lower_style_block_in,
-    lower_with_caps, lower_with_frozen_element_spans,
+    ForeignDialect, Lowered, LoweringFeatures, OpFamily, lower, lower_preserving_comments,
+    lower_source_block, lower_source_block_with_caps, lower_source_block_with_foreign_expressions,
+    lower_style_block, lower_style_block_in, lower_with_caps, lower_with_frozen_element_spans,
 };
 
 #[doc(hidden)]
 pub use emit::{
     SurfacePreflight, emit_dom_source_with_preflight,
     emit_dom_source_with_preflight_and_environment,
+    emit_dom_source_with_preflight_environment_and_syntax,
 };

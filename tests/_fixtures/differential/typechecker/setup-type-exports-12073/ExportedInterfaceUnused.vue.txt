@@ -1,0 +1,13 @@
+<script setup lang="ts">
+export interface Preview {
+    title: string | null
+}
+
+defineProps<{
+    show?: boolean
+}>()
+</script>
+
+<template>
+    <div v-if="show">preview</div>
+</template>

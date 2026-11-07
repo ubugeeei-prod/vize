@@ -35,7 +35,7 @@
     "build": "napi build --platform --release --manifest-path ../../crates/vize_fresco/Cargo.toml -p vize_fresco --features napi --output-dir .",
     "build:ci": "napi build --platform --profile ci --manifest-path ../../crates/vize_fresco/Cargo.toml -p vize_fresco --features napi --output-dir .",
     "build:debug": "napi build --platform --manifest-path ../../crates/vize_fresco/Cargo.toml -p vize_fresco --features napi --output-dir .",
-    "check:generated": "node ./scripts/verify-generated-contract.mjs --profile ci",
+    "check:generated": "node ./scripts/verify-generated-contract.ts --profile ci",
     "check:types": "node ./scripts/verify-consumer-types.ts"
   },
   "devDependencies": {

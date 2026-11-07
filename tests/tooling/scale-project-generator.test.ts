@@ -97,7 +97,20 @@ void test("plants scale with the project and always reach the last feature", () 
   );
 });
 
-void test("fixed model plants stay required while remaining handler misses stay pinned", () => {
+void test("the giant profile keeps all work in one oversized SFC", () => {
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 100 });
+  assert.equal(vueFiles(project.files), 1);
+  assert.equal(project.features, 100);
+  assert.ok((project.files.get("src/App.vue")?.length ?? 0) > 70_000);
+  assert.equal(project.plants.length, 1);
+  assert.match(plantLine(project.files, project.plants[0]!), PLANT_TEXT.script);
+  assert.throws(
+    () => generateScaleProject({ sfcs: 2, kind: "giant", giantBlocks: 100 }),
+    /exactly 1 SFC/u,
+  );
+});
+
+void test("fixed model and listener plants stay required", () => {
   const { plants } = generateScaleProject({ sfcs: minSfcs("vue"), kind: "vue" });
   const vModel = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "v-model")?.count;
@@ -106,7 +119,37 @@ void test("fixed model plants stay required while remaining handler misses stay 
   assert.equal(vModel("tsrs-fast-vize-mapper"), 1);
   const listener = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "listener-prop")?.count;
-  assert.deepEqual(["vize-check", "tsc-vize-mapper", "vue-tsc"].map(listener), [2, 1, 1]);
+  assert.deepEqual(
+    ["vize-check", "tsc-vize-mapper", "tsrs-fast-vize-mapper", "vue-tsc"].map(listener),
+    [2, 2, 2, 1],
+  );
+});
+
+void test("the performance corpus omits known cross-mapper misses", () => {
+  const project = generateScaleProject({
+    sfcs: minSfcs("vue"),
+    kind: "vue",
+    parityPlants: true,
+  });
+  assert.ok(project.plants.length > 0);
+  assert.ok(
+    project.plants.every((plant) => !["listener-arrow", "listener-prop"].includes(plant.kind)),
+  );
+  assert.doesNotMatch(
+    project.files.get("src/features/f0000/Page.vue") ?? "",
+    /@save-item="\(value: number\) => undefined"/u,
+  );
+  const counts = ["tsc-vize-mapper", "tsc-vue-mapper", "tsrs-fast-parallel-vize-mapper"].map(
+    (lane) => expectedPlants(project.plants, lane).reduce((sum, plant) => sum + plant.count, 0),
+  );
+  assert.equal(new Set(counts).size, 1);
+});
+
+void test("the giant profile has no reference-only attribute diagnostics", () => {
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 10 });
+  const source = project.files.get("src/App.vue") ?? "";
+  assert.doesNotMatch(source, /:data-index=/u);
+  assert.match(source, /id="metric-9"/u);
 });
 
 void test("a Nuxt project is a Nuxt 4 app tree with auto-imported, path-prefixed components", () => {

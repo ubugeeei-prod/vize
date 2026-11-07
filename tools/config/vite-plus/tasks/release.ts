@@ -22,6 +22,9 @@ const releaseCommand = (name: string, ...args: string[]) =>
  * catalog readable even as the repository gains more package families.
  */
 export const releaseTasks = defineTasks({
+  changelog: noCacheTask('node tools/commands/release/regenerate-changelog.ts "$@"', {
+    forwardArguments: true,
+  }),
   // The release command owns argument parsing and confirmation before mutation.
   release: noCacheTask(releaseCommand("release", "dispatch", '"$@"'), {
     forwardArguments: true,
@@ -36,7 +39,7 @@ export const releaseTasks = defineTasks({
     `${runTask("build:vite-plugin")} && ${releaseCommand("publish_npm_package", "npm/builder/vite")}`,
   ),
   "publish:oxlint-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/oxlint"])} && ${rustTool("release/npm/inject-native-optional-deps", "npm/oxlint/package.json", "npm/native/package.json")} && ${releaseCommand("publish_npm_package", "npm/oxlint")}`,
+    `${runInPackages("build", ["./npm/linter/oxlint"])} && ${rustTool("release/npm/inject-native-optional-deps", "npm/linter/oxlint/package.json", "npm/native/package.json")} && ${releaseCommand("publish_npm_package", "npm/linter/oxlint")}`,
   ),
   "publish:npm": noCacheTask(
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),

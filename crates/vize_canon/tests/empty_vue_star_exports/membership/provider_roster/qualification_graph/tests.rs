@@ -7,44 +7,50 @@ struct Inputs {
     update: Value,
     lock: Vec<u8>,
     package: Vec<u8>,
-    parcel_manifest: Vec<u8>,
-    cargo_workspace: Vec<u8>,
-    cargo_lock: Vec<u8>,
+    workspace: Vec<u8>,
+    babel_manifest: Vec<u8>,
+    eslint_manifest: Vec<u8>,
+    oxlint_manifest: Vec<u8>,
+    prettier_manifest: Vec<u8>,
 }
 
 fn inputs() -> Inputs {
     Inputs {
         previous: super::super::load(),
-        predecessor: lockfile_update(),
-        predecessor_bytes: fs::read(support::corpus().join(LOCKFILE_UPDATE)).unwrap(),
-        update: parcel_update(),
+        predecessor: parcel_update(),
+        predecessor_bytes: fs::read(support::corpus().join(PARCEL_UPDATE)).unwrap(),
+        update: tooling_update(),
         lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        parcel_manifest: fs::read(support::repository().join(PARCEL_MANIFEST)).unwrap(),
-        cargo_workspace: fs::read(support::repository().join(CARGO_WORKSPACE)).unwrap(),
-        cargo_lock: fs::read(support::repository().join(CARGO_LOCK)).unwrap(),
+        workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+        babel_manifest: fs::read(support::repository().join(BABEL_MANIFEST)).unwrap(),
+        eslint_manifest: fs::read(support::repository().join(ESLINT_MANIFEST)).unwrap(),
+        oxlint_manifest: fs::read(support::repository().join(OXLINT_MANIFEST)).unwrap(),
+        prettier_manifest: fs::read(support::repository().join(PRETTIER_MANIFEST)).unwrap(),
     }
 }
 
 impl Inputs {
-    fn graph<'a>(&'a self, lock: &'a [u8]) -> ParcelQualificationGraph<'a> {
-        ParcelQualificationGraph {
+    fn graph<'a>(&'a self, lock: &'a [u8]) -> ToolingQualificationGraph<'a> {
+        ToolingQualificationGraph {
             lock,
             package: &self.package,
-            parcel_manifest: &self.parcel_manifest,
-            cargo_workspace: &self.cargo_workspace,
-            cargo_lock: &self.cargo_lock,
+            workspace: &self.workspace,
+            babel_manifest: &self.babel_manifest,
+            eslint_manifest: &self.eslint_manifest,
+            oxlint_manifest: &self.oxlint_manifest,
+            prettier_manifest: &self.prettier_manifest,
         }
     }
 }
 
 fn verify(input: &Inputs, update: &Value, lock: &[u8]) -> Checked<()> {
     let graph = input.graph(lock);
-    verify_parcel_update(&input.predecessor, &input.predecessor_bytes, update, &graph)
+    verify_tooling_update(&input.predecessor, &input.predecessor_bytes, update, &graph)
 }
 
 #[test]
-fn exact_parcel_successor_binds_the_whole_current_graph() {
+fn exact_tooling_successor_binds_the_whole_current_graph() {
     let input = inputs();
     assert_eq!(verify(&input, &input.update, &input.lock), Ok(()));
     assert_eq!(
@@ -54,15 +60,12 @@ fn exact_parcel_successor_binds_the_whole_current_graph() {
 }
 
 #[test]
-fn historical_lockfile_successor_remains_an_exact_predecessor() {
+fn historical_parcel_successor_remains_an_exact_predecessor() {
     let input = inputs();
-    assert_eq!(
-        support::hash(&input.predecessor_bytes),
-        LOCKFILE_UPDATE_HASH
-    );
+    assert_eq!(support::hash(&input.predecessor_bytes), PARCEL_UPDATE_HASH);
     assert_eq!(
         input.update["previousProviderQualificationRecord"]["sha256"],
-        LOCKFILE_UPDATE_HASH
+        PARCEL_UPDATE_HASH
     );
     assert_eq!(
         input.update["previousQualificationLock"],
@@ -79,7 +82,7 @@ fn changed_graph_predecessor_and_fixed_point_are_refused() {
     ] {
         assert_eq!(
             verify(&input, &input.update, changed),
-            Err("exact current Parcel qualification graph bytes")
+            Err("exact current JavaScript tooling qualification graph bytes")
         );
     }
 
@@ -87,20 +90,20 @@ fn changed_graph_predecessor_and_fixed_point_are_refused() {
     predecessor["finalQualificationLock"]["sha256"] = json!(support::hash(b"foreign"));
     let graph = input.graph(&input.lock);
     assert_eq!(
-        verify_parcel_update(
+        verify_tooling_update(
             &predecessor,
             &input.predecessor_bytes,
             &input.update,
             &graph,
         ),
-        Err("exact frozen Parcel qualification successor")
+        Err("exact frozen JavaScript tooling qualification successor")
     );
 
     let mut resolver = input.update.clone();
-    resolver["resolvers"]["cargo"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
+    resolver["resolver"]["fixedPointSha256"] = json!(support::hash(b"foreign"));
     assert_eq!(
         verify(&input, &resolver, &input.lock),
-        Err("exact Parcel resolver fixed points")
+        Err("exact JavaScript tooling resolver fixed point")
     );
 }
 
@@ -108,10 +111,10 @@ fn changed_graph_predecessor_and_fixed_point_are_refused() {
 fn foreign_manifests_and_unreviewed_bytes_are_refused() {
     let input = inputs();
     let mut changed = input.update.clone();
-    changed["parcelNativeManifest"]["sha256"] = json!(support::hash(b"foreign"));
+    changed["oxlintManifest"]["sha256"] = json!(support::hash(b"foreign"));
     assert_eq!(
         verify(&input, &changed, &input.lock),
-        Err("exact current Parcel qualification graph bytes")
+        Err("exact current JavaScript tooling qualification graph bytes")
     );
 
     let mut lock = input.lock.clone();
@@ -120,6 +123,6 @@ fn foreign_manifests_and_unreviewed_bytes_are_refused() {
     rehashed["finalQualificationLock"]["sha256"] = json!(support::hash(&lock));
     assert_eq!(
         verify(&input, &rehashed, &lock),
-        Err("exact Parcel resolver fixed points")
+        Err("exact JavaScript tooling resolver fixed point")
     );
 }

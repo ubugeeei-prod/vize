@@ -5,12 +5,12 @@ import { test } from "node:test";
 
 import { normalizeRepoText, readRepoFile, root } from "./support/github-workflows.ts";
 
-const CANONICAL_OXLINT_PACKAGE_DIR = "npm/oxlint";
+const CANONICAL_OXLINT_PACKAGE_DIR = "npm/linter/oxlint";
 const MISSPELLED_OXLINT_PACKAGE_DIR = path.posix.join("npm", "oxint");
 
 const USER_VISIBLE_LINT_SURFACES = [
   ".github",
-  "CONTRIBUTING.md",
+  ".github/CONTRIBUTING.md",
   "README.md",
   "docs",
   "examples",

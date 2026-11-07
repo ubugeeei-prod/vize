@@ -5,6 +5,7 @@ mod unref;
 
 use vize_l0::ensure_sufficient_stack;
 use vize_l0::side_table::SideTable;
+use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Op, Region};
 
 use crate::lower::ForWrapper;
@@ -204,12 +205,21 @@ fn prefer_op_helpers(
         Op::JsxChildValue(_) => {}
         Op::Text(_) => buf.prefer(Helper::CreateText),
         Op::Comment(_) => buf.prefer(Helper::CreateComment),
-        Op::Interpolation(_) => {
-            buf.prefer(Helper::ToDisplayString);
-            if id
-                .and_then(|id| cx.facts.text_facts.get(id))
-                .is_some_and(|text| text.parts.iter().any(|part| !part.dynamic))
-            {
+        Op::Interpolation(interpolation) => {
+            let compound = id.and_then(|id| cx.facts.text_facts.get(id));
+            let needs_display_string = if matches!(
+                interpolation.expression,
+                ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound
+            ) {
+                compound
+                    .is_none_or(|text| text.parts.iter().any(|part| part.dynamic && !part.raw_html))
+            } else {
+                !interpolation.raw_html
+            };
+            if needs_display_string {
+                buf.prefer(Helper::ToDisplayString);
+            }
+            if compound.is_some_and(|text| text.parts.iter().any(|part| !part.dynamic)) {
                 buf.prefer(Helper::CreateText);
             }
         }

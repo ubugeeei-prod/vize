@@ -163,6 +163,39 @@ const sourceTransitions = new Map<string, Transition>([
   ],
 ]);
 
+const guardedInferenceTransition: Transition = {
+  before: {
+    bytes: 22_190,
+    sha256: "a8a74895bb7d5b6a33392f50455cae826a4e5754e59cfc6cce6641876c8fe4e3",
+  },
+  after: {
+    bytes: 22_600,
+    sha256: "b4e95857da9131f19273c08925849109987b6bae8af8eac01d069484ba2860d1",
+  },
+  edits: [
+    {
+      before: "    pub(super) enclosing_vif_guard: Option<&'a str>,\n",
+      after:
+        "    /// Logical guard that keeps listener contracts scoped to their authored\n" +
+        "    /// branch, even when the inference call needs its own physical wrapper.\n" +
+        "    pub(super) enclosing_vif_guard: Option<&'a str>,\n" +
+        "    /// Guard already wrapped around the emitted inference call. Only this may\n" +
+        "    /// be subtracted from the call's own `v-if` guard.\n" +
+        "    pub(super) inference_outer_vif_guard: Option<&'a str>,\n",
+    },
+    {
+      before: "        enclosing_vif_guard,\n        event_inference_usages,\n",
+      after:
+        "        enclosing_vif_guard,\n        inference_outer_vif_guard,\n        event_inference_usages,\n",
+    },
+    {
+      before: "            enclosing_vif_guard,\n            event_inference_usages,\n",
+      after:
+        "            enclosing_vif_guard: inference_outer_vif_guard,\n            event_inference_usages,\n",
+    },
+  ],
+};
+
 function inverse(current: string, transition: Transition, context: string): string {
   assert.deepEqual(identity(current), transition.after, context);
   for (const edit of transition.edits) {
@@ -176,6 +209,16 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  if (
+    path === "crates/vize_canon/src/virtual_ts/scope/component_events.rs" &&
+    identity(current).sha256 === guardedInferenceTransition.after.sha256
+  ) {
+    current = inverse(
+      current,
+      guardedInferenceTransition,
+      "selected emit gate producer: guarded inference source",
+    );
+  }
   const transition = sourceTransitions.get(path);
   return transition
     ? inverse(current, transition, `selected emit gate producer: listener relation source ${path}`)

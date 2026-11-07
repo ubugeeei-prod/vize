@@ -18,6 +18,7 @@ import {
   type Sample,
   type ScalingResults,
   growthOf,
+  performanceTargets,
   renderSummary,
   rowOf,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-report.ts";
@@ -181,6 +182,57 @@ void test("growth flags per-SFC growth and steps, and refused cells never contri
   assert.match(summary, /## Refused \(1\)/u);
   assert.match(summary, /\| vize-check \| 20000 \| 15\.00 \| 60\.00 \|/u);
   assert.match(summary, /\*\*superlinear\*\*: per-SFC CPU ×3\.00 from 1000 to 20000/u);
+});
+
+void test("performance targets require exact diagnostics and every cold and warm threshold", () => {
+  const targetCell = (
+    tool: Cell["tool"],
+    wallMs: number,
+    rssKb: number,
+    fingerprint = "same",
+  ): Cell => {
+    const value = cell(tool, 1000, wallMs * 4, rssKb);
+    value.runs = value.runs.map((entry) => ({ ...entry, wallMs, fingerprint }));
+    value.cold = { ...value.cold!, wallMs, fingerprint };
+    return value;
+  };
+  const passing = [
+    targetCell("tsc-vize-mapper", 4, 1000),
+    targetCell("tsc-vue-mapper", 400, 10_000),
+    targetCell("tsrs-fast-parallel-vize-mapper", 499, 2000),
+  ];
+  const [target] = performanceTargets(passing);
+  assert.equal(target?.met, true);
+  assert.equal(target?.mapperWarmSpeedup, 100);
+  assert.equal(target?.mapperColdMemoryReduction, 10);
+  assert.equal(target?.tsrsWarmMs, 499);
+
+  const mismatched = passing.map((entry) => ({
+    ...entry,
+    runs:
+      entry.tool === "tsc-vue-mapper"
+        ? entry.runs.map((sample) => ({ ...sample, fingerprint: "different" }))
+        : entry.runs,
+  }));
+  const [failed] = performanceTargets(mismatched);
+  assert.equal(failed?.met, false);
+  assert.ok(failed?.missing.includes("diagnostic parity"));
+
+  const mismatchedTsrs = passing.map((entry) => ({
+    ...entry,
+    runs:
+      entry.tool === "tsrs-fast-parallel-vize-mapper"
+        ? entry.runs.map((sample) => ({ ...sample, fingerprint: "different" }))
+        : entry.runs,
+  }));
+  const [tsrsFailed] = performanceTargets(mismatchedTsrs);
+  assert.equal(tsrsFailed?.met, false);
+  assert.ok(tsrsFailed?.missing.includes("diagnostic parity"));
+
+  const summary = renderSummary(results(passing));
+  assert.match(summary, /## Performance targets/u);
+  assert.match(summary, /\| vue 1,000 SFCs \| exact \| ×100\.00 \/ ×100\.00 \|/u);
+  assert.match(summary, /\| \*\*met\*\* \|/u);
 });
 
 void test("the plot draws one line per tool in each of the six panels", () => {

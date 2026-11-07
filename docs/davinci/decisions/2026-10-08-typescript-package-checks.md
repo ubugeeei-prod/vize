@@ -31,7 +31,7 @@ The real-Vite helper retains the producer pack, consumer `npm ci` flags,
 declaration staging, installed-package export, and exact consumer TypeScript
 compiler path and arguments. Its real Vite 8 lockfile and TypeScript consumer
 fixture retain their original bytes. Native package preparation and
-`npm/builder/vite/scripts/run-tests.mjs` belong to a separate provider graph.
+`npm/builder/vite/scripts/run-tests.ts` belongs to a separate provider graph.
 
 Public package `engines.node` remains `>=22`. These scripts are private build
 and verification tooling run under the already pinned workspace runtime.

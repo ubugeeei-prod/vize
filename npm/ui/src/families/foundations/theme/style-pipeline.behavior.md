@@ -30,6 +30,7 @@ Tabs, Breadcrumb, Pagination, and Stepper also expose independent
 | S4  | native color functions (`oklch()`)    | native                | preserved without legacy fallback                  | `authored nesting, layers, logical properties, and color functions compile to the floor` |
 | S5  | scoped `<style scoped>` semantics     | n/a                   | every lowered rule keeps its `[data-v-*]` selector | `scoped style semantics survive the down-compile`                                        |
 | S6  | runtime CSS-in-JS                     | forbidden             | styles exist only as opt-in CSS asset files        | `styles never arrive through runtime CSS-in-JS`                                          |
+| S7  | semantic nested component selectors   | source contract       | flattened without BEM or class-name APIs           | `semantic component nesting is lowered by Lightning CSS`                                 |
 
 ## Target policy
 
@@ -43,6 +44,10 @@ Tabs, Breadcrumb, Pagination, and Stepper also expose independent
 - Moving the floor is a reviewed contract change: edit `cssBrowserFloor`,
   rebuild, and update the `style-pipeline.test.ts` rows that pin which
   features lower and which ship verbatim.
+- Component styles start from semantic `data-vize-ui` hooks. State, variant,
+  tone, size, native pseudo-class, and media-query rules are nested beneath
+  that hook. BEM and generated class-name APIs are not part of the style
+  language.
 
 ## How consumers override the floor
 

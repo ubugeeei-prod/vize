@@ -16,6 +16,11 @@ pub struct CompositeSourceMap {
 }
 
 impl CompositeSourceMap {
+    /// Whether the materialized code is also the exact authored source.
+    pub fn is_authored_identity(&self) -> bool {
+        self.sfc_map.is_none() && self.import_map.is_empty()
+    }
+
     /// Create a new composite source map for a Vue SFC.
     pub fn new_vue(sfc_map: SfcSourceMap, import_map: ImportSourceMap) -> Self {
         Self {

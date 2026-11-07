@@ -48,7 +48,9 @@ pub(crate) struct UsageRequest {
     pub(crate) component_source: SourceExpectation,
     pub(crate) component_reference: Anchor,
     pub(crate) vue_module: Anchor,
-    pub(crate) hosts: [Anchor; 2],
+    /// The slot host's constructor instance pair: the template pass declares
+    /// it once, and the props pass annotates from that declaration.
+    pub(crate) hosts: [Anchor; 1],
 }
 
 #[derive(Debug, Serialize)]

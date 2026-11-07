@@ -1,7 +1,6 @@
 // The Davinci tab's data path against the real wasm compiler: each target's
 // `compileSfc` `captureStages` feed negotiates, climbs its rungs, and every
 // span the stage pages print lands on the authored source the editor highlights.
-// `it.fails` marks what the product capture does not observe yet.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { ref, shallowRef } from "vue";
 import { loadWasm, type CompilerOptions, type WasmModule } from "../src/wasm";
@@ -92,7 +91,20 @@ describe("Stage ladder from the real compiler", () => {
       dom.ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((p) => p.key)]),
     ).toEqual([
       ["l1", ["12 lines"], ["l1/parse"]],
-      ["l2", ["19 ops", "0 passes"], ["l2/lower", "l2-facts/facts"]],
+      [
+        "l2",
+        ["19 ops", "4 passes"],
+        [
+          "l2/lower",
+          "l2-plan/plan",
+          "l2/v-slot",
+          "l2/v-model",
+          "l2/hoist-static",
+          "l2/template-complexity",
+          "l2-provenance/provenance",
+          "l2-facts/facts",
+        ],
+      ],
     ]);
     expect(dom.ladder.l4Pages.map(({ step }) => step)).toEqual(["emit"]);
     expect(dom.ladder.unplaced).toEqual([]);
@@ -141,7 +153,7 @@ describe("Stage ladder from the real compiler", () => {
     ).toContain("condense.drop-whitespace");
   });
 
-  it.fails("runs the artifact-selected L2 passes, one page each", () => {
+  it("runs the artifact-selected L2 passes, one page each", () => {
     expect(dom.ladder.timeline.map((step) => [step.key, step.producer, step.changed])).toEqual([
       ["l1/parse", true, true],
       ["l2/lower", true, true],
@@ -152,7 +164,7 @@ describe("Stage ladder from the real compiler", () => {
     ]);
   });
 
-  it.fails("diffs consecutive L2 pages through the inspector's line diff", () => {
+  it("diffs consecutive L2 pages through the inspector's line diff", () => {
     const [lowered, vslot] = [page(dom, "l2/lower")!, page(dom, "l2/v-slot")];
     expect(vslot).toBeDefined();
     const diff = wasm.buildInspectorDiff(lowered.text, vslot!.text);
@@ -160,7 +172,7 @@ describe("Stage ladder from the real compiler", () => {
     expect(diff.stats).toEqual({ additions: 0, removals: 0, unchanged: lineCount });
   });
 
-  it.fails("runs each pass in its own walk, per the compiler's plan page", () => {
+  it("runs each pass in its own walk, per the compiler's plan page", () => {
     // Two mandatory barriers, then the two optional analyses fused into the
     // third walk.
     expect(dom.ladder.walks.map(({ index, passes, fusable }) => [index, passes, fusable])).toEqual([
@@ -178,7 +190,7 @@ describe("Stage ladder from the real compiler", () => {
     ]);
   });
 
-  it.fails("times every step and walk through the browser clock", () => {
+  it("times every step and walk through the browser clock", () => {
     // Values depend on the machine; which steps were measured does not.
     expect(dom.observed.timings).toBe(true);
     expect(dom.ladder.timeline.every(({ nanos }) => typeof nanos === "number" && nanos >= 0)).toBe(
@@ -190,14 +202,14 @@ describe("Stage ladder from the real compiler", () => {
     );
   });
 
-  it.fails("answers which pass facts the DOM run recorded for an L2 op", () => {
+  it("answers which pass facts the DOM run recorded for an L2 op", () => {
     expect(why(dom, "ui.element h1")).toEqual([
       ["lower.element", "ui.element h1"],
       ["pass.hoist-static.fact", "level=fully-static props=false nested=true native=true"],
     ]);
   });
 
-  it.fails("carries hoist-static's optimization remarks and ties them to ops", () => {
+  it("carries hoist-static's optimization remarks and ties them to ops", () => {
     expect(dom.observed.remarks).toBe(true);
     expect(summarizeRemarks(dom.ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
     expect(dom.ladder.timeline.find(({ key }) => key === "l2/hoist-static")!.remarks).toBe(11);

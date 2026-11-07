@@ -105,6 +105,7 @@ pub fn interpolation(allocator: &Allocator) -> Op<'_> {
     Op::Interpolation(Box::new_in(
         InterpolationOp {
             expression: expression(allocator),
+            raw_html: false,
             span: SPAN,
         },
         &allocator,

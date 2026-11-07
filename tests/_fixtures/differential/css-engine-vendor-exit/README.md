@@ -1,7 +1,7 @@
 # CSS engine fork fixtures
 
 Inputs for the tests that cover the vendored CSS engine forks
-(`vendor/lightningcss`, `vendor/parcel_sourcemap`) and their consumers.
+(`upstream/forks/lightningcss`, `upstream/forks/parcel_sourcemap`) and their consumers.
 
 - `atelier-inputs.json` — CSS inputs replayed by the
   `css_engine_vendor_observer` example in `crates/vize`.

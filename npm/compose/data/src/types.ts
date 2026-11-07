@@ -24,6 +24,11 @@ export type DataLoader<Input, Data> = {
   bivarianceHack(context: DataLoadContext<Input>): Data | Promise<Data>;
 }["bivarianceHack"];
 
+/** Host capability check for a resource input. Return a reason to explain unsupported hosts. */
+export type DataSupport<Input> = {
+  bivarianceHack(input: Input): boolean | string;
+}["bivarianceHack"];
+
 /** Typed data endpoint accepted by createDataClient. */
 export interface DataResourceDefinition<
   Key extends DataResourceKey = DataResourceKey,
@@ -37,8 +42,11 @@ export interface DataResourceDefinition<
   readonly meta?: Meta;
   readonly loader: DataLoader<Input, Data>;
   readonly serializeError?: (error: unknown) => ErrorPayload;
+  /** Return false or a reason when the active host cannot load this resource. */
+  readonly supports?: DataSupport<Input>;
 }
 
+/** Broad resource definition used by registries, clients, and generated manifests. */
 export type AnyDataResourceDefinition = DataResourceDefinition<
   DataResourceKey,
   unknown,
@@ -47,9 +55,11 @@ export type AnyDataResourceDefinition = DataResourceDefinition<
   DataResourceMeta
 >;
 
+/** Resolve the successful payload type declared by a resource. */
 export type InferData<Resource> =
   Resource extends DataResourceDefinition<DataResourceKey, infer _Input, infer Data> ? Data : never;
 
+/** Resolve the serialized error payload type declared by a resource. */
 export type InferError<Resource> =
   Resource extends DataResourceDefinition<
     DataResourceKey,
@@ -60,15 +70,18 @@ export type InferError<Resource> =
     ? ErrorPayload
     : never;
 
+/** Resolve the loader input type declared by a resource. */
 export type InferInput<Resource> =
   Resource extends DataResourceDefinition<infer _Key, infer Input> ? Input : never;
 
+/** Resolve a resource's literal key, falling back to the public key type. */
 export type InferKey<Resource> = Resource extends {
   readonly key: infer Key extends DataResourceKey;
 }
   ? Key
   : DataResourceKey;
 
+/** Complete lifecycle state for one keyed resource request. */
 export type DataState<
   Key extends DataResourceKey = DataResourceKey,
   Input = unknown,
@@ -83,12 +96,14 @@ export type DataState<
   | DataUnsupportedState<Key, Input>
   | DataErrorState<Key, Input, ErrorPayload>;
 
+/** Identity shared by every resource lifecycle state. */
 export interface DataStateBase<Key extends DataResourceKey, Input> {
   readonly key: Key;
   readonly input: Input;
   readonly requestKey: string;
 }
 
+/** Resource request that has not started. */
 export interface DataIdleState<Key extends DataResourceKey, Input> extends DataStateBase<
   Key,
   Input
@@ -96,6 +111,7 @@ export interface DataIdleState<Key extends DataResourceKey, Input> extends DataS
   readonly status: "idle";
 }
 
+/** Resource request with an active loader attempt. */
 export interface DataPendingState<Key extends DataResourceKey, Input> extends DataStateBase<
   Key,
   Input
@@ -105,6 +121,7 @@ export interface DataPendingState<Key extends DataResourceKey, Input> extends Da
   readonly startedAt: number;
 }
 
+/** Resource request whose current data completed successfully. */
 export interface DataSuccessState<Key extends DataResourceKey, Input, Data> extends DataStateBase<
   Key,
   Input
@@ -114,6 +131,7 @@ export interface DataSuccessState<Key extends DataResourceKey, Input, Data> exte
   readonly updatedAt: number;
 }
 
+/** Previously successful data marked for refresh or optimistic reconciliation. */
 export interface DataStaleState<Key extends DataResourceKey, Input, Data> extends DataStateBase<
   Key,
   Input
@@ -122,8 +140,10 @@ export interface DataStaleState<Key extends DataResourceKey, Input, Data> extend
   readonly data: Data;
   readonly staleAt: number;
   readonly updatedAt: number;
+  readonly reason?: string;
 }
 
+/** Resource request cancelled before it could commit data. */
 export interface DataCancelledState<Key extends DataResourceKey, Input> extends DataStateBase<
   Key,
   Input
@@ -133,6 +153,7 @@ export interface DataCancelledState<Key extends DataResourceKey, Input> extends 
   readonly reason: string;
 }
 
+/** Resource request rejected by its host capability check. */
 export interface DataUnsupportedState<Key extends DataResourceKey, Input> extends DataStateBase<
   Key,
   Input
@@ -141,6 +162,7 @@ export interface DataUnsupportedState<Key extends DataResourceKey, Input> extend
   readonly reason: string;
 }
 
+/** Resource request that exhausted its loader and retry policy. */
 export interface DataErrorState<
   Key extends DataResourceKey,
   Input,
@@ -170,10 +192,28 @@ export type DataRetryDelay<Key extends DataResourceKey = DataResourceKey, Input 
 /** Testable sleep hook used by retry backoff. */
 export type DataSleep = (milliseconds: number, signal: AbortSignal) => Promise<void>;
 
+/** Per-request cache, cancellation, and retry policy. */
 export interface DataLoadOptions<Key extends DataResourceKey = DataResourceKey, Input = unknown> {
+  /**
+   * Reason exposed to the first loader attempt.
+   *
+   * @default "initial"
+   */
   readonly reason?: DataLoadReason;
+
+  /**
+   * External abort signal linked to the request-owned controller.
+   *
+   * @default undefined
+   */
   readonly signal?: AbortSignal;
-  readonly policy?: "dedupe" | "cache-first" | "revalidate" | "replace";
+
+  /**
+   * Cache and in-flight request policy.
+   *
+   * @default "dedupe"
+   */
+  readonly policy?: "dedupe" | "cache-first" | "revalidate" | "replace" | "stale-while-revalidate";
   /**
    * Additional attempts after the first loader call.
    *
@@ -196,6 +236,7 @@ export interface DataLoadOptions<Key extends DataResourceKey = DataResourceKey, 
   readonly deadlineMs?: number;
 }
 
+/** Cache-owning resource client used by SSR and hydrated applications. */
 export interface DataClient {
   readonly load: <Resource extends AnyDataResourceDefinition>(
     resource: Resource,
@@ -215,20 +256,51 @@ export interface DataClient {
     input?: InferInput<Resource>,
     reason?: string,
   ) => number;
+  readonly optimistic: <Resource extends AnyDataResourceDefinition>(
+    resource: Resource,
+    input: InferInput<Resource>,
+    update: (current: InferData<Resource>) => InferData<Resource>,
+  ) => () => boolean;
+  readonly cancel: <Resource extends AnyDataResourceDefinition>(
+    resource: Resource,
+    input: InferInput<Resource>,
+    reason?: unknown,
+  ) => boolean;
+  readonly subscribe: (listener: (state: DataState) => void) => () => void;
   readonly snapshot: () => DataSnapshot;
 }
 
+/** Deterministic hooks and initial cache state for a data client. */
 export interface DataClientOptions {
+  /**
+   * Clock used for lifecycle timestamps.
+   *
+   * @default Date.now
+   */
   readonly now?: () => number;
+
+  /**
+   * Server snapshot used to seed the cache.
+   *
+   * @default undefined
+   */
   readonly snapshot?: DataSnapshot;
+
+  /**
+   * Abort-aware wait implementation used by retry backoff.
+   *
+   * @default built-in setTimeout-based sleep
+   */
   readonly sleep?: DataSleep;
 }
 
+/** Versioned collection of serializable resource states for hydration. */
 export interface DataSnapshot {
   readonly schemaVersion: 1;
   readonly resources: readonly SerializedDataState[];
 }
 
+/** Resource states that may cross the server-to-client boundary. */
 export type SerializedDataState =
   | DataSuccessState<DataResourceKey, unknown, unknown>
   | DataStaleState<DataResourceKey, unknown, unknown>
@@ -236,11 +308,13 @@ export type SerializedDataState =
   | DataUnsupportedState<DataResourceKey, unknown>
   | DataErrorState<DataResourceKey, unknown, unknown>;
 
+/** Versioned resource metadata emitted for tooling and documentation. */
 export interface DataManifest {
   readonly schemaVersion: 1;
   readonly resources: readonly DataManifestEntry[];
 }
 
+/** One resource's stable key, source owner, and serializable metadata. */
 export interface DataManifestEntry {
   readonly key: DataResourceKey;
   readonly source: DataSourceSpecifier;

@@ -33,6 +33,7 @@ mod page_meta_tests;
 mod parse;
 mod thread_pool;
 mod type_projects;
+mod type_resolution_batch;
 mod types;
 mod vue_version;
 
@@ -44,4 +45,5 @@ pub use compile::*;
 pub use css::*;
 pub use parse::*;
 pub use type_projects::*;
+pub use type_resolution_batch::*;
 pub use types::*;

@@ -108,7 +108,11 @@ impl<'a> Builder<'a> {
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
         self.push(Op::Interpolation(Box::new_in(
-            InterpolationOp { expression, span },
+            InterpolationOp {
+                expression,
+                raw_html: false,
+                span,
+            },
             &self.allocator,
         )));
         Ok(id)

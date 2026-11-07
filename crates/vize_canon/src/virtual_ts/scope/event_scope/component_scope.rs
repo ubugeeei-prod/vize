@@ -12,6 +12,7 @@ use crate::virtual_ts::types::{VirtualTsCheckOptions, VizeMapping};
 use super::super::component_events::{ComponentEventTypeContext, generate_component_event_types};
 use super::super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::super::event_handler::{event_name_source_range, generate_event_handler_expressions};
+use super::EventVifGuards;
 use super::event_targets::needs_typed_handler_assignment;
 
 fn uses_fallthrough_listener_payload(
@@ -28,7 +29,7 @@ pub(super) fn generate_component_handler_scope(
     ctx: &ScopeGenContext<'_, '_>,
     scope: &Scope,
     data: &EventHandlerScopeData,
-    enclosing_vif_guard: Option<&str>,
+    vif_guards: EventVifGuards<'_>,
     indents: (&str, &str),
 ) {
     let (indent, inner_indent) = indents;
@@ -73,7 +74,14 @@ pub(super) fn generate_component_handler_scope(
                             scope.span.start,
                         )
                     }),
-                    enclosing_vif_guard,
+                    // Listener contracts remain owned by their authored
+                    // branch even when a bare-reference listener has no
+                    // physical outer block.
+                    enclosing_vif_guard: vif_guards.handler,
+                    // Inference may subtract only a guard that physically
+                    // wraps its generated call. Bare-reference listeners keep
+                    // their guard inside the callback instead (#12074).
+                    inference_outer_vif_guard: vif_guards.active_outer,
                     event_inference_usages: ctx.event_inference_usages,
                     event_contracts: ctx.event_contracts,
                     indent,
@@ -188,7 +196,7 @@ pub(super) fn generate_component_handler_scope(
                 event_listener_type: Some(listener_type.as_str()),
                 event_name_src_range: event_name_src_range.clone(),
                 return_single_expression: inline_statement_handler,
-                enclosing_vif_guard,
+                enclosing_vif_guard: vif_guards.handler,
                 template_binding_access: ctx.template_binding_access,
                 template_offset: ctx.template_offset,
                 indent: inner_indent,

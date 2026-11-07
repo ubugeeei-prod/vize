@@ -70,6 +70,14 @@ test("publishes one registry item per catalog family with package identity", () 
   }
 });
 
+test("component-unit examples ship through source distribution", () => {
+  const button = itemsByName.get("button");
+  assert.deepEqual(
+    button?.examples.map((example) => example.path),
+    ["components/button/examples/basic.vue"],
+  );
+});
+
 test("is byte-for-byte deterministic", () => {
   const again = buildLibRegistry(createPackageLibRegistryInput(uiLibRegistryOptions()));
   assert.equal(serializeLibRegistryManifest(again), serializeLibRegistryManifest(bundle));

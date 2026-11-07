@@ -38,6 +38,7 @@ fn lowering_copies_expression_classification_without_reinterpreting_source() {
             ops.push(Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression,
+                    raw_html: false,
                     span: expression.span(),
                 },
                 &&arena,

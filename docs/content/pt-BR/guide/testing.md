@@ -43,7 +43,7 @@ Se um caso estiver faltando ou um resultado parecer errado, esse é exatamente o
   projeto pequeno) que ainda mostra o problema. Um link para o Playground Inspector funciona muito bem.
 - Relatórios de correção, reproduções, resultados de benchmarks e achados de compatibilidade ajudam. Veja o
   [Contributing](../contributing.md) guia e
-  [Support](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
+  [Support](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md).
 
 ## Mede o desempenho
 

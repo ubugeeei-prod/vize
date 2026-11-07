@@ -71,7 +71,7 @@ fn declaration_root_dir_from_tsconfig(
     project.register_path(&case_dir.join("extra.ts")).unwrap();
     project.materialize().unwrap();
     project
-        .write_declaration_tsconfig(&case_dir.join("dist"), false)
+        .write_declaration_tsconfig(&case_dir.join("dist"), false, false)
         .unwrap();
 
     let config_path = project_virtual_root(case_dir).join("tsconfig.declaration.json");

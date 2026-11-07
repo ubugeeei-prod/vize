@@ -14,6 +14,10 @@ use super::*;
 /// instantiate the constructor-fallback `Props` with constraint-violating
 /// `unknown` arguments, so declaration emit aborted with TS2304/TS2344 while
 /// the plain check passed (#3065).
+///
+/// A setup-local props interface also has to cross declaration emit through a
+/// structural return type; otherwise TypeScript reports TS4060 for its private
+/// setup name (#11498).
 #[test]
 fn declaration_emit_preserves_generic_type_parameters() {
     if resolve_test_tsgo_binary().is_none() {
@@ -85,6 +89,23 @@ defineSlots<{
 
 <template>
   <slot :label="props.label" />
+</template>
+"#,
+            ),
+            (
+                "src/SetupLocal.vue",
+                r#"<script setup lang="ts" generic="TBaz">
+type Foo = { value: TBaz };
+
+interface Bar {
+  items: Foo[];
+}
+
+defineProps<Bar>();
+</script>
+
+<template>
+  <div />
 </template>
 "#,
             ),

@@ -46,7 +46,7 @@ DOM・SSR の切り替え、仮想 TypeScript や VIR の読み方、ローカ�
 
 ## 調査結果を報告する
 
-報告先は[サポートのガイド](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md)で確認できます。
+報告先は[サポートのガイド](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md)で確認できます。
 報告には、次の項目をコピーして記入してください。分からない項目は、そのことを書けば構いません。
 
 ```console

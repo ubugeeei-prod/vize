@@ -1,6 +1,12 @@
 //! Source-only graph successors; every provider and native membership gate remains live.
 use super::{Checked, Value, final_graph, fs, json, support};
 
+mod tooling;
+use tooling::{
+    BABEL_MANIFEST, ESLINT_MANIFEST, OXLINT_MANIFEST, PRETTIER_MANIFEST, ToolingQualificationGraph,
+    tooling_update, verify_tooling_update,
+};
+
 const PREVIOUS_PROVIDER: &str = "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f";
 const ORACLE_UPDATE: &str = "malformed-membership/provider-oracle-importer-update-11172.json";
 const ORACLE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json";
@@ -384,7 +390,33 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         cargo_workspace: &cargo_workspace,
         cargo_lock: &cargo_lock,
     };
-    verify_parcel_update(&predecessor, &predecessor_bytes, &update, &graph)?;
+    if verify_parcel_update(&predecessor, &predecessor_bytes, &update, &graph).is_ok() {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(PARCEL_UPDATE))
+        .map_err(|_| "complete JavaScript tooling qualification predecessor")?;
+    let update = tooling_update();
+    let workspace = fs::read(support::repository().join(WORKSPACE))
+        .map_err(|_| "complete workspace manifest")?;
+    let babel_manifest = fs::read(support::repository().join(BABEL_MANIFEST))
+        .map_err(|_| "complete Babel manifest")?;
+    let eslint_manifest = fs::read(support::repository().join(ESLINT_MANIFEST))
+        .map_err(|_| "complete ESLint manifest")?;
+    let oxlint_manifest = fs::read(support::repository().join(OXLINT_MANIFEST))
+        .map_err(|_| "complete Oxlint manifest")?;
+    let prettier_manifest = fs::read(support::repository().join(PRETTIER_MANIFEST))
+        .map_err(|_| "complete Prettier manifest")?;
+    let graph = ToolingQualificationGraph {
+        lock,
+        package,
+        workspace: &workspace,
+        babel_manifest: &babel_manifest,
+        eslint_manifest: &eslint_manifest,
+        oxlint_manifest: &oxlint_manifest,
+        prettier_manifest: &prettier_manifest,
+    };
+    verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph)?;
     Ok(Some(update))
 }
 

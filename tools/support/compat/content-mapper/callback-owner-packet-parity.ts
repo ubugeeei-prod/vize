@@ -215,7 +215,11 @@ function assertInlineListenerRelation(
 }
 
 /** Certify the finite inline-to-local relation transition emitted by this change. */
-function listenerRelationEdits(original: string, actual: string): Edit[] {
+function listenerRelationEdits(
+  original: string,
+  actual: string,
+  certifiedCurrentEdits: Edit[] = [],
+): Edit[] {
   const edits: Edit[] = [];
   const aliases = new Set<string>();
   const missingPattern =
@@ -253,6 +257,12 @@ function listenerRelationEdits(original: string, actual: string): Edit[] {
       );
       continue;
     }
+    if (
+      certifiedCurrentEdits.some(
+        (edit) => edit.start === edit.end && edit.replacement.includes(Buffer.from(block)),
+      )
+    )
+      continue;
     const insertion = original.indexOf(library);
     assert.ok(insertion >= 0, "the original listener owner remains present");
     assert.equal(original.indexOf(library, insertion + 1), -1, "the listener owner is unambiguous");
@@ -397,7 +407,7 @@ export function assertPreservedCallbackPacket(
     currentSourceRead,
   );
   const currentEdits = currentSource.edits;
-  const relationEdits = listenerRelationEdits(original, actualText);
+  const relationEdits = listenerRelationEdits(original, actualText, currentEdits);
   const slotsTransition = original.includes(previousSlotsExport);
   if (slotsTransition) {
     assert.equal(original.split(previousSlotsExport).length, 2);

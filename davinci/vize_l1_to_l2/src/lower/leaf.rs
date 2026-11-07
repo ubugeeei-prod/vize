@@ -101,7 +101,11 @@ fn lower_interpolation<'a>(
         span,
     );
     out.push(Op::Interpolation(Box::new_in(
-        InterpolationOp { expression, span },
+        InterpolationOp {
+            expression,
+            raw_html: node.is_raw_html(),
+            span,
+        },
         &cx.allocator,
     )));
 }

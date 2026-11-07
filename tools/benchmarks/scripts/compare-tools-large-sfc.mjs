@@ -13,7 +13,7 @@ export function createLargeSfcSource(blockCount) {
   const blocks = [];
   for (let i = 0; i < blockCount; i++) {
     const metricIndex = i % 64;
-    blocks.push(`    <article class="metric-card metric-card-${i}" :class="{ active: selectedId === ${metricIndex} }" :data-index="${i}">
+    blocks.push(`    <article id="metric-${i}" class="metric-card metric-card-${i}" :class="{ active: selectedId === ${metricIndex} }">
       <header>
         <p>{{ labels[${metricIndex}] }}</p>
         <h2>{{ formatMetric(metrics[${metricIndex}], ${i}) }}</h2>

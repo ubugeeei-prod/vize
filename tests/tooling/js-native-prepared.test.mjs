@@ -16,7 +16,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-import { requirePreparedNative, runViteTests } from "../../npm/builder/vite/scripts/run-tests.mjs";
+import { requirePreparedNative, runViteTests } from "../../npm/builder/vite/scripts/run-tests.ts";
 import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 import { runInPackages, runTask } from "../../tools/config/vite-plus/task-commands.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
@@ -124,7 +124,7 @@ void test("standalone Vite tests build first; prepared tests reuse the same nati
   const manifest = JSON.parse(readFileSync(join(root, "npm/builder/vite/package.json"), "utf8"));
   assert.equal(
     manifest.scripts["test:prepared"],
-    'node scripts/run-tests.mjs --require-prepared && node --test --test-concurrency=1 "src/**/*.test.ts"',
+    'node scripts/run-tests.ts --require-prepared && node --test --test-concurrency=1 "src/**/*.test.ts"',
   );
   for (const prepared of [false, true]) {
     const calls = [];
@@ -242,7 +242,7 @@ process.exit(7);
       `
 import assert from 'node:assert/strict'; import fs from 'node:fs';
 import {withPreparedNative} from './${helper}';
-import {runViteTests} from ${JSON.stringify(join(root, "npm/builder/vite/scripts/run-tests.mjs"))};
+import {runViteTests} from ${JSON.stringify(join(root, "npm/builder/vite/scripts/run-tests.ts"))};
 Object.defineProperty(process,'platform',{value:'win32'});
 let calls=0;
 const packageRun=(command,args,options)=>{

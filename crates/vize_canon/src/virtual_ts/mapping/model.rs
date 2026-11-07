@@ -55,6 +55,21 @@ impl Default for ProjectionMapping {
 }
 
 impl ProjectionMapping {
+    /// Heap bytes this mapping retains: rows, their sub-spans, row metadata
+    /// and semantic links, as (rows, sub-spans, metadata, links).
+    pub fn retained_bytes(&self) -> (usize, usize, usize, usize) {
+        let rows = size_of_val(self.spans.as_slice());
+        let sub_spans = self
+            .spans
+            .iter()
+            .map(|span| size_of_val(span.sub_spans.as_slice()))
+            .sum();
+        let meta = size_of_val(self.meta.as_slice());
+        let links = size_of_val(self.semantic_links.as_slice())
+            + size_of_val(self.prop_default_key_links.as_slice());
+        (rows, sub_spans, meta, links)
+    }
+
     /// An empty mapping.
     #[inline]
     pub fn new() -> Self {

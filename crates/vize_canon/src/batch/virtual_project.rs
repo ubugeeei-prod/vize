@@ -84,8 +84,11 @@ pub use jsx_codegen::{
     GeneratedJsxFile as JsxDocumentVirtualTs,
     generate_jsx_virtual_ts as generate_jsx_document_virtual_ts,
 };
+mod foreign_declarations;
 mod mapping;
+mod retained_bytes;
 pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
+pub use retained_bytes::RetainedBytes;
 mod materialize;
 mod materialize_delta;
 mod materialize_fingerprint;
@@ -253,6 +256,13 @@ pub struct VirtualProject {
     /// Authored program files diagnosed in place instead of materialized.
     diagnostic_paths: FxHashSet<PathBuf>,
 
+    /// Canonical sources another program of the same check owns. They enter
+    /// this mirror as that program's emitted declarations, never as
+    /// projections, so nothing is checked twice.
+    foreign_sources: FxHashSet<PathBuf>,
+    /// Mirror paths of those declarations; program members like any input.
+    foreign_declaration_files: FxHashSet<PathBuf>,
+
     /// Caller-selected source roots eligible for declaration output. Inferred
     /// package dependencies participate in checking but must not be published
     /// under the virtual external-mirror layout.
@@ -346,7 +356,10 @@ pub struct VirtualProject {
     session_scripts: bool,
     /// Editor projections are generated once and reused by disk and overlays.
     editor_document_options: Option<VueDocumentVirtualTsOptions>,
-    pre_rewrite_code: FxHashMap<PathBuf, vize_carton::String>,
+    /// Materialized paths whose pre-rewrite projection text editor module
+    /// resolution reads; the text itself is restored from the materialized
+    /// code and its import source map instead of being kept twice.
+    pre_rewrite_sources: FxHashSet<PathBuf>,
     legacy_vue2: bool,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:
     /// when disabled, `.jsx`/`.tsx` are passed to TypeScript verbatim (React
@@ -386,13 +399,11 @@ pub struct VirtualProject {
     /// every virtual file on each LSP position-mapping request.
     original_index: FxHashMap<PathBuf, PathBuf>,
 
-    /// Original source text as registered, keyed by materialized (virtual)
-    /// path. Retained here (rather than on the public `VirtualFile`) so
-    /// position mapping can convert offsets to line/column without re-reading
-    /// the file from disk on every request, and without changing the public
-    /// `VirtualFile` API. This is also the exact text the source map's
-    /// original offsets refer to (e.g. an editor's unsaved buffer), so it is
-    /// more correct than re-reading live disk state.
+    /// Original source text when it differs from materialized code, keyed by
+    /// materialized path. Identity scripts use `VirtualFile::content` directly;
+    /// the first later rewrite moves that buffer here without copying. This is
+    /// the exact text source-map offsets refer to (including unsaved buffers),
+    /// so mapping never re-reads potentially newer disk state.
     original_contents: FxHashMap<PathBuf, CompactString>,
 
     /// Materialized paths of `.vue` files whose script block is JavaScript.

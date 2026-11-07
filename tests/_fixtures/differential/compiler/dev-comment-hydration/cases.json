@@ -29,7 +29,7 @@
     },
     {
       "path": "ssr.expected.json",
-      "sha256": "9d35efd417515aecdf3d6734d4a7993bd8d2a9e941e235571e042fb4daa1162b"
+      "sha256": "11b610a08cbfe7061260264dbf8e3b80cc8e56b1463b7e9a0c22c5a20b30c501"
     }
   ],
   "inlineSlots": [

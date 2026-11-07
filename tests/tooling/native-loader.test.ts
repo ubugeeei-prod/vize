@@ -169,6 +169,8 @@ const loadErrors = [];
 function requireNative() { return null; }
 let nativeBinding = requireNative();
 module.exports = nativeBinding
+module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch
+module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch
 module.exports.compile = nativeBinding.compile
 module.exports.compileSfc = nativeBinding.compileSfc
 `;
@@ -186,6 +188,8 @@ module.exports.compileSfc = nativeBinding.compileSfc
     assert.doesNotMatch(synchronized, /requireNative|loadErrors/);
     assert.match(synchronized, /module\.exports\.compile = nativeBinding\.compile;/);
     assert.match(synchronized, /module\.exports\.compileSfc = nativeBinding\.compileSfc;/);
+    assert.match(synchronized, /const compileSfcNative = nativeBinding\.compileSfc;/);
+    assert.match(synchronized, /queueMicrotask/);
 
     const idempotentSync = run(process.execPath, [entrypointSyncScript, generatedPath], {
       cwd: root,
@@ -301,6 +305,62 @@ try {
     );
     assertSucceeded(allowed, "require/import('@vizejs/native') with escape hatch");
     assert.match(allowed.stdout, /escape hatch preserved CJS and ESM exports/);
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
+test("generated native entrypoint shares imported-type validation for one JavaScript turn", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-native-entrypoint-turn-"));
+  try {
+    const entrypoint = path.join(tempDir, "index.js");
+    fs.writeFileSync(
+      entrypoint,
+      `const nativeBinding = require("./native-binding");
+module.exports = nativeBinding;
+module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;
+module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch;
+module.exports.compileSfc = nativeBinding.compileSfc;
+`,
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "native-binding.js"),
+      `let begins = 0;
+let closes = 0;
+class TypeResolutionBatch {
+  close() { closes += 1; return true; }
+}
+module.exports = {
+  TypeResolutionBatch,
+  beginTypeResolutionBatch() { begins += 1; return new TypeResolutionBatch(); },
+  compileSfc(source) { return source; },
+  counts() { return { begins, closes }; },
+};
+`,
+    );
+    const synchronized = run(process.execPath, [entrypointSyncScript, entrypoint], { cwd: root });
+    assertSucceeded(synchronized, "sync turn-scoped NAPI entrypoint");
+    const probe = run(
+      process.execPath,
+      [
+        "--input-type=commonjs",
+        "--eval",
+        `const native = require(${JSON.stringify(entrypoint)});
+native.compileSfc("one");
+native.compileSfc("two");
+queueMicrotask(() => {
+  const first = native.counts();
+  native.compileSfc("three");
+  queueMicrotask(() => console.log(JSON.stringify({ first, second: native.counts() })));
+});`,
+      ],
+      { cwd: root },
+    );
+    assertSucceeded(probe, "probe turn-scoped compileSfc wrapper");
+    assert.deepEqual(JSON.parse(probe.stdout), {
+      first: { begins: 1, closes: 1 },
+      second: { begins: 2, closes: 2 },
+    });
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true });
   }

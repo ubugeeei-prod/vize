@@ -34,20 +34,12 @@ const VUE_LANGUAGE_TOOLS: Partial<Record<PlantKind, number>> = {
   "listener-prop": 1,
 };
 
-// #11657 (fixed by #11667): the Vize mapper drops an inline handler's parameter mismatch.
-const VIZE_MAPPER: Partial<Record<PlantKind, number>> = {
-  "listener-arrow": 0,
-  "listener-prop": 1,
-};
 /** Errors per plant where a lane differs from the default, keyed by lane id. */
 export const PLANT_MULTIPLICITY: Record<string, Partial<Record<PlantKind, number>>> = {
-  "tsc-vize-mapper": VIZE_MAPPER,
-  "tsrs-fast-vize-mapper": VIZE_MAPPER,
   "vue-tsc": VUE_LANGUAGE_TOOLS,
   "tsc-vue-mapper": VUE_LANGUAGE_TOOLS,
 };
 export const PLANT_MULTIPLICITY_NOTES: readonly string[] = [
-  "The Vize mapper lanes expect no error from an inline handler's annotated parameter on a kebab-cased camelCase emit (#11657, fixed by #11667).",
   "vue-tsc and Vue's mapper do not check an inline handler's annotated parameters, so they expect no handler error on the listener plants.",
 ];
 

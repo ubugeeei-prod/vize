@@ -7,8 +7,10 @@ import { fileURLToPath } from "node:url";
 import {
   entrypoints,
   facadeSpecifier,
+  latestPublishedVersion,
   parseChannel,
   preparePackage,
+  preparePreviewPackage,
   publishedAt,
   waitForPublishedVersion,
 } from "../../tools/support/release/jsr/package.ts";
@@ -29,8 +31,10 @@ await test("every JSR entry point re-exports one npm package at the release vers
   assert.equal(manifest.version, version);
   assert.deepEqual(manifest.exports, {
     ".": "./mod.ts",
+    "./babel": "./babel.ts",
     "./config": "./config.ts",
     "./native": "./native.ts",
+    "./oxlint": "./oxlint.ts",
     "./vite": "./vite.ts",
   });
   for (const [filename, entrypoint] of Object.entries(entrypoints)) {
@@ -63,9 +67,22 @@ await test("the JSR package refuses a version other than the checked-out release
   assert.throws(() => preparePackage(resolve(root, "jsr/vize")), /separate staging/);
 });
 
+await test("the PR preview checks new entry points against one public release without weakening publication", (t) => {
+  const output = temporaryDirectory(t, "vize-jsr-preview-");
+  assert.equal(preparePreviewPackage(output, "0.708.0"), "0.708.0");
+  const manifest = JSON.parse(readFileSync(resolve(output, "jsr.json"), "utf8"));
+  assert.equal(manifest.version, "0.708.0");
+  assert.match(
+    readFileSync(resolve(output, "babel.ts"), "utf8"),
+    /npm:@vizejs\/babel-plugin@0\.708\.0/,
+  );
+  assert.throws(() => preparePreviewPackage(output, "latest"), /Invalid JSR version/);
+});
+
 await test("a facade is never generated over npm packages with different versions", (t) => {
   const fixture = temporaryDirectory(t, "vize-jsr-mismatch-");
-  for (const directory of ["npm/cli", "npm/native", "npm/builder/vite"]) {
+  const directories = [...new Set(Object.values(entrypoints).map(({ directory }) => directory))];
+  for (const directory of directories) {
     mkdirSync(resolve(fixture, directory), { recursive: true });
     cpSync(resolve(root, directory, "package.json"), resolve(fixture, directory, "package.json"));
   }
@@ -75,7 +92,7 @@ await test("a facade is never generated over npm packages with different version
   }
   cpSync(resolve(root, "LICENSE"), resolve(fixture, "LICENSE"));
   preparePackage(resolve(fixture, "output"), { root: fixture });
-  for (const directory of ["npm/native", "npm/builder/vite"]) {
+  for (const directory of directories.filter((directory) => directory !== "npm/cli")) {
     const manifestPath = resolve(fixture, directory, "package.json");
     const original = readFileSync(manifestPath, "utf8");
     writeFileSync(manifestPath, JSON.stringify({ ...JSON.parse(original), version: "0.1.0" }));
@@ -124,6 +141,20 @@ await test("the JSR public wait survives server processing and proves immutable 
   assert.throws(
     () => publishedAt({ versions: { "0.504.0": {} } }, "0.504.0"),
     /no valid createdAt/,
+  );
+});
+
+await test("the preview version is itself an immutable public JSR record", () => {
+  assert.equal(
+    latestPublishedVersion({
+      latest: "0.708.0",
+      versions: { "0.708.0": { createdAt: "2026-11-07T06:29:12.961611Z" } },
+    }),
+    "0.708.0",
+  );
+  assert.throws(
+    () => latestPublishedVersion({ latest: "0.708.0", versions: {} }),
+    /no valid latest public version/,
   );
 });
 

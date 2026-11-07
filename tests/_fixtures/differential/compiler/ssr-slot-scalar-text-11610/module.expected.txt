@@ -1,0 +1,19 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<div>${_ssrInterpolate(_ctx.count)} tail</div>`)
+      } else {
+        return [_createElementVNode("div", null, _toDisplayString(_ctx.count) + " tail", 1 /* TEXT */)]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -43,6 +43,26 @@ impl RequestedExports {
             }
         }
     }
+
+    fn without_named_reexports(&self, dependencies: &[TypeDependency]) -> Self {
+        let Self::Names(names) = self else {
+            return Self::All;
+        };
+        let mut remaining = names.clone();
+        remaining.retain(|name| {
+            !dependencies.iter().any(|dependency| {
+                let TypeDependency::NamedReexport { bindings, .. } = dependency else {
+                    return false;
+                };
+                bindings.iter().any(|(exported, _)| exported == name)
+            })
+        });
+        Self::Names(remaining)
+    }
+
+    fn is_empty(&self) -> bool {
+        matches!(self, Self::Names(names) if names.is_empty())
+    }
 }
 
 pub(super) struct TypeWalk<'a> {
@@ -60,6 +80,9 @@ impl ScriptCompileContext {
         current_file: &Path,
         walk: &mut TypeWalk<'_>,
     ) {
+        if requested.is_empty() {
+            return;
+        }
         let (specifier, requested) = match dependency {
             TypeDependency::Import { specifier, names } => (
                 specifier,
@@ -133,7 +156,13 @@ impl ScriptCompileContext {
             }
         };
 
+        let star_requested = requested.without_named_reexports(&dependencies);
         for dependency in &dependencies {
+            let requested = if matches!(dependency, TypeDependency::StarReexport { .. }) {
+                &star_requested
+            } else {
+                requested
+            };
             self.collect_types_from_dependency(dependency, requested, &resolved_path, walk);
         }
     }

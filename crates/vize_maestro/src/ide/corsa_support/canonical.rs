@@ -19,7 +19,10 @@ pub(super) mod rename;
 mod script;
 mod semantic_links;
 mod uri_index;
-pub(crate) use attribute_query::{component_attribute_position, is_component_attribute_query};
+pub(crate) use attribute_query::{
+    component_attribute_position, instantiated_component_attribute_position,
+    is_component_attribute_query,
+};
 pub(crate) use script::open_canonical_script_document;
 pub(crate) use uri_index::CanonicalUriIndex;
 use uri_index::IndexedDocument;

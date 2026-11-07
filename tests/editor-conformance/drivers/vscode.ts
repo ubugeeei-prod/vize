@@ -29,49 +29,54 @@ async function run(context: DriverContext): Promise<void> {
   // client makes. Changing settings after activation restarts the client, and
   // a document opened during a restart reaches two server sessions.
   const settingsFile = path.join(context.workspace, ".vscode", "settings.json");
-  const settings = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as Record<string, unknown>;
-  fs.writeFileSync(
-    settingsFile,
-    `${JSON.stringify(
-      {
-        ...settings,
-        "vize.enable": true,
-        "vize.lint.enable": true,
-        "vize.typecheck.enable": true,
-        "vize.editor.enable": true,
-        "vize.ecosystem.enable": true,
-        "vize.formatting.enable": true,
-        "vize.serverPath": path.join(shim, "vize"),
-      },
-      null,
-      2,
-    )}\n`,
-  );
+  const originalSettings = fs.readFileSync(settingsFile);
+  const settings = JSON.parse(originalSettings.toString("utf8")) as Record<string, unknown>;
   const cachePath = path.join(extensionRoot, ".vscode-test");
-  await host.runPackagedExtensionHost(
-    (args: string[], options: object) => runVSCodeCommand(args, { ...options, cachePath }),
-    {
-      extensionId: "ubugeeei.vize",
-      extensionsPath,
-      extensionTestsPath: path.join(suiteRoot, "drivers", "vscode-suite.cjs"),
-      hostEnvironment: {
-        ...context.env,
-        VIZE_TS45_SCENARIO: scenarioFile,
-        VIZE_TS45_SERVER: path.join(shim, "vize"),
+  try {
+    fs.writeFileSync(
+      settingsFile,
+      `${JSON.stringify(
+        {
+          ...settings,
+          "vize.enable": true,
+          "vize.lint.enable": true,
+          "vize.typecheck.enable": true,
+          "vize.editor.enable": true,
+          "vize.ecosystem.enable": true,
+          "vize.formatting.enable": true,
+          "vize.serverPath": path.join(shim, "vize"),
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    await host.runPackagedExtensionHost(
+      (args: string[], options: object) => runVSCodeCommand(args, { ...options, cachePath }),
+      {
+        extensionId: "ubugeeei.vize",
+        extensionsPath,
+        extensionTestsPath: path.join(suiteRoot, "drivers", "vscode-suite.cjs"),
+        hostEnvironment: {
+          ...context.env,
+          VIZE_TS45_SCENARIO: scenarioFile,
+          VIZE_TS45_SERVER: path.join(shim, "vize"),
+        },
+        hostTimeoutMs: 600_000,
+        installEnvironment: process.env,
+        installTimeoutMs: 120_000,
+        onOutput: ({ stdout, stderr }: { stdout?: string; stderr?: string }) => {
+          if (stdout) process.stdout.write(stdout);
+          if (stderr) process.stderr.write(stderr);
+        },
+        userDataPath: path.join(profile, "user-data"),
+        vscodeVersion,
+        vsixPath: path.join(extensionRoot, "dist", "vize.vsix"),
+        workspacePath: context.workspace,
       },
-      hostTimeoutMs: 600_000,
-      installEnvironment: process.env,
-      installTimeoutMs: 120_000,
-      onOutput: ({ stdout, stderr }: { stdout?: string; stderr?: string }) => {
-        if (stdout) process.stdout.write(stdout);
-        if (stderr) process.stderr.write(stderr);
-      },
-      userDataPath: path.join(profile, "user-data"),
-      vscodeVersion,
-      vsixPath: path.join(extensionRoot, "dist", "vize.vsix"),
-      workspacePath: context.workspace,
-    },
-  );
+    );
+  } finally {
+    fs.writeFileSync(settingsFile, originalSettings);
+  }
 }
 
 export const driver: Driver = {

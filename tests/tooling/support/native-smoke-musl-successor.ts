@@ -13,20 +13,33 @@ const predecessorMatrixStart =
   "        # containerized musl tarball staging is added.\n" +
   "        platform:\n";
 
-/** Admit the exact #11505 musl job while retaining the complete earlier workflow. */
+/** Admit the exact #11505 musl job and named release packages while retaining the earlier workflow. */
 export function assertMuslFreshInstallSuccessor(historical: string, current: string): void {
   const predecessor = packedSmokeTimingSuccessor(historical);
+  const relocations = [
+    ["npm/linter/oxlint", "npm/oxlint"],
+    ["npm/builder/babel", "npm/babel"],
+  ] as const;
+  let sealed = current;
+  for (const [relocated, historicalPath] of relocations) {
+    assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
+    sealed = sealed.replace(relocated, historicalPath);
+  }
+  for (const packagePath of ["npm/compose/router", "npm/compose/data"] as const) {
+    assert.equal(sealed.split(packagePath).length, 2, `one admitted ${packagePath} package path`);
+    sealed = sealed.replace(` ${packagePath}`, "");
+  }
   assert.equal(
-    createHash("sha256").update(current).digest("hex"),
+    createHash("sha256").update(sealed).digest("hex"),
     "d38f2a343f8c0bda93ef60b9e4b2318697e4f12925b79857feb1bab5143bd3aa",
-    "the complete musl smoke successor stays sealed",
+    "the complete musl smoke successor stays sealed outside the package relocations",
   );
-  assert.equal(current.split(muslJob).length, 2, "one musl smoke job");
-  assert.equal(current.split(selectedProducer).length, 2, "one selected producer boundary");
-  const muslStart = current.indexOf(muslJob);
-  const producerStart = current.indexOf(selectedProducer, muslStart + muslJob.length);
+  assert.equal(sealed.split(muslJob).length, 2, "one musl smoke job");
+  assert.equal(sealed.split(selectedProducer).length, 2, "one selected producer boundary");
+  const muslStart = sealed.indexOf(muslJob);
+  const producerStart = sealed.indexOf(selectedProducer, muslStart + muslJob.length);
   assert.ok(producerStart > muslStart, "musl smoke precedes the selected producer");
-  let reversed = current.slice(0, muslStart) + current.slice(producerStart);
+  let reversed = sealed.slice(0, muslStart) + sealed.slice(producerStart);
   assert.equal(reversed.split(currentMatrixStart).length, 2, "one current native matrix");
   reversed = reversed.replace(currentMatrixStart, predecessorMatrixStart);
   assert.equal(reversed, predecessor, "only the exact musl successor may extend native smoke");

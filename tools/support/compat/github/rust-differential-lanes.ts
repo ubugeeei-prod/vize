@@ -105,7 +105,7 @@ export const rustDifferentialLanes: readonly Lane[] = [
         ...corpus("vize_atelier_ssr", ["davinci_ssr_corpus"]),
         workspaceCorpus: true,
       },
-      corpus("vize_atelier_ssr", ["davinci_ssr_production_cases"]),
+      corpus("vize_atelier_ssr", ["davinci_ssr_production_cases", "slot_element_text_children"]),
       {
         ...corpus("vize_atelier_ssr", ["vue_ssr_render"]),
         env: { VIZE_VUE_RUNTIME_PRODUCTION: "1" },

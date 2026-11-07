@@ -19,7 +19,7 @@ runtime-conformance, renderer, type, size, or tree-shaking gate. The legacy
 | P10 | SSR/hydration | runtime fixture                | server markup hydrates without warnings or root node replacement                                                                               | `runtime-conformance.test.ts`                                           |
 | P11 | DOM/SSR/Vapor | compile                        | authored SFC and consumer fixture compile in every renderer lane without warnings                                                              | `scripts/check-renderers.ts`                                            |
 | P12 | public types  | invalid contract               | TypeScript rejects unsupported direction, state, props, and malformed readonly slot/expose shapes                                              | `src/families/feedback/progress-bar/progress-bar.types.test-d.ts`       |
-| P13 | root/subpath  | consumer bundle                | root and subpath consumers retain only ProgressBar and its structural CSS within gzip budgets                                                  | `scripts/check-tree-shaking.mjs`                                        |
+| P13 | root/subpath  | consumer bundle                | root and subpath consumers retain only ProgressBar and its structural CSS within gzip budgets                                                  | `scripts/check-tree-shaking.ts`                                         |
 
 ## Props
 

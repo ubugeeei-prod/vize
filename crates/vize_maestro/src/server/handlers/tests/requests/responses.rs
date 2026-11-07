@@ -1,6 +1,8 @@
 use super::*;
 use tower_lsp::lsp_types::CompletionList;
 
+mod template_responses;
+
 #[cfg(feature = "native")]
 #[test]
 fn exact_navigation_cache_hits_do_not_wait_for_the_native_transaction() {
@@ -48,6 +50,62 @@ fn exact_navigation_cache_hits_do_not_wait_for_the_native_transaction() {
         .expect("an exact references cache hit must not wait for the held transaction")
         .unwrap();
         assert_eq!(returned_references, references);
+    });
+}
+
+#[cfg(feature = "native")]
+#[test]
+fn exact_rename_cache_hits_do_not_wait_for_the_native_transaction() {
+    crate::runtime::block_on(async {
+        let service = service_with_options(serde_json::json!({
+            "rename": true,
+            "typecheck": true,
+            "crossFile": true,
+            "lint": false,
+            "ecosystem": false,
+        }));
+        let server = service.inner();
+        let uri = uri("CachedRename.vue");
+        open_vue(server, &uri, SAMPLE);
+        server.state.set_corsa_disk_watcher_registered();
+
+        let position = Position::new(0, 0);
+        let prepare = Some(PrepareRenameResponse::Range(range()));
+        let rename = Some(WorkspaceEdit {
+            changes: None,
+            document_changes: None,
+            change_annotations: None,
+        });
+        let stamp = server.state.corsa_request_stamp();
+        server
+            .state
+            .cache_native_prepare_rename(&uri, position, stamp, prepare.clone());
+        server.state.cache_native_rename(
+            &uri,
+            position,
+            "renamed".to_string(),
+            stamp,
+            rename.clone(),
+        );
+
+        let _native = server.state.corsa_request_scope().await;
+        let returned_prepare = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.prepare_rename(text_pos(&uri)),
+        )
+        .await
+        .expect("an exact prepare-rename cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_prepare, prepare);
+
+        let returned_rename = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.rename(rename_params(&uri)),
+        )
+        .await
+        .expect("an exact rename cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_rename, rename);
     });
 }
 
@@ -212,9 +270,7 @@ fn document_symbols_list_sfc_blocks_with_editor_labels() {
         panic!("expected nested document symbols");
     };
     let names: Vec<_> = symbols.into_iter().map(|symbol| symbol.name).collect();
-    assert!(names.contains(&"template".to_string()));
-    assert!(names.contains(&"script setup".to_string()));
-    assert!(names.contains(&"style scoped".to_string()));
+    assert_eq!(names, ["template", "script setup", "style scoped"]);
 }
 
 #[test]
@@ -261,9 +317,7 @@ fn folding_ranges_cover_multiline_sfc_blocks() {
         .filter_map(|range| range.collapsed_text)
         .collect();
 
-    assert!(labels.contains(&"template".to_string()));
-    assert!(labels.contains(&"script setup".to_string()));
-    assert!(labels.contains(&"style".to_string()));
+    assert_eq!(labels, ["template", "script setup", "style"]);
 }
 
 fn diagnostic_hover_fixture() -> serde_json::Value {

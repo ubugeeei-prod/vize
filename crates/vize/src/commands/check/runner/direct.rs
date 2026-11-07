@@ -150,6 +150,14 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
     let mut only_excluded_explicit_inputs = !candidates.is_empty();
+    // A referenced project checks first and hands its importers emitted
+    // declarations instead of its sources (#12102).
+    let (candidates, referenced) = if super::shared_declarations::sharing_enabled() {
+        super::programs::order_by_references(candidates, &mut tsconfig_input_cache)
+    } else {
+        (candidates, Default::default())
+    };
+    let mut shared = super::shared_declarations::SharedDeclarations::default();
     // Referenced programs of one shell reach mostly the same packages.
     let mut import_session = LocalImportSession::default();
     // Preparation shares the path and package caches, so it stays serial. Each
@@ -158,7 +166,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let (checked, preparation_error) = super::overlap::prepare_and_check_overlapped(
         candidates,
         |candidate| {
-            prepare_candidate(
+            let prepared = prepare_candidate(
                 args,
                 candidate,
                 &cwd,
@@ -172,11 +180,22 @@ pub(crate) fn run_direct(args: &CheckArgs) {
                 &mut canonical_paths,
                 &mut package_route_resolver,
                 &mut import_session,
-            )
-            .map(|prepared| {
-                only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;
-                prepared.execution
-            })
+                &shared,
+            )?;
+            only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;
+            let Some(pending) = prepared.execution else {
+                return Ok(None);
+            };
+            if let Some(config) = pending
+                .tsconfig_path()
+                .filter(|config| referenced.contains(*config))
+                .map(std::path::Path::to_path_buf)
+            {
+                let out_dir = shared.next_out_dir()?;
+                let declarations = pending.share_declarations(&out_dir)?;
+                shared.record(config, declarations, &mut canonical_paths);
+            }
+            Ok(Some(pending))
         },
         |pending| pending.virtual_root().to_path_buf(),
         super::execution::PendingProgram::check,

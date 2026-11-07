@@ -83,6 +83,9 @@ pub(super) struct ProgramExecutionInput<'a> {
     /// source the tsconfig `include` covers. Explicit file arguments stay a
     /// subset.
     pub(super) ensure_included_sources: bool,
+    /// Sources a referenced project owns, with the declarations its program
+    /// emitted; they enter this program as those declarations (#12102).
+    pub(super) foreign_declarations: Vec<(PathBuf, PathBuf)>,
 }
 
 fn resolve_program_dialect(
@@ -190,6 +193,7 @@ pub(super) fn prepare_program(
     );
     checker.set_package_route_resolver(input.package_route_resolver);
     checker.set_package_routes(input.package_routes);
+    checker.set_foreign_declarations(input.foreign_declarations);
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;
@@ -225,6 +229,24 @@ pub(super) fn prepare_program(
 impl PendingProgram {
     pub(super) fn virtual_root(&self) -> &std::path::Path {
         self.checker.virtual_root()
+    }
+
+    pub(super) fn tsconfig_path(&self) -> Option<&std::path::Path> {
+        self.tsconfig_path.as_deref()
+    }
+
+    /// Emit this program's declarations without checking, for the programs
+    /// that import its sources; returns (source, declaration) pairs.
+    pub(super) fn share_declarations(
+        &self,
+        out_dir: &std::path::Path,
+    ) -> Result<Vec<(PathBuf, PathBuf)>, String> {
+        self.checker
+            .emit_declarations(&vize_canon::DeclarationEmitOptions::for_mirror(
+                out_dir.to_path_buf(),
+            ))
+            .map_err(|error| cstr!("{}", error))?;
+        Ok(self.checker.emitted_mirror_declarations(out_dir))
     }
 
     /// Run the native check. Programs own separate checkers, so a caller may

@@ -13,7 +13,7 @@ passing test is a contract violation.
 | S5  | SSR semantic   | isolated requests | renders byte-identical semantic separator markup without request-global state                   | `renders byte-identical semantic separator markup across isolated SSR requests` |
 | S6  | SSR decorative | render            | renders decorative markup without separator ARIA or labels                                      | `renders decorative server markup without semantic ARIA`                        |
 | S7  | DOM/SSR/Vapor  | compile           | authored SFC compiles in every renderer lane without warnings or fallback                       | `scripts/check-renderers.ts`                                                    |
-| S8  | root/subpath   | consumer bundle   | root and subpath consumers retain only Separator, emit no CSS, and stay within gzip budget      | `scripts/check-tree-shaking.mjs`                                                |
+| S8  | root/subpath   | consumer bundle   | root and subpath consumers retain only Separator, emit no CSS, and stay within gzip budget      | `scripts/check-tree-shaking.ts`                                                 |
 
 ## Props
 

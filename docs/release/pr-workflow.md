@@ -8,7 +8,7 @@ vp run release minor -y
 ```
 
 Vize increments the minor version for every `0.x` release, as specified in the
-[redundancy guide](../../ubugeeei-redundancy.md#versioning-before-10). The command
+[redundancy guide](../project/redundancy.md#versioning-before-10). The command
 also accepts `patch`, `major`, `alpha`, `beta`, `rc`, and `release`. Omit `-y` for
 an interactive confirmation.
 

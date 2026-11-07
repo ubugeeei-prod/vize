@@ -108,6 +108,36 @@ await test("the hosted package check installs frozen tooling before importing ya
   );
 });
 
+await test("the hosted package check runs a fresh Bun preview over the public tool graph", () => {
+  const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
+  const bun = steps.find((step) => step.uses?.startsWith("oven-sh/setup-bun@"));
+  assert.equal(bun?.with?.["bun-version"], "1.3.14");
+  const preview = steps.find(
+    (step) => step.name === "Resolve the latest immutable public preview version",
+  );
+  assert.match(preview?.run ?? "", /package\.ts latest-public/);
+  const generate = steps.find(
+    (step) => step.name === "Generate a PR preview from that public release",
+  );
+  assert.match(generate?.run ?? "", /package\.ts prepare-preview/);
+  const consumer = steps.find(
+    (step) =>
+      step.name === "Install the public preview in a fresh Bun project and execute the tool APIs",
+  );
+  const script = consumer?.run ?? "";
+  assert.match(script, /bun add --ignore-scripts --exact/);
+  assert.match(script, /@vizejs\/babel-plugin@\$JSR_PREVIEW_VERSION/);
+  assert.match(script, /oxlint-plugin-vize@\$JSR_PREVIEW_VERSION/);
+  assert.match(script, /bunx --bun jsr@0\.14\.3 add/);
+  assert.match(script, /--babel-specifier @vizejs\/babel-plugin/);
+  assert.match(script, /--oxlint-specifier oxlint-plugin-vize/);
+  const upload = steps.find(
+    (step) => step.name === "Preserve the fresh Bun preview install and runtime outcome",
+  );
+  assert.equal(upload?.if, "${{ always() }}");
+  assert.equal(upload?.with?.name, "jsr-bun-preview-${{ github.sha }}-${{ github.run_attempt }}");
+});
+
 await test("pinned Deno runtime proof retains independent fresh-cache controls and public evidence", () => {
   const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
   const deno = steps.findIndex((step) => step.uses?.startsWith("denoland/setup-deno@"));
@@ -201,6 +231,20 @@ const exports = new Map([
     record("compileSfc", args);
     return { errors: input.fault === "errors" ? ["injected"] : [], code: input.fault === "code" ? "" : args[0] };
   } }],
+  [input.root + "/babel", {
+    default: input.fault === "babel" ? null : () => ({ name: "sealed-babel-facade" }),
+  }],
+  ["@vizejs/babel-plugin", {
+    default: input.fault === "babel" ? null : () => ({ name: "sealed-babel-package" }),
+  }],
+  [input.root + "/oxlint", {
+    default: input.fault === "oxlint" ? null : { meta: { name: "sealed-oxlint-facade" } },
+    configs: input.fault === "oxlint-config" ? {} : { recommended: { "vize/test": "error" } },
+  }],
+  ["oxlint-plugin-vize", {
+    default: input.fault === "oxlint" ? null : { meta: { name: "sealed-oxlint-package" } },
+    configs: input.fault === "oxlint-config" ? {} : { recommended: { "vize/test": "error" } },
+  }],
   [input.root + "/vite", { default: (...args) => {
     record("vite", args);
     return input.fault === "plugins" ? [] : [{ name: "sealed-facade" }];
@@ -275,7 +319,10 @@ function denoClosure(source: string) {
   assert.ok(excluded.length > 0);
   for (const specifier of excluded) {
     assert.ok(typeof specifier === "string");
-    assert.match(specifier, /^(?:jsr:@vizejs\/vize|npm:(?:vize|@vizejs\/[\w-]+))$/);
+    assert.match(
+      specifier,
+      /^(?:jsr:@vizejs\/vize|npm:(?:vize|oxlint-plugin-vize|@vizejs\/[\w-]+))$/,
+    );
   }
 }
 
@@ -301,7 +348,19 @@ await test("the physical two-file checkout executes every original consumer entr
   for (const [root, flags] of [
     ["@vizejs/vize", ["--vite"]],
     ["jsr:@vizejs/vize@0.467.0", []],
+    ["jsr:@vizejs/vize@0.457.0", ["--core-only"]],
+    [
+      "@vizejs/vize",
+      ["--babel-specifier", "@vizejs/babel-plugin", "--oxlint-specifier", "oxlint-plugin-vize"],
+    ],
   ] as const) {
+    const stringFlags = flags as readonly string[];
+    const tools = !stringFlags.includes("--core-only");
+    const vite = stringFlags.includes("--vite");
+    const value = (name: string, fallback: string) => {
+      const index = stringFlags.indexOf(name);
+      return index < 0 ? fallback : stringFlags[index + 1]!;
+    };
     assert.deepEqual(observe(source, root, flags), {
       status: 0,
       observation: {
@@ -309,12 +368,18 @@ await test("the physical two-file checkout executes every original consumer entr
           root,
           `${root}/config`,
           `${root}/native`,
-          ...(flags.length ? [`${root}/vite`] : []),
+          ...(tools
+            ? [
+                value("--babel-specifier", `${root}/babel`),
+                value("--oxlint-specifier", `${root}/oxlint`),
+              ]
+            : []),
+          ...(vite ? [`${root}/vite`] : []),
         ],
         calls: [
           { entry: "defineConfig", args: [{ compiler: { vapor: false } }] },
           { entry: "compileSfc", args: [sfc, { filename: "App.vue" }] },
-          ...(flags.length ? [{ entry: "vite", args: [] }] : []),
+          ...(vite ? [{ entry: "vite", args: [] }] : []),
         ],
         logs: [`Verified ${root} (${flags.join(" ") || "no flags"})`],
       },
@@ -371,6 +436,9 @@ await test("sealed facades exercise all original consumer refusal assertions", (
     ["loadConfig", "the config entry point exports loadConfig"],
     ["errors", "the native compiler reports no errors: injected"],
     ["code", "the native compiler emits the component"],
+    ["babel", "the Babel entry point exports the plugin factory"],
+    ["oxlint", "the Oxlint entry point exports the plugin"],
+    ["oxlint-config", "the Oxlint entry point exports the recommended rule config"],
     ["plugins", "the Vite entry point's default export creates the plugin"],
   ]) {
     const result = observe(source, "@vizejs/vize", ["--vite"], fault);

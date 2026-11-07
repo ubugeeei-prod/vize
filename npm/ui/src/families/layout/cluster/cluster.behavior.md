@@ -13,7 +13,7 @@ passing test is a contract violation.
 | C5  | any           | slot/expose       | exposes `element`, `wrap`, `reversed`, `direction`, `wrapMode`, `gap`, alignment, and state | `passes slot state and exposes live resolved layout state`                    |
 | C6  | SSR           | isolated requests | renders byte-identical flex cluster markup without request-global state                     | `renders byte-identical cluster markup across isolated SSR requests`          |
 | C7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                   | `scripts/check-renderers.ts`                                                  |
-| C8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Cluster, emit no CSS, and stay within gzip budget    | `scripts/check-tree-shaking.mjs`                                              |
+| C8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Cluster, emit no CSS, and stay within gzip budget    | `scripts/check-tree-shaking.ts`                                               |
 
 ## Props
 

@@ -28,7 +28,7 @@ const workspace = [
   { name: "@vizejs/native", path: "npm/native", dependencies: [] },
   { name: "@vizejs/cli", path: "npm/cli", dependencies: ["@vizejs/native"] },
   { name: "@vizejs/ui", path: "npm/ui", dependencies: ["@vizejs/native"] },
-  { name: "@vizejs/oxlint", path: "npm/oxlint", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/oxlint", path: "npm/linter/oxlint", dependencies: ["@vizejs/native"] },
 ];
 const plan = (paths: string[], eventName = "pull_request") =>
   planPrChecks({ paths, eventName, labels: [], workspace, cargoMetadata: metadata() });
@@ -86,7 +86,7 @@ test("daily source contracts cover the real Rust/docs failures without widening 
     const unknownBase = plan([], event);
     assert.equal(unknownBase.sourceContracts, true, "an unknown predecessor cannot skip contracts");
     assert.equal(prCheckOutputs(unknownBase)["source-contracts"], "true");
-    for (const path of ["npm/ui/src/Button.ts", "npm/oxlint/src/runtime.ts", "README.md"]) {
+    for (const path of ["npm/ui/src/Button.ts", "npm/linter/oxlint/src/runtime.ts", "README.md"]) {
       const selected = plan([path], event);
       assert.equal(selected.sourceContracts, false, path);
       assert.equal(prCheckOutputs(selected)["source-contracts"], "false", path);
@@ -98,7 +98,7 @@ test("every docs, tooling and JS-only PR gets the real Relief compiler baseline"
   for (const path of [
     "docs/guide.md",
     "tools/support/release/preflight.ts",
-    "npm/oxlint/src/index.ts",
+    "npm/linter/oxlint/src/index.ts",
   ]) {
     const selected = plan([path]);
     const outputs = prCheckOutputs(selected);
@@ -138,7 +138,7 @@ test("unknown, shared, deleted and empty PR inputs retain full workspace validat
 test("every merge candidate checks all Rust packages without widening actual JS/native changes", () => {
   for (const path of [
     "docs/guide.md",
-    "npm/oxlint/src/index.ts",
+    "npm/linter/oxlint/src/index.ts",
     "crates/vize_curator/src/lib.rs",
     "crates/vize_armature/src/lib.rs",
   ]) {

@@ -94,8 +94,8 @@ fn javascript_sfc_language_and_configuration_refresh_retire_only_the_old_project
     assert_ne!(typed, denied);
     assert!(!project.virtual_files.contains_key(&denied));
     assert!(!project.original_contents.contains_key(&denied));
-    assert!(!project.pre_rewrite_code.contains_key(&denied));
-    assert!(!project.unchecked_javascript_files.contains(&typed));
+    assert_eq!(project.pre_rewrite_sources.get(&denied), None);
+    assert_eq!(project.unchecked_javascript_files.get(&typed), None);
 
     project
         .register_path_with_content(&path, javascript)
@@ -116,7 +116,7 @@ fn javascript_sfc_language_and_configuration_refresh_retire_only_the_old_project
         .unwrap();
     assert_eq!(project.find_by_original(&path).unwrap().virtual_path, typed);
     assert!(!project.virtual_files.contains_key(&denied));
-    assert!(project.unchecked_javascript_files.contains(&typed));
+    assert_eq!(project.unchecked_javascript_files.get(&typed), Some(&typed));
     assert_eq!(project.original_index.len(), 1);
     assert_eq!(project.source_artifacts.len(), 1);
 }

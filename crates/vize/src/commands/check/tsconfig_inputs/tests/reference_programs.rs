@@ -252,3 +252,102 @@ fn later_reference_keeps_its_implicit_inputs_independent_of_reference_order() {
     }
     let _ = fs::remove_dir_all(&case_dir);
 }
+
+#[test]
+fn importing_program_reports_only_sources_no_referenced_project_owns() {
+    // #11642: a solution of composite packages where `app` imports a page of
+    // `kit`. `tsc -b` checks `kit`'s page in `kit`'s program alone, with
+    // `kit`'s own `components.d.ts`; the importing `app` program must neither
+    // report it again nor without those globals.
+    let case_dir = unique_case_dir("tsconfig-reference-ownership");
+    let _ = fs::remove_dir_all(&case_dir);
+    for dir in ["packages/kit/src", "packages/app/src", "shared"] {
+        fs::create_dir_all(case_dir.join(dir)).unwrap();
+    }
+    fs::write(
+        case_dir.join("tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"./packages/kit"},{"path":"./packages/app"}]}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("packages/kit/tsconfig.json"),
+        r#"{"compilerOptions":{"composite":true,"rootDir":"src"},"include":["src/**/*"]}"#,
+    )
+    .unwrap();
+    fs::write(
+        case_dir.join("packages/app/tsconfig.json"),
+        r#"{"compilerOptions":{"composite":true,"rootDir":"src"},"include":["src/**/*"],"references":[{"path":"../kit"}]}"#,
+    )
+    .unwrap();
+    let kit_page = case_dir.join("packages/kit/src/Page.vue");
+    let app_util = case_dir.join("packages/app/src/util.ts");
+    let shared = case_dir.join("shared/env.ts");
+    for (path, content) in [
+        (&kit_page, "<template><GBadge /></template>"),
+        (&app_util, "export const util = 1"),
+        (&shared, "export const env = 1"),
+    ] {
+        fs::write(path, content).unwrap();
+    }
+    let imports = || vec![kit_page.clone(), app_util.clone(), shared.clone()];
+    let retain = |tsconfig: &str, files: &mut Vec<PathBuf>| {
+        super::super::retain_program_owned_sources(
+            Some(&case_dir.join(tsconfig)),
+            files,
+            false,
+            &mut TsconfigInputCache::default(),
+        );
+    };
+
+    // The `app` program keeps its own input and the unowned shared module.
+    let mut files = imports();
+    retain("packages/app/tsconfig.json", &mut files);
+    assert_eq!(
+        relative_paths(&case_dir, &files),
+        vec!["packages/app/src/util.ts", "shared/env.ts"]
+    );
+
+    // The foreign import names its owner, so an importer can mirror that
+    // program's emitted declaration instead of the source (#12102).
+    let (owned, foreign) = super::super::partition_program_owned_sources(
+        Some(&case_dir.join("packages/app/tsconfig.json")),
+        imports(),
+        false,
+        &mut TsconfigInputCache::default(),
+    );
+    assert_eq!(
+        relative_paths(&case_dir, &owned),
+        vec!["packages/app/src/util.ts", "shared/env.ts"]
+    );
+    assert_eq!(
+        foreign
+            .iter()
+            .map(|source| (source.path.clone(), source.owner.clone()))
+            .collect::<Vec<_>>(),
+        vec![(
+            kit_page.clone(),
+            super::super::normalize_input_path(&case_dir.join("packages/kit/tsconfig.json")),
+        )]
+    );
+
+    // The solution shell owns nothing itself: every package source is foreign.
+    let mut files = imports();
+    retain("tsconfig.json", &mut files);
+    assert_eq!(relative_paths(&case_dir, &files), vec!["shared/env.ts"]);
+
+    // A project without references keeps every authored import, as before.
+    let mut files = imports();
+    retain("packages/kit/tsconfig.json", &mut files);
+    assert_eq!(files, imports());
+
+    // No tsconfig at all keeps every authored import too.
+    let mut files = imports();
+    super::super::retain_program_owned_sources(
+        None,
+        &mut files,
+        false,
+        &mut TsconfigInputCache::default(),
+    );
+    assert_eq!(files, imports());
+    let _ = fs::remove_dir_all(&case_dir);
+}

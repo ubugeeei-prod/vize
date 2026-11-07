@@ -13,6 +13,21 @@ use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 mod materialized_sources;
 pub(crate) use materialized_sources::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 
+#[inline]
+fn find_diagnostic_path<'a>(
+    diagnostic_paths: &'a FxHashSet<PathBuf>,
+    path: &Path,
+    normalize: impl FnOnce(&Path) -> PathBuf,
+) -> Option<&'a Path> {
+    // Backend diagnostics normally preserve the registered canonical identity.
+    // Keep that path hash-only, which matters on cross-filesystem WSL mounts.
+    if let Some(canonical) = diagnostic_paths.get(path) {
+        return Some(canonical.as_path());
+    }
+    let normalized = normalize(path);
+    diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+}
+
 impl VirtualProject {
     pub(crate) fn preferred_materialized_path_for_original(
         &self,
@@ -58,9 +73,16 @@ impl VirtualProject {
             .collect();
     }
 
+    pub(crate) fn set_prevalidated_diagnostic_paths(&mut self, canonical_paths: &[PathBuf]) {
+        self.diagnostic_paths = canonical_paths.par_iter().cloned().collect();
+    }
+
     pub(crate) fn diagnostic_path(&self, path: &Path) -> Option<&Path> {
-        let normalized = vize_carton::path::canonicalize_non_verbatim(path);
-        self.diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+        find_diagnostic_path(
+            &self.diagnostic_paths,
+            path,
+            vize_carton::path::canonicalize_non_verbatim,
+        )
     }
 
     pub(crate) fn diagnostic_position(
@@ -71,12 +93,12 @@ impl VirtualProject {
     ) -> Option<OriginalPosition> {
         let source_path = if let Some(canonical) = self.package_shadow_files.get(path) {
             let file = self.virtual_files.get(canonical)?;
-            let authored = self.original_contents.get(canonical)?;
+            let authored = self.original_content_for_virtual(canonical)?;
             let materialized = self.package_shadow_content(path, canonical).ok()?;
             // Relocated TS copies retain authored bytes, not the canonical
             // import rewrite. Only that exact owned identity can retain these
             // coordinates; synthetic companions must not borrow either map.
-            if materialized.as_str() != authored.as_str() {
+            if materialized.as_str() != authored {
                 return None;
             }
             file.original_path.clone()
@@ -191,9 +213,51 @@ impl VirtualProject {
 
     /// Original source text of a registered file, keyed by its virtual path.
     pub(crate) fn original_content_for_virtual(&self, virtual_path: &Path) -> Option<&str> {
-        self.original_contents
-            .get(virtual_path)
-            .map(|content| content.as_str())
+        if let Some(content) = self.original_contents.get(virtual_path) {
+            return Some(content.as_str());
+        }
+        let file = self.virtual_files.get(virtual_path)?;
+        file.source_map
+            .is_authored_identity()
+            .then_some(file.content.as_str())
+    }
+
+    /// Replace one materialized script while preserving a previously shared
+    /// identity buffer only when the rewrite makes authored bytes distinct.
+    pub(super) fn replace_virtual_content(
+        &mut self,
+        virtual_path: &Path,
+        content: vize_carton::String,
+        import_map: crate::batch::ImportSourceMap,
+    ) {
+        let Some(file) = self.virtual_files.get_mut(virtual_path) else {
+            return;
+        };
+        if file.source_map.sfc_map.is_none()
+            && import_map.is_empty()
+            && self
+                .original_contents
+                .get(virtual_path)
+                .is_some_and(|authored| authored == content)
+        {
+            self.original_contents.remove(virtual_path);
+            vize_carton::micro_count!("canon.source.identity_rejoined.files", 1);
+            vize_carton::micro_count!("canon.source.identity_rejoined.bytes", content.len());
+            file.content = content;
+            file.source_map.import_map = import_map;
+            return;
+        }
+        let preserve_identity = !self.original_contents.contains_key(virtual_path)
+            && file.source_map.is_authored_identity()
+            && (file.content != content || !import_map.is_empty());
+        if preserve_identity {
+            let authored = std::mem::replace(&mut file.content, content);
+            self.original_contents
+                .insert(virtual_path.to_path_buf(), authored);
+        } else {
+            file.content = content;
+        }
+        file.source_map.import_map = import_map;
     }
 
     #[cfg(test)]
@@ -213,7 +277,7 @@ impl VirtualProject {
             crate::batch::source_map::line_col_to_offset(&file.content, line, column)?;
         let (original_offset, _, block_type) =
             file.source_map.get_original_position(virtual_offset)?;
-        let original_content = self.original_contents.get(&file.virtual_path)?;
+        let original_content = self.original_content_for_virtual(&file.virtual_path)?;
         let (original_line, original_column) =
             crate::batch::source_map::offset_to_line_col(original_content, original_offset)?;
 
@@ -233,7 +297,7 @@ impl VirtualProject {
         column: u32,
     ) -> Option<(PathBuf, u32, u32)> {
         let file = self.find_by_original(original_path)?;
-        let original_content = self.original_contents.get(&file.virtual_path)?;
+        let original_content = self.original_content_for_virtual(&file.virtual_path)?;
         let original_offset =
             crate::batch::source_map::line_col_to_offset(original_content, line, column)?;
         let virtual_offset = if let Some(ref sfc_map) = file.source_map.sfc_map {
@@ -282,3 +346,33 @@ impl VirtualProject {
 
 #[cfg(test)]
 mod authored_shadow_diagnostics_tests;
+
+#[cfg(test)]
+mod diagnostic_path_tests {
+    use std::{cell::Cell, path::PathBuf};
+
+    use vize_carton::FxHashSet;
+
+    use super::find_diagnostic_path;
+
+    #[test]
+    fn diagnostic_path_lookup_only_normalizes_misses() {
+        let canonical = PathBuf::from("registered/source.ts");
+        let paths = FxHashSet::from_iter([canonical.clone()]);
+
+        let exact = find_diagnostic_path(&paths, &canonical, |_| {
+            panic!("an exact diagnostic path must not touch the filesystem")
+        });
+        assert_eq!(exact, Some(canonical.as_path()));
+
+        let alternate = PathBuf::from("source-link.ts");
+        let normalization_calls = Cell::new(0);
+        let normalized = find_diagnostic_path(&paths, &alternate, |path| {
+            assert_eq!(path, alternate);
+            normalization_calls.set(normalization_calls.get() + 1);
+            canonical.clone()
+        });
+        assert_eq!(normalized, Some(canonical.as_path()));
+        assert_eq!(normalization_calls.get(), 1);
+    }
+}

@@ -14,19 +14,23 @@ test("the registered Babel package is published and smoked with the native compi
     .match(/^  RELEASE_JS_PACKAGES: (.+)$/m)?.[1]
     .split(" ");
   assert.ok(packages && smokePackages, "both package inventories are required");
-  assert.equal(packages.includes("npm/babel"), true, "the registered plugin is released");
+  assert.equal(packages.includes("npm/builder/babel"), true, "the registered plugin is released");
   assert.deepEqual(smokePackages, packages, "release and native smoke publish the same packages");
   const build = read(".github/actions/release-build-packages/action.yml");
   assert.ok(
-    build.includes("--filter './npm/babel...'"),
+    build.includes("--filter './npm/builder/babel...'"),
     "release builds install the Babel package graph",
   );
   assert.ok(
-    build.includes("vp run --filter './npm/babel' build"),
+    build.includes("vp run --filter './npm/builder/babel' build"),
     "both Babel entrypoints and declarations are built",
   );
-  assert.match(build, /^          npm\/babel$/m, "the built Babel package enters the npm artifact");
-  const babel = JSON.parse(read("npm/babel/package.json"));
+  assert.match(
+    build,
+    /^          npm\/builder\/babel$/m,
+    "the built Babel package enters the npm artifact",
+  );
+  const babel = JSON.parse(read("npm/builder/babel/package.json"));
   const native = JSON.parse(read("npm/native/package.json"));
   assert.equal(
     babel.version,
