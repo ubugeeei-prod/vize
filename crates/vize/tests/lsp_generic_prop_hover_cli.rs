@@ -37,6 +37,9 @@ const INSTANTIATED_LIST: &str =
 const INSTANTIATED_EXPECTED: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/hover.expected.json"
 );
+const INSTANTIATED_RESPONSES: &str = include_str!(
+    "../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/responses.expected.json"
+);
 
 #[test]
 fn complete_original_generic_hover_sources_match_the_reporter_manifest() {
@@ -120,16 +123,23 @@ fn generic_prop_hover_uses_the_instantiated_type_at_the_call_site() {
             .unwrap()
     );
     let expected: Value = serde_json::from_str(INSTANTIATED_EXPECTED).unwrap();
+    let responses: Value = serde_json::from_str(INSTANTIATED_RESPONSES).unwrap();
+    assert_eq!(responses[0]["result"], expected);
     let mut project = Fixture::new_with_vue_component_project(
         INSTANTIATED_APP,
         "App.vue",
         &[("List.vue", INSTANTIATED_LIST)],
     );
     project.open(INSTANTIATED_APP);
-    let actual = project.request("textDocument/hover", INSTANTIATED_APP, "items=\"nums\"");
-    assert_eq!(
-        actual, expected,
-        "generic prop hover must use call-site inference"
-    );
+    for (index, marker) in ["items=\"nums\"", "items=\"words\""]
+        .into_iter()
+        .enumerate()
+    {
+        let actual = project.request("textDocument/hover", INSTANTIATED_APP, marker);
+        assert_eq!(
+            actual, responses[index]["result"],
+            "generic prop hover must use independent call-site inference"
+        );
+    }
     project.shutdown();
 }

@@ -13521,6 +13521,45 @@
       }
     },
     {
+      "id": "typechecker/regression/generic-prop-hover-11504",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-prop-hover-11504/App.vue.txt",
+          "sha256": "8022f5930039a7bec0d0229cf8e6949958cdb995a8b6f60d2b07aa5d1350941a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-prop-hover-11504/List.vue.txt",
+          "sha256": "2ef61c11dcb8fd12d05207f21c736c34d1b69a436d204670f64f3e0482528a28",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "generic-prop-hover-11504/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "lsp_generic_prop_hover_cli::generic_prop_hover_uses_the_instantiated_type_at_the_call_site; #11504 reported generic component receives independent number and string arrays. Input-only batch registration for the shared Canon source change; no batch diagnostic behavior or native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/generic-setup-local-declaration-11498",
       "state": "active",
       "targets": [
