@@ -135,7 +135,6 @@ struct StyleSelection<'a> {
 /// assert_eq!(view.template_lang(), Lang::Ts);
 /// assert_eq!(view.setup().unwrap().container_index(), 1);
 /// ```
-#[derive(Debug)]
 pub struct DescriptorObservation<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
@@ -146,6 +145,24 @@ pub struct DescriptorObservation<'a> {
     setup: Option<Selection<'a>>,
     template: Option<TemplateSelection<'a>>,
     styles: Vec<'a, StyleSelection<'a>>,
+}
+
+// The retained descriptor is an internal ownership improvement. Preserve the
+// pre-existing complete Debug representation consumed by compatibility oracles.
+impl core::fmt::Debug for DescriptorObservation<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter
+            .debug_struct("DescriptorObservation")
+            .field("container", &self.container)
+            .field("root", &self.root)
+            .field("options", &self.options)
+            .field("issues", &self.issues)
+            .field("ordinary", &self.ordinary)
+            .field("setup", &self.setup)
+            .field("template", &self.template)
+            .field("styles", &self.styles)
+            .finish()
+    }
 }
 
 impl<'a> DescriptorObservation<'a> {

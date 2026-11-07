@@ -1,6 +1,7 @@
 use super::*;
 use crate::container::{ContainerFormat, Vue};
 use crate::embed::EmbedSource;
+use alloc::format;
 use vize_l0::{ProfileKind, SourceFrameError, String, TemplateSyntaxMode};
 
 fn options() -> DescriptorOptions {
@@ -9,6 +10,19 @@ fn options() -> DescriptorOptions {
         dialect: VueDialect::Vue,
         template: SurfaceParseOptions::default(),
     }
+}
+
+#[test]
+fn resolved_descriptor_keeps_the_established_debug_surface() {
+    let allocator = Allocator::default();
+    let observation = Vue.observe_descriptor(&allocator, "<template><div/></template>", options());
+    let debug = format!("{observation:#?}");
+    assert!(!debug.contains("FileDialect"));
+    assert!(!debug.contains("syntax: Standard"));
+    assert_eq!(
+        format!("{:?}", observation.options()),
+        "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
+    );
 }
 
 fn has_issue(source: &str, code: DescriptorIssueCode) {

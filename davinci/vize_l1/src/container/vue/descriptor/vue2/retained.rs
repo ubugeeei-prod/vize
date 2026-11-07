@@ -66,7 +66,6 @@ use vize_l0::{FileDialect, SourceBlock, SourceRoot, Span, Vec};
 /// };
 /// println!("{root:?}");
 /// ```
-#[derive(Debug)]
 pub struct Vue2DescriptorExpressionPool<'a> {
     #[cfg(test)]
     _drop_probe: super::hooks::OwnerDrop,
@@ -79,6 +78,23 @@ pub struct Vue2DescriptorExpressionPool<'a> {
     component: Option<ComponentExpressionPool<'a>>,
     // Set only by the actual original selected() before consuming that owner.
     selected: bool,
+}
+
+impl core::fmt::Debug for Vue2DescriptorExpressionPool<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut debug = formatter.debug_struct("Vue2DescriptorExpressionPool");
+        #[cfg(test)]
+        debug.field("_drop_probe", &self._drop_probe);
+        debug
+            .field("container", &self.container)
+            .field("root", &self.root)
+            .field("options", &self.options)
+            .field("issues", &self.issues)
+            .field("selection", &self.selection)
+            .field("component", &self.component)
+            .field("selected", &self.selected)
+            .finish()
+    }
 }
 
 impl<'a> Vue2DescriptorExpressionPool<'a> {

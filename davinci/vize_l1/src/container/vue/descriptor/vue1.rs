@@ -68,7 +68,6 @@ mod tests;
 /// };
 /// let _ = owner.container();
 /// ```
-#[derive(Debug)]
 pub struct Vue1DescriptorObservation<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
@@ -77,6 +76,20 @@ pub struct Vue1DescriptorObservation<'a> {
     issues: Vec<'a, DescriptorIssue>,
     selection: Option<TemplateSelection<'a>>,
     component: Option<ComponentParse<'a>>,
+}
+
+impl core::fmt::Debug for Vue1DescriptorObservation<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter
+            .debug_struct("Vue1DescriptorObservation")
+            .field("container", &self.container)
+            .field("root", &self.root)
+            .field("options", &self.options)
+            .field("issues", &self.issues)
+            .field("selection", &self.selection)
+            .field("component", &self.component)
+            .finish()
+    }
 }
 
 impl<'a> Vue1DescriptorObservation<'a> {

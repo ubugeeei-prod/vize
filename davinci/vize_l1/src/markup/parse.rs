@@ -20,13 +20,27 @@ pub use crate::dialect::vue3::surface::{
 };
 
 /// Parse-time switches L1 owns for the L2 consumers.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct SurfaceParseOptions {
     /// Accept Vue's experimental `//` comments inside opening tag attrs.
     pub experimental_in_tag_comments: bool,
     /// File-wide recovery policy. Native nonstandard admission remains typed;
     /// carrying the selection here prevents a second parser-only axis.
     pub syntax: TemplateSyntaxMode,
+}
+
+// Keep the established public Debug surface stable while the canonical file
+// descriptor privately carries the additional syntax axis.
+impl core::fmt::Debug for SurfaceParseOptions {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter
+            .debug_struct("SurfaceParseOptions")
+            .field(
+                "experimental_in_tag_comments",
+                &self.experimental_in_tag_comments,
+            )
+            .finish()
+    }
 }
 
 /// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps
