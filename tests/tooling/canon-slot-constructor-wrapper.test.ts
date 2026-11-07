@@ -11,12 +11,9 @@ function fixture() {
     "type $SlotConstructorWithoutArguments<C> = C;",
     "type $SlotConstructorWithArguments<C> = C;",
     "type $NativeSlotsFactory<C> = [C] extends [new () => unknown] ? C : never;",
-    ...["Without", "With"].flatMap((name) =>
-      Array.from(
-        { length: 2 },
-        () =>
-          `new (undefined as unknown as $SlotConstructor${name}Arguments<typeof WitnessChild>)();`,
-      ),
+    ...["Without", "With"].map(
+      (name) =>
+        `new (undefined as unknown as $SlotConstructor${name}Arguments<typeof WitnessChild>)();`,
     ),
   ].join("\n");
   const afterText = `${declarations}\nconst q = "name";\nvoid (item)`;
@@ -57,6 +54,17 @@ const clone = <T>(value: T): T => structuredClone(value);
 void test("the constructor audit admits only the certified additive wrapper transition", () => {
   const { before, after } = fixture();
   assert.equal(auditPackets(before, after).mappings, 6);
+});
+void test("the constructor audit refuses copied slot-host branches", () => {
+  const { before, after } = fixture();
+  const branch =
+    "new (undefined as unknown as $SlotConstructorWithoutArguments<typeof WitnessChild>)();";
+  const copied = clone(after);
+  copied.text = copied.text.replace(branch, `${branch}\n${branch}`);
+  assert.throws(
+    () => auditPackets(before, copied),
+    /reused template host must retain each direct branch exactly once/u,
+  );
 });
 void test("the constructor audit admits only the exact named component navigation successor", () => {
   const text =

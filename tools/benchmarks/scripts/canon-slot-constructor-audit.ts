@@ -205,10 +205,10 @@ export function auditPackets(
   assert.deepEqual(
     directConstructorBranches,
     {
-      withoutArguments: [component, component],
-      withArguments: [component, component],
+      withoutArguments: [component],
+      withArguments: [component],
     },
-    "both inference phases must retain both direct branches under the exact component owner",
+    "the reused template host must retain each direct branch exactly once under the component owner",
   );
   assert.ok(!headText.includes(legacy), "the unconditional first argument must be gone");
   assert.ok(
