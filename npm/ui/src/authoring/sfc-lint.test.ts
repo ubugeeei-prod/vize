@@ -77,6 +77,8 @@ test("package lint:sfc stays wired to the shared Vize SFC gate", async () => {
   assert.match(lintScript, /"script\/define-props-destructuring"/);
   assert.match(lintScript, /"vue\/multi-word-component-names"/);
   assert.match(lintScript, /"script\/require-default-prop"/);
+  assert.match(lintScript, /"script\/no-boolean-default"/);
+  assert.match(lintScript, /"vue\/html-self-closing"/);
   assert.match(lintScript, /packageCompatibilityRules\.has\(diagnostic\.rule\)/);
   assert.match(lintScript, /corsaPath: workspaceCorsaPath/);
   assert.match(lintScript, /lintFiles\(lintCoreSfc, sourceRoots\)/);

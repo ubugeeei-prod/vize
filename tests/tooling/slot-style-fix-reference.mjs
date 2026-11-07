@@ -45,6 +45,7 @@ export function fixedSource(entry, originalRules = false) {
         .replace('disabled="disabled"', "disabled")
         .replace("<MyCard></MyCard>", "<MyCard />")
         .replace("<my-card />", "<MyCard />")
+        .replace("<input disabled />", "<input disabled>")
     : entry.fixed;
 }
 

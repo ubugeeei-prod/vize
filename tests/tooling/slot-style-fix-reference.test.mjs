@@ -22,7 +22,8 @@ await test("7905 slot contracts retain whole original carriers, edits and comple
       .replace("v-slot:header", "#header")
       .replace('disabled="disabled"', "disabled")
       .replace("<MyCard></MyCard>", "<MyCard />")
-      .replace("<my-card />", "<MyCard />"),
+      .replace("<my-card />", "<MyCard />")
+      .replace("<input disabled />", "<input disabled>"),
   );
   assert.deepEqual(
     wholeJson(original, false, true)[0].messages.map((finding) => finding.ruleId),

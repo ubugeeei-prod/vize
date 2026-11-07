@@ -105,5 +105,6 @@ export function fixedSource(entry, originalRules = false) {
         .replace("v-slot:header", "#header")
         .replace("<MyCard></MyCard>", "<MyCard />")
         .replace("<my-card />", "<MyCard />")
+        .replace("<input disabled />", "<input disabled>")
     : entry.fixed;
 }

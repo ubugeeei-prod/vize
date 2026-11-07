@@ -73,7 +73,7 @@ const ordered = (items) =>
 function publicNativeReport(after) {
   const report = currentBooleanStylePacket(wholeJson({ ...original, filename: file }, after, true));
   const source = after ? expected : original.source;
-  const target = after ? "<input disabled />" : '<input disabled="disabled" />';
+  const target = after ? "<input disabled>" : '<input disabled="disabled" />';
   const start = source.indexOf(target);
   assert.equal(source.indexOf(target, start + 1), -1);
   assert.ok(start >= 0);

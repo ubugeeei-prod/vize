@@ -25,6 +25,12 @@ const packageCompatibilityRules = new Set([
   // Optional primitive props are intentionally left without runtime defaults;
   // consumers need to be able to distinguish omission from an explicit value.
   "script/require-default-prop",
+  // The public component APIs intentionally spell explicit Boolean defaults;
+  // removing them is a package migration, not a product-preset exception.
+  "script/no-boolean-default",
+  // Existing renderless UI components retain their authored void/component
+  // syntax until the package can migrate it without snapshot churn.
+  "vue/html-self-closing",
 ]);
 
 const lintCoreSfc: SfcLintFunction = (source, options) => {
