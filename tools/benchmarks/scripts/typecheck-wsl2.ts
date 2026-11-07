@@ -8,6 +8,7 @@
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { availableParallelism } from "node:os";
 import { join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 import { parseArgs } from "node:util";
@@ -29,7 +30,11 @@ const HOSTS = {
 const TARGETS = { mapperSpeedup: 100, memoryReduction: 10, tsrsMs: 500 };
 const mapperTsconfigName = (mapper: "vize" | "vue") => `tsconfig.${mapper}-mapper.json`;
 
-type LaneId = "tsc-vize-mapper" | "tsc-vue-mapper" | "tsrs-fast-vize-mapper";
+type LaneId =
+  | "tsc-vize-mapper"
+  | "tsc-vue-mapper"
+  | "tsrs-fast-vize-mapper"
+  | "tsrs-fast-parallel-vize-mapper";
 type Sample = {
   location: string;
   profile: string;
@@ -130,7 +135,14 @@ function invoke(dir: string, corpus: ScaleProject, lane: LaneId): { bin: string;
   const host = lane.startsWith("tsrs") ? "tsrs" : "typescript";
   const bin = join(dir, "node_modules", host, "bin", host === "tsrs" ? "tsrs" : "tsc");
   const mapper = lane === "tsc-vue-mapper" ? "vue" : "vize";
-  const extra = lane === "tsrs-fast-vize-mapper" ? ["--fast"] : [];
+  const extra = lane.startsWith("tsrs-fast")
+    ? [
+        "--fast",
+        ...(lane === "tsrs-fast-parallel-vize-mapper"
+          ? ["--checkers", String(availableParallelism())]
+          : []),
+      ]
+    : [];
   return {
     bin,
     args:
@@ -240,7 +252,7 @@ function summary(samples: Sample[]): string {
       );
     const vizeFingerprint = [...fingerprints("tsc-vize-mapper")];
     const vueFingerprint = [...fingerprints("tsc-vue-mapper")];
-    const tsrsFingerprint = [...fingerprints("tsrs-fast-vize-mapper")];
+    const tsrsFingerprint = [...fingerprints("tsrs-fast-parallel-vize-mapper")];
     const diagnosticParity =
       vizeFingerprint.length === 1 &&
       vueFingerprint.length === 1 &&
@@ -263,8 +275,8 @@ function summary(samples: Sample[]): string {
       metric("tsc-vue-mapper", "warm", "maxRssKb"),
       metric("tsc-vize-mapper", "warm", "maxRssKb"),
     );
-    const tsrsCold = metric("tsrs-fast-vize-mapper", "cold", "wallMs");
-    const tsrsWarm = metric("tsrs-fast-vize-mapper", "warm", "wallMs");
+    const tsrsCold = metric("tsrs-fast-parallel-vize-mapper", "cold", "wallMs");
+    const tsrsWarm = metric("tsrs-fast-parallel-vize-mapper", "warm", "wallMs");
     const refused = mine.filter((sample) => sample.refused).length;
     const met =
       refused === 0 &&
@@ -307,7 +319,7 @@ function main(): void {
   const corpusFactories: Array<[string, () => ScaleProject]> = [
     ...sizes.map<[string, () => ScaleProject]>((sfcs) => [
       `vue-${sfcs}`,
-      () => generateScaleProject({ sfcs, kind: "vue" }),
+      () => generateScaleProject({ sfcs, kind: "vue", parityPlants: true }),
     ]),
     ...(giantBlocks > 0
       ? [
@@ -325,6 +337,7 @@ function main(): void {
               generateScaleProject({
                 sfcs: monorepoSfcs,
                 kind: "monorepo",
+                parityPlants: true,
                 featurePackages: monorepoPackages,
               }),
           ] as [string, () => ScaleProject],
@@ -337,7 +350,12 @@ function main(): void {
     return { label: value.slice(0, at), root: resolve(value.slice(at + 1)) };
   });
   const samples: Sample[] = [];
-  const lanes: LaneId[] = ["tsc-vize-mapper", "tsc-vue-mapper", "tsrs-fast-vize-mapper"];
+  const lanes: LaneId[] = [
+    "tsc-vize-mapper",
+    "tsc-vue-mapper",
+    "tsrs-fast-vize-mapper",
+    "tsrs-fast-parallel-vize-mapper",
+  ];
   for (const [profile, create] of corpusFactories) {
     for (const location of locations) {
       const corpus = create();

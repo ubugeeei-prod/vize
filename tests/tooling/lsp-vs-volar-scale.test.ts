@@ -169,6 +169,7 @@ test("generated projects pin Vue from the workspace catalog", () => {
     'catalogs:\n  a:\n    vue: "1.0.0"\n\n  # b\n  b:\n    "@vue/x": "2.0.0"\n    vue: "3.0.0"\n';
   assert.equal(catalogVersion(sample, "b", "vue"), "3.0.0");
   assert.equal(catalogVersion(sample, "b", "@vue/x"), "2.0.0");
+  assert.equal(catalogVersion(sample.replaceAll("\n", "\r\n"), "b", "vue"), "3.0.0");
   assert.throws(() => catalogVersion(sample, "a", "@vue/x"), /pins no/);
 });
 

@@ -133,7 +133,7 @@ export function performanceTargets(cells: Cell[]): PerformanceTarget[] {
       cells.find((cell) => cell.kind === kind && cell.sfcs === sfcs && cell.tool === tool);
     const vize = find("tsc-vize-mapper");
     const reference = find("tsc-vue-mapper");
-    const tsrs = find("tsrs-fast-vize-mapper");
+    const tsrs = find("tsrs-fast-parallel-vize-mapper");
     const vizeRow = vize ? rowOf(vize) : null;
     const referenceRow = reference ? rowOf(reference) : null;
     const tsrsRow = tsrs ? rowOf(tsrs) : null;
@@ -327,7 +327,7 @@ export function renderSummary(results: ScalingResults): string {
     lines.push(
       "## Performance targets",
       "",
-      `The target is at least ${MAPPER_SPEEDUP_TARGET}x lower mapper wall time and ${MAPPER_MEMORY_TARGET}x lower peak memory than the reference mapper on the same TypeScript host, plus tsrs --fast at or below ${TSRS_WALL_TARGET_MS} ms. Cold and warm observations must both pass, and complete diagnostic fingerprints must match. A miss remains visible and is never averaged with another corpus.`,
+      `The target is at least ${MAPPER_SPEEDUP_TARGET}x lower mapper wall time and ${MAPPER_MEMORY_TARGET}x lower peak memory than the reference mapper on the same TypeScript host, plus tsrs --fast --checkers=max at or below ${TSRS_WALL_TARGET_MS} ms. Cold and warm observations must both pass, and complete diagnostic fingerprints must match. A miss remains visible and is never averaged with another corpus.`,
       "",
       "| Corpus | Diagnostics | Mapper wall warm / cold | Memory warm / cold | tsrs warm / cold | Verdict |",
       "| --- | --- | ---: | ---: | ---: | --- |",
