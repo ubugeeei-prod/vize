@@ -536,23 +536,13 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     }
 
     fn parse_array_expression_element(&mut self) -> ArrayExpressionElement<'a> {
-        // Malformed TypeScript can hide thousands of nested array productions
-        // from the outer lexical admission scan. Keep the general parser
-        // bounded even when a caller parses untrusted source without that scan.
-        const MAX_ARRAY_EXPRESSION_DEPTH: usize = 256;
-        if self.state.array_expression_depth >= MAX_ARRAY_EXPRESSION_DEPTH {
-            return self.unexpected();
-        }
-        self.state.array_expression_depth += 1;
         // Grow before recursive element/spread/assignment descent. Empty arrays
         // leave the original delimited list before reaching this callback.
-        let element = stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || match self.cur_kind() {
+        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || match self.cur_kind() {
             Kind::Comma => self.parse_elision(),
             Kind::Dot3 => ArrayExpressionElement::SpreadElement(self.parse_spread_element()),
             _ => ArrayExpressionElement::from(self.parse_assignment_expression_or_higher()),
-        });
-        self.state.array_expression_depth -= 1;
-        element
+        })
     }
 
     /// Elision :

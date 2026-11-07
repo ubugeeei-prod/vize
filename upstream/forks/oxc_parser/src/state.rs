@@ -19,9 +19,6 @@ pub struct ParserState<'a> {
     /// Dynamic scope of reversible expression type-argument probes. The
     /// committed parser never consumes memoized failing subproblems.
     pub type_argument_speculation_depth: usize,
-    /// Recursive array-expression element descent. This is independent of
-    /// speculative checkpoints because every entry restores it before return.
-    pub array_expression_depth: usize,
     /// Keep valid generic fast paths free of memo-table/key work. The first
     /// failed expression type-argument probe enables sharing for later probes.
     pub reuse_failed_type_argument_subproblems: bool,
@@ -71,7 +68,6 @@ impl ParserState<'_> {
             last_type_argument_close: None,
             failed_speculations: FxHashSet::default(),
             type_argument_speculation_depth: 0,
-            array_expression_depth: 0,
             reuse_failed_type_argument_subproblems: false,
             failed_speculative_subproblems: FailedSubproblems::default(),
             speculation_effects_revision: 0,
