@@ -24,11 +24,7 @@ import {
   CompiledModuleCache,
   ownersOfDependency,
 } from "../../../npm/builder/vite/src/plugin/compiled-module-cache.ts";
-
-type BenchmarkModule = {
-  code: string;
-  dependencies: string[];
-};
+import type { CompiledModule } from "../../../npm/builder/vite/src/types.ts";
 
 type BenchmarkOptions = {
   sizes: number[];
@@ -67,14 +63,16 @@ function parseArgs(argv: readonly string[]): BenchmarkOptions {
   return options;
 }
 
-function buildEntries(size: number, withSrcImports: boolean): [string, BenchmarkModule][] {
-  const entries: [string, BenchmarkModule][] = [];
+function buildEntries(size: number, withSrcImports: boolean): [string, CompiledModule][] {
+  const entries: [string, CompiledModule][] = [];
   for (let i = 0; i < size; i += 1) {
     entries.push([
       `/project/src/Component${i}.vue`,
       {
         code: "export default {}",
         dependencies: withSrcImports ? [`/project/src/styles/component${i}.css`] : [],
+        hasScoped: false,
+        scopeId: `component-${i}`,
       },
     ]);
   }
@@ -82,9 +80,9 @@ function buildEntries(size: number, withSrcImports: boolean): [string, Benchmark
 }
 
 /** The pre-#3403 lookup, reproduced exactly. */
-function scanOwners(caches: readonly Map<string, BenchmarkModule>[], dependencyFile: string) {
+function scanOwners(caches: readonly Map<string, CompiledModule>[], dependencyFile: string) {
   const normalizedDependency = path.resolve(dependencyFile);
-  const owners = new Set();
+  const owners = new Set<string>();
   for (const cache of caches) {
     for (const [vueFile, compiled] of cache) {
       if (compiled.dependencies?.some((d) => path.resolve(d) === normalizedDependency)) {
@@ -95,9 +93,9 @@ function scanOwners(caches: readonly Map<string, BenchmarkModule>[], dependencyF
   return [...owners];
 }
 
-function indexOwners(caches: readonly Map<string, BenchmarkModule>[], dependencyFile: string) {
+function indexOwners(caches: readonly Map<string, CompiledModule>[], dependencyFile: string) {
   const normalizedDependency = path.resolve(dependencyFile);
-  const owners = new Set();
+  const owners = new Set<string>();
   for (const cache of caches) {
     for (const vueFile of ownersOfDependency(cache, normalizedDependency)) owners.add(vueFile);
   }
@@ -105,8 +103,8 @@ function indexOwners(caches: readonly Map<string, BenchmarkModule>[], dependency
 }
 
 function measure(
-  lookup: (caches: readonly Map<string, BenchmarkModule>[], changedFile: string) => string[],
-  caches: readonly Map<string, BenchmarkModule>[],
+  lookup: (caches: readonly Map<string, CompiledModule>[], changedFile: string) => string[],
+  caches: readonly Map<string, CompiledModule>[],
   changedFile: string,
   iterations: number,
 ) {
