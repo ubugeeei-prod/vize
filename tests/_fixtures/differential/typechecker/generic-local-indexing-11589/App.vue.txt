@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T extends Item, K extends keyof T">
+import type { Item } from "./types";
+const props = defineProps<{ item: T; key: K }>();
+const local: T = props.item;
+</script>
+<template><p>{{ local[props.key] }}</p></template>
