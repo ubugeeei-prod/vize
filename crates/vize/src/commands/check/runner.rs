@@ -14,7 +14,7 @@ use super::{
     path_cache::CanonicalPathCache,
     patterns::CheckFileOptions,
     reporting::{JsonFileResult, JsonOutput, JsonProgramResult},
-    tsconfig_inputs::{TsconfigInputCache, tsconfig_allows_js},
+    tsconfig_inputs::{TsconfigInputCache, retain_program_owned_sources, tsconfig_allows_js},
 };
 
 mod collect;
@@ -250,6 +250,13 @@ fn prepare_candidate(
             excluded_explicit_inputs: true,
         });
     }
+    // A referenced project's source is reported by its own program (#11642).
+    retain_program_owned_sources(
+        program_tsconfig_path.as_deref(),
+        &mut authored_imports,
+        jsx_typecheck,
+        cache,
+    );
     candidate.reported.extend(
         authored_imports
             .into_iter()

@@ -261,6 +261,7 @@ Regenerate with `node tools/commands/ci/workflow-catalog.ts`.
 | Sticky disk maintenance                  | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)                               |
 | Type-check corpus pair                   | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
 | Typecheck vs vue-tsc                     | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| WSL2 type-check qualification            | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
 | Typechecker cache custody                | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
 | Type checker native backend phases       | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
 | Native syntax and semantic completion    | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |

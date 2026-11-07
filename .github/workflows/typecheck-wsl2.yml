@@ -1,0 +1,137 @@
+name: WSL2 type-check qualification
+run-name: "WSL2 type-check ${{ inputs.vize }} (${{ inputs.sizes }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }})"
+
+on:
+  workflow_dispatch:
+    inputs:
+      vize:
+        description: Published vize npm spec to measure
+        type: string
+        required: true
+        default: latest
+      sizes:
+        description: Comma-separated SFC counts for ordinary projects
+        type: string
+        default: "1000"
+      giant_blocks:
+        description: Template blocks in one oversized SFC (0 skips it)
+        type: string
+        default: "10000"
+      monorepo_sfcs:
+        description: SFCs in the project-references monorepo (0 skips it)
+        type: string
+        default: "1000"
+      runs:
+        description: Warm runs per lane and filesystem
+        type: string
+        default: "3"
+      lsp_fixtures:
+        description: Generated editor fixtures measured on both filesystems
+        type: string
+        default: "scale-1k scale-giant-sfc scale-monorepo"
+  pull_request:
+    paths:
+      - .github/workflows/typecheck-wsl2.yml
+      - tools/benchmarks/scripts/typecheck-wsl2.ts
+
+permissions: { contents: read }
+concurrency:
+  group: wsl2-typecheck-${{ github.event.pull_request.number || inputs.vize }}-${{ inputs.sizes }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-2025
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl time xz-utils
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: |
+          $mount = (wsl.exe wslpath -a "$env:RUNNER_TEMP").Trim()
+          "WSL_MOUNT_ROOT=$mount/vize-wsl2" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install Node 24 in WSL2
+        shell: wsl-bash {0}
+        run: |
+          set -euo pipefail
+          version=24.14.0
+          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
+          curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
+          grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
+          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
+          node --version
+          npm --version
+          uname -a
+          wslpath -w "$PWD"
+      - name: Measure ext4 and Windows mount
+        shell: wsl-bash {0}
+        env:
+          VIZE_SPEC: ${{ inputs.vize }}
+          SIZES: ${{ inputs.sizes }}
+          GIANT_BLOCKS: ${{ inputs.giant_blocks }}
+          MONOREPO_SFCS: ${{ inputs.monorepo_sfcs }}
+          RUNS: ${{ inputs.runs }}
+        run: |
+          set -euo pipefail
+          [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
+          [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
+          [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
+          [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          ext4="$HOME/vize-wsl2"
+          mounted="$WSL_MOUNT_ROOT/mounted"
+          output="$WSL_MOUNT_ROOT/results"
+          mkdir -p "$ext4" "$mounted" "$output"
+          node tools/benchmarks/scripts/typecheck-wsl2.ts \
+            --location "ext4=$ext4" --location "windows-mount=$mounted" \
+            --vize "$VIZE_SPEC" --sizes "$SIZES" --giant-blocks "$GIANT_BLOCKS" \
+            --monorepo-sfcs "$MONOREPO_SFCS" --runs "$RUNS" --out "$output"
+          summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+          cat "$output/summary.md" >> "$summary_path"
+          wsl.exe --list --verbose
+      - name: Measure editor load, edits, requests and memory
+        shell: wsl-bash {0}
+        env:
+          VIZE_SPEC: ${{ inputs.vize }}
+          LSP_FIXTURES: ${{ inputs.lsp_fixtures }}
+        run: |
+          set -euo pipefail
+          [[ "$LSP_FIXTURES" =~ ^scale-(1k|5k|20k|giant-sfc|monorepo)(\ scale-(1k|5k|20k|giant-sfc|monorepo))*$ ]]
+          output="$WSL_MOUNT_ROOT/results"
+          summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+          for entry in "ext4=$HOME/vize-wsl2" "windows-mount=$WSL_MOUNT_ROOT/mounted"; do
+            label=${entry%%=*}
+            root=${entry#*=}
+            tools="$root/editor-tools"
+            mkdir -p "$tools"
+            printf '{"private":true}\n' > "$tools/package.json"
+            npm install --prefix "$tools" --no-audit --no-fund \
+              "vize@$VIZE_SPEC" \
+              "@vue/language-server@3.3.11" "@vue/typescript-plugin@3.3.11" \
+              "typescript@6.0.3" "@typescript/typescript-linux-x64@7.0.2"
+            args=()
+            for fixture in $LSP_FIXTURES; do args+=(--fixture "$fixture"); done
+            node tools/benchmarks/scripts/lsp-vs-volar.ts \
+              "${args[@]}" \
+              --vize "published=$tools/node_modules/.bin/vize" \
+              --volar-root "$tools" --fixtures-dir "$root/editor-projects" \
+              --rounds 1 --warmups 0 --cycles 2 --idle-ms 2000 \
+              --meta "filesystem=$label" --meta "vize=$VIZE_SPEC" \
+              --out "$output/lsp-$label.md" --json "$output/lsp-$label.json" \
+              --logs "$output/lsp-$label-logs"
+            cat "$output/lsp-$label.md" >> "$summary_path"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: wsl2-typecheck-${{ github.run_id }}
+          path: ${{ runner.temp }}/vize-wsl2/results/
+          if-no-files-found: warn
+          retention-days: 30
