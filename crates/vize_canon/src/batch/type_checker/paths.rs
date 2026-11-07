@@ -41,17 +41,29 @@ impl IncrementalPaths {
         }
     }
 
-    pub(super) fn after_explicit_scan(&mut self, project: &VirtualProject, paths: &[PathBuf]) {
-        self.allow_new_paths = false;
-        self.replace_snapshot(project, paths);
+    pub(super) fn after_explicit_scan(
+        &mut self,
+        project: &VirtualProject,
+        canonical_roots: Vec<PathBuf>,
+    ) {
+        self.replace_snapshot(project, canonical_roots, false);
     }
 
     pub(super) fn after_project_scan(
         &mut self,
         project: &VirtualProject,
-        mut canonical_roots: Vec<PathBuf>,
+        canonical_roots: Vec<PathBuf>,
     ) {
-        self.allow_new_paths = true;
+        self.replace_snapshot(project, canonical_roots, true);
+    }
+
+    fn replace_snapshot(
+        &mut self,
+        project: &VirtualProject,
+        mut canonical_roots: Vec<PathBuf>,
+        allow_new_paths: bool,
+    ) {
+        self.allow_new_paths = allow_new_paths;
         let state = self
             .state
             .get_mut()
@@ -59,22 +71,6 @@ impl IncrementalPaths {
         canonical_roots.sort();
         canonical_roots.dedup();
         state.roots = canonical_roots;
-        state.known_source_paths = project.registered_original_paths_sorted();
-        state.source_stamps = stamp_project_inputs(project, &state.known_source_paths);
-    }
-
-    fn replace_snapshot(&mut self, project: &VirtualProject, roots: &[PathBuf]) {
-        let state = self
-            .state
-            .get_mut()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        state.roots = roots
-            .par_iter()
-            .filter(|path| path.is_file())
-            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
-            .collect();
-        state.roots.sort();
-        state.roots.dedup();
         state.known_source_paths = project.registered_original_paths_sorted();
         state.source_stamps = stamp_project_inputs(project, &state.known_source_paths);
     }
@@ -182,6 +178,21 @@ pub(super) struct ProjectPathSnapshot {
     canonical: Vec<PathBuf>,
 }
 
+/// Verified explicit inputs paired with their physical identity in one pass.
+/// Logical paths borrow the caller's storage so large scans do not duplicate
+/// every path while declaration, registration, and incremental state reuse the
+/// canonical vector.
+pub(super) struct ExplicitPathSnapshot<'a> {
+    logical: Vec<&'a Path>,
+    canonical: Vec<PathBuf>,
+}
+
+impl<'a> ExplicitPathSnapshot<'a> {
+    pub(super) fn into_parts(self) -> (Vec<&'a Path>, Vec<PathBuf>) {
+        (self.logical, self.canonical)
+    }
+}
+
 impl ProjectPathSnapshot {
     pub(super) fn into_parts(self) -> (Vec<PathBuf>, Vec<PathBuf>) {
         (self.logical, self.canonical)
@@ -217,6 +228,20 @@ pub(super) fn collect_project_paths(
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
     Ok(collect_project_path_snapshot(project, source_policy)?.logical)
+}
+
+pub(super) fn collect_explicit_path_snapshot(paths: &[PathBuf]) -> ExplicitPathSnapshot<'_> {
+    let (logical, canonical) = paths
+        .par_iter()
+        .filter(|path| path.is_file())
+        .map(|path| {
+            (
+                path.as_path(),
+                vize_carton::path::canonicalize_non_verbatim(path),
+            )
+        })
+        .unzip();
+    ExplicitPathSnapshot { logical, canonical }
 }
 
 pub(super) fn collect_project_path_snapshot(
