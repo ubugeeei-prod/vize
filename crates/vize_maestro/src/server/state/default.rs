@@ -86,6 +86,8 @@ impl ServerState {
             #[cfg(feature = "native")]
             native_hover: Default::default(),
             #[cfg(feature = "native")]
+            native_navigation_answers: Default::default(),
+            #[cfg(feature = "native")]
             workspace_preparation: Default::default(),
             #[cfg(feature = "native")]
             corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),

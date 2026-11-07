@@ -108,10 +108,16 @@ pub(super) async fn goto_definition(
 
     #[cfg(feature = "native")]
     {
-        let corsa_bridge = server.state.get_corsa_bridge().await;
-        if let Some(response) = DefinitionService::definition_with_corsa(&ctx, corsa_bridge).await {
-            return Ok(Some(response));
+        let stamp = server.state.corsa_request_stamp();
+        if let Some(response) = server.state.cached_native_definition(uri, position, stamp) {
+            return Ok(response);
         }
+        let corsa_bridge = server.state.get_corsa_bridge().await;
+        let response = DefinitionService::definition_with_corsa(&ctx, corsa_bridge).await;
+        server
+            .state
+            .cache_native_definition(uri, position, stamp, response.clone());
+        Ok(response)
     }
 
     #[cfg(not(feature = "native"))]
@@ -119,6 +125,7 @@ pub(super) async fn goto_definition(
         return Ok(Some(response));
     }
 
+    #[cfg(not(feature = "native"))]
     Ok(None)
 }
 
