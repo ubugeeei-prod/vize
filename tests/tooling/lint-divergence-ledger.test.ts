@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 
 import { compareLintFindings as compareCompatibleLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
-import { compareLintFindings as compareCurrentLintFindings } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import { compareLintFindings as compareCurrentLintFindingsRaw } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.ts";
 import {
   compare,
@@ -12,6 +12,40 @@ import {
   ledgerPath,
   span,
 } from "./_helpers/lint-divergence-fixture.ts";
+
+interface Comparison {
+  schema: string;
+  version: number;
+  summary: {
+    falsePositiveCount: number;
+    falseNegativeCount: number;
+    intentionalDivergenceCount: number;
+    ruleLocationDivergenceCount: number;
+  };
+  falsePositives: unknown[];
+  falseNegatives: unknown[];
+  intentionalDivergences: { file: string }[];
+}
+
+const compareCurrent = (
+  project: string,
+  root: string,
+  ruleMap: unknown,
+  patinaFindings: unknown[],
+  eslintResults: unknown[],
+  context: unknown,
+): Comparison =>
+  compareCurrentLintFindingsRaw(
+    project,
+    root,
+    ruleMap as never,
+    patinaFindings as never,
+    eslintResults as never,
+    context as never,
+  ) as unknown as Comparison;
+const compareCompatible = (
+  input: Parameters<typeof compareCompatibleLintFindings>[0],
+): Comparison => compareCompatibleLintFindings(input) as unknown as Comparison;
 
 test("a ledger entry cancels exactly one false positive against one false negative", () => {
   const patina = [
@@ -111,10 +145,10 @@ test("the stronger direct defineProps policy is intentional on both reporters", 
       message: "Prefer destructuring the return value of defineProps().",
     },
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+  const current = compareCurrent("fixture", cwd, map, findings, [], {
     files: ["src/BareProps.vue", "src/WrappedProps.vue", "src/ModuleProps.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -184,10 +218,10 @@ test("stable defineProps and self-closing anchor differences are not false findi
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, findings, baseline, {
+  const current = compareCurrent("fixture", cwd, map, findings, baseline, {
     files: ["src/LocationAnchors.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -270,10 +304,10 @@ test("runtime-sensitive ordering, UTS, and proven unused registrations stay inte
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, findings, baseline, {
+  const current = compareCurrent("fixture", cwd, map, findings, baseline, {
     files: ["src/MergeOrder.vue", "src/Native.vue", "src/Unused.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -333,8 +367,8 @@ test("upstream rule ids classify second-script shifts and resolved default sprea
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
-  const compatible = compareCompatibleLintFindings({
+  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -372,10 +406,10 @@ test("static styles recovered through a TypeScript cast are intentional on both 
       message: "Static inline style attributes are not allowed.",
     },
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+  const current = compareCurrent("fixture", cwd, map, findings, [], {
     files: ["src/CastStyle.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -414,8 +448,8 @@ test("native-only dynamic components are intentional on both reporters", () => {
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
-  const compatible = compareCompatibleLintFindings({
+  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -484,10 +518,10 @@ test("fragment-root foreign elements are intentional on both reporters", () => {
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
     files: ["src/ForeignRoot.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -526,10 +560,10 @@ test("references before local ref declarations are intentional on both reporters
       message: "Ref 'palette' must be accessed through .value.",
     },
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, patina, [], {
+  const current = compareCurrent("fixture", cwd, map, patina, [], {
     files: ["src/EarlyRef.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -593,10 +627,10 @@ test("whitespace mustaches and imported Slot anchors are classified on both repo
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
     files: ["src/Slots.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -647,10 +681,10 @@ test("formatter-safe quotes and resolved props objects are intentional on both r
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+  const current = compareCurrent("fixture", cwd, map, patina, baseline, {
     files: ["src/Calendar.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -836,8 +870,8 @@ test("recovered templates and conservative legacy surfaces are intentional on bo
       },
     ]),
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
-  const compatible = compareCompatibleLintFindings({
+  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -926,10 +960,10 @@ test("sound Patina-only real-project findings are intentional on both reporters"
         "[vize:vue/no-unused-components] Component 'IpfsImageViewer' is registered but never used in template",
     },
   ];
-  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+  const current = compareCurrent("fixture", cwd, map, findings, [], {
     files: ["src/TemplateOnly.vue", "src/Props.vue", "src/Mutation.vue", "src/UnusedPug.vue"],
   });
-  const compatible = compareCompatibleLintFindings({
+  const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
@@ -956,7 +990,7 @@ test("a registered component used by a Pug template cannot be classified as inte
     message:
       "[vize:vue/no-unused-components] Component 'UsedPanel' is registered but never used in template",
   };
-  const result = compareCompatibleLintFindings({
+  const result = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: {
@@ -978,7 +1012,7 @@ test("a registered component used by a Pug template cannot be classified as inte
 test("the checked-in divergence ledger validates against the checked-in rule map", () => {
   const ledger = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
   assert.ok(Array.isArray(ledger), "the ledger must be an array of divergence entries");
-  const result = compareCompatibleLintFindings({
+  const result = compareCompatible({
     projectId: "unhydrated",
     cwd,
     ruleMap: readRuleMap(),
