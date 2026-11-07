@@ -142,6 +142,64 @@ fn generic_alias_dependents_are_not_unused_module_copies() {
             ),
             vec!["error:8:7 [TS2322] Type 'string' is not assignable to type 'number'."],
         ),
+        (
+            "authored-export",
+            CONFIG.into(),
+            PROBE.replace("interface Bar {", "export interface Bar {"),
+            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+        ),
+        (
+            "authored-export-type-alias",
+            CONFIG.into(),
+            PROBE
+                .replace("interface Bar {", "export type Bar = {")
+                .replace("  items: Foo[];\n}", "  items: Foo[];\n};"),
+            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+        ),
+        (
+            "authored-export-own-type-parameter",
+            CONFIG.into(),
+            PROBE
+                .replace(
+                    "interface Bar {",
+                    "export interface Bar<TItem extends Foo> {",
+                )
+                .replace("items: Foo[]", "items: TItem[]")
+                .replace("defineProps<Bar>();", "defineProps<Bar<Foo>>();"),
+            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+        ),
+        (
+            "multiple-authored-exports",
+            CONFIG.into(),
+            PROBE
+                .replace(
+                    "interface Bar {",
+                    "export type Extra = string;\nexport interface Bar {",
+                )
+                .replace(
+                    "defineProps<Bar>();",
+                    "defineProps<Bar & { extra: Extra }>();",
+                ),
+            vec![
+                "error:4:1 [TS1184] Modifiers cannot appear here.",
+                "error:5:1 [TS1184] Modifiers cannot appear here.",
+            ],
+        ),
+        (
+            "authored-export-after-non-ascii",
+            CONFIG.into(),
+            PROBE.replace("interface Bar {", "/* 日本語 */ export interface Bar {"),
+            vec!["error:4:11 [TS1184] Modifiers cannot appear here."],
+        ),
+        (
+            "authored-export-without-sfc-generics",
+            CONFIG.into(),
+            PROBE
+                .replace(" generic=\"TBaz\"", "")
+                .replace("TBaz", "string")
+                .replace("interface Bar {", "export interface Bar {"),
+            vec!["error:4:1 [TS1184] Modifiers cannot appear here."],
+        ),
     ];
     for (id, config, source, expected) in cases {
         let actual = check(&corsa, &config, &source);

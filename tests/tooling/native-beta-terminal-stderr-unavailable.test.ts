@@ -4,7 +4,10 @@ import {
   observeHistoricalTerminalStderr,
   observeUnavailableTerminalStableStderr,
 } from "./support/native-beta-dto/terminal-stderr-unavailable.ts";
-import { requireNoUnknownNativeWrites } from "./support/native-beta-dto/native-io.ts";
+import {
+  requireNoUnknownNativeWrites,
+  type NativeTimedObservation,
+} from "./support/native-beta-dto/native-io.ts";
 import {
   historicalSource,
   stableImageSha256,
@@ -134,15 +137,16 @@ function fixture() {
       { tid: 41, file: "syscalls.41", line: 28, at: at(16), raw: `${at(16)} ???( ` },
     ],
   };
+  const eof: Array<NativeTimedObservation & { fd: number }> = [
+    { tid: 43, fd: 0, at: at(9), line: 0, completion: { returnedAt: at(9), returnedBy: null } },
+  ];
   return {
     context,
     client,
     server,
     stderr,
     terminal,
-    eof: [
-      { tid: 43, fd: 0, at: at(9), line: 0, completion: { returnedAt: at(9), returnedBy: null } },
-    ],
+    eof,
   };
 }
 function observe(
@@ -215,6 +219,33 @@ test("unavailable pre-exit-request observation retains exact completed and unkno
     f.server.map((row) => row.packet),
   );
   assert.deepEqual(result.unfinishedOperations, f.terminal.unfinishedOperations);
+});
+test("unavailable cancellation keeps the completed stderr watch log as separate evidence", () => {
+  const f = fixture(),
+    header =
+      "Added new watch: root files for /tmp/terminal-watch-unit/tsconfig.json watcher 6.0\n" +
+      "\t/tmp/terminal-watch-unit/**/*\n\n";
+  f.server.pop();
+  f.stderr = [
+    { at: at(10), data: Buffer.from(header) },
+    { at: at(11), data: Buffer.from("1 paths ineligible for watching\n") },
+  ];
+  f.eof[0]!.tid = 42;
+  f.eof[0]!.completion = {
+    returnedAt: null,
+    returnedBy: { at: at(14), line: 30, basis: "next-same-thread-event" },
+  };
+  f.terminal.exitGroups[0]!.line = 30;
+  const result = observe(f);
+  assert.equal(result.watchLogTransport, "stderr");
+  assert.equal(result.header, null);
+  assert.equal(result.completedStderr.bytes, Buffer.byteLength(header) + 32);
+  assert.equal(result.attemptedStderr.rawResult, "? <unavailable>");
+  assert.equal(result.attemptedStderr.deliveredBytes, null);
+  assert.ok("eofReturnOrder" in result);
+  assert.equal(result.eofReturnOrder, "UNPROVEN");
+  assert.equal(result.registrationPass, false);
+  assert.equal(result.lifecyclePass, false);
 });
 test("dispatcher preserves the original strict marker and post-exit-request branch", () => {
   const current = fixture();

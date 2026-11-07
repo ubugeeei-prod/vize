@@ -16,7 +16,8 @@ const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPERS: &str = concat!(
 const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS: &str = concat!(
     "export type { __RuntimePropShape, __LooseRequired, __DefineProps, ",
     "__WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, ",
-    "$UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps };\n"
+    "$UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps, ",
+    "$RelaxedDynamicUnionExtra };\n"
 );
 
 /// Keep helpers outside setup so public component aliases can refer to them.

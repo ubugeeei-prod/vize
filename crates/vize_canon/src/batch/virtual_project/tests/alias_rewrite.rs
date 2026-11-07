@@ -19,7 +19,7 @@ fn write_vue_import_case_with_specifier(
     }
     fs::write(
         case.join("src/components/api/DirectiveTable.vue"),
-        "<script setup lang=\"ts\">export interface Props { id: string }</script>",
+        "<script setup lang=\"ts\">interface Props { id: string }</script>",
     )
     .unwrap();
     let app = case.join("src/App.vue");

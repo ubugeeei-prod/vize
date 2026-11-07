@@ -1,0 +1,9 @@
+<script setup lang="ts">
+export interface Props {
+  value: string;
+}
+
+defineProps<Props>();
+</script>
+
+<template><div>{{ value }}</div></template>

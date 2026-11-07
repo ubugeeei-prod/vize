@@ -28,10 +28,12 @@ fn project_reference_declarations_typecheck_from_packed_consumer() {
     .unwrap();
     std::fs::write(
         ui_root.join("src/Button.vue"),
-        r#"<script setup lang="ts">
+        r#"<script lang="ts">
 export interface ButtonProps {
   count: number
 }
+</script>
+<script setup lang="ts">
 defineProps<ButtonProps>()
 </script>
 <template>{{ count }}</template>

@@ -46,7 +46,10 @@ pub use generator::{
     find_define_art_component_name, find_define_art_target_component,
 };
 pub(crate) use generator::{find_art_block_at_completion_offset, find_block_at_completion_offset};
-pub(crate) use generator::{project_template_fragment, project_template_fragment_with_occurrences};
+pub(crate) use generator::{
+    project_petite_template_fragment, project_template_fragment,
+    project_template_fragment_with_occurrences,
+};
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
 pub use style_code::{StyleCodeGenerator, StyleMetadata};
 pub use template_code::{ExpressionKind, TemplateExpression, extract_expressions};

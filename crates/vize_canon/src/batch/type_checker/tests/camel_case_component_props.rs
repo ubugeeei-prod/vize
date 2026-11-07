@@ -127,7 +127,7 @@ fn batch_type_checker_keeps_v_for_items_separate_from_kebab_component_props() {
             (
                 "src/AfKeyboardButton.vue",
                 r#"<script setup lang="ts">
-export type KeyboardButtonType = "function" | "input" | "submit" | "system";
+type KeyboardButtonType = "function" | "input" | "submit" | "system";
 
 defineProps<{
   keyType?: KeyboardButtonType;

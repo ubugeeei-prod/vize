@@ -196,6 +196,7 @@ mod tests {
     fn current_assets_preamble_and_sdk_reconstruct_only_the_input_channels_layer() {
         for file in &FILES {
             let body = current(file.path);
+            let body = super::super::strict_extra_keys::source_before(file.path, body);
             let body = super::super::integrated_source::repair_before(file.path, body);
             let layer = super::super::jsx_exact_keys::source_edits_before(file.path, body);
             assert_eq!(
@@ -222,7 +223,8 @@ mod tests {
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
             let body =
-                super::super::integrated_source::repair_before(file.path, current(file.path));
+                super::super::strict_extra_keys::source_before(file.path, current(file.path));
+            let body = super::super::integrated_source::repair_before(file.path, body);
             let body = super::super::jsx_exact_keys::source_edits_before(file.path, body);
             let (before, after) = file.edits[0];
             for mutated in [

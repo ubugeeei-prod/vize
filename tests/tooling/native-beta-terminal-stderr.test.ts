@@ -195,6 +195,25 @@ test("unknown terminal tail remains attempted, never completed or qualifying", (
   assert.equal(result.registrationPass, true);
   assert.deepEqual(result.unfinishedOperations, f.terminal.unfinishedOperations);
 });
+test("completed stderr watch log remains distinct from the unknown cancellation tail", () => {
+  const f = fixture(),
+    header =
+      "Added new watch: root files for /tmp/terminal-watch-unit/tsconfig.json watcher 6.0\n" +
+      "\t/tmp/terminal-watch-unit/**/*\n\n";
+  f.server.pop();
+  f.stderr = [
+    { at: at(10), data: Buffer.from(header) },
+    { at: at(11), data: Buffer.from("1 paths ineligible for watching\n") },
+  ];
+  const result = observe(f);
+  assert.equal(result.watchLogTransport, "stderr");
+  assert.equal(result.header, null);
+  assert.equal(result.completedStderr.bytes, Buffer.byteLength(header) + 32);
+  assert.equal(result.attemptedStderr.requestedBytes, 127);
+  assert.equal(result.attemptedStderr.deliveredBytes, null);
+  assert.equal(result.registrationPass, true);
+  assert.equal(result.lifecyclePass, false);
+});
 test("completed byte partition does not define the semantic observation", () => {
   const f = fixture();
   f.stderr = [{ at: at(10), data: Buffer.from("\n1 paths ineligible for watching\n") }];

@@ -112,6 +112,7 @@ fn inverse(current: String, transition: &Transition) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::strict_extra_keys::source_before(path, current);
     TRANSITIONS
         .iter()
         .find(|transition| transition.path == path)
@@ -119,6 +120,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::strict_extra_keys::preamble_before(current);
     authenticate(
         current,
         47_268,

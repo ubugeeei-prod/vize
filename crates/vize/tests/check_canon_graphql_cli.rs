@@ -175,7 +175,7 @@ export type AimQuestion = {
 
     std::fs::write(
         project_root.join("pages/_studyInfoId.vue"),
-        r#"<script setup lang="ts">
+        r#"<script lang="ts">
 import type { AimQuestion } from '~/types/codegen/schema'
 
 export type AimContentsMoshi = {
@@ -293,7 +293,7 @@ export type UnwrapArray<T> = T extends Array<infer U> ? U : never
     .unwrap();
     std::fs::write(
         project_root.join("pages/_studyInfoId.vue"),
-        r#"<script setup lang="ts">
+        r#"<script lang="ts">
 import type { AimContentsMoshiQuery } from '~/types/codegen/schema'
 
 export type AimContentsMoshi = AimContentsMoshiQuery

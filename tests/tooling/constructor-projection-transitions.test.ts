@@ -14,9 +14,12 @@ import { certifyComponentExportTransition } from "../../tools/support/compat/con
 import { certifyJsxWitnessChange } from "../../tools/support/compat/content-mapper/constructor-jsx-witness-transition.ts";
 import {
   beforeDiscriminatedJsxUnion,
-  discriminatedJsxUnionAfterSha256,
   discriminatedJsxUnionBeforeSha256,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import {
+  beforeStrictExtraKeys,
+  strictExtraKeysAfterSha256,
+} from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 
@@ -154,7 +157,8 @@ test("only the complete reviewed JSX witness source transition can change canoni
   const record = image.file;
   assert.equal(record.path, file);
   const after = readFileSync(path.join(root, file));
-  const integratedAfter = beforeDiscriminatedJsxUnion(after.toString());
+  const relaxedAfter = beforeStrictExtraKeys(after.toString());
+  const integratedAfter = beforeDiscriminatedJsxUnion(relaxedAfter);
   assert.equal(record.after.sha256, discriminatedJsxUnionBeforeSha256);
   let previous = integratedAfter;
   for (const edit of [...record.edits].reverse())
@@ -164,7 +168,9 @@ test("only the complete reviewed JSX witness source transition can change canoni
   assert.ok(edit);
   const proof = certifyJsxWitnessChange(file, before, after);
   assert.equal(proof.beforeSha256, record.before.sha256);
-  assert.equal(proof.afterSha256, discriminatedJsxUnionAfterSha256);
+  assert.equal(proof.afterSha256, strictExtraKeysAfterSha256);
+  assert.equal(proof.successorRecordSha256s?.length, 2);
+  assert.equal(proof.successorRecordSha256s?.at(-1), proof.successorRecordSha256);
   assert.equal(proof.nativeAcceptanceCredit, false);
   for (const mutated of [
     after.subarray(0, after.length - 1),

@@ -11,7 +11,7 @@ use vize_atelier_sfc::croquis::{
 use vize_canon::virtual_ts::{
     GenericParameters, VirtualTsOptions, generate_virtual_ts_with_generic,
 };
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Analyzer, AnalyzerOptions, drawer::TemplateSemanticReuse};
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
@@ -75,7 +75,7 @@ pub(super) fn fragment_document(
     template_offset: u32,
     uri: String,
 ) -> VirtualDocument {
-    fragment_document_demand(
+    fragment_document_demand_with_reuse(
         script,
         script_setup,
         script_offset,
@@ -84,6 +84,37 @@ pub(super) fn fragment_document(
         template_offset,
         uri,
         None,
+        None,
+    )
+    .0
+}
+
+/// A template fragment whose bounded semantic hints came from one authenticated
+/// original Davinci owner. The Relief root remains the output/recovery owner.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one fragment owner and its anchored plan"
+)]
+pub(super) fn fragment_document_with_semantic_reuse(
+    script: Option<&str>,
+    script_setup: bool,
+    script_offset: u32,
+    generic: Option<&GenericParameters>,
+    root: &RootNode<'_>,
+    template_offset: u32,
+    uri: String,
+    reuse: TemplateSemanticReuse,
+) -> VirtualDocument {
+    fragment_document_demand_with_reuse(
+        script,
+        script_setup,
+        script_offset,
+        generic,
+        root,
+        template_offset,
+        uri,
+        None,
+        Some(reuse),
     )
     .0
 }
@@ -105,9 +136,43 @@ pub(super) fn fragment_document_demand(
     VirtualDocument,
     Option<super::occurrences::PhysicalOccurrences>,
 ) {
+    fragment_document_demand_with_reuse(
+        script,
+        script_setup,
+        script_offset,
+        generic,
+        root,
+        template_offset,
+        uri,
+        source,
+        None,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one fragment owner and its anchored plan"
+)]
+fn fragment_document_demand_with_reuse(
+    script: Option<&str>,
+    script_setup: bool,
+    script_offset: u32,
+    generic: Option<&GenericParameters>,
+    root: &RootNode<'_>,
+    template_offset: u32,
+    uri: String,
+    source: Option<&str>,
+    reuse: Option<TemplateSemanticReuse>,
+) -> (
+    VirtualDocument,
+    Option<super::occurrences::PhysicalOccurrences>,
+) {
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     if source.is_some() {
         analyzer = analyzer.with_binding_occurrences();
+    }
+    if let Some(reuse) = reuse {
+        analyzer = analyzer.with_template_semantic_reuse(reuse);
     }
     if let Some(script) = script {
         if script_setup {
