@@ -91,7 +91,7 @@ export function validateLinterProjectEvidence(
   assert.equal(raw.version, 2);
   assert.equal(raw.project, projectId);
   assert.equal(raw.revision ?? null, registryProject.revision ?? null);
-  assert.equal(raw.preset, "ecosystem");
+  assert.equal(raw.preset, "all-mapped");
   assert.equal(raw.evidence?.commitSha, sourceRevision);
   assert.deepEqual(raw.evidence, indexEvidence, `${projectId}: index evidence drifted`);
   exactKeys(raw.files, ["comparedCount", "expectedCount"], `${projectId}.files`);

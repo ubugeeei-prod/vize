@@ -194,7 +194,7 @@ function projectArtifact(
     version: 2,
     project: project.id,
     revision: project.revision ?? null,
-    preset: "ecosystem",
+    preset: "all-mapped",
     evidence: {
       commitSha: changes.sourceRevision ?? sourceRevision,
       runtime: { name: "node", version: "v24.0.0" },
@@ -216,9 +216,9 @@ function projectArtifact(
         "vue-eslint-parser": "10.4.1",
         "@typescript-eslint/parser": "8.46.1",
       },
-      comparedRuleCount: 2,
+      comparedRuleCount: 3,
       mappedRuleCount: 2,
-      skippedByPresetCount: 1,
+      skippedByPresetCount: 0,
       droppedConfigMessageCount: changes.droppedConfigMessageCount ?? 0,
       durationMs: 1,
       parseErrorResults: records(measured.baselineParseErrorCount, {
@@ -272,7 +272,7 @@ function index(projects: LintProjectReport[], revision = sourceRevision): LintIn
       runtime: { name: "node", version: "v24.0.0" },
       machine: { platform: "linux", arch: "x64", logicalCpuCount: 8 },
     },
-    preset: "ecosystem",
+    preset: "all-mapped",
     projectCount: projects.length,
     budget: {
       status: failed.length ? "failure" : "success",
