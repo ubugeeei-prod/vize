@@ -382,17 +382,7 @@ jobs:
             write('receipt.json', receipt);
           }
           JS
-      - name: Qualify the complete provider closure
-        if: ${{ always() && inputs.targeted-test != 'generic-body-error' }}
-        env:
-          VIZE_CONTENT_MAPPER_PROVIDER_CLOSURE_DIR: ${{ runner.temp }}/content-mapper-provider-closure
-          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
-          VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
-          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
-          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: standard-go-d6-vue35
-          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED: "1"
-          VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ runner.temp }}/content-mapper-provider-closure/dynamic-targets
-        run: node tools/support/compat/content-mapper/provider-closure.ts
+      - uses: ./.github/actions/qualify-content-mapper-provider-closure
       - name: Preserve whole owner calibration observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -403,7 +393,6 @@ jobs:
             target/vize-tests/content-mapper-quoted-generic-parameters
             ${{ runner.temp }}/content-mapper-native-host.json
             ${{ runner.temp }}/content-mapper-editor-stress
-            ${{ runner.temp }}/content-mapper-provider-closure
           if-no-files-found: error
           retention-days: 7
 
@@ -653,7 +642,6 @@ jobs:
             ${{ runner.temp }}/official-css-options/
             !${{ runner.temp }}/official-css-options/**/node_modules
             !${{ runner.temp }}/official-css-options/**/node_modules/**
-
   router-experimental:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)
     uses: ./.github/workflows/content-mapper-reported-q16.yml
