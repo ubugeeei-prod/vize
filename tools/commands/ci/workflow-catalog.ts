@@ -83,9 +83,19 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
     "",
   ];
   for (const group of groups) {
-    lines.push(`## ${group}`, "", "| Workflow | File |", "| --- | --- |");
-    for (const entry of entries.filter((candidate) => workflowGroup(candidate.file) === group)) {
-      lines.push(`| ${entry.name} | [\`${entry.file}\`](./${entry.file}) |`);
+    const rows = entries
+      .filter((candidate) => workflowGroup(candidate.file) === group)
+      .map((entry) => [entry.name, `[\`${entry.file}\`](./${entry.file})`] as const);
+    const workflowWidth = Math.max("Workflow".length, ...rows.map(([name]) => name.length));
+    const fileWidth = Math.max("File".length, ...rows.map(([, file]) => file.length));
+    lines.push(
+      `## ${group}`,
+      "",
+      `| ${"Workflow".padEnd(workflowWidth)} | ${"File".padEnd(fileWidth)} |`,
+      `| ${"-".repeat(workflowWidth)} | ${"-".repeat(fileWidth)} |`,
+    );
+    for (const [name, file] of rows) {
+      lines.push(`| ${name.padEnd(workflowWidth)} | ${file.padEnd(fileWidth)} |`);
     }
     lines.push("");
   }
