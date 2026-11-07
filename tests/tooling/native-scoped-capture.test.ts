@@ -14,6 +14,7 @@ void test("every new original scoped dependency selects both source proofs even 
     "davinci/vize_l1/src/css/empty.rs",
     "davinci/vize_l1/src/css/parser.rs",
     "davinci/vize_l1_to_l2/src/native_file/selected_scoped.rs",
+    "davinci/vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
     "davinci/vize_l4/src/module/scope.rs",
     "crates/vize_atelier_sfc/src/native.rs",
     "crates/vize_atelier_sfc/src/native/styles/scoped.rs",
