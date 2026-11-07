@@ -64,10 +64,7 @@ type NuxtWithBuilderOptions = {
     };
     buildDir: string;
     dev?: boolean;
-    experimental?: {
-      compilerComponentResolution?: boolean;
-      viteEnvironmentApi?: boolean;
-    };
+    experimental?: { compilerComponentResolution?: boolean; viteEnvironmentApi?: boolean };
     modules: unknown[];
     imports?: false | { autoImport?: boolean };
     components?: unknown;
@@ -280,13 +277,10 @@ async function setupVizeNuxtModule(raw: Partial<VizeNuxtOptions>, nuxt: NuxtWith
   }
   await setupLintInspector(options.lint, nuxt, compilerOptions, lintGeneration, nuxt.options.dev);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
-
   if (usesVizeCompiler) selectNuxtSourceComponentTransforms(nuxt.options, detectedNuxtMajor);
-
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
     await setupNuxtViteCompiler(compilerOptions, nuxt, options.compiler);
   }
-
   let isNuxtBuild = false;
   let isViteBuild = false;
   if (usesVizeCompiler) {
