@@ -1,6 +1,7 @@
 //! #11593: a slot's VNode fallback merges adjacent text and interpolations
 //! into one text child, as Vue's `transformText` does. Nuxt's `<Title>` reads
 //! its slot in VNode mode and accepts exactly one child.
+//! #11610 keeps an element's single text run as scalar children.
 
 use vize_atelier_ssr::compile_ssr;
 use vize_l0::{Allocator, String};
@@ -45,7 +46,7 @@ const SLOT_RUNS: &[(&str, &str)] = &[
 ];
 
 const MIXED: &str = "<Comp>x {{ b }}<i></i>y<div>{{ a }} b</div><p>{{ a }}</p></Comp>";
-const MIXED_FALLBACK: &str = r#"return [_createTextVNode("x " + _toDisplayString(_ctx.b)), _createElementVNode("i", null, null), _createTextVNode("y"), _createElementVNode("div", null, [_createTextVNode(_toDisplayString(_ctx.a) + " b")]), _createElementVNode("p", null, [_createTextVNode(_toDisplayString(_ctx.a))])]"#;
+const MIXED_FALLBACK: &str = r#"return [_createTextVNode("x " + _toDisplayString(_ctx.b)), _createElementVNode("i", null, null), _createTextVNode("y"), _createElementVNode("div", null, _toDisplayString(_ctx.a) + " b", 1 /* TEXT */), _createElementVNode("p", null, _toDisplayString(_ctx.a), 1 /* TEXT */)]"#;
 
 const NESTED: &[(&str, &str)] = &[
     (
@@ -54,7 +55,7 @@ const NESTED: &[(&str, &str)] = &[
     ),
     (
         r#"<Comp><span v-for="i in list" :key="i">{{ i }} x</span></Comp>"#,
-        r#"return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.list, (i) => { return _createElementVNode("span", { key: i }, [_createTextVNode(_toDisplayString(i) + " x")]) }), 128 /* KEYED_FRAGMENT */))]"#,
+        r#"return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.list, (i) => { return _createElementVNode("span", { key: i }, _toDisplayString(i) + " x", 1 /* TEXT */) }), 128 /* KEYED_FRAGMENT */))]"#,
     ),
     (
         "<Comp><slot>{{ a }} b</slot></Comp>",

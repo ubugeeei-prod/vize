@@ -115,6 +115,7 @@ fn current_scope_ownership(mut packet: serde_json::Value) -> serde_json::Value {
             .as_str()
             .expect("complete original SSR module");
         let expected = code
+            .replace("createTextVNode as _createTextVNode, ", "")
             .replace(
                 r#"_ssrRenderComponent($setup.VFSection, { "data-v-b7bbb04b": "" },"#,
                 "_ssrRenderComponent($setup.VFSection, null,",
@@ -122,6 +123,14 @@ fn current_scope_ownership(mut packet: serde_json::Value) -> serde_json::Value {
             .replace(
                 r#"_ssrRenderComponent(_resolveComponent("i18n-t"), _mergeProps({ keypath: "photo.description", tag: "p", class: "photo-description" }, { "data-v-b7bbb04b": "" }),"#,
                 r#"_ssrRenderComponent(_resolveComponent("i18n-t"), { keypath: "photo.description", tag: "p", class: "photo-description" },"#,
+            )
+            .replace(
+                "[_createTextVNode(_toDisplayString($setup.t('photo.cc0LinkText')))]",
+                "_toDisplayString($setup.t('photo.cc0LinkText')), 1 /* TEXT */",
+            )
+            .replace(
+                "[_createTextVNode(_toDisplayString($setup.getCategoryLabel(category.id)))]",
+                "_toDisplayString($setup.getCategoryLabel(category.id)), 1 /* TEXT */",
             );
         assert_ne!(
             expected, code,

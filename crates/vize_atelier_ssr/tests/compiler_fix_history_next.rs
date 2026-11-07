@@ -7,6 +7,7 @@ use serde_json::Value;
 
 mod support;
 use support::fix_history_next as fixtures;
+use support::slot_vnode_text_history as text_history;
 
 const FIRST: &str = include_str!("fixtures/fix-history-next/capture-c2451/first.stdout.json");
 const REPEAT: &str = include_str!("fixtures/fix-history-next/capture-c2451/repeat.stdout.json");
@@ -31,6 +32,15 @@ fn five_history_fixes_preserve_complete_ssr_outputs() {
         fixtures::options().expect("original defaults must be admitted"),
         *options,
         "default SSR options differ from the captured historical workload"
+    );
+    let text_current = text_history::read(
+        include_str!("fixtures/fix-history-next/single-text-vnode-current.expected.json"),
+        &[
+            "slot-fallback-vnode",
+            "component-slot-props",
+            "named-scoped-slot",
+        ],
+        options,
     );
     let cases = captured
         .get("cases")
@@ -57,7 +67,7 @@ fn five_history_fixes_preserve_complete_ssr_outputs() {
         assert_eq!(current.get("options"), Some(options));
         assert_eq!(
             fixtures::observe(source).expect("serialize complete output"),
-            current["output"],
+            *text_history::output(&text_current, id, &current["output"]),
             "complete SSR output changed for {id}"
         );
     }

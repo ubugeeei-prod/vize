@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_ssr/src/lib.rs
+source: crates/vize_atelier_ssr/src/component_tests.rs
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
@@ -16,7 +16,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
         }, _push, _parent, _scopeId)
         _push(`</button>`)
       } else {
-        return [_createElementVNode("button", null, [_renderSlot(_ctx.$slots, "default", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode("span", null, [_createTextVNode(_toDisplayString(_ctx.label))]) : _createCommentVNode("", true)])])]
+        return [_createElementVNode("button", null, [_renderSlot(_ctx.$slots, "default", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode("span", null, _toDisplayString(_ctx.label), 1 /* TEXT */) : _createCommentVNode("", true)])])]
       }
     }),
     _: 3 /* FORWARDED */

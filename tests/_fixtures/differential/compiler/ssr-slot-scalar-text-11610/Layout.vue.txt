@@ -1,0 +1,1 @@
+<template><Comp><div>{{ count }} tail</div></Comp></template>

@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_ssr/src/lib.rs
+source: crates/vize_atelier_ssr/src/component_tests.rs
 expression: result.code.as_str()
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
@@ -8,7 +8,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
       if (_push) {
         _push(`<div>${_ssrInterpolate(ui)}</div>`)
       } else {
-        return [_createElementVNode("div", null, [_createTextVNode(_toDisplayString(ui))])]
+        return [_createElementVNode("div", null, _toDisplayString(ui), 1 /* TEXT */)]
       }
     }),
     _: 2 /* DYNAMIC */

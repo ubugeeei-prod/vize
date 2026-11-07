@@ -46,7 +46,7 @@
       },
       {
         "path": "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",
-        "sha256": "572f59be1c6e6246127687e5b1d074def02e80b6c440ca91b686caa58d622388"
+        "sha256": "083d96f6d8d74095411095a18ca3114d70fae3163c1919de8808e54e74d25473"
       },
       {
         "path": "tests/_fixtures/differential/compiler/vapor-fix-history.manifest.json",
