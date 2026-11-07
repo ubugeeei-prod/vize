@@ -641,6 +641,81 @@
       }
     },
     {
+      "id": "compiler/project/star-export-shadow-pruning-12059",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "star-export-shadow-pruning-12059",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "role": "entry",
+            "sha256": "81d4b906712a3fe5840ede9e8eabe92869cb1e4bf6aac22d3e3fdb415cfda2fa"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "config",
+            "sha256": "79326c64f9cbc30b4adee744ddc565974502f326a6d0a3f2e7f52742f706a8a6"
+          },
+          {
+            "path": "types/index.ts.txt",
+            "role": "dependency",
+            "sha256": "f23be48cdf4262956e2b31215b44a0e502505aaf49464faacffbec9e0b751ebe"
+          },
+          {
+            "path": "types/Props.ts.txt",
+            "role": "dependency",
+            "sha256": "560ad6555a99b5e53f506ebf7870c6a73c8cd2c03b0d3480a1fe70f88d89d9a5"
+          },
+          {
+            "path": "types/Unused.ts.txt",
+            "role": "dependency",
+            "sha256": "4dc67e893a44662569fb6810df7283b03d40e4ba45dc6995ff300a7a98d9e179"
+          }
+        ]
+      },
+      "reference": {
+        "path": "star-export-shadow-pruning-12059/module.expected.txt",
+        "sha256": "cdae5d180ecf94c8fa27c5896e148394a3f6061b572ac8ca1ef5e2afac5ac67d",
+        "source": "Source-built CLI f423c4a7567ff7dc06060b2331edb9d9caad758f; exact finite project with an explicit Props re-export shadowing an unrelated star branch."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-project-v1",
+        "native": null,
+        "reasons": {
+          "native": "This fixture authenticates source-built CLI whole SSR output; the SDK native traversal cost is qualified by the focused Rust regression and reporter benchmark."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-project-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-project-v1 project inputs with explicit types shadowing star exports"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/asset-import-binding-collision-10710",
       "state": "active",
       "targets": [

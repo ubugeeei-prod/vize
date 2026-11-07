@@ -187,6 +187,62 @@ const props = defineProps<SelectedProps>();
 }
 
 #[test]
+fn explicit_named_reexport_prunes_shadowed_star_fanout() {
+    let project = temp_project_dir("named-over-star-pruning");
+    let types = project.join("types");
+    std::fs::create_dir_all(&types).unwrap();
+    std::fs::write(
+        types.join("Props.ts"),
+        "export interface Props { selected?: boolean }",
+    )
+    .unwrap();
+
+    let mut barrel = String::from("export type { Props } from './Props'\n");
+    for index in 0..64 {
+        std::fs::write(
+            types.join(format!("Model{index}.ts")),
+            format!("export interface Model{index} {{ value?: string }}"),
+        )
+        .unwrap();
+        barrel.push_str(&format!("export * from './Model{index}'\n"));
+    }
+    let index = types.join("index.ts");
+    std::fs::write(&index, barrel).unwrap();
+
+    let parent = project.join("Parent.vue");
+    let source = r#"
+import type { Props } from "./types";
+const props = defineProps<Props>();
+"#;
+    let mut ctx = super::super::ScriptCompileContext::new(source);
+    let collected = ctx
+        .try_collect_imported_types_from_path(source, parent.to_string_lossy().as_ref(), true, None)
+        .unwrap();
+    ctx.analyze();
+
+    assert!(ctx.interfaces.contains_key("Props"));
+    assert_eq!(
+        ctx.bindings.bindings.get("selected"),
+        Some(&crate::types::BindingType::Props)
+    );
+    let mut expected_dependencies = vec![
+        path_key(&index.canonicalize().unwrap()),
+        path_key(&types.join("Props.ts").canonicalize().unwrap()),
+    ];
+    expected_dependencies.extend(
+        Project::discovery_inputs(&parent)
+            .unwrap()
+            .iter()
+            .map(|path| path_key(path)),
+    );
+    expected_dependencies.sort();
+    expected_dependencies.dedup();
+    assert_eq!(collected.dependencies, expected_dependencies);
+
+    let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
 fn skips_type_import_collection_for_plain_js_scripts() {
     // Regression: the substring pre-check matches plain-JS object keys
     // like `type: 'text'` next to any `import`/`export`, which used to

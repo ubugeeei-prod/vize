@@ -69,12 +69,36 @@ function renderNamedExport(name) {
 
 export function synchronizeNativeEntrypoint(source) {
   const namedExports = collectNamedExports(source);
+  for (const required of ["beginTypeResolutionBatch", "compileSfc", "TypeResolutionBatch"]) {
+    if (!namedExports.includes(required)) {
+      throw new Error(`The generated native entrypoint is missing required export: ${required}`);
+    }
+  }
   return `${[
     "/* eslint-disable */",
     "// @ts-nocheck",
     "// Generated from the NAPI-RS export list by scripts/sync-entrypoint.mjs.",
     "// Native target selection and package version checks live in native-binding.js.",
     'const nativeBinding = require("./native-binding");',
+    "",
+    "const compileSfcNative = nativeBinding.compileSfc;",
+    "const beginTypeResolutionBatchNative = nativeBinding.beginTypeResolutionBatch;",
+    "let activeTypeResolutionTurn = null;",
+    "nativeBinding.compileSfc = function compileSfc(source, options) {",
+    '  if (typeof beginTypeResolutionBatchNative !== "function") {',
+    "    return compileSfcNative(source, options);",
+    "  }",
+    "  if (activeTypeResolutionTurn === null) {",
+    "    const turn = beginTypeResolutionBatchNative();",
+    "    activeTypeResolutionTurn = turn;",
+    "    queueMicrotask(() => {",
+    "      if (activeTypeResolutionTurn !== turn) return;",
+    "      activeTypeResolutionTurn = null;",
+    "      turn.close();",
+    "    });",
+    "  }",
+    "  return compileSfcNative(source, options);",
+    "};",
     "",
     rootExport,
     ...namedExports.map(renderNamedExport),

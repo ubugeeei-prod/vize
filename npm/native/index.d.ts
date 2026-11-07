@@ -340,6 +340,15 @@ export interface CompilerOptions {
   scriptExt?: string;
 }
 
+/** One explicit filesystem-stability window for imported-type resolution. */
+export declare class TypeResolutionBatch {
+  /** End this stability window. Repeated calls are harmless. */
+  close(): boolean;
+}
+
+/** Begin an explicit imported-type filesystem-stability window. */
+export declare function beginTypeResolutionBatch(): TypeResolutionBatch;
+
 export declare function compileSfc(
   source: string,
   options?: SfcCompileOptionsNapi | undefined | null,

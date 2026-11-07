@@ -4,13 +4,34 @@
 // Native target selection and package version checks live in native-binding.js.
 const nativeBinding = require("./native-binding");
 
+const compileSfcNative = nativeBinding.compileSfc;
+const beginTypeResolutionBatchNative = nativeBinding.beginTypeResolutionBatch;
+let activeTypeResolutionTurn = null;
+nativeBinding.compileSfc = function compileSfc(source, options) {
+  if (typeof beginTypeResolutionBatchNative !== "function") {
+    return compileSfcNative(source, options);
+  }
+  if (activeTypeResolutionTurn === null) {
+    const turn = beginTypeResolutionBatchNative();
+    activeTypeResolutionTurn = turn;
+    queueMicrotask(() => {
+      if (activeTypeResolutionTurn !== turn) return;
+      activeTypeResolutionTurn = null;
+      turn.close();
+    });
+  }
+  return compileSfcNative(source, options);
+};
+
 module.exports = nativeBinding;
 module.exports.getVueLanguageProjectMetadata = nativeBinding.getVueLanguageProjectMetadata;
 module.exports.generateVueLanguageCode = nativeBinding.generateVueLanguageCode;
 module.exports.PluginDocumentHandle = nativeBinding.PluginDocumentHandle;
+module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;
 module.exports.applyOutputPlugins = nativeBinding.applyOutputPlugins;
 module.exports.applyViteDefineReplacements = nativeBinding.applyViteDefineReplacements;
 module.exports.artToCsf = nativeBinding.artToCsf;
+module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch;
 module.exports.buildDesignTokenMap = nativeBinding.buildDesignTokenMap;
 module.exports.buildInspectorGraph = nativeBinding.buildInspectorGraph;
 module.exports.chunkVitePrecompileFiles = nativeBinding.chunkVitePrecompileFiles;
