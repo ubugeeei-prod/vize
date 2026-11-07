@@ -59,7 +59,6 @@ pub(crate) fn inject_ssr_values(
     options: &mut TemplateCompileOptions,
     vars: &[Cow<'_, str>],
     scope_id: &str,
-    filename: &str,
     bindings: Option<&BindingMetadata>,
 ) {
     if !options.ssr || vars.is_empty() {
@@ -71,7 +70,7 @@ pub(crate) fn inject_ssr_values(
             output.push_str(", ");
         }
         let name = if options.is_prod {
-            super::prod_scoped_v_bind_name(filename, expression)
+            super::prod_scoped_v_bind_name(scope_id, expression)
         } else {
             super::scoped_v_bind_name(scope_id, expression)
         };

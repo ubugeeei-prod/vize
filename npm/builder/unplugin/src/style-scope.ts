@@ -21,7 +21,7 @@ export function scopeCss(css: string, scoped: string): string {
  * `v-bind()` in a delegated block, named like the compiled `useCssVars` call.
  * The plugin compiles without `isProd`, so both sides use the dev names.
  */
-/** `productionFilename` selects the hashed production names `useCssVars` uses. */
+/** `productionFilename` selects production names; the stable scope id seeds their hash. */
 export function transformStyleVars(
   css: string,
   scopeId: string,

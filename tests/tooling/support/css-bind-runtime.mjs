@@ -78,11 +78,12 @@ for (const fixture of cases) {
   });
   assert.deepEqual(css.errors, []);
   if (fixture.isProd) {
-    // Vue's filename-based production naming independently owns the full vector.
+    // Vue's production naming uses the component id, while filename remains
+    // source provenance and must not affect the emitted variable identity.
     const productionCss = compileStyle({
       source: descriptor.styles[0].content,
       filename: fixture.filename,
-      id: fixture.filename,
+      id: fixture.scopeId,
       isProd: true,
     });
     assert.deepEqual(productionCss.errors, []);
@@ -92,7 +93,7 @@ for (const fixture of cases) {
     );
     let officialGetter;
     const productionScript = compileScript(descriptor, {
-      id: fixture.filename,
+      id: fixture.scopeId,
       isProd: true,
       inlineTemplate: true,
     });

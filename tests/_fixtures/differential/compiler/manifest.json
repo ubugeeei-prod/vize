@@ -2784,6 +2784,65 @@
       }
     },
     {
+      "id": "compiler/sfc/scoped-v-bind-checkout-stability-12056",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "scoped-v-bind-checkout-stability-12056",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "e863c4ae37433c1c3339e860ffb37b0b1ccf0a316e3f491a98656528253ee994",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "scoped-v-bind-checkout-stability-12056/module.expected.txt",
+        "sha256": "d7015028bd42ebeed8cd709991226e3173cc072543ffb32c7c5ae4dff027dbc8",
+        "cssPath": "scoped-v-bind-checkout-stability-12056/style.expected.css",
+        "cssSha256": "f4edb137272c381648de9137dc7f57066e15c6e625834415e209358f6f491b35",
+        "source": "crates/vize_atelier_sfc/tests/production_css_vars.rs:production_css_vars_are_independent_of_checkout_path"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); scoped style compilation remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/12056",
+        "reporter": "Q16solver"
+      }
+    },
+    {
       "id": "compiler/sfc/scoped-where-nesting-9830",
       "state": "active",
       "targets": [

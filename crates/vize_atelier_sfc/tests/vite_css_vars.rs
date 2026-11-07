@@ -7,25 +7,36 @@ const SOURCE: &str = include_str!("fixtures/fix-history/production-css-var-scann
 #[test]
 fn production_pipeline_changes_only_authored_bindings() {
     // The four hashes are independently produced by Vue 3.5.40 compileStyle,
-    // with id=/project/雪.vue and isProd=true. Literal/comment/string bytes stay authored.
+    // with id=scope and isProd=true. Literal/comment/string bytes stay authored.
     let expected = concat!(
         "/* v-bind(ignored); var(--scope-color) */\n",
         ".box {\n",
         "  content: \"v-bind(ignored) var(--scope-color)\";\n",
         "  --literal: var(--scope-color);\n",
-        "  color: var(--v70be3f90);\n",
-        "  border-color: var(--v7e6e72c2);\n",
-        "  width: var(--v1bbf8b5e);\n",
-        "  --unicode: var(--v4558c597);\n",
+        "  color: var(--v19ca5605);\n",
+        "  border-color: var(--v07468a12);\n",
+        "  width: var(--f7a4f774);\n",
+        "  --unicode: var(--ef1742e8);\n",
         "}\n",
     );
-    for scope in ["scope", "data-v-scope", "other-scope"] {
-        assert_eq!(
-            transform_css_vars_for_pipeline_with_context(SOURCE, scope, Some("/project/雪.vue"))
-                .as_str(),
-            expected,
-        );
+    for scope in ["scope", "data-v-scope"] {
+        for filename in [
+            "/work/a/src/Box.vue",
+            "/work/very-different-folder/src/Box.vue",
+        ] {
+            assert_eq!(
+                transform_css_vars_for_pipeline_with_context(SOURCE, scope, Some(filename))
+                    .as_str(),
+                expected,
+            );
+        }
     }
+    assert_ne!(
+        transform_css_vars_for_pipeline_with_context(SOURCE, "other-scope", Some("/work/a.vue"))
+            .as_str(),
+        expected,
+        "a different component scope must retain a different identity"
+    );
 }
 
 #[test]

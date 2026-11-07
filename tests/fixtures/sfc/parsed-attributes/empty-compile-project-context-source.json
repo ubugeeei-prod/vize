@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "8bb0c970f7c12e6aabb43a08da3d07385fc4b475",
+      "currentBlob": "9f62f82b85cb8947042d9cd098913b7da206a781",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -27,6 +27,22 @@
         {
           "reference": "        warnings,\n        bindings: script_result.bindings,\n        macro_artifacts,\n        dependencies: Vec::new(),\n    })\n}\n",
           "current": "        warnings,\n        bindings: script_result.bindings,\n        macro_artifacts,\n        dependencies: type_dependencies,\n    })\n}\n"
+        },
+        {
+          "reference": "    if auto_ssr_css_vars {\n        crate::css::transform::vars::inject_ssr_values(\n            &mut options.template,\n            &descriptor.css_vars,\n            &scope_id,\n            filename,\n            None,\n        );\n    }\n    let compiled_styles = profile!(\n        \"atelier.sfc.styles\",\n        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)\n            .with_css_var_names(\n                &descriptor.css_vars,\n                &scope_id,\n                filename,\n                options.template.is_prod\n            )\n    );\n",
+          "current": "    if auto_ssr_css_vars {\n        crate::css::transform::vars::inject_ssr_values(\n            &mut options.template,\n            &descriptor.css_vars,\n            &scope_id,\n            None,\n        );\n    }\n    let compiled_styles = profile!(\n        \"atelier.sfc.styles\",\n        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)\n            .with_css_var_names(&descriptor.css_vars, &scope_id, options.template.is_prod)\n    );\n"
+        },
+        {
+          "reference": "                    crate::css::transform::vars::inject_ssr_values(\n                        &mut template_opts,\n                        &descriptor.css_vars,\n                        &scope_id,\n                        filename,\n                        options_api_bindings.as_ref(),\n                    );\n",
+          "current": "                    crate::css::transform::vars::inject_ssr_values(\n                        &mut template_opts,\n                        &descriptor.css_vars,\n                        &scope_id,\n                        options_api_bindings.as_ref(),\n                    );\n"
+        },
+        {
+          "reference": "                crate::css::transform::vars::inject_ssr_values(\n                    &mut template_opts,\n                    &descriptor.css_vars,\n                    &scope_id,\n                    filename,\n                    Some(&script_bindings),\n                );\n",
+          "current": "                crate::css::transform::vars::inject_ssr_values(\n                    &mut template_opts,\n                    &descriptor.css_vars,\n                    &scope_id,\n                    Some(&script_bindings),\n                );\n"
+        },
+        {
+          "reference": "            &setup_css_module_names,\n            &scope_id,\n            filename,\n            options.template.is_prod,\n",
+          "current": "            &setup_css_module_names,\n            &scope_id,\n            &scope_id,\n            filename.ends_with(\".art.vue\"),\n            options.template.is_prod,\n"
         }
       ]
     },

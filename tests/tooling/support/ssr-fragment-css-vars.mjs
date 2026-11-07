@@ -84,10 +84,11 @@ function reference(source, ssr) {
   const parsed = compiler.parse(source, { filename: "App.vue" });
   assert.deepEqual(parsed.errors, []);
   const descriptor = parsed.descriptor;
-  // Vize's production CSS name hashes the filename. Give the independent
-  // compiler that same original identifier; no output key is normalized.
+  // Production CSS names belong to the stable component scope, never to the
+  // checkout-local filename. Keep the independent compiler on that identity.
+  const scopeId = "cssvars";
   const script = compiler.compileScript(descriptor, {
-    id: "App.vue",
+    id: scopeId,
     isProd: true,
     genDefaultAs: "__sfc__",
     templateOptions: { ssr },
@@ -95,7 +96,7 @@ function reference(source, ssr) {
   const template = compiler.compileTemplate({
     source: descriptor.template.content,
     filename: "App.vue",
-    id: "App.vue",
+    id: scopeId,
     isProd: true,
     ssr,
     ssrCssVars: descriptor.cssVars,
@@ -106,7 +107,7 @@ function reference(source, ssr) {
   const css = compiler.compileStyle({
     source: descriptor.styles[0].content,
     filename: "App.vue",
-    id: "data-v-App.vue",
+    id: `data-v-${scopeId}`,
     isProd: true,
   });
   assert.deepEqual(css.errors, []);
