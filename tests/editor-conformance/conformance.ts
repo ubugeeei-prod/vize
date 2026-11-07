@@ -103,38 +103,80 @@ function matches(actual: any, pattern: any): boolean {
   return Object.entries(pattern).every(([key, value]) => matches(actual?.[key], value));
 }
 
+function documentVersionAt(line: Timeline, at: number, uri: string): number | null {
+  for (let index = at; index >= 0; index -= 1) {
+    if (line.directions[index] !== "c2s") continue;
+    const message = line.messages[index];
+    if (message.params?.textDocument?.uri !== uri) continue;
+    if (message.method === "textDocument/didClose") return null;
+    if (
+      (message.method === "textDocument/didOpen" || message.method === "textDocument/didChange") &&
+      Number.isInteger(message.params.textDocument.version)
+    ) {
+      return message.params.textDocument.version;
+    }
+  }
+  return null;
+}
+
+/** Materializes the exact WorkspaceEdit shape negotiated by this client session. */
+function workspaceEditExpectation(edit: unknown, line: Timeline, at: number): unknown {
+  if (edit == null || typeof edit !== "object") return edit;
+  const initialize = line.messages.find(
+    (message, index) =>
+      index < at && line.directions[index] === "c2s" && message.method === "initialize",
+  );
+  const versioned =
+    initialize?.params?.capabilities?.workspace?.workspaceEdit?.documentChanges === true;
+  if (!versioned) return edit;
+  const { changes, ...rest } = edit as { changes?: Record<string, unknown[]> };
+  if (changes == null) return edit;
+  return {
+    ...rest,
+    documentChanges: Object.entries(changes).map(([uri, edits]) => ({
+      textDocument: { uri, version: documentVersionAt(line, at, uri) },
+      edits,
+    })),
+  };
+}
+
 /** Code actions echo client diagnostics; published diagnostics remain server-owned. */
 function actionExpectation(
   expected: any,
   request: Message,
   published: any[],
+  line: Timeline,
+  at: number,
 ): unknown[] | undefined {
   const supplied = request.params?.context?.diagnostics;
   if (!Array.isArray(expected) || !Array.isArray(supplied)) return undefined;
   const actions = [];
   for (const action of expected) {
     if (action == null || typeof action !== "object") return undefined;
-    if (!Array.isArray(action.diagnostics)) {
-      actions.push(action);
-      continue;
+    let diagnostics = action.diagnostics;
+    if (Array.isArray(diagnostics)) {
+      diagnostics = [];
+      for (const canonical of action.diagnostics) {
+        // The complete fixture diagnostic must match a real published diagnostic.
+        // This keeps every canonical field load-bearing before following its echo.
+        if (!published.some((value) => isDeepStrictEqual(value, canonical))) return undefined;
+        const echo = supplied.find(
+          (value: any) =>
+            value != null &&
+            typeof value === "object" &&
+            value.source === canonical.source &&
+            isDeepStrictEqual(value.code, canonical.code) &&
+            isDeepStrictEqual(value.range, canonical.range),
+        );
+        if (echo == null) return undefined;
+        diagnostics.push(echo);
+      }
     }
-    const diagnostics = [];
-    for (const canonical of action.diagnostics) {
-      // The complete fixture diagnostic must match a real published diagnostic.
-      // This keeps every canonical field load-bearing before following its echo.
-      if (!published.some((value) => isDeepStrictEqual(value, canonical))) return undefined;
-      const echo = supplied.find(
-        (value: any) =>
-          value != null &&
-          typeof value === "object" &&
-          value.source === canonical.source &&
-          isDeepStrictEqual(value.code, canonical.code) &&
-          isDeepStrictEqual(value.range, canonical.range),
-      );
-      if (echo == null) return undefined;
-      diagnostics.push(echo);
-    }
-    actions.push({ ...action, diagnostics });
+    actions.push({
+      ...action,
+      ...(Array.isArray(action.diagnostics) ? { diagnostics } : {}),
+      ...(action.edit == null ? {} : { edit: workspaceEditExpectation(action.edit, line, at) }),
+    });
   }
   return actions;
 }
@@ -333,7 +375,7 @@ export function evaluate(scenario: Scenario, entries: Entry[], roots: string[]):
               .at(-1)?.params?.diagnostics ?? [];
           expected =
             step.method === "textDocument/codeAction"
-              ? actionExpectation(step.expect, line.messages[at], published)
+              ? actionExpectation(step.expect, line.messages[at], published, line, at)
               : undefined;
           if (expected === undefined)
             return {

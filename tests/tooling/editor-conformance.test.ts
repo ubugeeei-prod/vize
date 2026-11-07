@@ -468,6 +468,45 @@ test("code action echo preserves supplied metadata and rejects changed rule iden
   }
 });
 
+test("code actions require the exact versioned WorkspaceEdit negotiated by the client", () => {
+  const entries = idealTranscript();
+  const initialize = entries.find((entry) => entry.msg?.method === "initialize")!.msg!;
+  initialize.params.capabilities = {
+    workspace: { workspaceEdit: { documentChanges: true } },
+  };
+  const { response } = codeActionExchange(entries);
+  for (const action of response.result) {
+    const changes = action.edit.changes;
+    delete action.edit.changes;
+    action.edit.documentChanges = Object.entries(changes).map(([uri, edits]) => ({
+      textDocument: { uri, version: 0 },
+      edits,
+    }));
+  }
+  assert.deepEqual(failures(entries), []);
+
+  response.result[0].edit.documentChanges[0].textDocument.version = 1;
+  assert.deepEqual(failures(entries), ["code-action"]);
+  response.result[0].edit.documentChanges[0].textDocument.version = 0;
+  response.result[0].edit.documentChanges[0].edits[0].newText = "wrong";
+  assert.deepEqual(failures(entries), ["code-action"]);
+
+  const unversioned = idealTranscript();
+  const unversionedInitialize = unversioned.find(
+    (entry) => entry.msg?.method === "initialize",
+  )!.msg!;
+  unversionedInitialize.params.capabilities = {
+    workspace: { workspaceEdit: { documentChanges: false } },
+  };
+  const exchange = codeActionExchange(unversioned);
+  const changes = exchange.response.result[0].edit.changes;
+  delete exchange.response.result[0].edit.changes;
+  exchange.response.result[0].edit.documentChanges = Object.entries(changes).map(
+    ([uri, edits]) => ({ textDocument: { uri, version: 0 }, edits }),
+  );
+  assert.deepEqual(failures(unversioned), ["code-action"]);
+});
+
 test("corrupted canonical action documentation fails even when the client omits documentation", () => {
   const entries = idealTranscript();
   const { response, diagnostic } = codeActionExchange(entries);
