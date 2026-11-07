@@ -10,10 +10,12 @@ use vize_l0::{FxHashMap, String, cstr};
 
 mod block;
 mod raw;
+mod split;
 mod template_boundary;
 
 pub use block::{parse_block_fast, tag_name_eq};
 pub use raw::find_block_end;
+pub use split::{CompatBlock, CompatBlockLocation, CompatSplitError, split_blocks};
 
 pub type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
 pub type BlockParseOutput<'a> = (
