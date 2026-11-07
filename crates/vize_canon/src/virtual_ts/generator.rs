@@ -624,7 +624,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 generation_options,
                 generic_param.is_some(),
                 inferred_slots || template_record.any(),
-                &mut semantic_links,
+                (&mut semantic_links, &mut mappings, template_offset),
             );
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);

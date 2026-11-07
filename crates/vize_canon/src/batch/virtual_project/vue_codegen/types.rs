@@ -44,6 +44,7 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     /// Editor requests retain script mappings while an unusable template is omitted.
     pub(in crate::batch::virtual_project) preserve_script_on_template_error: bool,
     pub(in crate::batch::virtual_project) component_name: Option<&'a str>,
+    pub(in crate::batch::virtual_project) template_use_navigation: bool,
     /// Type-only module that owns expensive component-attribute aliases for
     /// standalone Content Mapper output.
     pub(in crate::batch::virtual_project) external_component_attrs_module:

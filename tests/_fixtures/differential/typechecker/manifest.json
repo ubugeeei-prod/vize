@@ -15332,6 +15332,50 @@
       }
     },
     {
+      "id": "typechecker/regression/template-binding-uses-11636",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-binding-uses-11636/src/App.vue.txt",
+          "sha256": "ff644f29bb78a46efc24d1d60b1364e4a5db63db63c4d1083b3fbb022b286330",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-binding-uses-11636/src/Wrong.vue.txt",
+          "sha256": "01adfc7618af76e1bbef6af235b135c21d24e09297aaa61b4641e37ffc2752fd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-binding-uses-11636/src/types.ts.txt",
+          "sha256": "34ff170ed9c8b1ee63b1d00eaebbeb037606080aed6dd6104cf8e5a210a7bdae",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-binding-uses-11636/tsconfig.json.txt",
+          "sha256": "a128eab9a15a4db14fb9600d13c21c44cfb92da119aded4e9c4c56b5920d2f10",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_editor_accuracy::template_bindings::standard_tsgo_lsp_finds_template_uses_of_setup_bindings; reported #11636 under TypeScript 7.1's LSP: references and rename on a setup binding missed its template uses, which bound to the template's unwrapping shadow. A v-for alias of the same name keeps its own uses, and a wrong argument type keeps TS2345. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/tsconfig-reference-defaults-3984",
       "state": "active",
       "targets": [

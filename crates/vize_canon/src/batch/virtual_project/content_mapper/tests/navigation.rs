@@ -1,6 +1,9 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::path::Path;
 
+use super::super::span_features::{
+    CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER, CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+};
 use super::{
     CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
     ContentMapperSpanKind, generate_vue_content_mapper_transform,
@@ -271,4 +274,127 @@ const handleActivate = (value: "slot") => value;
         result.text.matches("const __vize_events_resolved_").count(),
         1
     );
+}
+
+/// A template use of a shadowed setup binding names the authored binding for
+/// navigation and a const, unwrapped proxy for hover (#11636, #11638).
+#[test]
+fn template_uses_of_shadowed_setup_bindings_navigate_to_the_authored_binding() {
+    let source = r#"<script setup lang="ts">
+import { ref } from "vue";
+const open = ref(false);
+const items = ref([1]);
+function toggle() {}
+</script>
+<template>
+  <p v-if="open" @click="open = false">{{ open }}</p>
+  <button @click="toggle" />
+  <i v-for="open in items" :key="open">{{ open }}</i>
+</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
+    let template = source.find("<template>").unwrap();
+    let loop_start = source.find("<i v-for").unwrap();
+    let uses = |name: &str| {
+        source
+            .match_indices(name)
+            .map(|(offset, _)| offset)
+            .filter(|offset| *offset > template)
+            .collect::<Vec<_>>()
+    };
+    let projected = |offset: usize, len: usize, features: usize, prefix: &str| {
+        result.mappings.iter().any(|mapping| {
+            let [
+                generated,
+                generated_len,
+                original,
+                original_len,
+                kind,
+                mapping_features,
+            ] = mapping.0;
+            let line = result.text[..generated]
+                .rsplit_once('\n')
+                .map_or("", |(_, line)| line);
+            original == offset
+                && original_len == len
+                && generated_len == len
+                && kind == ContentMapperSpanKind::Verbatim as usize
+                && mapping_features == features
+                && line.trim_start() == prefix
+        })
+    };
+    let hover_owner_count = |offset: usize, len: usize| {
+        result
+            .mappings
+            .iter()
+            .filter(|mapping| {
+                mapping.0[2] == offset
+                    && mapping.0[3] == len
+                    && mapping.0[5] & CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER != 0
+            })
+            .count()
+    };
+    let (setup, alias): (Vec<_>, Vec<_>) = uses("open")
+        .into_iter()
+        .partition(|offset| *offset < loop_start);
+    assert_eq!((setup.len(), alias.len()), (3, 3));
+    for offset in &setup {
+        for (features, prefix) in [
+            (
+                CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+                crate::virtual_ts::generated_names::TEMPLATE_USE_PREFIX,
+            ),
+            (
+                CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER,
+                crate::virtual_ts::generated_names::TEMPLATE_HOVER_PREFIX,
+            ),
+        ] {
+            assert!(
+                projected(*offset, "open".len(), features, prefix),
+                "{offset}:\n{}",
+                result.text
+            );
+        }
+        assert_eq!(hover_owner_count(*offset, "open".len()), 1);
+    }
+    // The `v-for` source reads `items` in the scope around the loop.
+    for offset in uses("items") {
+        assert!(
+            projected(
+                offset,
+                "items".len(),
+                CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+                crate::virtual_ts::generated_names::TEMPLATE_USE_PREFIX,
+            ),
+            "{offset}:\n{}",
+            result.text
+        );
+        assert!(
+            projected(
+                offset,
+                "items".len(),
+                CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER,
+                crate::virtual_ts::generated_names::TEMPLATE_HOVER_PREFIX,
+            ),
+            "{offset}:\n{}",
+            result.text
+        );
+        assert_eq!(hover_owner_count(offset, "items".len()), 1);
+    }
+    // A `v-for` alias and an unshadowed function are already the binding TS sees.
+    for offset in alias.into_iter().chain(uses("toggle")) {
+        assert!(
+            !result.mappings.iter().any(|mapping| {
+                mapping.0[2] == offset
+                    && matches!(
+                        mapping.0[5],
+                        CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE
+                            | CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
+                    )
+            }),
+            "{offset}:\n{}",
+            result.text
+        );
+    }
 }

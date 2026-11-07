@@ -2,6 +2,7 @@ mod auto_imports;
 mod deferred_bindings;
 mod narrowed_bindings;
 mod static_runtime_reads;
+mod template_uses;
 
 use std::ops::Range;
 
@@ -12,7 +13,7 @@ use vize_l0::{FxHashMap, FxHashSet, String, append};
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
 use super::legacy_vue2::{needs_legacy_vue2_helpers, ref_unwrap_helper_for_template};
-use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Setup-side template artifacts are emitted before the template closure owns
 /// any same-spelled local. Keep the caller's existing root-type phase intact.
@@ -76,7 +77,11 @@ pub(super) fn collect_and_emit_scope_preamble(
     generation_options: VirtualTsGenerationOptions<'_>,
     has_generic_param: bool,
     capture_template: bool,
-    semantic_links: &mut Vec<VizeSemanticLink>,
+    (semantic_links, mappings, template_offset): (
+        &mut Vec<VizeSemanticLink>,
+        &mut Vec<VizeMapping>,
+        u32,
+    ),
 ) -> TemplateRefUnwraps {
     let mut unwraps = TemplateRefUnwraps::collect(
         summary,
@@ -95,6 +100,10 @@ pub(super) fn collect_and_emit_scope_preamble(
     } else {
         None
     };
+    if generation_options.template_use_navigation {
+        let shadowed = unwraps.template_shadowed_bindings();
+        template_uses::emit_navigation(ts, mappings, summary, &shadowed, template_offset);
+    }
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
     ts.push_str(if capture_template {
@@ -103,10 +112,49 @@ pub(super) fn collect_and_emit_scope_preamble(
         "  ;(function __template() {\n"
     });
     unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
+    if generation_options.template_use_navigation {
+        let shadowed = unwraps.template_shadowed_bindings();
+        template_uses::emit_hover(ts, mappings, summary, &shadowed, template_offset, |name| {
+            unwraps.template_hover_type(name)
+        });
+    }
     unwraps
 }
 
 impl TemplateRefUnwraps {
+    fn template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.options_api_setup_bindings)
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
+    fn template_hover_type(&self, name: &str) -> Option<String> {
+        let mut annotation = String::default();
+        if self
+            .setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "{}{name}>", self.unwrap_prefix(name));
+        } else if self
+            .options_api_setup_bindings
+            .iter()
+            .any(|binding| binding == name)
+        {
+            append!(annotation, "__U<__R_{name}>");
+        } else if self.deferred_bindings.iter().any(|binding| binding == name) {
+            append!(annotation, "__D_{name}");
+        } else {
+            return None;
+        }
+        Some(annotation)
+    }
+
     #[expect(clippy::too_many_arguments, reason = "independent collection inputs")]
     pub(super) fn collect(
         summary: &Croquis,

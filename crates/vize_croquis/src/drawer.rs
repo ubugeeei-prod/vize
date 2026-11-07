@@ -33,10 +33,10 @@ pub use helpers::{
     VForScopeAliases, classify_event_handler, classify_event_handler_with_identifier,
     extract_identifier_refs_checked, extract_identifier_refs_oxc,
     extract_identifier_refs_retained_only, extract_identifier_refs_with_witness,
-    extract_identifiers_checked, extract_identifiers_oxc, extract_inline_callback_params,
-    extract_slot_props, is_builtin_directive, is_component_tag, is_keyword, parse_v_for_expression,
-    parse_v_for_scope_expression, retain_v_for_binding_parameters,
-    retain_v_for_binding_parameters_with_source, retained_binding_declarations, strip_js_comments,
-    strip_js_comments_with_offsets,
+    extract_identifier_uses_checked, extract_identifiers_checked, extract_identifiers_oxc,
+    extract_inline_callback_params, extract_slot_props, is_builtin_directive, is_component_tag,
+    is_keyword, parse_v_for_expression, parse_v_for_scope_expression,
+    retain_v_for_binding_parameters, retain_v_for_binding_parameters_with_source,
+    retained_binding_declarations, strip_js_comments, strip_js_comments_with_offsets,
 };
 pub use options::DrawerOptions;

@@ -3,6 +3,9 @@ use std::path::Path;
 
 use serde_json::Value;
 
+use super::super::span_features::{
+    CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER, CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+};
 use super::{
     CONTENT_MAPPER_SPAN_FEATURE_BITS, CONTENT_MAPPER_SPAN_FEATURES_ALL,
     CONTENT_MAPPER_SPAN_FEATURES_ATOM, CONTENT_MAPPER_SPAN_FEATURES_COMPLETION,
@@ -195,6 +198,16 @@ fn feature_masks_have_positive_and_negative_bit_oracles() {
             "References",
             "DocumentHighlights",
         ],
+    );
+    assert_exact_mask(
+        "template use",
+        CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+        &["Definition", "References", "DocumentHighlights", "Rename"],
+    );
+    assert_exact_mask(
+        "template hover",
+        CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER,
+        &["Hover"],
     );
     assert_exact_mask("diagnostic-only anchor", 0, &[]);
 }

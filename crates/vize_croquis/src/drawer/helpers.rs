@@ -100,4 +100,7 @@ pub fn is_valid_identifier_fast(bytes: &[u8]) -> bool {
 
 pub(in crate::drawer) use identifiers::extract_identifier_refs_retained;
 
-pub use identifiers::{extract_identifier_refs_checked, extract_identifier_refs_with_witness};
+pub use identifiers::{
+    extract_identifier_refs_checked, extract_identifier_refs_with_witness,
+    extract_identifier_uses_checked,
+};
