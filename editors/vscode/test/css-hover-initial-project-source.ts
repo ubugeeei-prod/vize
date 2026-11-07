@@ -116,11 +116,7 @@ export function invertWarmHoverSource(bytes: unknown): Buffer {
   const pieces = bytes.toString("utf8").split(warmHoverDispatch);
   assert.equal(pieces.length, 2, "foreign warm-hover source structure");
   const restored = Buffer.from(pieces.join(uncachedHoverDispatch));
-  assert.equal(
-    hash(restored),
-    residentMarkupTypedSourceSha256,
-    "whole warm-hover inverse differs",
-  );
+  assert.equal(hash(restored), residentMarkupTypedSourceSha256, "whole warm-hover inverse differs");
   assert.equal(blob(restored), residentMarkupTypedEntry.oid, "whole resident-markup blob differs");
   return restored;
 }
