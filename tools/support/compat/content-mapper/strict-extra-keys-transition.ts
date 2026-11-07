@@ -13,7 +13,7 @@ const recordUrl = new URL(
   "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/strict_extra_keys.rs",
   import.meta.url,
 );
-const recordSha256 = "f97c9b0a73935c5c69ac5b808209f2d43cff93e7f0ed315327c9d2bc99493bd2";
+const recordSha256 = "c588d4167349291f69d405d7f396055950186085354a6042f243fac4c0a7c46a";
 const before =
   "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;";
 const after =

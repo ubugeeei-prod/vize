@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { constructorEmitExportEditsBefore } from "./constructor-emit-export-source.ts";
+import { emitMemberInferEditsBefore } from "./emit-member-infer-source.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Transition = {
@@ -55,7 +56,7 @@ export function beforeGenericEventSpecialization(
   return beforeGenericEventSpecializationBase(
     read,
     path,
-    constructorEmitExportEditsBefore(read, path, current),
+    constructorEmitExportEditsBefore(read, path, emitMemberInferEditsBefore(read, path, current)),
   );
 }
 export function beforeGenericEventSpecializationBase(

@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { emitMemberInferAssetBefore } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
 
 // Chronological source-owned pairs. Each historical snippet occurs once.
 const TRANSITIONS: ReadonlyArray<readonly [string, string]> = [
@@ -99,7 +100,7 @@ export function applyIntegratedSourcePreambleTransitions(
     current = current.replace(before, after);
   }
   const authenticated = (file: string, expectedSha256: string) => {
-    const text = read(file);
+    const text = emitMemberInferAssetBefore(file, read(file));
     assert.equal(identity(text).sha256, expectedSha256, `authenticated preamble asset: ${file}`);
     return text;
   };

@@ -4,6 +4,10 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { beforeDiscriminatedJsxUnionIn } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import { beforeStrictExtraKeysIn } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import {
+  emitMemberInferEditsBefore,
+  emitMemberInferPreambleBefore,
+} from "./support/emit-member-infer-source.ts";
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 
 const root = new URL("../../", import.meta.url);
@@ -72,7 +76,7 @@ void test("the current-only emitter layer preserves both exact historical source
   const record = load();
   const generic = loadGeneric();
   for (const entry of record.files) {
-    const current = read(entry.path);
+    const current = emitMemberInferEditsBefore(read, entry.path, read(entry.path));
     const successor = generic.files.find((candidate) => candidate.path === entry.path);
     assert.ok(successor);
     const owned = inverse(current, successor);
@@ -102,29 +106,32 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   // This finite expansion is admitted only for the exact macro producer above.
   // Its compiled constant is checked independently by the native tests.
-  const current = [
-    read(decl + "shared-header.d.ts.txt"),
-    read(decl + "core-types.d.ts.txt"),
-    read(decl + "vue3-types.d.ts.txt"),
-    read(decl + "prop-keys.d.ts.txt"),
-    "\n",
-    read(base + "../component_prop_helpers.txt"),
-    ...[
-      "native-elements",
-      "component-global-attributes",
-      "for-list",
-      "directives",
-      "shared-template-refs",
-      "shared-slot-resolver",
-      "shared-slot-payload",
-      "emit-overloads",
-      "shared-emit-props",
-      "shared-emit-inference",
-      "component-checks",
-      "shared-macros",
-    ].map((name) => read(decl + name + ".d.ts.txt")),
-    read(base + "pattern_matching.d.ts"),
-  ].join("");
+  const current = emitMemberInferPreambleBefore(
+    read,
+    [
+      read(decl + "shared-header.d.ts.txt"),
+      read(decl + "core-types.d.ts.txt"),
+      read(decl + "vue3-types.d.ts.txt"),
+      read(decl + "prop-keys.d.ts.txt"),
+      "\n",
+      read(base + "../component_prop_helpers.txt"),
+      ...[
+        "native-elements",
+        "component-global-attributes",
+        "for-list",
+        "directives",
+        "shared-template-refs",
+        "shared-slot-resolver",
+        "shared-slot-payload",
+        "emit-overloads",
+        "shared-emit-props",
+        "shared-emit-inference",
+        "component-checks",
+        "shared-macros",
+      ].map((name) => read(decl + name + ".d.ts.txt")),
+      read(base + "pattern_matching.d.ts"),
+    ].join(""),
+  );
   assert.deepEqual(identity(current), {
     bytes: 46426,
     sha256: "8340b8b945e5e3ca8fcb61b7e8f0ca467ae1a603292c07f1e78f3e1226ca6522",
