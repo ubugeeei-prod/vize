@@ -156,6 +156,7 @@ export function compareLintFindings(
       }
     } else throw new Error(`${finding.ruleId} has unsupported status ${JSON.stringify(status)}`);
   }
+  const uniqueComparableBaseline = dedupeBaselineFindings(comparableBaseline);
   const comparablePatina: LintRecord[] = [],
     patinaOnlyRuleFindings: Json[] = [],
     patinaOutsideBaselineSurface: Json[] = [];
@@ -176,7 +177,7 @@ export function compareLintFindings(
         source === null
           ? null
           : classifyReferenceCoverage(project, context, { ...finding }, source, () =>
-              comparableBaseline.some(
+              uniqueComparableBaseline.some(
                 (other) => other.file === finding.file && other.ruleId === finding.ruleId,
               ),
             );
@@ -188,7 +189,7 @@ export function compareLintFindings(
     } else patinaOnlyRuleFindings.push(recordValue(finding));
   }
   const candidateGroups = groupByIdentity(comparablePatina),
-    expectedGroups = groupByIdentity(comparableBaseline);
+    expectedGroups = groupByIdentity(uniqueComparableBaseline);
   const shared: Json[] = [],
     messageDifferences: Json[] = [],
     falsePositives: LintRecord[] = [],
@@ -261,7 +262,7 @@ export function compareLintFindings(
     patinaFindingCount:
       comparablePatina.length + patinaOnlyRuleFindings.length + patinaOutsideBaselineSurface.length,
     baselineFindingCount: baseline.findings.length,
-    comparableBaselineCount: comparableBaseline.length,
+    comparableBaselineCount: uniqueComparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,
     documentedDivergenceCount: 0,
@@ -276,7 +277,9 @@ export function compareLintFindings(
     baselineExcludedNonVueCount: baseline.excludedNonVueCount,
     baselineInvalidRangeCount: baseline.invalidRangeCount,
     falsePositiveRatio: new JsonFloat(ratio(falsePositives.length, comparablePatina.length)),
-    falseNegativeRatio: new JsonFloat(ratio(falseNegatives.length, comparableBaseline.length)),
+    falseNegativeRatio: new JsonFloat(
+      ratio(falseNegatives.length, uniqueComparableBaseline.length),
+    ),
   };
   const classified: JsonObject = {
     referenceCoverageExpectations: expectations,
@@ -303,4 +306,14 @@ export function compareLintFindings(
     ...classified,
     sha256: sha256(canonicalJson({ summary, ...classified })),
   };
+}
+
+function dedupeBaselineFindings(records: LintRecord[]): LintRecord[] {
+  const seen = new Set<string>();
+  return records.filter((record) => {
+    const key = canonicalJson(recordValue(record));
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }

@@ -26,8 +26,8 @@
     },
     {
       "file": "original-requested-all-four.vue.fixture",
-      "bytes": 130,
-      "sha256": "c2095aa99a24cf24edd8caf2eea5f0f8b9ae4dec74be35e387e9679c1ee8ddb7"
+      "bytes": 132,
+      "sha256": "1f4ced1b75f3d08fbc1d021db79f91657ba9514409f99b758202f1216721bc26"
     },
     {
       "file": "CardList.vue.fixture",

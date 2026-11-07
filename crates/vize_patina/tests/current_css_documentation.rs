@@ -29,6 +29,27 @@ pub(super) fn packet(mut expected: serde_json::Value) -> serde_json::Value {
                 message["ruleId"].as_str().expect("frozen CSS rule"),
                 message["ruleDocsPath"].as_str().expect("frozen CSS URL"),
             );
+            match (
+                message["ruleId"].as_str(),
+                message["line"].as_u64(),
+                message["column"].as_u64(),
+                message["endLine"].as_u64(),
+                message["endColumn"].as_u64(),
+            ) {
+                (Some("css/no-display-none"), Some(3), Some(22), Some(3), Some(29)) => {
+                    message["column"] = 23.into();
+                    message["endColumn"] = 30.into();
+                }
+                (Some("css/no-utility-classes"), Some(2), Some(29), Some(2), Some(34)) => {
+                    message["column"] = 30.into();
+                    message["endColumn"] = 35.into();
+                }
+                (Some("css/no-id-selectors"), Some(2), Some(19), Some(2), Some(22)) => {
+                    message["column"] = 21.into();
+                    message["endColumn"] = 25.into();
+                }
+                _ => {}
+            }
             message["ruleDocsPath"] = serde_json::Value::String(current.to_owned());
         }
     }
@@ -36,6 +57,19 @@ pub(super) fn packet(mut expected: serde_json::Value) -> serde_json::Value {
 }
 
 pub(super) fn plain(expected: &str) -> vize_l0::String {
+    let expected = expected
+        .replace(
+            "cases/display-property-before-unicode-selector.vue:3:22 warning css/no-display-none",
+            "cases/display-property-before-unicode-selector.vue:3:23 warning css/no-display-none",
+        )
+        .replace(
+            "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
+            "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
+        )
+        .replace(
+            "AstralSameLine.vue:2:19 warning css/no-id-selectors",
+            "AstralSameLine.vue:2:21 warning css/no-id-selectors",
+        );
     let mut rule = None;
     let mut current = vize_l0::String::with_capacity(expected.len());
     for line in expected.split_inclusive('\n') {

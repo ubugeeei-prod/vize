@@ -8,7 +8,7 @@ const currentPages = {
   "css/no-utility-classes": "css-no-utility-classes",
 } as const;
 
-type GeometryProjection = "none" | "display-utf16" | "utility-utf16";
+type GeometryProjection = "none" | "display-utf16" | "report-utf16";
 
 function currentUtf16Geometry(
   message: Record<string, unknown>,
@@ -25,7 +25,7 @@ function currentUtf16Geometry(
     return { ...message, column: 23, endColumn: 30 };
   }
   if (
-    projection === "utility-utf16" &&
+    projection === "report-utf16" &&
     message.ruleId === "css/no-utility-classes" &&
     message.line === 2 &&
     message.column === 29 &&
@@ -33,6 +33,16 @@ function currentUtf16Geometry(
     message.endColumn === 34
   ) {
     return { ...message, column: 30, endColumn: 35 };
+  }
+  if (
+    projection === "report-utf16" &&
+    message.ruleId === "css/no-id-selectors" &&
+    message.line === 2 &&
+    message.column === 19 &&
+    message.endLine === 2 &&
+    message.endColumn === 22
+  ) {
+    return { ...message, column: 21, endColumn: 25 };
   }
   return message;
 }
@@ -73,11 +83,16 @@ export function currentCssPacket(
 export function currentCssPlain(expected: string, geometry: GeometryProjection = "none"): string {
   let reference: string | null = null;
   const geometryAdjusted =
-    geometry === "utility-utf16"
-      ? expected.replace(
-          "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
-          "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
-        )
+    geometry === "report-utf16"
+      ? expected
+          .replace(
+            "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
+            "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
+          )
+          .replace(
+            "AstralSameLine.vue:2:19 warning css/no-id-selectors",
+            "AstralSameLine.vue:2:21 warning css/no-id-selectors",
+          )
       : expected;
   return geometryAdjusted
     .split(/(?<=\n)/u)
@@ -123,7 +138,7 @@ export function currentCssCases<T extends CssCase>(cases: readonly T[]): T[] {
 export function currentCssReport<T extends { json: unknown; plain: string }>(expected: T): T {
   return {
     ...expected,
-    json: currentCssPacket(expected.json, "utility-utf16"),
-    plain: currentCssPlain(expected.plain, "utility-utf16"),
+    json: currentCssPacket(expected.json, "report-utf16"),
+    plain: currentCssPlain(expected.plain, "report-utf16"),
   };
 }

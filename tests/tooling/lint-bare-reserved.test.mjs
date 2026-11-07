@@ -75,7 +75,7 @@ await test("bare instance names use complete explicit prefix-policy successor pa
   assert.equal(propsSuccessors.bases.bare.sha256, sha256(fs.readFileSync(routeSuccessorsPath)));
   assert.equal(
     routeSuccessors.cases.reduce((count, entry) => count + entry.combinedCliDiagnostics.length, 0),
-    11,
+    12,
   );
   const projectionPath = path.join(root, "tests/_fixtures/n8n-cli-adoption.json");
   const projection = JSON.parse(fs.readFileSync(projectionPath, "utf8"));

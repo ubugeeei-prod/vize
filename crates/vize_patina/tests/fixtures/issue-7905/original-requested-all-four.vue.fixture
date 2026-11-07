@@ -4,5 +4,5 @@
   <MyCard>
     <template #header>Title</template>
   </MyCard>
-  <input disabled>
+  <input disabled />
 </template>

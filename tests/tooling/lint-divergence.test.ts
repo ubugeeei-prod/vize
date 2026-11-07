@@ -137,6 +137,33 @@ test("an aliased rule is compared under its patina name", () => {
   assert.equal(result.shared[0].upstreamRuleId, "vue/attributes-order");
 });
 
+test("identical duplicate baseline findings do not become false negatives", () => {
+  const baseline = {
+    ruleId: "vue/no-v-html",
+    severity: 2,
+    ...span(3, 8, 3, 20),
+    message: "`v-html` directive can lead to XSS attack.",
+  };
+  const result = compare(
+    [
+      {
+        file: "src/App.vue",
+        ruleId: "vue/no-v-html",
+        severity: 2,
+        ...span(3, 8, 3, 20),
+        message: "v-html",
+      },
+    ],
+    [eslintResult("src/App.vue", [baseline, { ...baseline }])],
+  );
+
+  assert.equal(result.summary.baselineFindingCount, 2);
+  assert.equal(result.summary.comparableBaselineCount, 1);
+  assert.equal(result.summary.sharedCount, 1);
+  assert.equal(result.summary.falseNegativeCount, 0);
+  assert.deepEqual(result.falseNegatives, []);
+});
+
 test("unimplemented and intentionally divergent rules never count as parity failures", () => {
   const result = compare(
     [],

@@ -37,6 +37,7 @@ export function loadCurrentCorpus(root) {
   const inverse = structuredClone(current);
   withoutDefaultBindStyle(inverse);
   withoutDefaultPropsDestructuring(inverse);
+  withoutCurrentUnusedSlotProps(inverse);
   for (const [index, id, start, end, lspStart, lspEnd] of [
     [0, "sync", 18, 37, 18, 37],
     [2, "slot-scope", 28, 38, 28, 38],
@@ -114,6 +115,25 @@ export function withoutDefaultPropsDestructuring(packet) {
       const kept = row[field].filter(
         (entry) => entry[identity] !== "script/define-props-destructuring",
       );
+      assert.equal(kept.length, row[field].length - 1, `${row.id} / ${field}`);
+      row[field] = kept;
+    }
+  }
+}
+
+// Current semantic analysis recognizes unused bindings in the two legacy slot
+// spellings. The frozen corpus predates that accuracy fix, so remove exactly
+// those two findings when proving the historical inverse.
+export function withoutCurrentUnusedSlotProps(packet) {
+  for (const row of packet.cases) {
+    if (!new Set(["slot-scope", "scope"]).has(row.id)) continue;
+    for (const [field, identity] of [
+      ["diagnostics", "rule_name"],
+      ["baselineDiagnostics", "rule_name"],
+      ["lspDiagnostics", "code"],
+      ["baselineLspDiagnostics", "code"],
+    ]) {
+      const kept = row[field].filter((entry) => entry[identity] !== "vue/no-unused-vars");
       assert.equal(kept.length, row[field].length - 1, `${row.id} / ${field}`);
       row[field] = kept;
     }

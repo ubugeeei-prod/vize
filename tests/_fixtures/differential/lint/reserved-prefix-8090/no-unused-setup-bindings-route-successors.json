@@ -10,7 +10,7 @@
     },
     "bare": {
       "path": "bare-parent-route-successors.json",
-      "sha256": "46b36ca49267bda3d48da5f684c32dcc26f5e5f483ee7d4901c7c17540234d48"
+      "sha256": "d6f177c108ec9494f24d5dc5a7d70ea0433e0aa0c69242db53f0760f51e00a4e"
     },
     "producer": {
       "path": "../../../../../crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",

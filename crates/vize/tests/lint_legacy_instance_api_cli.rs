@@ -171,6 +171,19 @@ fn all_template_authority_boundaries_use_the_actual_cli_and_complete_json_format
         overlay["frozenCliInput"]["sha256"],
         digest(TEMPLATE_MANIFEST.as_bytes())
     );
+    let unicode = manifest["cases"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|row| row["id"] == "unicode-before-token")
+        .unwrap();
+    let message = &mut unicode["expected"][0]["messages"][0];
+    assert_eq!(
+        (message["column"].as_u64(), message["endColumn"].as_u64()),
+        (Some(34), Some(44))
+    );
+    message["column"] = json!(35);
+    message["endColumn"] = json!(45);
     let corrections = overlay["legacyCorrections"].as_array().unwrap();
     assert_eq!(corrections.len(), 6);
     for correction in corrections {

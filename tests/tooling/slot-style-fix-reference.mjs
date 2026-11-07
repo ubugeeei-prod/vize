@@ -62,9 +62,9 @@ function message(source, target, rule, text, authoredStart = null) {
     severity: 1,
     message: `[vize:${rule}] ${text}`,
     line: from.length,
-    column: [...from.at(-1)].length + 1,
+    column: from.at(-1).length + 1,
     endLine: to.length,
-    endColumn: [...to.at(-1)].length + 1,
+    endColumn: to.at(-1).length + 1,
   };
 }
 

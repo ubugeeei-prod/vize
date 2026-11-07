@@ -164,6 +164,7 @@ export function compareLintFindings({
     });
   }
 
+  const uniqueComparableBaseline = dedupeBaselineFindings(comparableBaseline);
   const patinaOnlyRuleFindings: LintRecord[] = [];
   const comparablePatina: Compared[] = [];
   for (const finding of patina) {
@@ -171,7 +172,7 @@ export function compareLintFindings({
   }
 
   const patinaGroups = groupByIdentity(comparablePatina);
-  const baselineGroups = groupByIdentity(comparableBaseline);
+  const baselineGroups = groupByIdentity(uniqueComparableBaseline);
   const identities = [...new Set([...patinaGroups.keys(), ...baselineGroups.keys()])].sort(
     byteOrder,
   );
@@ -253,7 +254,7 @@ export function compareLintFindings({
   const summary = {
     patinaFindingCount: patina.length,
     baselineFindingCount: baselineInput.findings.length,
-    comparableBaselineCount: comparableBaseline.length,
+    comparableBaselineCount: uniqueComparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,
     documentedDivergenceCount: documented.length,
@@ -267,7 +268,7 @@ export function compareLintFindings({
     baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
     baselineInvalidRangeCount: baselineInput.invalidRangeCount,
     falsePositiveRatio: ratio(falsePositives.length, comparablePatina.length),
-    falseNegativeRatio: ratio(falseNegatives.length, comparableBaseline.length),
+    falseNegativeRatio: ratio(falseNegatives.length, uniqueComparableBaseline.length),
   };
   return {
     schema: "vize.fixtureLintDivergence",
@@ -280,6 +281,16 @@ export function compareLintFindings({
       .update(JSON.stringify({ summary, ...classified }))
       .digest("hex"),
   };
+}
+
+function dedupeBaselineFindings(records: readonly Compared[]): Compared[] {
+  const seen = new Set<string>();
+  return records.filter((record) => {
+    const key = JSON.stringify(record);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function patinaIntentionalReason(finding: LintRecord, cwd: string): string | null {

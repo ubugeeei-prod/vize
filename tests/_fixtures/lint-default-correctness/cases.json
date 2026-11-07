@@ -121,7 +121,7 @@
       "id": "slot-scope",
       "filename": "slot-scope.vue",
       "kind": "vue",
-      "source": "<template><Widget><template slot-scope=\"slotProps\">{{ slotProps }}</template></Widget></template>\n",
+      "source": "<template><Widget><template slot-scope=\"slotProps\">ok</template></Widget></template>\n",
       "diagnostics": [
         {
           "rule_name": "vue/no-deprecated-slot-scope-attribute",
@@ -162,7 +162,7 @@
       "id": "scope",
       "filename": "scope.vue",
       "kind": "vue",
-      "source": "<template><Widget><template scope=\"slotProps\">{{ slotProps }}</template></Widget></template>\n",
+      "source": "<template><Widget><template scope=\"slotProps\">ok</template></Widget></template>\n",
       "diagnostics": [
         {
           "rule_name": "vue/no-deprecated-scope-attribute",

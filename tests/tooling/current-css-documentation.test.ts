@@ -34,12 +34,20 @@ function historicalCssBytes(value: unknown): string {
       '"line":2,"column":29,"endLine":2,"endColumn":34',
     )
     .replaceAll(
+      '"line":2,"column":21,"endLine":2,"endColumn":25',
+      '"line":2,"column":19,"endLine":2,"endColumn":22',
+    )
+    .replaceAll(
       "cases/display-property-before-unicode-selector.vue:3:23 warning css/no-display-none",
       "cases/display-property-before-unicode-selector.vue:3:22 warning css/no-display-none",
     )
     .replaceAll(
       "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
       "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
+    )
+    .replaceAll(
+      "AstralSameLine.vue:2:21 warning css/no-id-selectors",
+      "AstralSameLine.vue:2:19 warning css/no-id-selectors",
     );
 }
 

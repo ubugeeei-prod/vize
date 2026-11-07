@@ -12,10 +12,8 @@ use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey};
-use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -39,31 +37,18 @@ impl NoStaticInlineStyles {
                 Self::report(ctx, binding.range());
             }
             MarkupBindingKind::Bind => {
-                let Some(expression) = binding.expression() else {
+                let Some(expression) = binding.retained_expression() else {
                     return;
                 };
-                match static_style_findings(expression) {
+                match static_style_findings(expression.ast) {
                     StyleFindings::None => {}
                     StyleFindings::Whole => Self::report(ctx, binding.range()),
                     StyleFindings::Properties(properties) => {
-                        let range = binding.range();
-                        let Some(authored) =
-                            ctx.source.get(range.start as usize..range.end as usize)
-                        else {
-                            return;
-                        };
-                        let Some(relative) = authored.find(expression) else {
-                            return;
-                        };
-                        let expression_start = range.start + relative as u32;
                         for property in properties {
-                            Self::report(
-                                ctx,
-                                ByteRange::new(
-                                    expression_start + property.start,
-                                    expression_start + property.end,
-                                ),
-                            );
+                            let Some(range) = expression.authored_range(property) else {
+                                continue;
+                            };
+                            Self::report(ctx, range);
                         }
                     }
                 }
@@ -91,19 +76,7 @@ enum StyleFindings {
     Properties(Vec<oxc_span::Span>),
 }
 
-fn static_style_findings(source: &str) -> StyleFindings {
-    let source = source.trim();
-    let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, source, SourceType::ts()).parse_expression()
-    else {
-        return StyleFindings::None;
-    };
-    if source
-        .get(expression.span().end as usize..)
-        .is_none_or(|rest| !rest.trim().is_empty())
-    {
-        return StyleFindings::None;
-    }
+fn static_style_findings(expression: &Expression<'_>) -> StyleFindings {
     match expression.get_inner_expression() {
         Expression::ObjectExpression(object) => findings_for_objects([&**object], true),
         Expression::ArrayExpression(array) => {
@@ -306,5 +279,16 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_static_jsx_style_binding_from_the_retained_ast() {
+        let source = r#"const view = <div style={{ color: 'red', width: 10 }}>text</div>;"#;
+        let result = create_linter().lint_jsx(source, "test.tsx", vize_atelier_jsx::JsxLang::Tsx);
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            result.diagnostics[0].rule_name,
+            "vue/no-static-inline-styles"
+        );
     }
 }

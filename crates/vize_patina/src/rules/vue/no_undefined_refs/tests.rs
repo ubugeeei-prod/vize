@@ -214,6 +214,28 @@ fn imported_props_shapes_are_not_assumed_to_be_closed() {
 }
 
 #[test]
+fn imported_base_of_exported_props_interface_is_not_assumed_closed() {
+    for (prop, required) in [("forceMount", false), ("value", true)] {
+        let optional = if required { "" } else { "?" };
+        let source = format!(
+            r#"<script lang="ts">
+import type {{ BaseProps }} from './base'
+export interface Props extends Omit<BaseProps, 'modelValue'> {{
+  {prop}{optional}: boolean
+}}
+</script>
+<script setup lang="ts">
+const props = defineProps<Props>()
+void props
+</script>
+<template>{{{{ {prop} }}}}</template>
+"#
+        );
+        assert_eq!(findings(&lint_sfc(&source)), none(), "{prop}");
+    }
+}
+
+#[test]
 fn closed_props_shapes_keep_reporting_unknown_names() {
     for declaration in [
         "defineProps<{ status?: 'default' | 'error' }>();",
