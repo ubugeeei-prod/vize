@@ -34,7 +34,7 @@ test("every selected native runtime lane uploads one merged case packet", () => 
   assert.equal(job.env?.TEST_CASES_JOB, "Native runtime (${{ matrix.lane }})");
   assert.equal(
     job.env?.VIZE_TEST_CASES,
-    "${{ runner.temp }}/test-cases-native-${{ matrix.lane }}.json",
+    "test-cases-native-${{ matrix.lane }}.json",
   );
   const prepare = job.steps.find(
     (step) => step.name === "Prepare native runtime test case capture",

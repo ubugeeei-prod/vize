@@ -214,7 +214,7 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
       TEST_CASES_JOB: "PR package conformance (${{ matrix.surface }})"
-      VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-js-conformance-${{ matrix.surface }}.json
+      VIZE_TEST_CASES: test-cases-js-conformance-${{ matrix.surface }}.json
     steps:
       - name: Explain documentation-only skip
         if: ${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}

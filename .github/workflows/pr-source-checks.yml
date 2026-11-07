@@ -233,7 +233,7 @@ jobs:
       VIZE_NATIVE_RUST_TARGETS: wasm32-unknown-unknown,wasm32-wasip2
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       TEST_CASES_JOB: "Native runtime (${{ matrix.lane }})"
-      VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-native-${{ matrix.lane }}.json
+      VIZE_TEST_CASES: test-cases-native-${{ matrix.lane }}.json
     steps:
       - name: Explain unrelated skip
         if: ${{ matrix.lane == 'none' }}
