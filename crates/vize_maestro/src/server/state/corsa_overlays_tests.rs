@@ -45,8 +45,8 @@ pub(super) fn rewrite(state: &ServerState, name: &str, text: &str, version: i32)
 pub(super) fn overlays(state: &ServerState) -> Vec<(PathBuf, String)> {
     let mut overlays = state
         .corsa_overlays()
-        .into_iter()
-        .map(|(path, text)| (path, text.to_string()))
+        .iter()
+        .map(|(path, text)| (path.clone(), text.to_string()))
         .collect::<Vec<_>>();
     overlays.sort();
     overlays
