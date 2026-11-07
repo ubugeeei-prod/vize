@@ -21,7 +21,7 @@ await test("7905 preserves whole originals and independent complete edit control
     "utf8",
   );
   assert.notEqual(original.fixed, requested, "the rule-isolated boolean corpus remains unchanged");
-  assert.equal(wholeJson(original, false, true)[0].messages.length, 4);
+  assert.equal(wholeJson(original, false, true)[0].messages.length, 5);
   assert.equal(wholeJson(original, true, true)[0].messages.length, 0);
   const complete = fixedSource(original, true);
   assert.equal(complete.slice(complete.indexOf("<template>")), requested);

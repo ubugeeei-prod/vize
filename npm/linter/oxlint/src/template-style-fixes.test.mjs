@@ -38,7 +38,12 @@ function save(observation) {
 }
 const findings = [
   ["vue/html-self-closing", "<MyCard>", "Empty component should be self-closing"],
-  ["vue/component-name-in-template-casing", "<my-card />", "Component should use PascalCase"],
+  [
+    "vue/html-self-closing",
+    '<input disabled="disabled" />',
+    "Element must not use self-closing syntax",
+  ],
+  ["vue/component-name-in-template-casing", "<my-card", "Component should use PascalCase"],
   ["vue/v-slot-style", "v-slot:header", "Expected '#header' instead of 'v-slot:header'"],
   [
     "vue/no-boolean-attr-value",
@@ -46,6 +51,7 @@ const findings = [
     'Boolean attribute "disabled" should not have value "disabled"',
   ],
 ];
+const enabledRules = [...new Set(findings.map(([rule]) => rule))];
 function position(source, index) {
   const lines = source.slice(0, index).split("\n");
   return {
@@ -81,7 +87,7 @@ function publicNativeReport(after) {
   const to = position(source, start + target.length);
   // Opinionated also enables the unchanged, nonfixable accessibility rule.
   // Preserve its complete finding instead of suppressing or fixing reporter input.
-  report[0].messages.splice(after ? 0 : 3, 0, {
+  report[0].messages.splice(after ? 0 : 4, 0, {
     ruleId: "a11y/form-control-has-label",
     ruleDocsPath: "docs/content/rules/reference/a11y-form-control-has-label.md",
     severity: 1,
@@ -101,7 +107,7 @@ const config =
       plugins: ["vue"],
       jsPlugins: [plugin],
       settings: { vize: { helpLevel: "none", preset: "incremental" } },
-      rules: Object.fromEntries(findings.map(([rule]) => [`vize/${rule}`, "warn"])),
+      rules: Object.fromEntries(enabledRules.map((rule) => [`vize/${rule}`, "warn"])),
     },
     null,
     2,
@@ -137,7 +143,7 @@ try {
       filename: "CardList.vue",
       preset: "incremental",
       helpLevel: "none",
-      enabledRules: findings.map(([rule]) => rule),
+      enabledRules,
     });
     assert.deepEqual(
       { ...actualNative, diagnostics: ordered(actualNative.diagnostics) },
@@ -234,7 +240,7 @@ try {
       "warningCount",
     ]);
     assert.equal(actual.errorCount, 0);
-    assert.equal(actual.warningCount, pass === 0 ? 5 : 1);
+    assert.equal(actual.warningCount, pass === 0 ? 6 : 1);
     assert.equal(actual.fileCount, 1);
     assert.ok(Number.isFinite(actual.timeMs) && actual.timeMs >= 0);
     assert.deepEqual(JSON.parse(actual.output), publicNativeReport(pass > 0));
