@@ -23,11 +23,11 @@ async function main() {
 
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-"));
   const userData = path.join(session, "user-data");
-  const config = path.join(session, "config");
+  const config = path.join(userData, "config");
   const shim = path.join(session, "bin");
   const installed = path.join(userData, "extensions", "installed", "vize");
   fs.mkdirSync(installed, { recursive: true });
-  fs.mkdirSync(path.join(config, "zed"), { recursive: true });
+  fs.mkdirSync(config, { recursive: true });
   fs.mkdirSync(shim, { recursive: true });
   fs.cpSync(packaged, installed, { recursive: true });
   fs.writeFileSync(path.join(userData, "extensions", "installed", ".rescan"), "");
@@ -41,7 +41,7 @@ async function main() {
     auto_update_extensions: { vize: false },
     telemetry: { diagnostics: false, metrics: false },
   };
-  fs.writeFileSync(path.join(config, "zed", "settings.json"), `${JSON.stringify(settings)}\n`);
+  fs.writeFileSync(path.join(config, "settings.json"), `${JSON.stringify(settings)}\n`);
   fs.writeFileSync(
     path.join(evidence, "zed-settings.json"),
     `${JSON.stringify(settings, null, 2)}\n`,
@@ -83,7 +83,6 @@ async function main() {
         ...process.env,
         PATH: `${shim}${path.delimiter}${process.env.PATH ?? ""}`,
         VIZE_CONFORMANCE_TRANSCRIPT: transcript,
-        XDG_CONFIG_HOME: config,
       },
       stdio: ["ignore", output, output],
     },

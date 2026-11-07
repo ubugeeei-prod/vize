@@ -106,6 +106,9 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
 });
 
 test("release Zed smoke explicitly opts Vize into Vue and retains failure evidence", () => {
+  assert.match(releaseZed, /path\.join\(userData, "config"\)/);
+  assert.match(releaseZed, /path\.join\(config, "settings\.json"\)/);
+  assert.doesNotMatch(releaseZed, /XDG_CONFIG_HOME/);
   assert.match(releaseZed, /"Vue\.js": \{/);
   assert.match(releaseZed, /language_servers: \["vize", "\.\.\."\]/);
   assert.match(releaseZed, /zed-settings\.json/);
