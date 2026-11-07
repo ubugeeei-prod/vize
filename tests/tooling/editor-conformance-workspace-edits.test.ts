@@ -95,6 +95,18 @@ test("the judge requires the exact WorkspaceEdit shape negotiated by the client"
   assert.deepEqual(failedSteps(transcript(true, 0, "wrong")), ["code-action"]);
   assert.deepEqual(failedSteps(transcript(false)), []);
 
+  const changedDocument = transcript(true, 1);
+  changedDocument.splice(2, 0, {
+    session: 1,
+    t: 2,
+    dir: "c2s",
+    msg: {
+      method: "textDocument/didChange",
+      params: { textDocument: { uri, version: 1 }, contentChanges: [{ text: "a" }] },
+    },
+  });
+  assert.deepEqual(failedSteps(changedDocument), []);
+
   const unadvertisedVersioned = transcript(false);
   unadvertisedVersioned[3].msg!.result[0].edit = transcript(true)[3].msg!.result[0].edit;
   assert.deepEqual(failedSteps(unadvertisedVersioned), ["code-action"]);
