@@ -54,7 +54,7 @@ jobs:
           key: release-smoke-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-${{ hashFiles('tools/commands/release/npm/smoke-release-install.rs', 'tools/support/common.rs', 'tools/commands/release/npm/npm_publish.rs', 'tools/commands/release/npm/npm_smoke_init.rs') }}
       - name: Install source contract dependencies
         shell: bash
-        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tools' --ignore-scripts
+        run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tools' --filter '@vize/tests' --ignore-scripts
       - name: Compile the exact retained Rust reference before comparing child output
         shell: bash
         run: |

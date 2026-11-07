@@ -232,7 +232,7 @@ test("release npm artifacts install their tools-owned helper dependencies", () =
   );
   assert.equal(
     contractInstall?.run,
-    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tools' --ignore-scripts",
+    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tools' --filter '@vize/tests' --ignore-scripts",
   );
   assert.ok(
     smokeContracts.on.pull_request.paths.includes(".github/actions/release-npm-artifacts/**"),
