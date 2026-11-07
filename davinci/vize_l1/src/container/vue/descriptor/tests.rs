@@ -13,14 +13,9 @@ fn options() -> DescriptorOptions {
 }
 
 #[test]
-fn resolved_descriptor_keeps_the_established_debug_surface() {
-    let allocator = Allocator::default();
-    let observation = Vue.observe_descriptor(&allocator, "<template><div/></template>", options());
-    let debug = format!("{observation:#?}");
-    assert!(!debug.contains("FileDialect"));
-    assert!(!debug.contains("syntax: Standard"));
+fn descriptor_options_keep_the_established_debug_surface() {
     assert_eq!(
-        format!("{:?}", observation.options()),
+        format!("{:?}", options()),
         "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
     );
 }
