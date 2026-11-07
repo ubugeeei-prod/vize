@@ -61,7 +61,12 @@ pub(super) fn rewrite_tsx_vue_shim_specifiers(
     let mut source_map = ImportSourceMap::for_rewrites(rewrites.len());
     for (start, end, new_path) in rewrites {
         output.replace_range(start as usize..end as usize, new_path.as_str());
-        source_map.record_replacement(start, end, new_path.len() as u32);
+        source_map.record_replacement(
+            start,
+            end,
+            new_path.len() as u32,
+            source.get(start as usize..end as usize).unwrap_or_default(),
+        );
     }
     source_map.finish_descending_replacements();
     Some(RewriteResult {

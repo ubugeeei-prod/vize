@@ -191,6 +191,7 @@ impl SessionCache {
     ) {
         fingerprint.compact_overlay_inputs();
         let key = RevisionKey::new(source_path, &fingerprint);
+        memory_census::record(&key.source_path, self.slots.len(), &context);
         if self.slots.len() >= CONTEXT_CACHE_CAPACITY && !self.slots.contains_key(&key) {
             let lru = self
                 .slots
@@ -378,3 +379,51 @@ mod overlay_tests;
 
 #[cfg(test)]
 mod overlay_profile;
+
+/// Editor memory attribution: with `VIZE_MEMORY_CENSUS=<file>` every cached
+/// revision appends what its mirror project retains, by family, beside the
+/// process's live heap when the profiling allocator is installed.
+mod memory_census {
+    use std::io::Write;
+    use std::path::Path;
+    use std::sync::Arc;
+
+    use super::super::AliasContext;
+
+    pub(super) fn record(source_path: &Path, cached_revisions: usize, context: &Arc<AliasContext>) {
+        let Some(file) = std::env::var_os("VIZE_MEMORY_CENSUS") else {
+            return;
+        };
+        let Some(census) = context.retained_bytes() else {
+            return;
+        };
+        let live_heap = live_heap_bytes();
+        let Ok(mut output) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(file)
+        else {
+            return;
+        };
+        let _ = writeln!(
+            output,
+            "census revision={} cached_revisions={} live_heap_mb={} {census}",
+            source_path.display(),
+            cached_revisions,
+            live_heap.map_or_else(
+                || vize_carton::cstr!("n/a"),
+                |bytes| vize_carton::cstr!("{:.1}", bytes as f64 / 1_048_576.0)
+            ),
+        );
+    }
+
+    #[cfg(feature = "profiling")]
+    fn live_heap_bytes() -> Option<i128> {
+        Some(vize_l0::profiler::allocation_snapshot().net_bytes())
+    }
+
+    #[cfg(not(feature = "profiling"))]
+    fn live_heap_bytes() -> Option<i128> {
+        None
+    }
+}

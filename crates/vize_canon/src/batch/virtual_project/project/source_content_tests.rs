@@ -142,8 +142,16 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
 fn project_observation(project: &VirtualProject) -> std::string::String {
     let mut originals = project.original_contents.iter().collect::<Vec<_>>();
     originals.sort_by_key(|(path, _)| *path);
-    let mut pre_rewrite = project.pre_rewrite_code.iter().collect::<Vec<_>>();
-    pre_rewrite.sort_by_key(|(path, _)| *path);
+    let mut pre_rewrite = project
+        .virtual_files
+        .iter()
+        .filter_map(|(path, file)| {
+            project
+                .pre_rewrite_code(file)
+                .map(|code| (path.clone(), code.into_owned()))
+        })
+        .collect::<Vec<_>>();
+    pre_rewrite.sort_by(|left, right| left.0.cmp(&right.0));
     let mut passthrough = project.passthrough_files.iter().collect::<Vec<_>>();
     passthrough.sort_by_key(|(path, _)| *path);
     format!(

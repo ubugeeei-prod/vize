@@ -164,7 +164,6 @@ crates/vize_canon/src/batch/virtual_project/package_node_modules/tests.rs	3
 crates/vize_canon/src/batch/virtual_project/package_route_reachability/tests.rs	8
 crates/vize_canon/src/batch/virtual_project/package_shadow_scope/fan_out_tests/identity_scopes.rs	1
 crates/vize_canon/src/batch/virtual_project/preparation_import_facts_test_snapshot.rs	10
-crates/vize_canon/src/batch/virtual_project/project/artifacts/javascript_collision_tests.rs	2
 crates/vize_canon/src/batch/virtual_project/tests/alias_rewrite.rs	13
 crates/vize_canon/src/batch/virtual_project/tests/declaration_graph_identity.rs	1
 crates/vize_canon/src/batch/virtual_project/tests/graphql_generated.rs	1
