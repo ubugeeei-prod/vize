@@ -168,7 +168,10 @@ await test("bare instance names use complete explicit prefix-policy successor pa
           entry,
           preset,
           config: null,
-          findings: preset === "essential" ? findings : withCurrentDefault(entry, findings),
+          findings:
+            preset === "essential"
+              ? findings.filter((finding) => finding.rule_name !== "vue/prop-name-casing")
+              : withCurrentDefault(entry, findings),
         };
       }),
       { entry, preset: "incremental", config: null, findings: [] },
