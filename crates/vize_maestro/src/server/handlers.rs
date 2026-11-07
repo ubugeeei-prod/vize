@@ -1,5 +1,6 @@
 //! LSP protocol handler implementations.
 
+mod completion;
 mod formatting;
 mod hover;
 mod inlay_hint;
@@ -34,7 +35,9 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::MaestroServer;
-use crate::ide::{CompletionService, position_to_offset};
+#[cfg(feature = "native")]
+use crate::ide::CompletionService;
+use crate::ide::position_to_offset;
 
 mod call_hierarchy;
 mod navigation;
@@ -184,15 +187,7 @@ impl LanguageServer for MaestroServer {
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let server = self.for_pos(&params.text_document_position).await;
-        if let Some(response) = server.local_resident_component_completion_response(&params)? {
-            return server.authored_response(Ok(response));
-        }
-        if let Some(response) = server.local_completion_response(&params)? {
-            return server.authored_response(Ok(response));
-        }
-        server
-            .native_request(server.completion_request(params))
-            .await
+        server.completion_response(params).await
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
