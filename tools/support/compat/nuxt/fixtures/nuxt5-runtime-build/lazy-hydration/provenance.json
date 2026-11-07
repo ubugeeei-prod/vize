@@ -1,0 +1,15 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/11802",
+  "reporter": "ubugeeei",
+  "runtime": {
+    "nuxt": "5.0.0-2611031025-9496b7e",
+    "nitro": "3.0.261029-rc",
+    "vite": "8.3.5",
+    "vue": "3.5.44",
+    "node": "26.13.0"
+  },
+  "files": {
+    "app.vue.txt": "34858e3cedbadf473f4d9e0caf59e7673bff9b8ca7d8400c9ac16345dd1277a0",
+    "Hydrated.vue.txt": "7068ed5d58cb1ea7812f9d9ddb06fdf47924824126c81a71fa1f6499a0f0b702"
+  }
+}

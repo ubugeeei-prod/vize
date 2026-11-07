@@ -80,6 +80,40 @@ void test("Nuxt 5 production fixture retains the reporter's complete three sourc
     assert.equal(lock.packages[`node_modules/${name}`].version, version);
 });
 
+void test("#11802 Nuxt 5 lazy hydration inputs and runtime oracle stay pinned", () => {
+  const directory = new URL("lazy-hydration/", fixture);
+  const provenance = JSON.parse(fs.readFileSync(new URL("provenance.json", directory), "utf8")) as {
+    issue: string;
+    runtime: Record<string, string>;
+    files: Record<string, string>;
+  };
+  assert.equal(provenance.issue, "https://github.com/ubugeeei-prod/vize/issues/11802");
+  assert.deepEqual(provenance.runtime, {
+    nuxt: "5.0.0-2611031025-9496b7e",
+    nitro: "3.0.261029-rc",
+    vite: "8.3.5",
+    vue: "3.5.44",
+    node: "26.13.0",
+  });
+  for (const [file, expected] of Object.entries(provenance.files)) {
+    assert.equal(
+      createHash("sha256")
+        .update(fs.readFileSync(new URL(file, directory)))
+        .digest("hex"),
+      expected,
+      file,
+    );
+  }
+
+  const harness = fs.readFileSync(
+    new URL("tools/support/compat/nuxt/nuxt5-runtime-build.ts", root),
+    "utf8",
+  );
+  assert.match(harness, /assert\.doesNotMatch\(lazyHtml, \/\\bhydrate-/);
+  assert.match(harness, /\["true", "false", "false"\]/);
+  assert.match(harness, /\["true", "true", "false"\]/);
+});
+
 void test("Nuxt runtime ownership and frozen consumer inputs trigger the existing source lane", () => {
   for (const trigger of [workflow.on.pull_request, workflow.on.push]) {
     for (const file of [
