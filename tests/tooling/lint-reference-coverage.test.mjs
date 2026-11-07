@@ -175,11 +175,17 @@ await test("actual report retains complete raw packets and scores a neighboring 
           ],
         }),
       );
-      const run = (messages = [entry.finding], budgetMode = "record-only", expectedStatus = 0) => {
+      const run = (
+        messages = [entry.finding],
+        budgetMode = "record-only",
+        expectedStatus = 0,
+        preset = "ecosystem",
+      ) => {
         fs.writeFileSync(
           fake,
           `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }]))});\n`,
         );
+        const presetArgs = preset === "all-mapped" ? ["--all-mapped-rules"] : ["--preset", preset];
         const result = spawnSync(
           process.execPath,
           [
@@ -190,8 +196,7 @@ await test("actual report retains complete raw packets and scores a neighboring 
             path.join(projectDir, "report"),
             "--vize-bin",
             fake,
-            "--preset",
-            "ecosystem",
+            ...presetArgs,
             "--budget-mode",
             budgetMode,
           ],
@@ -221,6 +226,11 @@ await test("actual report retains complete raw packets and scores a neighboring 
       assert.equal(packet.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
       assert.equal(packet.divergence.referenceCoverageExpectations.length, 1);
       assert.equal(packet.divergence.referenceCoverageExpectations[0].observedCount, 1);
+      const allMapped = run([entry.finding], "record-only", 0, "all-mapped");
+      assert.equal(allMapped.preset, "all-mapped");
+      assert.deepEqual(allMapped.divergence.falsePositives, []);
+      assert.equal(allMapped.divergence.referenceCoverageExpectations.length, 1);
+      assert.equal(allMapped.divergence.referenceCoverageExpectations[0].observedCount, 1);
       const missing = run([], "enforce", 1);
       assert.deepEqual(missing.raw.patinaFindings, []);
       assert.equal(missing.divergence.referenceCoverageExpectations[0].observedCount, 0);
