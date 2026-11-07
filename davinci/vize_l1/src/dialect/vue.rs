@@ -6,6 +6,7 @@
 
 use vize_l0::config::VueVersion;
 
+pub(crate) mod feature;
 pub(crate) mod surface;
 
 /// A legacy (pre-Vue-3) version line that Vize can opt into supporting.
@@ -100,13 +101,7 @@ impl LegacyVueVersion {
     /// line and must take the default (non-legacy) code paths. Vue 2.7 and
     /// Vue 2 share the [`V2`](Self::V2) template dialect.
     pub const fn from_dialect(dialect: VueVersion) -> Option<Self> {
-        match dialect {
-            VueVersion::V3 => None,
-            VueVersion::V2_7 | VueVersion::V2 => Some(Self::V2),
-            VueVersion::V1 => Some(Self::V1),
-            VueVersion::V0_11 => Some(Self::V0_11),
-            VueVersion::V0_10 => Some(Self::V0_10),
-        }
+        crate::registry::legacy_version(dialect)
     }
 
     /// Resolve this line into its template-syntax capability set.
@@ -114,12 +109,7 @@ impl LegacyVueVersion {
     /// Call this once per file/document when building parser or transform
     /// options; see [`LegacyDialectCapabilities`] for the zero-cost contract.
     pub const fn capabilities(self) -> LegacyDialectCapabilities {
-        match self {
-            Self::V0_10 => super::vue0::V0_10,
-            Self::V0_11 => super::vue0::V0_11,
-            Self::V1 => super::vue1::CAPABILITIES,
-            Self::V2 => super::vue2::CAPABILITIES,
-        }
+        crate::registry::legacy_capabilities(self)
     }
 }
 
@@ -214,10 +204,7 @@ impl LegacyDialectCapabilities {
     ///
     /// This is the once-per-file entry point for option builders.
     pub const fn for_dialect(dialect: VueVersion) -> LegacyDialectCapabilities {
-        match LegacyVueVersion::from_dialect(dialect) {
-            None => Self::VUE3,
-            Some(version) => version.capabilities(),
-        }
+        crate::registry::capabilities(dialect)
     }
 
     /// Compatibility spelling used by L1→L2 callers.

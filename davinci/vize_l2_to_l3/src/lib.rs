@@ -14,6 +14,7 @@ extern crate alloc;
 pub mod decision;
 mod lower;
 pub mod partition;
+pub mod registry;
 
 pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};

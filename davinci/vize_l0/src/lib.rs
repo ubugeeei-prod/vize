@@ -66,6 +66,7 @@ pub mod line_index;
 pub mod pool;
 pub mod profiler;
 pub mod recursion;
+pub mod registry;
 pub mod source_frame;
 pub mod source_io;
 pub mod source_range;

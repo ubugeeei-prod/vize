@@ -83,6 +83,7 @@ pub mod native_file;
 pub mod native_vue2;
 pub mod partial;
 pub mod pass;
+pub mod registry;
 pub mod vue_file;
 
 /// Croquis reactivity facts the L2 transform rewrite reads (P3-17).
