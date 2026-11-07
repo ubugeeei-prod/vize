@@ -77,6 +77,8 @@ jobs:
         run: |
           set -euo pipefail
           project="${RUNNER_TEMP}/release-zed-project"
+          evidence="${RUNNER_TEMP}/release-zed-evidence"
+          mkdir -p "$evidence"
           cp -R editors/vscode/test-fixtures/extension-host/real-vue "$project"
           node --input-type=module - "$project" <<'JS'
           import fs from "node:fs";
@@ -90,16 +92,17 @@ jobs:
             dependencies: { vue: "3.5.34" },
             devDependencies: { typescript: "6.0.3", vite: "8.0.0" },
           }, null, 2)}\n`);
+          fs.writeFileSync(path.join(root, "vite.config.ts"), "export default { vue: {} };\n");
           fs.writeFileSync(path.join(root, "src/Lint.vue"), `<script setup lang="ts">
           const items = [1, 2]
           </script>
           <template><ul><li v-for="item in items">{{ item }}</li></ul></template>
           `);
           JS
-          target/ci/vize init "$project" \
-            --yes --no-lint --vite --fmt --typecheck --editor --no-install
           npm install --prefix "$project" --ignore-scripts --no-audit --no-fund \
             --package-lock=false --save=false vue@3.5.34 typescript@6.0.3
+          target/ci/vize lint "$project/src/Lint.vue" --format json --no-config \
+            > "$evidence/source-diagnostic.json" || test "$?" -eq 1
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Ensure xvfb is available
         run: |
