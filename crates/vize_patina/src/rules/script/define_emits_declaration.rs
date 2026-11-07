@@ -34,7 +34,7 @@ use oxc_span::Span;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/define-emits-declaration",
@@ -74,6 +74,19 @@ impl ScriptRule for DefineEmitsDeclaration {
             }
         }
     }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if sfc.is_script_setup {
+            self.check_program(program, source, offset, result);
+        }
+    }
 }
 
 /// Collect the call expressions that appear directly at the top level of a
@@ -110,7 +123,7 @@ fn unwrap_call<'a, 'b>(expression: &'b Expression<'a>) -> Option<&'b CallExpress
 }
 
 /// If `call` is a `defineEmits(...)` call that uses the runtime/array form
-/// (a runtime argument rather than a type argument), return its callee span.
+/// (a runtime argument rather than a type argument), return its call span.
 ///
 /// A call with a type argument (`defineEmits<Emits>()`) and no runtime
 /// argument is the preferred form and yields `None`.
@@ -125,7 +138,7 @@ fn runtime_define_emits(call: &CallExpression<'_>) -> Option<Span> {
     // Prefer the type-based form: a runtime argument (array or object literal)
     // is what we flag. A type-argument-only call is valid.
     if has_runtime_argument(call) {
-        Some(callee.span)
+        Some(call.span)
     } else {
         None
     }
@@ -160,58 +173,48 @@ fn report(result: &mut ScriptLintResult, offset: usize, span: Span) {
 
 #[cfg(test)]
 mod tests {
-    use super::DefineEmitsDeclaration;
-    use crate::rules::script::ScriptLinter;
+    use crate::linter::{LintResult, Linter};
 
-    fn create_linter() -> ScriptLinter {
-        let mut linter = ScriptLinter::new();
-        linter.add_rule(Box::new(DefineEmitsDeclaration));
-        linter
+    fn lint(source: &str) -> LintResult {
+        let sfc = format!("<script setup lang=\"ts\">{source}</script>");
+        Linter::new()
+            .with_enabled_rules(Some(vec!["script/define-emits-declaration".into()]))
+            .lint_sfc(&sfc, "Probe.vue")
     }
 
     #[test]
     fn test_valid_type_based_inline() {
-        let linter = create_linter();
-        let result = linter.lint("const emit = defineEmits<{ change: [id: number] }>()", 0);
+        let result = lint("const emit = defineEmits<{ change: [id: number] }>()");
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_valid_type_based_named() {
-        let linter = create_linter();
-        let result = linter.lint("const emit = defineEmits<Emits>()", 0);
+        let result = lint("const emit = defineEmits<Emits>()");
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_invalid_runtime_array() {
-        let linter = create_linter();
-        let result = linter.lint("const emit = defineEmits(['change', 'update'])", 0);
+        let result = lint("const emit = defineEmits(['change', 'update'])");
         assert_eq!(result.warning_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
     fn test_invalid_runtime_object() {
-        let linter = create_linter();
-        let result = linter.lint(
-            "const emit = defineEmits({ change: (id: number) => true })",
-            0,
-        );
+        let result = lint("const emit = defineEmits({ change: (id: number) => true })");
         assert_eq!(result.warning_count, 1);
     }
 
     #[test]
     fn test_invalid_bare_expression_statement() {
-        let linter = create_linter();
-        let result = linter.lint("defineEmits(['change'])", 0);
+        let result = lint("defineEmits(['change'])");
         assert_eq!(result.warning_count, 1);
     }
 
     #[test]
     fn test_no_define_emits() {
-        let linter = create_linter();
-        let result = linter.lint("const props = defineProps<{ name: string }>()", 0);
+        let result = lint("const props = defineProps<{ name: string }>()");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -219,24 +222,32 @@ mod tests {
     fn test_no_warn_nested_define_emits_in_function() {
         // Only top-level macro calls are flagged; an identifier named
         // `defineEmits` used inside a function body is not the macro.
-        let linter = create_linter();
-        let result = linter.lint("function make() { return defineEmits(['change']) }", 0);
+        let result = lint("function make() { return defineEmits(['change']) }");
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_no_warn_define_emits_in_string_literal() {
         // The pattern inside a string literal must not be flagged.
-        let linter = create_linter();
-        let result = linter.lint("const code = \"defineEmits(['change'])\"", 0);
+        let result = lint("const code = \"defineEmits(['change'])\"");
         assert_eq!(result.warning_count, 0);
     }
 
     #[test]
     fn test_invalid_type_and_runtime_argument() {
         // A runtime argument is flagged even if a type argument is also given.
-        let linter = create_linter();
-        let result = linter.lint("const emit = defineEmits<Emits>(['change'])", 0);
+        let result = lint("const emit = defineEmits<Emits>(['change'])");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_normal_script_is_not_a_macro_context() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/define-emits-declaration".into()]))
+            .lint_sfc(
+                "<script lang=\"ts\">const value = defineEmits(['change'])</script>",
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 0);
     }
 }

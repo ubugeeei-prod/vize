@@ -28,6 +28,21 @@ import {
   JsonFloat,
 } from "./value.ts";
 
+export type BaselineRuleSetting = string | [string, JsonObject];
+
+function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSetting {
+  // Patina deliberately makes the Vue 3.5 destructuring preference stronger
+  // than eslint-plugin-vue's default. Equal options keep bare calls from being
+  // mislabeled as false positives in an all-preset comparison.
+  if (upstream === "vue/define-props-destructuring") {
+    return [severity, { destructure: "always" }];
+  }
+  if (upstream === "vue/match-component-file-name") {
+    return [severity, { extensions: ["jsx", "vue"] }];
+  }
+  return severity;
+}
+
 export function indexRuleMap(ruleMap: Json) {
   const entries = object(get(ruleMap, "entries"));
   if (!entries) throw new Error("rule map must carry entries");
@@ -50,7 +65,7 @@ export function selectComparableRules(
 ) {
   const entries = object(get(ruleMap, "entries"));
   if (!entries) throw new Error("rule map must carry entries");
-  const rules: Record<string, string> = {};
+  const rules: Record<string, BaselineRuleSetting> = {};
   let mappedRuleCount = 0,
     skippedByPresetCount = 0;
   for (const upstream of Object.keys(entries).sort(byteOrder)) {
@@ -67,7 +82,8 @@ export function selectComparableRules(
         skippedByPresetCount++;
         continue;
       }
-      rules[upstream] = get(entry, "patinaSeverity") === "error" ? "error" : "warn";
+      const severity = get(entry, "patinaSeverity") === "error" ? "error" : "warn";
+      rules[upstream] = baselineRuleSetting(upstream, severity);
     } else if (status === "intentional-divergence") {
       /* explicitly outside the comparison */
     } else if (typeof status === "string")

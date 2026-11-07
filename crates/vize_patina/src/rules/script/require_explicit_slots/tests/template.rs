@@ -7,7 +7,6 @@
 //! the negative ones assert it is exactly empty.
 
 use super::{findings, lint_sfc, none, owned, undeclared};
-use crate::diagnostic::Severity;
 
 // --- The recovered case: a rendered slot the declaration omits --------------
 
@@ -42,6 +41,22 @@ defineSlots<{ footer(): unknown }>();
     assert_eq!(
         owned(&lint_sfc(sfc)),
         vec![undeclared(sfc, "<slot />", "default")]
+    );
+}
+
+#[test]
+fn reports_the_whole_non_self_closing_slot_element_like_upstream() {
+    let sfc = r#"<script setup lang="ts">
+const ready = true;
+</script>
+
+<template>
+  <slot></slot>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "<slot></slot>", "default")]
     );
 }
 
@@ -248,10 +263,7 @@ defineSlots<{ [name: string]: () => unknown }>();
 }
 
 #[test]
-fn ignores_a_template_slot_when_no_declaration_exists_at_all() {
-    // Without `defineSlots` every `<slot>` would be "undeclared"; that is the
-    // `useSlots`-without-`defineSlots` case the script half owns, and it needs
-    // a `useSlots()` call to fire.
+fn reports_a_template_slot_when_no_declaration_exists_at_all() {
     let sfc = r#"<script setup lang="ts">
 const id: number = 1;
 </script>
@@ -260,13 +272,16 @@ const id: number = 1;
   <div><slot name="footer" /></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
 }
 
 // --- The pre-existing script-only subset must keep working -----------------
 
 #[test]
-fn still_reports_use_slots_without_define_slots_through_the_sfc_path() {
+fn reports_the_slot_outlet_instead_of_the_use_slots_call() {
     let sfc = r#"<script setup lang="ts">
 const props = defineProps<{ id: number }>();
 const slots = useSlots();
@@ -276,16 +291,9 @@ const slots = useSlots();
   <div><slot /></div>
 </template>
 "#;
-    let call = sfc.find("useSlots()").expect("useSlots call");
     assert_eq!(
-        findings(&lint_sfc(sfc)),
-        vec![(
-            "script/require-explicit-slots",
-            Severity::Warning,
-            call as u32,
-            (call + "useSlots()".len()) as u32,
-            "Slots consumed via useSlots() must be explicitly typed with defineSlots<...>().",
-        )]
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "<slot />", "default")]
     );
 }
 

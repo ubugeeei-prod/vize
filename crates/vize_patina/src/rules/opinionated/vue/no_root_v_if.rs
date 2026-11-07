@@ -34,6 +34,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
 
@@ -70,6 +71,30 @@ impl NoRootVIf {
         }
         None
     }
+
+    fn has_single_conditional_root(root: &RootNode<'_>) -> bool {
+        let mut sole_element: Option<&ElementNode<'_>> = None;
+        for child in &root.children {
+            if Self::is_ignorable(child) {
+                continue;
+            }
+            match child {
+                TemplateChildNode::Element(element) if sole_element.is_none() => {
+                    sole_element = Some(element);
+                }
+                _ => return false,
+            }
+        }
+        sole_element.is_some_and(|element| Self::v_if_location(element).is_some())
+    }
+
+    fn report(&self, ctx: &mut LintContext<'_>, range: ByteRange) {
+        ctx.warn_at_with_help(
+            ctx.t("vue/no-root-v-if.message"),
+            range,
+            ctx.t("vue/no-root-v-if.help"),
+        );
+    }
 }
 
 impl Rule for NoRootVIf {
@@ -77,41 +102,26 @@ impl Rule for NoRootVIf {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        // Collect the element children, skipping whitespace and comment nodes.
-        // If anything other than a single element node remains (multiple roots,
-        // or non-element content), the "single root" condition does not hold.
-        let mut sole_element: Option<&ElementNode<'a>> = None;
-
-        for child in &root.children {
-            if Self::is_ignorable(child) {
-                continue;
-            }
-
-            match child {
-                TemplateChildNode::Element(element) => {
-                    if sole_element.is_some() {
-                        // More than one root element: not a single-root template.
-                        return;
-                    }
-                    sole_element = Some(element);
-                }
-                // Meaningful non-element content (text, interpolation, ...) at
-                // the root means the root is not a lone element; bail out.
-                _ => return,
-            }
-        }
-
-        let Some(element) = sole_element else {
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let Some(template) = ctx.sfc_descriptor().and_then(|sfc| sfc.template.as_ref()) else {
             return;
         };
-
-        if let Some(loc) = Self::v_if_location(element) {
-            ctx.warn_with_help(
-                ctx.t("vue/no-root-v-if.message"),
-                loc,
-                ctx.t("vue/no-root-v-if.help"),
+        if template.src.is_some() || template.lang.is_some() {
+            return;
+        }
+        let allocator = vize_l0::Allocator::default();
+        let (root, _) = vize_armature::Parser::new(&allocator, template.content.as_ref()).parse();
+        if Self::has_single_conditional_root(&root) {
+            self.report(
+                ctx,
+                ByteRange::new(template.loc.tag_start as u32, template.loc.tag_end as u32),
             );
+        }
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        if ctx.sfc_descriptor().is_none() && Self::has_single_conditional_root(root) {
+            self.report(ctx, ByteRange::new(0, ctx.source.len() as u32));
         }
     }
 }
@@ -152,6 +162,19 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn sfc_reports_the_whole_template_body_like_upstream() {
+        let source =
+            "<template>\n  <div v-if=\"show\">content</div>\n</template>\n<script setup />";
+        let result = create_linter().lint_sfc(source, "ConditionalRoot.vue");
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].start, 0);
+        assert_eq!(
+            result.diagnostics[0].end,
+            source.find("</template>").unwrap() as u32 + "</template>".len() as u32
+        );
     }
 
     #[test]

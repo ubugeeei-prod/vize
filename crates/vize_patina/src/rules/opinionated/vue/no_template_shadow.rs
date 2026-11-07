@@ -30,6 +30,7 @@ use vize_relief::RootNode;
 mod bindings;
 mod frozen;
 mod scopes;
+mod script_bindings;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-shadow",
@@ -93,5 +94,24 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_slot_binding_shadows_options_api_prop() {
+        let result = create_linter().lint_sfc(
+            r#"<template><Widget #default="{ files }">{{ files }}</Widget></template>
+<script>export default { props: { files: Array } }</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_slot_binding_shadows_template_scope() {
+        let result = create_linter().lint_template(
+            r#"<div v-for="files in groups"><Widget #default="{ files }">{{ files }}</Widget></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }

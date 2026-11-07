@@ -207,3 +207,42 @@ const props = defineProps<{ name: string }>()
     let result = create_linter().lint(source, 0);
     assert_eq!(result.warning_count, 0);
 }
+
+#[test]
+fn test_options_api_reports_unused_array_emit() {
+    let sfc = r#"<template><button @click="$emit('save')" /></template>
+<script>
+export default {
+  emits: ['save', 'cancel'],
+  methods: { submit() { this.$emit('save') } }
+}
+</script>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert!(diagnostics[0].message.contains("cancel"));
+}
+
+#[test]
+fn test_options_api_dynamic_emit_name_does_not_mark_declarations_used() {
+    let sfc = r#"<template />
+<script>
+export default {
+  emits: ['open', 'close'],
+  methods: { toggle(active) { this.$emit(active ? 'close' : 'open') } }
+}
+</script>"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+            .count(),
+        2
+    );
+}

@@ -28,6 +28,7 @@
 //!   not read, or one reached only through a dynamic name, is simply not
 //!   checked.
 
+use crate::rules::opinionated::vue::authored_element::closing;
 use vize_l0::CompactString;
 use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
@@ -129,7 +130,13 @@ impl SlotCollector<'_> {
         self.slots.push(RenderedSlot {
             name: CompactString::new(name.unwrap_or("default")),
             start: element.loc.span.start,
-            end: element.loc.span.end,
+            end: if element.is_self_closing {
+                element.loc.span.end
+            } else {
+                closing(self.source, element)
+                    .map(|range| range.end as u32)
+                    .unwrap_or(element.loc.span.end)
+            },
         });
     }
 }

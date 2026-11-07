@@ -81,7 +81,7 @@ impl Rule for VOnHandlerStyle {
 
         ctx.warn_with_help(
             ctx.t("vue/v-on-handler-style.message"),
-            &directive.loc,
+            &exp.loc,
             ctx.t("vue/v-on-handler-style.help"),
         );
     }

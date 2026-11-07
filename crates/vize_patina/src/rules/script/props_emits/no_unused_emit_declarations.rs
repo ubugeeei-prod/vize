@@ -56,13 +56,19 @@
 
 use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression,
-    IdentifierReference, ObjectPropertyKind, Program, Statement, TSLiteral, TSSignature, TSType,
+    IdentifierReference, ObjectExpression, ObjectPropertyKind, Program, Statement, TSLiteral,
+    TSSignature, TSType,
 };
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_object_expression},
+};
+use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, Span};
 
 use vize_l0::{CompactString, FxHashSet};
 
+use super::super::vue_object::VueObjects;
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::template_emits::collect_template_emitted_events;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -105,47 +111,172 @@ impl ScriptRule for NoUnusedEmitDeclarations {
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        // Resolve the captured emit function and its declared events. Without an
-        // identifier binding we cannot track usage, so we bail.
-        let Some(declaration) = find_emit_declaration(program) else {
-            return;
-        };
-        if declaration.events.is_empty() {
-            return;
+        if let Some(declaration) = find_emit_declaration(program)
+            && !declaration.events.is_empty()
+        {
+            // Collect every event name emitted through the captured function.
+            let mut used = FxHashSet::default();
+            let mut collector = EmittedCollector {
+                emit_name: declaration.binding,
+                used: &mut used,
+                direct_callees: Vec::new(),
+                escaped: false,
+            };
+            collector.visit_program(program);
+            // `useClose(emit)`, `const saved = emit`, or `return emit` can emit
+            // any declared event. The rule cannot see which, so none are unused.
+            if !collector.escaped {
+                // Top-level `<script setup>` bindings are template-visible, so emit
+                // calls in template expressions count as usage too (#3209).
+                if let Some(template) = sfc.template_source {
+                    collect_template_emitted_events(template, declaration.binding, &mut used);
+                }
+
+                for event in &declaration.events {
+                    if !used.contains(event.name.as_str()) {
+                        report(&event.name, event.span, offset, result);
+                    }
+                }
+            }
         }
 
-        // Collect every event name emitted through the captured function.
-        let mut used = FxHashSet::default();
-        let mut collector = EmittedCollector {
-            emit_name: declaration.binding,
-            used: &mut used,
-            direct_callees: Vec::new(),
-            escaped: false,
-        };
-        collector.visit_program(program);
-        // `useClose(emit)`, `const saved = emit`, or `return emit` can emit
-        // any declared event. The rule cannot see which, so none are unused.
-        if collector.escaped {
-            return;
+        if !sfc.is_script_setup {
+            check_options_api(program, source, offset, sfc, result);
         }
+    }
+}
 
-        // Top-level `<script setup>` bindings are template-visible, so emit
-        // calls in template expressions count as usage too (#3209).
-        if let Some(template) = sfc.template_source {
-            collect_template_emitted_events(template, declaration.binding, &mut used);
+fn check_options_api<'a>(
+    program: &'a Program<'a>,
+    source: &str,
+    offset: usize,
+    sfc: SfcScriptContext<'_>,
+    result: &mut ScriptLintResult,
+) {
+    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+    let objects = VueObjects::collect(program, source, &built.semantic, sfc.is_sfc);
+    let mut template_used = FxHashSet::default();
+    if let Some(template) = sfc.template_source {
+        collect_template_emitted_events(template, "", &mut template_used);
+    }
+    let mut visitor = OptionsUnusedCollector {
+        objects: &objects,
+        frames: Vec::new(),
+        template_used: &template_used,
+        offset,
+        result,
+    };
+    visitor.visit_program(program);
+}
+
+struct OptionsFrame {
+    events: Vec<DeclaredEvent>,
+    used: FxHashSet<CompactString>,
+}
+
+struct OptionsUnusedCollector<'o, 'r> {
+    objects: &'o VueObjects,
+    frames: Vec<OptionsFrame>,
+    template_used: &'o FxHashSet<CompactString>,
+    offset: usize,
+    result: &'r mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for OptionsUnusedCollector<'_, '_> {
+    fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
+        let events = self
+            .objects
+            .kind(object)
+            .and_then(|_| collect_options_declared_events(object));
+        let pushed = events.is_some();
+        if let Some(events) = events {
+            self.frames.push(OptionsFrame {
+                events,
+                used: self.template_used.clone(),
+            });
         }
-
-        for event in &declaration.events {
-            if !used.contains(event.name.as_str()) {
-                report(&event.name, event.span, offset, result);
+        walk_object_expression(self, object);
+        if pushed && let Some(frame) = self.frames.pop() {
+            for event in frame.events {
+                if !frame.used.contains(event.name.as_str()) {
+                    report(&event.name, event.span, self.offset, self.result);
+                }
             }
         }
     }
+
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let Some(frame) = self.frames.last_mut()
+            && options_emit_callee(&call.callee)
+            && let Some(Argument::StringLiteral(event)) = call.arguments.first()
+        {
+            frame.used.insert(CompactString::new(event.value.as_str()));
+        }
+        walk_call_expression(self, call);
+    }
+}
+
+fn options_emit_callee(callee: &Expression<'_>) -> bool {
+    match callee.without_parentheses() {
+        Expression::Identifier(identifier) => identifier.name == "emit",
+        expression => expression.as_member_expression().is_some_and(|member| {
+            match member.static_property_name() {
+                Some("$emit") => matches!(
+                    member.object().without_parentheses(),
+                    Expression::ThisExpression(_)
+                ),
+                Some("emit") => true,
+                _ => false,
+            }
+        }),
+    }
+}
+
+fn collect_options_declared_events(object: &ObjectExpression<'_>) -> Option<Vec<DeclaredEvent>> {
+    let value = object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        (!property.computed && property_key_name(&property.key) == Some("emits"))
+            .then_some(&property.value)
+    })?;
+    let mut events = Vec::new();
+    match value.without_parentheses() {
+        Expression::ArrayExpression(array) => {
+            for element in &array.elements {
+                let ArrayExpressionElement::StringLiteral(literal) = element else {
+                    // Unknown declarations must not create false positives.
+                    return None;
+                };
+                events.push(DeclaredEvent {
+                    name: CompactString::new(literal.value.as_str()),
+                    span: literal.span,
+                });
+            }
+        }
+        Expression::ObjectExpression(object) => {
+            for property in &object.properties {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    return None;
+                };
+                if property.computed {
+                    return None;
+                }
+                let name = property_key_name(&property.key)?;
+                events.push(DeclaredEvent {
+                    name: CompactString::new(name),
+                    span: property.key.span(),
+                });
+            }
+        }
+        _ => return None,
+    }
+    Some(events)
 }
 
 /// A single declared event name with the span to report it at.

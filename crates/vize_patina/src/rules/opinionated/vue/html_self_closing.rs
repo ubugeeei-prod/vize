@@ -7,22 +7,23 @@
 //! ### Invalid (default config)
 //! ```vue
 //! <div></div>  <!-- should be <div /> when empty -->
-//! <img>        <!-- should be <img /> -->
-//! <br>         <!-- should be <br /> -->
+//! <img />      <!-- should be <img> -->
+//! <br />       <!-- should be <br> -->
 //! ```
 //!
 //! ### Valid
 //! ```vue
 //! <div />
-//! <img />
-//! <br />
+//! <img>
+//! <br>
 //! <div>content</div>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
+use crate::rules::opinionated::vue::authored_element::closing;
+use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
 use vize_relief::{ElementNode, ElementType, Namespace};
 
 mod fix;
@@ -57,8 +58,8 @@ pub struct HtmlSelfClosingHtmlOptions {
 impl Default for HtmlSelfClosingHtmlOptions {
     fn default() -> Self {
         Self {
-            void: HtmlSelfClosingStyle::Always,
-            normal: HtmlSelfClosingStyle::Any,
+            void: HtmlSelfClosingStyle::Never,
+            normal: HtmlSelfClosingStyle::Always,
             component: HtmlSelfClosingStyle::Always,
         }
     }
@@ -168,11 +169,11 @@ fn check_element<'a>(
         return;
     }
 
-    let has_children = !element.children.is_empty();
     let is_self_closing = element.is_self_closing || authored_self_closing(ctx, element);
+    let is_empty = authored_empty(ctx, element);
 
     match style {
-        HtmlSelfClosingStyle::Always if !has_children && !is_self_closing => {
+        HtmlSelfClosingStyle::Always if is_empty && !is_self_closing => {
             report(
                 ctx,
                 element,
@@ -201,7 +202,7 @@ fn report(
     message: std::borrow::Cow<'_, str>,
     help: std::borrow::Cow<'_, str>,
 ) {
-    let span = element.loc.span;
+    let span = diagnostic_span(ctx, element, style);
     let message: vize_l0::String = message.as_ref().into();
     let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
     if let Some(processed) = ctx.help_level().process(&help) {
@@ -213,6 +214,37 @@ fn report(
         diagnostic = diagnostic.with_fix(fix);
     }
     ctx.report(diagnostic);
+}
+
+fn authored_empty(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
+    let Some(close) = closing(ctx.source, element) else {
+        return element.children.is_empty();
+    };
+    ctx.source
+        .get(element.loc.span.end as usize..close.start)
+        .is_some_and(|content| content.trim().is_empty())
+}
+
+fn diagnostic_span(
+    ctx: &LintContext<'_>,
+    element: &ElementNode<'_>,
+    style: HtmlSelfClosingStyle,
+) -> Span {
+    match style {
+        HtmlSelfClosingStyle::Always => closing(ctx.source, element)
+            .and_then(|range| {
+                Some(Span::new(
+                    u32::try_from(range.start).ok()?,
+                    u32::try_from(range.end).ok()?,
+                ))
+            })
+            .unwrap_or(element.loc.span),
+        HtmlSelfClosingStyle::Never => {
+            let end = element.loc.span.end;
+            Span::new(end.saturating_sub(2), end)
+        }
+        HtmlSelfClosingStyle::Any => element.loc.span,
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -259,6 +291,9 @@ fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
 }
 
 fn is_html_element_name(tag: &str) -> bool {
+    if tag == "slot" {
+        return true;
+    }
     if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
         return is_html_tag(tag);
     }

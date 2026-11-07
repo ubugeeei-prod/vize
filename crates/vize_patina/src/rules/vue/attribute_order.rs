@@ -112,11 +112,10 @@ fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
 
 fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
     props.get(index).is_some_and(is_object_binding)
-        && (index + 1 == props.len()
-            || index
-                .checked_sub(1)
-                .and_then(|previous| props.get(previous))
-                .is_some_and(is_attribute_or_binding)
+        && (index
+            .checked_sub(1)
+            .and_then(|previous| props.get(previous))
+            .is_some_and(is_attribute_or_binding)
             || props.get(index + 1).is_some_and(is_attribute_or_binding))
 }
 
@@ -265,7 +264,7 @@ mod tests {
     }
 
     #[test]
-    fn trailing_object_v_bind_preserves_caller_override_precedence() {
+    fn trailing_object_v_bind_after_event_is_reported() {
         let linter = create_linter();
         for source in [
             r#"<button type="button" class="base-button" @click="onClick" v-bind="attrs" />"#,
@@ -273,7 +272,7 @@ mod tests {
         ] {
             let result = linter.lint_template(source, "test.vue");
             assert_eq!(
-                result.warning_count, 0,
+                result.warning_count, 1,
                 "{source}: {:?}",
                 result.diagnostics
             );

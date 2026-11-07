@@ -59,7 +59,7 @@ export default {
 }
 
 #[test]
-fn test_invalid_null_value() {
+fn test_valid_null_value() {
     let source = r#"
 export default {
   props: {
@@ -68,7 +68,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -95,6 +95,19 @@ export default {
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn validator_counts_as_a_type_contract() {
+    let source = r#"
+export default {
+  props: {
+    status: { validator: value => value !== null }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -138,7 +151,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 2);
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]
@@ -170,7 +183,7 @@ export default {
 }
 
 #[test]
-fn spread_descriptor_may_carry_the_type() {
+fn spread_descriptor_does_not_prove_a_type() {
     let source = r#"
 export default {
   props: {
@@ -179,7 +192,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]

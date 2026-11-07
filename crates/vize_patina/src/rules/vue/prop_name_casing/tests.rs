@@ -111,3 +111,12 @@ fn a_component_without_props_is_clean() {
     let sfc = "<script setup>\nconst x = 1\n</script>\n\n<template><p>{{ x }}</p></template>\n";
     assert_eq!(findings(sfc), none());
 }
+
+#[test]
+fn a_script_only_options_component_is_checked() {
+    let sfc = "<script>export default { props: { _instance: null } }</script>";
+    assert_eq!(
+        findings(sfc),
+        vec![reported(sfc, "_instance", "_instance: null")]
+    );
+}

@@ -48,7 +48,8 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_span::Span;
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_span::GetSpan;
 use vize_l0::FxHashMap;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -78,13 +79,28 @@ impl ScriptRule for NoBooleanDefault {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let Some(options) = find_component_options(program) else {
-            return;
-        };
-        let Some(props) = find_props_object(options) else {
-            return;
-        };
-        check_props_object(props, offset, result);
+        if let Some(options) = find_component_options(program)
+            && let Some(props) = find_props_object(options)
+        {
+            check_props_object(props, offset, result);
+        }
+        DefinePropsVisitor { offset, result }.visit_program(program);
+    }
+}
+
+struct DefinePropsVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for DefinePropsVisitor<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineProps")
+            && let Some(Argument::ObjectExpression(props)) = call.arguments.first()
+        {
+            check_props_object(props, self.offset, self.result);
+        }
+        walk_call_expression(self, call);
     }
 }
 
@@ -141,7 +157,7 @@ fn find_property<'a>(
 }
 
 fn report(default: &ObjectProperty<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let span: Span = default.span;
+    let span = default.value.span();
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
     let diagnostic = LintDiagnostic::warn(

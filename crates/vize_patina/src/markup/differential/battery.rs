@@ -259,7 +259,7 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2 + 7 + 3,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -321,6 +321,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Current native callback controls add eight calls: two literal inputs and
     // six variable-input observations. Every full facade comparison still runs;
     // these add thirteen retained trace lines, not semantic qualification credit.
+    // Real-project parity regressions add seven literal fixtures over ten calls;
+    // three helper-driven calls remain honest dynamic-input scanner skips.
+    // Script-binding and precise-range regressions add three literal fixtures
+    // over four calls; the helper-driven call remains an honest scanner skip.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -338,7 +342,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 3
         + 1
-        + 8,
+        + 8
+        + 10
+        + 4,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -362,9 +368,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 3
         + 1
-        + 6,
+        + 6
+        + 3
+        + 1,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13,
+    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13 + 51 + 18,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

@@ -261,7 +261,11 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Expression::StaticMemberExpression(member) = &it.callee
             && MUTATING_ARRAY_METHODS.contains(&member.property.name.as_str())
-            && (expression_root_is_this(&member.object)
+            && ((expression_root_is_this(&member.object)
+                && matches!(
+                    member.object.without_parentheses(),
+                    Expression::StaticMemberExpression(_) | Expression::ComputedMemberExpression(_)
+                ))
                 || composition::root_is_external(&member.object, self.scoping, self.getter_span))
         {
             self.report(
@@ -608,6 +612,21 @@ export default {
   computed: {
     reversed() {
       return [...this.items].reverse()
+    }
+  }
+}
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_component_method_named_sort_is_not_assumed_to_mutate() {
+        let source = r#"
+export default {
+  computed: {
+    items() {
+      return this.sort()
     }
   }
 }

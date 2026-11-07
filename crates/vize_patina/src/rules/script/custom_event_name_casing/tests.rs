@@ -258,6 +258,12 @@ type Wrapper = { vm: { $emit: (event: string) => void } };
 export function simulate(wrapper: Wrapper): void {
   wrapper.vm.$emit('clear-click');
 }
+
+#[test]
+fn test_event_bus_emit_in_sfc_is_not_checked() {
+    let result = lint_sfc("<script>EventBus.emit('dark-mode-toggle')</script>");
+    assert_eq!(result.error_count, 0);
+}
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);

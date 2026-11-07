@@ -2,37 +2,27 @@
 //!
 //! Prefer the shorthand for a boolean attribute bound to `true`.
 //!
-//! `:disabled="true"` on a native element with a boolean attribute is
-//! equivalent to the shorthand `disabled`. The explicit `="true"` binding adds
-//! noise without changing behaviour.
-//!
-//! The rule only reports attributes that are *statically known* to be boolean:
-//! native boolean attributes on native elements. On a component the shorthand
-//! passes the empty string `""`, which only casts to `true` when the target
-//! component declares the prop as `Boolean` — a declaration this template
-//! cannot see. For a fallthrough attr the rewrite silently changes runtime
-//! behaviour (`true` becomes the falsy `""`), so components are left alone.
+//! On a component, `:visible="true"` is more concisely written as `visible`.
+//! Native HTML attributes are outside this Vue component-prop style rule.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <input :disabled="true" />
+//! <MyComponent :visible="true" />
 //! ```
 //!
 //! ### Valid
 //! ```vue
-//! <input disabled />
-//! <input :disabled="false" />
-//! <MyComponent :visible="true" />
+//! <MyComponent visible />
+//! <MyComponent :visible="false" />
 //! <MyComponent :visible="isVisible" />
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::MarkupElement;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
-use vize_l0::is_native_tag;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -57,7 +47,7 @@ impl Rule for PreferTrueAttributeShorthand {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        if directive.name != "bind" {
+        if !matches!(directive.name, "bind" | "model") {
             return;
         }
         // Only a static argument (`:foo`), not `v-bind="obj"`.
@@ -68,17 +58,7 @@ impl Rule for PreferTrueAttributeShorthand {
             return;
         }
         let name = arg.content;
-        // Only attributes statically known to be boolean: the shorthand form
-        // passes `""`, which is only cast back to `true` for native boolean
-        // attributes or props *declared* as `Boolean` on the target component.
-        // Prop declarations of other components are not visible here, and for
-        // fallthrough attrs the rewrite changes runtime behaviour (#4952), so
-        // anything but a native boolean attribute stays silent.
-        if !is_native_tag(element.tag) || !BOOLEAN_ATTRIBUTES.contains(&name) {
-            return;
-        }
-        // Modifiers such as `.prop` change semantics; leave them alone.
-        if !directive.modifiers.is_empty() {
+        if !MarkupElement::new(element).is_component() {
             return;
         }
         let is_true =
@@ -109,10 +89,10 @@ mod tests {
     }
 
     #[test]
-    fn reports_native_boolean_true_binding() {
+    fn allows_native_boolean_true_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :disabled="true" />"#, "App.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
@@ -136,17 +116,13 @@ mod tests {
     }
 
     #[test]
-    fn allows_component_true_binding() {
-        // #4952: the target component's prop declarations are not visible from
-        // this template. When the prop is not Boolean-declared (e.g. a
-        // fallthrough attr), the shorthand passes the empty string instead of
-        // `true`, so the rewrite would change runtime behaviour.
+    fn reports_component_true_binding() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<Draggable :list="[]" item-key="id" :force-fallback="true" />"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

@@ -9,8 +9,8 @@
 //! This flags a prop that carries no type:
 //! * an array-form entry (`props: ['foo']` / `defineProps(['foo'])`), which by
 //!   construction declares only a name, and
-//! * an object-form prop with no `type` member, or whose value is `null`
-//!   (`foo: null`) or an empty descriptor (`foo: {}`).
+//! * an object-form prop with an empty array, function value, or descriptor
+//!   carrying neither `type` nor `validator`.
 //!
 //! An object-form prop whose value is itself the type (`foo: String`,
 //! `foo: [String, Number]`) or whose descriptor has a `type` member is typed
@@ -47,7 +47,6 @@
 //! ```
 
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
-use oxc_span::GetSpan;
 
 use vize_l0::CompactString;
 
@@ -90,7 +89,7 @@ impl ScriptRule for RequirePropTypes {
             // empty-or-typeless descriptor.
             for prop in source.object_props() {
                 if !prop_has_type(prop) {
-                    report(prop.name, prop.key.span(), offset, result);
+                    report(prop.name, prop.span, offset, result);
                 }
             }
         }
@@ -105,24 +104,37 @@ impl ScriptRule for RequirePropTypes {
 /// `null` or a descriptor with no `type` member (including `{}`).
 fn prop_has_type(prop: PropDescriptor<'_>) -> bool {
     match prop.value {
-        // `foo: null` declares no type.
-        Expression::NullLiteral(_) => false,
+        // eslint-plugin-vue treats null and unknown expressions as intentionally
+        // unconstrained rather than incomplete declarations.
+        Expression::NullLiteral(_) => true,
         // A descriptor object is typed only if it has a `type` member.
         Expression::ObjectExpression(descriptor) => descriptor_has_type(descriptor),
+        Expression::ArrayExpression(types) => !types.elements.is_empty(),
+        Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => false,
         // Any other value (constructor, array of constructors, validator,
         // imported type) is itself the type.
         _ => true,
     }
 }
 
-/// Whether a prop-descriptor object has a `type` member. A spread may carry
-/// one, so it counts as typed.
+/// Whether a prop-descriptor object has a non-empty `type` member or a
+/// `validator`, matching eslint-plugin-vue's default contract.
 fn descriptor_has_type(descriptor: &ObjectExpression<'_>) -> bool {
     descriptor.properties.iter().any(|property| {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
-            return true;
+            return false;
         };
-        !property.computed && property_key_name(&property.key) == Some("type")
+        if property.computed {
+            return false;
+        }
+        match property_key_name(&property.key) {
+            Some("validator") => true,
+            Some("type") => !matches!(
+                &property.value,
+                Expression::ArrayExpression(types) if types.elements.is_empty()
+            ),
+            _ => false,
+        }
     })
 }
 

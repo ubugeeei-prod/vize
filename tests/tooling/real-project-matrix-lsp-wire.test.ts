@@ -69,7 +69,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   const nodeRun = [
     `${nodeCommand} \\`,
     '  --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \\',
-    '  --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \\',
+    '  --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \\',
     "  --vize-bin target/ci/vize --timeout-ms 600000 \\",
     '  --output-dir "$FIXTURE_REPORT_DIR"',
     'test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"',

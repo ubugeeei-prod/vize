@@ -149,6 +149,20 @@ export default defineComponent({
 }
 
 #[test]
+fn test_invalid_runtime_define_props() {
+    let source = r#"
+const props = defineProps({
+  active: { type: Boolean, default: true }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+    let start = source.find("true").unwrap() as u32;
+    assert_eq!(result.diagnostics[0].start, start);
+    assert_eq!(result.diagnostics[0].end, start + 4);
+}
+
+#[test]
 fn test_invalid_identifier_bound_options() {
     let source = r#"
 const component = {

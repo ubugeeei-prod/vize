@@ -207,7 +207,23 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
                 self.emit_binding == Some(identifier.name.as_str())
             }
             Expression::StaticMemberExpression(member) => {
-                self.is_sfc && matches!(member.property.name.as_str(), "emit" | "$emit")
+                if !self.is_sfc {
+                    return false;
+                }
+                match member.property.name.as_str() {
+                    "$emit" => matches!(
+                        member.object.without_parentheses(),
+                        Expression::ThisExpression(_)
+                    ),
+                    // Keep the common setup-context spelling without treating
+                    // arbitrary event buses and application services as Vue.
+                    "emit" => matches!(
+                        member.object.without_parentheses(),
+                        Expression::Identifier(identifier)
+                            if matches!(identifier.name.as_str(), "ctx" | "context")
+                    ),
+                    _ => false,
+                }
             }
             _ => false,
         }

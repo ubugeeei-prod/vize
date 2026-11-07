@@ -19,6 +19,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-undefined-refs",
     "vue/no-mutating-props",
     "vue/no-unused-properties",
+    "vue/no-unused-refs",
     "vue/prop-name-casing",
     "a11y/no-refer-to-non-existent-id",
     "ecosystem/router-link-require-to",
@@ -27,11 +28,13 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/match-component-file-name",
+    "vue/multi-word-component-names",
     "vue/no-array-index-key",
     "vue/no-deprecated-functional-template",
     "ssr/no-browser-globals-in-ssr",
     "vue/no-mutating-props",
     "vue/no-reserved-component-names",
+    "vue/no-root-v-if",
     "vue/no-unused-properties",
     "vue/no-unused-refs",
     "vue/prop-name-casing",

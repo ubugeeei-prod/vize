@@ -9,7 +9,7 @@
 //! ```ts
 //! export default {
 //!   render() {
-//!     return this.$slots.default
+//!     return [this.$slots.default]
 //!   }
 //! }
 //! ```
@@ -26,20 +26,19 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    BindingPattern, ConditionalExpression, Expression, Function, IfStatement, MemberExpression,
-    Program, SpreadElement, StaticMemberExpression, UnaryExpression, VariableDeclarator,
+    ArrayExpression, AssignmentExpression, AssignmentTarget, BindingPattern, Expression, Function,
+    MemberExpression, Program, SpreadElement, VariableDeclarator,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{
-        walk_arrow_function_expression, walk_call_expression, walk_conditional_expression,
-        walk_function, walk_identifier_reference, walk_if_statement, walk_spread_element,
-        walk_static_member_expression, walk_unary_expression, walk_variable_declarator,
+        walk_array_expression, walk_arrow_function_expression, walk_assignment_expression,
+        walk_function, walk_member_expression, walk_spread_element, walk_variable_declarator,
     },
 };
 use oxc_span::{GetSpan, Span};
-use oxc_syntax::{operator::UnaryOperator, scope::ScopeFlags};
-use vize_l0::{CompactString, FxHashMap, FxHashSet};
+use oxc_syntax::scope::ScopeFlags;
+use vize_l0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-slots-as-functions",
@@ -51,8 +50,7 @@ const MESSAGE: &str = "`$slots` properties are functions in Vue 3 and must be ca
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Kind {
-    SlotFn,
-    SlotsObject,
+    SlotFn(Span),
     NotSlot,
 }
 
@@ -82,7 +80,6 @@ impl ScriptRule for RequireSlotsAsFunctions {
             offset,
             result,
             scopes: vec![FxHashMap::default()],
-            suppressed: FxHashSet::default(),
         };
         visitor.visit_program(program);
     }
@@ -92,7 +89,6 @@ struct SlotsVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
     scopes: Vec<FxHashMap<CompactString, Kind>>,
-    suppressed: FxHashSet<u32>,
 }
 
 impl<'a> Visit<'a> for SlotsVisitor<'_> {
@@ -120,57 +116,52 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
         self.bind_pattern(&declarator.id, Kind::NotSlot);
         if let Some(init) = &declarator.init {
-            self.note_init(&declarator.id, init);
+            if let Some(origin) = self.slot_function_origin(init) {
+                if let BindingPattern::BindingIdentifier(identifier) = &declarator.id {
+                    self.bind(identifier.name.as_str(), Kind::SlotFn(origin));
+                } else {
+                    self.report(origin);
+                }
+            }
         }
         walk_variable_declarator(self, declarator);
     }
 
-    fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-        self.suppress_direct_slot_function(&call.callee);
-        walk_call_expression(self, call);
-    }
-
-    fn visit_if_statement(&mut self, statement: &IfStatement<'a>) {
-        self.suppress_direct_slot_function(&statement.test);
-        walk_if_statement(self, statement);
-    }
-
-    fn visit_conditional_expression(&mut self, expression: &ConditionalExpression<'a>) {
-        self.suppress_direct_slot_function(&expression.test);
-        self.suppress_direct_slot_function(&expression.consequent);
-        self.suppress_direct_slot_function(&expression.alternate);
-        walk_conditional_expression(self, expression);
-    }
-
-    fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
-        if matches!(
-            expression.operator,
-            UnaryOperator::LogicalNot | UnaryOperator::Typeof
-        ) {
-            self.suppress_direct_slot_function(&expression.argument);
-        }
-        walk_unary_expression(self, expression);
-    }
-
-    fn visit_static_member_expression(&mut self, member: &StaticMemberExpression<'a>) {
-        if self.is_slot_member_expr(member) && !self.suppressed.contains(&member.span.start) {
-            self.report(member.span);
-        }
-        walk_static_member_expression(self, member);
-    }
-
-    fn visit_identifier_reference(&mut self, identifier: &oxc_ast::ast::IdentifierReference<'a>) {
-        if self.lookup(identifier.name.as_str()) == Some(Kind::SlotFn)
-            && !self.suppressed.contains(&identifier.span.start)
+    fn visit_assignment_expression(&mut self, assignment: &AssignmentExpression<'a>) {
+        if let Some(origin) = self.slot_function_origin(&assignment.right)
+            && let AssignmentTarget::AssignmentTargetIdentifier(identifier) = &assignment.left
         {
-            self.report(identifier.span);
+            self.assign(identifier.name.as_str(), Kind::SlotFn(origin));
         }
-        walk_identifier_reference(self, identifier);
+        walk_assignment_expression(self, assignment);
+    }
+
+    fn visit_member_expression(&mut self, member: &MemberExpression<'a>) {
+        if let Some(origin) = self.slot_function_origin(member.object()) {
+            self.report(origin);
+        }
+        if let MemberExpression::ComputedMemberExpression(computed) = member
+            && let Some(origin) = self.slot_function_origin(&computed.expression)
+        {
+            self.report(origin);
+        }
+        walk_member_expression(self, member);
+    }
+
+    fn visit_array_expression(&mut self, array: &ArrayExpression<'a>) {
+        for element in &array.elements {
+            if let Some(expression) = element.as_expression()
+                && let Some(origin) = self.slot_function_origin(expression)
+            {
+                self.report(origin);
+            }
+        }
+        walk_array_expression(self, array);
     }
 
     fn visit_spread_element(&mut self, spread: &SpreadElement<'a>) {
-        if self.is_bare_slots(&spread.argument) {
-            self.report(spread.span);
+        if let Some(origin) = self.slot_function_origin(&spread.argument) {
+            self.report(origin);
         }
         walk_spread_element(self, spread);
     }
@@ -187,69 +178,15 @@ impl SlotsVisitor<'_> {
         }
     }
 
-    fn note_init(&mut self, pattern: &BindingPattern<'_>, init: &Expression<'_>) {
-        if self.is_bare_slots(init) {
-            if let BindingPattern::BindingIdentifier(identifier) = pattern {
-                self.bind(identifier.name.as_str(), Kind::SlotsObject);
-            } else {
-                self.report(init.span());
-            }
-            return;
+    fn slot_function_origin(&self, expression: &Expression<'_>) -> Option<Span> {
+        let expression = expression.get_inner_expression();
+        if let Expression::Identifier(identifier) = expression {
+            return match self.lookup(identifier.name.as_str()) {
+                Some(Kind::SlotFn(origin)) => Some(origin),
+                _ => None,
+            };
         }
-        if self.is_slot_property(init)
-            && let BindingPattern::BindingIdentifier(identifier) = pattern
-        {
-            self.bind(identifier.name.as_str(), Kind::SlotFn);
-            if let Some(member) = member_of(init) {
-                self.suppressed.insert(member.span().start);
-            }
-        }
-    }
-
-    fn suppress_direct_slot_function(&mut self, callee: &Expression<'_>) {
-        let callee = callee.get_inner_expression();
-        if let Expression::Identifier(identifier) = callee
-            && self.lookup(identifier.name.as_str()) == Some(Kind::SlotFn)
-        {
-            self.suppressed.insert(identifier.span.start);
-            return;
-        }
-        if let Some(member) = member_of(callee)
-            && self.is_slot_member(member)
-        {
-            self.suppressed.insert(member.span().start);
-        }
-    }
-
-    fn is_slot_member_expr(&self, member: &StaticMemberExpression<'_>) -> bool {
-        let name = member.property.name.as_str();
-        name != "$slots" && self.is_slots_object(&member.object)
-    }
-
-    fn is_slot_member(&self, member: &MemberExpression<'_>) -> bool {
-        let Some(name) = member.static_property_name() else {
-            return false;
-        };
-        name != "$slots" && self.is_slots_object(member.object())
-    }
-
-    fn is_slot_property(&self, expression: &Expression<'_>) -> bool {
-        member_of(expression).is_some_and(|member| self.is_slot_member(member))
-    }
-
-    fn is_slots_object(&self, expression: &Expression<'_>) -> bool {
-        self.is_bare_slots(expression)
-    }
-
-    fn is_bare_slots(&self, expression: &Expression<'_>) -> bool {
-        if let Some(member) = member_of(expression) {
-            return member.static_property_name() == Some("$slots") && is_this(member.object());
-        }
-        matches!(
-            expression.get_inner_expression(),
-            Expression::Identifier(identifier)
-                if self.lookup(identifier.name.as_str()) == Some(Kind::SlotsObject)
-        )
+        member_of(expression).and_then(slot_property_span)
     }
 
     fn lookup(&self, name: &str) -> Option<Kind> {
@@ -262,6 +199,19 @@ impl SlotsVisitor<'_> {
     fn bind(&mut self, name: &str, kind: Kind) {
         if let Some(scope) = self.scopes.last_mut() {
             scope.insert(CompactString::new(name), kind);
+        }
+    }
+
+    fn assign(&mut self, name: &str, kind: Kind) {
+        if let Some(scope) = self
+            .scopes
+            .iter_mut()
+            .rev()
+            .find(|scope| scope.contains_key(name))
+        {
+            scope.insert(CompactString::new(name), kind);
+        } else {
+            self.bind(name, kind);
         }
     }
 
@@ -307,6 +257,20 @@ fn member_of<'a>(expression: &'a Expression<'a>) -> Option<&'a MemberExpression<
     }
 }
 
+fn slot_property_span(member: &MemberExpression<'_>) -> Option<Span> {
+    let slots = member_of(member.object())?;
+    if slots.static_property_name() != Some("$slots") || !is_this(slots.object()) {
+        return None;
+    }
+    match member {
+        MemberExpression::ComputedMemberExpression(computed) => Some(computed.expression.span()),
+        MemberExpression::StaticMemberExpression(static_member) => {
+            Some(static_member.property.span)
+        }
+        MemberExpression::PrivateFieldExpression(_) => None,
+    }
+}
+
 fn is_this(expression: &Expression<'_>) -> bool {
     matches!(
         expression.get_inner_expression(),
@@ -326,9 +290,17 @@ mod tests {
     }
 
     #[test]
-    fn flags_non_call_slot_uses_and_allows_calls() {
+    fn matches_the_upstream_parent_contexts() {
         assert_eq!(
             lint("export default { render() { return this.$slots.default } }").error_count,
+            0
+        );
+        assert_eq!(
+            lint("export default { render() { return [this.$slots.default] } }").error_count,
+            1
+        );
+        assert_eq!(
+            lint("export default { render() { return this.$slots.default.length } }").error_count,
             1
         );
         assert_eq!(
@@ -345,7 +317,11 @@ mod tests {
     #[test]
     fn tracks_slot_aliases() {
         let source = "export default { methods: { forward() { const children = this.$slots.foo; const slots = this.$slots; return [children, slots.foo, children(), slots.bar()] } } }";
-        assert_eq!(lint(source).error_count, 2);
+        let result = lint(source);
+        assert_eq!(result.error_count, 1);
+        let property = source.find("foo").unwrap() as u32;
+        assert_eq!(result.diagnostics[0].start, property);
+        assert_eq!(result.diagnostics[0].end, property + 3);
     }
 }
 

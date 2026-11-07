@@ -18,17 +18,19 @@ fn create_configured_linter(options: HtmlSelfClosingOptions) -> Linter {
 }
 
 #[test]
-fn test_valid_self_closing_void() {
+fn test_invalid_self_closing_void() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<img />"#, "test.vue");
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 5);
+    assert_eq!(result.diagnostics[0].end, 7);
 }
 
 #[test]
-fn test_invalid_void_not_self_closing() {
+fn test_valid_void_not_self_closing() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<img>"#, "test.vue");
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -53,6 +55,29 @@ fn test_invalid_empty_component() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 13);
+    assert_eq!(result.diagnostics[0].end, 27);
+}
+
+#[test]
+fn test_empty_html_and_whitespace_only_content_use_the_end_tag_range() {
+    let linter = create_linter();
+    let source = "<div> \n </div>";
+    let result = linter.lint_template(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    let start = source.find("</div>").unwrap() as u32;
+    assert_eq!(result.diagnostics[0].start, start);
+    assert_eq!(result.diagnostics[0].end, start + 6);
+}
+
+#[test]
+fn test_empty_slot_is_an_html_element() {
+    let linter = create_linter();
+    let source = "<slot></slot>";
+    let result = linter.lint_template(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 6);
+    assert_eq!(result.diagnostics[0].end, 13);
 }
 
 #[test]

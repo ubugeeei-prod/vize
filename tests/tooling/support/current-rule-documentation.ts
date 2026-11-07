@@ -40,6 +40,7 @@ const pages = new Map<string, readonly [string, string]>([
   ["type/no-reactivity-loss", ["type-and-script", "type-no-reactivity-loss"]],
   ["vue/component-name-in-template-casing", ["vue", "vue-component-name-in-template-casing"]],
   ["vue/html-self-closing", ["vue", "vue-html-self-closing"]],
+  ["vue/multi-word-component-names", ["vue", "vue-multi-word-component-names"]],
   ["vue/no-boolean-attr-value", ["vue", "vue-no-boolean-attr-value"]],
   ["vue/no-deprecated-v-on-number-modifiers", ["vue", "vue-no-deprecated-v-on-number-modifiers"]],
   ["vue/no-deprecated-functional-template", ["vue", "vue-no-deprecated-functional-template"]],

@@ -207,6 +207,47 @@ const inputElement = ref(null)
 }
 
 #[test]
+fn test_name_in_script_string_does_not_count_as_usage() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+export default {
+  mounted() {
+    const docs = `const inputEl = ref(null)`
+    console.log(docs)
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn test_unrelated_options_api_local_does_not_count_as_usage() {
+    let sfc = r#"<template><input ref="tab" /></template>
+<script>
+export default {
+  mounted() {
+    let tab = 0
+    tab++
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn test_static_computed_refs_access_counts_as_usage() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+export default {
+  mounted() {
+    this.$refs['inputEl'].focus()
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
 fn test_disable_directive_suppresses() {
     // Confirms the rule participates in the standard disable machinery.
     let sfc = r#"<template>

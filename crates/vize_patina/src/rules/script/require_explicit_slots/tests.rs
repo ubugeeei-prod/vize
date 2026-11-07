@@ -85,14 +85,12 @@ fn undeclared(
 }
 
 #[test]
-fn test_invalid_use_slots_without_define_slots() {
-    // TS syntax present (defineProps<T>()), useSlots() consumed, no defineSlots.
+fn test_use_slots_without_rendered_slot_is_valid() {
     let result = lint_setup_script(
         "const props = defineProps<{ id: number }>()\nconst slots = useSlots()",
         0,
     );
-    assert_eq!(result.warning_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -115,31 +113,31 @@ fn test_regular_sfc_script_does_not_require_script_setup_macro() {
 }
 
 #[test]
-fn test_script_setup_still_requires_explicit_slots() {
+fn test_script_setup_without_rendered_slot_is_valid() {
     let result = lint_sfc(
         "<script setup lang=\"ts\">\nconst value: number = 1\nconst slots = useSlots()\n</script>",
     );
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_with_type_annotation() {
+fn test_use_slots_with_type_annotation_is_valid_without_outlet() {
     // TS signalled by a plain type annotation.
     let result = lint_setup_script("const n: number = 1\nconst slots = useSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_with_interface() {
+fn test_use_slots_with_interface_is_valid_without_outlet() {
     let result = lint_setup_script("interface Props { id: number }\nconst s = useSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_called_without_assignment() {
+fn test_use_slots_called_without_assignment_is_valid_without_outlet() {
     // A bare `useSlots()` expression statement still counts as consumption.
     let result = lint_setup_script("const x: string = ''\nuseSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -206,19 +204,30 @@ fn test_no_warn_use_slots_in_string_literal() {
 }
 
 #[test]
-fn test_multiple_use_slots_reports_once_at_first() {
+fn test_multiple_use_slots_are_valid_without_outlet() {
     let source = "const x: number = 0\nconst a = useSlots()\nconst b = useSlots()";
     let result = lint_setup_script(source, 0);
-    assert_eq!(result.warning_count, 1);
-    let first = source.find("useSlots()").unwrap() as u32;
-    assert_eq!(result.diagnostics[0].start, first);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_offset_applied() {
+fn test_offset_without_outlet_remains_silent() {
     let source = "const x: number = 0\nconst slots = useSlots()";
     let result = lint_setup_script(source, 100);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_script_setup_slot_requires_define_slots() {
+    let result = lint_sfc(
+        "<template><slot /></template><script setup lang=\"ts\">const ready = true</script>",
+    );
     assert_eq!(result.warning_count, 1);
-    let call_start = source.find("useSlots()").unwrap() as u32 + 100;
-    assert_eq!(result.diagnostics[0].start, call_start);
+}
+
+#[test]
+fn test_options_api_typescript_slot_requires_slots_type() {
+    let result =
+        lint_sfc("<template><slot /></template><script lang=\"ts\">export default {}</script>");
+    assert_eq!(result.warning_count, 1);
 }

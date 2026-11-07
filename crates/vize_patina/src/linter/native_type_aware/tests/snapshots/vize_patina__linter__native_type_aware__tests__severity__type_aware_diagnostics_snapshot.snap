@@ -7,7 +7,7 @@ expression: diagnostics
         "script/define-emits-declaration",
         "Prefer the type-based defineEmits<{}>() declaration over the runtime/array form",
         72,
-        83,
+        93,
         Some(
             "Use the type-based form: `const emit = defineEmits<{ change: [id: number] }>()`",
         ),
@@ -123,8 +123,8 @@ expression: diagnostics
     (
         "vue/v-on-handler-style",
         "Prefer a method reference or an inline function over an inline statement for this v-on handler",
-        380,
-        401,
+        388,
+        400,
         Some(
             "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
         ),

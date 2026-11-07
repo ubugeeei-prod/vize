@@ -12,25 +12,7 @@
 //! Mirrors [`vue/require-explicit-slots`](https://eslint.vuejs.org/rules/require-explicit-slots.html),
 //! which applies to TypeScript only. It has two halves, and both are ported.
 //!
-//! ## Script half — `useSlots()` without `defineSlots`
-//!
-//! Fires only when **all** of the following hold for a single `<script setup>`
-//! block:
-//!
-//! * the block contains TypeScript syntax (a type annotation, interface, type
-//!   alias, `defineProps<T>()`, etc.). Because a script rule does not receive
-//!   the SFC `lang` attribute, the presence of TS syntax is used as a sound
-//!   proxy for `lang="ts"`, matching `vue/require-explicit-slots`, which only
-//!   runs for TypeScript SFCs. A block with no TS syntax at all is treated as
-//!   JavaScript and never flagged.
-//! * slots are clearly consumed: there is at least one `useSlots()` call.
-//! * there is **no** `defineSlots(...)` / `defineSlots<...>()` declaration in
-//!   the same block.
-//!
-//! The report is anchored at the first `useSlots()` call so the fix (adding a
-//! `defineSlots` declaration) is obvious.
-//!
-//! ## Template half — a `<slot>` the declaration does not cover
+//! ## Template slots must have declarations
 //!
 //! When the block *does* declare slots and the declared set is fully
 //! enumerable, a `<slot name="footer" />` rendered by the template but absent
@@ -80,12 +62,11 @@ mod template;
 mod tests;
 
 use oxc_ast::ast::Program;
-use oxc_span::Span;
 use vize_l0::CompactString;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use self::declared::{DeclaredSlots, ScriptSlots};
+use self::declared::DeclaredSlots;
 use self::template::{RenderedSlot, RenderedSlots};
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 
@@ -95,10 +76,6 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-const MESSAGE: &str =
-    "Slots consumed via useSlots() must be explicitly typed with defineSlots<...>().";
-const HELP: &str = "Declare the slots with the type-only macro, e.g. \
-     `defineSlots<{ default(props: {}): unknown }>()`.";
 const UNDECLARED_HELP: &str = "Add this slot to the defineSlots type, e.g. \
      `defineSlots<{ footer(): unknown }>()`, or remove the <slot> outlet.";
 
@@ -133,39 +110,34 @@ impl ScriptRule for RequireExplicitSlots {
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
-        offset: usize,
+        source: &str,
+        _offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if !sfc.is_script_setup {
+        if !sfc.is_sfc || !sfc.typescript {
+            return;
+        }
+        // With both script kinds, run once from script setup. A normal-script
+        // SlotsType declaration is not yet enumerable here, so stay quiet
+        // instead of inventing missing-slot reports.
+        if !sfc.sole_script_block && !sfc.is_script_setup {
+            return;
+        }
+        if !sfc.is_script_setup && source.contains("SlotsType") {
             return;
         }
         let slots = declared::collect(program);
-        if !slots.has_ts_syntax {
-            return;
-        }
         match &slots.declared {
-            DeclaredSlots::Absent => report_missing_declaration(&slots, offset, result),
+            DeclaredSlots::Absent => {
+                check_template(&vize_l0::FxHashSet::default(), sfc, result);
+            }
             DeclaredSlots::Unknown => {}
             DeclaredSlots::Known(names) => {
                 check_template(names, sfc, result);
             }
         }
     }
-}
-
-/// The script half: `useSlots()` consumed with no `defineSlots` at all.
-fn report_missing_declaration(slots: &ScriptSlots, offset: usize, result: &mut ScriptLintResult) {
-    let Some(span) = slots.first_use_slots else {
-        return;
-    };
-    let (start, end) = script_span(span, offset);
-    result.add_diagnostic(
-        LintDiagnostic::warn(META.name, MESSAGE, start, end)
-            .with_label("slots consumed here without defineSlots", start, end)
-            .with_help(HELP),
-    );
 }
 
 /// The template half: every rendered `<slot>` must be in the declared set.
@@ -204,9 +176,4 @@ fn report_undeclared_slot(
             .with_label("undeclared slot", start, end)
             .with_help(UNDECLARED_HELP),
     );
-}
-
-#[inline]
-fn script_span(span: Span, offset: usize) -> (u32, u32) {
-    (offset as u32 + span.start, offset as u32 + span.end)
 }

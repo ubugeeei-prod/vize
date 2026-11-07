@@ -1,6 +1,7 @@
-use super::{is_nuxt_config_filename, script_rule_may_match};
+use super::{is_nuxt_config_filename, script_rule_applies_to_language, script_rule_may_match};
 use crate::linter::script_rules::registry::{
-    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_IMPORT_COMPILER_MACROS, RULE_VALID_DEFINE_PROPS,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_VALID_DEFINE_PROPS,
 };
 
 #[test]
@@ -86,5 +87,17 @@ fn skips_define_props_rule_without_define_props_call() {
     assert!(script_rule_may_match(
         RULE_VALID_DEFINE_PROPS,
         "defineProps<{ value: string }>()"
+    ));
+}
+
+#[test]
+fn typed_object_props_only_apply_to_typescript() {
+    assert!(!script_rule_applies_to_language(
+        RULE_REQUIRE_TYPED_OBJECT_PROP,
+        false
+    ));
+    assert!(script_rule_applies_to_language(
+        RULE_REQUIRE_TYPED_OBJECT_PROP,
+        true
     ));
 }

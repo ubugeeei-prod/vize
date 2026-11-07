@@ -40,7 +40,7 @@ pub struct NoMultiSpaces {
 impl Default for NoMultiSpaces {
     fn default() -> Self {
         Self {
-            ignore_properties: true,
+            ignore_properties: false,
         }
     }
 }
@@ -79,6 +79,29 @@ impl NoMultiSpaces {
             self.check_gap(ctx, gap_start, range.start);
             previous_binding_end = Some(range.end);
         });
+
+        let opening = element.open_tag_range(ctx.source);
+        let closing_start = opening_closing_start(ctx.source, opening);
+        let gap_start = previous_binding_end
+            .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
+        self.check_gap(ctx, gap_start, closing_start);
+
+        if !self.ignore_properties {
+            element.walk_bindings(&mut |binding| {
+                let Some(expression) = binding.expression() else {
+                    return;
+                };
+                let range = binding.range();
+                let Some(authored) = ctx.source.get(range.start as usize..range.end as usize)
+                else {
+                    return;
+                };
+                let Some(relative) = authored.find(expression) else {
+                    return;
+                };
+                self.check_expression(ctx, range.start as usize + relative, expression.as_bytes());
+            });
+        }
     }
 
     fn check_gap(&self, ctx: &mut LintContext<'_>, gap_start: u32, gap_end: u32) {
@@ -111,6 +134,46 @@ impl NoMultiSpaces {
             .with_fix(fix),
         );
     }
+
+    fn check_expression(&self, ctx: &mut LintContext<'_>, start: usize, expression: &[u8]) {
+        let mut cursor = 0;
+        while cursor < expression.len() {
+            if !matches!(expression[cursor], b' ' | b'\t') {
+                cursor += 1;
+                continue;
+            }
+            let run_start = cursor;
+            while cursor < expression.len() && matches!(expression[cursor], b' ' | b'\t') {
+                cursor += 1;
+            }
+            let starts_line = run_start == 0
+                || expression
+                    .get(run_start - 1)
+                    .is_some_and(|byte| matches!(byte, b'\n' | b'\r'));
+            let ends_line = expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b'\n' | b'\r'));
+            if cursor - run_start > 1 && !starts_line && !ends_line {
+                self.check_gap(ctx, (start + run_start) as u32, (start + cursor) as u32);
+            }
+        }
+    }
+}
+
+fn opening_closing_start(source: &str, opening: ByteRange) -> u32 {
+    let start = opening.start as usize;
+    let end = opening.end as usize;
+    let Some(authored) = source.get(start..end) else {
+        return opening.end;
+    };
+    let Some(close) = authored.rfind('>') else {
+        return opening.end;
+    };
+    let mut close = start + close;
+    if close > start && source.as_bytes().get(close - 1) == Some(&b'/') {
+        close -= 1;
+    }
+    close as u32
 }
 
 fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
@@ -192,5 +255,20 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_multiple_spaces_before_self_closing_end() {
+        let result = create_linter().lint_template(r#"<Input fluid  />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_multiple_spaces_inside_expression() {
+        let result = create_linter().lint_template(
+            r#"<Input :aria-controls="expanded ?  id : undefined" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
     }
 }
