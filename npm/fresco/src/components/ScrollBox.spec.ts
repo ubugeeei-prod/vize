@@ -85,6 +85,32 @@ test("100k items retain only viewport plus overscan and scroll by keyboard and w
   rendered.unmount();
 });
 
+test("normalizes an unsafe wheel step before scrolling", async () => {
+  const offset = ref(0);
+  const rendered = renderTui(() =>
+    h(
+      ScrollBox,
+      {
+        itemCount: 10,
+        viewportSize: 2,
+        focused: true,
+        wheelStep: Number.POSITIVE_INFINITY,
+        modelValue: offset.value,
+        "onUpdate:modelValue": (value: number) => {
+          offset.value = value;
+        },
+      },
+      {
+        default: ({ index }: { index: number }) => h("text", { text: `row-${index}` }),
+      },
+    ),
+  );
+
+  await rendered.input.mouse({ kind: "scroll-down", x: 0, y: 0 });
+  assert.equal(offset.value, 1);
+  rendered.unmount();
+});
+
 test("simultaneous collection and model updates clamp against the new item count", async () => {
   const itemCount = ref(5);
   const offset = ref(0);

@@ -47,6 +47,10 @@ const viewport = createVirtualViewport({
   initialOffset: modelValue ?? 0,
 });
 const isActive = computed(() => focused && !disabled);
+const normalizedWheelStep = computed(() => {
+  const truncated = Math.trunc(wheelStep);
+  return Number.isSafeInteger(truncated) && truncated > 0 ? truncated : 1;
+});
 const retainedIndexes = computed(() => {
   const range = viewport.range.value;
   return Array.from(
@@ -142,8 +146,8 @@ useInput(
 );
 useMouse(
   (event) => {
-    if (event.kind === "scroll-up") scrollBy(-wheelStep);
-    else if (event.kind === "scroll-down") scrollBy(wheelStep);
+    if (event.kind === "scroll-up") scrollBy(-normalizedWheelStep.value);
+    else if (event.kind === "scroll-down") scrollBy(normalizedWheelStep.value);
   },
   { isActive },
 );
