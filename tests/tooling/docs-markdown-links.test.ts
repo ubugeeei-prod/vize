@@ -8,9 +8,9 @@ const root = resolve(import.meta.dirname, "../..");
 const require = createRequire(new URL("../../docs/package.json", import.meta.url));
 const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi");
 const { Window } = createRequire(new URL("../package.json", import.meta.url))("happy-dom");
-const supportUrl = "https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md";
+const supportUrl = "https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md";
 const repositoryDocumentUrl =
-  "https://github.com/ubugeeei-prod/vize/blob/main/CONTRIBUTING.md#pull-requests";
+  "https://github.com/ubugeeei-prod/vize/blob/main/.github/CONTRIBUTING.md#pull-requests";
 
 void test("each authored testing guide retains its external Support destination in native SSG", () => {
   for (const locale of ["", "ja/", "zh-CN/", "pt-BR/", "fr/"]) {

@@ -1,12 +1,12 @@
 [workspace]
 resolver = "3"
-exclude = ["vendor/oxc_parser_compat"]
+exclude = ["upstream/forks/oxc_parser_compat"]
 members = [
-  "vendor/parcel_sourcemap",
-  "vendor/lightningcss",
-  "vendor/oxc_parser",
-  "vendor/oxc_formatter",
-  "vendor/oxlint_html_renderer186",
+  "upstream/forks/parcel_sourcemap",
+  "upstream/forks/lightningcss",
+  "upstream/forks/oxc_parser",
+  "upstream/forks/oxc_formatter",
+  "upstream/forks/oxlint_html_renderer186",
   "crates/vize_carton",
   "crates/vize_relief",
   "crates/vize_armature",
@@ -97,7 +97,7 @@ vize_l2_to_l3 = { path = "davinci/vize_l2_to_l3", version = "=0.474.0" }
 vize_l4 = { path = "davinci/vize_l4", version = "=0.474.0" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
-oxc_parser = { package = "vize_oxc_parser", version = "=0.474.0", path = "vendor/oxc_parser" }
+oxc_parser = { package = "vize_oxc_parser", version = "=0.474.0", path = "upstream/forks/oxc_parser" }
 oxc_ast = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_ast_visit = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 oxc_span = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
@@ -115,7 +115,7 @@ oxc_codegen = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc"
 # `oxc_formatter_core` carries the language-agnostic option types (`IndentStyle`,
 # `IndentWidth`, `LineEnding`, `LineWidth`) that `oxc_formatter` takes but does not
 # re-export; it is `publish = false` upstream for the same reason.
-oxc_formatter = { package = "vize_oxc_formatter", version = "=0.474.0", path = "vendor/oxc_formatter" }
+oxc_formatter = { package = "vize_oxc_formatter", version = "=0.474.0", path = "upstream/forks/oxc_formatter" }
 oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 
 # Serialization and schema formats
@@ -207,8 +207,8 @@ mimalloc = "=0.1.52"
 
 # CSS
 cssparser = "=0.37.0"
-lightningcss = { package = "vize_lightningcss", version = "=0.474.0", path = "vendor/lightningcss" }
-parcel_sourcemap = { package = "vize_parcel_sourcemap", version = "=0.474.0", path = "vendor/parcel_sourcemap" }
+lightningcss = { package = "vize_lightningcss", version = "=0.474.0", path = "upstream/forks/lightningcss" }
+parcel_sourcemap = { package = "vize_parcel_sourcemap", version = "=0.474.0", path = "upstream/forks/parcel_sourcemap" }
 parcel_selectors = "=0.28.3"
 
 # Terminal / layout
@@ -234,7 +234,7 @@ corsa_runtime = { package = "corsa_runtime", version = "=2.0.0-beta.4" }
 #
 # Panic-free: shipped code (lib + bin targets) must not abort on any input, so
 # every explicit and implicit panic path is denied. Test code is exempt through
-# the `allow-*-in-tests` keys in `clippy.toml`. There is no escape hatch: an
+# the `allow-*-in-tests` keys in `.cargo/clippy.toml`. There is no escape hatch: an
 # invariant that "cannot fail" is expressed by construction (iterators, pattern
 # matching, `get`, `split_at_checked`, ...) or degrades gracefully.
 #
@@ -314,4 +314,4 @@ strip = "symbols"
 # Keep transitive upstream consumers (notably the formatter) on the same parser.
 # Published Vize crates use the direct vize_oxc_parser dependency above.
 [patch."https://github.com/oxc-project/oxc"]
-oxc_parser = { path = "vendor/oxc_parser_compat" }
+oxc_parser = { path = "upstream/forks/oxc_parser_compat" }

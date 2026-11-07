@@ -38,7 +38,7 @@
 //! `::core` and `vize_l0` support paths - never `::std` or `::alloc`.
 //! This is the approved `std` host-build edge P2-14's boundary audit records.
 
-// The house string discipline (clippy.toml: no std String / format! /
+// The house string discipline (.cargo/clippy.toml: no std String / format! /
 // to_string) exists for the compiler's hot paths. A proc-macro crate runs
 // on the host at build time, is never linked into any target, and speaks
 // syn/quote's std-String API - pulling vize_carton into a build dependency

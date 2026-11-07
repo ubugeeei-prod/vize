@@ -241,6 +241,6 @@ and supported releases advance. Dependent source slices use verified ordered
 GitHub native Stacks; independent green PRs use squash auto-merge. Retain every
 actual candidate and terminal merge receipt. Remove a known-red candidate until
 its correction qualifies, preserve original failed evidence and protect foreign
-worktrees. Re-read `ubugeeei-redundancy.md` when selecting each next slice.
+worktrees. Re-read `docs/project/redundancy.md` when selecting each next slice.
 Do not erase labels, bulk-close unfinished reports, transfer historical green
 credit or expand native/public claims to make the census look complete.

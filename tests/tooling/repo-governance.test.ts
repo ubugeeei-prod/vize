@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("repository governance docs cover contribution and security paths", () => {
-  const security = readRepoFile("SECURITY.md");
-  const contributing = readRepoFile("CONTRIBUTING.md");
+  const security = readRepoFile(".github/SECURITY.md");
+  const contributing = readRepoFile(".github/CONTRIBUTING.md");
 
   assert.match(security, /Supported Versions/);
   assert.match(security, /Please do not open a public tracker entry/);

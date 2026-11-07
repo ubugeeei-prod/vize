@@ -426,7 +426,7 @@ test("the stamp reaches every tracked non-private npm and editor manifest", asyn
 
 test("the stamp rewrites aliased fork pins and keeps upstream versions", () => {
   const input =
-    '[workspace.package]\nversion = "0.430.0"\n[workspace.dependencies]\noxc_parser = { package = "vize_oxc_parser", version = "=0.430.0", path = "vendor/oxc_parser" }\noxc_ast = { version = "=0.142.0" }\n';
+    '[workspace.package]\nversion = "0.430.0"\n[workspace.dependencies]\noxc_parser = { package = "vize_oxc_parser", version = "=0.430.0", path = "upstream/forks/oxc_parser" }\noxc_ast = { version = "=0.142.0" }\n';
   assert.equal(
     updateWorkspaceManifestVersions(input, "0.430.0", "0.430.1"),
     input.replaceAll("0.430.0", "0.430.1"),

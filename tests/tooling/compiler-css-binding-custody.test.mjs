@@ -200,7 +200,7 @@ await test("binding source gate admits only actual newly registered exact source
   for (const extra of [
     "crates/vize_atelier_sfc/src/style.rs",
     "crates/vize_atelier_ssr/src/compile.rs",
-    "vendor/lightningcss/src/printer.rs",
+    "upstream/forks/lightningcss/src/printer.rs",
   ]) {
     assert.equal(onlyCompilerCssChanges([...cssBindingProducerPaths, extra], admitted), false);
     assert.deepEqual(

@@ -83,7 +83,7 @@ rayon = { workspace = true, optional = true }
 ignore = { workspace = true, optional = true }
 
 # Private final conversion for the two qualified Oxlint host profiles.
-oxlint_html_renderer186 = { path = "../../vendor/oxlint_html_renderer186", optional = true }
+oxlint_html_renderer186 = { path = "../../upstream/forks/oxlint_html_renderer186", optional = true }
 regex = { workspace = true, optional = true }
 miette178 = { package = "oxc-miette", version = "=4.0.0", optional = true }
 

@@ -87,23 +87,9 @@ jobs:
           vp node docs/scripts/ensure-browser.ts
           mkdir -p docs-render-evidence/resource-readiness
           node --test --test-reporter=tap tests/tooling/docs-preview-readiness-browser.test.ts 2>&1 | tee docs-render-evidence/resource-readiness/tests.tap
-          node --input-type=module <<'NODE'
-          import assert from 'node:assert/strict';
-          import { createHash } from 'node:crypto';
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const output = 'docs-render-evidence/resource-readiness';
-          const tap = readFileSync(`${output}/tests.tap`, 'utf8');
-          const counts = Object.fromEntries([...tap.matchAll(/^# (tests|pass|fail|cancelled|skipped|todo) (\d+)$/gm)]
-            .map(([, name, count]) => [name, Number(count)]));
-          assert.deepEqual(counts, { tests: 8, pass: 8, fail: 0, cancelled: 0, skipped: 0, todo: 0 });
-          writeFileSync(`${output}/receipt.json`, `${JSON.stringify({
-            schema: 'vize.docs-preview-resource-readiness',
-            sourceSha: process.env.GITHUB_SHA,
-            testFile: 'tests/tooling/docs-preview-readiness-browser.test.ts',
-            counts,
-            tapSha256: createHash('sha256').update(tap).digest('hex'),
-          }, null, 2)}\n`);
-          NODE
+          node tools/support/github/docs-preview-readiness.ts \
+            docs-render-evidence/resource-readiness/tests.tap \
+            docs-render-evidence/resource-readiness
 
       - name: Build docs
         # The page manifest records this exact source SHA; do not replay an

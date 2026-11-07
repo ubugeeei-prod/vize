@@ -105,11 +105,11 @@ const config = {
       "tests/fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-ccf36f226d00.json",
       // Authenticated upstream originals keep their complete source/fixture bytes.
       // The CSS vendor custody guard verifies them before focused Rust checks.
-      "vendor/{lightningcss,parcel_sourcemap}/.cargo_vcs_info.json",
-      "vendor/{lightningcss,parcel_sourcemap}/Cargo.toml.orig",
-      "vendor/{lightningcss,parcel_sourcemap}/UPSTREAM-Cargo.toml",
-      "vendor/lightningcss/rustfmt.toml",
-      "vendor/lightningcss/tests/testdata/**",
+      "upstream/forks/{lightningcss,parcel_sourcemap}/.cargo_vcs_info.json",
+      "upstream/forks/{lightningcss,parcel_sourcemap}/Cargo.toml.orig",
+      "upstream/forks/{lightningcss,parcel_sourcemap}/UPSTREAM-Cargo.toml",
+      "upstream/forks/lightningcss/rustfmt.toml",
+      "upstream/forks/lightningcss/tests/testdata/**",
       ...formatterSensitiveContentIgnorePatterns,
     ],
   },

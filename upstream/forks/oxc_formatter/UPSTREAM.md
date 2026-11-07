@@ -6,7 +6,7 @@ https://github.com/oxc-project/oxc/tree/fc702c1fa9f0412d06ec6908b58cd395b826cf7f
 
 The source-only import is a separate commit. Reproduce it with:
 
-`node tools/support/dependencies/vendor-oxc-formatter.ts VERIFIED_OXC_CLONE`
+`node tools/support/dependencies/upstream-oxc-formatter.ts VERIFIED_OXC_CLONE`
 
 The standalone manifest gives this unofficial fork the package name
 `vize_oxc_formatter` and retains the Rust library name `oxc_formatter`.

@@ -3,7 +3,7 @@ export const cssMapProducerPaths = [
   "crates/vize_atelier_sfc/src/css/parser.rs",
   "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
   "crates/vize_atelier_sfc/src/css/parser/source_map.rs",
-  "vendor/lightningcss/src/printer.rs",
+  "upstream/forks/lightningcss/src/printer.rs",
 ] as const;
 
 export const cssBindingProducerPaths = [

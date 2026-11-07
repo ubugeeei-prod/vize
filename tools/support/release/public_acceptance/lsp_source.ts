@@ -261,7 +261,7 @@ export function prepareLspSource(root: string, head: string, consumer: string, o
       "Cargo.toml",
       "Cargo.lock",
       "rust-toolchain.toml",
-      "clippy.toml",
+      ".cargo/clippy.toml",
     ]),
   ]
     .sort((left, right) => (left < right ? -1 : Number(left > right)))

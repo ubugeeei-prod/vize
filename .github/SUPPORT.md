@@ -2,8 +2,8 @@
 
 Vize is still pre-1.0; the surfaces that are ready for adopters and the ones
 that are not are listed in
-[`docs/release/production-readiness.md`](./docs/release/production-readiness.md)
-and [`docs/content/stability.md`](./docs/content/stability.md). Please check
+[`docs/release/production-readiness.md`](../docs/release/production-readiness.md)
+and [`docs/content/stability.md`](../docs/content/stability.md). Please check
 those before opening a support thread.
 
 ## Where to ask
@@ -26,7 +26,7 @@ entry with the `question` label and we will move the conversation if it grows.
 The following are in scope for the fix tracker:
 
 - fixes in the supported tiers listed in
-  [`docs/release/production-readiness.md`](./docs/release/production-readiness.md)
+  [`docs/release/production-readiness.md`](../docs/release/production-readiness.md)
 - crashes, panics, or memory problems in the CLI, native bindings, or WASM
   builds
 - incorrect or missing diagnostics from `vize lint`, `vize check`, or LSP

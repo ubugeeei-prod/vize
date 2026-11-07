@@ -13,7 +13,7 @@ import { repoRoot } from "./support/release-command.ts";
 const rootSource = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");
 const root = parseToml(rootSource);
 const fork = parseToml(
-  fs.readFileSync(path.join(repoRoot, "vendor/lightningcss/Cargo.toml"), "utf8"),
+  fs.readFileSync(path.join(repoRoot, "upstream/forks/lightningcss/Cargo.toml"), "utf8"),
 );
 type TomlTable = ReturnType<typeof parseToml>;
 const workspace = root.workspace as { package: { version: string }; dependencies: TomlTable };
@@ -26,7 +26,7 @@ test("the optional JSON source-map provider inherits the release-owned exact ali
   assert.deepEqual(dependencies.parcel_sourcemap, {
     package: "vize_parcel_sourcemap",
     version: `=${current}`,
-    path: "vendor/parcel_sourcemap",
+    path: "upstream/forks/parcel_sourcemap",
   });
   assert.deepEqual(forkDependencies.parcel_sourcemap, {
     workspace: true,
@@ -63,7 +63,7 @@ test("the real release rewrite resolves both forks and rejects the historical st
     }
 
     // Minimal manifest-resolution controls: no upstream parser, archive, or code executes.
-    const members = ["vendor/lightningcss", "vendor/parcel_sourcemap"];
+    const members = ["upstream/forks/lightningcss", "upstream/forks/parcel_sourcemap"];
     fs.writeFileSync(
       path.join(directory, "Cargo.toml"),
       stringifyToml({

@@ -6,7 +6,7 @@ Thanks for helping make Vize sharper. This project is still moving toward v1 alp
 
 Use the Node.js development runtime from `package.json#devEngines.runtime` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.99.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
 
-Instruction-count and paired-memory measurements use the same `rust-toolchain.toml` compiler. A toolchain bump re-baselines their recorded compiler identity in the same PR, without loosening ceilings the compiler change does not explain (see [one Rust toolchain](docs/davinci/decisions/2026-10-20-single-rust-toolchain.md)).
+Instruction-count and paired-memory measurements use the same `rust-toolchain.toml` compiler. A toolchain bump re-baselines their recorded compiler identity in the same PR, without loosening ceilings the compiler change does not explain (see [one Rust toolchain](../docs/davinci/decisions/2026-10-20-single-rust-toolchain.md)).
 
 Install dependencies from the workspace root:
 
@@ -98,7 +98,7 @@ For Blacksmith Testbox job changes, also validate the workflow shape with
 
 ## Lint Policy
 
-`clippy.toml` bans `std::string::String`, `std::collections::HashMap`/`HashSet`, `Rc`/`Arc`,
+`.cargo/clippy.toml` bans `std::string::String`, `std::collections::HashMap`/`HashSet`, `Rc`/`Arc`,
 `ToString::to_string`, and `std::format!` across the workspace; the replacements live in
 `vize_carton` (`String`, `FxHashMap`, `FxHashSet`, `cstr!`, `append!`, `appends!`). That policy is a
 production invariant and is not relaxed for tests. CI enforces the workspace lint with
@@ -125,7 +125,7 @@ the list of crates that have not joined yet from growing back.
   slicing, and `&str[..]` slicing are denied. Express the invariant by construction (iterators,
   `match`/`let … else`, `get`, `split_at_checked`, `strip_prefix`, `char_indices`), propagate with
   `?`, or degrade gracefully (skip the node, keep the input unchanged, emit a diagnostic). Do not
-  suppress these lints in shipped code. Test code is exempt through `clippy.toml`.
+  suppress these lints in shipped code. Test code is exempt through `.cargo/clippy.toml`.
 - **Reasoned suppressions.** Use `#[expect(lint, reason = "…")]` instead of `#[allow]`: a stale
   expectation fails the build, and each one records why it exists. When a lint only fires under
   some `cfg`, gate the expectation with `cfg_attr`.
@@ -178,7 +178,7 @@ described in [Source Layout](#source-layout). `insta` keeps the recorded snapsho
 Vize follows compiler-project practice from rustc, TypeScript, TypeScript-Go, and Flow: classify the
 change, add the smallest meaningful fixture, review generated output as a contract, then broaden to
 parity, performance, or release gates when the touched surface needs it. See
-[Language Engineering Practices](./docs/content/architecture/language-engineering-practices.md) for
+[Language Engineering Practices](../docs/content/architecture/language-engineering-practices.md) for
 the full matrix.
 
 Use one of these change classes in PRs when applicable:

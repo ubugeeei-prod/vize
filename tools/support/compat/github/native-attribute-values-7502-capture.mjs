@@ -28,8 +28,8 @@ const sourceTrees = [
   "crates/vize_atelier_sfc/src/native_ssr",
   "crates/vize_atelier_sfc/src/native_vapor",
   "crates/vize_atelier_sfc/tests/native_attribute_values_7502",
-  "vendor/oxc_parser/src",
-  "vendor/oxc_parser_compat/src",
+  "upstream/forks/oxc_parser/src",
+  "upstream/forks/oxc_parser_compat/src",
 ];
 const exactInputs = new Set([
   "Cargo.toml",
@@ -61,8 +61,8 @@ const exactInputs = new Set([
   "davinci/vize_l4/src/expr.rs",
   "crates/vize_atelier_sfc/Cargo.toml",
   "crates/vize_atelier_sfc/src/lib.rs",
-  "vendor/oxc_parser/Cargo.toml",
-  "vendor/oxc_parser_compat/Cargo.toml",
+  "upstream/forks/oxc_parser/Cargo.toml",
+  "upstream/forks/oxc_parser_compat/Cargo.toml",
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/original_inputs.json",
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
   "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",

@@ -123,7 +123,7 @@ test("Testbox commands fail with an actionable lifecycle when the box id is abse
   assert.match(result.stderr, /"\$VIZE_BLACKSMITH_BIN" auth login/);
   assert.match(result.stderr, /git push --set-upstream origin/);
   assert.match(result.stderr, /vp run --workspace-root testbox:warmup/);
-  assert.match(result.stderr, /guarded lifecycle in CONTRIBUTING\.md/);
+  assert.match(result.stderr, /guarded lifecycle in \.github\/CONTRIBUTING\.md/);
 });
 
 test("Testbox commands require the dedicated Nix shell", () => {
@@ -265,7 +265,7 @@ test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
 });
 
 test("contributor docs use workspace-explicit commands outside the Nix aliases", () => {
-  for (const relativePath of ["CONTRIBUTING.md", "docs/content/contributing.md"]) {
+  for (const relativePath of [".github/CONTRIBUTING.md", "docs/content/contributing.md"]) {
     const guide = fs.readFileSync(path.join(root, relativePath), "utf8");
 
     for (const taskName of ["build", "test", "lint"]) {
@@ -285,7 +285,7 @@ test("contributor docs use workspace-explicit commands outside the Nix aliases",
 });
 
 test("documented Testbox lifecycle rejects stale ids and always stops after task failure", () => {
-  const guides = ["CONTRIBUTING.md", "docs/content/contributing.md"].map((relativePath) =>
+  const guides = [".github/CONTRIBUTING.md", "docs/content/contributing.md"].map((relativePath) =>
     fs.readFileSync(path.join(root, relativePath), "utf8"),
   );
   const lifecycle = extractTestboxLifecycle(guides[0]);
