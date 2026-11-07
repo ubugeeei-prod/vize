@@ -27,6 +27,8 @@ const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
 const selectedGroup = "${{ (inputs.run-js && matrix.group != 'none') }}";
+const selectedOxlint =
+  "${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}";
 const boolean = { required: true, type: "boolean" };
 const evidenceJs = "${{ !cancelled() && inputs.run-js }}";
 const groupCommand =
@@ -126,9 +128,15 @@ void test("PR and merge queue preserve package tests, native declaration, type a
   assert.deepEqual(Object.keys(jsChecks.jobs), [
     "pr-js-package-tests",
     "pr-oxlint-project-qualification",
+    "pr-oxlint-windows-json-config",
     "pr-js-package-conformance",
   ]);
   for (const [name, job] of Object.entries(jsChecks.jobs)) {
+    if (name === "pr-oxlint-windows-json-config") {
+      assert.equal(job.if, selectedOxlint);
+      assert.equal(job.needs, undefined);
+      continue;
+    }
     // Every costly step is selected by the input plan. Original-project
     // qualification is available explicitly and runs in full scheduled Check.
     const tier = name === "pr-oxlint-project-qualification";
@@ -144,6 +152,14 @@ void test("PR and merge queue preserve package tests, native declaration, type a
     assert.match(job.steps[0].run, /skipped because this PR changes no package/, name);
     for (const step of job.steps.slice(1)) assert.ok(step.if, `${name}: ${step.name ?? step.uses}`);
   }
+  const windows = jsChecks.jobs["pr-oxlint-windows-json-config"];
+  assert.equal(windows["runs-on"], "windows-2025");
+  assert.equal(windows.defaults.run.shell, "bash");
+  assert.equal(
+    windows.steps.find((step) => step.name === "Run the reported JSON-config command on Windows")
+      .run,
+    "node --test npm/linter/oxlint/src/windows-json-config.test.ts",
+  );
   const testStep = jsChecks.jobs["pr-js-package-tests"].steps.find(
     (step) => step.name === "Test JS package group",
   );

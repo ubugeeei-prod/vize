@@ -23,21 +23,28 @@ async function main() {
 
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-"));
   const userData = path.join(session, "user-data");
-  const config = path.join(session, "config");
+  const config = path.join(userData, "config");
   const shim = path.join(session, "bin");
   const installed = path.join(userData, "extensions", "installed", "vize");
   fs.mkdirSync(installed, { recursive: true });
-  fs.mkdirSync(path.join(config, "zed"), { recursive: true });
+  fs.mkdirSync(config, { recursive: true });
   fs.mkdirSync(shim, { recursive: true });
   fs.cpSync(packaged, installed, { recursive: true });
   fs.writeFileSync(path.join(userData, "extensions", "installed", ".rescan"), "");
+  const settings = {
+    languages: {
+      "Vue.js": {
+        language_servers: ["vize", "..."],
+      },
+    },
+    auto_install_extensions: { vize: false },
+    auto_update_extensions: { vize: false },
+    telemetry: { diagnostics: false, metrics: false },
+  };
+  fs.writeFileSync(path.join(config, "settings.json"), `${JSON.stringify(settings)}\n`);
   fs.writeFileSync(
-    path.join(config, "zed", "settings.json"),
-    `${JSON.stringify({
-      auto_install_extensions: { vize: false },
-      auto_update_extensions: { vize: false },
-      telemetry: { diagnostics: false, metrics: false },
-    })}\n`,
+    path.join(evidence, "zed-settings.json"),
+    `${JSON.stringify(settings, null, 2)}\n`,
   );
 
   const transcript = path.join(evidence, "zed.transcript.jsonl");
@@ -76,14 +83,15 @@ async function main() {
         ...process.env,
         PATH: `${shim}${path.delimiter}${process.env.PATH ?? ""}`,
         VIZE_CONFORMANCE_TRANSCRIPT: transcript,
-        XDG_CONFIG_HOME: config,
       },
       stdio: ["ignore", output, output],
     },
   );
 
+  let passed = false;
   try {
     await waitForDiagnostic(transcript, workspace, child);
+    passed = true;
   } finally {
     child.kill("SIGTERM");
     await Promise.race([
@@ -91,7 +99,21 @@ async function main() {
       sleep(10_000).then(() => child.kill("SIGKILL")),
     ]);
     fs.closeSync(output);
+    if (!passed) retainFailureSession(session, evidence);
     fs.rmSync(session, { force: true, recursive: true });
+  }
+}
+
+function retainFailureSession(session: string, evidence: string) {
+  const destination = path.join(evidence, "failure-session");
+  try {
+    fs.rmSync(destination, { force: true, recursive: true });
+    fs.cpSync(session, destination, { recursive: true });
+  } catch (error) {
+    fs.writeFileSync(
+      path.join(evidence, "failure-session-copy-error.txt"),
+      `${error instanceof Error ? error.stack : String(error)}\n`,
+    );
   }
 }
 

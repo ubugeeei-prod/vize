@@ -13,6 +13,7 @@ import {
 import { resolveWorkaroundSource } from "../workaround.ts";
 import { withoutLintTargets } from "./args.ts";
 import { collectVueLikeFilesFromTargets } from "./files.ts";
+import { registerLocationVariants, registerPathReplacementVariants } from "./workaround-files.ts";
 
 void test("target projection preserves Vue-shaped option values and the literal separator", () => {
   assert.deepEqual(
@@ -96,6 +97,45 @@ void test("path-sensitive import/project and non-POSIX envelopes refuse before t
       message: "Scoped Vue transport cannot preserve non-POSIX filesystem roots.",
     },
   );
+  validateScopedConfig(
+    { file: "C:\\project\\config.json", bytes: "", value: { rules: {} } },
+    [],
+    "win32",
+  );
+  for (const value of [{ ignorePatterns: [] }, { overrides: [] }]) {
+    assert.throws(
+      () =>
+        validateScopedConfig({ file: "C:\\project\\config.json", bytes: "", value }, [], "win32"),
+      { message: "Scoped Vue transport cannot preserve non-POSIX filesystem roots." },
+    );
+  }
+});
+
+void test("Windows separators remain distinct from ambiguous filename bytes", () => {
+  const cwd = String.raw`C:\project`;
+  validateSelectionPaths(cwd, [cwd, String.raw`C:\project\App.vue`], "win32");
+  for (const file of ["line\nfeed.vue", "carriage\rreturn.vue"])
+    assert.throws(() => validateSelectionPaths(cwd, [file], "win32"), {
+      message: "Scoped Vue transport cannot preserve filenames containing CR, LF or backslash.",
+    });
+});
+
+void test("Windows namespaced paths retain workaround ownership", () => {
+  const filename = String.raw`C:\temporary\App.vue`;
+  const namespaced = path.win32.toNamespacedPath(filename);
+  const locations = new Map();
+  const bridge = { source: "", scriptStart: 0, originalStart: 0 };
+  registerLocationVariants(locations, String.raw`C:\project`, filename, bridge);
+  assert.equal(locations.get(namespaced), bridge);
+
+  const replacements = new Map<string, string>();
+  registerPathReplacementVariants(
+    replacements,
+    String.raw`C:\project`,
+    filename,
+    String.raw`C:\project\App.vue`,
+  );
+  assert.equal(replacements.get(namespaced), replacements.get(filename));
 });
 
 const source = '<script setup>const title = "About";</script>\n<template>{{ title }}</template>\n';

@@ -203,6 +203,35 @@ jobs:
         env:
           VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
         run: node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup
+  pr-oxlint-windows-json-config:
+    name: PR Oxlint Windows JSON config
+    if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+    runs-on: windows-2025
+    timeout-minutes: 25
+    defaults:
+      run: { shell: bash }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+      - uses: ./.github/actions/cache-vp-bootstrap
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+        with:
+          version: latest
+          node-version-file: "package.json"
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install Oxlint package dependencies
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+        run: node tools/support/compat/github/install-js-checks.ts original-project
+      - name: Build the source Oxlint bundles
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+        run: vp run --filter './npm/linter/oxlint' build
+      - name: Run the reported JSON-config command on Windows
+        if: ${{ inputs.run-js && contains(fromJSON(inputs.js-plan).matrix.group, 'oxlint') }}
+        run: node --test npm/linter/oxlint/src/windows-json-config.test.ts
   pr-js-package-conformance:
     name: PR package conformance (${{ matrix.surface }})
     strategy:

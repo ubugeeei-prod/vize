@@ -23,6 +23,7 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+const releaseZed = readRepoFile("tests", "editor-conformance", "release-zed.ts");
 
 test("release editor hosts consume the packed candidate before the tag exists", () => {
   const job = workflow.jobs["smoke-editor-artifacts"]!;
@@ -48,6 +49,12 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.match(serialized, /\$\{editor\}-vize-extension\.tar\.gz/);
   const install = job.steps?.find((step) => step.id === "artifacts")?.run ?? "";
   assert.match(install, /node "\$packaged_cli" init [\s\S]*--typecheck --editor --no-install/);
+  assert.match(install, /"typescript-native": "npm:typescript@7\.1\.0-beta"/);
+  assert.match(install, /typescript-native@npm:typescript@7\.1\.0-beta/);
+  assert.match(install, /typescript-native\/lib\/getExePath\.js/);
+  assert.match(install, /test -x "\$native_checker"/);
+  assert.match(install, /fresh_real=\$\(readlink -f "\$fresh"\)/);
+  assert.match(install, /native checker escapes the fresh project/);
   assert.match(serialized, /VIZE_TS45_EXISTING_WORKSPACE/);
   for (const client of ["neovim", "helix", "vscode"]) {
     assert.match(serialized, new RegExp(`tests/editor-conformance/run\\.ts ${client}`));
@@ -59,7 +66,7 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.match(serialized, /dependency-links\.txt/);
   assert.match(serialized, /dependency-links-after-hosts\.txt/);
   assert.equal(serialized.match(/target=\$\(readlink -f \\"\$link\\"\)/g)?.length, 2);
-  assert.equal(serialized.match(/node_modules\\"\/\*/g)?.length, 2);
+  assert.equal(serialized.match(/node_modules\\"\/\*/g)?.length, 3);
   assert.match(serialized, /workspace-links\.txt/);
   assert.match(serialized, /vue\/require-v-for-key/);
   const host = job.steps?.find((step) => step.uses === "./.github/actions/vscode-host-smoke");
@@ -96,4 +103,15 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
     (step) => step.name === "Run actual Zed with the packaged release extension",
   );
   assert.equal(zed?.if, "inputs.release-workspace != ''");
+});
+
+test("release Zed smoke explicitly opts Vize into Vue and retains failure evidence", () => {
+  assert.match(releaseZed, /path\.join\(userData, "config"\)/);
+  assert.match(releaseZed, /path\.join\(config, "settings\.json"\)/);
+  assert.doesNotMatch(releaseZed, /XDG_CONFIG_HOME/);
+  assert.match(releaseZed, /"Vue\.js": \{/);
+  assert.match(releaseZed, /language_servers: \["vize", "\.\.\."\]/);
+  assert.match(releaseZed, /zed-settings\.json/);
+  assert.match(releaseZed, /if \(!passed\) retainFailureSession\(session, evidence\)/);
+  assert.match(releaseZed, /path\.join\(evidence, "failure-session"\)/);
 });
