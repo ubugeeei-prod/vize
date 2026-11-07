@@ -1,0 +1,14 @@
+{
+  "extends": "@parcel/config-default",
+  "transformers": {
+    "*.vue": [
+      {
+        "plugin": "@vizejs/parcel-transformer-native",
+        "config": {
+          "styles": "inject",
+          "transformAssetUrls": true
+        }
+      }
+    ]
+  }
+}

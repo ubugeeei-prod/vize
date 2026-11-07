@@ -7,9 +7,12 @@ on:
     paths:
       - npm/babel/**
       - crates/vize_atelier_jsx/**
+      - crates/vize_atelier_sfc/**
       - crates/vize_atelier_vapor/**
       - crates/vize_atelier_ssr/**
       - crates/vize_vitrine/src/napi/jsx.rs
+      - crates/vize_vitrine/src/napi/sfc.rs
+      - crates/vize_vitrine/src/napi/sfc/**
       - .github/workflows/babel-plugin-hosts.yml
 permissions: { contents: read }
 concurrency:

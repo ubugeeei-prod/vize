@@ -1,4 +1,4 @@
-import type { JsxCompileResultNapi } from "@vizejs/native";
+import type { JsxCompileResultNapi, StyleBlockNapi } from "@vizejs/native";
 
 /** JSX output defaults; component directive prologues can select another mode. */
 export interface VizeBabelOptions {
@@ -7,6 +7,12 @@ export interface VizeBabelOptions {
   ssr?: boolean;
   /** Explicitly hand extracted CSS to a bundler through Babel file metadata. */
   scopedStyles?: "error" | "metadata";
+  /** How standalone Babel transforms handle Vue SFC style blocks. */
+  sfcStyles?: "inject" | "metadata" | "error";
+  /** Root used to make SFC scope IDs stable across machines. */
+  root?: string;
+  /** Enables production SFC output and content-sensitive production scope IDs. */
+  isProduction?: boolean;
 }
 
 export interface VizeBabelMetadata {
@@ -15,6 +21,16 @@ export interface VizeBabelMetadata {
   nativePasses: 1;
   warnings: string[];
   scopedStyles: JsxCompileResultNapi["scopedStyles"];
+}
+
+export interface VizeBabelSfcMetadata {
+  defaultMode: "vdom" | "vapor";
+  ssr: boolean;
+  nativePasses: 1;
+  warnings: string[];
+  css: string | null;
+  styles: StyleBlockNapi[];
+  dependencies: string[];
 }
 
 // The plugin is structurally typed across the two host AST versions. Babel
@@ -30,6 +46,9 @@ export interface FileAst extends AstNode {
 }
 
 export interface ParserOptions {
+  filename?: string;
+  sourceFilename?: string;
+  sourceFileName?: string;
   plugins?: (string | [string, Record<string, unknown>])[];
   [key: string]: unknown;
 }
@@ -50,6 +69,8 @@ export interface BabelFile {
   metadata: Record<string, unknown>;
   opts: Record<string, unknown> & {
     filename?: string;
+    sourceFileName?: string;
+    sourceRoot?: string;
     parserOpts?: ParserOptions;
     sourceMaps?: boolean | "inline" | "both";
   };
@@ -63,6 +84,8 @@ export interface BabelFile {
   get(key: symbol): unknown;
   set(key: symbol, value: unknown): void;
 }
+
+export type BabelParse = (code: string, options?: Record<string, unknown>) => FileAst;
 
 export interface SerializedAst {
   code: string | null;

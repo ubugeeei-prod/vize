@@ -63,6 +63,28 @@ export function assertCompiled(
 ): asserts result is BabelResult & { code: string; ast: Extract<BabelAst, { type: "File" }> } {
   assert(result && typeof result.code === "string" && result.ast);
   assert.equal(hasJsx(result.ast), false, "the complete returned AST has no remaining JSX");
+  if (fixture.sfc) {
+    const metadata = result.metadata.vize!.sfc!;
+    assert.equal(metadata.defaultMode, "vdom");
+    assert.equal(metadata.ssr, false);
+    assert.equal(metadata.nativePasses, 1);
+    assert.deepEqual(metadata.warnings, []);
+    assert.match(metadata.css!, /\.message\[data-v-[0-9a-f]{8}\]/u);
+    assert.equal(metadata.styles.length, 1);
+    assert.deepEqual(metadata.dependencies, []);
+    assert.match(result.code, /__vize_css__/u);
+    assert.match(result.code, /__scopeId/u);
+    assert(result.map, "the SFC transform must preserve its native source map");
+    assert(
+      result.map.sources.some((source) => source?.endsWith(".vue")),
+      "the final map must point at the authored Vue file",
+    );
+    assert(
+      result.map.sourcesContent?.some((source) => source?.includes("<template>")),
+      "the final map must retain the authored SFC content",
+    );
+    return;
+  }
   assert.deepEqual(result.metadata.vize!.jsx, {
     defaultMode: "vdom",
     ssr: false,

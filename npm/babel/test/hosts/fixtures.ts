@@ -24,6 +24,8 @@ export interface HostFixture {
   generatorOverrides?: number;
   uidReservation?: "split" | "before";
   modules?: boolean;
+  sfc?: boolean;
+  sourceMaps?: boolean;
 }
 
 const basic = 'export const render = () => <div data-probe="original">hello</div>;\n';
@@ -44,6 +46,15 @@ export const coldFixtures: HostFixture[] = [
   { id: "pre-hook-jsx-removed", pre: "remove", source: basic },
 ];
 export const positiveFixtures: HostFixture[] = [
+  {
+    id: "vue-sfc-script-setup-scoped-style",
+    sfc: true,
+    sourceMaps: true,
+    filenameSuffix: ".vue",
+    source:
+      '<script setup lang="ts">const message: string = "from-sfc"</script>\n<template><p class="message">{{ message }}</p></template>\n<style scoped>.message { color: red }</style>\n',
+    html: '<p class="message">from-sfc</p>',
+  },
   {
     id: "vize-before-module-transform",
     source: basic,

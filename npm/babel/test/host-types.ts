@@ -1,11 +1,11 @@
 import type { FileResult, types as t } from "@babel/core";
-import type { VizeBabelMetadata } from "../src/types.ts";
+import type { VizeBabelMetadata, VizeBabelSfcMetadata } from "../src/types.ts";
 
 export type BabelCore = typeof import("@babel/core");
 export type BabelAst = t.Node;
 export type BabelResult = Omit<FileResult, "metadata"> & {
   metadata: Record<string, unknown> & {
-    vize?: { predecessor?: string; jsx?: VizeBabelMetadata };
+    vize?: { predecessor?: string; jsx?: VizeBabelMetadata; sfc?: VizeBabelSfcMetadata };
   };
 };
 export interface WholeError {
@@ -61,7 +61,7 @@ export interface HostLoader {
   react(): ReturnType<HostLoader["vize"]>;
   mapping(): Promise<MappingModule>;
   trace(): Promise<TraceModule>;
-  vue(): Promise<{ createSSRApp(options: { render(): unknown }): unknown }>;
+  vue(): Promise<{ createSSRApp(options: unknown): unknown }>;
   renderer(): Promise<{ renderToString(app: unknown): Promise<string> }>;
 }
 export type HostWorkerInput = import("./hosts/environment.ts").HostSettings & {

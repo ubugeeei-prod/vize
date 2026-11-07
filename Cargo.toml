@@ -38,6 +38,7 @@ members = [
   "crates/vize_marquette",
   "crates/vize_doctor",
   "crates/vize_incremental",
+  "npm/builder/parcel-native",
   "tools/benchmarks/crates/davinci_harness",
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",
@@ -120,6 +121,7 @@ oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-projec
 # Serialization and schema formats
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.154"
+parcel-plugin = "=0.1.0"
 toml = "=1.1.8"
 lsp-types = "=0.97.0"
 pklrust = "=0.9.0"
