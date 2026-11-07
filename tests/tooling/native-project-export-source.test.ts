@@ -21,7 +21,12 @@ for (const member of nativeLoaderProgram.modules) {
 }
 test("unknown exports and modules cannot acquire the original loader authority", () => {
   const body = fs.readFileSync(new URL("../../npm/native/index.js", import.meta.url));
-  for (const change of ["typeProjectInputs", "typeProjectOwners"]) {
+  for (const change of [
+    "typeProjectInputs",
+    "typeProjectOwners",
+    "TypeResolutionBatch",
+    "beginTypeResolutionBatch",
+  ]) {
     assert.throws(() =>
       originalNativeLoaderModule(
         "index.js",
