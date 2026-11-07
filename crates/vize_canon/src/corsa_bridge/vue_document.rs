@@ -247,8 +247,8 @@ impl CorsaBridge {
         let phase = super::preparation_trace::Phase::start("project_synchronize", documents.len());
         let timer = self.profiler().timer("corsa_project_synchronize");
         if let Some(project_root) = session_project_root {
-            vize_l0::profile!("canon.editor.project_activate", {
-                self.with_client(move |client| {
+            self.with_client(move |client| {
+                vize_l0::profile!("canon.editor.project_activate", {
                     client
                         .synchronize_materialized_project(
                             &project_root,
@@ -257,13 +257,10 @@ impl CorsaBridge {
                         )
                         .map_err(CorsaBridgeError::CommunicationError)
                 })
-                .await
-            })?;
+            })
+            .await?;
         }
-        vize_l0::profile!(
-            "canon.editor.native_batch_open",
-            self.open_native_document_batch(documents).await
-        )?;
+        self.open_native_document_batch(documents).await?;
         phase.finish();
         if let Some(timer) = timer {
             timer.record(self.profiler());

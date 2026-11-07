@@ -88,9 +88,11 @@ impl CorsaBridge {
     ) -> Result<(), CorsaBridgeError> {
         let cache_len = self
             .with_client(move |client| {
-                client
-                    .did_open_immutable_batch(&owned)
-                    .map_err(CorsaBridgeError::CommunicationError)?;
+                vize_l0::profile!("canon.editor.native_batch_open", {
+                    client
+                        .did_open_immutable_batch(&owned)
+                        .map_err(CorsaBridgeError::CommunicationError)
+                })?;
                 Ok(client.diagnostics_cache_len())
             })
             .await?;

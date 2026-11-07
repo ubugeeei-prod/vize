@@ -84,17 +84,20 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, "typed hover skipped: no initialized Corsa bridge");
         return None;
     };
-    let opened = vize_l0::profile!("maestro.hover.canonical.open", {
-        if ctx.has_initial_canonical_document(bridge) {
-            corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
-                .await
-                .map(|document| document.map(|document| HoverDocument::Owned(Box::new(document))))
-        } else {
-            corsa_support::open_canonical_hover_document_strict(ctx, bridge)
-                .await
-                .map(|document| document.map(HoverDocument::Shared))
-        }
-    });
+    let profiler = vize_l0::profiler::global_profiler();
+    let started = profiler.is_enabled().then(std::time::Instant::now);
+    let opened = if ctx.has_initial_canonical_document(bridge) {
+        corsa_support::open_canonical_virtual_document_strict(ctx, bridge)
+            .await
+            .map(|document| document.map(|document| HoverDocument::Owned(Box::new(document))))
+    } else {
+        corsa_support::open_canonical_hover_document_strict(ctx, bridge)
+            .await
+            .map(|document| document.map(HoverDocument::Shared))
+    };
+    if let Some(started) = started {
+        profiler.record("maestro.hover.canonical.open", started.elapsed());
+    }
     let document = match opened {
         Ok(Some(document)) => document,
         Ok(None) => {
@@ -113,10 +116,12 @@ pub(super) async fn hover(
         tracing::info!(uri = %ctx.uri, offset = ctx.offset, "typed hover skipped: offset has no generated position");
         return None;
     };
-    let mut hover = match vize_l0::profile!(
-        "maestro.hover.canonical.backend",
-        bridge.hover(document.request_uri(), line, character).await
-    ) {
+    let started = profiler.is_enabled().then(std::time::Instant::now);
+    let response = bridge.hover(document.request_uri(), line, character).await;
+    if let Some(started) = started {
+        profiler.record("maestro.hover.canonical.backend", started.elapsed());
+    }
+    let mut hover = match response {
         Ok(Some(hover)) => hover,
         Ok(None) => return Some(Answer::Empty),
         Err(error) => {

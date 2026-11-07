@@ -19,14 +19,15 @@ impl CorsaBridge {
     ) -> Result<Option<LspHover>, CorsaBridgeError> {
         let _timer = self.profiler.timer("corsa_hover");
         let uri = uri.to_owned();
-        let result = vize_l0::profile!("canon.editor.hover_transport", {
-            self.with_client(move |client| {
-                client
-                    .hover_raw(uri.as_str(), line, character)
-                    .map_err(CorsaBridgeError::CommunicationError)
+        let result = self
+            .with_client(move |client| {
+                vize_l0::profile!("canon.editor.hover_transport", {
+                    client
+                        .hover_raw(uri.as_str(), line, character)
+                        .map_err(CorsaBridgeError::CommunicationError)
+                })
             })
-            .await
-        })?;
+            .await?;
 
         if let Some(timer) = _timer {
             timer.record(&self.profiler);
