@@ -215,7 +215,11 @@ impl CorsaExecutor {
         profile!("canon.executor.materialize_dts", project.materialize())?;
         let config_path = profile!(
             "canon.project.dts_tsconfig",
-            project.write_declaration_tsconfig(options.out_dir.as_path(), options.declaration_map)
+            project.write_declaration_tsconfig(
+                options.out_dir.as_path(),
+                options.declaration_map,
+                options.mirror_layout,
+            )
         )?;
         let output = profile!(
             "canon.corsa.emit_dts",
@@ -244,6 +248,16 @@ impl CorsaExecutor {
             return Err(CorsaError::CorsaExecution { exit_code, message });
         }
 
+        if options.mirror_layout {
+            // Another program resolves these in place of the sources: keep
+            // TypeScript's own specifiers and layout.
+            return Ok(DeclarationEmitResult {
+                files: profile!(
+                    "canon.dts.collect_outputs",
+                    collect_declaration_outputs(options.out_dir.as_path(), false)
+                )?,
+            });
+        }
         declaration_maps::rewrite_declaration_map_outputs(options.out_dir.as_path(), project)?;
         // TypeScript can widen the emit root when a retained SFC reaches an
         // inferred dependency outside the authored `rootDir`. Restore the
@@ -259,13 +273,16 @@ impl CorsaExecutor {
         Ok(DeclarationEmitResult {
             files: profile!(
                 "canon.dts.collect_outputs",
-                collect_declaration_outputs(options.out_dir.as_path())
+                collect_declaration_outputs(options.out_dir.as_path(), true)
             )?,
         })
     }
 }
 
-fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
+fn collect_declaration_outputs(
+    out_dir: &Path,
+    rewrite_specifiers: bool,
+) -> CorsaResult<Vec<DeclarationOutput>> {
     let mut files = Vec::new();
     let rewriter = ImportRewriter::new();
     if !out_dir.exists() {
@@ -285,9 +302,13 @@ fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOut
         let content = std::fs::read_to_string(path)?;
         files.push(DeclarationOutput {
             path: path.to_path_buf(),
-            content: rewriter
-                .rewrite_declaration_specifiers(&content, SourceType::ts())
-                .code,
+            content: if rewrite_specifiers {
+                rewriter
+                    .rewrite_declaration_specifiers(&content, SourceType::ts())
+                    .code
+            } else {
+                content.into()
+            },
         });
     }
 

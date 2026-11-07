@@ -47,6 +47,7 @@ impl BatchTypeChecker {
             owned_storage: None,
             persistent_storage_owner: None,
             _persistent_storage_leases: None,
+            foreign_declarations: Vec::new(),
         })
     }
 }

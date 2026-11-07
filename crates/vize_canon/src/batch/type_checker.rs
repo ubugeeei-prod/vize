@@ -82,6 +82,9 @@ pub struct BatchTypeChecker {
     persistent_storage_owner: Option<installed_sources::PersistentStorageOwner>,
     // Owner and context leases both outlive the executor.
     _persistent_storage_leases: Option<(std::fs::File, std::fs::File)>,
+    /// Another program's emitted declarations, mirrored once the scan has
+    /// settled this project's mirror root (#12102).
+    foreign_declarations: Vec<(PathBuf, PathBuf)>,
 }
 
 impl BatchTypeChecker {
@@ -223,6 +226,8 @@ impl BatchTypeChecker {
         install_diagnostic_paths: bool,
     ) -> CorsaResult<()> {
         self.scope_initial_installed_sources(&valid_paths, &canonical_paths)?;
+        self.project
+            .register_foreign_declarations(&self.foreign_declarations)?;
         let previous_sources = self.project.registered_original_paths_sorted();
         self.project
             .set_prevalidated_declaration_roots(&canonical_paths);
@@ -252,6 +257,8 @@ impl BatchTypeChecker {
                 .into_parts();
         self.scope_initial_installed_sources(&paths, &canonical_paths)?;
         self.project
+            .register_foreign_declarations(&self.foreign_declarations)?;
+        self.project
             .set_prevalidated_declaration_roots(&canonical_paths);
         self.project
             .register_scanned_paths(&paths, &canonical_paths)?;
@@ -280,6 +287,20 @@ impl BatchTypeChecker {
         paths: impl IntoIterator<Item = PathBuf>,
     ) -> CorsaResult<()> {
         self.project.adopt_diagnostic_sources(paths)
+    }
+
+    /// Mirror another program's emitted declarations in place of the sources
+    /// they describe. They register during the scan, once installed-source
+    /// scoping has settled the mirror root. See
+    /// [`VirtualProject::register_foreign_declarations`].
+    pub fn set_foreign_declarations(&mut self, declarations: Vec<(PathBuf, PathBuf)>) {
+        self.foreign_declarations = declarations;
+    }
+
+    /// The declarations a mirror-layout [`Self::emit_declarations`] produced
+    /// for this program's own sources, keyed by authored source path.
+    pub fn emitted_mirror_declarations(&self, out_dir: &Path) -> Vec<(PathBuf, PathBuf)> {
+        self.project.emitted_mirror_declarations(out_dir)
     }
 
     /// The directory this checker materializes into.

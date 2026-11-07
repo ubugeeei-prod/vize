@@ -307,6 +307,29 @@ fn importing_program_reports_only_sources_no_referenced_project_owns() {
         vec!["packages/app/src/util.ts", "shared/env.ts"]
     );
 
+    // The foreign import names its owner, so an importer can mirror that
+    // program's emitted declaration instead of the source (#12102).
+    let (owned, foreign) = super::super::partition_program_owned_sources(
+        Some(&case_dir.join("packages/app/tsconfig.json")),
+        imports(),
+        false,
+        &mut TsconfigInputCache::default(),
+    );
+    assert_eq!(
+        relative_paths(&case_dir, &owned),
+        vec!["packages/app/src/util.ts", "shared/env.ts"]
+    );
+    assert_eq!(
+        foreign
+            .iter()
+            .map(|source| (source.path.clone(), source.owner.clone()))
+            .collect::<Vec<_>>(),
+        vec![(
+            kit_page.clone(),
+            super::super::normalize_input_path(&case_dir.join("packages/kit/tsconfig.json")),
+        )]
+    );
+
     // The solution shell owns nothing itself: every package source is foreign.
     let mut files = imports();
     retain("tsconfig.json", &mut files);
