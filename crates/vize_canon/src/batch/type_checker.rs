@@ -203,6 +203,25 @@ impl BatchTypeChecker {
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
+        self.scan_explicit_snapshot(valid_paths, canonical_paths, false)
+    }
+
+    /// Scan explicit files and report diagnostics for the same canonical set.
+    ///
+    /// The check server uses this combined entry point so its cold request does
+    /// one filesystem validation and realpath pass per source instead of
+    /// rediscovering both identities when it installs the diagnostic filter.
+    pub(crate) fn scan_paths_with_diagnostics(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
+        self.scan_explicit_snapshot(valid_paths, canonical_paths, true)
+    }
+
+    fn scan_explicit_snapshot(
+        &mut self,
+        valid_paths: Vec<&Path>,
+        canonical_paths: Vec<PathBuf>,
+        install_diagnostic_paths: bool,
+    ) -> CorsaResult<()> {
         self.scope_initial_installed_sources(&valid_paths, &canonical_paths)?;
         let previous_sources = self.project.registered_original_paths_sorted();
         self.project
@@ -216,6 +235,10 @@ impl BatchTypeChecker {
         self.project.register_reachable_dependencies()?;
         self.project.prune_unowned_sources(previous_sources);
         self.project.finalize_package_routes()?;
+        if install_diagnostic_paths {
+            self.project
+                .set_prevalidated_diagnostic_paths(&canonical_paths);
+        }
         self.scanned = true;
         self.incremental_paths
             .after_explicit_scan(&self.project, canonical_paths);
