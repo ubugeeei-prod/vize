@@ -15,19 +15,7 @@ pub fn is_lint_component(tag: &str, dynamic_component: bool) -> bool {
     (dynamic_component && tag == "component") || tag.chars().next().is_some_and(char::is_uppercase)
 }
 
-use super::vue::{DirectiveArgStyle, LegacyDialectCapabilities};
+use super::vue::{LegacyDialectCapabilities, feature};
 
 /// No legacy syntax; colon-style directive arguments.
-pub const CAPABILITIES: LegacyDialectCapabilities = LegacyDialectCapabilities {
-    supports_filters: false,
-    space_separated_filter_args: false,
-    v_repeat_syntax: false,
-    directive_arg_style: DirectiveArgStyle::Colon,
-    v_with_directive: false,
-    v_component_directive: false,
-    computed_dollar_get_set: false,
-    attr_value_interpolation: false,
-    scoped_slot_attrs: false,
-    raw_html_interpolation: false,
-    v2_event_sugar: false,
-};
+pub const CAPABILITIES: LegacyDialectCapabilities = feature::BASE;

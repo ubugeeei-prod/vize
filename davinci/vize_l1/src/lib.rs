@@ -71,6 +71,7 @@ pub mod edit;
 pub mod embed;
 pub mod markup;
 pub mod pug;
+pub mod registry;
 
 mod build;
 mod event;

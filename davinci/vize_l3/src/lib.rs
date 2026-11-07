@@ -35,6 +35,7 @@ pub mod op;
 pub mod operand;
 pub mod optimize;
 pub mod placement;
+pub mod registry;
 pub mod trace;
 pub mod values_dump;
 pub mod verify;

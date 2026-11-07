@@ -7,7 +7,7 @@
 
 use crate::config::VueVersion;
 
-use super::{VueDialect, standalone_html_dialect};
+use super::VueDialect;
 
 /// Template syntax recovery policy.
 ///
@@ -29,7 +29,7 @@ impl TemplateSyntaxMode {
     /// Whether compatibility quirks are active for this file.
     #[must_use]
     pub const fn is_quirks(self) -> bool {
-        matches!(self, Self::Quirks)
+        crate::registry::is_quirks(self)
     }
 }
 
@@ -68,13 +68,7 @@ impl FileDialect {
         syntax: TemplateSyntaxMode,
         lang: Lang,
     ) -> Self {
-        Self {
-            version,
-            framework,
-            syntax,
-            profile: ProfileKind::Component,
-            lang,
-        }
+        crate::registry::component(version, framework, syntax, lang)
     }
 
     /// Resolve a standalone HTML descriptor after structural petite-vue
@@ -86,11 +80,21 @@ impl FileDialect {
         syntax: TemplateSyntaxMode,
         lang: Lang,
     ) -> Self {
+        crate::registry::document(configured, content, syntax, lang)
+    }
+
+    pub(crate) const fn resolved(
+        version: VueVersion,
+        framework: VueDialect,
+        syntax: TemplateSyntaxMode,
+        profile: ProfileKind,
+        lang: Lang,
+    ) -> Self {
         Self {
-            version: VueVersion::V3,
-            framework: standalone_html_dialect(configured, content),
+            version,
+            framework,
             syntax,
-            profile: ProfileKind::Document,
+            profile,
             lang,
         }
     }
@@ -122,28 +126,19 @@ impl FileDialect {
 
     #[must_use]
     pub const fn is_vue3_component(self) -> bool {
-        matches!(
-            (self.version, self.framework, self.profile),
-            (VueVersion::V3, VueDialect::Vue, ProfileKind::Component)
-        )
+        crate::registry::is_vue3_component(self)
     }
 
     /// Whether this is the standard recovery policy for a Vue component at
     /// the requested version. Language remains an independent resolved field.
     #[must_use]
     pub fn is_standard_vue_component(self, version: VueVersion) -> bool {
-        self.version == version
-            && self.framework == VueDialect::Vue
-            && self.syntax == TemplateSyntaxMode::Standard
-            && self.profile == ProfileKind::Component
+        crate::registry::is_standard_vue_component(self, version)
     }
 
     #[must_use]
     pub const fn is_petite_document(self) -> bool {
-        matches!(
-            (self.framework, self.profile),
-            (VueDialect::PetiteVue, ProfileKind::Document)
-        )
+        crate::registry::is_petite_document(self)
     }
 }
 

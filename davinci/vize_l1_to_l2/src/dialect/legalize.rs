@@ -68,27 +68,24 @@ pub struct LegacyFacts {
 /// Vue 3 is the 4-pass table; every legacy dialect prepends this pass.
 #[must_use]
 pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
-    if caps.needs_sugar() {
-        LEGACY
-    } else {
-        crate::pass::TRANSFORM
-    }
+    crate::registry::legalization_pipeline(caps)
 }
 
 /// Legalize Vue 2 sugar in place, then recount and rekey.
 pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
     let mut facts = LegacyFacts::default();
     let allocator = lowered.allocator;
+    let patterns = crate::registry::legalization_patterns(lowered.caps);
     let sync_ids = ids::collect_sync_ids(&lowered.root.ops);
     tree::map_binding_lists(&mut lowered.root.ops, &mut |bindings| {
         sync::expand(allocator, bindings);
         slot::convert(allocator, bindings);
-        if lowered.caps.v2_event_sugar {
+        if patterns.vue2_events() {
             on::rewrite(allocator, bindings);
         }
     });
     ids::rekey(lowered, &sync_ids);
-    if lowered.caps.supports_filters {
+    if patterns.filters() {
         filter::rewrite(
             allocator,
             lowered.source,

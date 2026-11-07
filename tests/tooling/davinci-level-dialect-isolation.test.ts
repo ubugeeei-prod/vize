@@ -12,7 +12,16 @@ import { maskRustSource } from "./davinci-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const crates = ["vize_l1_to_l2", "vize_l2", "vize_l2_to_l3", "vize_l3", "vize_l4"];
-const dialectModules = new Set(["dialect", "markup", "lang", "framework"]);
+const registryCrates = [
+  "vize_l0",
+  "vize_l1",
+  "vize_l1_to_l2",
+  "vize_l2",
+  "vize_l2_to_l3",
+  "vize_l3",
+  "vize_l4",
+];
+const dialectModules = new Set(["dialect", "markup", "lang", "framework", "registry"]);
 // #6829: L4 keeps one target per framework runtime.
 const frameworkTargets = new Set(["vize_l4/src/targets/vue2.rs", "vize_l4/src/targets/vue2"]);
 const policy =
@@ -75,6 +84,7 @@ test("the owed list only shrinks", () => {
 
 test("dialect modules, test code and module declarations are exempt; code is not", () => {
   assert.equal(isCoreFile("vize_l2/src/lang/js.rs"), false);
+  assert.equal(isCoreFile("vize_l2/src/registry.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/dialect/vue2.rs"), false);
   assert.equal(isCoreFile("vize_l4/src/targets/vue2/emit.rs"), false);
   assert.equal(isCoreFile("vize_l3/src/decision/tests.rs"), false);
@@ -116,6 +126,93 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
     path.join(repoRoot, "davinci/vize_l4/src/framework/vue.rs"),
     "utf8",
   );
-  assert.match(target, /\.dialect\(\)\s*\.is_standard_vue_component/u);
+  assert.match(target, /registry::TargetOptions::for_file\(/u);
+  assert.match(target, /\.descriptor\(\)\.dialect\(\)/u);
   assert.doesNotMatch(target, /options\.(?:version|dialect)/u);
+});
+
+test("each level has one registry and policy consumers do not rematch variants", () => {
+  for (const crate of registryCrates) {
+    const root = path.join(repoRoot, "davinci", crate, "src");
+    assert.ok(fs.existsSync(path.join(root, "registry.rs")), `${crate} has no registry.rs`);
+    assert.match(
+      fs.readFileSync(path.join(root, "lib.rs"), "utf8"),
+      /pub mod registry;/u,
+      `${crate} does not expose its registry`,
+    );
+  }
+
+  const consumers = [
+    "vize_l1/src/container/vue/descriptor/policy.rs",
+    "vize_l1/src/container/vue/descriptor/vue1/view.rs",
+    "vize_l1/src/container/vue/descriptor/vue2/view.rs",
+    "vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
+    "vize_l2/src/lang/js/file/native/scoped.rs",
+    "vize_l4/src/framework/vue.rs",
+  ];
+  for (const relative of consumers) {
+    const source = maskRustSource(
+      fs.readFileSync(path.join(repoRoot, "davinci", relative), "utf8"),
+    );
+    assert.match(source, /registry::/u, `${relative} does not use its level registry`);
+    assert.doesNotMatch(
+      source,
+      /\b(?:VueVersion|VueDialect|TemplateSyntaxMode)::\w+/u,
+      `${relative} rematches a concrete dialect variant`,
+    );
+  }
+
+  const fileDialect = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l0/src/dialect/file.rs"),
+    "utf8",
+  );
+  for (const entry of ["component", "document", "is_vue3_component", "is_petite_document"])
+    assert.match(fileDialect, new RegExp(`registry::${entry}\\b`, "u"));
+
+  const capabilities = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l1/src/dialect/vue.rs"),
+    "utf8",
+  );
+  for (const entry of ["legacy_version", "legacy_capabilities", "capabilities"])
+    assert.match(capabilities, new RegExp(`registry::${entry}\\b`, "u"));
+
+  const legalizer = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l1_to_l2/src/dialect/legalize.rs"),
+    "utf8",
+  );
+  for (const entry of ["legalization_pipeline", "legalization_patterns"])
+    assert.match(legalizer, new RegExp(`registry::${entry}\\b`, "u"));
+  assert.doesNotMatch(
+    legalizer,
+    /lowered\.caps\.(?:supports_filters|v2_event_sugar)/u,
+    "the legalizer rematches capability policy outside its registry",
+  );
+
+  const featureRoot = path.join(repoRoot, "davinci/vize_l1/src/dialect/vue/feature");
+  for (const feature of [
+    "attribute.rs",
+    "component.rs",
+    "computed.rs",
+    "directive.rs",
+    "event.rs",
+    "filters.rs",
+    "inheritance.rs",
+    "repeat.rs",
+    "slot_scope.rs",
+    "triple_mustache.rs",
+  ])
+    assert.ok(fs.existsSync(path.join(featureRoot, feature)), `missing Vue feature ${feature}`);
+
+  for (const version of ["vue0.rs", "vue1.rs", "vue2.rs", "vue3.rs"]) {
+    const source = fs.readFileSync(
+      path.join(repoRoot, "davinci/vize_l1/src/dialect", version),
+      "utf8",
+    );
+    assert.match(source, /feature::/u, `${version} is not a const feature composition`);
+    assert.doesNotMatch(
+      source,
+      /LegacyDialectCapabilities\s*\{/u,
+      `${version} duplicates the capability table`,
+    );
+  }
 });

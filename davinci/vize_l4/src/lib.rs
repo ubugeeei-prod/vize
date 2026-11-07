@@ -32,6 +32,7 @@ pub mod expr;
 pub mod framework;
 pub mod jsx;
 pub mod module;
+pub mod registry;
 pub mod runtime;
 pub mod targets;
 pub mod write;

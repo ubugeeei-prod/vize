@@ -2,7 +2,7 @@
 // existing public type identity remains stable.
 
 use alloc::vec::Vec;
-use vize_l0::{Span, config::VueVersion, line_index::utf16_offset};
+use vize_l0::{Span, line_index::utf16_offset};
 use vize_l1_to_l2::{native::NativeEmbed, native_file::NativeSfc};
 use vize_l2::{
     expr::ExprRef, file::FileArtifact, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
@@ -145,10 +145,8 @@ fn project<'o, 'a, L: LinkSink>(
     original: NativeSfc<'o, 'a>,
 ) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
     let observation = original.observation();
-    if !observation
-        .descriptor()
-        .dialect()
-        .is_standard_vue_component(VueVersion::V3)
+    if !crate::registry::TargetOptions::for_file(observation.descriptor().dialect())
+        .vue_projection()
     {
         return Err(VueProjectionError::UnsupportedDialect);
     }

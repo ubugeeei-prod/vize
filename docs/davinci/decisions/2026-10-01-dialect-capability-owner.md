@@ -94,14 +94,39 @@ recovery with their existing `UnsupportedOptions` result, so this ownership
 change does not broaden syntax admission or alter emitted bytes. The legacy
 compiler consumes the same moved enum through its old public path.
 
+### 2026-11-07 per-level registry follow-up
+
+Each level now exposes one dialect registry. L0 is the sole constructor and
+predicate owner for the resolved input axes. L1 maps configured Vue versions to
+their historical line and capability table; each version table is a const
+composition of named syntax features instead of a second field-by-field
+derivation. A frozen six-version matrix pins every boolean and directive style
+to the pre-registry values.
+
+The L1-to-L2 registry selects the existing conditional filter and Vue 2 event
+legalization patterns and the existing pipeline, while the baseline `.sync`
+and `slot-scope` rewrites retain their order and traversal. It also owns the
+bounded selected-SFC admission. L2 registers the remaining scoped-template
+meaning. L2-to-L3 and L3 publish explicit empty registries because all current
+input distinctions have been erased before those levels. L4 turns the retained
+file descriptor into target options for Vue 3 projection and the Vue 2 runtime.
+Consumers ask their level registry instead of matching concrete input variants.
+
+The core-isolation owed list is empty. The retired MoonBit dialect, guest SDK
+and component host remain absent; neutral foreign-expression test strings do
+not restore that architecture. This change does not add syntax, broaden an
+admission, change a diagnostic or alter output bytes. Existing replay laws,
+the full capability matrix, level-isolation laws and differential corpora are
+the behavior proof; exact-source and protected-candidate Actions remain the
+merge authority.
+
 ## Remaining work under #6841
 
-- Move all dialect-specific legalization policy out of generic conversion
-  modules, with a gate enforcing core isolation.
-- Complete per-level residual dialect-op semantics and L4 target options.
-- Dissolve MoonBit infrastructure into the appropriate per-level language
-  modules after its provider contracts exist.
+- Qualify this registry integration on its exact source and protected merge
+  candidate, then verify the signed main result before closing the structural
+  issue.
+- Complete the native Vue 0.x, Vue 1 and quirks behavior tracked separately by
+  #6842; registry ownership does not establish those runtime semantics.
 
-This is one structural provider slice. It does not close #6841 or establish
-complete native parsing, embedded-language admission, product adoption or
-legacy-removal parity.
+This structural provider does not establish complete native parsing,
+embedded-language admission, product adoption or legacy-removal parity.
