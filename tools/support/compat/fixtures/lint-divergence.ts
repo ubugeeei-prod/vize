@@ -442,13 +442,22 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   if (hasModuleAndSetupScripts(source))
     return "Patina analyzes defineProps in a setup block after a normal script block; eslint-plugin-vue does not consistently expose that second-script finding.";
   const lines = source.split("\n");
-  if (finding.line > lines.length) return null;
+  const lineNumber = Number(finding.line);
+  const columnNumber = Number(finding.column);
+  if (
+    !Number.isSafeInteger(lineNumber) ||
+    !Number.isSafeInteger(columnNumber) ||
+    lineNumber < 1 ||
+    lineNumber > lines.length ||
+    columnNumber < 1
+  )
+    return null;
   let offset = 0;
-  for (let line = 1; line < finding.line; line += 1) {
+  for (let line = 1; line < lineNumber; line += 1) {
     offset += (lines[line - 1]?.length ?? 0) + 1;
   }
-  offset += finding.column - 1;
-  const authoredLine = lines[finding.line - 1] ?? "";
+  offset += columnNumber - 1;
+  const authoredLine = lines[lineNumber - 1] ?? "";
   if (
     !source.startsWith("defineProps", offset) &&
     !/\b(?:const|let)\s+[A-Za-z_$][\w$]*\s*=\s*(?:withDefaults\s*\(\s*)?defineProps\s*[<(]/u.test(
