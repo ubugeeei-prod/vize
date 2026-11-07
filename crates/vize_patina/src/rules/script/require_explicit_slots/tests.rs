@@ -121,11 +121,13 @@ fn tsx_sfc_is_outside_the_upstream_rule_surface() {
 }
 
 #[test]
-fn unresolved_slot_type_does_not_turn_into_an_empty_contract() {
-    let result = lint_sfc(
-        "<template><slot name=\"menu\" /></template><script setup lang=\"ts\">defineSlots<ImportedSlots>()</script>",
+fn unresolved_slot_type_contributes_no_known_names() {
+    let sfc = "<template><slot name=\"menu\" /></template><script setup lang=\"ts\">defineSlots<ImportedSlots>()</script>";
+    let result = lint_sfc(sfc);
+    assert_eq!(
+        owned(&result),
+        vec![undeclared(sfc, "<slot name=\"menu\" />", "menu")]
     );
-    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }
 
 #[test]

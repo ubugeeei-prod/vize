@@ -25,7 +25,9 @@ use oxc_ast::ast::{
 
 use oxc_span::{GetSpan, Span};
 
-use vize_l0::FxHashMap;
+use vize_l0::{FxHashMap, FxHashSet};
+
+use super::super::component_options::component_definitions;
 
 /// A single object-form prop entry: its name, the key node (for span
 /// reporting), and its value (a type shorthand or a descriptor object).
@@ -104,6 +106,37 @@ pub(super) fn collect_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSo
     collect_define_props_sources(program, &mut sources);
 
     sources
+}
+
+/// Collect runtime props from every statically recognized component object,
+/// including local `defineComponent({...})` values, plus setup macros.
+pub(super) fn collect_all_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
+    let bindings = collect_object_bindings(program);
+    let mut sources = Vec::new();
+    let mut seen = FxHashSet::default();
+    for options in component_definitions(program) {
+        let Some(source) = option_props_source(options, &bindings) else {
+            continue;
+        };
+        if seen.insert(props_source_start(&source)) {
+            sources.push(source);
+        }
+    }
+    let mut setup = Vec::new();
+    collect_define_props_sources(program, &mut setup);
+    for source in setup {
+        if seen.insert(props_source_start(&source)) {
+            sources.push(source);
+        }
+    }
+    sources
+}
+
+fn props_source_start(source: &PropsSource<'_>) -> u32 {
+    match source {
+        PropsSource::Object(object) => object.span.start,
+        PropsSource::Array(array) => array.span.start,
+    }
 }
 
 /// Resolve only component-owned Options API props, excluding setup macros.

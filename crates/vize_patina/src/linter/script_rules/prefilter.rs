@@ -73,15 +73,18 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         }
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT => {
             // Typed defaults express requiredness in the type and may use an
-            // assignment pattern rather than a literal `default` member.
+            // assignment pattern rather than a literal `default` member. A
+            // normal sibling script can own that local type while the setup
+            // block owns the default, so retain type-declaration blocks for
+            // cross-block resolution too.
             contains(bytes, b"defineProps")
+                || contains(bytes, b"interface")
+                || contains(bytes, b"type ")
                 || (source_may_declare_props(bytes)
                     && contains(bytes, b"required")
                     && contains(bytes, b"default"))
         }
-        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => {
-            source_may_declare_props(bytes) && contains(bytes, b"type")
-        }
+        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => source_may_declare_props(bytes),
         RULE_NO_RESERVED_PROPS => {
             source_may_declare_props(bytes) && contains_any(bytes, RESERVED_PROP_NEEDLES)
         }

@@ -331,6 +331,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // calls, both retained as explicit scanner skips.
     // The final real-project parity pass adds four literal fixtures and calls;
     // their complete traces add thirty-four lines.
+    // The same-element v-if/v-for parity probe adds one nonliteral call and
+    // remains an explicit scanner skip while its focused rule test executes.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -353,7 +355,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 4
         + 17
         + 2
-        + 4,
+        + 4
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -381,7 +384,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 1
         + 3
-        + 2,
+        + 2
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13 + 51 + 18 + 102 + 34,
     restructured: 0,

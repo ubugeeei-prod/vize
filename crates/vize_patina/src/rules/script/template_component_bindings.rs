@@ -12,7 +12,7 @@ use oxc_ast::ast::{
 };
 use oxc_parser::ParserReturn;
 use vize_atelier_sfc::{SfcDescriptor, SfcScriptBlock};
-use vize_croquis::{OptionGroup, script_parser::collect_options_descriptor};
+use vize_croquis::script_parser::collect_options_descriptor;
 use vize_l0::{CompactString, Span};
 
 const MAX_DECLARATIONS: usize = 4096;
@@ -156,13 +156,11 @@ impl TemplateComponentBindings {
             && let Some(options) = collect_options_descriptor(&parsed.program)
         {
             for member in options.members {
-                if member.group == OptionGroup::Setup {
-                    result.record(
-                        block,
-                        member.name.as_str(),
-                        oxc_span::Span::new(member.start, member.end),
-                    );
-                }
+                result.record(
+                    block,
+                    member.name.as_str(),
+                    oxc_span::Span::new(member.start, member.end),
+                );
             }
         }
         result

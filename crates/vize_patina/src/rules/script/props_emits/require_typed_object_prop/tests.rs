@@ -224,6 +224,21 @@ export default defineComponent({
 }
 
 #[test]
+fn test_invalid_local_define_component() {
+    let source = r#"
+const Item = defineComponent({
+  props: {
+    value: { type: Object },
+    rows: Array,
+  },
+})
+export default Item
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_invalid_mixed_counts() {
     let source = r#"
 const props = defineProps({

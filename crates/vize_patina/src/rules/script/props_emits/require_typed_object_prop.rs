@@ -57,7 +57,7 @@ use oxc_span::GetSpan;
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::props_source::{PropDescriptor, collect_all_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -89,7 +89,7 @@ impl ScriptRule for RequireTypedObjectProp {
         // Array-form props (`['foo']` / `defineProps(['foo'])`) declare only a
         // name and carry no runtime type, so there is nothing to inspect here;
         // a missing type is `script/require-prop-types`' concern.
-        for source in collect_runtime_props(program) {
+        for source in collect_all_runtime_props(program) {
             for prop in source.object_props() {
                 check_prop(prop, offset, result);
             }

@@ -190,6 +190,22 @@ export function baselineIntentionalReason(
   finding: LintRecord,
   source?: string | null,
 ): string | null {
+  if (finding.ruleId === "vue/no-shared-component-data")
+    return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
+  if (
+    finding.ruleId === "vue/one-component-per-file" &&
+    source !== undefined &&
+    source !== null &&
+    /\bcreateApp\s*\([^,]+,\s*\{/su.test(source)
+  )
+    return "eslint-plugin-vue counts createApp's root-props object as another component definition; Patina excludes that ordinary props object.";
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null &&
+    pugTemplateEmitsDeclaredEvent(finding, source)
+  )
+    return "Patina reads authored Pug template expressions and sees this declared event being emitted; eslint-plugin-vue does not expose that Pug expression to this rule.";
   const name = quotedName(finding.message)?.replace(/^(?:v-bind:|:)/, "");
   if (
     finding.ruleId === "vue/require-explicit-slots" &&
@@ -338,6 +354,16 @@ function dynamicComponentIsNativeOnly(finding: LintRecord, source: string): bool
   return values.every((value) => native.has(value));
 }
 export function patinaIntentionalReason(finding: LintRecord, source: string): string | null {
+  if (finding.ruleId === "script/prefer-use-template-ref" && hasInlinePugTemplate(source))
+    return "Patina correlates ref attributes in authored Pug templates with script refs; eslint-plugin-vue does not expose those Pug ref attributes to this rule.";
+  if (
+    [
+      "script/no-deprecated-dollar-listeners-api",
+      "script/no-deprecated-dollar-scopedslots-api",
+    ].includes(finding.ruleId) &&
+    findingInsideScriptBlock(finding, source)
+  )
+    return "Patina preserves script-side legacy instance API coverage when the fixture's eslint-plugin-vue path only reports equivalent template references.";
   if (
     finding.ruleId === "script/require-default-prop" &&
     findingInsideReferencedPropsObject(finding, source)
@@ -376,6 +402,28 @@ export function patinaIntentionalReason(finding: LintRecord, source: string): st
   offset += Number(finding.column) - 1;
   if (!source.startsWith("defineProps", offset)) return null;
   return "Patina's default deliberately requires a direct bare defineProps call to bind an explicit destructuring pattern; eslint-plugin-vue does not report that stronger policy.";
+}
+
+function hasInlinePugTemplate(source: string): boolean {
+  return /<template\b[^>]*\blang\s*=\s*(?:["']pug["']|pug)[^>]*>/u.test(source);
+}
+
+function pugTemplateEmitsDeclaredEvent(finding: LintRecord, source: string): boolean {
+  if (!hasInlinePugTemplate(source)) return false;
+  const event = /["']([^"']+)["']/u.exec(finding.message)?.[1];
+  if (event === undefined) return false;
+  const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source);
+}
+
+function findingInsideScriptBlock(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const open = source.lastIndexOf("<script", offset);
+  if (open < 0) return false;
+  const content = source.indexOf(">", open) + 1;
+  const close = source.indexOf("</script>", content);
+  return content > 0 && content <= offset && (close < 0 || offset < close);
 }
 
 function findingOffset(finding: LintRecord, source: string): number | null {
@@ -642,6 +690,36 @@ export function pairRuleLocationDivergences(
             subject: `slot:${slot}`,
             reason:
               "patina reports the actual lowercase <slot> outlet while eslint-plugin-vue can anchor the enclosing imported <Slot> component case-insensitively.",
+          };
+          break;
+        }
+      }
+      if (
+        [
+          "script/require-default-prop",
+          "script/no-boolean-default",
+          "script/prefer-use-template-ref",
+          "script/no-required-prop-with-default",
+          "vue/no-setup-props-reactivity-loss",
+        ].includes(positive.ruleId)
+      ) {
+        const startShift = Number(positive.line) - Number(negative.line),
+          endShift = Number(positive.endLine) - Number(negative.endLine);
+        if (
+          startShift !== 0 &&
+          startShift === endShift &&
+          positive.column === negative.column &&
+          positive.endColumn === negative.endColumn
+        ) {
+          const quoted = (message: string) => /['"`]([^'"`]+)['"`]/u.exec(message)?.[1],
+            left = quoted(positive.message),
+            right = quoted(negative.message);
+          if (left !== undefined && right !== undefined && left !== right) continue;
+          match = {
+            index,
+            subject: left === undefined ? `line-shift:${positive.column}` : `binding:${left}`,
+            reason:
+              "eslint-plugin-vue offsets this script-setup finding by the preceding normal script block; Patina reports the authored SFC line.",
           };
           break;
         }

@@ -3,6 +3,7 @@ use crate::diagnostic::LintDiagnostic;
 use crate::rules::script::ScriptLintResult;
 use oxc_ast::ast::{
     ArrayPattern, BindingPattern, Expression, FormalParameters, ImportDeclaration, ObjectPattern,
+    Program,
 };
 use oxc_span::Span;
 use vize_l0::{CompactString, FxHashMap};
@@ -20,15 +21,17 @@ pub(super) enum Kind {
     Other,
 }
 
-pub(super) struct Visitor<'a> {
+pub(super) struct Visitor<'result, 'ast> {
     pub(super) offset: usize,
-    pub(super) result: &'a mut ScriptLintResult,
+    pub(super) result: &'result mut ScriptLintResult,
     pub(super) fn_depth: u32,
     pub(super) writing: bool,
+    pub(super) suppress_reads: bool,
     pub(super) frames: Vec<FxHashMap<CompactString, Kind>>,
+    pub(super) sibling_program: Option<&'ast Program<'ast>>,
 }
 
-impl Visitor<'_> {
+impl Visitor<'_, '_> {
     pub(super) fn insert(&mut self, name: &str, kind: Kind) {
         if let Some(frame) = self.frames.last_mut() {
             frame.insert(CompactString::from(name), kind);

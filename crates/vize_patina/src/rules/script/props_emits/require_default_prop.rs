@@ -17,8 +17,11 @@
 //! options/props objects, and the `<script setup>` runtime form
 //! `defineProps({ ... })`. The array shorthand (`props: ['x']` /
 //! `defineProps(['x'])`) declares neither type nor default and is left to
-//! `require-prop-types`. Type-based props are checked directly, including a
-//! local generic interface declared in the SFC's sibling `<script>` block.
+//! `require-prop-types`. Type-based props are checked when they use a defaults
+//! surface (`withDefaults` or props destructuring), including a local generic
+//! interface declared in the SFC's sibling `<script>` block. A plain
+//! `defineProps<T>()` has no authored default surface and is left alone,
+//! matching eslint-plugin-vue.
 //!
 //! Port of [`vue/require-default-prop`](https://eslint.vuejs.org/rules/require-default-prop.html).
 //!
@@ -118,11 +121,13 @@ impl ScriptRule for RequireDefaultProp {
                     );
                 }
             }
-            for prop in &declaration.typed {
-                if prop.required || prop.boolean || declaration.has_default(&prop.name) {
-                    continue;
+            if declaration.uses_destructure || declaration.uses_with_defaults {
+                for prop in &declaration.typed {
+                    if prop.required || prop.boolean || declaration.has_default(&prop.name) {
+                        continue;
+                    }
+                    report(&prop.name, prop.span, prop.offset, result);
                 }
-                report(&prop.name, prop.span, prop.offset, result);
             }
         }
     }

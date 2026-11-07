@@ -121,14 +121,14 @@ emit('change')
 }
 
 #[test]
-fn test_emit_passed_to_a_call_does_not_count_as_direct_usage() {
+fn test_emit_passed_to_a_call_escapes_analysis() {
     let source = r#"
 import { useClose } from "./use-close";
 const emit = defineEmits<{ close: [] }>();
 const { close } = useClose(emit);
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -164,7 +164,7 @@ function use() {
 }
 
 #[test]
-fn test_sfc_emit_passed_to_a_composable_is_not_direct_usage() {
+fn test_sfc_emit_passed_to_a_composable_escapes_analysis() {
     let sfc = r#"<script setup lang="ts">
 import { useClose } from "./use-close";
 
@@ -183,7 +183,7 @@ const { close } = useClose(emit);
             .iter()
             .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
             .count(),
-        1,
+        0,
         "{:?}",
         result.diagnostics
     );

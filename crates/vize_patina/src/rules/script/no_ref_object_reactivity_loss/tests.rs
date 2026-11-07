@@ -1,5 +1,6 @@
 use super::{MESSAGE, NoRefObjectReactivityLoss};
 use crate::diagnostic::Severity;
+use crate::linter::Linter;
 use crate::rules::script::{ScriptLintResult, ScriptLinter};
 
 const RULE: &str = super::RULE;
@@ -102,6 +103,7 @@ const watched = computed(() => item.value)
 const refs = toRefs(foo)
 const watchedBag = computed(() => refs.item.value)
 const [a] = ref(0)
+const copiedIntoAnotherRef = ref(count.value)
 foo.bar = ref(0)
 let alias = ref(0)
 alias = alias
@@ -118,4 +120,25 @@ fn stays_opt_in_until_same_scope_value_reads_are_precise() {
         .expect(RULE);
     assert_eq!(meta.default_severity, Severity::Warning);
     assert!(meta.presets.is_empty());
+}
+
+#[test]
+fn resolves_vue_factories_imported_by_the_sibling_script_block() {
+    let source = r#"<script lang="ts">
+import { computed, toRefs } from 'vue'
+</script>
+<script setup lang="ts">
+const refs = toRefs(props)
+const item = refs.item.value
+const selected = computed(() => item).value
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec![RULE.into()]))
+        .lint_sfc(source, "Probe.vue");
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE)
+        .collect();
+    assert_eq!(diagnostics.len(), 2, "{diagnostics:?}");
 }

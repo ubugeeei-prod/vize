@@ -1,6 +1,6 @@
 //! script/require-typed-ref
 //!
-//! Require an explicit type argument on a `ref()` whose initial value cannot be
+//! Require an explicit type argument on a `ref()` or `shallowRef()` whose initial value cannot be
 //! inferred.
 //!
 //! When `ref()` is called with no argument, or with `null` / `undefined`, the
@@ -11,10 +11,10 @@
 //! known up front. A direct identifier binding annotation also supplies that
 //! explicit type, for example `const value: Ref<string | null> = ref(null)`.
 //!
-//! Only the un-inferable initializers are flagged — `ref()`, `ref(null)`, and
-//! `ref(undefined)` *without* a type argument. A `ref(0)` (inferable from the
-//! literal) or any `ref<T>(...)` (already typed) is left alone. The `ref` must be
-//! the one imported from `vue` (directly or under an alias).
+//! Only the un-inferable initializers are flagged — empty, `null`, and
+//! `undefined` calls *without* a type argument. An inferable literal or any
+//! explicitly typed call is left alone. The helper must be imported from `vue`
+//! directly or under an alias.
 //!
 //! Mirrors [`vue/require-typed-ref`](https://eslint.vuejs.org/rules/require-typed-ref.html),
 //! which applies to TypeScript only.
@@ -87,7 +87,6 @@ impl ScriptRule for RequireTypedRef {
             offset,
             result,
             ref_aliases: FxHashSet::default(),
-            ref_imported: false,
             annotated_initializer: None,
         };
         visitor.visit_program(program);
@@ -110,11 +109,8 @@ impl ScriptRule for RequireTypedRef {
 struct RequireTypedRefVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
-    /// Local names bound to the `ref` import from `vue` (handles `ref as r`).
+    /// Local names bound to `ref` / `shallowRef` imports from `vue`.
     ref_aliases: FxHashSet<CompactString>,
-    /// Whether `ref` was imported from `vue` at all. Only then do bare `ref(...)`
-    /// calls refer to the reactivity helper rather than some unrelated function.
-    ref_imported: bool,
     /// Only the annotated binding's direct call, never an arbitrary nested ref.
     annotated_initializer: Option<Span>,
 }
@@ -128,8 +124,7 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
                 let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
                     continue;
                 };
-                if specifier.imported.name().as_str() == "ref" {
-                    self.ref_imported = true;
+                if matches!(specifier.imported.name().as_str(), "ref" | "shallowRef") {
                     self.ref_aliases
                         .insert(CompactString::new(specifier.local.name.as_str()));
                 }
@@ -179,9 +174,6 @@ impl RequireTypedRefVisitor<'_> {
     /// Whether the callee is the `ref` helper imported from `vue`. Requires the
     /// import to be present so a local `ref` in a non-vue file is not flagged.
     fn is_ref_call(&self, call: &CallExpression<'_>) -> bool {
-        if !self.ref_imported {
-            return false;
-        }
         matches!(
             &call.callee,
             Expression::Identifier(identifier) if self.ref_aliases.contains(identifier.name.as_str())
@@ -255,6 +247,20 @@ mod tests {
         // `ref` is not imported from vue, so this is some other function.
         let result = create_linter().lint("const a = ref()", 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_untyped_shallow_ref() {
+        let source = "import { shallowRef } from 'vue'\nconst value = shallowRef()";
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_aliased_shallow_ref() {
+        let source = "import { shallowRef as shallow } from 'vue'\nconst value = shallow(null)";
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

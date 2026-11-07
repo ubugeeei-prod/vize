@@ -15,28 +15,19 @@
 //! ### Invalid
 //! ```ts
 //! const header = this.$scopedSlots.header
-//! const footer = ctx.$scopedSlots.footer
 //! render($scopedSlots.default)
 //! ```
 //!
 //! ### Valid
 //! ```ts
 //! const header = this.$slots.header
-//! const footer = ctx.$slots.footer
 //! render($slots.default)
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    ComputedMemberExpression, Expression, IdentifierReference, Program, StaticMemberExpression,
-};
-use oxc_ast_visit::{
-    Visit,
-    walk::{
-        walk_computed_member_expression, walk_identifier_reference, walk_static_member_expression,
-    },
-};
+use oxc_ast::ast::{Expression, Program, StaticMemberExpression};
+use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
 use oxc_span::Span;
 
 /// The removed Vue 2 instance property this rule reports.
@@ -116,36 +107,16 @@ struct NoDeprecatedDollarScopedSlotsApiVisitor<'result> {
 
 impl<'a> Visit<'a> for NoDeprecatedDollarScopedSlotsApiVisitor<'_> {
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
-        // `this.$scopedSlots`, `ctx.$scopedSlots`, etc. Report the whole
-        // member-access span so the fix target covers `<object>.$scopedSlots`.
-        if it.property.name.as_str() == SCOPED_SLOTS {
-            self.push_diagnostic(it.span);
+        if it.property.name.as_str() == SCOPED_SLOTS
+            && matches!(
+                it.object.get_inner_expression(),
+                Expression::ThisExpression(_)
+            )
+        {
+            self.push_diagnostic(it.property.span);
         }
 
         walk_static_member_expression(self, it);
-    }
-
-    fn visit_computed_member_expression(&mut self, it: &ComputedMemberExpression<'a>) {
-        // `this["$scopedSlots"]` and friends: only a string-literal key can name
-        // the removed property statically.
-        if let Expression::StringLiteral(key) = &it.expression
-            && key.value.as_str() == SCOPED_SLOTS
-        {
-            self.push_diagnostic(it.span);
-        }
-
-        walk_computed_member_expression(self, it);
-    }
-
-    fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
-        // A bare `$scopedSlots` reference (e.g. destructured off the instance).
-        // The property of a static member access is an `IdentifierName`, not an
-        // `IdentifierReference`, so this never double-counts `obj.$scopedSlots`.
-        if it.name.as_str() == SCOPED_SLOTS {
-            self.push_diagnostic(it.span);
-        }
-
-        walk_identifier_reference(self, it);
     }
 }
 
@@ -215,13 +186,13 @@ const slots = useSlots()
     }
 
     #[test]
-    fn test_invalid_ctx_scoped_slots() {
+    fn test_valid_non_instance_scoped_slots_member() {
         let result = lint("const footer = ctx.$scopedSlots.footer");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_bare_identifier_reference() {
+    fn test_valid_bare_identifier_reference() {
         let source = r#"
 const { $scopedSlots } = this
 render($scopedSlots.default)
@@ -230,37 +201,33 @@ render($scopedSlots.default)
         // usage; the destructuring target is a binding identifier, so only the
         // `render(...)` argument is an `IdentifierReference`.
         let result = lint(source);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_computed_string_key() {
+    fn test_valid_computed_string_key() {
         let result = lint(r#"const header = this["$scopedSlots"].header"#);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_multiple_occurrences() {
+    fn test_only_reports_direct_instance_occurrences() {
         let source = r#"
 const a = this.$scopedSlots.header
 const b = ctx.$scopedSlots.footer
 "#;
         let result = lint(source);
-        assert_eq!(result.error_count, 2);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
-    fn test_reports_member_span() {
+    fn test_reports_property_span() {
         let result = lint("const header = this.$scopedSlots.header");
         assert_eq!(result.diagnostics.len(), 1);
         let diag = &result.diagnostics[0];
-        // Span covers `this.$scopedSlots`, not the trailing `.header` access.
-        let start = source_index(
-            "const header = this.$scopedSlots.header",
-            "this.$scopedSlots",
-        );
+        let start = source_index("const header = this.$scopedSlots.header", "$scopedSlots");
         assert_eq!(diag.start, start as u32);
-        assert_eq!(diag.end, (start + "this.$scopedSlots".len()) as u32);
+        assert_eq!(diag.end, (start + "$scopedSlots".len()) as u32);
     }
 
     fn source_index(haystack: &str, needle: &str) -> usize {

@@ -136,12 +136,12 @@ const props = defineProps({
 }
 
 #[test]
-fn test_define_props_type_based_requires_default() {
+fn test_plain_type_only_define_props_has_no_default_surface() {
     let source = r#"
 const props = defineProps<{ name?: string }>()
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]

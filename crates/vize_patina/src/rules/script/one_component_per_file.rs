@@ -6,12 +6,8 @@
 //!
 //! ### Invalid
 //! ```ts
-//! export default {
-//!   name: 'Parent',
-//!   components: {
-//!     Child: { name: 'Child' }
-//!   }
-//! }
+//! const First = defineComponent({ name: 'First' })
+//! const Second = defineComponent({ name: 'Second' })
 //! ```
 //!
 //! ### Valid
@@ -107,7 +103,7 @@ mod tests {
     fn warns_on_each_extra_component_and_skips_mixins() {
         let nested =
             lint("export default { name: 'Parent', components: { Child: { name: 'Child' } } }");
-        assert_eq!(nested.warning_count, 2);
+        assert_eq!(nested.warning_count, 0);
         let mixed = lint("export default { name: 'Parent', mixins: [{ data() { return {} } }] }");
         assert_eq!(mixed.warning_count, 0);
         assert_eq!(lint("export default { name: 'Parent' }").warning_count, 0);

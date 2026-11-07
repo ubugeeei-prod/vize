@@ -14,7 +14,9 @@
 //! This is intentionally pragmatic. It tracks the captured emit function
 //! (`const emit = defineEmits(...)`) and the string-literal event names passed
 //! as its first argument (`emit('change')`). An event declared but never emitted
-//! through that function is reported. Calls are counted from the macro
+//! through that function is reported. Passing the function to another call
+//! escapes it to code this rule cannot inspect, so all declarations are then
+//! treated as potentially used, matching eslint-plugin-vue. Calls are counted from the macro
 //! declaration onward, matching eslint-plugin-vue's source-order visitor. When
 //! the `defineEmits` return value is not assigned to a binding (e.g. a bare
 //! `defineEmits([...])`), only template `$emit(...)` calls can use declarations.
@@ -121,13 +123,16 @@ impl ScriptRule for NoUnusedEmitDeclarations {
         {
             // Collect every event name emitted through the captured function.
             let mut used = FxHashSet::default();
+            let mut escaped = false;
             if let Some(binding) = declaration.binding {
                 let mut collector = EmittedCollector {
                     emit_name: binding,
                     used: &mut used,
                     after: declaration.start,
+                    escaped: false,
                 };
                 collector.visit_program(program);
+                escaped = collector.escaped;
             }
 
             // Top-level `<script setup>` bindings are template-visible, so emit
@@ -141,7 +146,7 @@ impl ScriptRule for NoUnusedEmitDeclarations {
             }
 
             for event in &declaration.events {
-                if !used.contains(event.name.as_str()) {
+                if !escaped && !used.contains(event.name.as_str()) {
                     report(
                         &event.name,
                         event.span,
@@ -644,6 +649,7 @@ struct EmittedCollector<'a, 'set> {
     emit_name: &'a str,
     used: &'set mut FxHashSet<CompactString>,
     after: u32,
+    escaped: bool,
 }
 
 impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
@@ -655,7 +661,28 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
         {
             self.used.insert(CompactString::new(literal.value.as_str()));
         }
+        if it.span.start > self.after {
+            for argument in &it.arguments {
+                let mut finder = EmitReferenceFinder {
+                    emit_name: self.emit_name,
+                    found: false,
+                };
+                finder.visit_argument(argument);
+                self.escaped |= finder.found;
+            }
+        }
         walk_call_expression(self, it);
+    }
+}
+
+struct EmitReferenceFinder<'a> {
+    emit_name: &'a str,
+    found: bool,
+}
+
+impl<'a> Visit<'a> for EmitReferenceFinder<'_> {
+    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
+        self.found |= identifier.name.as_str() == self.emit_name;
     }
 }
 

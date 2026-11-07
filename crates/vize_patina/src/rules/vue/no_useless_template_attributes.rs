@@ -40,8 +40,17 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUselessTemplateAttributes;
 
-/// Structural directives that are valid on `<template>`
-const STRUCTURAL_DIRECTIVES: &[&str] = &["if", "else-if", "else", "for", "slot"];
+/// Structural directives that are valid on `<template>`. `scope` and
+/// `slot-scope` are retained for Vue 2 migration projects.
+const STRUCTURAL_DIRECTIVES: &[&str] = &[
+    "if",
+    "else-if",
+    "else",
+    "for",
+    "slot",
+    "scope",
+    "slot-scope",
+];
 
 impl NoUselessTemplateAttributes {
     /// Check if a template has a structural directive (which justifies its existence)
@@ -75,8 +84,8 @@ impl NoUselessTemplateAttributes {
                 false
             }
             PropNode::Attribute(attr) => {
-                // key attribute is allowed
-                attr.name == "key"
+                // `slot` is the Vue 2 plain-attribute spelling.
+                matches!(attr.name, "key" | "slot")
             }
         }
     }
@@ -168,6 +177,23 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_vue_2_slot_syntax() {
+        let linter = create_linter();
+        for template in [
+            r#"<MyComponent><template slot="header"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template slot-scope="props"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template scope="props"><h1 /></template></MyComponent>"#,
+        ] {
+            let result = linter.lint_template(template, "test.vue");
+            assert_eq!(
+                result.error_count, 0,
+                "{template}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 
     #[test]

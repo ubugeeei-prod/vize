@@ -222,7 +222,7 @@ fn retained_method_reference(expression: &SimpleExpressionNode<'_>) -> bool {
     let Some(parsed) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
         return false;
     };
-    match parsed.ast.get_inner_expression() {
+    match parsed.ast {
         JsExpression::Identifier(_) => true,
         // Optional member access (`actions?.save`) is not a stable method
         // reference: it conditionally evaluates to `undefined`, and upstream

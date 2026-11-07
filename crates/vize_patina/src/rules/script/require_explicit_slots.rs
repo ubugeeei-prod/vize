@@ -123,7 +123,9 @@ impl ScriptRule for RequireExplicitSlots {
             }
             // eslint-plugin-vue cannot resolve imported/referenced types here;
             // such a declaration contributes no statically known slot names.
-            DeclaredSlots::Unknown => {}
+            DeclaredSlots::Unknown => {
+                check_template(&vize_l0::FxHashSet::default(), sfc, result);
+            }
             DeclaredSlots::Known(names) => {
                 check_template(names, sfc, result);
             }

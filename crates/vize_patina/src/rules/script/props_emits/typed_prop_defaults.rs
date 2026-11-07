@@ -24,6 +24,7 @@ pub(crate) struct PropDefault {
 pub(crate) struct TypedProp {
     pub(crate) name: CompactString,
     pub(crate) span: Span,
+    pub(crate) key_span: Span,
     pub(crate) required: bool,
     pub(crate) boolean: bool,
     /// Offset of the script block which owns this type member.
@@ -35,6 +36,7 @@ pub(crate) struct SetupPropsDeclaration<'a> {
     pub(crate) typed: Vec<TypedProp>,
     pub(crate) defaults: Vec<PropDefault>,
     pub(crate) uses_destructure: bool,
+    pub(crate) uses_with_defaults: bool,
 }
 
 impl SetupPropsDeclaration<'_> {
@@ -174,6 +176,7 @@ fn declaration_from_expression<'a>(
         typed,
         defaults,
         uses_destructure,
+        uses_with_defaults: with_defaults.is_some(),
     })
 }
 
@@ -327,6 +330,7 @@ fn collect_signatures(
         props.push(TypedProp {
             name: CompactString::new(name),
             span: property.span(),
+            key_span: property.key.span(),
             required: !property.optional,
             boolean,
             offset: origin_offset,

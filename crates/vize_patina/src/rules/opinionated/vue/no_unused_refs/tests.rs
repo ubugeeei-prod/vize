@@ -89,6 +89,30 @@ export default {
 }
 
 #[test]
+fn static_refs_destructuring_does_not_hide_other_unused_refs() {
+    let sfc = r#"<template>
+  <input ref="inputEl" />
+  <input ref="dead" />
+</template>
+<script>
+export default {
+  mounted() {
+    const { inputEl: input } = this.$refs
+    input.focus()
+  }
+}
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert!(findings[0].message.contains("dead"));
+}
+
+#[test]
 fn test_valid_options_api_setup_return() {
     let sfc = r#"<template><input ref="inputEl" /></template>
 <script>

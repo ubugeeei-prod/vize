@@ -51,8 +51,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{
-    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey, Statement, StaticMemberExpression,
+    Argument, BindingPattern, CallExpression, Expression, ObjectExpression, ObjectPropertyKind,
+    Program, PropertyKey, Statement, StaticMemberExpression, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::SemanticBuilder;
@@ -298,6 +298,18 @@ impl RefUseVisitor<'_> {
 }
 
 impl<'a> Visit<'a> for RefUseVisitor<'_> {
+    fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
+        if let (BindingPattern::ObjectPattern(pattern), Some(init)) =
+            (&declarator.id, &declarator.init)
+            && Self::refs_object(init)
+        {
+            self.used |= pattern.properties.iter().any(|property| {
+                !property.computed && property_key_name(&property.key) == Some(self.name)
+            });
+        }
+        walk::walk_variable_declarator(self, declarator);
+    }
+
     fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
         if self.objects.contains(object) {
             for property in &object.properties {
@@ -423,12 +435,43 @@ fn has_opaque_refs_access(source: &str) -> bool {
             // `$refs.member` — a resolvable static read; the member name will be
             // matched by `token_present`, so this is not opaque.
             Some(b'.') => {}
+            // Static object destructuring enumerates the exact ref names and
+            // is handled by `RefUseVisitor`; it is not a whole-object escape.
+            _ if is_static_refs_destructure(source, index) => {}
             // `$refs` at end of input, or anything else (`[`, `,`, `)`, `;`, `=`,
             // operators, etc.) is treated as opaque to stay sound.
             _ => return true,
         }
     }
     false
+}
+
+fn is_static_refs_destructure(source: &str, refs_start: usize) -> bool {
+    let Some(prefix) = source.get(..refs_start) else {
+        return false;
+    };
+    let Some(assignment) = prefix.rfind('=') else {
+        return false;
+    };
+    let Some(rhs_prefix) = prefix.get(assignment + 1..).map(str::trim) else {
+        return false;
+    };
+    if !matches!(rhs_prefix, "" | "this.") {
+        return false;
+    }
+    let Some(left) = prefix.get(..assignment).map(str::trim_end) else {
+        return false;
+    };
+    if !left.ends_with('}') {
+        return false;
+    }
+    let Some(open) = left.rfind('{') else {
+        return false;
+    };
+    let Some(entries) = left.get(open + 1..left.len() - 1) else {
+        return false;
+    };
+    !entries.contains("...") && !entries.contains('[') && !entries.contains(']')
 }
 
 #[cfg(test)]

@@ -23,7 +23,7 @@
 //! count.value = 1
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::Severity;
 use oxc_ast::ast::Program;
 use oxc_ast_visit::Visit;
@@ -60,12 +60,31 @@ impl ScriptRule for NoRefObjectReactivityLoss {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'a>,
+        result: &mut ScriptLintResult,
+    ) {
         let mut visitor = Visitor {
             offset,
             result,
             fn_depth: 0,
             writing: false,
+            suppress_reads: false,
             frames: Vec::new(),
+            sibling_program: sfc.sibling_program,
         };
         visitor.visit_program(program);
     }
