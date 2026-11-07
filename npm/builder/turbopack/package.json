@@ -77,7 +77,7 @@
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable",
-    "yaml": "catalog:"
+    "yaml": "2.9.0"
   },
   "peerDependencies": {
     "next": "^16.4.3",
