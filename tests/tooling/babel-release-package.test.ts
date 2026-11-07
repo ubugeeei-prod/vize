@@ -7,19 +7,15 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file: string) => fs.readFileSync(path.join(root, file), "utf8");
 
-test("the unpublished Babel package is built and smoked with the native compiler", () => {
+test("the registered Babel package is published and smoked with the native compiler", () => {
   const workflow = read(".github/workflows/release.yml");
   const packages = workflow.match(/^  RELEASE_JS_PACKAGES: (.+)$/m)?.[1].split(" ");
   const smokePackages = read(".github/workflows/native-smoke.yml")
     .match(/^  RELEASE_JS_PACKAGES: (.+)$/m)?.[1]
     .split(" ");
   assert.ok(packages && smokePackages, "both package inventories are required");
-  assert.equal(packages.includes("npm/babel"), false, "first publication needs registry setup");
-  assert.deepEqual(
-    smokePackages,
-    [...packages, "npm/babel"],
-    "native smoke includes the unpublished plugin and every established release package",
-  );
+  assert.equal(packages.includes("npm/babel"), true, "the registered plugin is released");
+  assert.deepEqual(smokePackages, packages, "release and native smoke publish the same packages");
   const build = read(".github/actions/release-build-packages/action.yml");
   assert.ok(
     build.includes("--filter './npm/babel...'"),

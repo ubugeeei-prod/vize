@@ -91,12 +91,12 @@ test("source provenance, original digest and archive membership cannot be omitte
 
 function assertLiveInventory(workflow: string, release: string): void {
   assertMuslFreshInstallSuccessor(after, workflow);
-  const expected = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  const expected = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(expected);
   assert.deepEqual(
     release.split("\n").filter((row) => row.startsWith("  RELEASE_JS_PACKAGES: ")),
     [expected],
-    "release retains the fifteen established packages while Babel awaits registry setup",
+    "release publishes the registered Babel package with every established package",
   );
 }
 
@@ -107,7 +107,7 @@ test("actual native-smoke and release files bind the registered successor", () =
   );
 });
 
-test("smoke rollback or premature Babel publication cannot reuse historical admission", () => {
+test("smoke rollback or Babel publication rollback cannot reuse historical admission", () => {
   const workflow = fs.readFileSync(
     new URL("../../.github/workflows/native-smoke.yml", import.meta.url),
     "utf8",
@@ -120,13 +120,13 @@ test("smoke rollback or premature Babel publication cannot reuse historical admi
   const newLine = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(oldLine && newLine);
   assert.throws(() => assertLiveInventory(before, release));
-  assert.throws(() => assertLiveInventory(workflow, release.replace(oldLine, newLine)));
+  assert.throws(() => assertLiveInventory(workflow, release.replace(newLine, oldLine)));
   for (const changed of [
-    oldLine.replace(" npm/cli", ""),
-    oldLine.replace(" npm/cli", " npm/cli npm/cli"),
-    oldLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
+    newLine.replace(" npm/cli", ""),
+    newLine.replace(" npm/cli", " npm/cli npm/cli"),
+    newLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
   ])
-    assert.throws(() => assertLiveInventory(workflow, release.replace(oldLine, changed)));
+    assert.throws(() => assertLiveInventory(workflow, release.replace(newLine, changed)));
 });
 
 test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {
