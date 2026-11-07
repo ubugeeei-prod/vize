@@ -303,7 +303,7 @@ const props = defineProps({
     assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     assert_eq!(
         result.diagnostics[0].message,
-        "Type of the default value for 'item' prop must be an object."
+        "Type of the default value for 'item' prop must be a object."
     );
 }
 

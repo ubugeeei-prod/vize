@@ -229,6 +229,21 @@ mod component_name_in_template_casing;`;
       ]);
       value.entries[rule].patinaPresets = [];
     }
+    assert.deepEqual(value.entries["vue/v-on-handler-style"], {
+      reason:
+        "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
+      status: "intentional-divergence",
+    });
+    value.entries["vue/v-on-handler-style"] = {
+      patinaPresets: ["nuxt", "opinionated"],
+      patinaRule: "vue/v-on-handler-style",
+      patinaSeverity: "warning",
+      status: "mapped",
+    };
+    assert.equal(value.summary.intentionalDivergence, 3);
+    assert.equal(value.summary.mapped, 150);
+    value.summary.intentionalDivergence = 2;
+    value.summary.mapped = 151;
     return jsonBytes(value);
   }
   if (

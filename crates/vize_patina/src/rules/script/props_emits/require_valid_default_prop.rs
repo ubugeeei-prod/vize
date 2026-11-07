@@ -284,19 +284,10 @@ fn report(
 
     let expected = expected_types(type_names, factory_return);
 
-    let article = if matches!(
-        expected.as_bytes().first(),
-        Some(b'a' | b'e' | b'i' | b'o' | b'u')
-    ) {
-        "an "
-    } else {
-        "a "
-    };
     let mut message = CompactString::with_capacity(name.len() + expected.len() + 48);
     message.push_str("Type of the default value for '");
     message.push_str(name);
-    message.push_str("' prop must be ");
-    message.push_str(article);
+    message.push_str("' prop must be a ");
     message.push_str(&expected);
     message.push('.');
 

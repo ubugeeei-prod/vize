@@ -477,7 +477,9 @@ function hasUtsScript(source: string): boolean {
 }
 
 function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string): boolean {
-  const name = quotedName(finding.message);
+  const name = /^Component '([^']+)' is registered but never used in template$/u.exec(
+    finding.message,
+  )?.[1];
   if (name === undefined) return false;
   const template = /<template\b[^>]*>([\s\S]*?)<\/template>/iu.exec(source)?.[1];
   if (template === undefined || /<component\b/iu.test(template)) return false;
