@@ -34,7 +34,7 @@ test("every source carrier selects the natural corpus guard before merge", () =>
       assert.equal(isNaturalVOnSource(file), true);
       assert.deepEqual(planToolingTests([file], { cwd: f.cwd }).tests, [V_ON_GATE]);
     }
-    for (const file of ["README.md", "CHANGELOG.md", "docs/new-guide.md", "npm/ui/new.vue"]) {
+    for (const file of ["README.md", "docs/new-guide.md", "npm/ui/new.vue"]) {
       assert.deepEqual(planToolingTests([file], { cwd: f.cwd }).tests, [V_ON_GATE]);
     }
   } finally {

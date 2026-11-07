@@ -62,8 +62,7 @@ const provenance = asRecord(parseJson(provenanceBytes.toString()));
 
 test("the pinned Vue rule retains complete direct-condition originals and boundary outcomes", () => {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "reference execution is Actions-only");
-  const workspace = createRequire(join(root, "package.json"));
-  const require = createRequire(workspace.resolve("@nuxt/eslint-config"));
+  const require = createRequire(join(root, "npm/linter/oxlint/package.json"));
   const providers = Object.fromEntries(
     Object.entries({
       eslint: "10.13.0",

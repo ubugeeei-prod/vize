@@ -104,7 +104,7 @@ await test("the hosted package check installs frozen tooling before importing ya
   assert.equal(steps[setup]?.with?.["run-install"], false);
   assert.equal(
     steps[install]?.run,
-    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts",
+    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter @vize/tests --ignore-scripts",
   );
 });
 

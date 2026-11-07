@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { h, nextTick, ref } from "vue";
 
 import { dispatchKey, firstChild, mountFresco, typeChars } from "../testing/mount.js";
@@ -24,7 +24,7 @@ function mountInput(initial = "", props: Record<string, unknown> = {}) {
   return { mounted, value, emitted, node: () => firstChild(mounted) };
 }
 
-void test("renders value, cursor, and placeholder state onto the input node", () => {
+test("renders value, cursor, and placeholder state onto the input node", () => {
   const { mounted, node } = mountInput("hi", { placeholder: "name..." });
 
   const props = node().props;
@@ -38,7 +38,7 @@ void test("renders value, cursor, and placeholder state onto the input node", ()
   mounted.unmount();
 });
 
-void test("typed characters update the model and the mounted node", async () => {
+test("typed characters update the model and the mounted node", async () => {
   const { mounted, value, node } = mountInput();
 
   await typeChars("abc");
@@ -48,7 +48,7 @@ void test("typed characters update the model and the mounted node", async () => 
   mounted.unmount();
 });
 
-void test("ignores keyboard input while unfocused", async () => {
+test("ignores keyboard input while unfocused", async () => {
   const { mounted, value } = mountInput("keep", { focused: false });
 
   await typeChars("x");
@@ -57,7 +57,7 @@ void test("ignores keyboard input while unfocused", async () => {
   mounted.unmount();
 });
 
-void test("moves the cursor with arrows, home, and end before editing", async () => {
+test("moves the cursor with arrows, home, and end before editing", async () => {
   const { mounted, value, node } = mountInput("ac");
 
   await dispatchKey({ key: "left" });
@@ -75,7 +75,7 @@ void test("moves the cursor with arrows, home, and end before editing", async ()
   mounted.unmount();
 });
 
-void test("backspace and delete edit by grapheme cluster", async () => {
+test("backspace and delete edit by grapheme cluster", async () => {
   const { mounted, value, node } = mountInput("a👋🏽b");
 
   assert.equal(node().props.cursor, 3, "emoji with modifier counts as one grapheme");
@@ -92,7 +92,7 @@ void test("backspace and delete edit by grapheme cluster", async () => {
   mounted.unmount();
 });
 
-void test("emits submit with the current value and cancel on escape", async () => {
+test("emits submit with the current value and cancel on escape", async () => {
   const { mounted, emitted } = mountInput("ok");
 
   await dispatchKey({ key: "enter" });
@@ -104,7 +104,7 @@ void test("emits submit with the current value and cancel on escape", async () =
   mounted.unmount();
 });
 
-void test("external model updates clamp the cursor into range", async () => {
+test("external model updates clamp the cursor into range", async () => {
   const value = ref("longer");
   const mounted = mountFresco(() => h(TextInput, { modelValue: value.value, focused: true }));
 
@@ -119,7 +119,7 @@ void test("external model updates clamp the cursor into range", async () => {
   mounted.unmount();
 });
 
-void test("PasswordInput masks by default and forwards its model", async () => {
+test("PasswordInput masks by default and forwards its model", async () => {
   const value = ref("");
   const mounted = mountFresco(() =>
     h(PasswordInput, {

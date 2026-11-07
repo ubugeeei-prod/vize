@@ -59,7 +59,6 @@ void test("codename scan counts paths and lines but not aliases, history or the 
       "crates/vize/src/profile.rs": `record("${program}.expr.parses");\n`,
       [`docs/${program}/plan/${dump}-format.md`]: `${title(dump)} and ${title(program)}\n`,
       "docs/content/guide.md": `${title(l3)} and ${title(program)}\n`,
-      "CHANGELOG.md": l3 + "\n",
       [`tools/commands/${program}/completion-gates.ts`]: JSON.stringify(l3) + ",\n",
       "tests/_fixtures/run/cargo.jsonl": `{"${l3}": 1}\n`,
       "tests/_fixtures/differential/compiler/case/observed-base.json": `"${program}.x.y"\n`,

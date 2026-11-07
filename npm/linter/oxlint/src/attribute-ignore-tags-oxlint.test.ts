@@ -34,7 +34,7 @@ assert.equal(path.dirname(generated), fs.realpathSync(nativeDir));
 // its own engine; Vize's existing workspace loader selects this local image.
 const hostEnvironment: NodeJS.ProcessEnv = { ...process.env, VIZE_PREFER_WORKSPACE_BINDING: "1" };
 delete hostEnvironment.NAPI_RS_NATIVE_LIBRARY_PATH;
-const require = createRequire(path.join(root, "package.json"));
+const require = createRequire(path.join(root, "npm/linter/oxlint/package.json"));
 assert.equal(asRecord(require("oxlint/package.json")).version, "1.78.0");
 const binary = path.join(path.dirname(require.resolve("oxlint/package.json")), "bin/oxlint");
 const directory = path.join(root, "target/vize-tests/attribute-ignore-tags-oxlint");

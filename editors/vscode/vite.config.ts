@@ -21,6 +21,7 @@ export default defineConfig({
       neverBundle: ["vscode"],
       alwaysBundle: [/^vscode-languageclient(?:\/|$)/],
       onlyBundle: [
+        "@isaacs/nonrecursive-glob-match",
         "balanced-match",
         "brace-expansion",
         "minimatch",

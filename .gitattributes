@@ -1,6 +1,6 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Dependency patch filenames must retain LF when Windows checks out the repository.
-patches/*.patch text eol=lf
+patches/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 # Strict extra-key transition custody authenticates these exact LF bytes.
 crates/vize_canon/src/virtual_ts/helpers/** text eol=lf
 crates/vize_canon/src/virtual_ts/component_prop_helpers.txt text eol=lf

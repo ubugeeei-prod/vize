@@ -7,9 +7,7 @@ import { defineConfig } from "../vite-plus.ts";
 import { resolveConfigExport } from "../config.ts";
 import { taskConfigKey, type ConfigWithVizeTasks } from "./types.ts";
 
-const reference = createRequire(new URL("../../../../../package.json", import.meta.url))(
-  "oxfmt",
-) as {
+const reference = createRequire(new URL("../../package.json", import.meta.url))("oxfmt") as {
   format: (
     name: string,
     source: string,

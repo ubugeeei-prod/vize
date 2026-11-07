@@ -22,6 +22,7 @@ export type AriaRole =
   | "progressbar"
   | "radio"
   | "radiogroup"
+  | "scrollbar"
   | "tab"
   | "tablist"
   | "table"
@@ -29,20 +30,21 @@ export type AriaRole =
   | "timer"
   | "toolbar";
 
-export type AriaState = Partial<
-  Record<
-    | "busy"
-    | "checked"
-    | "disabled"
-    | "expanded"
-    | "multiline"
-    | "multiselectable"
-    | "readonly"
-    | "required"
-    | "selected",
-    boolean
-  >
->;
+export interface AriaState {
+  busy?: boolean;
+  checked?: boolean;
+  disabled?: boolean;
+  expanded?: boolean;
+  multiline?: boolean;
+  multiselectable?: boolean;
+  readonly?: boolean;
+  required?: boolean;
+  selected?: boolean;
+  orientation?: "horizontal" | "vertical";
+  valueMin?: number;
+  valueMax?: number;
+  valueNow?: number;
+}
 
 export function isScreenReaderEnabledByDefault(): boolean {
   return process.env.INK_SCREEN_READER === "true" || process.env.FRESCO_SCREEN_READER === "true";
@@ -121,8 +123,9 @@ export function treeToScreenReaderString(
 
   const state = ariaState(node);
   if (state) {
-    const stateDescription = Object.keys(state)
-      .filter((key) => state[key as keyof AriaState])
+    const stateDescription = Object.entries(state)
+      .filter(([, value]) => value !== false && value !== undefined && value !== null)
+      .map(([key, value]) => (value === true ? key : `${key}: ${String(value)}`))
       .join(", ");
 
     if (stateDescription) {

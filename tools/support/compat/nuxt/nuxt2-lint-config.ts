@@ -110,8 +110,8 @@ async function runProbe(
     fs.writeFileSync(input, source, { flag: "wx" });
     temporaryFiles.push(input);
     fs.writeFileSync(path.join(artifacts, sourceName), source);
-    const requireRoot = createRequire(path.join(root, "package.json"));
-    const oxlintRoot = path.dirname(requireRoot.resolve("oxlint/package.json"));
+    const requireTools = createRequire(path.join(root, "tools/package.json"));
+    const oxlintRoot = path.dirname(requireTools.resolve("oxlint/package.json"));
     const rows: unknown[] = [];
     for (const value of asArray(corpus.cases, "corpus.cases")) {
       const entry = asRecord(value, "lint case");
@@ -159,7 +159,7 @@ async function runProbe(
           packages,
           fixtureConfigSha256: createHash("sha256").update(configBytes).digest("hex"),
           sourceSha256: createHash("sha256").update(source).digest("hex"),
-          oxlint: at(requireRoot("oxlint/package.json"), "version"),
+          oxlint: at(requireTools("oxlint/package.json"), "version"),
           plugin: at(
             readJson(path.join(fixture, "node_modules/oxlint-plugin-vize/package.json")),
             "version",

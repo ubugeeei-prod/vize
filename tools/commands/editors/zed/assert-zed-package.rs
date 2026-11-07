@@ -39,6 +39,13 @@ fn run() -> Result<(), String> {
         "zed/languages/art-vue/injections.scm",
         "zed/languages/art-vue/outline.scm",
         "zed/languages/art-vue/overrides.scm",
+        "zed/languages/vue/brackets.scm",
+        "zed/languages/vue/config.toml",
+        "zed/languages/vue/highlights.scm",
+        "zed/languages/vue/indents.scm",
+        "zed/languages/vue/injections.scm",
+        "zed/languages/vue/outline.scm",
+        "zed/languages/vue/overrides.scm",
         "zed/src/lib.rs",
         "zed/src/initialization_options.rs",
         "zed/src/initialization_tests.rs",
@@ -69,6 +76,14 @@ fn run() -> Result<(), String> {
             "zed/languages/art-vue/injections.scm",
             "zed/languages/art-vue/outline.scm",
             "zed/languages/art-vue/overrides.scm",
+            "zed/languages/vue/",
+            "zed/languages/vue/brackets.scm",
+            "zed/languages/vue/config.toml",
+            "zed/languages/vue/highlights.scm",
+            "zed/languages/vue/indents.scm",
+            "zed/languages/vue/injections.scm",
+            "zed/languages/vue/outline.scm",
+            "zed/languages/vue/overrides.scm",
             "zed/src/",
             "zed/src/lib.rs",
             "zed/src/initialization_options.rs",
@@ -96,6 +111,7 @@ fn run() -> Result<(), String> {
     let lib = editor_archive::read_tar_text(&archive, "zed/src/lib.rs")?;
     let profile = editor_archive::read_tar_text(&archive, "zed/src/initialization_options.rs")?;
     let art_config = editor_archive::read_tar_text(&archive, "zed/languages/art-vue/config.toml")?;
+    let vue_config = editor_archive::read_tar_text(&archive, "zed/languages/vue/config.toml")?;
     let injections =
         editor_archive::read_tar_text(&archive, "zed/languages/art-vue/injections.scm")?;
     let highlights =
@@ -137,6 +153,10 @@ fn run() -> Result<(), String> {
         (&art_config, r#"grammar = "vue""#),
         (&art_config, r#"path_suffixes = ["art.vue"]"#),
         (&art_config, r#"prettier_parser_name = "vue""#),
+        (&vue_config, r#"name = "Vue.js""#),
+        (&vue_config, r#"grammar = "vue""#),
+        (&vue_config, r#"path_suffixes = ["vue"]"#),
+        (&vue_config, r#"prettier_parser_name = "vue""#),
         (&injections, "directive_attribute"),
         (&injections, "style_element"),
         (&injections, "template_element"),

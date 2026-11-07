@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: [
+      "src/shared/codeHighlightingEngine.test.ts",
       "e2e/vite-plugin-vapor.test.ts",
       "e2e/vite-plugin-package-imports-mock.test.ts",
       "e2e/code-highlight-ssr.test.ts",

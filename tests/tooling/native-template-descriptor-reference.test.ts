@@ -12,8 +12,8 @@ const pack = JSON.parse(
     "utf8",
   ),
 );
-const fromRoot = createRequire(new URL("../../package.json", import.meta.url));
-const fromVue = createRequire(fromRoot.resolve("vue-computed-inlay-oracle/package.json"));
+const fromTests = createRequire(new URL("../package.json", import.meta.url));
+const fromVue = createRequire(fromTests.resolve("vue-computed-inlay-oracle/package.json"));
 const fromSfc = createRequire(fromVue.resolve("@vue/compiler-sfc/package.json"));
 const compiler = fromSfc("@vue/compiler-sfc");
 

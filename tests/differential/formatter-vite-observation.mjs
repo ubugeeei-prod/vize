@@ -93,11 +93,14 @@ export function qualifyReference(root, require, version) {
   assert.equal(workspaceLocks.length, 1, "ambiguous or missing workspace lock importer owner");
   const [lock] = workspaceLocks;
   assert.equal(catalog.catalogs.linting.oxfmt, version);
-  assert.equal(lock.importers["."].devDependencies.oxfmt.version.split("(")[0], version);
+  assert.equal(
+    lock.importers["npm/builder/vite"].devDependencies.oxfmt.version.split("(")[0],
+    version,
+  );
   return lock;
 }
 
-export function qualifiedConsumerPeer(root, workspace, packageRequire, rootRequire, lock) {
+export function qualifiedConsumerPeer(root, workspace, packageRequire, testRequire, lock) {
   const consumerRequire = createRequire(path.join(workspace, "package.json"));
   const peerPath = fs.realpathSync(consumerRequire.resolve("vite-plus/package.json"));
   assert.equal(peerPath, fs.realpathSync(packageRequire.resolve("vite-plus/package.json")));
@@ -111,7 +114,7 @@ export function qualifiedConsumerPeer(root, workspace, packageRequire, rootRequi
     peer.version,
   );
   assert(
-    rootRequire("semver").satisfies(peer.version, manifest.peerDependencies["vite-plus"]),
+    testRequire("semver").satisfies(peer.version, manifest.peerDependencies["vite-plus"]),
     "consumer Vite+ peer is outside published support",
   );
   return {

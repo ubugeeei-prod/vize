@@ -1,12 +1,12 @@
 /* eslint-disable script/one-component-per-file -- this module defines more than one component */
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { defineComponent, h, nextTick, ref, type Ref } from "vue";
 
 import { mountFresco } from "../testing/mount.js";
 import { createFocusManager, useFocus, type FocusManager } from "./useFocus.js";
 
-void test("focusNext and focusPrevious traverse registration order and wrap", () => {
+test("focusNext and focusPrevious traverse registration order and wrap", () => {
   const manager = createFocusManager();
   manager.register("a");
   manager.register("b");
@@ -25,7 +25,7 @@ void test("focusNext and focusPrevious traverse registration order and wrap", ()
   assert.equal(manager.focusedId.value, "c", "backwards traversal wraps to the end");
 });
 
-void test("inactive focusables are skipped and lose focus when deactivated", () => {
+test("inactive focusables are skipped and lose focus when deactivated", () => {
   const manager = createFocusManager();
   manager.register("a");
   manager.register("b");
@@ -45,7 +45,7 @@ void test("inactive focusables are skipped and lose focus when deactivated", () 
   assert.equal(manager.focusedId.value, null, "deactivation releases focus");
 });
 
-void test("disableFocus clears and blocks focus until re-enabled", () => {
+test("disableFocus clears and blocks focus until re-enabled", () => {
   const manager = createFocusManager();
   manager.register("a", { autoFocus: true });
   assert.equal(manager.focusedId.value, "a");
@@ -84,7 +84,7 @@ function focusableStub(
   });
 }
 
-void test("focused descendants are derived through direct and nested parents", () => {
+test("focused descendants are derived through direct and nested parents", () => {
   const manager = createFocusManager();
   manager.register("modal");
   manager.register("body", { parentId: "modal" });
@@ -107,7 +107,7 @@ void test("focused descendants are derived through direct and nested parents", (
   assert.equal(manager.hasFocusedDescendant("modal"), false, "broken parent chains stop lookup");
 });
 
-void test("empty string focus IDs stay addressable in hierarchy checks", () => {
+test("empty string focus IDs stay addressable in hierarchy checks", () => {
   const manager = createFocusManager();
   manager.register("");
   manager.register("field", { parentId: "" });
@@ -124,7 +124,7 @@ void test("empty string focus IDs stay addressable in hierarchy checks", () => {
   assert.equal(manager.focusedId.value, "later");
 });
 
-void test("mounted components register with the app focus manager and unregister on unmount", async () => {
+test("mounted components register with the app focus manager and unregister on unmount", async () => {
   const probes = new Map<string, FocusProbe>();
   const showSecond = ref(true);
   const First = focusableStub("first", probes);
@@ -150,7 +150,7 @@ void test("mounted components register with the app focus manager and unregister
   assert.deepEqual(manager.focusableIds.value, []);
 });
 
-void test("focus and blur from useFocus move ownership through the manager", () => {
+test("focus and blur from useFocus move ownership through the manager", () => {
   const probes = new Map<string, FocusProbe>();
   const First = focusableStub("first", probes);
   const Second = focusableStub("second", probes);
@@ -170,7 +170,7 @@ void test("focus and blur from useFocus move ownership through the manager", () 
   mounted.unmount();
 });
 
-void test("autoFocus focuses the first mounted target only", () => {
+test("autoFocus focuses the first mounted target only", () => {
   const probes = new Map<string, FocusProbe>();
   const First = defineComponent({
     setup() {
@@ -191,7 +191,7 @@ void test("autoFocus focuses the first mounted target only", () => {
   mounted.unmount();
 });
 
-void test("a reactive isActive toggles traversal membership from inside the tree", async () => {
+test("a reactive isActive toggles traversal membership from inside the tree", async () => {
   const probes = new Map<string, FocusProbe>();
   const active = ref(false);
   const First = focusableStub("first", probes);
@@ -212,7 +212,7 @@ void test("a reactive isActive toggles traversal membership from inside the tree
   mounted.unmount();
 });
 
-void test("mounted focusables expose descendant-focus state", async () => {
+test("mounted focusables expose descendant-focus state", async () => {
   const probes = new Map<string, FocusProbe>();
   const parentId = ref<string | null>("panel");
   const Panel = focusableStub("panel", probes);

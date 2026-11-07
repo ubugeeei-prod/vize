@@ -201,7 +201,7 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
     directivePatterns[3]?.beginCaptures?.["4"]?.patterns?.[0]?.include,
     "#vue-ts-expression",
   );
-  assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "source.ts#expression");
+  assert.equal(repository["vue-interpolation"]?.patterns?.[0]?.include, "#vue-ts-expression");
   assert.equal(repository["vue-template-pug"]?.patterns?.[1]?.patterns?.[0]?.include, "text.pug");
   assert.equal(repository["vue-script-tsx"]?.patterns?.[1]?.patterns?.[0]?.include, "source.tsx");
   assert.equal(
@@ -334,7 +334,7 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
   );
 });
 
-test("zed-vize registers art-vue as a first-party language", () => {
+test("zed-vize registers Vue.js and art-vue as first-party languages", () => {
   const manifest = readText("editors/zed/extension.toml");
   assert.match(manifest, /^languages = \["Vue.js", "Art Vue"\]$/m);
   assert.match(manifest, /^"Vue.js" = "vue"$/m);
@@ -346,6 +346,12 @@ test("zed-vize registers art-vue as a first-party language", () => {
   assert.match(artConfig, /^grammar = "vue"$/m);
   assert.match(artConfig, /^path_suffixes = \["art\.vue"\]$/m);
   assert.match(artConfig, /^prettier_parser_name = "vue"$/m);
+
+  const vueConfig = readText("editors/zed/languages/vue/config.toml");
+  assert.match(vueConfig, /^name = "Vue\.js"$/m);
+  assert.match(vueConfig, /^grammar = "vue"$/m);
+  assert.match(vueConfig, /^path_suffixes = \["vue"\]$/m);
+  assert.match(vueConfig, /^prettier_parser_name = "vue"$/m);
 
   for (const filename of [
     "brackets.scm",
@@ -359,6 +365,21 @@ test("zed-vize registers art-vue as a first-party language", () => {
       fs.existsSync(path.join(root, "editors/zed/languages/art-vue", filename)),
       true,
       `missing zed art-vue language file: ${filename}`,
+    );
+  }
+
+  for (const filename of [
+    "brackets.scm",
+    "highlights.scm",
+    "indents.scm",
+    "injections.scm",
+    "outline.scm",
+    "overrides.scm",
+  ]) {
+    assert.equal(
+      fs.existsSync(path.join(root, "editors/zed/languages/vue", filename)),
+      true,
+      `missing zed vue language file: ${filename}`,
     );
   }
 

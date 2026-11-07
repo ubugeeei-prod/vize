@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-fresco-sfc-successor",
+  "sourceRevision": "2502056ce3d9bc9e6f14fc31599fbc9e67f1aa19",
+  "sourceTree": "9a185a28dc231219a6bc7626fe9ac790b4ac26a4",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-layout-update-12082.json",
+    "bytes": 3001,
+    "sha256": "fdcfb765b733d4ce0c66169c179ec8d78ec9068bd287e12ad3cdf1c54ca2f005",
+    "gitBlob": "4876315be72bf76f30902d456394fd6ca0b3c686"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1128491,
+    "sha256": "0279e4f7979613a0d9a881da575099cef5e8a244c9427e0ebcb20025db891d8f",
+    "gitBlob": "5ad3a03e7937598942785ec302b49798d57b1a47"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1115197,
+    "sha256": "d3a660986e8c1e2efcefdf139a697fc634f52ab6c378618af81d172900ee4328",
+    "gitBlob": "366b8cb99320d11ab6f826a189d41331deab05a6"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "frescoManifest": {
+    "path": "npm/fresco/package.json",
+    "bytes": 2338,
+    "sha256": "7f36fd3e6919a46b0140c65faf21b97d82ce53a6b1e914431d0b25438190e34c",
+    "gitBlob": "3745dc17cea7b48cb6fde11c63f851c5d4a3a5bf"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "d3a660986e8c1e2efcefdf139a697fc634f52ab6c378618af81d172900ee4328"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Add SFC compilation, Vue type checking, and Vitest with a DOM environment to Fresco for canonical .vue scroll primitives while preserving the exact pnpm resolver fixed point. Root package, provider roster, provider bodies, and all native membership controls retain their prior authority; this record gives source provenance only."
+}

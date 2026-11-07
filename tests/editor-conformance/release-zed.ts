@@ -9,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
+import { prepareReleaseZedProfile } from "./release-zed-settings.ts";
 import { readTranscript } from "./support/transcript.ts";
 
 const timeoutMs = 180_000;
@@ -22,30 +23,9 @@ async function main() {
   fs.mkdirSync(evidence, { recursive: true });
 
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-"));
-  const userData = path.join(session, "user-data");
-  const config = path.join(userData, "config");
-  const shim = path.join(session, "bin");
-  const installed = path.join(userData, "extensions", "installed", "vize");
-  fs.mkdirSync(installed, { recursive: true });
-  fs.mkdirSync(config, { recursive: true });
-  fs.mkdirSync(shim, { recursive: true });
-  fs.cpSync(packaged, installed, { recursive: true });
-  fs.writeFileSync(path.join(userData, "extensions", "installed", ".rescan"), "");
-  const settings = {
-    languages: {
-      "Vue.js": {
-        language_servers: ["vize", "..."],
-      },
-    },
-    auto_install_extensions: { vize: false },
-    auto_update_extensions: { vize: false },
-    telemetry: { diagnostics: false, metrics: false },
-  };
-  fs.writeFileSync(path.join(config, "settings.json"), `${JSON.stringify(settings)}\n`);
-  fs.writeFileSync(
-    path.join(evidence, "zed-settings.json"),
-    `${JSON.stringify(settings, null, 2)}\n`,
-  );
+  // The job owns this fresh workspace, so bypass Zed's interactive Restricted
+  // Mode prompt and allow the packaged language server to start.
+  const { userData, shim, installed } = prepareReleaseZedProfile(session, packaged, evidence);
 
   const transcript = path.join(evidence, "zed.transcript.jsonl");
   fs.rmSync(transcript, { force: true });

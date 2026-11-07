@@ -30,7 +30,7 @@ import {
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
-import { normalizeKeyEventType } from "./nativeInput.js";
+import { normalizeKeyEventType, normalizeMouseEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
   FocusEvent,
@@ -757,12 +757,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     }
 
     if (event.eventType === "mouse") {
-      lastMouseEvent.value = {
-        type: "mouse",
-        button: event.button ?? undefined,
-        x: event.x ?? 0,
-        y: event.y ?? 0,
-      };
+      lastMouseEvent.value = normalizeMouseEvent(event);
       return;
     }
 

@@ -156,6 +156,8 @@ export interface InputEventNapi {
   modifiers?: ModifiersNapi
   /** Mouse button (for mouse events) */
   button?: string
+  /** Mouse action, including wheel direction when no button exists. */
+  mouseKind?: "down" | "up" | "drag" | "moved" | "scroll-up" | "scroll-down" | "scroll-left" | "scroll-right"
   /** Mouse x position */
   x?: number
   /** Mouse y position */

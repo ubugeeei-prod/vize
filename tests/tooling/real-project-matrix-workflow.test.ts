@@ -333,12 +333,11 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
   for (const pattern of [
     /tests\/tooling\/real-project-syntax-highlighting\.test\.ts/,
     /--test-concurrency=1/,
-    /test -s "\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.json"/,
-    /test -s "\$FIXTURE_REPORT_DIR\/syntax-highlighter-divergence\.md"/,
+    /test -s "\$FIXTURE_REPORT_DIR\/syntax-highlighter-summary\.json"/,
   ]) {
     assert.match(syntaxHighlighter.run ?? "", pattern);
   }
-  assert.equal(syntaxHighlighter.env?.SYNTAX_HIGHLIGHTER_ORACLE_TIMEOUT_MS, "600000");
+  assert.equal(syntaxHighlighter.env?.SYNTAX_HIGHLIGHTER_TIMEOUT_MS, "600000");
   assert.ok(glyphPropertiesIndex < divergenceIndex);
   assert.equal(glyphProperties.env?.VIZE_TEST_BIN, "target/ci/vize");
   assert.match(glyphProperties.run ?? "", /--test-concurrency=1/);

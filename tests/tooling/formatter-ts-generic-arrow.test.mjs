@@ -46,7 +46,7 @@ void test("original TS generics retain full bytes while TSX keeps disambiguation
       assert.equal(sha256(bytes), expected.sha256);
     }
 
-    const require = createRequire(path.join(root, "package.json"));
+    const require = createRequire(path.join(root, "tests/package.json"));
     const packagePath = fs.realpathSync(require.resolve("oxfmt/package.json"));
     const packageRaw = fs.readFileSync(packagePath);
     const version = JSON.parse(packageRaw).version;

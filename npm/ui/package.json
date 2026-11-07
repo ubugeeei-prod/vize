@@ -1187,6 +1187,7 @@
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "devDependencies": {
+    "@babel/core": "catalog:babel-jsx-oracle",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@vitejs/plugin-vue": "catalog:vite-stack",

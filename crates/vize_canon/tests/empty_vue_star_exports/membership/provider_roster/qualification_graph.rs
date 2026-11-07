@@ -1,6 +1,16 @@
 //! Source-only graph successors; every provider and native membership gate remains live.
 use super::{Checked, Value, final_graph, fs, json, support};
 
+mod dependency_ownership;
+use dependency_ownership::{
+    OWNER_MANIFESTS, OwnershipQualificationGraph, update as dependency_ownership_update,
+    verify as verify_dependency_ownership_update,
+};
+mod fresco;
+use fresco::{
+    FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
+    TOOLING_UPDATE_HASH, fresco_update, verify_fresco_update,
+};
 mod tooling;
 use tooling::{
     BABEL_MANIFEST, ESLINT_MANIFEST, OXLINT_MANIFEST, PRETTIER_MANIFEST, ToolingQualificationGraph,
@@ -416,7 +426,46 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         oxlint_manifest: &oxlint_manifest,
         prettier_manifest: &prettier_manifest,
     };
-    verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph)?;
+    if verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph).is_ok() {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(TOOLING_UPDATE))
+        .map_err(|_| "complete Fresco qualification predecessor")?;
+    let update = fresco_update();
+    let fresco_manifest = fs::read(support::repository().join(FRESCO_MANIFEST))
+        .map_err(|_| "complete Fresco manifest")?;
+    let graph = FrescoQualificationGraph {
+        lock,
+        package,
+        fresco_manifest: &fresco_manifest,
+    };
+    if verify_fresco_update(&tooling_update(), &predecessor_bytes, &update, &graph).is_ok() {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(FRESCO_UPDATE))
+        .map_err(|_| "complete root dependency ownership predecessor")?;
+    let update = dependency_ownership_update();
+    let owner_bytes = OWNER_MANIFESTS
+        .iter()
+        .map(|path| {
+            fs::read(support::repository().join(path))
+                .map_err(|_| "complete root dependency owner manifest")
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let owners = OWNER_MANIFESTS
+        .iter()
+        .zip(&owner_bytes)
+        .map(|(path, bytes)| (*path, bytes.as_slice()))
+        .collect::<Vec<_>>();
+    let graph = OwnershipQualificationGraph {
+        lock,
+        package,
+        workspace: &workspace,
+        owners: &owners,
+    };
+    verify_dependency_ownership_update(&fresco_update(), &predecessor_bytes, &update, &graph)?;
     Ok(Some(update))
 }
 

@@ -42,7 +42,7 @@ const expectedSchema = {
     },
   ],
 };
-const require = createRequire(new URL("../../package.json", import.meta.url));
+const require = createRequire(new URL("../package.json", import.meta.url));
 const Ajv = require("ajv") as new (options: {
   strict: boolean;
   allErrors: boolean;

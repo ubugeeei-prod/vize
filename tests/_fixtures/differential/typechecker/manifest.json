@@ -11852,6 +11852,50 @@
       }
     },
     {
+      "id": "typechecker/generic-local-indexing-11589",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "test": "batch::type_checker::tests::recent_issues::generic_local_indexing::generic_setup_local_indexing_reports_the_vue_ref_distribution_error",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "generic-local-indexing-11589/App.vue.txt",
+          "sha256": "98ff519024ced5d8c0e125610ea2fbc7fbb3c01a78087c1014c5abd0147826d4"
+        },
+        {
+          "file": "src/types.ts",
+          "path": "generic-local-indexing-11589/types.ts.txt",
+          "sha256": "7a639efdcd8c4321f4547b215fcfdba931d6f10ad0dad7b6c6646c503f2b0594"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "generic-local-indexing-11589/tsconfig.json.txt",
+          "sha256": "97fe2cd88a02b6ee5680212cba048feac1cb807d26fd4a5ef3c2dede7874117e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Pinned reporter project physically consumed by the exact native batch TS2536 regression."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/global-component-listener-11373/original-three-components",
       "state": "active",
       "targets": [
