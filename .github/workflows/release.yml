@@ -359,7 +359,7 @@ jobs:
     needs: [version, smoke, build-cli, build-editor-extensions]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions: { contents: write }
+    permissions: { actions: write, contents: write }
     env:
       RELEASE_TAG: ${{ needs.version.outputs.tag }}
       RELEASE_CANDIDATE: ${{ needs.version.outputs.ref }}
@@ -370,6 +370,9 @@ jobs:
         run: |
           git push origin "HEAD:refs/tags/$RELEASE_TAG"
           git push origin ":$RELEASE_CANDIDATE"
+      - name: Dispatch Parcel native publication from the immutable tag
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh workflow run parcel-transformer.yml --ref "$RELEASE_TAG" -f publish=true
 
   # Re-read complete registry histories after the long builds, before any registry write.
   # The pre-stamp check is not reused as admission evidence.
