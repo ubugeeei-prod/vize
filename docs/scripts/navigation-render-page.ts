@@ -253,7 +253,7 @@ export async function verifyNavigationRenderJob(
   });
   await phase("links", async () => {
     if (route.endsWith("/guide/testing")) {
-      const supportUrl = "https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md";
+      const supportUrl = "https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md";
       const support = page.locator(`.content a[href="${supportUrl}"]`);
       assert.equal(await support.count(), 1, `${route}: original external Support URL`);
       assert.equal(await support.getAttribute("target"), "_blank");

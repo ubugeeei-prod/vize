@@ -17,7 +17,7 @@ this Rust package's scope. No selected Rust source or original test is omitted.
 Reproduce the source-only import from both authenticated archives with:
 
 ```sh
-vp node tools/support/dependencies/vendor-css-engines.ts \
+vp node tools/support/dependencies/upstream-css-engines.ts \
   lightningcss-1.0.0-alpha.72.crate parcel_sourcemap-2.1.1.crate
 ```
 

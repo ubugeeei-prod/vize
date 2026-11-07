@@ -89,6 +89,7 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "crates/vize_atelier_ssr/src/l4/emit/component.rs",
     "crates/vize_atelier_jsx/tests/ssr.rs",
     "crates/vize_atelier_jsx/tests/falsy_and.rs",
+    "upstream/forks/oxc_parser/src/lib.rs",
     "tests/tooling/support/jsx-falsy-and-runtime.mjs",
     "tests/tooling/jsx-runtime-slots-ssr.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",

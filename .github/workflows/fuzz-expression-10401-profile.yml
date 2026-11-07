@@ -7,7 +7,7 @@ on:
       - tests/fuzz/regressions/js_ts_expression/issue-10401.input
       - davinci/vize_l0/src/expression_guard/**
       - davinci/vize_l0/src/expression_guard.rs
-      - vendor/oxc_parser/src/**
+      - upstream/forks/oxc_parser/src/**
   workflow_dispatch: {}
 permissions:
   contents: read

@@ -56,7 +56,9 @@ for (const [name, digest] of Object.entries(expected)) {
   emit(name, data, true);
 }
 assert.deepEqual(
-  readFileSync(path.join(root, "vendor/oxc_parser/src/speculation/fixtures/issue-10845.input")),
+  readFileSync(
+    path.join(root, "upstream/forks/oxc_parser/src/speculation/fixtures/issue-10845.input"),
+  ),
   readFileSync(path.join(corpus, "issue-10845.input")),
 );
 const original = readFileSync(path.join(corpus, "issue-10401.input"));

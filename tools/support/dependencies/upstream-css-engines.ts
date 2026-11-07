@@ -1,5 +1,5 @@
 // Import the checksum-authenticated, unchanged Rust sources for the CSS forks.
-// Usage: vp node tools/support/dependencies/vendor-css-engines.ts LIGHTNING_CRATE PARCEL_CRATE
+// Usage: vp node tools/support/dependencies/upstream-css-engines.ts LIGHTNING_CRATE PARCEL_CRATE
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -56,7 +56,7 @@ const plans = inputs.map((input, index) => {
   if (createHash("sha256").update(bytes).digest("hex") !== input.checksum) {
     throw new Error(`Archive checksum mismatch: ${input.name}`);
   }
-  const target = path.resolve("vendor", input.name);
+  const target = path.resolve("upstream/forks", input.name);
   if (existsSync(target)) throw new Error(`Refusing to overwrite ${target}`);
   const paths = tar(["-tzf", archive]).trim().split("\n");
   const selected = paths.filter((entry) => {

@@ -8,7 +8,7 @@ defects are repaired rather than hidden behind input rewriting or comment skips.
 The pure source-copy commit preserves exactly 53 official blobs, 1,023,751 bytes, from
 OXC `0.142.0` commit `fc702c1fa9f0412d06ec6908b58cd395b826cf7f`, including its
 original MIT license. The source-copy commit is separate from manifest and
-behavior changes. `tools/support/dependencies/vendor-oxc-parser.ts` reproduces
+behavior changes. `tools/support/dependencies/upstream-oxc-parser.ts` reproduces
 the unmodified source directly from verified Git objects, ignoring dirty
 checkout bytes. `UPSTREAM.md` records the source and license identity.
 

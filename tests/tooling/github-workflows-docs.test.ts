@@ -143,7 +143,12 @@ test("full Docs checks real preview resources before building and retains the ra
     /node --test --test-reporter=tap tests\/tooling\/docs-preview-readiness-browser\.test\.ts/,
   );
   assert.match(readiness.run!, /\| tee docs-render-evidence\/resource-readiness\/tests\.tap/);
-  assert.match(readiness.run!, /receipt\.json/);
+  assert.match(readiness.run!, /node tools\/support\/github\/docs-preview-readiness\.ts/);
+  assert.match(readiness.run!, /docs-render-evidence\/resource-readiness/);
+  assert.match(
+    readRepoFile("tools", "support", "github", "docs-preview-readiness.ts"),
+    /"receipt\.json"/,
+  );
   const reading = namedStep(job, "Verify rendered navigation and Japanese reading paths");
   assert.equal(reading.if, "${{ inputs.links-only != true }}");
   assert.equal(

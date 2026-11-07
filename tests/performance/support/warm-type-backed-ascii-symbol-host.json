@@ -18,31 +18,31 @@
   ],
   "preservedBodies": [
     [
-      "vendor/oxc_parser/src/js/expression.rs",
+      "upstream/forks/oxc_parser/src/js/expression.rs",
       "e1e16a0ad4d17edac18006ce30b1a2b4da10b7f4c216e2474ff128ed66f410ed"
     ],
     [
-      "vendor/oxc_parser/src/js/function.rs",
+      "upstream/forks/oxc_parser/src/js/function.rs",
       "00bc16a3cd65d177998e93755a175ecea2041d68604147bcbea9babfaef86196"
     ],
     [
-      "vendor/oxc_parser/src/js/class.rs",
+      "upstream/forks/oxc_parser/src/js/class.rs",
       "6f441e180e64056cc489158e5832047760864604dc503386fddfca3b3ba0a10d"
     ],
     [
-      "vendor/oxc_parser/src/ts/statement.rs",
+      "upstream/forks/oxc_parser/src/ts/statement.rs",
       "589f537c7e9fcde9e297b1660466a112c630dc25efabd5d50378ce2179108c5b"
     ],
     [
-      "vendor/oxc_parser/src/error_handler.rs",
+      "upstream/forks/oxc_parser/src/error_handler.rs",
       "ae31c3f783aa263360c9988b9bfc012b41f546bfab2048e1c53be06e0dca860b"
     ],
     [
-      "vendor/oxc_parser/src/lib.rs",
+      "upstream/forks/oxc_parser/src/lib.rs",
       "470c9bdda6eacfd785448d9b79a13e3963d59e17ff36229497fc5fe18a5991ec"
     ],
     [
-      "vendor/oxc_parser/src/lexer/identifier.rs",
+      "upstream/forks/oxc_parser/src/lexer/identifier.rs",
       "cac73d17ea714475f28497ed488ccab1f0e036d078f9b6d98f6c74889d32f947"
     ],
     [
@@ -74,11 +74,11 @@
       "e1fe55bcfebec4c2b1aed73be23fa3a4d362667b919fc0c35b94fbe0283d9a68"
     ],
     [
-      "vendor/oxc_parser/src/js/binding.rs",
+      "upstream/forks/oxc_parser/src/js/binding.rs",
       "4f999f78c9c927d6fabe057ce49691341979d1f45e8fa4e4ef04f22c0f6db8ed"
     ],
     [
-      "vendor/oxc_parser/src/js/statement.rs",
+      "upstream/forks/oxc_parser/src/js/statement.rs",
       "3b51b5591ac5da509a3bf2de6b9555d2e75581866544e6df71dee143187e826c"
     ]
   ]

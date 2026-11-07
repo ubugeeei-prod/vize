@@ -10,18 +10,18 @@ import {
   tryWriteStringToFile,
 } from "../command_runtime.ts";
 
-const VENDOR_DIRECTORIES: Readonly<Record<string, string>> = {
+const UPSTREAM_FORK_DIRECTORIES: Readonly<Record<string, string>> = {
   vize_oxc_parser: "oxc_parser",
   vize_parcel_sourcemap: "parcel_sourcemap",
   vize_lightningcss: "lightningcss",
 };
 
 export function crateManifestPath(crateName: string): string {
-  const vendorDirectory = Object.hasOwn(VENDOR_DIRECTORIES, crateName)
-    ? VENDOR_DIRECTORIES[crateName]
+  const upstreamDirectory = Object.hasOwn(UPSTREAM_FORK_DIRECTORIES, crateName)
+    ? UPSTREAM_FORK_DIRECTORIES[crateName]
     : "";
-  if (vendorDirectory !== "") {
-    return joinPath(joinPath("vendor", vendorDirectory), "Cargo.toml");
+  if (upstreamDirectory !== "") {
+    return joinPath(joinPath("upstream/forks", upstreamDirectory), "Cargo.toml");
   }
   const native = joinPath(joinPath("davinci", crateName), "Cargo.toml");
   return pathExists(native) ? native : joinPath(joinPath("crates", crateName), "Cargo.toml");

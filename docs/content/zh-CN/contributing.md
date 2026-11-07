@@ -160,7 +160,7 @@ Vize 遵循了 rustc、TypeScript、TypeScript-Go 和 Flow 的编译器-项目�
 报告更快，行动起来更快。
 
 安全报告应随后发布
-[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md)而不是公众
+[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SECURITY.md)而不是公众
 修正模板。
 
 ## 行为准则与治理准则
@@ -168,5 +168,5 @@ Vize 遵循了 rustc、TypeScript、TypeScript-Go 和 Flow 的编译器-项目�
 参与即表示您同意遵守
 [贡献者 Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/)。该
 治理模型和决策过程有文档
-[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/GOVERNANCE.md)。求助于寻找
-右声道，见[`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md)。
+[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/GOVERNANCE.md)。求助于寻找
+右声道，见[`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md)。

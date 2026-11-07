@@ -163,7 +163,7 @@ PR の説明では、該当する変更の種類を示してください。
 小さな再現例やプレイグラウンドのパーマリンクがあると、問題を調べやすくなります。
 
 セキュリティの問題は公開の不具合報告に書き込まず、
-[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md) の手順に従って報告してください。
+[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SECURITY.md) の手順に従って報告してください。
 
 外部の利用者から届いた再現可能な不具合報告は、ロードマップの作業より優先します。
 小さな回帰テスト、修正のレビュー、GitHub Actions の成功、merge queue での実際のマージ、
@@ -180,5 +180,5 @@ GitHub の公開プロフィールを確認し、本人が公開したメール�
 
 プロジェクトへの参加にあたっては、
 [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) の行動規範を守ってください。
-運営方針と意思決定の手順は [`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/GOVERNANCE.md)、
-問い合わせ先は [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md) にまとめています。
+運営方針と意思決定の手順は [`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/GOVERNANCE.md)、
+問い合わせ先は [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md) にまとめています。

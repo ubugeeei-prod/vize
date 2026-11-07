@@ -129,6 +129,10 @@ test("shared, deleted and unknown inputs still select every Rust package", () =>
 test("Rust source affects JS only through a source-built native package", () => {
   const leaf = planAffectedRust(metadata, ["crates/vize_curator/src/lib.rs"]);
   assert.deepEqual(planAffectedJs(workspace, ["crates/vize_curator/src/lib.rs"], leaf).groups, []);
+  assert.deepEqual(
+    planAffectedJs(workspace, ["upstream/forks/oxc_parser/src/lib.rs"], leaf).groups,
+    [],
+  );
   const compiler = planAffectedRust(metadata, ["crates/vize_armature/src/lib.rs"]);
   const selected = planAffectedJs(workspace, ["crates/vize_armature/src/lib.rs"], compiler);
   assert.deepEqual(selected.groups, ["builders", "ui", "oxlint"]);

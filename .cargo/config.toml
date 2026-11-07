@@ -1,3 +1,8 @@
+[env]
+# Clippy normally searches the workspace root. Keep its repository policy with
+# the other Cargo configuration without requiring callers to pass an option.
+CLIPPY_CONF_DIR = { value = ".cargo", relative = true }
+
 [target.aarch64-apple-darwin]
 linker = "clang"
 

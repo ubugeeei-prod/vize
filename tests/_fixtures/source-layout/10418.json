@@ -351,6 +351,6 @@
     "tools/support/typecheck_mutation_recovery.rs": "tools/commands/fixtures/project_deadline/recovery.rs",
     "tools/support/typecheck_process_session.rs": "tools/commands/fixtures/project_deadline/process_session.rs",
     "tools/support/typecheck_project_deadline.rs": "tools/commands/fixtures/project_deadline.rs",
-    "vendor/oxc_formatter/src/formatter/comments_tests.rs": "vendor/oxc_formatter/src/formatter/comments/tests.rs"
+    "vendor/oxc_formatter/src/formatter/comments_tests.rs": "upstream/forks/oxc_formatter/src/formatter/comments/tests.rs"
   }
 }

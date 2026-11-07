@@ -160,7 +160,7 @@ ou melhorias no fluxo de trabalho. Uma reprodução mínima — idealmente um li
 muito mais rápido para ser executado.
 
 Relatórios de segurança devem seguir
-[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md) em vez dos modelos públicos
+[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SECURITY.md) em vez dos modelos públicos
 corrigir.
 
 ## Código de Conduta e Governança
@@ -168,5 +168,5 @@ corrigir.
 Ao participar, você concorda em cumprir o
 [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). O modelo de governança
 e o processo de tomada de decisão estão documentados em
-[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/GOVERNANCE.md). Para ajuda para encontrar
-canal certo, veja [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
+[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/GOVERNANCE.md). Para ajuda para encontrar
+canal certo, veja [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md).

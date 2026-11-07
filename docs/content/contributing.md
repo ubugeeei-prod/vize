@@ -158,7 +158,7 @@ or workflow improvements. A minimal reproduction — ideally a playground inspec
 report much faster to act on.
 
 Security reports should follow
-[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md) instead of the public
+[`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SECURITY.md) instead of the public
 fix templates.
 
 Prioritize reproducible reports from external users ahead of roadmap work. Carry
@@ -179,5 +179,5 @@ credit in a new attribution change without rewriting published fixes or tags.
 By participating, you agree to abide by the
 [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). The
 governance model and decision-making process are documented in
-[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/GOVERNANCE.md). For help finding
-the right channel, see [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/SUPPORT.md).
+[`GOVERNANCE.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/GOVERNANCE.md). For help finding
+the right channel, see [`SUPPORT.md`](https://github.com/ubugeeei-prod/vize/blob/main/.github/SUPPORT.md).

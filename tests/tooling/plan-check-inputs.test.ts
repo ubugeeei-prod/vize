@@ -22,7 +22,7 @@ await test("product, compiled documentation and cache changes retain app checks"
   for (const path of [
     "davinci/vize_l2/src/lib.rs",
     "crates/vize/src/main.rs",
-    "vendor/lightningcss/src/lib.rs",
+    "upstream/forks/lightningcss/src/lib.rs",
     "npm/builder/vite/src/index.ts",
     "npm/cli/schemas/vize.config.schema.json",
     "playground/src/App.vue",

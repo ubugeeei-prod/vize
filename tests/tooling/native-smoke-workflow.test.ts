@@ -351,5 +351,5 @@ void test("all transitive local normal and build dependencies keep Moon out of d
         }
   }
   assert.ok(visited.has("crates/vize_fresco/Cargo.toml"));
-  assert.ok(visited.has("vendor/oxc_parser_compat/Cargo.toml"));
+  assert.ok(visited.has("upstream/forks/oxc_parser_compat/Cargo.toml"));
 });

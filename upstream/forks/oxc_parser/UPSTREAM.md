@@ -7,7 +7,7 @@ https://github.com/oxc-project/oxc/tree/fc702c1fa9f0412d06ec6908b58cd395b826cf7f
 The adjacent LICENSE is the exact upstream MIT license at the same revision.
 Reproduce this source-copy commit with:
 
-`vp node tools/support/dependencies/vendor-oxc-parser.ts VERIFIED_OXC_CLONE`
+`vp node tools/support/dependencies/upstream-oxc-parser.ts VERIFIED_OXC_CLONE`
 
 Following commits normalize standalone manifest dependencies and apply the
 reviewed PURE recovery correction. Supporting OXC crates stay at the original
@@ -53,7 +53,7 @@ Upstream source retains its own formatting and lint policy; Vize's workspace
 continues to compile and test the fork; its crate-level Clippy policy preserves
 upstream style without changing first-party check commands.
 
-The unpublished `vendor/oxc_parser_compat` package re-exports this same fork
+The unpublished `upstream/forks/oxc_parser_compat` package re-exports this same fork
 under the upstream package identity for transitive Git dependencies such as
 `oxc_formatter::parse_for_format`. The repository patch retains parser safety
 in those paths; published Vize consumers use the direct fork dependency and

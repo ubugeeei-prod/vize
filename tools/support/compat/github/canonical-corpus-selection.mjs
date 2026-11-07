@@ -19,7 +19,7 @@ const inputs = [
   /^\.cargo\//,
   /^davinci\//,
   /^crates\/vize_(?:atelier_|armature\/|canon\/|carton\/|croquis\/|croquis_cf\/|curator\/|relief\/)/,
-  /^vendor\//,
+  /^upstream\/forks\//,
   // Pinned gitlinks, the committed fixture SFCs swept by production reach,
   // and the fixture folders the observer binaries and recorder read.
   /^tests\/_fixtures\/_git\//,

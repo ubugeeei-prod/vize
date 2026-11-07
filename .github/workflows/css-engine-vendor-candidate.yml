@@ -3,8 +3,8 @@ on:
   pull_request:
     paths:
       - "Cargo.lock"
-      - "vendor/lightningcss/**"
-      - "vendor/parcel_sourcemap/**"
+      - "upstream/forks/lightningcss/**"
+      - "upstream/forks/parcel_sourcemap/**"
       - ".github/workflows/css-engine-vendor-candidate.yml"
   workflow_dispatch:
 permissions: { contents: read }

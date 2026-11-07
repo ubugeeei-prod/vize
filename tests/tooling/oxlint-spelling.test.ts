@@ -10,7 +10,7 @@ const MISSPELLED_OXLINT_PACKAGE_DIR = path.posix.join("npm", "oxint");
 
 const USER_VISIBLE_LINT_SURFACES = [
   ".github",
-  "CONTRIBUTING.md",
+  ".github/CONTRIBUTING.md",
   "README.md",
   "docs",
   "examples",

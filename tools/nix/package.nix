@@ -88,16 +88,16 @@ let
 
   # Vize remains manifest-only, but both parser identities are real
   # dependencies of official OXC crates. Their APIs must survive local stubs.
-  patchedParser = lib.cleanSource (root + /vendor/oxc_parser);
-  patchedParserCompat = lib.cleanSource (root + /vendor/oxc_parser_compat);
+  patchedParser = lib.cleanSource (root + /upstream/forks/oxc_parser);
+  patchedParserCompat = lib.cleanSource (root + /upstream/forks/oxc_parser_compat);
   cargoArtifacts = craneLib.buildDepsOnly (
     commonArgs
     // {
       extraDummyScript = ''
-        rm -rf "$out/vendor/oxc_parser" "$out/vendor/oxc_parser_compat"
-        cp -R ${patchedParser} "$out/vendor/oxc_parser"
-        cp -R ${patchedParserCompat} "$out/vendor/oxc_parser_compat"
-        chmod -R +w "$out/vendor/oxc_parser" "$out/vendor/oxc_parser_compat"
+        rm -rf "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"
+        cp -R ${patchedParser} "$out/upstream/forks/oxc_parser"
+        cp -R ${patchedParserCompat} "$out/upstream/forks/oxc_parser_compat"
+        chmod -R +w "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"
       '';
     }
   );
