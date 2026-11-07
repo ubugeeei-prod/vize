@@ -32,6 +32,12 @@ pub mod __internal {
         extract_and_transform_v_bind_with_scope, find_matching_paren, prod_scoped_v_bind_name,
         scoped_v_bind_name, v_bind_expression_ranges,
     };
+
+    /// Compatibility descriptor projection keeps the shipped CSS variable
+    /// vocabulary while SFC block splitting is owned by L1.
+    pub fn extract_css_vars(css: &str) -> Vec<vize_carton::String> {
+        super::extract_css_vars(css)
+    }
 }
 
 pub(crate) fn extract_css_vars(css: &str) -> Vec<vize_carton::String> {
