@@ -1,36 +1,19 @@
 //! vue/valid-template-root
 //!
-//! Enforce a valid `<template>` root for Vue 3 fragment semantics.
+//! Enforce that an SFC `<template>` block has valid root content.
 //!
-//! Vue 3 templates compile to a fragment, so multiple root nodes and
-//! `v-if` / `v-else-if` / `v-else` roots are all valid and are **not** flagged.
-//!
-//! Under Vue 3 fragment semantics a root `<slot>` renders the slot content (the
-//! canonical Nuxt `<template><slot/></template>` layout) and a root `<template>`
-//! carrying a structural directive (`v-if`/`v-else-if`/`v-else`/`v-for`) is a
-//! valid fragment. Both render and are accepted by the compiler, so neither is
-//! flagged. The one construct this rule still reports is a *bare* `<template>`
-//! root — a directive-less wrapper that only nests its children one level
-//! deeper for no effect.
-//!
-//! ## Scope note
-//!
-//! eslint's `vue/valid-template-root` also reports an empty `<template>` and a
-//! `v-for` on a root node. Those checks require knowing that the node being
-//! linted is genuinely the *entire* SFC `<template>` root. In this codebase a
-//! template root is linted the same way whether it is a full SFC root or an
-//! isolated fragment/snippet (an empty fragment and a single `v-for` root are
-//! both valid inputs to lint), so flagging them here would be unsound and
-//! produce false positives. This rule therefore implements the sound subset:
-//! the root-element-kind check, which holds in either case.
+//! Vue 3 templates compile to fragments, so multiple roots, root `v-for`, root
+//! `<slot>`, and bare `<template>` wrappers are valid syntax here. Redundant
+//! wrappers belong to `vue/no-lone-template`. This rule instead mirrors the
+//! current eslint-plugin-vue contract at the SFC boundary: an inline template
+//! needs rendered content, while a template with `src` must not also contain
+//! inline content.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <template>
-//!   <template>content</template>
-//! </template>
+//! <template></template>
 //! ```
 //!
 //! ### Valid
@@ -63,25 +46,14 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
-
-/// Structural directives that turn a `<template>` root into a real Vue 3
-/// fragment (its children render in its place).
-fn has_fragment_directive(element: &ElementNode) -> bool {
-    element.props.iter().any(|prop| {
-        matches!(
-            prop,
-            PropNode::Directive(directive)
-                if matches!(directive.name, "if" | "else-if" | "else" | "for")
-        )
-    })
-}
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_l0::profile;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-template-root",
-    description: "Enforce a valid `<template>` root for Vue 3 fragment semantics",
+    description: "Enforce valid root content in an SFC `<template>` block",
     category: RuleCategory::Essential,
     fixable: false,
     default_severity: Severity::Error,
@@ -95,28 +67,52 @@ impl Rule for ValidTemplateRoot {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        for child in &root.children {
-            // Under Vue 3 fragment semantics a `<slot>` root renders the slot
-            // content (the canonical Nuxt `<template><slot/></template>` layout)
-            // and a `<template>` root carrying a structural directive
-            // (`v-if`/`v-else-if`/`v-else`/`v-for`) is a valid fragment. Both
-            // render and are accepted by the compiler, so neither is flagged.
-            //
-            // The one residual case is a *bare* `<template>` root with no
-            // structural directive: an inert wrapper that only nests its
-            // children one level deeper for no effect.
-            if let TemplateChildNode::Element(element) = child {
-                let tag = element.tag;
-                if tag == "template" && !has_fragment_directive(element) {
-                    ctx.error_with_help(
-                        ctx.t_fmt("vue/valid-template-root.disallowed_root", &[("tag", tag)]),
-                        &element.loc,
-                        ctx.t("vue/valid-template-root.help"),
-                    );
-                }
-            }
-        }
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let owned_descriptor;
+        let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {
+            descriptor
+        } else {
+            owned_descriptor = match profile!(
+                "patina.rule.valid_template_root.parse_sfc",
+                parse_sfc(
+                    ctx.source,
+                    SfcParseOptions {
+                        filename: ctx.filename.into(),
+                        ..Default::default()
+                    },
+                )
+            ) {
+                Ok(descriptor) => descriptor,
+                Err(_) => return,
+            };
+            &owned_descriptor
+        };
+        let Some(template) = descriptor.template.as_ref() else {
+            return;
+        };
+
+        let has_src = template.src.is_some() || template.attrs.contains_key(":src");
+        let has_inline_content = !template.content.trim().is_empty();
+        let (message, start, end) = if has_src && has_inline_content {
+            (
+                ctx.t("vue/valid-template-root.non_empty_src"),
+                template.loc.start as u32,
+                template.loc.end as u32,
+            )
+        } else if !has_src && !has_inline_content {
+            (
+                ctx.t("vue/valid-template-root.no_child"),
+                template.loc.tag_start as u32,
+                template.loc.tag_end as u32,
+            )
+        } else {
+            return;
+        };
+
+        ctx.report(
+            LintDiagnostic::error(META.name, message, start, end)
+                .with_help(ctx.t("vue/valid-template-root.help")),
+        );
     }
 }
 
@@ -219,12 +215,32 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_bare_template_root() {
-        // A bare `<template>` root with no structural directive is an inert
-        // wrapper and is still reported.
+    fn test_valid_bare_template_root_is_owned_by_no_lone_template() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<template><div>content</div></template>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_empty_sfc_template() {
+        let result = create_linter().lint_sfc("<template></template>", "test.vue");
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
         assert_eq!(result.diagnostics[0].rule_name, "vue/valid-template-root");
+    }
+
+    #[test]
+    fn test_valid_external_sfc_template_without_inline_content() {
+        let result =
+            create_linter().lint_sfc(r#"<template src="./template.html"></template>"#, "test.vue");
+        assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_external_sfc_template_with_inline_content() {
+        let result = create_linter().lint_sfc(
+            r#"<template src="./template.html"><div /></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 }

@@ -19,7 +19,7 @@ description: "优先使用绑定到 `true` 的布尔属性简写。"
 
 ```vue annotate="remove:2"
 <template>
-<input :disabled="true" />
+<MyComponent :visible="true" />
 </template>
 ```
 
@@ -27,11 +27,10 @@ description: "优先使用绑定到 `true` 的布尔属性简写。"
 
 原生属性使用布尔简写。false 绑定和组件 props 保留显式值。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3,4"
 <template>
-<input disabled />
-<input :disabled="false" />
-<MyComponent :visible="true" />
+<MyComponent visible />
+<MyComponent :visible="false" />
 <MyComponent :visible="isVisible" />
 </template>
 ```
@@ -57,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L28)

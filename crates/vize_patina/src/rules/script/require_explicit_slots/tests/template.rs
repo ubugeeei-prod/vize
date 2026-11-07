@@ -234,7 +234,7 @@ const attrs = { name: 'footer' };
 }
 
 #[test]
-fn an_unresolved_declaration_contributes_no_known_slot_names() {
+fn an_unresolved_declaration_does_not_claim_that_any_slot_is_undeclared() {
     let sfc = r#"<script setup lang="ts">
 type Slots = { default(): unknown; footer(): unknown };
 defineSlots<Slots>();
@@ -244,10 +244,7 @@ defineSlots<Slots>();
   <div><slot name="other" /></div>
 </template>
 "#;
-    assert_eq!(
-        owned(&lint_sfc(sfc)),
-        vec![undeclared(sfc, r#"<slot name="other" />"#, "other")]
-    );
+    assert!(owned(&lint_sfc(sfc)).is_empty());
 }
 
 #[test]

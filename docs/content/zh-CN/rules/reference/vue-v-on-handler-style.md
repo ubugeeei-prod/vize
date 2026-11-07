@@ -17,11 +17,12 @@ description: "要求 v-on 处理器写为方法引用或内联函数。"
 
 处理器将修改操作和多条语句直接写在事件属性中。
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3,4,5"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
+<button @click="() => count++"></button>
 </template>
 ```
 
@@ -29,12 +30,10 @@ description: "要求 v-on 处理器写为方法引用或内联函数。"
 
 使用处理器引用；需要内联逻辑时，使用箭头函数或函数表达式。函数边界使处理器形式明确。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)

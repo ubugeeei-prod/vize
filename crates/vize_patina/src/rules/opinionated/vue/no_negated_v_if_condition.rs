@@ -31,8 +31,12 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::Expression;
+use oxc_span::GetSpan;
 use oxc_syntax::operator::{BinaryOperator, UnaryOperator};
-use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
+use vize_armature::patterns::attribute_source_span;
+use vize_relief::{
+    ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-negated-v-if-condition",
@@ -68,11 +72,12 @@ fn check_children(ctx: &mut LintContext, children: &[TemplateChildNode]) {
             continue;
         };
         if has_directive(el, "else")
-            && let Some(expression) = previous_element.and_then(negated_condition)
+            && let Some(expression) =
+                previous_element.and_then(|element| negated_condition(element, ctx.source))
         {
             ctx.warn_with_help(
                 ctx.t("vue/no-negated-v-if-condition.message"),
-                expression.loc(),
+                &expression,
                 ctx.t("vue/no-negated-v-if-condition.help"),
             );
         }
@@ -87,7 +92,7 @@ fn has_directive(element: &ElementNode, name: &str) -> bool {
         .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == name))
 }
 
-fn negated_condition<'a>(element: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<'a>> {
+fn negated_condition(element: &ElementNode<'_>, source: &str) -> Option<SourceLocation> {
     element.props.iter().find_map(|prop| {
         let PropNode::Directive(directive) = prop else {
             return None;
@@ -95,11 +100,30 @@ fn negated_condition<'a>(element: &'a ElementNode<'a>) -> Option<&'a ExpressionN
         if !matches!(directive.name, "if" | "else-if") {
             return None;
         }
-        directive
-            .exp
-            .as_ref()
-            .filter(|expression| expression_is_negated(expression))
+        let expression = directive.exp.as_ref()?;
+        expression_is_negated(expression).then(|| precise_expression_location(expression, source))
     })
+}
+
+fn precise_expression_location(expression: &ExpressionNode<'_>, source: &str) -> SourceLocation {
+    let ExpressionNode::Simple(simple) = expression else {
+        let loc = expression.loc();
+        return SourceLocation::new(loc.span.start, loc.span.end);
+    };
+    let Some(parsed) = simple.js_ast.and_then(|parsed| parsed.as_expression()) else {
+        return SourceLocation::new(simple.loc.span.start, simple.loc.span.end);
+    };
+    let authored = source
+        .get(simple.loc.span.start as usize..simple.loc.span.end as usize)
+        .unwrap_or_default();
+    let span = parsed.ast.get_inner_expression().span();
+    let Some(span) = attribute_source_span(authored, simple.content, span) else {
+        return SourceLocation::new(simple.loc.span.start, simple.loc.span.end);
+    };
+    SourceLocation::new(
+        simple.loc.span.start + span.start,
+        simple.loc.span.start + span.end,
+    )
 }
 
 fn expression_is_negated(exp: &ExpressionNode) -> bool {
@@ -206,6 +230,10 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.warning_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        let expected =
+            r#"<div v-if="  !ok ">A</div><div v-else>B</div>"#.find("!ok").unwrap() as u32;
+        assert_eq!((diagnostic.start, diagnostic.end), (expected, expected + 3));
     }
 
     #[test]

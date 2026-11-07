@@ -99,6 +99,35 @@ fn test_template_v_for_child_key_is_not_missing_key() {
 }
 
 #[test]
+fn test_template_v_for_reports_each_unkeyed_native_child() {
+    let result = create_linter().lint_template(
+        r#"<svg>
+  <template v-for="point in points">
+    <circle :cx="point.x" />
+    <text>{{ point.label }}</text>
+  </template>
+</svg>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_multiline_native_v_for_without_key_reports() {
+    let result = create_linter().lint_template(
+        r#"<svg>
+  <circle
+    class="point"
+    v-for="point in points"
+    :cx="point.x"
+  />
+</svg>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_template_v_for_dynamic_slot_forwarder_is_not_missing_key() {
     let linter = create_linter();
     let result = linter.lint_template(

@@ -20,7 +20,7 @@ A opção de componente `name: 'my-component'` está em kebab-case, enquanto est
 ```vue annotate="remove:3"
 <script lang="ts">
 export default {
-  name: 'my-component' // kebab-case
+  components: { myComponent }
 }
 </script>
 ```
@@ -32,7 +32,7 @@ export default {
 ```vue annotate="add:3"
 <script lang="ts">
 export default {
-  name: 'MyComponent'
+  components: { MyComponent }
 }
 </script>
 ```
@@ -58,4 +58,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de tipo e script](../type-and-script.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L40)

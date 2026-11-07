@@ -17,17 +17,15 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 Un `<template>` imbriqué ordinaire occupe la racine du template sans directive lui donnant un rôle de rendu.
 
-```vue annotate="remove:2"
-<template>
-  <template>content</template>
-</template>
+```vue annotate="remove:1"
+<template></template>
 ```
 
 ## Bon
 
 Le `<div>` est un élément racine qui peut être affiché. Cet exemple n’impose pas de restriction universelle à une seule racine pour les fragments de Vue 3.
 
-```vue annotate="add:2"
+```vue annotate="add:1,2,3"
 <template>
   <div>content</div>
 </template>
@@ -54,4 +52,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L54)

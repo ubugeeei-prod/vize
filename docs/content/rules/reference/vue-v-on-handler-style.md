@@ -17,11 +17,12 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 
 The handlers put mutations and multiple statements directly in the event attribute.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3,4,5"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
+<button @click="() => count++"></button>
 </template>
 ```
 
@@ -29,12 +30,10 @@ The handlers put mutations and multiple statements directly in the event attribu
 
 Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +58,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)

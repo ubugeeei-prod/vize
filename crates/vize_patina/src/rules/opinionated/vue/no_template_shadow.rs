@@ -114,4 +114,21 @@ mod tests {
         );
         assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
+
+    #[test]
+    fn test_invalid_v_for_binding_shadows_nested_component_prop() {
+        let result = create_linter().lint_sfc(
+            r#"<template><Widget v-for="item in items" :key="item.id" /></template>
+<script setup lang="ts">
+import { defineComponent } from 'vue'
+const Widget = defineComponent({
+  props: { item: Object }
+})
+const items = []
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert!(result.diagnostics[0].message.contains("item"));
+    }
 }

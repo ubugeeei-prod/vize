@@ -1,11 +1,11 @@
 ---
 title: "vue/slot-name-casing"
-description: "Enforce kebab-case for named slots used via v-slot."
+description: "Enforce camelCase for rendered slot names."
 ---
 
 # `vue/slot-name-casing`
 
-Enforce kebab-case for named slots used via v-slot.
+Enforce camelCase for rendered slot names.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -54,4 +54,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L28)

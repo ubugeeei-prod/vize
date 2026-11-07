@@ -41,10 +41,11 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupText,
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule,
+    MarkupText,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-bare-strings-in-template",
@@ -108,6 +109,13 @@ impl NoBareStringsInTemplate {
     }
 
     fn check_element_legacy(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        // The legacy Relief visitor has no text callback. Keep its direct-child
+        // projection here while the unified markup lane uses `enter_text`.
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Text(text) = child {
+                Self::check_text(ctx, &text);
+            }
+        });
         Self::check_bindings(ctx, element);
     }
 }
@@ -132,7 +140,9 @@ impl MarkupRule for NoBareStringsInTemplate {
     }
 
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
-        Self::check_text(ctx.lint(), text);
+        if ctx.is_jsx() || ctx.current_element().is_none() {
+            Self::check_text(ctx.lint(), text);
+        }
     }
 }
 
@@ -154,6 +164,23 @@ impl Rule for NoBareStringsInTemplate {
 
     fn exit_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         Self::check_element_legacy(ctx, &MarkupElement::new(element));
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        // Root-level text has no owning element, so the legacy element-exit
+        // visitor cannot observe it.
+        for child in &root.children {
+            let TemplateChildNode::Text(text) = child else {
+                continue;
+            };
+            if has_bare_string(text.content) {
+                ctx.warn_at_with_help(
+                    ctx.t("vue/no-bare-strings-in-template.message"),
+                    ByteRange::new(text.loc.span.start, text.loc.span.end),
+                    ctx.t("vue/no-bare-strings-in-template.help"),
+                );
+            }
+        }
     }
 }
 

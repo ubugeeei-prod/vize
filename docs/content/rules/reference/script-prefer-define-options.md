@@ -1,11 +1,11 @@
 ---
 title: "script/prefer-define-options"
-description: "Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs."
+description: "Prefer defineOptions() over a default export paired with <script setup>."
 ---
 
 # `script/prefer-define-options`
 
-Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs.
+Prefer defineOptions() over a default export paired with &lt;script setup&gt;.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -58,4 +58,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L44)

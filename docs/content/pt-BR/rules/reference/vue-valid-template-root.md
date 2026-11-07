@@ -17,17 +17,15 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 Um `<template>` aninhado comum ocupa a raiz do template sem uma diretiva que lhe dê uma função de renderização.
 
-```vue annotate="remove:2"
-<template>
-  <template>content</template>
-</template>
+```vue annotate="remove:1"
+<template></template>
 ```
 
 ## Correto
 
 A `<div>` é um elemento raiz renderizável. Este exemplo não impõe uma restrição universal de raiz única aos fragmentos do Vue 3.
 
-```vue annotate="add:2"
+```vue annotate="add:1,2,3"
 <template>
   <div>content</div>
 </template>
@@ -54,4 +52,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Vue](../vue.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L54)

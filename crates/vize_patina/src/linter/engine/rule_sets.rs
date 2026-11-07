@@ -44,6 +44,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/sfc-element-order",
     "vue/require-scoped-style",
     "vue/single-style-block",
+    "vue/valid-template-root",
     "vue/no-src-attribute",
     "vue/no-preprocessor-lang",
     "vue/no-template-lang",

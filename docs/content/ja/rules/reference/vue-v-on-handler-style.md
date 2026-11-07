@@ -17,11 +17,12 @@ description: "イベントハンドラーの書き方を参照または関数の
 
 イベント属性の中に変更処理や複数の文を直接記述しています。
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3,4,5"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
+<button @click="() => count++"></button>
 </template>
 ```
 
@@ -29,12 +30,10 @@ description: "イベントハンドラーの書き方を参照または関数の
 
 handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)

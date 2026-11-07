@@ -202,16 +202,22 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "强制 `<template>` 根符合 Vue 3 的片段语义",
     ),
     (
-        "vue/valid-template-root.disallowed_root",
-        "`<{tag}>` cannot be used as a root node of the template",
-        "`<{tag}>` はテンプレートのルートノードとして使用できません",
-        "`<{tag}>` 不能用作模板的根节点",
+        "vue/valid-template-root.no_child",
+        "The template requires child content",
+        "テンプレートには子コンテンツが必要です",
+        "模板需要子内容",
+    ),
+    (
+        "vue/valid-template-root.non_empty_src",
+        "A template with a src attribute must not contain inline content",
+        "src 属性を持つテンプレートにインラインコンテンツを含めることはできません",
+        "带有 src 属性的模板不能包含内联内容",
     ),
     (
         "vue/valid-template-root.help",
-        "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.",
-        "<template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。",
-        "请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。",
+        "Add rendered template content, or keep a template with src empty.",
+        "描画されるテンプレートコンテンツを追加するか、src を持つテンプレートを空にしてください。",
+        "请添加可渲染的模板内容，或保持带有 src 的模板为空。",
     ),
     // vue/no-v-for-template-key-on-child
     (

@@ -313,6 +313,16 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
     findingInsideTypeCastStyleBinding(finding, source)
   )
     return "Patina unwraps TypeScript casts around style bindings and preserves the upstream rule's static-property checks; eslint-plugin-vue skips the entire binding when its root is a TS cast.";
+  if (
+    finding.ruleId === "script/no-ref-as-operand" &&
+    findingPrecedesLocalRefDeclaration(finding, source)
+  )
+    return "Patina resolves the lexical ref binding before visiting its references, so it catches an operand authored before the local ref declaration; eslint-plugin-vue misses that earlier reference because its visitor has not recorded the declaration yet.";
+  if (
+    finding.ruleId === "vue/require-v-for-key" &&
+    authoredForeignNativeOpening(finding, source)?.includes("v-for")
+  )
+    return "Patina recognizes this fragment-root SVG or MathML tag as native and requires its v-for key; eslint-plugin-vue loses the foreign-element namespace and treats the tag as a custom component that is exempt from this rule.";
   if (finding.ruleId !== "script/define-props-destructuring") return null;
   const lines = source.split("\n");
   if (finding.line > lines.length) return null;
@@ -368,6 +378,95 @@ function findingInsideTypeCastStyleBinding(finding: LintRecord, source: string):
   return /\}\s+as\s+[A-Za-z_$][\w$]*/u.test(source.slice(offset, end));
 }
 
+const FOREIGN_NATIVE_TAGS = new Set([
+  "animate",
+  "circle",
+  "clipPath",
+  "defs",
+  "ellipse",
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feComposite",
+  "feConvolveMatrix",
+  "feDiffuseLighting",
+  "feDisplacementMap",
+  "feDistantLight",
+  "feDropShadow",
+  "feFlood",
+  "feFuncA",
+  "feFuncB",
+  "feFuncG",
+  "feFuncR",
+  "feGaussianBlur",
+  "feImage",
+  "feMerge",
+  "feMergeNode",
+  "feMorphology",
+  "feOffset",
+  "fePointLight",
+  "feSpecularLighting",
+  "feSpotLight",
+  "feTile",
+  "feTurbulence",
+  "filter",
+  "foreignObject",
+  "g",
+  "image",
+  "line",
+  "linearGradient",
+  "marker",
+  "mask",
+  "math",
+  "mfrac",
+  "mi",
+  "mn",
+  "mo",
+  "mrow",
+  "msqrt",
+  "mstyle",
+  "mtext",
+  "path",
+  "pattern",
+  "polygon",
+  "polyline",
+  "radialGradient",
+  "rect",
+  "stop",
+  "svg",
+  "symbol",
+  "text",
+  "textPath",
+  "tspan",
+  "use",
+]);
+
+function authoredForeignNativeOpening(finding: LintRecord, source: string): string | null {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return null;
+  const start = source.lastIndexOf("<", offset),
+    end = source.indexOf(">", start + 1);
+  if (start < 0 || end < offset) return null;
+  const opening = source.slice(start, end + 1),
+    tag = /^<\s*([A-Za-z][\w:.-]*)/u.exec(opening)?.[1];
+  return tag !== undefined && FOREIGN_NATIVE_TAGS.has(tag) ? opening : null;
+}
+
+function findingPrecedesLocalRefDeclaration(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const name = /'([^']*)'/.exec(finding.message)?.[1] ??
+    /^[A-Za-z_$][\w$]*/u.exec(source.slice(offset))?.[0];
+  if (name === undefined || !source.startsWith(name, offset)) return false;
+  const scriptEnd = source.indexOf("</script>", offset),
+    tail = source.slice(offset + name.length, scriptEnd < 0 ? source.length : scriptEnd),
+    escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(
+    `\\b(?:const|let|var)\\s+${escaped}\\s*=\\s*(?:computed|customRef|ref|shallowRef|toRef|toRefs)\\s*\\(`,
+    "u",
+  ).test(tail);
+}
+
 function baselineIntentionalReason(finding: LintRecord, cwd: string): string | null {
   const quoted = /'([^']*)'/.exec(finding.message)?.[1]?.replace(/^(?:v-bind:|:)/, "");
   if (
@@ -382,6 +481,21 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
   } catch {
     return null;
   }
+  if (
+    finding.ruleId === "vue/attribute-hyphenation" &&
+    authoredForeignNativeOpening(finding, source) !== null
+  )
+    return "Patina recognizes the authored SVG or MathML tag as native even when it is a fragment root; eslint-plugin-vue loses the foreign-element namespace there and applies this component-only attribute rule.";
+  if (
+    finding.ruleId === "vue/no-v-text-v-html-on-component" &&
+    authoredForeignNativeOpening(finding, source) !== null
+  )
+    return "Patina recognizes the authored SVG or MathML tag as native even when it is a fragment root; eslint-plugin-vue loses the foreign-element namespace there and treats v-text or v-html as component content.";
+  if (
+    finding.ruleId === "vue/valid-v-for" &&
+    authoredForeignNativeOpening(finding, source) !== null
+  )
+    return "Patina recognizes the authored SVG or MathML tag as native even when it is a fragment root; eslint-plugin-vue loses the foreign-element namespace and incorrectly applies its custom-component v-for exemption.";
   if (finding.ruleId === "vue/require-explicit-slots") {
     const lines = source.split("\n"),
       startLine = lines[finding.line - 1],

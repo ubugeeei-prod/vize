@@ -121,24 +121,24 @@ emit('change')
 }
 
 #[test]
-fn test_emit_passed_to_a_call_uses_every_declared_event() {
+fn test_emit_passed_to_a_call_does_not_count_as_direct_usage() {
     let source = r#"
 import { useClose } from "./use-close";
 const emit = defineEmits<{ close: [] }>();
 const { close } = useClose(emit);
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
 }
 
 #[test]
-fn test_emit_stored_uses_every_declared_event() {
+fn test_emit_stored_does_not_count_as_direct_usage() {
     let source = r#"
 const emit = defineEmits(['close', 'save'])
 const handlers = { emit }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 2);
 }
 
 #[test]
@@ -152,7 +152,7 @@ const handlers = { save: emit.bind(null, 'save') }
 }
 
 #[test]
-fn test_emit_returned_uses_every_declared_event() {
+fn test_emit_returned_does_not_count_as_direct_usage() {
     let source = r#"
 const emit = defineEmits(['close'])
 function use() {
@@ -160,11 +160,11 @@ function use() {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
 }
 
 #[test]
-fn test_sfc_emit_passed_to_a_composable_is_used() {
+fn test_sfc_emit_passed_to_a_composable_is_not_direct_usage() {
     let sfc = r#"<script setup lang="ts">
 import { useClose } from "./use-close";
 
@@ -177,14 +177,50 @@ const { close } = useClose(emit);
 </template>
 "#;
     let result = lint_sfc(sfc);
-    assert!(
+    assert_eq!(
         result
             .diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule_name != "script/no-unused-emit-declarations"),
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+            .count(),
+        1,
         "{:?}",
         result.diagnostics
     );
+}
+
+#[test]
+fn test_calls_before_define_emits_do_not_count_as_usage() {
+    let source = r#"
+function save() { emit('save') }
+const emit = defineEmits(['save'])
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_type_reference_in_sibling_script_keeps_declaration_span() {
+    let sfc = r#"<script lang="ts">
+export type Events<T> = {
+  'update:modelValue': [value: T]
+  unused: []
+}
+</script>
+<script setup lang="ts" generic="T">
+const emit = defineEmits<Events<T>>()
+emit('update:modelValue', value)
+</script>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert!(diagnostics[0].message.contains("unused"));
+    let expected = sfc.find("  unused: []").unwrap() as u32 + 2;
+    assert_eq!(diagnostics[0].start, expected);
 }
 
 #[test]
@@ -269,4 +305,47 @@ export default {
             .count(),
         2
     );
+}
+
+#[test]
+fn test_options_api_setup_emit_bindings_are_tracked_by_symbol() {
+    for setup in [
+        "setup(props, { emit }) { emit('save') }",
+        "setup(props, context) { context.emit('save') }",
+    ] {
+        let sfc = format!("<script>export default {{ emits: ['save'], {setup} }}</script>");
+        let result = lint_sfc(&sfc);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+                .count(),
+            0,
+            "{setup}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn test_options_api_unrelated_emit_calls_do_not_hide_unused_declarations() {
+    let sfc = r#"<script>
+export default {
+  emits: ['save'],
+  setup(props, { emit }) {
+    service.emit('save')
+    function shadow(emit) { emit('save') }
+    shadow(console.log)
+  }
+}
+</script>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert!(diagnostics[0].message.contains("save"));
 }

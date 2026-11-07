@@ -24,9 +24,6 @@
 //! <li v-for="(item, index) in items" :key="index">{{ item }}</li>
 //! <li v-for="item in items" :key="item.id">{{ item.name }}</li>
 //!
-//! <!-- Underscore prefix indicates intentionally unused -->
-//! <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
-//!
 //! <template v-slot="{ data }">
 //!   <span>{{ data }}</span>
 //! </template>
@@ -34,14 +31,14 @@
 //!
 //! ## Options
 //!
-//! Variables starting with `_` are ignored by default (e.g., `_unused`).
+//! An ignore pattern can be configured explicitly; the default matches
+//! eslint-plugin-vue and reports underscore-prefixed aliases too.
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::UnusedVarContext;
 use vize_l0::String;
-use vize_l0::ToCompactString;
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
@@ -62,7 +59,7 @@ pub struct NoUnusedVars {
 impl Default for NoUnusedVars {
     fn default() -> Self {
         Self {
-            ignore_pattern: Some("^_".to_compact_string()),
+            ignore_pattern: None,
         }
     }
 }
@@ -70,11 +67,6 @@ impl Default for NoUnusedVars {
 impl NoUnusedVars {
     /// Check if a variable name should be ignored
     fn should_ignore(&self, name: &str) -> bool {
-        // By default, ignore variables starting with underscore
-        if name.starts_with('_') {
-            return true;
-        }
-
         // Check custom ignore pattern
         if let Some(pattern) = &self.ignore_pattern {
             if pattern == "^_" {
@@ -169,10 +161,10 @@ mod tests {
     }
 
     #[test]
-    fn test_should_ignore_underscore_prefix() {
+    fn test_default_does_not_ignore_underscore_prefix() {
         let rule = NoUnusedVars::default();
-        assert!(rule.should_ignore("_item"));
-        assert!(rule.should_ignore("_"));
+        assert!(!rule.should_ignore("_item"));
+        assert!(!rule.should_ignore("_"));
         assert!(!rule.should_ignore("item"));
         assert!(!rule.should_ignore("index"));
     }

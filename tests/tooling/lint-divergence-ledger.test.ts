@@ -197,6 +197,116 @@ test("native-only dynamic components are intentional on both reporters", () => {
   }
 });
 
+test("fragment-root foreign elements are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/ForeignRoot.vue`,
+    `<template>\n  <g v-for="item in items" v-html="content" />\n  <text fontSize="16" />\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/attribute-hyphenation": {
+        status: "mapped",
+        patinaRule: "vue/attribute-hyphenation",
+      },
+      "vue/no-v-text-v-html-on-component": {
+        status: "mapped",
+        patinaRule: "vue/no-v-text-v-html-on-component",
+      },
+      "vue/require-v-for-key": {
+        status: "mapped",
+        patinaRule: "vue/require-v-for-key",
+      },
+      "vue/valid-v-for": { status: "mapped", patinaRule: "vue/valid-v-for" },
+    },
+  };
+  const patina = [
+    {
+      file: "src/ForeignRoot.vue",
+      ruleId: "vue/require-v-for-key",
+      severity: 2,
+      ...span(2, 3, 2, 51),
+      message: "Elements in iteration expect a v-bind:key directive.",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/ForeignRoot.vue", [
+      {
+        ruleId: "vue/valid-v-for",
+        severity: 2,
+        ...span(2, 6, 2, 27),
+        message: "Custom elements in iteration require v-bind:key directives.",
+      },
+      {
+        ruleId: "vue/no-v-text-v-html-on-component",
+        severity: 2,
+        ...span(2, 29, 2, 45),
+        message: "Using v-html on component may break component content.",
+      },
+      {
+        ruleId: "vue/attribute-hyphenation",
+        severity: 1,
+        ...span(3, 9, 3, 22),
+        message: "Attribute 'fontSize' must be hyphenated.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 4);
+  }
+});
+
+test("references before local ref declarations are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/EarlyRef.vue`,
+    `<script setup lang="ts">\nconst chosen = palette || []\nconst palette = computed(() => [])\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-ref-as-operand": {
+        status: "mapped",
+        patinaRule: "script/no-ref-as-operand",
+      },
+    },
+  };
+  const patina = [
+    {
+      file: "src/EarlyRef.vue",
+      ruleId: "script/no-ref-as-operand",
+      severity: 1,
+      ...span(2, 16, 2, 23),
+      message: "Ref 'palette' must be accessed through .value.",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, [], {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 1);
+  }
+});
+
 test("whitespace mustaches and imported Slot anchors are classified on both reporters", () => {
   const directory = `${cwd}/src`;
   fs.mkdirSync(directory, { recursive: true });

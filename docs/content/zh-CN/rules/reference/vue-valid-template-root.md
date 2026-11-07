@@ -17,17 +17,15 @@ description: "要求 `<template>` 根节点符合 Vue 3 片段语义。"
 
 普通的嵌套 `<template>` 占据模板根部，却没有赋予它渲染作用的指令。
 
-```vue annotate="remove:2"
-<template>
-  <template>content</template>
-</template>
+```vue annotate="remove:1"
+<template></template>
 ```
 
 ## 正确示例
 
 `<div>` 是可渲染的根元素。此示例并未对 Vue 3 片段施加普遍的单根节点限制。
 
-```vue annotate="add:2"
+```vue annotate="add:1,2,3"
 <template>
   <div>content</div>
 </template>
@@ -54,4 +52,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L54)

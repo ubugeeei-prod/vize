@@ -1,11 +1,13 @@
 //! Component bindings visible above every template-local scope.
 
 use crate::context::LintContext;
+use crate::rules::script::vue_object::VueObjects;
 use oxc_ast::ast::{
-    ArrayExpressionElement, BindingPattern, ExportDefaultDeclarationKind, Expression,
-    ImportDeclarationSpecifier, ObjectExpression, ObjectPropertyKind, Program, PropertyKey,
-    Statement,
+    ArrayExpressionElement, BindingPattern, Expression, ImportDeclarationSpecifier,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
+use oxc_ast_visit::{Visit, walk::walk_object_expression};
+use oxc_semantic::SemanticBuilder;
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
@@ -17,11 +19,23 @@ pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
     let Some(scripts) = ctx.sfc_scripts() else {
         return names;
     };
+    let descriptor = ctx.sfc_descriptor();
     if let Some(parsed) = scripts.script_setup() {
         collect_setup(&parsed.program, &mut names);
+        if let Some(source) = descriptor
+            .and_then(|descriptor| descriptor.script_setup.as_ref())
+            .map(|block| block.content.as_ref())
+        {
+            collect_vue_objects(&parsed.program, source, &mut names);
+        }
     }
     if let Some(parsed) = scripts.script() {
-        collect_options(&parsed.program, &mut names);
+        if let Some(source) = descriptor
+            .and_then(|descriptor| descriptor.script.as_ref())
+            .map(|block| block.content.as_ref())
+        {
+            collect_vue_objects(&parsed.program, source, &mut names);
+        }
     }
     names
 }
@@ -93,23 +107,27 @@ fn collect_pattern(pattern: &BindingPattern<'_>, names: &mut FxHashSet<CompactSt
     }
 }
 
-fn collect_options(program: &Program<'_>, names: &mut FxHashSet<CompactString>) {
-    for statement in &program.body {
-        let Statement::ExportDefaultDeclaration(export) = statement else {
-            continue;
-        };
-        let options = match &export.declaration {
-            ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object.as_ref()),
-            ExportDefaultDeclarationKind::CallExpression(call) => call
-                .arguments
-                .first()
-                .and_then(|argument| argument.as_expression())
-                .and_then(object_expression),
-            _ => None,
-        };
-        if let Some(options) = options {
-            collect_options_object(options, names);
+fn collect_vue_objects(program: &Program<'_>, source: &str, names: &mut FxHashSet<CompactString>) {
+    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+    let objects = VueObjects::collect(program, source, &built.semantic, true);
+    let mut collector = VueObjectBindingCollector {
+        objects: &objects,
+        names,
+    };
+    collector.visit_program(program);
+}
+
+struct VueObjectBindingCollector<'o, 'n> {
+    objects: &'o VueObjects,
+    names: &'n mut FxHashSet<CompactString>,
+}
+
+impl<'a> Visit<'a> for VueObjectBindingCollector<'_, '_> {
+    fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
+        if self.objects.contains(object) {
+            collect_options_object(object, self.names);
         }
+        walk_object_expression(self, object);
     }
 }
 

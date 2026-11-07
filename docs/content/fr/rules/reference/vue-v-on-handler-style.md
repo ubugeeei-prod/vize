@@ -17,11 +17,12 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 Les gestionnaires placent des modifications et plusieurs instructions directement dans l’attribut d’événement.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3,4,5"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
+<button @click="() => count++"></button>
 </template>
 ```
 
@@ -29,12 +30,10 @@ Les gestionnaires placent des modifications et plusieurs instructions directemen
 
 Utilisez une référence de gestionnaire, ou une expression de fonction fléchée ou classique lorsqu’une logique en ligne est nécessaire. La limite de la fonction rend la forme du gestionnaire explicite.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +58,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)
