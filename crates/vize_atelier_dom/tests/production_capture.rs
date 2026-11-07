@@ -62,11 +62,36 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
             .iter()
             .map(|page| page.level)
             .collect::<Vec<_>>(),
-        [Level::L1, Level::L2, Level::L2, Level::L4],
+        [
+            Level::L1,
+            Level::L2,
+            Level::L2,
+            Level::L2,
+            Level::L2,
+            Level::L2,
+            Level::L2,
+            Level::L4,
+        ],
     );
-    assert_eq!(capture.pages[2].step, "facts");
     assert_eq!(
-        capture.pages[2].text.as_str(),
+        capture
+            .pages
+            .iter()
+            .map(|page| page.step)
+            .collect::<Vec<_>>(),
+        [
+            "parse",
+            "lower",
+            "plan",
+            "hoist-static",
+            "template-complexity",
+            "provenance",
+            "facts",
+            "emit",
+        ]
+    );
+    assert_eq!(
+        capture.pages[6].text.as_str(),
         r#"L2Facts {
     legacy: LegacyFacts {
         filters: [],
@@ -98,10 +123,18 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
             },
         },
     },
-    complexity: None,
+    complexity: Some(
+        ComplexityFacts {
+            cyclomatic: 1,
+            cognitive: 0,
+            unknown: 0,
+            max_nesting: 0,
+            contributions: [],
+        },
+    ),
 }"#
     );
-    assert_ne!(capture.pages[1].text, capture.pages[2].text);
+    assert_ne!(capture.pages[1].text, capture.pages[6].text);
 }
 
 #[test]

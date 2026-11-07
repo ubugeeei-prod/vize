@@ -39,10 +39,19 @@ export function buildProductLadder(
   };
   const timings = new Map(
     feed.observed.timings
-      ? feed.timings.map(({ level, step, nanos }) => [`${level}/${step}`, nanos] as const)
+      ? feed.timings
+          .filter(({ scope }) => scope !== "walk")
+          .map(({ level, step, nanos }) => [`${level}/${step}`, nanos] as const)
       : [],
   );
-  const ladder = buildLadder(stageFeed, undefined, timings);
+  const walkTimings = new Map(
+    feed.observed.timings
+      ? feed.timings
+          .filter(({ scope }) => scope === "walk")
+          .map(({ level, step, nanos }) => [`${level}/${step}`, nanos] as const)
+      : [],
+  );
+  const ladder = buildLadder(stageFeed, undefined, timings, walkTimings);
   ladder.l4Pages = feed.pages
     .filter(({ level }) => level === "l4")
     .map(({ step, text }) => ({ step, text }));

@@ -1,10 +1,17 @@
 use super::{
     SfcScriptOutputMode, compile_sfc_for_adapter_with_experimental_options,
     compile_sfc_for_adapter_with_stage_capture,
+    compile_sfc_for_adapter_with_stage_capture_and_clock,
 };
 use crate::types::{SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions};
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
-use vize_l0::dump::capture::CaptureOutcome;
+use vize_l0::dump::capture::{CaptureOutcome, TimingScope};
+
+static CLOCK: core::sync::atomic::AtomicU64 = core::sync::atomic::AtomicU64::new(0);
+
+fn test_clock() -> u64 {
+    CLOCK.fetch_add(10, core::sync::atomic::Ordering::Relaxed)
+}
 
 fn compile_both(
     source: &str,
@@ -102,6 +109,42 @@ fn accepted_dom_sfc_carries_only_the_stages_that_produced_its_module() {
     assert_eq!(capture.target, "dom");
     assert_eq!(capture.outcome, CaptureOutcome::Accepted);
     assert!(!capture.pages.is_empty());
+}
+
+#[test]
+fn host_clock_times_product_steps_and_the_selected_fused_walk() {
+    CLOCK.store(0, core::sync::atomic::Ordering::Relaxed);
+    let descriptor = crate::parse::parse_sfc(
+        "<template><div>{{ message }}</div></template>",
+        SfcParseOptions::default(),
+    )
+    .unwrap();
+    let (_, capture) = compile_sfc_for_adapter_with_stage_capture_and_clock(
+        &descriptor,
+        SfcCompileOptions::default(),
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::SeparateTemplate,
+        SfcCompileExperimentalOptions::default(),
+        test_clock,
+    )
+    .unwrap();
+    assert!(capture.timings_observed);
+    assert_eq!(
+        capture
+            .timings
+            .iter()
+            .map(|timing| (timing.scope, timing.step, timing.nanos))
+            .collect::<Vec<_>>(),
+        [
+            (TimingScope::Step, "parse", 10),
+            (TimingScope::Step, "lower", 10),
+            (TimingScope::Step, "hoist-static", 10),
+            (TimingScope::Step, "template-complexity", 10),
+            (TimingScope::Walk, "hoist-static", 30),
+        ]
+    );
 }
 
 #[test]

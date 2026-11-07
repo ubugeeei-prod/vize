@@ -79,6 +79,7 @@ pub use compile::{
     SfcScriptOutputMode, compile_sfc_for_adapter,
     compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_nuxt_page_meta,
     compile_sfc_for_adapter_with_stage_capture,
+    compile_sfc_for_adapter_with_stage_capture_and_clock,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax_and_codegen_options, prepare_root_patterned_template,

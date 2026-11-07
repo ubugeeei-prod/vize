@@ -32,6 +32,12 @@ pub enum SchemaError {
         path: CompactString,
         expected: CompactString,
     },
+    /// An instance is absent from a schema `enum`.
+    #[error("schema violation at `{path}`: value is not one of `{expected}`")]
+    Enum {
+        path: CompactString,
+        expected: CompactString,
+    },
     /// A required object property is absent.
     #[error("schema violation at `{path}`: missing required property `{property}`")]
     Required {
@@ -78,7 +84,7 @@ impl SchemaError {
 /// Schema keys that annotate rather than validate.
 const ANNOTATION_KEYWORDS: [&str; 4] = ["$schema", "$id", "title", "description"];
 /// Validation keywords this subset implements.
-const IMPLEMENTED_KEYWORDS: [&str; 9] = [
+const IMPLEMENTED_KEYWORDS: [&str; 10] = [
     "type",
     "required",
     "properties",
@@ -88,6 +94,7 @@ const IMPLEMENTED_KEYWORDS: [&str; 9] = [
     "minLength",
     "pattern",
     "const",
+    "enum",
 ];
 
 /// Validate `instance` against the strict Davinci schema subset.
@@ -117,10 +124,39 @@ pub fn validate(schema: &Value, instance: &Value, path: &str) -> Result<(), Sche
             expected: serde_json::to_string(expected).unwrap_or_default().into(),
         });
     }
+    if let Some(expected) = schema_object.get("enum").and_then(Value::as_array)
+        && !expected.contains(instance)
+    {
+        return Err(SchemaError::Enum {
+            path: path.into(),
+            expected: serde_json::to_string(expected).unwrap_or_default().into(),
+        });
+    }
     check_object_keywords(schema, instance, path)?;
     check_array_items(schema, instance, path)?;
     check_scalar_bounds(schema, instance, path)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::{SchemaError, validate};
+
+    #[test]
+    fn enum_accepts_only_declared_values() {
+        let schema = json!({ "type": "string", "enum": ["step", "walk"] });
+
+        assert_eq!(validate(&schema, &json!("walk"), "$"), Ok(()));
+        assert_eq!(
+            validate(&schema, &json!("tree"), "$"),
+            Err(SchemaError::Enum {
+                path: "$".into(),
+                expected: r#"["step","walk"]"#.into(),
+            })
+        );
+    }
 }
 
 fn json_type_name(value: &Value) -> &'static str {

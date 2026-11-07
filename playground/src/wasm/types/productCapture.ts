@@ -19,7 +19,7 @@ export interface ProductCaptureFeed {
   observed: { timings: boolean; remarks: boolean };
   options: { name: string; value: string }[];
   pages: { level: string; step: string; text: string }[];
-  timings: { level: string; step: string; nanos: number }[];
+  timings: { level: string; step: string; scope?: "step" | "walk"; nanos: number }[];
   remarks: {
     level: string;
     pass: string;
@@ -72,6 +72,7 @@ function timing(value: unknown): boolean {
     text(value.level) &&
     /^l[0-4]$/.test(value.level) &&
     text(value.step) &&
+    (value.scope === undefined || value.scope === "step" || value.scope === "walk") &&
     Number.isSafeInteger(value.nanos) &&
     (value.nanos as number) >= 0
   );

@@ -48,11 +48,29 @@ pub struct CaptureOption {
     pub value: String,
 }
 
+/// Whether elapsed host-clock time describes one step or its fused walk.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TimingScope {
+    Step,
+    Walk,
+}
+
+impl TimingScope {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Step => "step",
+            Self::Walk => "walk",
+        }
+    }
+}
+
 /// Elapsed host-clock time for one stage that actually ran.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageTiming {
     pub level: Level,
     pub step: &'static str,
+    pub scope: TimingScope,
     pub nanos: u64,
 }
 
@@ -82,7 +100,9 @@ pub struct CaptureRemark {
 }
 
 /// The sidecar for one product compile. It is never transported between levels.
-#[derive(Debug, Clone, PartialEq, Eq)]
+pub type CaptureClock = fn() -> u64;
+
+#[derive(Debug, Clone)]
 pub struct StageCapture {
     /// An opaque host-selected output target (for example a backend name).
     pub target: String,
@@ -96,7 +116,24 @@ pub struct StageCapture {
     pub timings_observed: bool,
     /// Whether the producer observed every eligible remark in this run.
     pub remarks_observed: bool,
+    clock: Option<CaptureClock>,
 }
+
+impl PartialEq for StageCapture {
+    fn eq(&self, other: &Self) -> bool {
+        self.target == other.target
+            && self.outcome == other.outcome
+            && self.options == other.options
+            && self.pages == other.pages
+            && self.unavailable == other.unavailable
+            && self.timings == other.timings
+            && self.remarks == other.remarks
+            && self.timings_observed == other.timings_observed
+            && self.remarks_observed == other.remarks_observed
+    }
+}
+
+impl Eq for StageCapture {}
 
 impl StageCapture {
     #[must_use]
@@ -111,7 +148,16 @@ impl StageCapture {
             remarks: Vec::new(),
             timings_observed: false,
             remarks_observed: false,
+            clock: None,
         }
+    }
+
+    /// Create a capture whose compiler stages read the supplied host clock.
+    #[must_use]
+    pub fn new_with_clock(target: &str, clock: CaptureClock) -> Self {
+        let mut capture = Self::new(target);
+        capture.clock = Some(clock);
+        capture
     }
 
     /// Record an effective compile option beside the outcome.
@@ -144,6 +190,12 @@ pub trait CaptureSink {
 
     /// Record a measured host-clock window. No clock is read by this trait.
     fn timing<F: FnOnce() -> u64>(&mut self, level: Level, step: &'static str, nanos: F);
+
+    /// Record a measured fused-walk window, attributed to its lead pass.
+    fn walk_timing<F: FnOnce() -> u64>(&mut self, level: Level, step: &'static str, nanos: F);
+
+    /// Read the invocation's monotonic host clock when one was supplied.
+    fn clock_now(&mut self) -> Option<u64>;
 
     fn remark<F: FnOnce() -> CaptureRemark>(&mut self, render: F);
 
@@ -179,6 +231,14 @@ impl CaptureSink for NoCapture {
 
     #[inline(always)]
     fn timing<F: FnOnce() -> u64>(&mut self, _: Level, _: &'static str, _: F) {}
+
+    #[inline(always)]
+    fn walk_timing<F: FnOnce() -> u64>(&mut self, _: Level, _: &'static str, _: F) {}
+
+    #[inline(always)]
+    fn clock_now(&mut self) -> Option<u64> {
+        None
+    }
 
     #[inline(always)]
     fn remark<F: FnOnce() -> CaptureRemark>(&mut self, _: F) {}
@@ -228,8 +288,22 @@ impl CaptureSink for StageCapture {
         self.timings.push(StageTiming {
             level,
             step,
+            scope: TimingScope::Step,
             nanos: nanos(),
         });
+    }
+
+    fn walk_timing<F: FnOnce() -> u64>(&mut self, level: Level, step: &'static str, nanos: F) {
+        self.timings.push(StageTiming {
+            level,
+            step,
+            scope: TimingScope::Walk,
+            nanos: nanos(),
+        });
+    }
+
+    fn clock_now(&mut self) -> Option<u64> {
+        self.clock.map(|clock| clock())
     }
 
     fn remark<F: FnOnce() -> CaptureRemark>(&mut self, render: F) {
