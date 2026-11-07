@@ -76,8 +76,23 @@ function check(root: string): void {
     if (old !== "pass/legacy.rs" && fs.existsSync(path.join(sourceRoot, old)))
       throw new Error(`unmoved legalization helper: ${old}`);
   }
-  const bridge = fs.readFileSync(path.join(sourceRoot, "pass/legacy.rs"), "utf8");
-  if (!bridge.includes("pub use crate::dialect::legalize::") || bridge.includes("pub fn run")) {
+  const bridgePath = path.join(sourceRoot, "pass/legacy.rs");
+  const bridge = fs.readFileSync(bridgePath, "utf8");
+  const include = bridge.match(/include!\("([^"]+)"\);/u);
+  const includeTarget = include?.[1];
+  const adapterPath =
+    includeTarget === undefined
+      ? bridgePath
+      : path.resolve(path.dirname(bridgePath), includeTarget);
+  if (
+    includeTarget !== undefined &&
+    path.relative(sourceRoot, adapterPath).split(path.sep).join("/") !==
+      "dialect/vue/pass/legacy.rs"
+  ) {
+    throw new Error("pass::legacy includes an unreviewed legalization adapter");
+  }
+  const adapter = includeTarget === undefined ? bridge : fs.readFileSync(adapterPath, "utf8");
+  if (!adapter.includes("pub use crate::dialect::legalize::") || adapter.includes("pub fn run")) {
     throw new Error("pass::legacy is not a narrow legalization adapter");
   }
   if (!fs.readFileSync(path.join(sourceRoot, "dialect.rs"), "utf8").includes("pub mod legalize;")) {

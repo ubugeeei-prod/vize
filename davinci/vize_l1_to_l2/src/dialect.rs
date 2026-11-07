@@ -6,4 +6,15 @@
 
 pub mod legalize;
 
+// These disabled ordinary declarations keep every physically owned policy
+// body in the standard rustfmt module graph without changing runtime identity.
+#[cfg(any())]
+mod exports;
+#[cfg(any())]
+mod vue;
+#[cfg(any())]
+mod vue2;
+#[cfg(any())]
+mod vue3;
+
 pub use vize_l1::dialect::LegacyCaps;
