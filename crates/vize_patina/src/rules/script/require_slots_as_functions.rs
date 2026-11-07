@@ -37,7 +37,7 @@ use oxc_ast_visit::{
     },
 };
 use oxc_span::{GetSpan, Span};
-use oxc_syntax::scope::ScopeFlags;
+use oxc_syntax::{operator::AssignmentOperator, scope::ScopeFlags};
 use vize_l0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -128,10 +128,13 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     }
 
     fn visit_assignment_expression(&mut self, assignment: &AssignmentExpression<'a>) {
-        if let Some(origin) = self.slot_function_origin(&assignment.right)
+        if assignment.operator == AssignmentOperator::Assign
             && let AssignmentTarget::AssignmentTargetIdentifier(identifier) = &assignment.left
         {
-            self.assign(identifier.name.as_str(), Kind::SlotFn(origin));
+            let kind = self
+                .slot_function_origin(&assignment.right)
+                .map_or(Kind::NotSlot, Kind::SlotFn);
+            self.assign(identifier.name.as_str(), kind);
         }
         walk_assignment_expression(self, assignment);
     }
@@ -322,6 +325,19 @@ mod tests {
         let property = source.find("foo").unwrap() as u32;
         assert_eq!(result.diagnostics[0].start, property);
         assert_eq!(result.diagnostics[0].end, property + 3);
+    }
+
+    #[test]
+    fn simple_assignment_resets_a_slot_alias_but_compound_assignment_stays_conservative() {
+        let reset = lint(
+            "export default { render() { let slot = this.$slots.foo; slot = other; return [slot] } }",
+        );
+        assert_eq!(reset.error_count, 0, "{:?}", reset.diagnostics);
+
+        let compound = lint(
+            "export default { render() { let slot = this.$slots.foo; slot ||= other; return [slot] } }",
+        );
+        assert_eq!(compound.error_count, 1, "{:?}", compound.diagnostics);
     }
 }
 

@@ -296,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    fn allows_number_only_text() {
+    fn reports_number_only_text() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>123</div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);

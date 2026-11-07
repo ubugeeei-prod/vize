@@ -10,6 +10,9 @@
 //! This rule checks the explicit component `name` when one is declared and
 //! otherwise falls back to the SFC filename. It does not inspect component
 //! usages in the template. This matches eslint-plugin-vue.
+//! Filename fallback is intentionally strict for route-shaped names too:
+//! `index.vue`, `default.vue`, `error.vue`, and dynamic Nuxt route filenames
+//! are not implicit exemptions from the selected rule.
 //!
 //! ## Examples
 //!
@@ -247,10 +250,16 @@ mod tests {
     }
 
     #[test]
-    fn test_reports_index_files_like_upstream() {
+    fn test_reports_route_shaped_single_word_filenames_like_upstream() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div>hello</div>"#, "index.vue");
-        assert_eq!(result.error_count, 1);
+        for filename in ["index.vue", "default.vue", "error.vue", "pages/[id].vue"] {
+            let result = linter.lint_template(r#"<div>hello</div>"#, filename);
+            assert_eq!(
+                result.error_count, 1,
+                "{filename}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 
     #[test]
@@ -323,5 +332,20 @@ mod tests {
     fn ordinary_non_component_program_does_not_infer_a_component_name() {
         let source = "<script>console.log('utility')</script><template><div /></template>";
         assert_eq!(create_linter().lint_sfc(source, "Item.vue").error_count, 0);
+    }
+
+    #[test]
+    fn only_vue_extend_and_mixin_calls_define_components() {
+        let vue = "<script>Vue.extend({ name: 'Item' })</script><template><div /></template>";
+        assert_eq!(create_linter().lint_sfc(vue, "Utility.vue").error_count, 1);
+
+        let unrelated =
+            "<script>Library.extend({ name: 'Item' })</script><template><div /></template>";
+        assert_eq!(
+            create_linter()
+                .lint_sfc(unrelated, "Utility.vue")
+                .error_count,
+            0
+        );
     }
 }

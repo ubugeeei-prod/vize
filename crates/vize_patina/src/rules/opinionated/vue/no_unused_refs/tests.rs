@@ -260,7 +260,7 @@ export default {
 }
 
 #[test]
-fn test_static_computed_refs_access_counts_as_usage() {
+fn test_static_computed_refs_access_keeps_the_rule_conservative() {
     let sfc = r#"<template><input ref="inputEl" /></template>
 <script>
 export default {
@@ -270,6 +270,24 @@ export default {
 }
 </script>"#;
     assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn test_fatal_template_parse_does_not_report_partial_ref_analysis() {
+    let sfc = r#"<template><div><input ref="inputEl" /></template>
+<script setup>
+import { ref } from 'vue'
+const inputEl = ref(null)
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/no-unused-refs"),
+        "{:?}",
+        result.diagnostics
+    );
 }
 
 #[test]

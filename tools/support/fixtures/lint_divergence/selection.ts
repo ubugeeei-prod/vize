@@ -23,7 +23,7 @@ export const help = [
   "",
   "--project <id[,id]>     Limit registry projects",
   "--preset <name>         Patina preset under test (default: ecosystem)",
-  "--all-mapped-rules      Compare every mapped rule with Patina's all preset",
+  "--all-mapped-rules      Compare every mapped rule, ignoring preset membership",
   "--measure-coverage-gap  Also enable unimplemented upstream rules",
   "--shard-index <n>       Zero-based project shard index",
   "--shard-count <n>       Total balanced project shards",

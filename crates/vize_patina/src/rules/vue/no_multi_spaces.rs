@@ -131,6 +131,24 @@ impl NoMultiSpaces {
     fn check_expression(&self, ctx: &mut LintContext<'_>, start: usize, expression: &[u8]) {
         let mut cursor = 0;
         while cursor < expression.len() {
+            let Some(&byte) = expression.get(cursor) else {
+                break;
+            };
+            match byte {
+                b'\'' | b'"' | b'`' => {
+                    cursor = skip_quoted(expression, cursor, byte);
+                    continue;
+                }
+                b'/' if expression.get(cursor + 1) == Some(&b'/') => {
+                    cursor = skip_line_comment(expression, cursor + 2);
+                    continue;
+                }
+                b'/' if expression.get(cursor + 1) == Some(&b'*') => {
+                    cursor = skip_block_comment(expression, cursor + 2);
+                    continue;
+                }
+                _ => {}
+            }
             if !expression
                 .get(cursor)
                 .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
@@ -157,6 +175,38 @@ impl NoMultiSpaces {
             }
         }
     }
+}
+
+fn skip_quoted(source: &[u8], mut cursor: usize, delimiter: u8) -> usize {
+    cursor += 1;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            byte if byte == delimiter => return cursor + 1,
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_line_comment(source: &[u8], mut cursor: usize) -> usize {
+    while source
+        .get(cursor)
+        .is_some_and(|byte| !matches!(byte, b'\n' | b'\r'))
+    {
+        cursor += 1;
+    }
+    cursor
+}
+
+fn skip_block_comment(source: &[u8], mut cursor: usize) -> usize {
+    while cursor < source.len() {
+        if source.get(cursor) == Some(&b'*') && source.get(cursor + 1) == Some(&b'/') {
+            return cursor + 2;
+        }
+        cursor += 1;
+    }
+    source.len()
 }
 
 fn opening_closing_start(source: &str, opening: ByteRange) -> u32 {
@@ -269,5 +319,21 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn quoted_expression_content_and_comments_are_not_rewritten() {
+        let linter = create_linter();
+        let clean = r#"<Input :one="'a  b'" :two="`c  d`" :three="value /* x  y */" />"#;
+        assert_eq!(linter.lint_template(clean, "test.vue").warning_count, 0);
+
+        let source = r#"<Input :one="'a  b'" :value="left  + right" />"#;
+        let result = linter.lint_template(source, "test.vue");
+        let start = source.find("left  +").unwrap() as u32 + 4;
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (start, start + 2)
+        );
     }
 }

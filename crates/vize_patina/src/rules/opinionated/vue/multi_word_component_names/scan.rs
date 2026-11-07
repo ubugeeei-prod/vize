@@ -145,6 +145,7 @@ impl<'a> Visit<'a> for Scanner<'a, '_> {
             self.note_name_property(object);
         } else if let Some(member) = call.callee.get_inner_expression().as_member_expression()
             && matches!(member.static_property_name(), Some("extend" | "mixin"))
+            && identifier_name(member.object()) == Some("Vue")
             && let Some(object) = call.arguments.last().and_then(object_argument)
         {
             self.note_component(object);

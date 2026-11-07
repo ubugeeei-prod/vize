@@ -49,8 +49,8 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str =
     "Prefer defineOptions() over a separate <script> block paired with <script setup>.";
-const HELP: &str = "Move the default export into a `defineOptions(...)` call in <script setup> and \
-     remove this plain <script> block.";
+const HELP: &str = "Move the default export into a `defineOptions(...)` call in <script setup>. \
+     Remove the plain <script> block only when it has no other content.";
 
 /// Prefer `defineOptions()` over a plain-script default export next to setup.
 pub struct PreferDefineOptions;

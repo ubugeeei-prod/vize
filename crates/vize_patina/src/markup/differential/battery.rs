@@ -326,7 +326,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Script-binding and precise-range regressions add three literal fixtures
     // over four calls; the helper-driven call remains an honest scanner skip.
     // Real-project lint parity adds fifteen literal fixtures over seventeen
-    // calls; three helper-driven calls remain explicit scanner skips.
+    // calls; three helper-driven calls remain explicit scanner skips. The
+    // receiver and expression-tokenizer regressions add two focused dynamic
+    // calls, both retained as explicit scanner skips.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -347,7 +349,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 8
         + 10
         + 4
-        + 17,
+        + 17
+        + 2,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -374,7 +377,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 6
         + 3
         + 1
-        + 3,
+        + 3
+        + 2,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13 + 51 + 18 + 102,
     restructured: 0,

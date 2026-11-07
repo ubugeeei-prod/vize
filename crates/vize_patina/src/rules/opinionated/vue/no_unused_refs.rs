@@ -12,7 +12,7 @@
 //! Patina correlates each static `ref="x"` with the already-built SFC semantic
 //! analysis and the shared script ASTs. Script-setup bindings and values exposed
 //! from an Options API `setup()` return count as uses, as do
-//! `useTemplateRef('x')` and static `$refs.x` / `$refs['x']` reads. Looking at
+//! `useTemplateRef('x')` and static `$refs.x` reads. Looking at
 //! syntax and bindings instead of raw source text is important: an identifier in
 //! a comment, documentation string, CSS selector, or an unrelated Options API
 //! local must not keep a dead template ref alive.
@@ -20,9 +20,10 @@
 //! To stay sound in the few cases the text test cannot resolve, the rule reports
 //! nothing for the file when:
 //!
-//! - a script or the template uses `$refs` opaquely — a computed access
-//!   `$refs[expr]`, or `$refs` passed / destructured / iterated as a whole object
-//!   — since any ref could then be reached without its name appearing literally.
+//! - a script or the template uses `$refs` opaquely — any computed access
+//!   (including `$refs['x']`), or `$refs` passed / destructured / iterated as a
+//!   whole object — since any ref could then be reached without a proven static
+//!   member read.
 //!
 //! Dynamic ref bindings (`:ref` / `v-bind:ref`) are skipped: their target is an
 //! expression, not a named template ref.
@@ -50,8 +51,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{
-    Argument, CallExpression, ComputedMemberExpression, Expression, ObjectExpression,
-    ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement, StaticMemberExpression,
+    Argument, CallExpression, Expression, ObjectExpression, ObjectProperty, ObjectPropertyKind,
+    Program, PropertyKey, Statement, StaticMemberExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::{CompactString, cstr};
@@ -87,6 +88,12 @@ impl Rule for NoUnusedRefs {
         let mut refs: Vec<TemplateRef> = Vec::new();
         collect_template_refs(&root.children, ctx.source, &mut refs);
         if refs.is_empty() {
+            return;
+        }
+        // An active SFC rule normally receives semantic analysis. Its absence
+        // here means the template had a fatal parse error, so the recovered
+        // partial tree cannot prove that a ref declaration is really unused.
+        if ctx.analysis().is_none() {
             return;
         }
 
@@ -304,15 +311,6 @@ impl<'a> Visit<'a> for RefUseVisitor<'_> {
             self.used = true;
         }
         walk::walk_static_member_expression(self, member);
-    }
-
-    fn visit_computed_member_expression(&mut self, member: &ComputedMemberExpression<'a>) {
-        if Self::refs_object(&member.object)
-            && member.static_property_name().as_deref() == Some(self.name)
-        {
-            self.used = true;
-        }
-        walk::walk_computed_member_expression(self, member);
     }
 }
 
