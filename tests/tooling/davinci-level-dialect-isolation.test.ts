@@ -20,28 +20,7 @@ const policy =
 const moduleDeclaration = /^\s*(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*;/gmu;
 
 // Core files that still reference dialect policy. Remove an entry when its file is fixed.
-const owed = [
-  "vize_l1_to_l2/src/emit/budget.rs",
-  "vize_l1_to_l2/src/emit/budget/preflight.rs",
-  "vize_l1_to_l2/src/emit/budget/slot_scope.rs",
-  "vize_l1_to_l2/src/emit/entry.rs",
-  "vize_l1_to_l2/src/lib.rs",
-  "vize_l1_to_l2/src/lower.rs",
-  "vize_l1_to_l2/src/lower/caps.rs",
-  "vize_l1_to_l2/src/lower/cx.rs",
-  "vize_l1_to_l2/src/lower/expr.rs",
-  "vize_l1_to_l2/src/lower/foreign.rs",
-  "vize_l1_to_l2/src/lower/forop.rs",
-  "vize_l1_to_l2/src/lower/frozen.rs",
-  "vize_l1_to_l2/src/native/element.rs",
-  "vize_l1_to_l2/src/native/pattern.rs",
-  "vize_l1_to_l2/src/native_file/selected_scoped.rs",
-  "vize_l1_to_l2/src/native_vue2.rs",
-  "vize_l1_to_l2/src/native_vue2/children.rs",
-  "vize_l1_to_l2/src/native_vue2/element.rs",
-  "vize_l1_to_l2/src/pass/legacy.rs",
-  "vize_l1_to_l2/src/pass/plan.rs",
-];
+const owed: string[] = [];
 
 function rustFiles(root: string): string[] {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
