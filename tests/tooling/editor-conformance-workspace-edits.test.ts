@@ -38,7 +38,7 @@ const scenario: Scenario = {
   ],
 };
 
-function transcript(documentChanges: boolean, version = 0, newText = "b"): Entry[] {
+function transcript(documentChanges: boolean, version: number | null = 0, newText = "b"): Entry[] {
   const responseEdit = documentChanges
     ? {
         documentChanges: [{ textDocument: { uri, version }, edits: [{ ...edit, newText }] }],
@@ -106,6 +106,20 @@ test("the judge requires the exact WorkspaceEdit shape negotiated by the client"
     },
   });
   assert.deepEqual(failedSteps(changedDocument), []);
+
+  const malformedChange = transcript(true, null);
+  malformedChange.splice(2, 0, {
+    session: 1,
+    t: 2,
+    dir: "c2s",
+    msg: {
+      method: "textDocument/didChange",
+      params: { textDocument: { uri, version: "invalid" }, contentChanges: [{ text: "a" }] },
+    },
+  });
+  assert.deepEqual(failedSteps(malformedChange), []);
+  malformedChange.at(-1)!.msg!.result[0].edit.documentChanges[0].textDocument.version = 0;
+  assert.deepEqual(failedSteps(malformedChange), ["code-action"]);
 
   const unadvertisedVersioned = transcript(false);
   unadvertisedVersioned[3].msg!.result[0].edit = transcript(true)[3].msg!.result[0].edit;

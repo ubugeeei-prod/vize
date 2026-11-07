@@ -109,11 +109,9 @@ function documentVersionAt(line: Timeline, at: number, uri: string): number | nu
     const message = line.messages[index];
     if (message.params?.textDocument?.uri !== uri) continue;
     if (message.method === "textDocument/didClose") return null;
-    if (
-      (message.method === "textDocument/didOpen" || message.method === "textDocument/didChange") &&
-      Number.isInteger(message.params.textDocument.version)
-    ) {
-      return message.params.textDocument.version;
+    if (message.method === "textDocument/didOpen" || message.method === "textDocument/didChange") {
+      const version = message.params.textDocument.version;
+      return Number.isInteger(version) ? version : null;
     }
   }
   return null;
