@@ -41,6 +41,8 @@ mod global_tag_names;
 #[cfg(feature = "native")]
 mod native_hover;
 #[cfg(feature = "native")]
+mod native_navigation_answers;
+#[cfg(feature = "native")]
 pub(crate) mod workspace_preparation;
 #[cfg(feature = "native")]
 mod workspace_project_files;
@@ -206,6 +208,10 @@ pub struct ServerState {
     /// token repeatedly, so retain one bounded revision-stamped response.
     #[cfg(feature = "native")]
     native_hover: native_hover::NativeHoverCache,
+    /// Last exact answers for repeated navigation requests. Each request kind
+    /// retains one bounded revision-stamped response.
+    #[cfg(feature = "native")]
+    native_navigation_answers: native_navigation_answers::NativeNavigationAnswers,
     /// Lets a workspace-wide request build its projection outside that lock.
     #[cfg(feature = "native")]
     pub(crate) workspace_preparation: workspace_preparation::WorkspacePreparation,
@@ -271,6 +277,7 @@ impl ServerState {
         #[cfg(feature = "native")]
         {
             self.native_hover.remove(uri);
+            self.native_navigation_answers.remove(uri);
             self.corsa_overlays.remove(uri);
             self.remove_idle_diagnostic_lock(uri);
         }
@@ -282,6 +289,7 @@ impl ServerState {
         #[cfg(feature = "native")]
         if renamed {
             self.native_hover.remove(old_uri);
+            self.native_navigation_answers.remove(old_uri);
             self.corsa_overlays.remove(old_uri);
             self.remove_idle_diagnostic_lock(old_uri);
         }
