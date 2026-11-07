@@ -13,6 +13,21 @@ use super::{Diagnostic, OriginalPosition, VirtualFile, VirtualProject};
 mod materialized_sources;
 pub(crate) use materialized_sources::{MaterializedSourceDocument, MaterializedSourceMappingKind};
 
+#[inline]
+fn find_diagnostic_path<'a>(
+    diagnostic_paths: &'a FxHashSet<PathBuf>,
+    path: &Path,
+    normalize: impl FnOnce(&Path) -> PathBuf,
+) -> Option<&'a Path> {
+    // Backend diagnostics normally preserve the registered canonical identity.
+    // Keep that path hash-only, which matters on cross-filesystem WSL mounts.
+    if let Some(canonical) = diagnostic_paths.get(path) {
+        return Some(canonical.as_path());
+    }
+    let normalized = normalize(path);
+    diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+}
+
 impl VirtualProject {
     pub(crate) fn preferred_materialized_path_for_original(
         &self,
@@ -59,8 +74,11 @@ impl VirtualProject {
     }
 
     pub(crate) fn diagnostic_path(&self, path: &Path) -> Option<&Path> {
-        let normalized = vize_carton::path::canonicalize_non_verbatim(path);
-        self.diagnostic_paths.get(&normalized).map(PathBuf::as_path)
+        find_diagnostic_path(
+            &self.diagnostic_paths,
+            path,
+            vize_carton::path::canonicalize_non_verbatim,
+        )
     }
 
     pub(crate) fn diagnostic_position(
@@ -324,3 +342,33 @@ impl VirtualProject {
 
 #[cfg(test)]
 mod authored_shadow_diagnostics_tests;
+
+#[cfg(test)]
+mod diagnostic_path_tests {
+    use std::{cell::Cell, path::PathBuf};
+
+    use vize_carton::FxHashSet;
+
+    use super::find_diagnostic_path;
+
+    #[test]
+    fn diagnostic_path_lookup_only_normalizes_misses() {
+        let canonical = PathBuf::from("registered/source.ts");
+        let paths = FxHashSet::from_iter([canonical.clone()]);
+
+        let exact = find_diagnostic_path(&paths, &canonical, |_| {
+            panic!("an exact diagnostic path must not touch the filesystem")
+        });
+        assert_eq!(exact, Some(canonical.as_path()));
+
+        let alternate = PathBuf::from("source-link.ts");
+        let normalization_calls = Cell::new(0);
+        let normalized = find_diagnostic_path(&paths, &alternate, |path| {
+            assert_eq!(path, alternate);
+            normalization_calls.set(normalization_calls.get() + 1);
+            canonical.clone()
+        });
+        assert_eq!(normalized, Some(canonical.as_path()));
+        assert_eq!(normalization_calls.get(), 1);
+    }
+}
