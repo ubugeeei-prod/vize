@@ -140,7 +140,6 @@ impl Drawer {
 
     fn handler_vif_guard(&self, listener_scope: ScopeId, name: &str) -> Option<CompactString> {
         let listener_owner = self.croquis.scopes.binding_scope_from(listener_scope, name);
-        let mut stable_reference = false;
         let mut replay = Vec::new();
 
         for (guard, guard_scope) in self.vif_guard_stack.iter().zip(&self.vif_guard_scope_stack) {
@@ -152,11 +151,10 @@ impl Drawer {
             {
                 continue;
             }
-            stable_reference |= references_binding;
             replay.push(guard.as_str());
         }
 
-        stable_reference.then(|| CompactString::new(replay.join(" && ")))
+        (!replay.is_empty()).then(|| CompactString::new(replay.join(" && ")))
     }
 }
 
@@ -330,6 +328,7 @@ mod tests {
                 "<div v-if=\"handler !== null\"><template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template></div>",
                 true,
             ),
+            ("<div v-if=\"ready\"><Row @act=\"handler\" /></div>", true),
         ];
 
         for (template, expected) in cases {
