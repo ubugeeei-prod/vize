@@ -39,6 +39,8 @@ mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
 #[cfg(feature = "native")]
+mod native_hover;
+#[cfg(feature = "native")]
 pub(crate) mod workspace_preparation;
 #[cfg(feature = "native")]
 mod workspace_project_files;
@@ -200,6 +202,10 @@ pub struct ServerState {
     /// Hold one complete native open/query/map operation, never syntax-only RPCs.
     #[cfg(feature = "native")]
     corsa_request_lock: AsyncMutex<()>,
+    /// Last exact typed-hover answer. Pointer motion commonly asks for the same
+    /// token repeatedly, so retain one bounded revision-stamped response.
+    #[cfg(feature = "native")]
+    native_hover: native_hover::NativeHoverCache,
     /// Lets a workspace-wide request build its projection outside that lock.
     #[cfg(feature = "native")]
     pub(crate) workspace_preparation: workspace_preparation::WorkspacePreparation,
@@ -264,6 +270,7 @@ impl ServerState {
         self.resident.close_document(uri);
         #[cfg(feature = "native")]
         {
+            self.native_hover.remove(uri);
             self.corsa_overlays.remove(uri);
             self.remove_idle_diagnostic_lock(uri);
         }
@@ -274,6 +281,7 @@ impl ServerState {
         let renamed = self.resident.rename(&self.documents, old_uri, new_uri);
         #[cfg(feature = "native")]
         if renamed {
+            self.native_hover.remove(old_uri);
             self.corsa_overlays.remove(old_uri);
             self.remove_idle_diagnostic_lock(old_uri);
         }
