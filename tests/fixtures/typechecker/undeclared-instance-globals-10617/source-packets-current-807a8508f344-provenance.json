@@ -1,0 +1,89 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "producer": {
+    "sourceRevision": "807a8508f344e83895b18257bff3d59e5ab0c84a",
+    "sourceTree": "8113cc4a381955833dae3054a2a8dd064d673033",
+    "pullRequestHead": "4ab51ceaa4ccef7c9d6a594a3df097a7d6b86205",
+    "binarySha256": "2a5efe798b832277b66588f86dbc6d91869e4db817dafc8268c514c759fce4e4",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42379142226,
+    "artifactId": 13577645615,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42379142226,
+    "job": 128423168142,
+    "id": 13577645615,
+    "digest": "sha256:d63a91ab4722202f07bebba86084272b5aaf08402a16a778f47e6c005bdad74d",
+    "bytes": 18673771
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-b13ee5096a47.json",
+    "bytes": 398819,
+    "sha256": "6c44e02ea3c1ad9e6bb18483359e5c0b9a764d22c661bf26bcba6a7b59825cd4"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "3652cc1cbac9119561a6bf86850dd71622f5d33ada7c26c38afedaefdafb2072"
+    },
+    "source-identity.txt": {
+      "bytes": 82,
+      "sha256": "9ad90e0ed0787c855edc3c1424a6c83d10981b0eb627342ea70d9383defc1f8e"
+    },
+    "source-host.json": {
+      "bytes": 558,
+      "sha256": "7888fcc83f7df6caadc9e09807655d8335dd084b73ececc2ddf4d7c570290cf5"
+    },
+    "consumer/source-launch.json": {
+      "bytes": 882,
+      "sha256": "0fa1372fa35dc2703e0ab450b905416b825e319f1691ba237943d4431923ff72"
+    },
+    "consumer/source-protocol.json": {
+      "bytes": 456681,
+      "sha256": "b01558fd75e2bbe574bc2bdc0ea41d5b918b7601524442b5a5c3538b693b752d"
+    },
+    "consumer/outcomes.json": {
+      "bytes": 116755,
+      "sha256": "5c473a2b3a8fef633aa9a9251f0a7e3f45a2e5e9b1fb7a76a046fb3677b877d4"
+    },
+    "consumer/qualification.json": {
+      "bytes": 120904,
+      "sha256": "bd4efa18973c956b3447f3c8ce5463140260464a0649d12d4ade1c6e7285f108"
+    },
+    "consumer/host-matrix.json": {
+      "bytes": 4327,
+      "sha256": "d12414fab91e66fe1078bb8416663a4c28c8b57e08fc59eebc98e067d1ed1c6f"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified before accepting this successor population",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "hostMatrixRequired": true,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "sourceHostAdmitted": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "Reusing the template pass slot host for the slot props pass changed only the crlf-unicode/mixed-slot-scope, crlf-unicode/slot-shadow, lf/mixed-slot-scope, lf/slot-shadow complete packets for LF and CRLF-Unicode inputs (the second __vize_slot_props_host declaration is gone); the source campaign retained those exact postimages while semantic, protocol, mapping-geometry and all three real host controls passed."
+  }
+}
