@@ -29,7 +29,7 @@ export const TEST_AREAS: ReadonlyArray<{
   { area: "Type checker", paths: ["crates/vize_canon", "crates/vize_croquis_cf"] },
   {
     area: "Linter",
-    paths: ["crates/vize_patina", "vendor/oxlint_html_renderer186", "npm/oxlint"],
+    paths: ["crates/vize_patina", "vendor/oxlint_html_renderer186", "npm/linter/oxlint"],
   },
   { area: "Formatter", paths: ["crates/vize_glyph", "vendor/oxc_formatter"] },
   { area: "LSP", paths: ["crates/vize_maestro", "editors"] },

@@ -202,7 +202,7 @@ test("source gates cover iteration events while full qualification runs on sched
   ) as { runs: { steps: Array<{ run?: string }> } };
   const jsTestCommands = history.runs.steps.map((step) => step.run ?? "").join("\n");
   assert.match(jsTestCommands, /vp run --workspace-root test:js/);
-  assert.match(jsTestCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
+  assert.match(jsTestCommands, /node npm\/linter\/oxlint\/scripts\/check-project-transport\.mjs/);
   assert.match(commands("rust-clippy-portability"), /cargo clippy --workspace/);
   assert.equal(
     workflow.jobs?.["rust-native-differential"]?.steps?.find((step) => step.name === "Test")?.uses,

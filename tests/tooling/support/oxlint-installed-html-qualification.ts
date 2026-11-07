@@ -6,7 +6,7 @@ import {
   expectedOriginalRows,
   assertStandaloneOutput,
   completeCase,
-} from "../../../npm/oxlint/src/test-support/html-cli-oracles.mjs";
+} from "../../../npm/linter/oxlint/src/test-support/html-cli-oracles.mjs";
 import { sourceRoot } from "./oxlint-installed-html-authority.ts";
 import type {
   HtmlFixture,

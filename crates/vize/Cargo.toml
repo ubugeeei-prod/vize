@@ -60,6 +60,8 @@ vize_maestro = { workspace = true, optional = true }
 
 # CLI
 clap.workspace = true
+flate2.workspace = true
+tar.workspace = true
 
 # Directory walking with .gitignore support
 ignore.workspace = true

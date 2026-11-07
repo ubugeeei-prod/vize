@@ -32,7 +32,7 @@ type Manifest = Record<string, unknown> & {
 };
 const manifestPaths = [
   "npm/cli/package.json",
-  "npm/oxlint/package.json",
+  "npm/linter/oxlint/package.json",
   "npm/native/package.json",
 ];
 const actualHead = execFileSync("git", ["--no-replace-objects", "rev-parse", "HEAD"], {
@@ -134,7 +134,7 @@ describe("SourceControls", () => {
         "@typescript/typescript-darwin-arm64",
         "catalog:wrong",
       ],
-      ["npm/oxlint/package.json", "optionalDependencies", "@vizejs/native-darwin-arm64", "0.998.0"],
+      ["npm/linter/oxlint/package.json", "optionalDependencies", "@vizejs/native-darwin-arm64", "0.998.0"],
     ];
     for (const [name, field, child, value] of mutations) {
       f.writeShape("0.999.0");

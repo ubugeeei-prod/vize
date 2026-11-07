@@ -11,7 +11,7 @@ import { runInNewContext } from "node:vm";
 import {
   cleanupProjectNative,
   stageProjectNative,
-} from "../../npm/oxlint/scripts/project-native-staging.ts";
+} from "../../npm/linter/oxlint/scripts/project-native-staging.ts";
 
 const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
@@ -24,7 +24,7 @@ void test("the actual caller stages standalone and emits its exact owned path on
   fs.writeFileSync(source, bytes);
   fs.writeFileSync(sourceReceipt, '{"source":"standalone caller"}\n');
   const caller = fs.readFileSync(
-    fileURLToPath(new URL("../../npm/oxlint/scripts/check-project-transport.mjs", import.meta.url)),
+    fileURLToPath(new URL("../../npm/linter/oxlint/scripts/check-project-transport.mjs", import.meta.url)),
     "utf8",
   );
   const start = caller.indexOf("const staged = stageProjectNative(");
@@ -177,12 +177,12 @@ void test("cleanup refuses an outside directory and a symlink to an unowned comp
 function sourcePreloadFixture(t: { after: (cleanup: () => void) => void }) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-scoped-preload-")));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const helper = path.join(root, "npm/oxlint/scripts/project-native-staging.ts");
+  const helper = path.join(root, "npm/linter/oxlint/scripts/project-native-staging.ts");
   const wrapper = path.join(root, "npm/native/index.js");
   fs.mkdirSync(path.dirname(helper), { recursive: true });
   fs.mkdirSync(path.dirname(wrapper));
   fs.copyFileSync(
-    fileURLToPath(new URL("../../npm/oxlint/scripts/project-native-staging.ts", import.meta.url)),
+    fileURLToPath(new URL("../../npm/linter/oxlint/scripts/project-native-staging.ts", import.meta.url)),
     helper,
   );
   const binary = path.join(root, "authored-image.cjs");

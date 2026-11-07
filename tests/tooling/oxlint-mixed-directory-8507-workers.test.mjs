@@ -8,7 +8,7 @@ import {
   mixedCells,
   joinMixedCaptures,
   runMixedWorkers,
-} from "../../npm/oxlint/src/test-support/mixed-directory-8507-workers.mjs";
+} from "../../npm/linter/oxlint/src/test-support/mixed-directory-8507-workers.mjs";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const plan = JSON.parse(

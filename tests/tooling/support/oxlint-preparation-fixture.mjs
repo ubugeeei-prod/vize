@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { referenceSource } from "../../../npm/oxlint/scripts/n8n-reference-source.mjs";
+import { referenceSource } from "../../../npm/linter/oxlint/scripts/n8n-reference-source.mjs";
 
 export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export const read = (file) => JSON.parse(fs.readFileSync(file));
@@ -61,7 +61,7 @@ export function preparationFixture(t) {
     source: referenceSource,
     physicalSource: [
       {
-        filename: "npm/oxlint/source.mjs",
+        filename: "npm/linter/oxlint/source.mjs",
         sha256: hash(fs.readFileSync(path.join(referenceRoot, "source.mjs"))),
       },
     ],

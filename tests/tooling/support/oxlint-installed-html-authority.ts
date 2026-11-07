@@ -24,10 +24,10 @@ const campaignPaths = [
   "tests/tooling/support/oxlint-installed-html-qualification.ts",
   "tests/tooling/support/oxlint-installed-html-acceptance.ts",
   "tests/tooling/support/oxlint-installed-html-acceptance.rs",
-  "npm/oxlint/src/test-support/html-cli-oracles.mjs",
-  "npm/oxlint/src/test-support/html-cli-oracles.d.mts",
-  "npm/oxlint/src/format.ts",
-  "npm/oxlint/src/cli/presentation-context.ts",
+  "npm/linter/oxlint/src/test-support/html-cli-oracles.mjs",
+  "npm/linter/oxlint/src/test-support/html-cli-oracles.d.mts",
+  "npm/linter/oxlint/src/format.ts",
+  "npm/linter/oxlint/src/cli/presentation-context.ts",
   "npm/native/index.d.ts",
   "tests/tooling/support/n8n-installed-authority.ts",
   "tests/tooling/support/n8n-installed-cli.ts",
@@ -36,8 +36,8 @@ const campaignPaths = [
   "tests/tooling/support/n8n-cli-config-workspace.mjs",
   "tests/_fixtures/n8n-cli-adoption.json",
   "tools/support/release/public_acceptance/installed.ts",
-  "npm/oxlint/src/test-support/html-cli-original-packets.json",
-  "npm/oxlint/src/__snapshots__/stylish-standalone-html-output.txt",
+  "npm/linter/oxlint/src/test-support/html-cli-original-packets.json",
+  "npm/linter/oxlint/src/__snapshots__/stylish-standalone-html-output.txt",
 ].sort();
 
 export function installedHtmlPreflight() {

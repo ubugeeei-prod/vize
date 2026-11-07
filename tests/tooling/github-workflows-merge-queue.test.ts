@@ -113,7 +113,7 @@ test("queue scope reaches the planner and every selected source lane remains req
   assert.equal(source.jobs["pr-js-packages"].uses, "./.github/workflows/pr-js-checks.yml");
   const jsCommands = Object.values(jsChecks.jobs).map(commands).join("\n");
   assert.match(jsCommands, /vp run --workspace-root "test:js:\$VIZE_JS_PACKAGE_GROUP"/);
-  assert.match(jsCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
+  assert.match(jsCommands, /node npm\/linter\/oxlint\/scripts\/check-project-transport\.mjs/);
   requiredUiConformance(jsChecks.jobs["pr-js-package-conformance"]);
   assert.equal(jsHistory.runs.using, "composite");
   const fullPackageTest = jsHistory.runs.steps.find((step) => step.name === "Test JS packages");

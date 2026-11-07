@@ -129,6 +129,7 @@ pklrust = "=0.9.0"
 # CLI, async, and IDE runtime
 clap = { version = "=4.6.7", features = ["derive"] }
 futures = "=0.3.34"
+flate2 = "=1.1.11"
 tower = { version = "=0.4.13", default-features = false }
 tower-lsp = { version = "=0.20.0", default-features = false, features = ["runtime-agnostic"] }
 async-trait = "=0.1.92"
@@ -145,6 +146,7 @@ globset = "=0.4.20"
 rayon = "=1.12.0"
 regex-lite = "=0.1.9"
 tempfile = "=3.27.0"
+tar = { version = "=0.4.46", default-features = false }
 
 # NAPI / WASM / Web
 napi = { version = "=3.14.2", default-features = false, features = ["napi8", "serde-json"] }

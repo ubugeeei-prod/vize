@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.ts";
-import { verifyCorpus } from "../../../npm/oxlint/scripts/n8n-replay-inputs.mjs";
+import { verifyCorpus } from "../../../npm/linter/oxlint/scripts/n8n-replay-inputs.mjs";
 import {
   root,
   projection,

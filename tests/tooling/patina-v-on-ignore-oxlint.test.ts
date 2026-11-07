@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   isVOnEventHyphenationOptions,
   vOnEventHyphenationSchema,
-} from "../../npm/oxlint/src/v-on-event-options.ts";
+} from "../../npm/linter/oxlint/src/v-on-event-options.ts";
 
 const require = createRequire(import.meta.url);
 const Ajv: typeof import("ajv").default = require("ajv");

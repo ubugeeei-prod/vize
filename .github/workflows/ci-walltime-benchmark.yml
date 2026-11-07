@@ -61,10 +61,10 @@ jobs:
       - name: Build and qualify the same native binary once
         run: vp run --workspace-root test:js
       - name: Serial complete original-project qualification
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode serial --phase-walltime target/ci-walltime/js-serial.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode serial --phase-walltime target/ci-walltime/js-serial.json
       - name: Concurrent complete original-project qualification
         if: ${{ !cancelled() }}
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/js-concurrent.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/js-concurrent.json
       - name: Preserve both complete qualifications and timings
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -87,12 +87,12 @@ jobs:
       - name: Build the same source native binary and bridge once
         run: |
           vp run --workspace-root build:native:test
-          vp run --filter './npm/oxlint' build
+          vp run --filter './npm/linter/oxlint' build
       - name: Sequential preparation with unchanged concurrent project hosts
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode sequential --phase-walltime target/ci-walltime/n8n-preparation-sequential.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode sequential --phase-walltime target/ci-walltime/n8n-preparation-sequential.json
       - name: Overlapping preparation with unchanged concurrent project hosts
         if: ${{ !cancelled() }}
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode overlap --phase-walltime target/ci-walltime/n8n-preparation-overlap.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode overlap --phase-walltime target/ci-walltime/n8n-preparation-overlap.json
       - name: Preserve both complete preparation campaigns and the one native build
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -226,14 +226,14 @@ jobs:
       - name: Build the same source native binary and bridge once
         run: |
           vp run --workspace-root build:native:test
-          vp run --filter './npm/oxlint' build
+          vp run --filter './npm/linter/oxlint' build
       - name: Serial baseline with unchanged concurrent project hosts
         env: { VIZE_N8N_BASELINE_MODE: serial }
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json
       - name: Partitioned baseline with unchanged concurrent project hosts
         if: ${{ !cancelled() }}
         env: { VIZE_N8N_BASELINE_MODE: partitioned }
-        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json
       - name: Preserve both complete baseline campaigns and the one native build
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

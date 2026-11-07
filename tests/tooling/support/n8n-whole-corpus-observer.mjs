@@ -7,7 +7,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.ts";
-import { verifyCorpus } from "../../../npm/oxlint/scripts/n8n-replay-inputs.mjs";
+import { verifyCorpus } from "../../../npm/linter/oxlint/scripts/n8n-replay-inputs.mjs";
 import { root, projection, validateProjection } from "./n8n-cli-config-inputs.mjs";
 import { errorPacket, loadAuthoredCases } from "./n8n-cli-config-oracle.mjs";
 import {

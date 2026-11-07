@@ -5,7 +5,10 @@
 //! - Editor extension installation for VSCode and Zed
 
 use clap::{Args, Subcommand};
+use flate2::read::MultiGzDecoder;
+use std::collections::BTreeSet;
 use std::ffi::OsString;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use vize_l0::{String, cstr};
@@ -19,6 +22,10 @@ const VSCODE_EXTENSION_ID: &str = "ubugeeei.vize";
 const LEGACY_VSCODE_EXTENSION_ID: &str = "vize.vize";
 const RELEASE_REPOSITORY: &str = "https://github.com/ubugeeei-prod/vize";
 const ZED_RELEASE_ASSET: &str = "zed-vize-extension.tar.gz";
+const MAX_ZED_ARCHIVE_BYTES: u64 = 2 * 1024 * 1024;
+const MAX_ZED_EXTRACTED_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_ZED_TAR_STREAM_BYTES: u64 = 10 * 1024 * 1024;
+const MAX_ZED_ARCHIVE_ENTRIES: usize = 256;
 
 #[derive(Args)]
 pub struct IdeArgs {
@@ -386,11 +393,10 @@ fn download_zed_extension(version: &str) -> Result<tempfile::TempDir, String> {
         .map_err(|error| cstr!("could not create a temporary directory: {error}"))?;
     let archive = temporary.path().join(ZED_RELEASE_ASSET);
     let source = temporary.path().join("zed");
-    std::fs::create_dir(&source)
-        .map_err(|error| cstr!("could not prepare the extension directory: {error}"))?;
 
     let curl = std::env::var_os("VIZE_IDE_CURL").unwrap_or_else(|| OsString::from("curl"));
     let url = zed_release_asset_url(version);
+    let maximum_archive_bytes = cstr!("{MAX_ZED_ARCHIVE_BYTES}");
     let download = Command::new(curl)
         .args([
             "--fail",
@@ -401,7 +407,11 @@ fn download_zed_extension(version: &str) -> Result<tempfile::TempDir, String> {
             "=https",
             "--proto-redir",
             "=https",
+            "--max-redirs",
+            "5",
         ])
+        .arg("--max-filesize")
+        .arg(maximum_archive_bytes.as_str())
         .arg("--output")
         .arg(&archive)
         .arg(url.as_str())
@@ -411,25 +421,150 @@ fn download_zed_extension(version: &str) -> Result<tempfile::TempDir, String> {
         return Err(cstr!("curl exited with {download} while fetching {url}"));
     }
 
-    let tar = std::env::var_os("VIZE_IDE_TAR").unwrap_or_else(|| OsString::from("tar"));
-    let extract = Command::new(tar)
-        .arg("-xzf")
-        .arg(&archive)
-        .arg("-C")
-        .arg(&source)
-        .arg("--strip-components=1")
-        .status()
-        .map_err(|error| cstr!("could not run tar: {error}"))?;
-    if !extract.success() {
+    let metadata = std::fs::metadata(&archive)
+        .map_err(|error| cstr!("could not inspect the downloaded extension: {error}"))?;
+    if !metadata.is_file() || metadata.len() > MAX_ZED_ARCHIVE_BYTES {
         return Err(cstr!(
-            "tar exited with {extract} while extracting the extension"
+            "downloaded extension is not a regular archive within the {MAX_ZED_ARCHIVE_BYTES}-byte limit"
         ));
     }
-    if !source.join("extension.toml").is_file() {
-        return Err(cstr!("release archive does not contain zed/extension.toml"));
+    let bytes = std::fs::read(&archive)
+        .map_err(|error| cstr!("could not read the downloaded extension: {error}"))?;
+    unpack_zed_extension_archive(&bytes, temporary.path())?;
+    if !std::fs::symlink_metadata(source.join("extension.toml"))
+        .is_ok_and(|metadata| metadata.file_type().is_file())
+    {
+        return Err(cstr!(
+            "release archive does not contain a regular zed/extension.toml"
+        ));
     }
 
     Ok(temporary)
+}
+
+fn unpack_zed_extension_archive(bytes: &[u8], destination: &Path) -> Result<(), String> {
+    validate_zed_extension_archive(bytes)?;
+
+    let decoder = MultiGzDecoder::new(Cursor::new(bytes));
+    let mut archive = tar::Archive::new(decoder);
+    let entries = archive
+        .entries()
+        .map_err(|error| cstr!("could not read the Zed extension archive: {error}"))?;
+    for entry in entries {
+        let mut entry = entry
+            .map_err(|error| cstr!("could not read a Zed extension archive entry: {error}"))?;
+        if !entry
+            .unpack_in(destination)
+            .map_err(|error| cstr!("could not extract the Zed extension archive: {error}"))?
+        {
+            return Err(cstr!(
+                "refused a Zed extension archive entry outside the destination"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_zed_extension_archive(bytes: &[u8]) -> Result<(), String> {
+    if bytes.len() as u64 > MAX_ZED_ARCHIVE_BYTES {
+        return Err(cstr!(
+            "Zed extension archive exceeds the {MAX_ZED_ARCHIVE_BYTES}-byte limit"
+        ));
+    }
+
+    let decoder = MultiGzDecoder::new(Cursor::new(bytes));
+    let limited = std::io::Read::take(decoder, MAX_ZED_TAR_STREAM_BYTES + 1);
+    let mut archive = tar::Archive::new(limited);
+    let mut seen = BTreeSet::new();
+    let mut extracted_bytes = 0_u64;
+    let mut has_manifest = false;
+    {
+        let entries = archive
+            .entries()
+            .map_err(|error| cstr!("could not read the Zed extension archive: {error}"))?;
+        for (index, entry) in entries.enumerate() {
+            if index >= MAX_ZED_ARCHIVE_ENTRIES {
+                return Err(cstr!(
+                    "Zed extension archive exceeds the {MAX_ZED_ARCHIVE_ENTRIES}-entry limit"
+                ));
+            }
+            let entry = entry
+                .map_err(|error| cstr!("could not read a Zed extension archive entry: {error}"))?;
+            let entry_type = entry.header().entry_type();
+            let size = entry
+                .header()
+                .size()
+                .map_err(|error| cstr!("invalid Zed extension archive entry size: {error}"))?;
+            let name = validate_zed_archive_member(
+                entry.path_bytes().as_ref(),
+                entry_type,
+                size,
+                &mut seen,
+            )?;
+            extracted_bytes = extracted_bytes
+                .checked_add(size)
+                .filter(|total| *total <= MAX_ZED_EXTRACTED_BYTES)
+                .ok_or_else(|| {
+                    cstr!(
+                        "Zed extension archive exceeds the {MAX_ZED_EXTRACTED_BYTES}-byte extraction limit"
+                    )
+                })?;
+            has_manifest |= name == "zed/extension.toml" && entry_type.is_file();
+        }
+    }
+    let mut limited = archive.into_inner();
+    std::io::copy(&mut limited, &mut std::io::sink())
+        .map_err(|error| cstr!("invalid Zed extension gzip stream: {error}"))?;
+    let stream_bytes = MAX_ZED_TAR_STREAM_BYTES + 1 - limited.limit();
+    if stream_bytes > MAX_ZED_TAR_STREAM_BYTES {
+        return Err(cstr!(
+            "Zed extension archive exceeds the {MAX_ZED_TAR_STREAM_BYTES}-byte stream limit"
+        ));
+    }
+    if !has_manifest {
+        return Err(cstr!(
+            "release archive does not contain a regular zed/extension.toml"
+        ));
+    }
+    Ok(())
+}
+
+fn validate_zed_archive_member(
+    raw_name: &[u8],
+    entry_type: tar::EntryType,
+    size: u64,
+    seen: &mut BTreeSet<String>,
+) -> Result<String, String> {
+    if !entry_type.is_file() && !entry_type.is_dir() {
+        return Err(cstr!(
+            "Zed extension archive contains a link or special entry"
+        ));
+    }
+    let name = std::str::from_utf8(raw_name)
+        .map_err(|_| cstr!("Zed extension archive contains a non-UTF-8 path"))?;
+    if name.starts_with('/') || name.contains('\\') || name.contains('\0') {
+        return Err(cstr!("Zed extension archive contains an unsafe path"));
+    }
+    let normalized = name.strip_suffix('/').unwrap_or(name);
+    let mut parts = normalized.split('/');
+    if parts.next() != Some("zed")
+        || parts
+            .clone()
+            .any(|part| part.is_empty() || part == "." || part == "..")
+        || normalized == "zed" && !entry_type.is_dir()
+        || name.ends_with('/') && !entry_type.is_dir()
+        || entry_type.is_dir() && size != 0
+    {
+        return Err(cstr!(
+            "Zed extension archive contains an unsafe path or entry"
+        ));
+    }
+    if !seen.insert(normalized.into()) {
+        return Err(cstr!(
+            "Zed extension archive contains a duplicate path: {normalized}"
+        ));
+    }
+    Ok(normalized.into())
 }
 
 fn zed_uninstall() {

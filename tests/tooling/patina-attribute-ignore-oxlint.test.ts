@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   attributeHyphenationSchema,
   getAttributeHyphenationOptions,
-} from "../../npm/oxlint/src/attribute-options.ts";
+} from "../../npm/linter/oxlint/src/attribute-options.ts";
 const require = createRequire(import.meta.url);
 const Ajv: typeof import("ajv").default = require("ajv");
 

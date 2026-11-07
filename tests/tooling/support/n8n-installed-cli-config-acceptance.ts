@@ -10,7 +10,7 @@ import type {
   Projection,
   AuthoredCapture,
 } from "./n8n-installed-contract-types.ts";
-import { verifyCorpus } from "../../../npm/oxlint/scripts/n8n-replay-inputs.mjs";
+import { verifyCorpus } from "../../../npm/linter/oxlint/scripts/n8n-replay-inputs.mjs";
 import {
   root,
   projection as frozenProjection,

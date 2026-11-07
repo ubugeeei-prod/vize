@@ -2,8 +2,10 @@
   "name": "@vizejs/vize",
   "exports": {
     ".": "./mod.ts",
+    "./babel": "./babel.ts",
     "./config": "./config.ts",
     "./native": "./native.ts",
+    "./oxlint": "./oxlint.ts",
     "./vite": "./vite.ts"
   },
   "publish": {

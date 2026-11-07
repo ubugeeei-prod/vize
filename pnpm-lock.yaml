@@ -622,14 +622,14 @@ importers:
         specifier: workspace:*
         version: link:../../npm/cli
 
-  npm/babel:
+  npm/builder/babel:
     dependencies:
       '@jridgewell/remapping':
         specifier: 2.3.5
         version: 2.3.5
       '@vizejs/native':
         specifier: workspace:*
-        version: link:../native
+        version: link:../../native
       convert-source-map:
         specifier: 2.0.0
         version: 2.0.0
@@ -1155,33 +1155,27 @@ importers:
         specifier: catalog:typescript
         version: 3.3.11(typescript@6.0.3)
 
-  npm/eslint:
+  npm/formatter/prettier:
     dependencies:
-      '@typescript-eslint/parser':
-        specifier: 8.72.0
-        version: 8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
-      oxlint-plugin-vize:
+      '@vizejs/native':
         specifier: workspace:*
-        version: link:../oxlint
-      vue-eslint-parser:
-        specifier: 10.4.1
-        version: 10.4.1(eslint@10.13.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+        version: link:../../native
     devDependencies:
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2
-      '@vizejs/native':
-        specifier: workspace:*
-        version: link:../native
-      eslint:
-        specifier: 10.13.0
-        version: 10.13.0(jiti@2.7.0)(supports-color@10.2.2)
+      prettier:
+        specifier: 3.9.10
+        version: 3.9.10
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
       vite-plus:
         specifier: catalog:vite-stack
         version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
 
   npm/framework/musea-nuxt:
     devDependencies:
@@ -1321,6 +1315,87 @@ importers:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
 
+  npm/linter/eslint:
+    dependencies:
+      '@typescript-eslint/parser':
+        specifier: 8.72.0
+        version: 8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
+      oxlint-plugin-vize:
+        specifier: workspace:*
+        version: link:../oxlint
+      vue-eslint-parser:
+        specifier: 10.4.1
+        version: 10.4.1(eslint@10.13.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      eslint:
+        specifier: 10.13.0
+        version: 10.13.0(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
+
+  npm/linter/oxlint:
+    dependencies:
+      '@oxlint/plugins':
+        specifier: catalog:linting
+        version: 1.78.0
+    devDependencies:
+      '@tsdown/css':
+        specifier: catalog:content
+        version: 0.22.14(jiti@2.7.0)(postcss@8.5.26)(tsdown@0.22.14)(tsx@4.23.12)(yaml@2.9.0)
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      tsdown:
+        specifier: catalog:vite-stack
+        version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.28(typescript@6.0.3))(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(vue-tsc@3.3.9(typescript@6.0.3))
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite:
+        specifier: catalog:vite-stack
+        version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)'
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
+    optionalDependencies:
+      '@vizejs/native-darwin-arm64':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-darwin-x64':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-linux-arm64-gnu':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-linux-arm64-musl':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-linux-x64-gnu':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-linux-x64-musl':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-win32-arm64-msvc':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+      '@vizejs/native-win32-x64-msvc':
+        specifier: catalog:native-binaries
+        version: 0.474.0
+
   npm/marquette:
     devDependencies:
       '@types/node':
@@ -1401,86 +1476,11 @@ importers:
         specifier: catalog:native-binaries
         version: 0.474.0
 
-  npm/oxlint:
-    dependencies:
-      '@oxlint/plugins':
-        specifier: catalog:linting
-        version: 1.78.0
-    devDependencies:
-      '@tsdown/css':
-        specifier: catalog:content
-        version: 0.22.14(jiti@2.7.0)(postcss@8.5.26)(tsdown@0.22.14)(tsx@4.23.12)(yaml@2.9.0)
-      '@types/node':
-        specifier: catalog:typescript
-        version: 25.9.2
-      '@vizejs/native':
-        specifier: workspace:*
-        version: link:../native
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.22.14(@tsdown/css@0.22.14)(@volar/typescript@2.4.28(typescript@6.0.3))(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(vue-tsc@3.3.9(typescript@6.0.3))
-      typescript:
-        specifier: catalog:typescript
-        version: 6.0.3
-      vite:
-        specifier: catalog:vite-stack
-        version: '@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)'
-      vite-plus:
-        specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
-    optionalDependencies:
-      '@vizejs/native-darwin-arm64':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-darwin-x64':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-linux-arm64-gnu':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-linux-arm64-musl':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-linux-x64-gnu':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-linux-x64-musl':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-win32-arm64-msvc':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-      '@vizejs/native-win32-x64-msvc':
-        specifier: catalog:native-binaries
-        version: 0.474.0
-
   npm/plugin-sdk:
     devDependencies:
       '@vizejs/native':
         specifier: workspace:*
         version: link:../native
-
-  npm/prettier:
-    dependencies:
-      '@vizejs/native':
-        specifier: workspace:*
-        version: link:../native
-    devDependencies:
-      '@types/node':
-        specifier: catalog:typescript
-        version: 25.9.2
-      prettier:
-        specifier: 3.9.10
-        version: 3.9.10
-      typescript:
-        specifier: catalog:typescript
-        version: 6.0.3
-      vite-plus:
-        specifier: catalog:vite-stack
-        version: 0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
-      vue:
-        specifier: catalog:vue-stable
-        version: 3.5.35(typescript@6.0.3)
 
   npm/typescript-plugin:
     dependencies:

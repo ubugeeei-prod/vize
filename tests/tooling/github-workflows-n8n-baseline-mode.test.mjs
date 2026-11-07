@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { hostVersions, parseHostOptions } from "../../npm/oxlint/scripts/ci-host-concurrency.mjs";
+import { hostVersions, parseHostOptions } from "../../npm/linter/oxlint/scripts/ci-host-concurrency.mjs";
 
 const action = parse(
   readFileSync(
@@ -21,8 +21,8 @@ const workflow = parse(
 const pullRequest = parse(
   readFileSync(new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url), "utf8"),
 );
-const controller = "node npm/oxlint/scripts/check-project-transport.mjs";
-const selector = new URL("../../npm/oxlint/scripts/n8n-baseline-partitions.mjs", import.meta.url)
+const controller = "node npm/linter/oxlint/scripts/check-project-transport.mjs";
+const selector = new URL("../../npm/linter/oxlint/scripts/n8n-baseline-partitions.mjs", import.meta.url)
   .href;
 
 function observedMode(...overlays) {

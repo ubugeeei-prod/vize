@@ -250,14 +250,14 @@ test("shared row action validates the plan and never parallelizes fixture proces
     /git submodule update --init --recursive --depth 1 -- "\$\{fixture_paths\[@\]\}"/,
   );
   const install = namedStep({ steps: action.runs?.steps }, "Install JavaScript dependencies");
-  assert.match(install.run ?? "", /--filter '\.\/npm\/oxlint\.\.\.'/);
+  assert.match(install.run ?? "", /--filter '\.\/npm\/linter\/oxlint\.\.\.'/);
   const build = namedStep({ steps: action.runs?.steps }, "Build local Vize packages");
   assert.match(build.run ?? "", /run-many\.ts/);
   for (const packagePath of [
     "./npm/cli",
     "./npm/builder/vite",
     "./npm/framework/nuxt-lint-config",
-    "./npm/oxlint",
+    "./npm/linter/oxlint",
     "./npm/builder/vite-musea",
     "./npm/framework/nuxt",
     "./npm/framework/musea-nuxt",

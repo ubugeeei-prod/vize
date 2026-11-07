@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { createHostCommandRunner } from "../../npm/oxlint/scripts/ci-host-worker.mjs";
+import { createHostCommandRunner } from "../../npm/linter/oxlint/scripts/ci-host-worker.mjs";
 
 void test("HTML children preserve complete transport evidence and retain strict failed child diagnostics", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-host-html-evidence-"));

@@ -15,7 +15,7 @@ import {
   fixtures,
   plainHostEnvironment,
   finishCapture,
-} from "../../../npm/oxlint/src/test-support/html-cli-oracles.mjs";
+} from "../../../npm/linter/oxlint/src/test-support/html-cli-oracles.mjs";
 import type { HtmlFixture, HtmlCapture, ExpectedPacket } from "./oxlint-installed-html-types.ts";
 
 installedHtmlPreflight();
@@ -36,7 +36,7 @@ if (process.argv[2] === "--print-campaign-authority") {
     ...JSON.parse(fs.readFileSync(path.join(corpus, "expected-packets.json"), "utf8")),
     ...JSON.parse(
       fs.readFileSync(
-        path.join(sourceRoot, "npm/oxlint/src/test-support/html-cli-original-packets.json"),
+        path.join(sourceRoot, "npm/linter/oxlint/src/test-support/html-cli-original-packets.json"),
         "utf8",
       ),
     ),
