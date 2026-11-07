@@ -65,6 +65,74 @@ function render(source: string, fields: Record<string, string>) {
     return fields[name!]!;
   });
 }
+
+/** Certify a direct emit-props call moved under its authored `v-if` guard. */
+export function guardedInferenceEdits(before: string, after: string): Edit[] {
+  const edits: Edit[] = [];
+  const header = /^([ \t]*)const (__vize_emit_props_[0-9]+) = \(\(\) => \{\r?\n/gmu;
+  for (const match of after.matchAll(header)) {
+    const [opening, indent, emitProps] = match;
+    const newline = opening.endsWith("\r\n") ? "\r\n" : "\n";
+    const comment =
+      `${indent}  // @ts-ignore Inference-only guard; authored binding checks own diagnostics.` +
+      newline;
+    const guardedLineStart = match.index + opening.length;
+    if (!after.startsWith(comment, guardedLineStart)) continue;
+    const ifStart = guardedLineStart + comment.length;
+    const ifEnd = after.indexOf(newline, ifStart);
+    assert.ok(ifEnd > ifStart, "guarded inference keeps one complete guard line");
+    const ifLine = after.slice(ifStart, ifEnd);
+    const prefix = `${indent}  if (`;
+    const separator = ") return ";
+    assert.ok(ifLine.startsWith(prefix), "guarded inference keeps the authored guard");
+    const separatorAt = ifLine.lastIndexOf(separator);
+    assert.ok(separatorAt > prefix.length, "guarded inference keeps one return call");
+    const call = ifLine.slice(separatorAt + separator.length);
+    assert.ok(
+      call.startsWith("(undefined as unknown as __") && call.endsWith(")({"),
+      "guarded inference keeps the complete resolver call",
+    );
+    const tail = `${indent}  return undefined as never;${newline}${indent}})();${newline}`;
+    const tailStart = after.indexOf(tail, ifEnd + newline.length);
+    assert.ok(tailStart > ifEnd, "guarded inference keeps its unreachable fallback");
+    const blockEnd = tailStart + tail.length;
+    const current = after.slice(match.index, blockEnd);
+    if (before.includes(current)) continue;
+
+    const nested = after.slice(ifEnd + newline.length, tailStart);
+    const directBody = nested
+      .split(newline)
+      .map((line) => {
+        if (!line) return line;
+        assert.ok(
+          line.startsWith(`${indent}  `),
+          "guarded inference indents every resolver body line",
+        );
+        return indent + line.slice(indent.length + 2);
+      })
+      .join(newline);
+    const direct = `${indent}const ${emitProps} = ${call}${newline}${directBody}`;
+    const directAt = before.indexOf(direct);
+    if (directAt < 0) continue;
+    assert.equal(
+      before.indexOf(direct, directAt + direct.length),
+      -1,
+      "one direct inference call owns the guarded transition",
+    );
+    assert.equal(
+      after.includes(direct),
+      false,
+      "the direct inference call is fully replaced by its guard",
+    );
+    edits.push({
+      start: Buffer.byteLength(before.slice(0, directAt)),
+      end: Buffer.byteLength(before.slice(0, directAt + direct.length)),
+      replacement: Buffer.from(current),
+    });
+  }
+  return edits;
+}
+
 export function currentCallbackSourceEdits(
   before: string,
   after: string,
@@ -273,5 +341,6 @@ export function currentCallbackSourceEdits(
       add(match.index, match[0].length, replacements[0]!);
     }
   }
+  edits.push(...guardedInferenceEdits(before, after));
   return { edits, addedMappings };
 }

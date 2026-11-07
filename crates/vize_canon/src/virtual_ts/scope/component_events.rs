@@ -64,7 +64,12 @@ pub(super) struct ComponentEventTypeContext<'a, 'template> {
     pub(super) native_fallthrough_only: bool,
     /// The `@vue-generic` binding this listener's component resolves through.
     pub(super) explicit_generic: Option<&'a str>,
+    /// Logical guard that keeps listener contracts scoped to their authored
+    /// branch, even when the inference call needs its own physical wrapper.
     pub(super) enclosing_vif_guard: Option<&'a str>,
+    /// Guard already wrapped around the emitted inference call. Only this may
+    /// be subtracted from the call's own `v-if` guard.
+    pub(super) inference_outer_vif_guard: Option<&'a str>,
     pub(super) event_inference_usages: &'a std::cell::RefCell<FxHashSet<usize>>,
     pub(super) event_contracts: &'a std::cell::RefCell<FxHashMap<EventContractKey, u32>>,
     pub(super) indent: &'a str,
@@ -94,6 +99,7 @@ pub(super) fn generate_component_event_types(
         native_fallthrough_only,
         explicit_generic,
         enclosing_vif_guard,
+        inference_outer_vif_guard,
         event_inference_usages,
         event_contracts,
         indent,
@@ -329,7 +335,7 @@ pub(super) fn generate_component_event_types(
             template_binding_access,
             template_ast,
             source_context,
-            enclosing_vif_guard,
+            enclosing_vif_guard: inference_outer_vif_guard,
             event_inference_usages,
             indent,
             hoist_shared_preamble,

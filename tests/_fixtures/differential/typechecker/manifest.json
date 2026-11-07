@@ -13555,6 +13555,35 @@
       }
     },
     {
+      "id": "typechecker/regression/guarded-listener-packet-12089",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-listener-spread-guard-12074/SpreadSiblingBranches.vue.txt",
+          "sha256": "3dbd40abdbc6266429bff35a24766e2b35a0f4b6ba4b36cf85b8506a6467df95",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::component_listener_guard_share::guarded_spread_props_keep_narrowing_for_bare_listener_inference; two guarded sibling branches reuse one bare listener while keeping branch-owned contracts and guarded emit-props inference. Input-only registration, no differential diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/imported-mark-raw-callback",
       "state": "active",
       "targets": [

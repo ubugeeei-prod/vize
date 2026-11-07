@@ -116,6 +116,12 @@ fn guarded_spread_props_keep_narrowing_for_bare_listener_inference() {
                 ),
             ),
             (
+                "src/SpreadSiblingBranches.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/SpreadSiblingBranches.vue.txt"
+                ),
+            ),
+            (
                 "src/NoSpreadBareRef.vue",
                 include_str!(
                     "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/NoSpreadBareRef.vue.txt"
