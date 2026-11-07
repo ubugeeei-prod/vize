@@ -18,7 +18,8 @@ const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: repositoryRoot,
   encoding: "utf8",
 }).trim();
-if (process.env.GITHUB_SHA) assert.equal(sourceSha, process.env.GITHUB_SHA);
+const expectedSourceSha = process.env.VIZE_EXPECTED_SOURCE_SHA || process.env.GITHUB_SHA;
+if (expectedSourceSha) assert.equal(sourceSha, expectedSourceSha);
 const binary = fs.realpathSync(resolveRealServerPath());
 const digest = (file: string) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const binarySha = digest(binary);

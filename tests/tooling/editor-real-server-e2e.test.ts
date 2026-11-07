@@ -145,6 +145,10 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     stepEnvironment(action, "Run real Emacs Eglot project configuration").VIZE_SERVER_PATH,
     "${{ github.workspace }}/target/ci/vize",
   );
+  assert.equal(
+    stepEnvironment(action, "Run real Emacs Eglot project configuration").VIZE_EXPECTED_SOURCE_SHA,
+    "${{ inputs.expected-source-sha || github.sha }}",
+  );
   assert.match(action, /vp run --workspace-root test:zed-extension:real-server/);
   assert.match(action, /vp run --workspace-root test:helix-extension:real-server/);
 
@@ -246,6 +250,17 @@ test("CI pins vim-lsp before running the Vim real-server scenario", () => {
   assert.match(scenario, /VIZE_TEST_VIM_LSP_PATH: \$\{\{ runner\.temp \}\}\/vim-lsp/);
   assert.match(scenario, /VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/);
   assert.match(scenario, /vp run --workspace-root test:vim-extension:real-server/);
+  assert.equal(
+    stepEnvironment(action, "Run the Vim scenario against the real server")
+      .VIZE_EXPECTED_SOURCE_SHA,
+    "${{ inputs.expected-source-sha || github.sha }}",
+  );
+  for (const source of [
+    readRepoFile("tools", "support", "compat", "vim-vize", "run-config-server.ts"),
+    readRepoFile("tools", "support", "compat", "emacs-vize", "run-real-server.ts"),
+  ]) {
+    assert.match(source, /process\.env\.VIZE_EXPECTED_SOURCE_SHA \|\| process\.env\.GITHUB_SHA/);
+  }
 });
 
 test("CI executes the packaged Emacs ERT suite", () => {

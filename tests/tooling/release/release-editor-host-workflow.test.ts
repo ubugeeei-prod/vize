@@ -66,6 +66,7 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.equal(host?.with?.["prebuilt-server"], "${{ steps.artifacts.outputs.server }}");
   assert.equal(host?.with?.["prebuilt-vsix"], "${{ steps.artifacts.outputs.vsix }}");
   assert.equal(host?.with?.["expected-version"], "${{ needs.version.outputs.version }}");
+  assert.equal(host?.with?.["expected-source-sha"], "${{ needs.version.outputs.sha }}");
   assert.equal(host?.with?.["release-workspace"], "${{ steps.artifacts.outputs.fresh }}");
   assert.equal(host?.with?.["release-evidence"], "${{ steps.artifacts.outputs.evidence }}");
 });
@@ -77,6 +78,7 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
   };
   assert.ok(action.inputs["prebuilt-server"]);
   assert.ok(action.inputs["prebuilt-vsix"]);
+  assert.ok(action.inputs["expected-source-sha"]);
   const build = action.runs.steps.find((step) =>
     step.run?.includes("cargo build --profile ci -p vize"),
   );
