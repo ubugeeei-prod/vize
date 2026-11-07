@@ -56,7 +56,12 @@ jobs:
       - name: Resolve the Windows mount
         shell: pwsh
         run: |
-          $mount = (wsl.exe wslpath -a "$env:RUNNER_TEMP").Trim()
+          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
+          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
+          $tail = $windowsPath.Substring(2).Replace('\', '/')
+          $mount = "/mnt/$drive$tail"
+          wsl.exe test -d $mount
+          if ($LASTEXITCODE -ne 0) { throw "WSL mount is unavailable: $mount" }
           "WSL_MOUNT_ROOT=$mount/vize-wsl2" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Install Node 24 in WSL2
         shell: wsl-bash {0}
