@@ -133,9 +133,10 @@ fn intervening_native_operations_restore_exact_initial_graph() {
             );
         } else {
             assert!(before_consume > initial_epoch);
-            assert!(
-                after_consume >= before_consume + 2,
-                "intervening native state requires ordinary synchronization"
+            assert_eq!(
+                after_consume,
+                before_consume + 1,
+                "ordinary synchronization activates and opens in one native transaction"
             );
         }
         corsa::runtime::block_on(bridge.shutdown()).unwrap();
