@@ -63,7 +63,7 @@ export interface EvidenceFile<T> {
 }
 
 const matrixTools = ["compiler", "typechecker", "linter", "formatter"];
-const matrixStatuses = ["planned", "ok", "findings", "failed", "missing-fixture"];
+const matrixStatuses = ["planned", "ok", "findings", "configuration", "failed", "missing-fixture"];
 const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx",
   noFilesPrefix = `No ${lintExtensions} files found matching patterns: `,
   unmatchedPatternsPrefix = `Warning: no ${lintExtensions} files found matching patterns: `,
@@ -140,6 +140,7 @@ function expectedMatrixSummary(matrix: FixtureToolMatrix): JsonRecord {
     runCount: runs.length,
     okRuns: count("ok"),
     findingsRuns: count("findings"),
+    configurationRuns: count("configuration"),
     failedRuns: count("failed"),
     missingFixtureRuns: count("missing-fixture"),
     plannedRuns: count("planned"),
@@ -249,6 +250,7 @@ export function validateFixtureToolMatrix(
       "runCount",
       "okRuns",
       "findingsRuns",
+      "configurationRuns",
       "failedRuns",
       "missingFixtureRuns",
       "plannedRuns",

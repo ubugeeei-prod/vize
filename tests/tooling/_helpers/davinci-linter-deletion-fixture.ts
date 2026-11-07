@@ -356,6 +356,7 @@ function matrix(
       runCount: runs.length,
       okRuns: count("ok"),
       findingsRuns: count("findings"),
+      configurationRuns: 0,
       failedRuns: 0,
       missingFixtureRuns: 0,
       plannedRuns: 0,
