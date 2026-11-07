@@ -85,6 +85,21 @@ function foundationExports(packageRoot: string, entry: UiFamilyCatalogEntry): st
   return exportsSection(exports);
 }
 
+function qualityEvidence(entry: UiFamilyCatalogEntry): string {
+  return entry.qualityGates.map((gate) => gate.replaceAll("-", " ")).join(", ");
+}
+
+function bundleBudget(entry: UiFamilyCatalogEntry): string {
+  const budget = entry.bundleBudget;
+  if (budget == null) return "—";
+  return `${budget.maximumJavaScriptGzipBytes.toLocaleString("en-US")} B JS gzip / ${budget.maximumCssGzipBytes.toLocaleString("en-US")} B CSS gzip`;
+}
+
+function authoredGuide(packageRoot: string, entry: UiFamilyCatalogEntry): string {
+  if (entry.documentation == null) return "";
+  return readFileSync(path.join(packageRoot, entry.documentation), "utf8").trim();
+}
+
 /** Render `docs/content/guide/ui/<name>.md`. */
 export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEntry): string {
   const summary = familySummary(packageRoot, entry);
@@ -96,6 +111,8 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
     [
       ["Package", `\`@vizejs/ui${subpath}\``],
       ["Maturity", entry.maturity],
+      ["Quality gates", cell(qualityEvidence(entry))],
+      ["Bundle budget", bundleBudget(entry)],
       ["Own the source", `\`vize lib pull ${entry.canonicalName}\``],
       [
         "Requires",
@@ -143,6 +160,7 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
   const behavior = embedBehavior(
     readFileSync(path.join(packageRoot, entry.behaviorContract), "utf8"),
   );
+  const guide = authoredGuide(packageRoot, entry);
   return blocks(
     frontmatter(entry.title, summary),
     GENERATED_NOTICE,
@@ -163,6 +181,7 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
           "## Copy the example",
           ["```vue", example.trim(), "```"].join("\n"),
         ),
+    guide,
     api === "" ? "" : `## API\n\n${api}`,
     `## Behavior\n\n${behavior}`,
   );

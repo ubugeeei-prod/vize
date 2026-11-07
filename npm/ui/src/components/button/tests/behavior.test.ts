@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 
 import { test } from "vite-plus/test";
 
-import Button from "./button.vue";
-import { getButtonKeyboardAction } from "./button-keyboard.ts";
+import Button from "../button.vue";
+import { getButtonKeyboardAction } from "../keyboard.ts";
 import { mountInteraction } from "../../../testing/mount.ts";
 
 test("matches native keyboard activation timing", () => {
@@ -22,8 +22,27 @@ test("renders a native button with an accessible name", () => {
   assert.equal(button.getAttribute("type"), "button");
   assert.equal(button.getAttribute("data-vize-ui"), "button");
   assert.equal(button.getAttribute("data-state"), "idle");
+  assert.equal(button.getAttribute("data-variant"), "solid");
+  assert.equal(button.getAttribute("data-tone"), "accent");
+  assert.equal(button.getAttribute("data-size"), "md");
   assert.equal(button.getAttribute("aria-disabled"), null);
   assert.equal(button.getAttribute("aria-busy"), null);
+  handle.unmount();
+});
+
+test("publishes typed visual hooks without changing native semantics", () => {
+  const handle = mountInteraction(Button, {
+    props: { size: "lg", tone: "danger", variant: "outline" },
+    slots: { default: "Delete project" },
+  });
+  const button = handle.getByRole("button", { name: "Delete project" });
+
+  assert.equal(button.tagName, "BUTTON");
+  assert.equal(button.getAttribute("type"), "button");
+  assert.equal(button.getAttribute("data-size"), "lg");
+  assert.equal(button.getAttribute("data-tone"), "danger");
+  assert.equal(button.getAttribute("data-variant"), "outline");
+  assert.equal(button.getAttribute("aria-disabled"), null);
   handle.unmount();
 });
 
@@ -172,8 +191,9 @@ test("loading button announces busy, stays focusable, and suppresses press", asy
   handle.unmount();
 });
 
-test("exposes disabled, loading, and unavailable to the default slot", async () => {
+test("exposes live availability to the default slot", async () => {
   const handle = mountInteraction(Button, {
+    props: { size: "sm", tone: "neutral", variant: "quiet" },
     slots: {
       default: (state: { disabled: boolean; loading: boolean; unavailable: boolean }) =>
         `disabled:${state.disabled} loading:${state.loading} unavailable:${state.unavailable}`,

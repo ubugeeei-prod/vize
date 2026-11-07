@@ -67,7 +67,7 @@ VizeUiResolver({ source: "local" }); // ./vize-lib.lock.json を読む
 VizeComposableResolver({ source: "local", root: projectRoot, lockfile: "vize-lib.lock.json" });
 ```
 
-`vize-lib.lock.json` に記録された項目は `<root>/<dir>/<entry>` に解決されます。たとえば `src/components/vize/families/actions/button/button.ts` のような、コピーしたソースを使います。
+`vize-lib.lock.json` に記録された項目は `<root>/<dir>/<entry>` に解決されます。たとえば `src/components/vize/components/button/index.ts` のような、コピーしたソースを使います。
 その他の項目はパッケージにフォールバックします。フォールバックを止めるには `fallback: false` を指定します。
 Nuxt の `ui` と `composables` にも同じオプションがあります。
 

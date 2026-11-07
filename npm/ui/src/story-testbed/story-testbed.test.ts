@@ -25,16 +25,14 @@ import {
   uiStoryTestbedViewports,
 } from "./story-testbed.ts";
 import { themePresets } from "../families/foundations/theme/theme-constants.ts";
+import {
+  browserTestFileFor,
+  storyFileFor,
+  vrtTestFileFor,
+  vueTestFileFor,
+} from "./story-testbed-paths.ts";
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-
-function colocatedArtifactFile(
-  targetFile: `src/${string}`,
-  canonicalName: string,
-  suffix: string,
-): string {
-  return path.posix.join(path.posix.dirname(targetFile), `${canonicalName}${suffix}`);
-}
 
 async function collectSourceFiles(
   directory: string,
@@ -73,22 +71,10 @@ test("publishes a deterministic story-testbed inventory for each family", () => 
     assert.equal(entry.title, catalogEntry.title);
     assert.equal(entry.packageSubpath, catalogEntry.packageSubpath);
     const primaryTarget = entry.targetFiles[0] ?? catalogEntry.entryFile;
-    assert.equal(
-      entry.storyFile,
-      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".art.vue"),
-    );
-    assert.equal(
-      entry.vueTestFile,
-      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".vue.test.ts"),
-    );
-    assert.equal(
-      entry.browserTestFile,
-      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".browser.spec.ts"),
-    );
-    assert.equal(
-      entry.vrtTestFile,
-      colocatedArtifactFile(primaryTarget, entry.canonicalName, ".vrt.spec.ts"),
-    );
+    assert.equal(entry.storyFile, storyFileFor(entry.canonicalName, primaryTarget));
+    assert.equal(entry.vueTestFile, vueTestFileFor(entry.canonicalName, primaryTarget));
+    assert.equal(entry.browserTestFile, browserTestFileFor(entry.canonicalName, primaryTarget));
+    assert.equal(entry.vrtTestFile, vrtTestFileFor(entry.canonicalName, primaryTarget));
     assert.deepEqual(entry.supportingTestFiles, catalogEntry.tests);
     assert.deepEqual(entry.matrixDimensions, uiStoryMatrixDimensions);
     assert.deepEqual(entry.presets, themePresets);
@@ -109,8 +95,8 @@ test("publishes a deterministic story-testbed inventory for each family", () => 
         `${entry.canonicalName} target ${targetFile} must come from the family catalog`,
       );
       assert.equal(
-        path.posix.dirname(targetFile),
         path.posix.dirname(entry.storyFile),
+        path.posix.dirname(storyFileFor(entry.canonicalName, targetFile)),
         `${entry.canonicalName} story must stay colocated with its target files`,
       );
     }

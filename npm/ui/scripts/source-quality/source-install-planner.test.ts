@@ -18,7 +18,7 @@ function plan(input: Partial<UiSourceInstallPlanInput> = {}) {
     sourceFiles: [
       {
         familyName: "button",
-        sourcePath: "src/families/actions/button/button.ts",
+        sourcePath: "src/components/button/index.ts",
         destinationPath: "button.ts",
         sourceDigest: "sha256:button",
         destinationDigest: null,
@@ -50,7 +50,7 @@ void test("emits deterministic dry-run actions in destination path order", () =>
       },
       {
         familyName: "button",
-        sourcePath: "src/families/actions/button/button.ts",
+        sourcePath: "src/components/button/index.ts",
         destinationPath: "actions/button.ts",
         sourceDigest: "sha256:button",
         destinationDigest: null,
@@ -150,7 +150,7 @@ void test("reports duplicate destination paths as conflicts", () => {
       },
       {
         familyName: "button",
-        sourcePath: "src/families/actions/button/button.ts",
+        sourcePath: "src/components/button/index.ts",
         destinationPath: "field.ts",
         sourceDigest: "sha256:button",
       },
@@ -186,7 +186,7 @@ void test("keeps the JSON shape stable for machine consumers", () => {
       "operation": "create",
       "reason": "destination-missing",
       "familyName": "button",
-      "sourcePath": "src/families/actions/button/button.ts",
+      "sourcePath": "src/components/button/index.ts",
       "destinationPath": "button.ts",
       "targetPath": "/workspace/ui/button.ts",
       "sourceDigest": "sha256:button",

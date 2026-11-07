@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { defineComponent, h, type VNode } from "vue";
 
-import Button from "../families/actions/button/button.vue";
+import Button from "../components/button/button.vue";
 import ErrorSummary from "../families/form/error-summary/error-summary.vue";
 import IdProvider from "../families/foundations/id/deterministic-id-provider.vue";
 import { useDeterministicId } from "../families/foundations/id/deterministic-id.ts";
@@ -159,7 +159,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   interactionHooksRuntimeFixture,
   {
     name: "button",
-    sourceFile: "families/actions/button/button.vue",
+    sourceFile: "components/button/button.vue",
     render: () =>
       h(
         Button,

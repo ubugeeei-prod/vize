@@ -15,9 +15,10 @@ import { createPackageLibRegistryInput } from "../../scripts/source-registry-bun
 import { uiFamilyCatalog } from "../catalog/family-catalog.ts";
 
 const packageRoot = path.resolve(import.meta.dirname, "../..");
-const modules = import.meta.glob<{ default: Component }>("../families/*/*/examples/*.vue", {
-  eager: true,
-});
+const modules = {
+  ...import.meta.glob<{ default: Component }>("../components/*/examples/*.vue", { eager: true }),
+  ...import.meta.glob<{ default: Component }>("../families/*/*/examples/*.vue", { eager: true }),
+};
 const examples = Object.entries(modules).map(([file, module]) => ({
   file: file.replace(/^\.\.\//, "src/"),
   component: module.default,
@@ -45,7 +46,7 @@ function captureWarnings(run: () => Promise<void>): Promise<readonly string[]> {
 
 /**
  * Every family that exports components must ship
- * `examples/<family>-basic.vue` (also enforced by `pnpm check:examples`).
+ * its canonical colocated example (also enforced by `pnpm check:examples`).
  */
 const REQUIRE_EXAMPLE_FOR_EVERY_FAMILY = true;
 
@@ -54,7 +55,7 @@ test("every family that exports components ships at least one example", () => {
     .filter((entry) => familyExamples(entry).length === 0)
     .map((entry) => entry.canonicalName);
   if (REQUIRE_EXAMPLE_FOR_EVERY_FAMILY) {
-    assert.deepEqual(missing, [], "add src/families/<area>/<family>/examples/<family>-basic.vue");
+    assert.deepEqual(missing, [], "add the canonical example to the component source unit");
   }
   const covered = familiesWithComponents().length - missing.length;
   assert.ok(covered >= 140, `example coverage regressed to ${covered} families`);
