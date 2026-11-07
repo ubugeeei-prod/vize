@@ -29,7 +29,13 @@ type Job = {
   env?: Record<string, string>;
   permissions?: Record<string, string>;
   uses?: string;
-  steps?: Array<{ id?: string; uses?: string; run?: string; with?: Record<string, unknown> }>;
+  steps?: Array<{
+    env?: Record<string, string>;
+    id?: string;
+    uses?: string;
+    run?: string;
+    with?: Record<string, unknown>;
+  }>;
 };
 const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
@@ -166,7 +172,6 @@ test("stamping moves every versioned manifest and leaves the native pins alone",
 });
 
 test("release is dispatched on main with an optional exact version or npm resume run", () => {
-  // Dispatch only: crates.io trusted publishing refuses workflow_run and schedule.
   assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
   assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
     "version",
@@ -224,7 +229,6 @@ test("builds use the untagged candidate; only a fully built release is tagged", 
   for (const gate of ["smoke", "smoke-editor-artifacts", "build-cli", "build-editor-extensions"]) {
     assert.ok(needs("tag").includes(gate), `tag waits for ${gate}`);
   }
-  // Platform editor packaging is never a release gate.
   for (const name of ["tag", "publish-npm", "publish-vscode", "publish-open-vsx"]) {
     assert.ok(!needs(name).includes("build-editor-platforms"), name);
   }
@@ -311,7 +315,6 @@ test("the release ends at publishing and dispatches verification as the maintain
   assert.deepEqual(needs("dispatch-verify"), ["version", "publish-npm"]);
   assert.match(String(dispatch.if), /always\(\)/);
   assert.match(String(dispatch.if), /publish-npm\.result == 'success'/);
-  // release-verify.yml dispatches JSR, which refuses github-actions[bot].
   assert.equal(dispatch.environment, "release-operator");
   assert.equal(dispatch.env, undefined);
   const step = dispatch.steps?.[0] as { run?: string; env?: Record<string, string> };
@@ -351,7 +354,6 @@ test("the release ends at publishing and dispatches verification as the maintain
       name,
     );
   }
-  // Nothing in the Release run waits on npm propagation or JSR any more.
   for (const name of Object.keys(workflow.jobs)) {
     assert.ok(!/^verify-|^publish-jsr$/.test(name), name);
     assert.ok(!needs(name).includes("dispatch-verify"), name);
@@ -381,7 +383,6 @@ test("verification runs outside the release concurrency group and gates only JSR
   assert.deepEqual(verify.jobs["quota-dry-run"].permissions, { contents: "read", actions: "read" });
   assert.match(String(verify.jobs["quota-dry-run"].if), /quota_dry_run == true/);
   assert.match(String(verify.jobs["verify-npm"].if), /quota_dry_run != true/);
-  // A failed or skipped verify-npm skips the JSR dispatch for that version.
   const jsr = verify.jobs["publish-jsr"];
   assert.deepEqual(verifyNeeds("publish-jsr"), ["verify-npm"]);
   assert.equal(jsr.if, undefined);
@@ -393,19 +394,18 @@ test("verification runs outside the release concurrency group and gates only JSR
 });
 
 test("post-publish product checks follow npm verification and gate nothing", () => {
-  for (const check of ["verify-config", "verify-musea-vrt"]) {
+  for (const check of ["verify-config", "verify-musea-vrt", "verify-oxlint-windows-json-config"]) {
     assert.deepEqual(verifyNeeds(check), ["verify-npm"]);
     assert.equal(verify.jobs[check].if, undefined);
     for (const name of Object.keys(verify.jobs)) assert.ok(!verifyNeeds(name).includes(check));
   }
-  assert.match(
-    JSON.stringify(verify.jobs["verify-musea-vrt"].steps),
-    /verify_published\/musea_vrt\.ts/,
-  );
-  assert.match(
-    JSON.stringify(verify.jobs["verify-config"].steps),
-    /verify_published\/config_free\.ts/,
-  );
+  const command = (job: string, needle: string) =>
+    verify.jobs[job].steps?.find(({ run }) => run?.includes(needle));
+  assert.ok(command("verify-musea-vrt", "verify_published/musea_vrt.ts"));
+  assert.ok(command("verify-config", "verify_published/config_free.ts"));
+  const oxlint = command("verify-oxlint-windows-json-config", "windows-json-config.test.ts");
+  assert.ok(oxlint);
+  assert.equal(oxlint.env?.OXLINT_VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
 });
 
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {
