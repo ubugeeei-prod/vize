@@ -232,6 +232,8 @@ jobs:
       VIZE_NATIVE_RUST_COMPONENTS: clippy,rust-src,rustfmt
       VIZE_NATIVE_RUST_TARGETS: wasm32-unknown-unknown,wasm32-wasip2
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      TEST_CASES_JOB: "Native runtime (${{ matrix.lane }})"
+      VIZE_TEST_CASES: test-cases-native-${{ matrix.lane }}.json
     steps:
       - name: Explain unrelated skip
         if: ${{ matrix.lane == 'none' }}
@@ -292,6 +294,9 @@ jobs:
       - name: Install native runtime oracle dependencies
         if: ${{ matrix.lane != 'none' }}
         run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/native...' --filter './npm/ui...' --filter './tests...'
+      - name: Prepare native runtime test case capture
+        if: ${{ matrix.lane != 'none' }}
+        run: node tools/support/compat/github/job-test-cases.ts setup "$RUNNER_TEMP/native-test-cases-${{ matrix.lane }}"
       - name: Test native typechecker ownership and projection laws
         if: ${{ matrix.lane == 'canon' }}
         uses: ./.github/actions/test-native-canon
@@ -334,6 +339,11 @@ jobs:
       - name: Execute original selected-template DOM modules
         if: ${{ matrix.lane == 'selected-template' }}
         uses: ./.github/actions/test-native-selected-template
+      - name: Collect and upload native runtime test cases
+        if: ${{ !cancelled() && matrix.lane != 'none' }}
+        uses: ./.github/actions/collect-job-test-cases
+        with:
+          artifact: test-cases-native-${{ matrix.lane }}-${{ github.run_attempt }}
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}

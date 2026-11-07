@@ -1,7 +1,7 @@
 /**
  * Count `node --test`, `tsx --test`, and `vp test run` while a package-test
  * command runs, and write one test case packet for the Check test report.
- * Plain scripts have no case list and are left out.
+ * Plain assertion scripts have no case list, so record one command-level case.
  */
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseJson } from "../../json-value.ts";
-import { packet, parsePacket, vitestCases, type TestCase } from "./test-cases.ts";
+import { ownedPath, packet, parsePacket, vitestCases, type TestCase } from "./test-cases.ts";
 
 const reporter = fileURLToPath(new URL("./test-case-reporter.ts", import.meta.url));
 const self = fileURLToPath(import.meta.url);
@@ -123,6 +123,35 @@ function isTsxCli(script: string): boolean {
   return base === "cli.mjs" && script.split("\\").join("/").includes("/tsx/");
 }
 
+function isPlainTestScript(script: string): boolean {
+  const normalized = script.split("\\").join("/");
+  if (/(?:^|\/)node_modules\//u.test(normalized)) return false;
+  const base = path.basename(normalized);
+  return (
+    /\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(base) ||
+    /^(?:test|tests|run-tests|run-host|host)\.[cm]?[jt]sx?$/u.test(base) ||
+    /-judge\.[cm]?[jt]sx?$/u.test(base) ||
+    /\/(?:test|tests)\/[^/]+\.[cm]?[jt]sx?$/u.test(normalized) ||
+    normalized.endsWith("/support/compat/parcel/run.ts")
+  );
+}
+
+/** One command-level case for a plain Node assertion script. */
+export function plainNodeTestCase(
+  args: readonly string[],
+  root: string,
+  status: number,
+): TestCase | null {
+  const split = splitNodeArgv(args);
+  if (!split || !isPlainTestScript(split.script)) return null;
+  const file = ownedPath(path.resolve(process.cwd(), split.script), root);
+  return {
+    path: file,
+    name: `${file} › plain test command`,
+    outcome: status === 0 ? "passed" : "failed",
+  };
+}
+
 /**
  * Argv for `node <vp-or-tsx> …` after a package script has prepended
  * `node_modules/.bin`. Those shims `exec node` on the real CLI, so PATH order
@@ -206,13 +235,19 @@ function execVp(args: readonly string[]): void {
 function execWrapped(args: readonly string[]): void {
   const partials = process.env.VIZE_TEST_CASE_PARTIALS;
   if (!partials) throw new Error("VIZE_TEST_CASE_PARTIALS is required");
+  const nodeDestination = path.join(partials, partialName("node"));
   const rewritten = wrappedNodeArguments(
     args,
     reporter,
-    path.join(partials, partialName("node")),
+    nodeDestination,
     path.join(partials, partialName("vitest")),
   );
-  process.exitCode = run(process.env.VIZE_TEST_CASES_NODE || process.execPath, rewritten ?? args);
+  const status = run(process.env.VIZE_TEST_CASES_NODE || process.execPath, rewritten ?? args);
+  if (!rewritten) {
+    const plain = plainNodeTestCase(args, jsPackageRoot(process.env), status);
+    if (plain) writeFileSync(nodeDestination, `${JSON.stringify(packet(process.env, [plain]))}\n`);
+  }
+  process.exitCode = status;
 }
 
 function writeMerged(partials: string, root: string): void {
@@ -293,8 +328,7 @@ for arg in "$@"; do
   script="$arg"
   break
 done
-base="\${script##*/}"
-if [[ "$base" == "vp" || "$base" == "tsx" || ( "$base" == "cli.mjs" && "$script" == *"/tsx/"* ) ]]; then
+if [[ -n "$script" ]]; then
   exec "$VIZE_TEST_CASES_NODE" "$VIZE_JS_TEST_CASES" exec-wrapped -- "$@"
 fi
 exec "$VIZE_TEST_CASES_NODE" "$@"
