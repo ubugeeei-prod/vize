@@ -53,6 +53,10 @@ test("release editor hosts consume the packed candidate before the tag exists", 
     assert.match(serialized, new RegExp(`tests/editor-conformance/run\\.ts ${client}`));
   }
   assert.match(serialized, /project-links\.txt/);
+  assert.match(install, /find "\$fresh" -path "\$fresh\/node_modules" -prune/);
+  assert.match(install, /dependency-links\.txt/);
+  assert.match(install, /target=\$\(readlink -f "\$link"\)/);
+  assert.match(install, /"\$fresh\/node_modules"\/\*/);
   assert.match(serialized, /workspace-links\.txt/);
   assert.match(serialized, /vue\/require-v-for-key/);
   const host = job.steps?.find((step) => step.uses === "./.github/actions/vscode-host-smoke");

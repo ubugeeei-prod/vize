@@ -370,8 +370,20 @@ jobs:
           set -e
           test "$lint_status" -eq 1
           grep -F 'vue/require-v-for-key' "$evidence/diagnostics.json"
-          find "$fresh" -type l -print > "$evidence/project-links.txt"
+          find "$fresh" -path "$fresh/node_modules" -prune -o -type l -print \
+            > "$evidence/project-links.txt"
           test ! -s "$evidence/project-links.txt"
+          find "$fresh/node_modules" -type l -print > "$evidence/dependency-links.txt"
+          while IFS= read -r link; do
+            target=$(readlink -f "$link")
+            case "$target" in
+              "$fresh/node_modules"/*) ;;
+              *)
+                echo "installed dependency link escapes the fresh project: $link -> $target" >&2
+                exit 1
+                ;;
+            esac
+          done < "$evidence/dependency-links.txt"
           if grep -R -F -n "$GITHUB_WORKSPACE" "$fresh" > "$evidence/workspace-links.txt"; then
             echo "fresh release project refers to the source checkout" >&2
             exit 1
