@@ -38,6 +38,7 @@ use crate::ide::{CompletionService, position_to_offset};
 mod call_hierarchy;
 mod navigation;
 mod references;
+mod rename;
 mod resident_completion;
 mod signature_help;
 use call_hierarchy::{
@@ -332,16 +333,12 @@ impl LanguageServer for MaestroServer {
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
         let server = self.for_document(&params.text_document.uri).await;
-        server
-            .native_request(server.prepare_rename_request(params))
-            .await
+        server.cached_prepare_rename_response(params).await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
         let server = self.for_pos(&params.text_document_position).await;
-        server
-            .workspace_native_request(|| server.rename_request(params.clone()))
-            .await
+        server.cached_rename_response(params).await
     }
 
     async fn semantic_tokens_full(

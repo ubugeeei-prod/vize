@@ -51,6 +51,62 @@ fn exact_navigation_cache_hits_do_not_wait_for_the_native_transaction() {
     });
 }
 
+#[cfg(feature = "native")]
+#[test]
+fn exact_rename_cache_hits_do_not_wait_for_the_native_transaction() {
+    crate::runtime::block_on(async {
+        let service = service_with_options(serde_json::json!({
+            "rename": true,
+            "typecheck": true,
+            "crossFile": true,
+            "lint": false,
+            "ecosystem": false,
+        }));
+        let server = service.inner();
+        let uri = uri("CachedRename.vue");
+        open_vue(server, &uri, SAMPLE);
+        server.state.set_corsa_disk_watcher_registered();
+
+        let position = Position::new(0, 0);
+        let prepare = Some(PrepareRenameResponse::Range(range()));
+        let rename = Some(WorkspaceEdit {
+            changes: None,
+            document_changes: None,
+            change_annotations: None,
+        });
+        let stamp = server.state.corsa_request_stamp();
+        server
+            .state
+            .cache_native_prepare_rename(&uri, position, stamp, prepare.clone());
+        server.state.cache_native_rename(
+            &uri,
+            position,
+            "renamed".to_string(),
+            stamp,
+            rename.clone(),
+        );
+
+        let _native = server.state.corsa_request_scope().await;
+        let returned_prepare = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.prepare_rename(text_pos(&uri)),
+        )
+        .await
+        .expect("an exact prepare-rename cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_prepare, prepare);
+
+        let returned_rename = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.rename(rename_params(&uri)),
+        )
+        .await
+        .expect("an exact rename cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_rename, rename);
+    });
+}
+
 #[test]
 fn references_preserve_structural_results_without_starting_a_disabled_checker() {
     for cross_file in [false, true] {

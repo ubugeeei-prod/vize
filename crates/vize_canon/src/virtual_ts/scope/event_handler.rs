@@ -54,8 +54,9 @@ pub(super) fn generate_event_handler_expressions(
             };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
+            let replay_guard = expr.vif_guard.as_ref();
             let guard = (!is_callback)
-                .then_some(expr.vif_guard.as_ref())
+                .then_some(replay_guard)
                 .flatten()
                 .and_then(|guard| {
                     let guard = match ctx.enclosing_vif_guard {

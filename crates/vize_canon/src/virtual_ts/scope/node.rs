@@ -220,10 +220,7 @@ pub(super) fn generate_scope_node(
                     .flatten()
                     .and_then(|guard| callback_vif_guard_for_v_for_aliases(guard, &v_for_aliases))
             } else if has_listener_reference {
-                data.target_component
-                    .as_ref()
-                    .and(common_guard.as_deref())
-                    .map(String::from)
+                data.target_component.as_ref().and(common_guard)
             } else {
                 None
             }

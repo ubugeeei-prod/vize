@@ -31,7 +31,7 @@ impl<'a> Cx<'a> {
         let (kind, qualifier) = match expression {
             ExprRef::Js(_) => (ValueKind::Js, ""),
             ExprRef::Opaque(value) => (ValueKind::Opaque, value.reason.mnemonic()),
-            ExprRef::Foreign(value) => (ValueKind::Foreign, value.dialect),
+            ExprRef::Foreign(value) => (ValueKind::Foreign, value.qualifier()),
             ExprRef::Filter(_) => (ValueKind::Filter, ""),
         };
         OperandValue {

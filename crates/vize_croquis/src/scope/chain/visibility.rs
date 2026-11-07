@@ -3,6 +3,30 @@
 use super::{FxHashSet, ScopeBinding, ScopeChain, ScopeId, ScopeKind};
 
 impl ScopeChain {
+    /// Resolve the scope that owns `name` from an explicit semantic scope.
+    /// Retaining the owner distinguishes same-spelled shadowed bindings.
+    pub(crate) fn binding_scope_from(&self, start_id: ScopeId, name: &str) -> Option<ScopeId> {
+        let mut visited: Vec<ScopeId> = Vec::new();
+        let mut to_visit: Vec<ScopeId> = vec![start_id];
+
+        while let Some(id) = to_visit.pop() {
+            if visited.contains(&id) {
+                continue;
+            }
+            visited.push(id);
+
+            let scope = self.get_scope(id)?;
+            if scope.has_binding(name) {
+                return Some(id);
+            }
+            for parent in scope.parents.iter().rev().copied() {
+                to_visit.push(parent);
+            }
+        }
+
+        None
+    }
+
     /// Collect every binding visible at `offset`, walking from the deepest
     /// containing scope outward through its parents.
     ///

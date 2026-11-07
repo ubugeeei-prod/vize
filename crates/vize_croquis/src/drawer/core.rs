@@ -1,4 +1,5 @@
 use crate::croquis::Croquis;
+use crate::scope::ScopeId;
 use vize_carton::{CompactString, FxHashMap, profile};
 
 use super::DrawerOptions;
@@ -19,6 +20,8 @@ pub struct Drawer {
     pub(crate) script_drawn: bool,
     /// Current v-if guard stack (for type narrowing in templates)
     pub(crate) vif_guard_stack: Vec<CompactString>,
+    /// Semantic scope in which each guard was evaluated.
+    pub(crate) vif_guard_scope_stack: Vec<ScopeId>,
     /// Memoized join of `vif_guard_stack` (` && `-separated). `None` when the
     /// stack is empty. Recomputed eagerly whenever `vif_guard_stack` is pushed
     /// to or popped (both happen behind `&mut self`), so the read path
@@ -76,6 +79,7 @@ impl Drawer {
             croquis: Croquis::new(),
             script_drawn: false,
             vif_guard_stack: Vec::new(),
+            vif_guard_scope_stack: Vec::new(),
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
@@ -103,6 +107,7 @@ impl Drawer {
             croquis,
             script_drawn,
             vif_guard_stack: Vec::new(),
+            vif_guard_scope_stack: Vec::new(),
             vif_guard_cache: None,
             vif_branch_conditions: Vec::new(),
             vfor_depth: 0,
@@ -157,6 +162,11 @@ impl Drawer {
     /// Recompute the memoized joined v-if guard. Call after every push/pop of
     /// `vif_guard_stack` (both behind `&mut self`) to keep the cache current.
     pub(crate) fn refresh_vif_guard_cache(&mut self) {
+        debug_assert_eq!(
+            self.vif_guard_stack.len(),
+            self.vif_guard_scope_stack.len(),
+            "every guard must retain its evaluation scope"
+        );
         self.vif_guard_cache = if self.vif_guard_stack.is_empty() {
             None
         } else {
