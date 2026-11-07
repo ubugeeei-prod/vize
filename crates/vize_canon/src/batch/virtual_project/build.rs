@@ -166,6 +166,7 @@ pub(super) fn build_vue_registered_file(
                 preserve_authored_component: context.editor_document_options.is_none(),
                 preserve_script_on_template_error: context.editor_document_options.is_some(),
                 component_name: None,
+                template_use_navigation: false,
                 external_component_attrs_module: None,
                 preserve_event_navigation: context
                     .editor_document_options

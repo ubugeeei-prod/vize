@@ -22,16 +22,41 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "d51c0acbed93e899ec5b634825bd3d7d2ffb2d47908f5bbc575e68feb909a937",
+    "9c3faec15ca7c73c4a8a3f0fd1fcae7bb6f9d70c8e71a7046994d373e8b4e038",
     "unqualified content-mapper producer",
+  );
+  const hoverOwnerSuccessor =
+    "    span_features::retain_template_hover_owner(generated, &mut spans);\n";
+  assert.equal(
+    producerText.split(hoverOwnerSuccessor).length,
+    2,
+    "finite template-hover owner producer successor",
+  );
+  const hoverOwnerPredecessor = producerText.replace(hoverOwnerSuccessor, "");
+  assert.equal(
+    digest(hoverOwnerPredecessor),
+    "6a060e4d0c5d16cd3071f76ca35558abcecde9fcd5458346d54287eacdef03fd",
+    "finite template-hover owner producer successor",
+  );
+  const templateUseProjectionSuccessor = "            template_use_navigation: true,\n";
+  assert.equal(
+    hoverOwnerPredecessor.split(templateUseProjectionSuccessor).length,
+    2,
+    "finite template-use projection producer successor",
+  );
+  const projectionPredecessor = hoverOwnerPredecessor.replace(templateUseProjectionSuccessor, "");
+  assert.equal(
+    digest(projectionPredecessor),
+    "d51c0acbed93e899ec5b634825bd3d7d2ffb2d47908f5bbc575e68feb909a937",
+    "finite template-use projection producer successor",
   );
   const localOwnershipSuccessor = "            local_component_ownership_helpers: false,\n";
   assert.equal(
-    producerText.split(localOwnershipSuccessor).length,
+    projectionPredecessor.split(localOwnershipSuccessor).length,
     2,
     "finite local-ownership producer successor",
   );
-  let historicalProducer = producerText.replace(localOwnershipSuccessor, "");
+  let historicalProducer = projectionPredecessor.replace(localOwnershipSuccessor, "");
   assert.equal(
     digest(historicalProducer),
     "f75096741294e3f99e5fedf6accad2daf49ee402c72af2bc684b20b0f4310e20",

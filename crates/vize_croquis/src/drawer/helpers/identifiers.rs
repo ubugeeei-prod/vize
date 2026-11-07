@@ -103,6 +103,12 @@ pub fn extract_identifier_refs_checked(source: &str) -> Option<Vec<IdentifierRef
     checked::checked_references(source)
 }
 
+/// Every free read or write of an expression, at its exact authored offset.
+#[doc(hidden)]
+pub fn extract_identifier_uses_checked(source: &str) -> Option<Vec<IdentifierRef>> {
+    checked::checked_uses(source)
+}
+
 /// Retain cooked names even when their physical authored spans cannot be proved.
 #[doc(hidden)]
 pub fn extract_identifier_refs_with_witness(source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
