@@ -6,8 +6,10 @@
 //! - Simple handler reference tracking
 
 use crate::drawer::Drawer;
-use crate::drawer::helpers::{EventHandlerExpression, classify_event_handler};
-use crate::scope::EventHandlerScopeData;
+use crate::drawer::helpers::{
+    EventHandlerExpression, classify_event_handler_with_identifier, extract_identifiers_oxc,
+};
+use crate::scope::{EventHandlerScopeData, ScopeId};
 use vize_carton::{CompactString, profile};
 use vize_relief::ExpressionNode;
 
@@ -58,18 +60,21 @@ impl Drawer {
             // Every named listener runs in a handler scope. Whether its body
             // contains parentheses, semicolons or nested callbacks cannot change
             // that ownership; statement bodies must never become `void (body)`.
-            let shape = if self
+            let (shape, handler_binding) = if self
                 .template_semantic_reuse
                 .as_ref()
                 .is_some_and(|reuse| reuse.is_inline_handler(exp))
             {
-                EventHandlerExpression::Inline
+                (EventHandlerExpression::Inline, None)
             } else {
                 profile!(
                     "croquis.template.event.classify",
-                    classify_event_handler(content)
+                    classify_event_handler_with_identifier(content)
                 )
             };
+            let handler_vif_guard = handler_binding.as_ref().and_then(|name| {
+                self.handler_vif_guard(self.croquis.scopes.current_id(), name.as_str())
+            });
             let has_implicit_event = matches!(shape, EventHandlerExpression::Inline);
             let params = match shape {
                 EventHandlerExpression::Callback { params, .. } => params,
@@ -91,6 +96,7 @@ impl Drawer {
                     has_implicit_event,
                     param_names: params.into_iter().collect(),
                     handler_expression: Some(CompactString::new(content)),
+                    handler_vif_guard,
                     target_component,
                 },
                 dir.loc.span.start,
@@ -127,11 +133,32 @@ impl Drawer {
             self.croquis.scopes.exit_scope();
         }
     }
+
+    fn handler_vif_guard(&self, listener_scope: ScopeId, name: &str) -> Option<CompactString> {
+        let listener_owner = self.croquis.scopes.binding_scope_from(listener_scope, name);
+        let mut stable_reference = false;
+        let mut replay = Vec::new();
+
+        for (guard, guard_scope) in self.vif_guard_stack.iter().zip(&self.vif_guard_scope_stack) {
+            let references_binding = extract_identifiers_oxc(guard.as_str())
+                .iter()
+                .any(|identifier| identifier == name);
+            if references_binding
+                && self.croquis.scopes.binding_scope_from(*guard_scope, name) != listener_owner
+            {
+                continue;
+            }
+            stable_reference |= references_binding;
+            replay.push(guard.as_str());
+        }
+
+        stable_reference.then(|| CompactString::new(replay.join(" && ")))
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Analyzer, AnalyzerOptions, ScopeKind, TemplateExpressionKind};
+    use crate::{Analyzer, AnalyzerOptions, ScopeData, ScopeKind, TemplateExpressionKind};
     use vize_carton::{Allocator, cstr};
 
     #[test]
@@ -272,6 +299,57 @@ mod tests {
                 !scope.bindings().any(|(name, _)| name == "$event"),
                 "{body}"
             );
+        }
+    }
+
+    #[test]
+    fn listener_guards_retain_binding_identity_across_v_for_shadowing() {
+        let script = "const handlers: (number | (() => void))[] = []; const handler = () => {}; const ready = true;";
+        let cases = [
+            (
+                "<template v-if=\"typeof handler === 'number'\"><div></div></template><template v-else><Row v-for=\"handler in handlers\" @act=\"handler\" /></template>",
+                false,
+            ),
+            (
+                "<Row v-if=\"typeof handler === 'function'\" v-for=\"handler in handlers\" @act=\"handler\" />",
+                false,
+            ),
+            (
+                "<template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template>",
+                true,
+            ),
+            (
+                "<div v-if=\"ready\"><template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template></div>",
+                true,
+            ),
+            (
+                "<div v-if=\"handler !== null\"><template v-for=\"handler in handlers\"><Row v-if=\"typeof handler === 'function'\" @act=\"handler\" /></template></div>",
+                true,
+            ),
+        ];
+
+        for (template, expected) in cases {
+            let allocator = Allocator::new();
+            let (root, errors) = vize_armature::parse(&allocator, template);
+            assert!(errors.is_empty(), "{template}: {errors:?}");
+            let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+            analyzer.analyze_script_setup(script);
+            analyzer.analyze_template(&root);
+            let summary = analyzer.finish();
+            let data = summary
+                .scopes
+                .iter()
+                .find_map(|scope| match scope.data() {
+                    ScopeData::EventHandler(data) => Some(data),
+                    _ => None,
+                })
+                .unwrap();
+            assert_eq!(data.handler_vif_guard.is_some(), expected, "{template}");
+            if template.contains("handler !== null") {
+                let guard = data.handler_vif_guard.as_deref().unwrap();
+                assert!(!guard.contains("handler !== null"), "{guard}");
+                assert!(guard.contains("typeof handler === 'function'"), "{guard}");
+            }
         }
     }
 }

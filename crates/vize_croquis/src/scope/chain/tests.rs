@@ -126,6 +126,7 @@ fn test_event_handler_scope_with_params() {
                 CompactString::new("extra")
             ],
             handler_expression: None,
+            handler_vif_guard: None,
             target_component: None,
         },
         0,
@@ -231,6 +232,7 @@ fn test_nested_callback_in_v_for() {
             has_implicit_event: false,
             param_names: vize_carton::smallvec![CompactString::new("e")],
             handler_expression: None,
+            handler_vif_guard: None,
             target_component: None,
         },
         50,
@@ -715,6 +717,7 @@ fn test_snapshot_complex_nested_scopes() {
             has_implicit_event: false,
             param_names: vize_carton::smallvec![CompactString::new("e")],
             handler_expression: None,
+            handler_vif_guard: None,
             target_component: None,
         },
         300,

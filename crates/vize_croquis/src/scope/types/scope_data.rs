@@ -148,6 +148,9 @@ pub struct EventHandlerScopeData {
     pub param_names: ParamNames,
     /// The handler expression (e.g., "handleClick" or "handleClick($event)")
     pub handler_expression: Option<CompactString>,
+    /// Branch guard that can be replayed for a standalone handler identifier
+    /// without changing which same-spelled binding its terms reference.
+    pub handler_vif_guard: Option<CompactString>,
     /// Target component name (for component custom events, e.g., "TodoItem")
     /// None for DOM element events
     pub target_component: Option<CompactString>,

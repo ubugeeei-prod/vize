@@ -55,6 +55,8 @@ impl Drawer {
                 build_branch_guard(previous_conditions.as_slice(), current_condition);
             let guard_pushed = if let Some(ref guard) = branch_guard {
                 self.vif_guard_stack.push(guard.clone());
+                self.vif_guard_scope_stack
+                    .push(self.croquis.scopes.current_id());
                 // Stack changed: recompute the memoized joined guard.
                 self.refresh_vif_guard_cache();
                 true
@@ -72,6 +74,7 @@ impl Drawer {
             // Pop v-if guard
             if guard_pushed {
                 self.vif_guard_stack.pop();
+                self.vif_guard_scope_stack.pop();
                 // Stack changed: recompute the memoized joined guard.
                 self.refresh_vif_guard_cache();
             }

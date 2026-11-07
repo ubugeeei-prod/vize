@@ -186,3 +186,68 @@ fn component_listener_branches_keep_narrowing_and_authored_body_errors() {
         assert_eq!(output.stderr, b"", "{phase}: {}", output_text(&output));
     }
 }
+
+#[test]
+fn shadowed_listener_guard_keeps_binding_identity() {
+    let Some(native) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("Content Mapper provider not selected; no semantic qualification");
+        return;
+    };
+    let fixture = workspace_root().join(FIXTURE);
+    let row = fs::read_to_string(fixture.join("Row.vue.txt")).unwrap();
+    let config = fs::read(fixture.join("tsconfig.json.txt")).unwrap();
+    let shadowed = r#"<script setup lang="ts">
+import Row from './Row.vue';
+const handlers: (number | ((value: string) => void))[] = [123];
+const handler = Math.random() ? 1 : (value: string) => { void value; };
+</script>
+<template>
+<template v-if="typeof handler === 'number'"><div /></template>
+<template v-else><Row v-for="handler in handlers" @act="handler" /></template>
+</template>"#;
+    let callable_control = shadowed.replace(
+        "const handlers: (number | ((value: string) => void))[] = [123];",
+        "const handlers: ((value: string) => void)[] = [(value) => { void value; }];",
+    );
+
+    for (phase, main, expected) in [
+        (
+            "shadowed",
+            shadowed.to_owned(),
+            vec![(position("Main.vue", shadowed, "@act", 1), 2322)],
+        ),
+        ("callable-control", callable_control, Vec::new()),
+    ] {
+        let parent = workspace_root().join("target/vize-tests/tests");
+        fs::create_dir_all(&parent).unwrap();
+        let project = tempfile::Builder::new()
+            .prefix("listener-shadow-guard-11749-")
+            .tempdir_in(parent)
+            .unwrap();
+        install_mapper_manifest(project.path());
+        install_vue_package(project.path());
+        fs::write(project.path().join("Row.vue"), &row).unwrap();
+        fs::write(project.path().join("Main.vue"), &main).unwrap();
+        fs::write(project.path().join("tsconfig.json"), &config).unwrap();
+        let mut output = check_project(&native, project.path(), "tsconfig.json");
+        // A freshly started external host can lose its first mapper handshake.
+        // Retry only that transport diagnostic; the identical semantic result
+        // below must still match exactly.
+        if output.stdout.windows(7).any(|window| window == b"TS18069") {
+            output = check_project(&native, project.path(), "tsconfig.json");
+        }
+        assert_eq!(
+            output.status.code(),
+            Some(if expected.is_empty() { 0 } else { 2 }),
+            "{phase}: {}",
+            output_text(&output)
+        );
+        assert_eq!(
+            diagnostics(&output),
+            expected,
+            "{phase}: {}",
+            output_text(&output)
+        );
+        assert_eq!(output.stderr, b"", "{phase}: {}", output_text(&output));
+    }
+}
