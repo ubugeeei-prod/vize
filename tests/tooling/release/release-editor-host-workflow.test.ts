@@ -4,7 +4,14 @@ import { parse } from "yaml";
 
 import { readRepoFile } from "../support/github-workflows.ts";
 
-type Step = { uses?: string; with?: Record<string, unknown> };
+type Step = {
+  id?: string;
+  name?: string;
+  if?: string;
+  run?: string;
+  uses?: string;
+  with?: Record<string, unknown>;
+};
 type Job = {
   needs?: string[];
   if?: string;
@@ -19,18 +26,29 @@ const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke",
 
 test("release editor hosts consume the packed candidate before the tag exists", () => {
   const job = workflow.jobs["smoke-editor-artifacts"]!;
-  assert.deepEqual(job.needs, ["version", "build-cli", "build-editor-extensions"]);
+  assert.deepEqual(job.needs, [
+    "version",
+    "build-cli",
+    "build-packages",
+    "build-editor-extensions",
+  ]);
   assert.equal(job.if, "needs.version.outputs.ref != ''");
   assert.ok((job["timeout-minutes"] ?? 0) >= 45);
   const serialized = JSON.stringify(job.steps);
   assert.match(serialized, /"name":"cli-x86_64-unknown-linux-gnu"/);
   assert.match(serialized, /"name":"editor-extensions"/);
+  assert.match(serialized, /"name":"npm-packages"/);
   assert.match(serialized, /vize-x86_64-unknown-linux-gnu\.tar\.gz/);
   assert.match(serialized, /vize \$RELEASE_VERSION/);
   assert.match(serialized, /for editor in zed nvim vim helix emacs/);
   assert.match(serialized, /target\/source-editors\/\$editor/);
   assert.match(serialized, /\$\{editor\}-vize-extension\.tar\.gz/);
-  assert.match(serialized, /init .*--typecheck --editor --no-install/);
+  const install = job.steps?.find((step) => step.id === "artifacts")?.run ?? "";
+  assert.match(install, /node "\$packaged_cli" init [\s\S]*--typecheck --editor --no-install/);
+  assert.match(serialized, /VIZE_TS45_EXISTING_WORKSPACE/);
+  for (const client of ["neovim", "helix", "vscode"]) {
+    assert.match(serialized, new RegExp(`tests/editor-conformance/run\\.ts ${client}`));
+  }
   assert.match(serialized, /project-links\.txt/);
   assert.match(serialized, /workspace-links\.txt/);
   assert.match(serialized, /vue\/require-v-for-key/);
@@ -38,15 +56,21 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.equal(host?.with?.["prebuilt-server"], "${{ steps.artifacts.outputs.server }}");
   assert.equal(host?.with?.["prebuilt-vsix"], "${{ steps.artifacts.outputs.vsix }}");
   assert.equal(host?.with?.["expected-version"], "${{ needs.version.outputs.version }}");
+  assert.equal(host?.with?.["release-workspace"], "${{ steps.artifacts.outputs.fresh }}");
+  assert.equal(host?.with?.["release-evidence"], "${{ steps.artifacts.outputs.evidence }}");
 });
 
 test("release editor hosts install the supplied CLI and VSIX without rebuilding them", () => {
-  assert.match(editorHostAction, /prebuilt-server:/);
-  assert.match(editorHostAction, /prebuilt-vsix:/);
-  assert.match(
-    editorHostAction,
-    /if: inputs\.prebuilt-server == ''[\s\S]*cargo build --profile ci -p vize/,
+  const action = parse(editorHostAction) as {
+    inputs: Record<string, unknown>;
+    runs: { steps: Step[] };
+  };
+  assert.ok(action.inputs["prebuilt-server"]);
+  assert.ok(action.inputs["prebuilt-vsix"]);
+  const build = action.runs.steps.find((step) =>
+    step.run?.includes("cargo build --profile ci -p vize"),
   );
+  assert.equal(build?.if, "inputs.prebuilt-server == ''");
   assert.match(editorHostAction, /install -m 0755 "\$PREBUILT_SERVER" target\/ci\/vize/);
   assert.match(editorHostAction, /target\/ci\/vize --version[\s\S]*vize \$EXPECTED_VERSION/);
   assert.match(
@@ -54,4 +78,10 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
     /install -m 0644 "\$PREBUILT_VSIX" editors\/vscode\/dist\/vize\.vsix/,
   );
   assert.match(editorHostAction, /vp node editors\/vscode\/test\/run-extension-host-real\.mjs/);
+  assert.match(editorHostAction, /zed-linux-x86_64\.tar\.gz/);
+  assert.match(editorHostAction, /node tests\/editor-conformance\/release-zed\.ts/);
+  const zed = action.runs.steps.find(
+    (step) => step.name === "Run actual Zed with the packaged release extension",
+  );
+  assert.equal(zed?.if, "inputs.release-workspace != ''");
 });

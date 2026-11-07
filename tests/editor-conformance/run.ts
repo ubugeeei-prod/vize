@@ -42,7 +42,10 @@ async function main(argv: string[]): Promise<number> {
   const { driver } = await load();
   const scenario = loadScenario();
   const session = fs.mkdtempSync(path.join(os.tmpdir(), `vize-ts45-${id}-`));
-  const workspace = prepareRealVueWorkspace(path.join(session, "real-vue")) as string;
+  const suppliedWorkspace = process.env.VIZE_TS45_EXISTING_WORKSPACE;
+  const workspace = suppliedWorkspace
+    ? copyInitializedWorkspace(suppliedWorkspace, path.join(session, "real-vue"))
+    : (prepareRealVueWorkspace(path.join(session, "real-vue")) as string);
   const shimDir = path.join(session, "bin");
   fs.mkdirSync(shimDir);
   const server = resolveRealServerPath() as string;
@@ -117,6 +120,12 @@ async function main(argv: string[]): Promise<number> {
     evaluation.steps.every((candidate) => candidate.pass) &&
     result.corruptedExpectationsAccepted.length === 0;
   return passed ? 0 : 1;
+}
+
+function copyInitializedWorkspace(source: string, destination: string): string {
+  const resolved = fs.realpathSync(path.resolve(source));
+  fs.cpSync(resolved, destination, { recursive: true });
+  return fs.realpathSync(destination);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
