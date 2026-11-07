@@ -95,11 +95,12 @@ fn each_slot_inference_copy_has_an_expression_owner_without_changing_navigation(
                 let after = packet("src/Min.vue", &source, true);
                 let echoes = added_echoes(&before, &after);
                 // Each slot's template pass copies both fields twice; the props
-                // pass only infers a host when the slot has a binding to type.
+                // pass annotates a bound slot from that host instead of
+                // inferring a second one, so it adds no copies.
                 assert_eq!(
                     echoes.len(),
-                    1 + 4 * slots + 4 * bound,
-                    "one bare navigation echo and the per-field slot host copies"
+                    1 + 4 * slots,
+                    "one bare navigation echo and the per-field slot host copies (bound: {bound})"
                 );
                 for [original, length, generated, end, policy, _] in echoes {
                     assert_eq!(policy, 0);

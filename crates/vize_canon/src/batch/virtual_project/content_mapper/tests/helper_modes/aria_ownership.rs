@@ -46,17 +46,19 @@ const label = 'ok';
         let raw_call = "...__vizeComponentAriaPropEntries(\"aria-label\", \"ariaLabel\", label)";
         assert_eq!(
             text.matches(raw_call).count(),
-            4,
-            "both slot scopes must retain their two raw inference copies: {text}"
+            2,
+            "the template slot scope must retain its two raw inference copies; the props scope reads its host: {text}"
         );
-        for (start, end) in [
+        for (start, end, copies) in [
             (
                 "// v-slot scope: #default",
                 "// Component props type declarations",
+                2,
             ),
             (
                 "// Component props in v-slot scope: #default",
                 "// Mark used components as referenced",
+                0,
             ),
         ] {
             assert_eq!(text.matches(start).count(), 1, "unique scope start: {text}");
@@ -65,8 +67,8 @@ const label = 'ok';
             let (scope, _) = after_start.split_once(end).expect("the slot scope ends");
             assert_eq!(
                 scope.matches(raw_call).count(),
-                2,
-                "the constructor and factory in {start} must each retain their raw value: {text}"
+                copies,
+                "the constructor and factory in {start} retain their raw value only where the scope declares its own host: {text}"
             );
         }
         assert_eq!(
