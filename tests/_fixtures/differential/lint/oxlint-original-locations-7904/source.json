@@ -53,8 +53,8 @@
     },
     {
       "file": "expected.json",
-      "bytes": 16057,
-      "sha256": "f1c48d32ceb6be1022e647348134b7c39b4bb30c474f044d713081da1cdf803c"
+      "bytes": 16027,
+      "sha256": "87166c4e9eaa62282cc3a0269a9ccad7a3a7c047b1eab22f60757082b353dbba"
     }
   ]
 }

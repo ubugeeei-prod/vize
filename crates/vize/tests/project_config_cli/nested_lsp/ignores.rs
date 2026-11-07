@@ -14,19 +14,36 @@ fn alt_text() -> Value {
     }])
 }
 
+fn lint_diagnostics(file: &str) -> Value {
+    let mut diagnostics = alt_text().as_array().unwrap().clone();
+    if file == "pages/i.vue" {
+        diagnostics.insert(
+            0,
+            json!({
+                "range":{"start":{"line":0,"character":0},"end":{"line":0,"character":0}},
+                "severity":1,"code":"vue/multi-word-component-names",
+                "codeDescription":{"href":"https://eslint.vuejs.org/rules/multi-word-component-names.html"},
+                "source":"vize/lint",
+                "message":"Component name \"i\" should be multi-word to avoid conflicts with HTML elements\n\nHelp: Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")"
+            }),
+        );
+    }
+    json!(diagnostics)
+}
+
 #[test]
 fn vite_root_global_ignores_preserve_negation_escaping_and_watch_diagnostics() {
     let project = fixture(None);
     let root = project.path();
     write(root, "packages/a/vite.config.mjs", CONFIG);
     let mut lsp = initialize(root, Value::Null);
-    for (file, ignored) in [
+    for (relative, ignored) in [
         ("generated/SkippedItem.vue", true),
         ("generated/KeepItem.vue", false),
         ("pages/[id].vue", true),
         ("pages/i.vue", false),
     ] {
-        let file = cstr!("packages/a/src/{file}");
+        let file = cstr!("packages/a/src/{relative}");
         write(root, &file, IMAGE);
         let uri = file_uri(&root.join(file));
         lsp.send(
@@ -41,7 +58,11 @@ fn vite_root_global_ignores_preserve_negation_escaping_and_watch_diagnostics() {
         });
         assert_eq!(
             publication["params"]["diagnostics"],
-            if ignored { json!([]) } else { alt_text() },
+            if ignored {
+                json!([])
+            } else {
+                lint_diagnostics(relative)
+            },
             "{publication:#}"
         );
     }

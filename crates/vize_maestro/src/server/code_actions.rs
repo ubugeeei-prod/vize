@@ -261,8 +261,8 @@ mod tests {
             partial_result_params: PartialResultParams::default(),
         };
         let edits = serde_json::json!([{
-            "range": {"start":{"line":1,"character":2},"end":{"line":1,"character":23}},
-            "newText": "<img src=\"/logo.png\" />"
+            "range": {"start":{"line":1,"character":22},"end":{"line":1,"character":24}},
+            "newText": ""
         }]);
         let expected = |versioned, version| {
             let fix = if versioned {
@@ -284,7 +284,7 @@ mod tests {
                 serde_json::json!({"changes":{(uri.as_str()):suppression_edits}})
             };
             serde_json::json!([
-                {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[diagnostic],"edit":fix,"isPreferred":true},
+                {"title":"Fix: Use separate start and end tags","kind":"quickfix","diagnostics":[diagnostic],"edit":fix,"isPreferred":true},
                 {"title":"Suppress with @vize:forget (vue/html-self-closing)","kind":"quickfix","diagnostics":[diagnostic],"edit":suppression,"isPreferred":false}
             ])
         };

@@ -194,6 +194,26 @@ fn test_configured_option_matches_requested_eslint_vue_shape() {
 }
 
 #[test]
+fn configured_always_recognizes_authored_void_elements_as_empty() {
+    let linter = create_configured_linter(HtmlSelfClosingOptions {
+        html: HtmlSelfClosingHtmlOptions {
+            void: HtmlSelfClosingStyle::Always,
+            ..HtmlSelfClosingHtmlOptions::default()
+        },
+        ..HtmlSelfClosingOptions::default()
+    });
+    let result = linter.lint_sfc(
+        "<template><img src=\"/logo.png\"></template>",
+        "LogoView.vue",
+    );
+    assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Void element should be self-closing"
+    );
+}
+
+#[test]
 fn test_configured_never_flags_self_closing_components_svg_and_math() {
     let linter = create_configured_linter(HtmlSelfClosingOptions {
         html: HtmlSelfClosingHtmlOptions {

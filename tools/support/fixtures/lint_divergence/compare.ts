@@ -220,6 +220,9 @@ export function compareLintFindings(
     falsePositives.push(...candidates.slice(common));
     falseNegatives.push(...expected.slice(common));
   }
+  const ruleLocationDivergences = sortValues(
+    pairRuleLocationDivergences(falsePositives, falseNegatives),
+  );
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
     // A reporter finding outside the reconciled corpus is always an
@@ -237,9 +240,6 @@ export function compareLintFindings(
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
   }
-  const ruleLocationDivergences = sortValues(
-    pairRuleLocationDivergences(falsePositives, falseNegatives),
-  );
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
     if (!measuredFiles.has(finding.file)) continue;

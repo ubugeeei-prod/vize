@@ -19,7 +19,10 @@ fn suppression_order_depends_on_authored_identity_instead_of_lint_traversal() {
         .open(uri.clone(), source.into(), 1, "vue".into());
     let ctx = IdeContext::new(&state, &uri, 13).unwrap();
     let mut lint = CodeActionService::lint_template_once(&ctx).unwrap();
+    let mut self_closing = vize_patina::rules::HtmlSelfClosingOptions::default();
+    self_closing.html.void = vize_patina::rules::HtmlSelfClosingStyle::Always;
     lint.result = vize_patina::Linter::with_preset(vize_patina::LintPreset::Opinionated)
+        .with_html_self_closing_options(self_closing)
         .lint_template(&lint.content, uri.path());
     lint.result.diagnostics.retain(|diagnostic| {
         matches!(
@@ -27,7 +30,12 @@ fn suppression_order_depends_on_authored_identity_instead_of_lint_traversal() {
             "a11y/alt-text" | "vue/html-self-closing"
         )
     });
-    assert_eq!(lint.result.diagnostics.len(), 2);
+    assert_eq!(
+        lint.result.diagnostics.len(),
+        2,
+        "same-range diagnostics: {:?}",
+        lint.result.diagnostics
+    );
     lint.result
         .diagnostics
         .sort_by_key(|diagnostic| diagnostic.rule_name);

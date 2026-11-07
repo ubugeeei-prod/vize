@@ -4366,7 +4366,7 @@
         "files": [
           {
             "path": "App.vue.txt",
-            "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19"
+            "sha256": "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051"
           },
           {
             "path": "vize.config.json",
@@ -4376,7 +4376,7 @@
       },
       "case": {
         "path": "versioned-template-suppression-6876/case.json",
-        "sha256": "a77c681637eb43ad084d2885c224ef4469850dd46675bd2b4ca39acb21f967f1"
+        "sha256": "a0cf65ac64e1f9c0c93b7c94721bdc68189a3fd234d74af9fd0367aece35dc6a"
       },
       "requestCount": 1,
       "initializationOptions": {

@@ -44,8 +44,8 @@ function currentCliExpectation(expected: unknown) {
 
 void test("current code-action CLI expectations preserve the complete historical witness", () => {
   const frozen = fs.readFileSync(path.join(fixture, "references.json"));
-  assert.equal(frozen.length, 2619);
-  assert.equal(hash(frozen), "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2");
+  assert.equal(frozen.length, 2643);
+  assert.equal(hash(frozen), "28013efd08e0386a6a34ac94f718e29ec1d7d4196f0d8b63a7dd93bc703d13d0");
   const saved = JSON.stringify(reference);
   const current = currentCliExpectation(reference.cli);
   assert.equal(JSON.stringify(reference), saved);

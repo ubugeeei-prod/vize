@@ -229,6 +229,9 @@ fn report(
 }
 
 fn authored_empty(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
+    if element.ns == Namespace::Html && is_void_tag(element.tag) {
+        return true;
+    }
     let Some(close) = closing(ctx.source, element) else {
         // Do not infer emptiness from a recovered parser node. Invalid or
         // mismatched end tags can leave a node with no children even though the

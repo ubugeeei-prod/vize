@@ -207,16 +207,6 @@ export function compareLintFindings({
     falseNegatives.push(...expected.slice(commonCount));
   }
 
-  for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
-    const finding = falsePositives[index];
-    if (finding === undefined) continue;
-    if (finding.ruleId === "vue/no-unused-components") continue;
-    const reason = patinaIntentionalReason(finding, cwd);
-    if (reason === null) continue;
-    falsePositives.splice(index, 1);
-    intentionalDivergences.push({ ...finding, reason });
-  }
-
   shared.sort(compareShared);
   messageDifferences.sort(compareShared);
   falsePositives.sort(compareRecords);
@@ -230,6 +220,15 @@ export function compareLintFindings({
     falseNegatives,
   );
   const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives);
+  for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
+    const finding = falsePositives[index];
+    if (finding === undefined) continue;
+    if (finding.ruleId === "vue/no-unused-components") continue;
+    const reason = patinaIntentionalReason(finding, cwd);
+    if (reason === null) continue;
+    falsePositives.splice(index, 1);
+    intentionalDivergences.push({ ...finding, reason });
+  }
   for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
     const finding = falsePositives[index];
     if (finding?.ruleId !== "vue/no-unused-components") continue;
