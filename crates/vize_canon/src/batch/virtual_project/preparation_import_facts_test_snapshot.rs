@@ -244,8 +244,8 @@ fn warm_syntax_facts_do_not_freeze_missing_targets_routes_or_dependency_ownershi
             .contains("3")
     );
     assert_eq!(
-        cached.original_contents[&cached.original_index[&host]],
-        source
+        cached.original_content_for_virtual(&cached.original_index[&host]),
+        Some(source)
     );
     let work = facts.stats();
     let reference_work = reference_facts.stats();

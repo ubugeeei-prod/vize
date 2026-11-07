@@ -89,7 +89,7 @@ pub(super) fn build_jsx_registered_file(
         typed_router_import: false,
         empty_module_exports: false,
         module_exports: None,
-        original_content: retain_source_content(source),
+        original_content: Some(retain_source_content(source)),
     })
 }
 

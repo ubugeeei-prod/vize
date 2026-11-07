@@ -106,9 +106,8 @@ fn shadow_document(
         .package_shadow_content(materialized_path, canonical_path)
         .ok()?;
     let source = project
-        .original_contents
-        .get(&file.virtual_path)
-        .cloned()
+        .original_content_for_virtual(&file.virtual_path)
+        .map(vize_carton::String::from)
         .unwrap_or_default();
     let mapping_kind = if code == file.content {
         MaterializedSourceMappingKind::Generated
@@ -167,9 +166,8 @@ fn virtual_file_document(
     file: &super::super::VirtualFile,
 ) -> MaterializedSourceDocument {
     let source = project
-        .original_contents
-        .get(&file.virtual_path)
-        .cloned()
+        .original_content_for_virtual(&file.virtual_path)
+        .map(vize_carton::String::from)
         .unwrap_or_default();
     let mappings = file
         .source_map

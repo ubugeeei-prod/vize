@@ -67,10 +67,10 @@ impl VirtualProject {
             registered.file.original_path.clone(),
             registered.file.virtual_path.clone(),
         );
-        self.original_contents.insert(
-            registered.file.virtual_path.clone(),
-            registered.original_content,
-        );
+        if let Some(original_content) = registered.original_content {
+            self.original_contents
+                .insert(registered.file.virtual_path.clone(), original_content);
+        }
         if let Some(code) = registered.pre_rewrite_code {
             self.pre_rewrite_code
                 .insert(registered.file.virtual_path.clone(), code);

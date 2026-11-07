@@ -46,7 +46,9 @@ pub(super) struct RegisteredFile {
     /// Original source text as registered, retained for offset<->line/col
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
-    pub(super) original_content: CompactString,
+    /// Authored bytes when they differ from `file.content`. Identity scripts
+    /// read the materialized buffer directly instead of retaining a duplicate.
+    pub(super) original_content: Option<CompactString>,
     pub(super) pre_rewrite_code: Option<CompactString>,
     /// Authored `.vue.ts` literals whose generated spelling collides with an
     /// SFC mirror. Final graph passes must keep these on TypeScript's authored
@@ -306,7 +308,7 @@ pub(super) fn build_vue_registered_file(
         typed_router_import,
         empty_module_exports: empty_module_exports && module_sources_known,
         module_exports: module_exports.filter(|_| module_sources_known),
-        original_content: retain_source_content(source),
+        original_content: Some(retain_source_content(source)),
     })
 }
 

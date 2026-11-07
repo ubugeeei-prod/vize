@@ -53,7 +53,8 @@ impl VirtualProject {
             let Some(source) = self
                 .pre_rewrite_code
                 .get(&file.virtual_path)
-                .or_else(|| self.original_contents.get(&file.virtual_path))
+                .map(vize_carton::String::as_str)
+                .or_else(|| self.original_content_for_virtual(&file.virtual_path))
             else {
                 continue;
             };
@@ -189,10 +190,7 @@ impl VirtualProject {
             })
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
-            }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 
