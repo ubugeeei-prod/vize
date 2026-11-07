@@ -45,7 +45,7 @@ mod tag_types;
 use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, TextEdit};
 
 use super::is_inside_html_comment;
-use crate::ide::IdeContext;
+use crate::ide::{IdeContext, is_component_tag};
 
 #[cfg(any(test, feature = "native"))]
 use bindings::analyzed_template_binding_completions;
@@ -145,6 +145,30 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     items_vec.extend(bindings::template_snippets());
 
     items_vec
+}
+
+/// Exact component-prop completion after an authored `:`/`v-bind:` prefix.
+///
+/// Imported component metadata is resident and authoritative for this closed
+/// list. Answering it before project acquisition keeps a large TypeScript
+/// workspace off the keystroke path; arbitrary template expressions still use
+/// the typed completion route.
+pub(crate) fn complete_resident_component_props(
+    ctx: &IdeContext<'_>,
+) -> Option<Vec<CompletionItem>> {
+    let tag_ctx = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset)?;
+    if tag_ctx.inside_attribute_value
+        || crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
+        || !is_component_tag(&tag_ctx.tag_name)
+        || !tag_context::is_dynamic_prop_prefix(&tag_ctx.current_token)
+    {
+        return None;
+    }
+    let component = component_meta::component_surface_completions(ctx);
+    component
+        .iter()
+        .any(|item| item.kind == Some(tower_lsp::lsp_types::CompletionItemKind::PROPERTY))
+        .then(|| prepare_open_tag_completions(ctx, &tag_ctx, component))
 }
 
 /// Slot-name syntax on a nested `<template>` has a closed completion domain:
