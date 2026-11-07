@@ -199,7 +199,7 @@ void test("performance targets require exact diagnostics and every cold and warm
   const passing = [
     targetCell("tsc-vize-mapper", 4, 1000),
     targetCell("tsc-vue-mapper", 400, 10_000),
-    targetCell("tsrs-fast-vize-mapper", 499, 2000),
+    targetCell("tsrs-fast-parallel-vize-mapper", 499, 2000),
   ];
   const [target] = performanceTargets(passing);
   assert.equal(target?.met, true);

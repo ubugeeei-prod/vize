@@ -35,7 +35,13 @@ export const childPages = (k: number, features: number): number[] =>
 /** Rows a feature starts with; the seed varies it per feature. */
 export const rowCount = (k: number, seed: number): number => 6 + ((k + seed) % 5);
 
-export function page(k: number, features: number, planted: boolean, ctx: Ctx): Source {
+export function page(
+  k: number,
+  features: number,
+  planted: boolean,
+  parityPlants: boolean,
+  ctx: Ctx,
+): Source {
   const dir = featureDir(k);
   const used = [
     ...["KitAction", "KitCard", "KitField", "KitList", "KitSelect", "KitTabs"].map((name) => [
@@ -121,15 +127,18 @@ export function page(k: number, features: number, planted: boolean, ctx: Ctx): S
     );
     out.plant("v-model", '    <KitField v-model="climate" label="Plant" />');
     out.plant("global", "    <GBadge :count=\"'many'\" />");
-    // #11657: an annotated inline handler and a statement handler on a kebab-cased camelCase emit.
-    out.plant(
-      "listener-arrow",
-      '    <KitAction action-label="Plant" @save-item="(value: number) => undefined" />',
-    );
-    out.plant(
-      "listener-prop",
-      '    <KitAction :action-label="1" @save-item="(value: number) => undefined" />',
-    );
+    // These two plants deliberately expose a known reference-mapper miss. Keep
+    // them in correctness corpora, but not in the exact-parity performance corpus.
+    if (!parityPlants) {
+      out.plant(
+        "listener-arrow",
+        '    <KitAction action-label="Plant" @save-item="(value: number) => undefined" />',
+      );
+      out.plant(
+        "listener-prop",
+        '    <KitAction :action-label="1" @save-item="(value: number) => undefined" />',
+      );
+    }
     out.plant(
       "listener-statement",
       '    <KitAction action-label="Plant" @save-item="takesLabel(count)" />',

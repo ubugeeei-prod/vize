@@ -28,6 +28,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { availableParallelism } from "node:os";
 import { dirname, join } from "node:path";
 
 import { fileSha256 } from "./benchmark-binary.mjs";
@@ -48,6 +49,7 @@ export type ToolId =
   | "vize-check"
   | "tsc-vize-mapper"
   | "tsrs-fast-vize-mapper"
+  | "tsrs-fast-parallel-vize-mapper"
   | "vue-tsc"
   | "tsc-vue-mapper"
   | "nuxt-build"
@@ -63,6 +65,12 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "vize-check", label: "vize check", vize: true, format: "json" },
   { id: "tsc-vize-mapper", label: "tsc 7.1 + Vize mapper", vize: true, format: "text" },
   { id: "tsrs-fast-vize-mapper", label: "tsrs --fast + Vize mapper", vize: true, format: "text" },
+  {
+    id: "tsrs-fast-parallel-vize-mapper",
+    label: "tsrs --fast --checkers=max + Vize mapper",
+    vize: true,
+    format: "text",
+  },
   { id: "vue-tsc", label: "vue-tsc", vize: false, format: "text" },
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
@@ -227,6 +235,12 @@ export function invocation(
       return host(env.hosts.tsc, mapperTsconfigName(vizeMapper));
     case "tsrs-fast-vize-mapper":
       return host(env.hosts.tsrs, mapperTsconfigName(vizeMapper), ["--fast"]);
+    case "tsrs-fast-parallel-vize-mapper":
+      return host(env.hosts.tsrs, mapperTsconfigName(vizeMapper), [
+        "--fast",
+        "--checkers",
+        String(availableParallelism()),
+      ]);
     case "tsc-vue-mapper":
       return host(env.hosts.tsc, mapperTsconfigName(vueMapper));
     case "vue-tsc":

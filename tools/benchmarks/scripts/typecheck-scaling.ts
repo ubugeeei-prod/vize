@@ -335,7 +335,7 @@ function main(): void {
     writeFileSync(join(out, "scaling.svg"), renderScalingSvg(results));
   };
   const corpora: (() => ScaleProject)[] = [
-    ...sizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "vue" })),
+    ...sizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "vue", parityPlants: true })),
     ...(giantBlocks > 0
       ? [() => generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks })]
       : []),
@@ -345,11 +345,14 @@ function main(): void {
             generateScaleProject({
               sfcs: monorepoSfcs,
               kind: "monorepo",
+              parityPlants: true,
               featurePackages: Number(values["monorepo-packages"]),
             }),
         ]
       : []),
-    ...nuxtSizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "nuxt" })),
+    ...nuxtSizes.map(
+      (sfcs) => () => generateScaleProject({ sfcs, kind: "nuxt", parityPlants: true }),
+    ),
   ];
   for (const make of corpora) {
     const corpus = make();

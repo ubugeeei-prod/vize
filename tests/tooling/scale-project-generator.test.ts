@@ -125,6 +125,33 @@ void test("fixed model and listener plants stay required", () => {
   );
 });
 
+void test("the performance corpus omits known cross-mapper misses", () => {
+  const project = generateScaleProject({
+    sfcs: minSfcs("vue"),
+    kind: "vue",
+    parityPlants: true,
+  });
+  assert.ok(project.plants.length > 0);
+  assert.ok(
+    project.plants.every((plant) => !["listener-arrow", "listener-prop"].includes(plant.kind)),
+  );
+  assert.doesNotMatch(
+    project.files.get("src/features/f0000/Page.vue") ?? "",
+    /@save-item="\(value: number\) => undefined"/u,
+  );
+  const counts = ["tsc-vize-mapper", "tsc-vue-mapper", "tsrs-fast-parallel-vize-mapper"].map(
+    (lane) => expectedPlants(project.plants, lane).reduce((sum, plant) => sum + plant.count, 0),
+  );
+  assert.equal(new Set(counts).size, 1);
+});
+
+void test("the giant profile has no reference-only attribute diagnostics", () => {
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 10 });
+  const source = project.files.get("src/App.vue") ?? "";
+  assert.doesNotMatch(source, /:data-index=/u);
+  assert.match(source, /id="metric-9"/u);
+});
+
 void test("a Nuxt project is a Nuxt 4 app tree with auto-imported, path-prefixed components", () => {
   const project = generateScaleProject({ sfcs: minSfcs("nuxt") * 3, kind: "nuxt" });
   const { files } = project;

@@ -73,6 +73,8 @@ export type ScaleProjectOptions = {
   seed?: number;
   /** Plant the known type errors (default true). */
   plants?: boolean;
+  /** Omit known cross-mapper diagnostic divergences so complete fingerprints are comparable. */
+  parityPlants?: boolean;
   /** Feature packages of a monorepo (default 6). */
   featurePackages?: number;
   /** Repeated template blocks when kind is giant (default 10,000). */
@@ -192,7 +194,7 @@ function generate(
     for (let index = 0; index < LAYER_DEPTH; index++) {
       at(`${dir}/${layerName(index)}.vue`, (ctx) => layer(k, index, planted, ctx));
     }
-    at(`${dir}/Page.vue`, (ctx) => page(k, features, planted, ctx));
+    at(`${dir}/Page.vue`, (ctx) => page(k, features, planted, options.parityPlants, ctx));
     const widgets = WIDGETS + (k === features - 1 ? extraWidgets : 0);
     for (let index = 1; index <= widgets; index++) {
       at(`${dir}/${widgetName(index)}.vue`, (ctx) =>
@@ -362,6 +364,7 @@ export function generateScaleProject(options: ScaleProjectOptions): ScaleProject
     kind: options.kind,
     seed: options.seed ?? 0,
     plants: options.plants ?? true,
+    parityPlants: options.parityPlants ?? false,
   };
   if (!Number.isInteger(base.seed) || base.seed < 0)
     throw new Error(`seed must be a natural number, got ${base.seed}`);

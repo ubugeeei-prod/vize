@@ -154,14 +154,16 @@ jobs:
         run: |
           # One source of truth: the workspace catalog pins vue-tsc (same release
           # train as @vue/language-server), TypeScript and the Corsa runtime.
+          # The typecheck-host manifest owns the experimental tsrs pin.
           pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
           vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
-          test -n "$vue" && test -n "$ts" && test -n "$corsa"
+          tsrs=$(node -p 'require("./tools/benchmarks/typecheck-hosts/package.json").dependencies.tsrs')
+          test -n "$vue" && test -n "$ts" && test -n "$corsa" && test -n "$tsrs"
           mkdir "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
           echo '{"private":true}' > package.json
           npm install --no-audit --no-fund "@vue/language-server@$vue" "@vue/typescript-plugin@$vue" \
-            "typescript@$ts" "@typescript/typescript-linux-x64@$corsa"
-          node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
+            "typescript@$ts" "@typescript/typescript-linux-x64@$corsa" "tsrs@$tsrs"
+          node -e 'for (const name of ["@vue/language-server", "@vue/typescript-plugin", "@vue/language-core", "@volar/language-server", "typescript", "@typescript/typescript-linux-x64", "tsrs"]) console.log(name, require(`./node_modules/${name}/package.json`).version)' | tee versions.txt
 
       - name: Stage the tsserver plugin row (this commit's plugin and native addon)
         if: ${{ env.TSSERVER_PLUGIN == 'true' }}
@@ -199,10 +201,22 @@ jobs:
             rounds=1
             cycles=1
           fi
-          args=(--vize "head=$RUNNER_TEMP/vize-head")
+          tsrs_fast="$RUNNER_TEMP/tsrs-fast"
+          printf '#!/bin/sh\nexec "%s" --fast "$@"\n' "$tools/.bin/tsrs" > "$tsrs_fast"
+          chmod +x "$tsrs_fast"
+          args=(
+            --vize "head=$RUNNER_TEMP/vize-head"
+            --vize "head-tsrs-fast=$RUNNER_TEMP/vize-head"
+            --vize-env "head-tsrs-fast:CORSA_PATH=$tsrs_fast"
+          )
           for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
           if [ -n "$COMPARE_REF" ]; then
-            args+=(--vize "compare=$RUNNER_TEMP/vize-compare" --meta "compare=$COMPARE_REF")
+            args+=(
+              --vize "compare=$RUNNER_TEMP/vize-compare"
+              --vize "compare-tsrs-fast=$RUNNER_TEMP/vize-compare"
+              --vize-env "compare-tsrs-fast:CORSA_PATH=$tsrs_fast"
+              --meta "compare=$COMPARE_REF"
+            )
           fi
           if [ -n "$TSGO_MAPPER" ]; then
             # The mapper row reads the project's own TypeScript native host, not vize's pin.
@@ -212,7 +226,10 @@ jobs:
           fi
           for assignment in $VIZE_ENV; do
             args+=(--vize-env "head:$assignment" --meta "env=$assignment")
-            if [ -n "$COMPARE_REF" ]; then args+=(--vize-env "compare:$assignment"); fi
+            args+=(--vize-env "head-tsrs-fast:$assignment")
+            if [ -n "$COMPARE_REF" ]; then
+              args+=(--vize-env "compare:$assignment" --vize-env "compare-tsrs-fast:$assignment")
+            fi
           done
           if [ "$TSSERVER_PLUGIN" = true ]; then
             args+=(--tsserver-plugin "$RUNNER_TEMP/tsserver-plugin" --tsserver-plugin-version "head")
