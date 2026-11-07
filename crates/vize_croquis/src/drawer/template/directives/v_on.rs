@@ -138,18 +138,31 @@ impl Drawer {
         }
     }
 
-    fn handler_vif_guard(&self, listener_scope: ScopeId, name: &str) -> Option<CompactString> {
-        let listener_owner = self.croquis.scopes.binding_scope_from(listener_scope, name);
+    fn handler_vif_guard(&mut self, listener_scope: ScopeId, name: &str) -> Option<CompactString> {
+        if self.vif_guard_stack.is_empty() {
+            return None;
+        }
+
+        let mut listener_owner = None;
         let mut replay = Vec::new();
 
         for (guard, guard_scope) in self.vif_guard_stack.iter().zip(&self.vif_guard_scope_stack) {
-            let references_binding = extract_identifiers_oxc(guard.as_str())
-                .iter()
-                .any(|identifier| identifier == name);
-            if references_binding
-                && self.croquis.scopes.binding_scope_from(*guard_scope, name) != listener_owner
-            {
-                continue;
+            let references_binding = match self.ident_cache.get(guard.as_str()) {
+                Some(identifiers) => identifiers.iter().any(|identifier| identifier == name),
+                None => {
+                    let identifiers = extract_identifiers_oxc(guard.as_str());
+                    let references = identifiers.iter().any(|identifier| identifier == name);
+                    self.ident_cache.insert(guard.clone(), identifiers);
+                    references
+                }
+            };
+            if references_binding {
+                let listener_owner = *listener_owner.get_or_insert_with(|| {
+                    self.croquis.scopes.binding_scope_from(listener_scope, name)
+                });
+                if self.croquis.scopes.binding_scope_from(*guard_scope, name) != listener_owner {
+                    continue;
+                }
             }
             replay.push(guard.as_str());
         }
