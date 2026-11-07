@@ -52,7 +52,7 @@ jobs:
         run: |
           vp run --workspace-root build:native:test
           vp run --workspace-root build:vite-plugin
-          node npm/builder/vite/scripts/run-tests.mjs --require-prepared
+          node npm/builder/vite/scripts/run-tests.ts --require-prepared
       - name: Install the exact reported Vitest and official Vue control
         working-directory: tools/support/compat/vitest/fixtures/fs-module-cache
         run: npm ci --ignore-scripts --no-audit --no-fund

@@ -26,7 +26,7 @@ void test("the actual Vite package command discovers new tests and preserves fai
     // Observe the preparation boundary without building or loading a native
     // image. The existing js-native-prepared tests own its real native contract.
     fs.writeFileSync(
-      path.join(directory, "scripts/run-tests.mjs"),
+      path.join(directory, "scripts/run-tests.ts"),
       `
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

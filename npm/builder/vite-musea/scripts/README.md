@@ -6,7 +6,7 @@ routes do not need the real gallery, dependency graph, or another test's cache.
 Run a bounded comparison on Linux with the repository Node and frozen dependencies:
 
 ```sh
-vp exec node npm/builder/vite-musea/scripts/http-lifecycle-probe.mjs BASELINE_COMMIT OUTPUT_DIRECTORY
+vp exec node npm/builder/vite-musea/scripts/http-lifecycle-probe.ts BASELINE_COMMIT OUTPUT_DIRECTORY
 ```
 
 `BASELINE_COMMIT` must be a full 40-character commit containing the original test.

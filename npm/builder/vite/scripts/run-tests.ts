@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import type { SpawnSyncOptions } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -8,7 +9,7 @@ import { nativePreparationIsActive } from "../../../native/scripts/test-preparat
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 
-export function requirePreparedNative(nativeDir, loadBinding = require) {
+export function requirePreparedNative(nativeDir: string, loadBinding: NodeRequire = require): void {
   const bindings = readdirSync(nativeDir).filter(
     (name) => name.startsWith("vize-vitrine.") && name.endsWith(".node"),
   );
@@ -22,8 +23,8 @@ export function requirePreparedNative(nativeDir, loadBinding = require) {
   loadBinding(join(nativeDir, bindings[0]));
 }
 
-export function runViteTests(prepared, run = spawnSync) {
-  const options = {
+export function runViteTests(prepared: boolean, run: typeof spawnSync = spawnSync): number {
+  const options: SpawnSyncOptions = {
     cwd: packageDir,
     env: process.env,
     stdio: "inherit",
@@ -45,6 +46,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (prepared) console.log("Vite tests reuse the active root native preparation.");
     process.exitCode = runViteTests(prepared);
   } else {
-    throw new Error("usage: run-tests.mjs [--require-prepared]");
+    throw new Error("usage: run-tests.ts [--require-prepared]");
   }
 }

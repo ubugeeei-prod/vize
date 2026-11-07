@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import type { BinaryLike } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -13,15 +14,35 @@ const baseline = process.argv[2];
 assert.match(baseline, /^[a-f0-9]{40}$/);
 const output = path.resolve(process.argv[3]);
 mkdirSync(output, { recursive: true });
-const sha256 = (body) => createHash("sha256").update(body).digest("hex");
+const sha256 = (body: BinaryLike): string => createHash("sha256").update(body).digest("hex");
 const before = execFileSync("git", ["show", `${baseline}:${relative}`], {
   cwd: root,
   encoding: "utf8",
 });
 const after = readFileSync(path.join(root, relative), "utf8");
-const preload = fileURLToPath(new URL("./http-lifecycle-preload.mjs", import.meta.url));
+const preload = fileURLToPath(new URL("./http-lifecycle-preload.ts", import.meta.url));
 const tsx = createRequire(path.join(project, "package.json")).resolve("tsx/cli");
-const receipt = {
+interface LifecycleObservation {
+  readonly name: string;
+  readonly trial: number;
+  readonly sourceSha256: string;
+  readonly observedSha256: string;
+  readonly argv: string[];
+  readonly status: number | null;
+  readonly signal: NodeJS.Signals | null;
+  readonly error: string | undefined;
+  readonly directory: string;
+}
+
+interface LifecycleReceipt {
+  readonly baseline: string;
+  readonly source: string;
+  readonly node: string;
+  readonly executable: string;
+  readonly observations: LifecycleObservation[];
+}
+
+const receipt: LifecycleReceipt = {
   baseline,
   source: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(),
   node: process.version,
@@ -29,7 +50,7 @@ const receipt = {
   observations: [],
 };
 
-function instrument(source) {
+function instrument(source: string): string {
   const markers = [
     [
       "  const server = await createServer({",
@@ -72,7 +93,7 @@ for (const [name, source] of [
     const transformed = instrument(source);
     writeFileSync(filename, transformed, { flag: "wx" });
     const args = ["--import", preload, tsx, "--test", "--test-reporter=tap", filename];
-    const env = {
+    const env: NodeJS.ProcessEnv = {
       ...process.env,
       DEBUG: "vite:deps*",
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${pathToFileURL(preload).href}`,
