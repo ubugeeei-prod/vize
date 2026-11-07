@@ -33,11 +33,12 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::MaestroServer;
-use crate::ide::{CompletionService, IdeContext, position_to_offset};
+use crate::ide::{CompletionService, position_to_offset};
 
 mod call_hierarchy;
 mod navigation;
 mod references;
+mod resident_completion;
 mod signature_help;
 use call_hierarchy::{
     CHIncomingParams, CHIncomingResponse, CHItems, CHOutgoingParams, CHOutgoingResponse,
@@ -48,37 +49,6 @@ use navigation::{
     TypeDefResponse,
 };
 use signature_help::{SigHelp, SigHelpParams};
-
-impl MaestroServer {
-    fn local_resident_component_completion_response(
-        &self,
-        params: &CompletionParams,
-    ) -> Result<Option<Option<CompletionResponse>>> {
-        if params
-            .context
-            .as_ref()
-            .and_then(|context| context.trigger_character.as_deref())
-            != Some(":")
-        {
-            return Ok(None);
-        }
-        self.local_request(|| {
-            if !self.state.lsp_features().completion {
-                return Ok(None);
-            }
-            let request = &params.text_document_position;
-            let uri = &request.text_document.uri;
-            if crate::utils::is_jsx_path(uri.path()) {
-                return Ok(None);
-            }
-            let position = request.position;
-            let Some(ctx) = IdeContext::at_completion_position(&self.state, uri, position) else {
-                return Ok(None);
-            };
-            Ok(CompletionService::complete_resident_component_props(&ctx).map(Some))
-        })
-    }
-}
 
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
