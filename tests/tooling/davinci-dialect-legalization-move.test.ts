@@ -56,6 +56,15 @@ test("legalization moves preserve every owner byte and replay after wiring", () 
     assert.equal(run(root, "move").status, 0);
     write(root, "pass/legacy.rs", "pub use crate::dialect::legalize::*;\n");
     assert.equal(run(root, "move").status, 0);
+    write(root, "dialect.rs", "pub mod legalize;\n");
+    assert.equal(run(root, "check").status, 0);
+    write(
+      root,
+      "dialect/vue/pass/legacy.rs",
+      "pub use crate::dialect::legalize::*;\n",
+    );
+    write(root, "pass/legacy.rs", 'include!("../dialect/vue/pass/legacy.rs");\n');
+    assert.equal(run(root, "check").status, 0);
     assert.equal(run(repoRoot, "check").status, 0);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
