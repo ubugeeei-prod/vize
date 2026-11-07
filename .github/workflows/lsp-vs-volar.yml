@@ -202,7 +202,7 @@ jobs:
             cycles=1
           fi
           tsrs_fast="$RUNNER_TEMP/tsrs-fast"
-          printf '#!/bin/sh\nexec "%s" --fast "$@"\n' "$tools/.bin/tsrs" > "$tsrs_fast"
+          printf '#!/bin/sh\nexport TSRS_FAST=1\nexec "%s" "$@"\n' "$tools/.bin/tsrs" > "$tsrs_fast"
           chmod +x "$tsrs_fast"
           args=(
             --vize "head=$RUNNER_TEMP/vize-head"
