@@ -3,11 +3,11 @@
 use super::{l2_binding_table_for, l2_codegen_sections, l2_emit_options};
 use crate::options::DomCompilerOptions;
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections};
-use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher};
+use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_l0::dump::capture::CaptureSink;
 use vize_l0::{Allocator, profile, profiler::active_profiler_is_enabled};
-use vize_l1_to_l2::{DomEmitOptions, EmitError, LegacyCaps};
+use vize_l1_to_l2::{DomEmitOptions, EmitError};
 
 pub(in crate::compile) struct SlotEmitPolicy {
     pub(in crate::compile) strict_slot_params: bool,
@@ -22,6 +22,7 @@ pub(in crate::compile) struct SlotEmitPolicy {
 pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
+    template_syntax: TemplateSyntaxMode,
     options: &DomCompilerOptions,
     codegen: &CodegenOptions,
     custom_elements: &CustomElementMatcher,
@@ -37,6 +38,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
         return super::try_emit_l2(
             allocator,
             source,
+            template_syntax,
             options,
             codegen,
             custom_elements,
@@ -63,6 +65,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             allocator,
             source,
             options.dialect,
+            template_syntax,
             &emit_options,
             pre_s2_walks,
             SlotEmitPolicy {
@@ -87,6 +90,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     dialect: vize_l0::config::VueVersion,
+    template_syntax: TemplateSyntaxMode,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     policy: SlotEmitPolicy,
@@ -100,16 +104,17 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     } = policy;
     if let Some(preflight) = preflight.as_deref_mut() {
         let observe = active_profiler_is_enabled();
-        let observed = vize_l1_to_l2::emit_dom_source_with_preflight_and_environment(
+        let observed = vize_l1_to_l2::emit_dom_source_with_preflight_environment_and_syntax(
             allocator,
             source,
-            LegacyCaps::for_version(dialect),
+            super::dom_compat_caps(dialect, options.prefix_identifiers),
             options,
             strict_slot_params,
             no_slotted,
             preflight,
             observe,
             development,
+            template_syntax,
             capture,
         );
         let (emit, budget) = if C::RECORDING {
@@ -134,6 +139,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             allocator,
             source,
             dialect,
+            template_syntax,
             options,
             pre_s2_walks,
             strict_slot_params,
@@ -141,10 +147,10 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             development,
         ));
     }
-    let caps = LegacyCaps::for_version(dialect);
+    let caps = super::dom_compat_caps(dialect, options.prefix_identifiers);
     let emit = if active_profiler_is_enabled() {
         let observed =
-            vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
+            vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
                 allocator,
                 source,
                 caps,
@@ -152,12 +158,13 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
                 strict_slot_params,
                 no_slotted,
                 development,
+                template_syntax,
                 capture,
             )?;
         super::record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_and_environment(
+        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,
@@ -165,6 +172,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             strict_slot_params,
             no_slotted,
             development,
+            template_syntax,
             capture,
         )?
     };

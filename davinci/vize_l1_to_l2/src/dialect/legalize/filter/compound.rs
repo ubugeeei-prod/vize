@@ -59,8 +59,13 @@ pub(super) fn rewrite<'a>(
 
 fn dynamic_part_expression<'a>(source: &'a str, part: &TextPart) -> Option<(&'a str, Span)> {
     let raw = source.get(part.span.start as usize..part.span.end as usize)?;
-    let inner_start = raw.find("{{")? + "{{".len();
-    let inner_end = raw.rfind("}}")?;
+    let (open, close) = if part.raw_html {
+        ("{{{", "}}}")
+    } else {
+        ("{{", "}}")
+    };
+    let inner_start = raw.find(open)? + open.len();
+    let inner_end = raw.rfind(close)?;
     let inner = raw.get(inner_start..inner_end)?;
     let trimmed = inner.trim();
     if trimmed != part.text.as_str() {

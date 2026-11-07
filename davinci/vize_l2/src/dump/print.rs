@@ -193,6 +193,9 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
             } else {
                 "ui.interpolation "
             })?;
+            if interpolation.raw_html {
+                w.write_str("raw-html ")?;
+            }
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)
         }

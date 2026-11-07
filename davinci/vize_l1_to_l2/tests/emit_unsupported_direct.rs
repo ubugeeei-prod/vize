@@ -268,6 +268,7 @@ fn compound<'a>(a: &'a Allocator) -> Op<'a> {
         a,
         InterpolationOp {
             expression: opaque(a, "hello {{ name }}", OpaqueReason::Compound),
+            raw_html: false,
             span: sp(),
         },
     ))

@@ -78,6 +78,11 @@ pub enum OpaqueReason {
     /// Text-classifiable: oxc rejected the text, or the first complete
     /// expression does not cover it.
     ParseRejected,
+    /// Position-classified: a Vue 0.x directive value uses the historical
+    /// clause grammar (`v-repeat="item: items"`, `v-on="click: select"`).
+    /// It is not a standalone JavaScript expression, but legacy codegen emits
+    /// the authored clause verbatim in the directive value position.
+    DirectiveClause,
     /// Position-classified: a compound expression rebuilt from source
     /// slices (merged text + interpolation), whose content never existed
     /// as one authored expression.
@@ -96,6 +101,7 @@ impl OpaqueReason {
             Self::MultiStatement => "multi-statement",
             Self::NestingRefused => "nesting-refused",
             Self::ParseRejected => "parse-rejected",
+            Self::DirectiveClause => "directive-clause",
             Self::Compound => "compound",
             Self::SourceCoordinates => "source-coordinates",
         }
@@ -109,6 +115,7 @@ impl OpaqueReason {
             "multi-statement" => Some(Self::MultiStatement),
             "nesting-refused" => Some(Self::NestingRefused),
             "parse-rejected" => Some(Self::ParseRejected),
+            "directive-clause" => Some(Self::DirectiveClause),
             "compound" => Some(Self::Compound),
             "source-coordinates" => Some(Self::SourceCoordinates),
             _ => None,

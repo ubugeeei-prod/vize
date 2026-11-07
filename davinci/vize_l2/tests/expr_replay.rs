@@ -36,6 +36,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression: ExprRef::Js(retained),
+                    raw_html: false,
                     span: Span::new(0, 32),
                 },
                 &allocator,
@@ -43,6 +44,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression: ExprRef::Opaque(escape),
+                    raw_html: false,
                     span: Span::new(34, 46),
                 },
                 &allocator,
@@ -108,6 +110,7 @@ fn a_printed_folio_replays_across_an_arena_reset() {
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression: ExprRef::Js(loaded),
+                    raw_html: false,
                     span: Span::new(0, 32),
                 },
                 &allocator,
@@ -119,6 +122,7 @@ fn a_printed_folio_replays_across_an_arena_reset() {
                         source: "a++; b++",
                         span: Span::new(36, 44),
                     })),
+                    raw_html: false,
                     span: Span::new(34, 46),
                 },
                 &allocator,

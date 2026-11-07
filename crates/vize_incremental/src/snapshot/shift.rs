@@ -233,6 +233,7 @@ mod tests {
                     node: 8,
                     span: Span::new(start + 3, start + 11),
                     ops: vec![Op::Interpolation(Interpolation {
+                        raw_html: false,
                         span: Span::new(start + 6, start + 9),
                         expression: Expr::Js {
                             source: String::from("x"),

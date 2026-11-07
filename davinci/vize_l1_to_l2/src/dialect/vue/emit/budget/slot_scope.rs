@@ -4,8 +4,8 @@ use super::{
     DomEmit, DomEmitOptions, EmitError, EmitInvocation, LegacyCaps, NoObserver, ObservedDomEmit,
     emit_dom_source_with_options_and_observer_captured,
 };
-use vize_l0::Allocator;
 use vize_l0::dump::capture::CaptureSink;
+use vize_l0::{Allocator, TemplateSyntaxMode};
 
 /// Observe SFC emission with its own slot-scope policy.
 #[doc(hidden)]
@@ -43,6 +43,35 @@ pub fn emit_dom_source_observed_with_options_captured_slot_scope_and_environment
     development: bool,
     capture: &mut C,
 ) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        no_slotted,
+        development,
+        TemplateSyntaxMode::Standard,
+        capture,
+    )
+}
+
+/// Observe SFC emission with its resolved template recovery policy.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "SFC emission inputs")]
+pub fn emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax<
+    C: CaptureSink,
+>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+    syntax: TemplateSyntaxMode,
+    capture: &mut C,
+) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = vize_l0::pass::BudgetObserver::new();
     let observed = emit_dom_source_with_options_and_observer_captured(
         allocator,
@@ -50,6 +79,7 @@ pub fn emit_dom_source_observed_with_options_captured_slot_scope_and_environment
         caps,
         EmitInvocation {
             options,
+            syntax,
             strict_slot_params,
             no_slotted,
             development,
@@ -104,12 +134,41 @@ pub fn emit_dom_source_with_options_captured_slot_scope_and_environment<C: Captu
     development: bool,
     capture: &mut C,
 ) -> Result<DomEmit, EmitError> {
+    emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        no_slotted,
+        development,
+        TemplateSyntaxMode::Standard,
+        capture,
+    )
+}
+
+/// Emit with SFC scope, build environment and recovery policy outside the
+/// published `DomEmitOptions` literal.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "SFC emission inputs")]
+pub fn emit_dom_source_with_options_captured_slot_scope_environment_and_syntax<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    development: bool,
+    syntax: TemplateSyntaxMode,
+    capture: &mut C,
+) -> Result<DomEmit, EmitError> {
     emit_dom_source_with_options_and_observer_captured(
         allocator,
         source,
         caps,
         EmitInvocation {
             options,
+            syntax,
             strict_slot_params,
             no_slotted,
             development,

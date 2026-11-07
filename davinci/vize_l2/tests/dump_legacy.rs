@@ -56,6 +56,7 @@ fn hand_built() -> L2Page {
                     source: String::from("msg | cap"),
                     span: Span::new(28, 37),
                 },
+                raw_html: false,
                 span: Span::new(27, 38),
             })],
             span: Span::new(0, 40),
@@ -118,6 +119,7 @@ fn an_arena_tree_mirrors_the_legacy_dialect_ops() {
                         [Op::Interpolation(Box::new_in(
                             InterpolationOp {
                                 expression: ExprRef::Filter(filter),
+                                raw_html: false,
                                 span: Span::new(27, 38),
                             },
                             &allocator,

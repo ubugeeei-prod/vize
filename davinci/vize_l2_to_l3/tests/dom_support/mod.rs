@@ -68,6 +68,7 @@ pub fn interpolation<'a>(allocator: &'a Allocator, value: ExprRef<'a>) -> Op<'a>
     Op::Interpolation(Box::new_in(
         InterpolationOp {
             expression: value,
+            raw_html: false,
             span: SPAN,
         },
         &allocator,

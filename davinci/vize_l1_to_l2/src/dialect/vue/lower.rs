@@ -47,6 +47,15 @@ pub use text::{
 };
 pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
+/// Whether directive values carry `name: expression` clauses instead of a
+/// separate argument token. Kept in the physically Vue-owned policy module so
+/// neutral lowering modules consume a resolved fact without naming a version.
+pub(super) fn directive_values_are_clauses(
+    cx: &cx::Cx<'_, impl vize_l2::provenance::ProvenanceSink>,
+) -> bool {
+    cx.caps.directive_arg_style == vize_l1::dialect::DirectiveArgStyle::Clause
+}
+
 /// The L2 artifact one lowering produces: the op tree plus the three
 /// fact channels, all live even when diagnostics are present (the
 /// Lean-InfoTree survival property — kept fragments, not rollback).

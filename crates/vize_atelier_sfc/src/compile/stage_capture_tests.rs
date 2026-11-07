@@ -173,14 +173,14 @@ fn script_setup_template_error_discards_provisional_pages() {
 }
 
 #[test]
-fn legacy_template_selection_has_no_native_pages() {
+fn native_quirks_template_selection_carries_product_pages() {
     let (_, capture) = compile_both(
         "<template><div>{{ message }}</div></template>",
         TemplateSyntaxMode::Quirks,
     );
     assert_eq!(capture.target, "dom");
-    assert!(matches!(capture.outcome, CaptureOutcome::Legacy(_)));
-    assert!(capture.pages.is_empty());
+    assert_eq!(capture.outcome, CaptureOutcome::Accepted);
+    assert!(!capture.pages.is_empty());
 }
 
 #[test]

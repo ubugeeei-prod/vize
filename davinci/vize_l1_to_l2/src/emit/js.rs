@@ -49,6 +49,9 @@ pub(super) fn expr_source<'a>(expr: &ExprRef<'a>, allow_identifier: bool) -> Opt
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::MultiStatement => {
             line_comment_source_as_block(opaque.source, opaque.span.start)
         }
+        ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::DirectiveClause => {
+            Some(RawJs::Borrowed(opaque.source))
+        }
         _ => parse_rejected_raw_js(expr, allow_identifier),
     }
 }

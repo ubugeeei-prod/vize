@@ -46,6 +46,7 @@ fn interpolation<'a>(arena: &'a Allocator, source: &'a str, authored: &'a str) -
     Op::Interpolation(Box::new_in(
         InterpolationOp {
             expression,
+            raw_html: false,
             span: Span::new(expression_span.start - 2, expression_span.end + 2),
         },
         &arena,

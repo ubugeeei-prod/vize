@@ -109,7 +109,7 @@ fn build_dump_uses_the_same_product_compile_without_changing_output() {
 }
 
 #[test]
-fn build_dump_records_legacy_selection_without_native_pages() {
+fn build_dump_records_native_quirks_pages() {
     let root = temp_project_dir("dump-legacy");
     write_batch(&root);
     let accepted = vize(
@@ -134,11 +134,11 @@ fn build_dump_records_legacy_selection_without_native_pages() {
     );
     assert_eq!(output.status.code(), Some(0));
     let dir = root.join("dumps/a.vue");
-    assert_eq!(sorted_entries(&dir), ["stages.json"]);
+    assert!(sorted_entries(&dir).len() > 1);
     let feed: serde_json::Value =
         serde_json::from_slice(&fs::read(dir.join("stages.json")).unwrap()).unwrap();
-    assert_eq!(feed["outcome"]["kind"], "legacy");
-    assert!(feed["pages"].as_array().unwrap().is_empty());
+    assert_eq!(feed["outcome"]["kind"], "accepted");
+    assert!(!feed["pages"].as_array().unwrap().is_empty());
     let _ = fs::remove_dir_all(root);
 }
 

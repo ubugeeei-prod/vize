@@ -40,10 +40,6 @@ pub(super) enum DomLegacyReason {
     CustomRenderer,
     /// The requested whitespace strategy is not implemented by L2 lowering.
     Whitespace,
-    /// A Vue 2 / 2.7 dialect.
-    Dialect,
-    /// Quirks template syntax.
-    TemplateSyntax,
     /// A Croquis summary is attached (the script-setup SFC path).
     Croquis,
     /// The source text may carry patterned-template directives.
@@ -68,8 +64,6 @@ impl DomLegacyReason {
             Self::SelfComponent => "self-component",
             Self::CustomRenderer => "custom-renderer",
             Self::Whitespace => "whitespace",
-            Self::Dialect => "dialect",
-            Self::TemplateSyntax => "template-syntax",
             Self::Croquis => "analysis-context",
             Self::PatternedSource => "patterned-source",
             Self::DirectiveComment => "directive-comment",
@@ -90,8 +84,6 @@ impl DomLegacyReason {
             Self::SelfComponent => "l2.dom.legacy.self_component",
             Self::CustomRenderer => "l2.dom.legacy.custom_renderer",
             Self::Whitespace => "l2.dom.legacy.whitespace",
-            Self::Dialect => "l2.dom.legacy.dialect",
-            Self::TemplateSyntax => "l2.dom.legacy.template_syntax",
             Self::Croquis => "l2.dom.legacy.croquis",
             Self::PatternedSource => "l2.dom.legacy.patterned_source",
             Self::DirectiveComment => "l2.dom.legacy.directive_comment",

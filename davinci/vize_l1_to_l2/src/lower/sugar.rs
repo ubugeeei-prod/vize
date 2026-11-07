@@ -34,8 +34,9 @@ pub(crate) fn should_take(
         && scope_attr_index(element, analyzed).is_some()
 }
 
-/// The first static `slot-scope` or (on `<template>` only) `scope`
-/// attribute, in authored order. Vue 2.5+'s `slot-scope` is legal on
+/// The effective static `slot-scope` or (on `<template>` only) `scope`
+/// attribute. Vue 2's duplicate-attribute map keeps the last authored value.
+/// Vue 2.5+'s `slot-scope` is legal on
 /// any element; `scope` (2.1) was the `<template>`-only precursor, so
 /// `<div scope="props">` stays an ordinary HTML attribute.
 pub(crate) fn scope_attr_index(element: &Element<'_>, analyzed: &Analyzed<'_>) -> Option<usize> {
@@ -45,7 +46,7 @@ pub(crate) fn scope_attr_index(element: &Element<'_>, analyzed: &Analyzed<'_>) -
         .attrs
         .iter()
         .enumerate()
-        .position(|(index, attr)| {
+        .rposition(|(index, attr)| {
             matches!(analyzed.forms.get(index), Some(AttrForm::Static))
                 && (attr.name.text == "slot-scope" || (attr.name.text == "scope" && on_template))
         })
@@ -62,7 +63,7 @@ pub(crate) fn companion_slot_index(
         .attrs
         .iter()
         .enumerate()
-        .position(|(index, attr)| {
+        .rposition(|(index, attr)| {
             matches!(analyzed.forms.get(index), Some(AttrForm::Static)) && attr.name.text == "slot"
         })
 }

@@ -122,6 +122,7 @@ fn hand_built() -> Page {
                                     82,
                                     88,
                                 ),
+                                raw_html: false,
                                 span: Span::new(80, 88),
                             })],
                             span: Span::new(75, 90),
@@ -166,6 +167,7 @@ fn hand_built() -> Page {
                             source: String::from("count + 1"),
                             span: Span::new(150, 159),
                         },
+                        raw_html: false,
                         span: Span::new(148, 161),
                     })],
                     span: Span::new(131, 161),
@@ -310,6 +312,7 @@ fn every_opaque_reason_spelling_round_trips() {
         (OpaqueReason::MultiStatement, "multi-statement"),
         (OpaqueReason::NestingRefused, "nesting-refused"),
         (OpaqueReason::ParseRejected, "parse-rejected"),
+        (OpaqueReason::DirectiveClause, "directive-clause"),
         (OpaqueReason::Compound, "compound"),
         (OpaqueReason::SourceCoordinates, "source-coordinates"),
     ];
@@ -319,6 +322,7 @@ fn every_opaque_reason_spelling_round_trips() {
             .map(|(reason, _)| {
                 Op::Interpolation(Interpolation {
                     expression: opaque(*reason, "x", 1, 2),
+                    raw_html: false,
                     span: Span::new(0, 3),
                 })
             })
@@ -326,13 +330,14 @@ fn every_opaque_reason_spelling_round_trips() {
     };
     let canonical = "\
 [l2-dump-v2]
-ops=6
+ops=7
 
 [l2-dump-v2.ops]
 ui.interpolation opaque(for-value \"x\" @1:2) @0:3
 ui.interpolation opaque(multi-statement \"x\" @1:2) @0:3
 ui.interpolation opaque(nesting-refused \"x\" @1:2) @0:3
 ui.interpolation opaque(parse-rejected \"x\" @1:2) @0:3
+ui.interpolation opaque(directive-clause \"x\" @1:2) @0:3
 ui.interpolation opaque(compound \"x\" @1:2) @0:3
 ui.interpolation opaque(source-coordinates \"x\" @1:2) @0:3
 

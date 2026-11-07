@@ -1,9 +1,12 @@
 //! The typed raw-child emitter owns array precedence independently of JSX parser spelling.
-use vize_l0::{Allocator, Box, Span, Vec, side_table::SideTable};
+#![expect(clippy::disallowed_macros, reason = "fixture source uses format")]
+#![expect(clippy::unreachable, reason = "test shape assertions panic")]
+
+use vize_l0::{Allocator, Span, Vec};
 use vize_l2::{
-    artifact::{Artifact, ArtifactParts},
+    artifact::{Artifact, Builder},
     expr::{ExprRef, JsExpr},
-    op::{ElementOp, InterpolationOp, Namespace, Op, Region},
+    op::{Namespace, Op},
     resolution::{BindingId, BindingLookup, resolve_expression},
 };
 use vize_l3::decision::{build_dom_decisions, dom::ContextOnly};
@@ -32,34 +35,33 @@ fn typed_sequence_child_preserves_the_real_expression_and_complete_emission_pack
     let source = format!("// 雪🌸\r\n{expression}");
     let span = Span::new(source.find(expression).unwrap() as u32, source.len() as u32);
     let js = JsExpr::parse_in(arena, expression, span).unwrap();
-    let region = |ops| Region {
-        ops: Vec::from_iter_in(ops, &arena),
+    let mut builder = Builder::new(arena, &source).unwrap();
+    builder
+        .element(
+            "main",
+            Namespace::Html,
+            Vec::new_in(&arena),
+            Span::new(0, source.len() as u32),
+            |children, _| {
+                children.interpolation(ExprRef::Js(js), span).unwrap();
+            },
+        )
+        .unwrap();
+    let mut parts = builder.finish().unwrap().into_parts();
+    let mut roots = parts.root.ops.into_iter();
+    let Op::Element(mut element) = roots.next().unwrap() else {
+        unreachable!()
     };
-    let child = Op::JsxChildValue(Box::new_in(
-        InterpolationOp {
-            expression: ExprRef::Js(js),
-            span,
-        },
-        &arena,
-    ));
-    let root = region([Op::Element(Box::new_in(
-        ElementOp {
-            tag: "main",
-            namespace: Namespace::Html,
-            attributes: Vec::new_in(&arena),
-            bindings: Vec::new_in(&arena),
-            children: region([child]),
-            span: Span::new(0, source.len() as u32),
-        },
-        &arena,
-    ))]);
-    let artifact = Artifact::try_new(ArtifactParts {
-        source: &source,
-        root,
-        provenance: std::vec::Vec::new(),
-        scopes: SideTable::new(),
-    })
-    .unwrap();
+    assert!(roots.next().is_none());
+    let mut children =
+        core::mem::replace(&mut element.children.ops, Vec::new_in(&arena)).into_iter();
+    let Op::Interpolation(child) = children.next().unwrap() else {
+        unreachable!()
+    };
+    assert!(children.next().is_none());
+    element.children.ops = Vec::from_iter_in([Op::JsxChildValue(child)], &arena);
+    parts.root.ops = Vec::from_iter_in([Op::Element(element)], &arena);
+    let artifact = Artifact::try_new(parts).unwrap();
     let tables = [resolve_expression(js, &State).unwrap()];
     let ids = [BindingId::new(0)];
     let bindings = [Binding {

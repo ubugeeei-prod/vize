@@ -1,8 +1,8 @@
 // Vue-aware emission entry policy; included by the compatibility module.
 use vize_l0::dump::capture::{CaptureSink, NoCapture};
 use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
-use vize_l0::{Allocator, ensure_sufficient_stack};
-use vize_l1::markup::{SurfaceParseOptions, parse_with_options};
+use vize_l0::{Allocator, TemplateSyntaxMode, ensure_sufficient_stack};
+use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::provenance::NoProvenance;
 
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
@@ -16,6 +16,7 @@ mod preflight;
 pub use preflight::{
     SurfacePreflight, emit_dom_source_with_preflight,
     emit_dom_source_with_preflight_and_environment,
+    emit_dom_source_with_preflight_environment_and_syntax,
 };
 
 #[cfg(any())]
@@ -23,12 +24,15 @@ mod slot_scope;
 pub use slot_scope::{
     emit_dom_source_observed_with_options_captured_and_slot_scope,
     emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax,
     emit_dom_source_with_options_captured_and_slot_scope,
     emit_dom_source_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_with_options_captured_slot_scope_environment_and_syntax,
 };
 
 struct EmitInvocation<'o, 'p, 'v> {
     options: &'o DomEmitOptions<'p>,
+    syntax: TemplateSyntaxMode,
     strict_slot_params: bool,
     no_slotted: bool,
     development: bool,
@@ -120,10 +124,12 @@ fn emit_dom_source_observed_with_slot_policy(
         options,
         strict_slot_params,
         false,
+        TemplateSyntaxMode::Standard,
         &mut NoCapture,
     )
 }
 
+#[expect(clippy::too_many_arguments, reason = "DOM emission inputs")]
 fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
@@ -131,6 +137,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
     options: &DomEmitOptions<'_>,
     strict_slot_params: bool,
     no_slotted: bool,
+    syntax: TemplateSyntaxMode,
     capture: &mut C,
 ) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = BudgetObserver::new();
@@ -140,6 +147,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
         caps,
         EmitInvocation {
             options,
+            syntax,
             strict_slot_params,
             no_slotted,
             development: true,
@@ -208,6 +216,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
         caps,
         options,
         &mut observer,
+        TemplateSyntaxMode::Standard,
         false,
         false,
         true,
@@ -229,19 +238,21 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
     observer: &mut O,
+    syntax: TemplateSyntaxMode,
     strict_slot_params: bool,
     no_slotted: bool,
     development: bool,
     preflight: Option<&mut dyn SurfacePreflight>,
 ) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
-        let (tree, errors) = parse_with_options(
+        let (tree, errors) = parse_with_options_and_caps(
             allocator,
             source,
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
-                ..SurfaceParseOptions::default()
+                syntax,
             },
+            caps,
         );
         if let Some(preflight) = preflight
             && !preflight.check(Some((&tree, &errors)))
@@ -286,6 +297,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
     if !C::RECORDING {
         let EmitInvocation {
             options,
+            syntax,
             strict_slot_params,
             no_slotted,
             development,
@@ -297,6 +309,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             caps,
             options,
             observer,
+            syntax,
             strict_slot_params,
             no_slotted,
             development,

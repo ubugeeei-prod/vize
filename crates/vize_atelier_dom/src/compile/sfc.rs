@@ -99,6 +99,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
                     allocator,
                     source,
                     options.dialect,
+                    template_syntax,
                     &l2_options,
                     None,
                     stage_options::SlotEmitPolicy {

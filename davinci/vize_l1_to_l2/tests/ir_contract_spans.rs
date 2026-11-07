@@ -89,6 +89,7 @@ fn owned_folio_rejects_same_length_expression_source_mismatches() {
                 source: String::from("y"),
                 span: Span::new(3, 4),
             },
+            raw_html: false,
             span: Span::new(0, 7),
         })],
     };
@@ -105,6 +106,7 @@ fn owned_folio_rejects_different_length_expression_source_mismatches() {
                 source: String::from("items"),
                 span: Span::new(3, 11),
             },
+            raw_html: false,
             span: Span::new(0, 14),
         })],
     };

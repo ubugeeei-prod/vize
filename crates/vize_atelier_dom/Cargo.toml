@@ -113,6 +113,7 @@ name = "l2_hoist_static_selector"
 
 [[test]]
 name = "l2_legacy_selector"
+required-features = ["legacy", "legacy-differential"]
 
 [[test]]
 name = "l2_production_selector"

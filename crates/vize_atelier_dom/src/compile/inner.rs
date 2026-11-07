@@ -120,6 +120,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         if let Some(result) = stage_options::try_emit_l2(
             allocator,
             source,
+            template_syntax,
             &options,
             &codegen_opts,
             &l2_custom_elements,
@@ -170,6 +171,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         stage_options::try_emit_l2(
             allocator,
             source,
+            template_syntax,
             &options,
             &codegen_opts,
             &l2_custom_elements,

@@ -188,6 +188,10 @@ pub struct LegacyDialectCapabilities {
     pub raw_html_interpolation: bool,
     /// `.native` and numeric key-code event sugar. Vue 2 / 2.7 only.
     pub v2_event_sugar: bool,
+    /// Repeated plain attributes keep the last authored value. Every
+    /// pre-Vue-3 parser line used an attribute map with overwrite semantics;
+    /// Vue 3 keeps the first value while reporting the repeat.
+    pub duplicate_static_attrs_keep_last: bool,
 }
 
 impl LegacyDialectCapabilities {

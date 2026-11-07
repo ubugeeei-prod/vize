@@ -103,7 +103,7 @@ pub(super) fn l2_emit_refusal(
     options: &DomCompilerOptions,
     _codegen: &CodegenOptions,
     _custom_elements: &CustomElementMatcher,
-    template_syntax: TemplateSyntaxMode,
+    _template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
     l2_emit_selection: L2EmitSelection,
     experimental_self_component: bool,
@@ -129,8 +129,6 @@ pub(super) fn l2_emit_refusal(
         {
             DomLegacyReason::Whitespace
         }
-        _ if options.dialect != vize_l0::config::VueVersion::V3 => DomLegacyReason::Dialect,
-        _ if template_syntax != TemplateSyntaxMode::Standard => DomLegacyReason::TemplateSyntax,
         _ if has_croquis => DomLegacyReason::Croquis,
         _ => return None,
     };
@@ -207,6 +205,7 @@ pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
 pub(super) fn try_emit_l2(
     allocator: &Allocator,
     source: &str,
+    template_syntax: TemplateSyntaxMode,
     options: &DomCompilerOptions,
     codegen: &CodegenOptions,
     custom_elements: &CustomElementMatcher,
@@ -232,6 +231,7 @@ pub(super) fn try_emit_l2(
             allocator,
             source,
             options.dialect,
+            template_syntax,
             &emit_options,
             pre_s2_walks,
             strict_slot_params,
@@ -251,15 +251,16 @@ pub(super) fn emit_l2(
     allocator: &Allocator,
     source: &str,
     dialect: vize_l0::config::VueVersion,
+    template_syntax: TemplateSyntaxMode,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
     no_slotted: bool,
     development: bool,
 ) -> Result<CodegenResultWithSections, EmitError> {
-    let caps = LegacyCaps::for_version(dialect);
+    let caps = dom_compat_caps(dialect, options.prefix_identifiers);
     let emit = if active_profiler_is_enabled() {
-        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_and_environment(
+        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,
@@ -267,12 +268,13 @@ pub(super) fn emit_l2(
             strict_slot_params,
             no_slotted,
             development,
+            template_syntax,
             &mut NoCapture,
         )?;
         record_l2_budget(observed.budget, pre_s2_walks);
         observed.emit
     } else {
-        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_and_environment(
+        vize_l1_to_l2::emit_dom_source_with_options_captured_slot_scope_environment_and_syntax(
             allocator,
             source,
             caps,
@@ -280,6 +282,7 @@ pub(super) fn emit_l2(
             strict_slot_params,
             no_slotted,
             development,
+            template_syntax,
             &mut NoCapture,
         )?
     };
@@ -293,6 +296,23 @@ pub(super) fn emit_l2(
         // shipped emitter so SFC assembly can slice either lane identically.
         sections: Some(l2_codegen_sections(emit.sections)),
     })
+}
+
+/// Historical DOM compilation enables the legacy pipe-filter rewrite only on
+/// its identifier-prefixing transform path. In unprefixed function mode,
+/// `label | cap` remains a JavaScript bitwise-or expression. Keep the shared
+/// dialect table intact for SSR and direct Davinci consumers while projecting
+/// that shipped DOM behavior at this product boundary.
+pub(super) fn dom_compat_caps(
+    dialect: vize_l0::config::VueVersion,
+    prefix_identifiers: bool,
+) -> LegacyCaps {
+    let mut caps = LegacyCaps::for_version(dialect);
+    if !prefix_identifiers {
+        caps.supports_filters = false;
+        caps.space_separated_filter_args = false;
+    }
+    caps
 }
 const fn l2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
     CodegenSections {

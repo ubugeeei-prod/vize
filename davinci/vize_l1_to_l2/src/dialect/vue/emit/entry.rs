@@ -2,7 +2,7 @@
 // two-half render module the dual-run compares.
 
 use vize_l0::pass::NoObserver;
-use vize_l0::{Allocator, String};
+use vize_l0::{Allocator, String, TemplateSyntaxMode};
 
 use crate::lower::LegacyCaps;
 
@@ -82,6 +82,7 @@ pub fn emit_dom_source_with_options<'a>(
         caps,
         options,
         &mut observer,
+        TemplateSyntaxMode::Standard,
         false,
         false,
         true,
@@ -105,6 +106,7 @@ pub fn emit_dom_source_sfc_with_options<'a>(
         caps,
         options,
         &mut observer,
+        TemplateSyntaxMode::Standard,
         true,
         false,
         true,

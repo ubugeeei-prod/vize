@@ -41,6 +41,7 @@ fn typed_child_value_projects_the_same_full_expression_and_span_as_template_text
         let payload = Box::new_in(
             InterpolationOp {
                 expression: ExprRef::parse_js_in(allocator, "state.value", span),
+                raw_html: false,
                 span,
             },
             &allocator,

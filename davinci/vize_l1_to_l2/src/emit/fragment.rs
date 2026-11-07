@@ -269,7 +269,7 @@ fn emit_interp(
             for part in &parts {
                 start_item(cx, first);
                 if part.dynamic {
-                    emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
+                    emit_dynamic_part(cx, part.text.as_str(), part.raw_html, Site::Expression)?;
                 } else {
                     emit_plain_text_vnode(cx, part.text.as_str());
                 }

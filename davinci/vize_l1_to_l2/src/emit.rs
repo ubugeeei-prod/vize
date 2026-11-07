@@ -133,9 +133,11 @@ pub use self::budget::{
     emit_dom_source_observed_with_options, emit_dom_source_observed_with_options_captured,
     emit_dom_source_observed_with_options_captured_and_slot_scope,
     emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax,
     emit_dom_source_sfc_observed_with_options, emit_dom_source_with_caps_observed,
     emit_dom_source_with_options_captured, emit_dom_source_with_options_captured_and_slot_scope,
     emit_dom_source_with_options_captured_slot_scope_and_environment,
+    emit_dom_source_with_options_captured_slot_scope_environment_and_syntax,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use self::budget::{
@@ -277,4 +279,5 @@ struct EmitCx<'facts> {
 pub use budget::{
     SurfacePreflight, emit_dom_source_with_preflight,
     emit_dom_source_with_preflight_and_environment,
+    emit_dom_source_with_preflight_environment_and_syntax,
 };

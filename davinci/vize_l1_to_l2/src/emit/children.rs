@@ -113,6 +113,9 @@ pub(super) fn emit_interpolation(
     interp: &InterpolationOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if interp.raw_html {
+        return emit_raw_html_interpolation(cx, interp, Site::Expression);
+    }
     match interp.expression {
         ExprRef::Js(js) if cx.prefixing() => {
             emit_prefixed_to_display_string(cx, js, Site::Expression)
@@ -150,6 +153,23 @@ pub(super) fn emit_interpolation(
     }
 }
 
+pub(super) fn emit_raw_html_interpolation(
+    cx: &mut EmitCx<'_>,
+    interp: &InterpolationOp<'_>,
+    site: Site,
+) -> Result<(), EmitError> {
+    if cx.prefixing() {
+        let text = cx.prefixed_expr(&interp.expression, site)?;
+        cx.buf.push(text.as_str());
+        return Ok(());
+    }
+    let raw = super::js::expr_source(&interp.expression, false).ok_or_else(|| {
+        EmitError::unsupported_at(Reason::TextExpressionNotEmittable, interp.expression.span())
+    })?;
+    cx.buf.push(raw.as_str());
+    Ok(())
+}
+
 pub(super) fn emit_jsx_child(
     cx: &mut EmitCx<'_>,
     child: &InterpolationOp<'_>,
@@ -184,11 +204,18 @@ pub(super) fn emit_prefixed_to_display_string(
 pub(super) fn emit_dynamic_part(
     cx: &mut EmitCx<'_>,
     text: &str,
+    raw_html: bool,
     site: Site,
 ) -> Result<(), EmitError> {
     if cx.prefixing() {
         let text = cx.prefixed_text(text, site)?;
-        emit_to_display_string(cx, text.as_str());
+        if raw_html {
+            cx.buf.push(text.as_str());
+        } else {
+            emit_to_display_string(cx, text.as_str());
+        }
+    } else if raw_html {
+        cx.buf.push(text);
     } else {
         emit_to_display_string(cx, text);
     }
@@ -213,7 +240,7 @@ pub(super) fn emit_compound_parts(
             cx.buf.push(" + ");
         }
         if part.dynamic {
-            emit_dynamic_part(cx, part.text.as_str(), site)?;
+            emit_dynamic_part(cx, part.text.as_str(), part.raw_html, site)?;
         } else {
             emit_quoted_text(cx, part.text.as_str());
         }
