@@ -9,6 +9,7 @@ import type {
   SerializedDataState,
 } from "./types.ts";
 
+/** HTTP loader failure with the response status and decoded error body. */
 export class DataHttpError extends Error {
   readonly status: number;
   readonly statusText: string;
@@ -23,6 +24,7 @@ export class DataHttpError extends Error {
   }
 }
 
+/** Typed HTTP endpoint and decoding policy for a fetch-backed resource. */
 export interface FetchDataResourceOptions<
   Key extends DataResourceKey,
   Input,
@@ -33,11 +35,46 @@ export interface FetchDataResourceOptions<
   readonly key: Key;
   readonly source: DataSourceSpecifier;
   readonly endpoint: (input: Input) => string | URL;
+  /**
+   * Request initialization derived from the typed input.
+   *
+   * @default undefined
+   */
   readonly init?: (input: Input) => RequestInit;
+
+  /**
+   * Fetch implementation used by the loader.
+   *
+   * @default globalThis.fetch
+   */
   readonly fetch?: typeof globalThis.fetch;
+
+  /**
+   * Successful response decoder.
+   *
+   * @default response.json()
+   */
   readonly decode?: (response: Response) => Data | Promise<Data>;
+
+  /**
+   * Failed response body decoder.
+   *
+   * @default response.text(), falling back to undefined
+   */
   readonly decodeError?: (response: Response) => unknown;
+
+  /**
+   * Error payload serializer forwarded to the resource definition.
+   *
+   * @default undefined
+   */
   readonly serializeError?: (error: unknown) => ErrorPayload;
+
+  /**
+   * Serializable metadata forwarded to manifests and loaders.
+   *
+   * @default {}
+   */
   readonly meta?: Meta;
 }
 
@@ -75,6 +112,7 @@ export function createFetchDataResource<
   });
 }
 
+/** Typed async stream and reduction policy for a stream-backed resource. */
 export interface StreamDataResourceOptions<
   Key extends DataResourceKey,
   Input,
@@ -88,7 +126,18 @@ export interface StreamDataResourceOptions<
   readonly initial: (input: Input) => Data;
   readonly open: (context: DataLoadContext<Input>) => AsyncIterable<Chunk>;
   readonly reduce: (data: Data, chunk: Chunk) => Data;
+  /**
+   * Error payload serializer forwarded to the resource definition.
+   *
+   * @default undefined
+   */
   readonly serializeError?: (error: unknown) => ErrorPayload;
+
+  /**
+   * Serializable metadata forwarded to manifests and loaders.
+   *
+   * @default {}
+   */
   readonly meta?: Meta;
 }
 
@@ -130,6 +179,7 @@ export async function hydrateDataClientFromStream(
   return hydrateDataClient(snapshot, options);
 }
 
+/** Queue-backed loader and call history exposed to deterministic tests. */
 export interface DataTestAdapter<Input, Data> {
   readonly calls: readonly DataLoadContext<Input>[];
   readonly loader: (context: DataLoadContext<Input>) => Promise<Data>;
