@@ -1,0 +1,62 @@
+{
+  "name": "@vizejs/parcel-transformer-native",
+  "version": "0.474.0",
+  "description": "Native Parcel 3 transformer for Vue single-file components",
+  "keywords": [
+    "native",
+    "parcel",
+    "sfc",
+    "transformer",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/builder/parcel-native"
+  },
+  "files": [],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "cargo build --release -p vize_parcel_transformer",
+    "build:debug": "cargo build -p vize_parcel_transformer",
+    "check": "cargo check -p vize_parcel_transformer",
+    "test": "cargo test -p vize_parcel_transformer",
+    "test:host": "cargo build -p vize_parcel_transformer && node test/host.ts"
+  },
+  "devDependencies": {
+    "parcel": "3.0.0-alpha.2",
+    "vue": "catalog:vue-stable"
+  },
+  "engines": {
+    "node": ">=22.18.0",
+    "parcel": "^3.0.0-0"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  },
+  "parcel": {
+    "abi": 1,
+    "artifacts": {
+      "aarch64-apple-darwin": "@vizejs/parcel-transformer-native-darwin-arm64",
+      "x86_64-apple-darwin": "@vizejs/parcel-transformer-native-darwin-x64",
+      "aarch64-pc-windows-msvc": "@vizejs/parcel-transformer-native-win32-arm64-msvc",
+      "x86_64-pc-windows-msvc": "@vizejs/parcel-transformer-native-win32-x64-msvc",
+      "aarch64-unknown-linux-gnu": "@vizejs/parcel-transformer-native-linux-arm64-gnu",
+      "x86_64-unknown-linux-gnu": "@vizejs/parcel-transformer-native-linux-x64-gnu",
+      "aarch64-unknown-linux-musl": "@vizejs/parcel-transformer-native-linux-arm64-musl",
+      "x86_64-unknown-linux-musl": "@vizejs/parcel-transformer-native-linux-x64-musl"
+    },
+    "devLibrary": "../../../target/debug/libvize_parcel_transformer"
+  }
+}

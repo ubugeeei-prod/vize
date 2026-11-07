@@ -1,10 +1,16 @@
 import { createRequire } from "node:module";
-import type { compileJsx } from "@vizejs/native";
+import type { compileJsx, compileSfc, generateSfcScopeId } from "@vizejs/native";
 
-let compiler: typeof compileJsx | undefined;
+export interface NativeCompiler {
+  compileJsx: typeof compileJsx;
+  compileSfc: typeof compileSfc;
+  generateSfcScopeId: typeof generateSfcScopeId;
+}
 
-/** Keep addon initialization outside the common no-JSX path. */
-export function getCompiler(): typeof compileJsx {
+let compiler: NativeCompiler | undefined;
+
+/** Keep addon initialization outside the common no-JSX/non-SFC path. */
+export function getCompiler(): NativeCompiler {
   if (compiler) return compiler;
   const require = createRequire(typeof __filename === "string" ? __filename : import.meta.url);
   const binding: unknown = require("@vizejs/native");
@@ -12,12 +18,16 @@ export function getCompiler(): typeof compileJsx {
     typeof binding !== "object" ||
     binding === null ||
     !("compileJsx" in binding) ||
-    typeof binding.compileJsx !== "function"
+    typeof binding.compileJsx !== "function" ||
+    !("compileSfc" in binding) ||
+    typeof binding.compileSfc !== "function" ||
+    !("generateSfcScopeId" in binding) ||
+    typeof binding.generateSfcScopeId !== "function"
   ) {
     throw new Error(
-      "The installed Vize native binding does not expose compileJsx; use matching Vize package versions",
+      "The installed Vize native binding does not expose the Babel compiler surface; use matching Vize package versions",
     );
   }
-  compiler = binding.compileJsx as typeof compileJsx;
+  compiler = binding as NativeCompiler;
   return compiler;
 }

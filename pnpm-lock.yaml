@@ -711,6 +711,15 @@ importers:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
 
+  npm/builder/parcel-native:
+    devDependencies:
+      parcel:
+        specifier: 3.0.0-alpha.2
+        version: 3.0.0-alpha.2
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
+
   npm/builder/rspack:
     dependencies:
       '@vizejs/native':
@@ -5751,6 +5760,50 @@ packages:
   '@parcel/packager-wasm@2.16.4':
     resolution: {integrity: sha512-AY96Aqu/RpmaSZK2RGkIrZWjAperDw8DAlxLAiaP1D/RPVnikZtl5BmcUt/Wz3PrzG7/q9ZVqqKkWsLmhkjXZQ==}
     engines: {node: '>=16.0.0', parcel: ^2.16.4}
+
+  '@parcel/parcel3-darwin-arm64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-1QWz8kyEuyprpvumspbrzm1wTXbStZUevLjFJ1Iv+xe3ZgM3gmjMdwxuiX6RtkzKS9D+xHH5lK5bnQ5Ojvynzg==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@parcel/parcel3-darwin-x64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-HX534iankEFRKd9jzT0P5PS1nHB06DRD/Nxazy9tWMbopvGz0Wp8xhkhAzS/7D82lHCr0E8aR4DkbEbYhgrWdA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@parcel/parcel3-linux-arm64-musl@3.0.0-alpha.2':
+    resolution: {integrity: sha512-BqnChgftVd6FT1xU6fx1eID6nPa2ot1VLEXHVbFN2gQl4aBqzI7VQTvtwCXHTwSV03sZ7E9Day+4HkyG0mEuVA==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@parcel/parcel3-linux-arm64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-a+z3FlDPlsaVqjau9ZS1sXQbQytPb6SNFPQqutTlMN1y83FldRhV+IMCaUEhk2x6yKrfcH59gNpQ9pm3osyqLA==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@parcel/parcel3-linux-x64-musl@3.0.0-alpha.2':
+    resolution: {integrity: sha512-Uh+EXhkU+0Vam2b+o3Zy6eFKpIMaLAWteHuA5KN9rodo8qajGwFsRKtqyb9ngpeJ70OdsxJJq8VPLCA2/cltjg==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@parcel/parcel3-linux-x64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-782sbffCKFQZ+jfch3nOK1xdliOzzvrqELmMy2Q1Kf4mbufG4cqCm/jxmDI3StScLWDhvkV/DoL9w9BhNx7ouA==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@parcel/parcel3-win32-arm64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-g1D02yXKhSu2JGzNnMtyaFh48R7XMTOpttFp5v3w5GTJAIl+b5xEIFmlEK0z4T6xFkQCVvLNpCL9XLidanmYCQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@parcel/parcel3-win32-x64@3.0.0-alpha.2':
+    resolution: {integrity: sha512-KCs4xgUp3jXsa9EbmhDLtC/oFqy37SihLjfLbeNBFb3begz9M9gGhul9XGkrTeggIjD8UfDo3Z9ORqfGv/fQLQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@parcel/plugin@2.16.4':
     resolution: {integrity: sha512-aN2VQoRGC1eB41ZCDbPR/Sp0yKOxe31oemzPx1nJzOuebK2Q6FxSrJ9Bjj9j/YCaLzDtPwelsuLOazzVpXJ6qg==}
@@ -12926,6 +12979,11 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
+  parcel@3.0.0-alpha.2:
+    resolution: {integrity: sha512-7vMj3GQ2sE0pb4VI5VW/+D0JRLaSZaeHNDy3sjS04YqBwSyk95q6RTtLF/Fz6pQe08C1JA1vArAD+IKowmkAVA==}
+    engines: {node: '>= 18'}
+    hasBin: true
+
   parse-imports-exports@0.2.4:
     resolution: {integrity: sha512-4s6vd6dx1AotCx/RCI2m7t7GCh5bDRUtGNvRfHSP2wbBQdMi67pPe7mtzmgwcaQ8VKK/6IB7Glfyu3qdZJPybQ==}
 
@@ -19442,6 +19500,30 @@ snapshots:
     transitivePeerDependencies:
       - '@parcel/core'
       - napi-wasm
+
+  '@parcel/parcel3-darwin-arm64@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-darwin-x64@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-linux-arm64-musl@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-linux-arm64@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-linux-x64-musl@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-linux-x64@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-win32-arm64@3.0.0-alpha.2':
+    optional: true
+
+  '@parcel/parcel3-win32-x64@3.0.0-alpha.2':
+    optional: true
 
   '@parcel/plugin@2.16.4(@parcel/core@2.16.4(@swc/helpers@0.5.23))':
     dependencies:
@@ -27118,6 +27200,17 @@ snapshots:
   package-manager-detector@1.8.0: {}
 
   package-manager-detector@1.9.0: {}
+
+  parcel@3.0.0-alpha.2:
+    optionalDependencies:
+      '@parcel/parcel3-darwin-arm64': 3.0.0-alpha.2
+      '@parcel/parcel3-darwin-x64': 3.0.0-alpha.2
+      '@parcel/parcel3-linux-arm64': 3.0.0-alpha.2
+      '@parcel/parcel3-linux-arm64-musl': 3.0.0-alpha.2
+      '@parcel/parcel3-linux-x64': 3.0.0-alpha.2
+      '@parcel/parcel3-linux-x64-musl': 3.0.0-alpha.2
+      '@parcel/parcel3-win32-arm64': 3.0.0-alpha.2
+      '@parcel/parcel3-win32-x64': 3.0.0-alpha.2
 
   parse-imports-exports@0.2.4:
     dependencies:

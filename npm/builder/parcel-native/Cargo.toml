@@ -1,0 +1,24 @@
+[package]
+name = "vize_parcel_transformer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Native Parcel 3 transformer for Vue single-file components"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+parcel-plugin.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+vize_carton.workspace = true
+vize_atelier_core.workspace = true
+vize_atelier_dom.workspace = true
+vize_atelier_sfc.workspace = true
+
+[lints]
+workspace = true

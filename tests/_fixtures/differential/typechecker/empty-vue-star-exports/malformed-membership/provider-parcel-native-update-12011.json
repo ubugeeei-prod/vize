@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-parcel-native-successor",
+  "sourceRevision": "2329f63cc08bf57322c1edae3f0890fd3f8d25bc",
+  "sourceTree": "84266ec85200e047c5a5b6ef1fbbc1a22fe854eb",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-qualification-lockfile-update-11542.json",
+    "bytes": 2863,
+    "sha256": "1191a1ee7876f54a25cc10aeaa46cf8c8cc61643ebaf7a8562a5d7c98ff107af",
+    "gitBlob": "5357ae88719ed040cfedda676498ed13d721518c"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1125305,
+    "sha256": "2560b4282b013dff0c25977b43adb705956e0ec174db1f8f34bb77d5bed5f01d",
+    "gitBlob": "b4ef0cd46bdcbbef080d913dd62f707b391b60f7"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1128440,
+    "sha256": "d95bd434f96244f90db5acdadc6805c75ab653a67a08c173f0fe8f553082b010",
+    "gitBlob": "5fd7c3928ed030c2ad09f45cf59c51b092993b31"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "parcelNativeManifest": {
+    "path": "npm/builder/parcel-native/package.json",
+    "bytes": 2103,
+    "sha256": "bc8730cd63106ffbd2f0d7ac6d23b1dcd43752ec282603541343c37d248e38f8",
+    "gitBlob": "3b3499a003e492ae5e30b597771e18bbacff1dc8"
+  },
+  "cargoWorkspaceManifest": {
+    "path": "Cargo.toml",
+    "bytes": 13224,
+    "sha256": "b647aa9b834cfe80b071d9a8b2da026451345402bd4a00a91d695078c5a2e0a7",
+    "gitBlob": "d19e29633eafa4bca69099db81aff78fed2d7030"
+  },
+  "cargoLock": {
+    "path": "Cargo.lock",
+    "bytes": 129524,
+    "sha256": "10a5609b2d11722ef7232b8c6b2281d042b7dbf39fcea8ae58319afb3c54f774",
+    "gitBlob": "360263d371573554ce80eb775d97d4de66119561"
+  },
+  "resolvers": {
+    "pnpm": {
+      "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+      "fixedPointSha256": "d95bd434f96244f90db5acdadc6805c75ab653a67a08c173f0fe8f553082b010"
+    },
+    "cargo": {
+      "command": "cargo metadata --locked --no-deps --format-version 1",
+      "fixedPointSha256": "10a5609b2d11722ef7232b8c6b2281d042b7dbf39fcea8ae58319afb3c54f774"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Add the experimental Parcel 3 native transformer as one pnpm importer and one Cargo workspace crate, pin Parcel 3.0.0-alpha.2 and parcel-plugin 0.1.0, and retain all eight declared native platform artifact mappings. The exact pnpm and Cargo lockfiles are resolver fixed points. Root package, provider roster, provider bodies, and all native membership controls retain their prior authority; this record gives source provenance only."
+}

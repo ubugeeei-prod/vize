@@ -2,10 +2,19 @@ import { enableSyntax, hasJsx, rejectForeignRuntime } from "./ast.ts";
 import { getCompiler } from "./native.ts";
 import { normalizeOptions } from "./options.ts";
 import { captureReservations, restoreReservations } from "./scopes.ts";
+import { compileSfcForBabel, installSfcFileState, isVueSfc, type CompiledSfc } from "./sfc.ts";
 import { composeInputMap } from "./source-map.ts";
-import type { BabelApi, BabelFile, FileAst, VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
+import type {
+  BabelApi,
+  BabelFile,
+  BabelParse,
+  FileAst,
+  ParserOptions,
+  VizeBabelMetadata,
+  VizeBabelOptions,
+} from "./types.ts";
 
-export type { VizeBabelMetadata, VizeBabelOptions } from "./types.ts";
+export type { VizeBabelMetadata, VizeBabelOptions, VizeBabelSfcMetadata } from "./types.ts";
 
 const compiled = Symbol.for("@vizejs/babel-plugin/compiled");
 
@@ -17,6 +26,7 @@ export default function vizeBabelPlugin(
   const api = apiValue as BabelApi;
   api.assertVersion("^7.29.7 || ^8.0.9");
   const options = normalizeOptions(rawOptions);
+  const sfcOutputs = new WeakMap<object, CompiledSfc>();
   const assertComplete = (ast: FileAst) => {
     if (hasJsx(ast, api.types.VISITOR_KEYS)) {
       throw new Error(
@@ -29,7 +39,25 @@ export default function vizeBabelPlugin(
     manipulateOptions(host: { filename?: string }, parser: Parameters<typeof enableSyntax>[1]) {
       enableSyntax(host.filename ?? "", parser);
     },
+    parserOverride(source: string, parserOptions: ParserOptions, parse: BabelParse) {
+      const filename = String(
+        parserOptions.filename ??
+          parserOptions.sourceFilename ??
+          parserOptions.sourceFileName ??
+          "",
+      );
+      if (!filename || !isVueSfc(filename)) return undefined;
+      const compiledSfc = compileSfcForBabel(source, filename, parserOptions, parse, options);
+      sfcOutputs.set(compiledSfc.ast, compiledSfc);
+      return compiledSfc.ast;
+    },
     pre(file: BabelFile) {
+      const compiledSfc = sfcOutputs.get(file.ast);
+      if (compiledSfc) {
+        file.set(compiled, true);
+        installSfcFileState(file, compiledSfc);
+        return;
+      }
       if (!hasJsx(file.ast, api.types.VISITOR_KEYS)) return;
       if (file.get(compiled))
         throw new Error("JSX was introduced after this file's native compilation pass");
@@ -60,7 +88,7 @@ export default function vizeBabelPlugin(
       const typescript =
         /\.(?:tsx|ts|mts|cts)$/iu.test(file.opts.filename ?? "") ||
         parserPlugins.some((p) => (Array.isArray(p) ? p[0] : p) === "typescript");
-      const output = getCompiler()(printed.code, {
+      const output = getCompiler().compileJsx(printed.code, {
         filename: file.opts.filename,
         lang: typescript ? "tsx" : "jsx",
         jsxMode: options.jsxMode,

@@ -135,14 +135,14 @@ export async function runHost(input: HostWorkerInput, load: HostLoader) {
           fixture.id + (fixture.filenameSuffix ?? (fixture.typescript ? ".tsx" : ".jsx")),
         );
         const parserOpts: HostOptions["parserOpts"] = {
-          plugins: fixture.typescript ? ["jsx", "typescript"] : ["jsx"],
+          plugins: fixture.sfc ? [] : fixture.typescript ? ["jsx", "typescript"] : ["jsx"],
         };
         const options: HostOptions = {
           filename,
           babelrc: false,
           configFile: false,
           ast: true,
-          sourceMaps: Boolean(fixture.upstream),
+          sourceMaps: Boolean(fixture.upstream || fixture.sourceMaps),
           comments: fixture.comments ?? true,
           parserOpts,
           plugins: [],
@@ -395,14 +395,26 @@ export async function runHost(input: HostWorkerInput, load: HostLoader) {
         const vue = await load.vue(),
           renderer = await load.renderer();
         const html = await renderer.renderToString(
-          vue.createSSRApp({ render: () => exports.render(fixture.renderProps) }),
+          fixture.sfc
+            ? vue.createSSRApp(exports.default)
+            : vue.createSSRApp({ render: () => exports.render(fixture.renderProps) }),
         );
         item.html = html;
-        assert.equal(
-          html,
-          fixture.html,
-          "whole actual Vue-rendered HTML after the host transforms",
-        );
+        if (fixture.sfc) {
+          const scope = /data-v-[0-9a-f]{8}/u.exec(item.result.metadata.vize!.sfc!.css!)?.[0];
+          assert(scope, "the scoped SFC CSS must expose its compiler scope");
+          assert.equal(
+            html,
+            `<p class="message" ${scope}>from-sfc</p>`,
+            "whole actual Vue-rendered SFC HTML after the host transforms",
+          );
+        } else {
+          assert.equal(
+            html,
+            fixture.html,
+            "whole actual Vue-rendered HTML after the host transforms",
+          );
+        }
       } catch (error) {
         item.assertion = wholeError(error);
       }

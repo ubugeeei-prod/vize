@@ -1,6 +1,6 @@
 # @vizejs/babel-plugin
 
-Compile Vue JSX and TSX with the shared Vize compiler inside Babel.
+Compile Vue single-file components, JSX, and TSX with the shared Vize compiler inside Babel.
 
 ```sh
 pnpm add -D @babel/core @vizejs/babel-plugin
@@ -28,6 +28,12 @@ Use `@babel/preset-typescript` for type stripping and the usual Babel plugins fo
 decorators, language targets, or CommonJS output. The plugin enables JSX parsing
 and TSX parsing for `.tsx` filenames. It leaves plain `.ts` parsing to the host.
 
+The same plugin compiles `.vue` files through Babel's parser override. The native
+compiler returns JavaScript before the normal Babel visitor pipeline runs, so module,
+target, and instrumentation plugins continue to work on SFC output. Plain and scoped
+CSS is injected once at runtime by default; server transforms keep the CSS in metadata
+without touching `document`.
+
 ## Options
 
 | Option         | Default    | Behavior                                                                                                       |
@@ -36,6 +42,9 @@ and TSX parsing for `.tsx` filenames. It leaves plain `.ts` parsing to the host.
 | `ssr`          | `false`    | Generate SSR output for the selected client renderer.                                                          |
 | `jsxCompat`    | `"native"` | Select native or `"babel"` compatibility semantics. Incompatible combinations surface the compiler diagnostic. |
 | `scopedStyles` | `"error"`  | `"metadata"` lets a bundler consume extracted CSS explicitly.                                                  |
+| `sfcStyles`    | `"inject"` | Handle SFC CSS with runtime `"inject"`, metadata-only `"metadata"`, or `"error"`.                              |
+| `root`         | cwd        | Project root used to make SFC scope IDs stable across machines.                                                |
+| `isProduction` | `NODE_ENV` | Enable production SFC output and content-sensitive production scope IDs.                                       |
 
 Keep client and server builds on the same renderer setting. Unsupported native
 source shapes surface as compilation errors.
@@ -82,15 +91,24 @@ The final generation boundary also checks for JSX introduced by later `post`
 hooks. That guard returns control to Babel without claiming code generation;
 other generator overrides keep Babel's normal collision rules.
 
+`.vue` files are selected by filename before parsing, so the native compiler is loaded
+for those inputs even though their authored syntax is not JavaScript. External SFC
+blocks, custom blocks, style preprocessors, and CSS `@import` require a bundler adapter
+and fail explicitly in standalone Babel.
+
 Use Babel `overrides`, `only`, and `ignore` to select Vue files in mixed projects.
 An explicit foreign JSX runtime or factory is a configuration error.
 
 ## Source maps
 
-Enable Babel `sourceMaps` normally. The plugin composes the native map with
+Enable Babel `sourceMaps` normally. For JSX, the plugin composes the native map with
 Babel's current-AST map and any upstream input map, then lets Babel's normal
 generator produce the final map. It does not replace the parser or generator.
 A missing requested native map produces an error.
+
+For SFCs, the parser override installs the compiler's structured `.vue` map as Babel's
+input map before ordinary visitors run. Runtime style bootstrap lines are unmapped and
+the authored script/template mappings retain their original `.vue` source.
 
 When calling `transformFromAstSync`, pass the original source to retain its
 source content in the map.
