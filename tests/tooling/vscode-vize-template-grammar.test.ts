@@ -149,6 +149,30 @@ test("vscode-vize grammar keeps Vue scopes after nested template blocks", async 
   }
 });
 
+test("vscode-vize grammar closes multiline end tags before the next component", async () => {
+  const { grammar, registry } = await loadVueTextMateGrammar();
+
+  try {
+    const tokens = tokenizeLines(grammar, [
+      "<template>",
+      '  <label for="password">Password <span>*</span></label',
+      "  >",
+      "  <AfsTextField",
+      '    :append-icon="isShowedPassword ? \'mdi-eye\' : \'mdi-eye-off\'"',
+      '    @click:append="isShowedPassword = !isShowedPassword"',
+      "  />",
+      "</template>",
+    ]);
+
+    assertTextHasScope(tokens, "AfsTextField", "entity.name.tag.html");
+    assertTextHasScope(tokens, "append-icon", "entity.other.attribute-name.binding.vue");
+    assertTextHasScope(tokens, "click:append", "entity.other.attribute-name.event.vue");
+    assertTextHasScope(tokens, "isShowedPassword", "meta.embedded.expression.vue");
+  } finally {
+    registry.dispose();
+  }
+});
+
 test("vscode-vize grammar keeps TS generics and assertions inside attribute values", async () => {
   const { grammar, registry } = await loadVueTextMateGrammar();
 
