@@ -19,7 +19,7 @@ mod storage_tests {
             let pointer = map.replacement_ranges.as_ptr();
             for index in (0..count).rev() {
                 let start = index as u32 * 8 + 10;
-                map.record_replacement(start, start + 2, 4);
+                map.record_replacement(start, start + 2, 4, "'ab'");
                 assert_eq!(map.replacement_ranges.as_ptr(), pointer);
             }
             map.finish_descending_replacements();
@@ -42,10 +42,63 @@ pub struct RewriteResult {
     pub source_map: ImportSourceMap,
 }
 
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Default, Clone)]
 pub struct ImportSourceMap {
     adjustments: Vec<OffsetAdjustment>,
     replacement_ranges: Vec<ReplacementRange>,
+    /// The authored literal each replacement range replaced, quotes included,
+    /// in the same order as `replacement_ranges`: enough to restore the text
+    /// the rewriter read without keeping a second copy of it.
+    original_literals: Vec<String>,
+}
+
+/// Two maps are the same mapping when their offset rows agree; the authored
+/// literals only restore text and never change where an offset lands.
+impl PartialEq for ImportSourceMap {
+    fn eq(&self, other: &Self) -> bool {
+        self.adjustments == other.adjustments && self.replacement_ranges == other.replacement_ranges
+    }
+}
+
+impl Eq for ImportSourceMap {}
+
+impl ImportSourceMap {
+    /// Heap bytes the adjustment and replacement rows retain.
+    pub fn retained_bytes(&self) -> usize {
+        size_of_val(self.adjustments.as_slice())
+            + size_of_val(self.replacement_ranges.as_slice())
+            + size_of_val(self.original_literals.as_slice())
+            + self
+                .original_literals
+                .iter()
+                .map(|literal| literal.len())
+                .sum::<usize>()
+    }
+
+    /// The text the rewriter read, restored from `rewritten`: every replaced
+    /// range goes back to its authored text. `None` when nothing was
+    /// replaced, so the rewritten text is that text.
+    pub fn pre_rewrite_text(&self, rewritten: &str) -> Option<String> {
+        if self.replacement_ranges.is_empty() {
+            return None;
+        }
+        let mut restored = String::with_capacity(rewritten.len());
+        let mut cursor = 0usize;
+        for (range, literal) in self.replacement_ranges.iter().zip(&self.original_literals) {
+            // A module literal's recorded range is its content; the authored
+            // text kept its quotes, one byte either side, and the writer may
+            // have respelled both with the content. A raw range has no pad.
+            let content = (range.original_end - range.original_start) as usize;
+            let pad = literal.len().saturating_sub(content) / 2;
+            let start = (range.virtual_start as usize).saturating_sub(pad);
+            let end = (range.virtual_end as usize).saturating_add(pad);
+            restored.push_str(rewritten.get(cursor..start).unwrap_or_default());
+            restored.push_str(literal);
+            cursor = end;
+        }
+        restored.push_str(rewritten.get(cursor..).unwrap_or_default());
+        Some(restored)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -77,6 +130,7 @@ impl ImportSourceMap {
         Self {
             adjustments,
             replacement_ranges: Vec::new(),
+            original_literals: Vec::new(),
         }
     }
 
@@ -86,22 +140,33 @@ impl ImportSourceMap {
         Self {
             adjustments: Vec::new(),
             replacement_ranges: Vec::with_capacity(count),
+            original_literals: Vec::with_capacity(count),
         }
     }
 
-    pub(crate) fn record_replacement(&mut self, start: u32, end: u32, length: u32) {
+    /// `original_literal` is the authored literal, quotes included, that the
+    /// content range `start..end` belonged to.
+    pub(crate) fn record_replacement(
+        &mut self,
+        start: u32,
+        end: u32,
+        length: u32,
+        original_literal: &str,
+    ) {
         self.replacement_ranges.push(ReplacementRange {
             original_start: start,
             original_end: end,
             virtual_start: start,
             virtual_end: start.saturating_add(length),
         });
+        self.original_literals.push(String::from(original_literal));
     }
 
     /// The writer replaces literals right to left. Publish their actual virtual
     /// coordinates in source order, applying each shift at its exclusive end.
     pub(crate) fn finish_descending_replacements(&mut self) {
         self.replacement_ranges.reverse();
+        self.original_literals.reverse();
         let mut delta = 0_i64;
         for range in &mut self.replacement_ranges {
             let length = range.virtual_end - range.virtual_start;
@@ -172,19 +237,31 @@ impl ImportSourceMap {
             return self.clone();
         }
         if self.adjustments.is_empty() {
-            let mut map = Self::for_rewrites(self.replacement_ranges.len() + replacements.len());
-            for range in &self.replacement_ranges {
-                map.record_replacement(
-                    range.original_start,
-                    range.original_end,
-                    range.virtual_end - range.virtual_start,
-                );
+            // Replay every replacement right to left with its authored text:
+            // a star replacement replaced the one `*` byte.
+            let mut rows: Vec<(u32, u32, u32, &str)> = self
+                .replacement_ranges
+                .iter()
+                .zip(&self.original_literals)
+                .map(|(range, literal)| {
+                    (
+                        range.original_start,
+                        range.original_end,
+                        range.virtual_end - range.virtual_start,
+                        literal.as_str(),
+                    )
+                })
+                .chain(
+                    replacements
+                        .iter()
+                        .map(|(start, length)| (*start, start + 1, *length, "*")),
+                )
+                .collect();
+            rows.sort_by_key(|row| std::cmp::Reverse(row.0));
+            let mut map = Self::for_rewrites(rows.len());
+            for (start, end, length, literal) in rows {
+                map.record_replacement(start, end, length, literal);
             }
-            for (start, length) in replacements {
-                map.record_replacement(*start, start + 1, *length);
-            }
-            map.replacement_ranges
-                .sort_by_key(|range| std::cmp::Reverse(range.original_start));
             map.finish_descending_replacements();
             return map;
         }

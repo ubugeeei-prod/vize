@@ -356,7 +356,11 @@ impl ImportRewriter {
             if let Some(length) =
                 literal_rewrite::replace(&mut output, source, start, end, &new_path)
             {
-                source_map.record_replacement(start, end, length);
+                // `replace` admitted the literal only with a quote on each side.
+                let literal = source
+                    .get((start as usize).saturating_sub(1)..=end as usize)
+                    .unwrap_or_default();
+                source_map.record_replacement(start, end, length, literal);
             }
         }
         source_map.finish_descending_replacements();

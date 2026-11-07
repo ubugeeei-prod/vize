@@ -48,20 +48,19 @@ impl VirtualProject {
             .map(|file| {
                 let walked = walked_source_type(&file.virtual_path);
                 let module = self.walked_source(file);
-                let resolution = self
-                    .pre_rewrite_code
-                    .get(&file.virtual_path)
-                    .map(String::as_str)
-                    .or_else(|| self.original_content_for_virtual(&file.virtual_path));
+                let resolution = self.pre_rewrite_code(file).or_else(|| {
+                    self.original_content_for_virtual(&file.virtual_path)
+                        .map(std::borrow::Cow::Borrowed)
+                });
                 ArtifactFacts {
                     virtual_path: file.virtual_path.clone(),
                     registered: sorted(facts.collect_occurrences(&file.content, walked)),
-                    module: sorted(facts.collect_occurrences(module, walked)),
+                    module: sorted(facts.collect_occurrences(&module, walked)),
                     resolution: resolution
                         .zip(super::build::source_type_for_path(&file.virtual_path))
-                        .map(|(code, kind)| sorted(facts.collect_occurrences(code, kind)))
+                        .map(|(code, kind)| sorted(facts.collect_occurrences(&code, kind)))
                         .unwrap_or_default(),
-                    references: self.walked_references(file, module),
+                    references: self.walked_references(file, &module),
                 }
             })
             .collect();
@@ -79,8 +78,9 @@ impl VirtualProject {
     }
 
     /// The text the reachable walk collects a file's specifiers from.
-    pub(super) fn walked_source<'a>(&'a self, file: &'a VirtualFile) -> &'a str {
-        self.module_source(file).unwrap_or(&file.content)
+    pub(super) fn walked_source<'a>(&'a self, file: &'a VirtualFile) -> std::borrow::Cow<'a, str> {
+        self.module_source(file)
+            .unwrap_or_else(|| std::borrow::Cow::Borrowed(file.content.as_str()))
     }
 
     /// Triple-slash path edges: authored SFC text, not its projection, whose

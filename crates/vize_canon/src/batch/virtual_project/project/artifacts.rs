@@ -71,9 +71,12 @@ impl VirtualProject {
             self.original_contents
                 .insert(registered.file.virtual_path.clone(), original_content);
         }
-        if let Some(code) = registered.pre_rewrite_code {
-            self.pre_rewrite_code
-                .insert(registered.file.virtual_path.clone(), code);
+        if registered.pre_rewrite_code {
+            self.pre_rewrite_sources
+                .insert(registered.file.virtual_path.clone());
+        } else {
+            self.pre_rewrite_sources
+                .remove(&registered.file.virtual_path);
         }
         // Re-registration must refresh the classification, not accumulate it.
         self.unchecked_javascript_files
@@ -187,7 +190,7 @@ impl VirtualProject {
             );
             self.typed_router.import_files.remove(&path);
             self.original_contents.remove(&path);
-            self.pre_rewrite_code.remove(&path);
+            self.pre_rewrite_sources.remove(&path);
             self.unchecked_javascript_files.remove(&path);
             removed.push(path);
         }

@@ -73,7 +73,7 @@ pub(super) fn build_jsx_registered_file(
             virtual_path,
         },
         extra_virtual_files: Vec::new(),
-        pre_rewrite_code: Some(code),
+        pre_rewrite_code: true,
         authored_vue_ts_specifiers,
         passthrough_files: collect_passthrough_modules(
             path,
