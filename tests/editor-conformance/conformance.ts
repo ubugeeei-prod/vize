@@ -103,19 +103,43 @@ function matches(actual: any, pattern: any): boolean {
   return Object.entries(pattern).every(([key, value]) => matches(actual?.[key], value));
 }
 
-/** Code actions echo client diagnostics; published diagnostics remain server-owned. */
+/**
+ * Code actions echo client diagnostics; published diagnostics remain server-owned.
+ * The edit envelope follows the versioned-workspace-edit capability the client advertised.
+ */
 function actionExpectation(
   expected: any,
   request: Message,
   published: any[],
+  version: number | undefined,
+  versionedEdits: boolean,
 ): unknown[] | undefined {
   const supplied = request.params?.context?.diagnostics;
   if (!Array.isArray(expected) || !Array.isArray(supplied)) return undefined;
   const actions = [];
   for (const action of expected) {
     if (action == null || typeof action !== "object") return undefined;
+    let projected = action;
+    if (versionedEdits && action.edit?.changes != null) {
+      const uri = request.params?.textDocument?.uri;
+      if (
+        typeof uri !== "string" ||
+        version == null ||
+        Object.keys(action.edit.changes).length !== 1 ||
+        !Array.isArray(action.edit.changes[uri])
+      )
+        return undefined;
+      const { changes: _changes, ...edit } = action.edit;
+      projected = {
+        ...action,
+        edit: {
+          ...edit,
+          documentChanges: [{ textDocument: { uri, version }, edits: action.edit.changes[uri] }],
+        },
+      };
+    }
     if (!Array.isArray(action.diagnostics)) {
-      actions.push(action);
+      actions.push(projected);
       continue;
     }
     const diagnostics = [];
@@ -134,7 +158,7 @@ function actionExpectation(
       if (echo == null) return undefined;
       diagnostics.push(echo);
     }
-    actions.push({ ...action, diagnostics });
+    actions.push({ ...projected, diagnostics });
   }
   return actions;
 }
@@ -331,9 +355,28 @@ export function evaluate(scenario: Scenario, entries: Entry[], roots: string[]):
                   message.params?.uri === uri,
               )
               .at(-1)?.params?.diagnostics ?? [];
+          let version: number | undefined;
+          for (let index = 0; index < at; index += 1) {
+            const document = line.messages[index].params?.textDocument;
+            if (
+              line.directions[index] === "c2s" &&
+              document?.uri === uri &&
+              Number.isInteger(document.version)
+            )
+              version = document.version;
+          }
+          const initialize = line.messages.find((_, index) => fromClient(index, "initialize"));
+          const versionedEdits =
+            initialize?.params?.capabilities?.workspace?.workspaceEdit?.documentChanges === true;
           expected =
             step.method === "textDocument/codeAction"
-              ? actionExpectation(step.expect, line.messages[at], published)
+              ? actionExpectation(
+                  step.expect,
+                  line.messages[at],
+                  published,
+                  version,
+                  versionedEdits,
+                )
               : undefined;
           if (expected === undefined)
             return {

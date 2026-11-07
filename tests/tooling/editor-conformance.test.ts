@@ -468,6 +468,34 @@ test("code action echo preserves supplied metadata and rejects changed rule iden
   }
 });
 
+test("code actions honor the client's versioned workspace-edit capability", () => {
+  const versioned = idealTranscript();
+  const initialize = versioned.find((entry) => entry.msg?.method === "initialize")!.msg!;
+  initialize.params.capabilities = {
+    workspace: { workspaceEdit: { documentChanges: true } },
+  };
+  const { response } = codeActionExchange(versioned);
+  for (const action of response.result) {
+    const changes = action.edit.changes;
+    action.edit = {
+      documentChanges: Object.entries(changes).map(([uri, edits]) => ({
+        textDocument: { uri, version: 0 },
+        edits,
+      })),
+    };
+  }
+  assert.deepEqual(failures(versioned), []);
+
+  const stale = structuredClone(versioned);
+  codeActionExchange(stale).response.result[0].edit.documentChanges[0].textDocument.version = 1;
+  assert.deepEqual(failures(stale), ["code-action"]);
+
+  const unversioned = idealTranscript();
+  unversioned.find((entry) => entry.msg?.method === "initialize")!.msg!.params.capabilities =
+    initialize.params.capabilities;
+  assert.deepEqual(failures(unversioned), ["code-action"]);
+});
+
 test("corrupted canonical action documentation fails even when the client omits documentation", () => {
   const entries = idealTranscript();
   const { response, diagnostic } = codeActionExchange(entries);
