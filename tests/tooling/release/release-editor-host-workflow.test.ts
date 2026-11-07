@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import { writeReleaseZedSettings } from "../../editor-conformance/release-zed-settings.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
@@ -105,14 +109,23 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
   assert.equal(zed?.if, "inputs.release-workspace != ''");
 });
 
-test("release Zed smoke trusts its isolated worktree, opts Vize in, and retains evidence", () => {
+test("release Zed smoke trusts its isolated worktree, opts Vize in, and retains evidence", (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-settings-"));
+  t.after(() => fs.rmSync(temporary, { force: true, recursive: true }));
+  const config = path.join(temporary, "config");
+  const evidence = path.join(temporary, "evidence");
+  writeReleaseZedSettings(config, evidence);
+  const settings = JSON.parse(fs.readFileSync(path.join(config, "settings.json"), "utf8"));
+
+  assert.equal(settings.session?.trust_all_worktrees, true);
+  assert.deepEqual(settings.languages?.["Vue.js"]?.language_servers, ["vize", "..."]);
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(evidence, "zed-settings.json"), "utf8")),
+    settings,
+  );
   assert.match(releaseZed, /path\.join\(userData, "config"\)/);
-  assert.match(releaseZed, /path\.join\(config, "settings\.json"\)/);
   assert.doesNotMatch(releaseZed, /XDG_CONFIG_HOME/);
-  assert.match(releaseZed, /session: \{ trust_all_worktrees: true \}/);
-  assert.match(releaseZed, /"Vue\.js": \{/);
-  assert.match(releaseZed, /language_servers: \["vize", "\.\.\."\]/);
-  assert.match(releaseZed, /zed-settings\.json/);
+  assert.match(releaseZed, /writeReleaseZedSettings\(config, evidence\)/);
   assert.match(releaseZed, /if \(!passed\) retainFailureSession\(session, evidence\)/);
   assert.match(releaseZed, /path\.join\(evidence, "failure-session"\)/);
 });

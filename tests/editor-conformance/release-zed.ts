@@ -9,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
+import { writeReleaseZedSettings } from "./release-zed-settings.ts";
 import { readTranscript } from "./support/transcript.ts";
 
 const timeoutMs = 180_000;
@@ -27,29 +28,12 @@ async function main() {
   const shim = path.join(session, "bin");
   const installed = path.join(userData, "extensions", "installed", "vize");
   fs.mkdirSync(installed, { recursive: true });
-  fs.mkdirSync(config, { recursive: true });
   fs.mkdirSync(shim, { recursive: true });
   fs.cpSync(packaged, installed, { recursive: true });
   fs.writeFileSync(path.join(userData, "extensions", "installed", ".rescan"), "");
-  const settings = {
-    // The release workspace is created by this isolated CI job. Zed otherwise
-    // opens every fresh worktree in Restricted Mode and refuses to spawn the
-    // packaged language server before an interactive trust decision.
-    session: { trust_all_worktrees: true },
-    languages: {
-      "Vue.js": {
-        language_servers: ["vize", "..."],
-      },
-    },
-    auto_install_extensions: { vize: false },
-    auto_update_extensions: { vize: false },
-    telemetry: { diagnostics: false, metrics: false },
-  };
-  fs.writeFileSync(path.join(config, "settings.json"), `${JSON.stringify(settings)}\n`);
-  fs.writeFileSync(
-    path.join(evidence, "zed-settings.json"),
-    `${JSON.stringify(settings, null, 2)}\n`,
-  );
+  // The job owns this fresh workspace, so bypass Zed's interactive Restricted
+  // Mode prompt and allow the packaged language server to start.
+  writeReleaseZedSettings(config, evidence);
 
   const transcript = path.join(evidence, "zed.transcript.jsonl");
   fs.rmSync(transcript, { force: true });
