@@ -51,17 +51,10 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Disallow unused v-for and v-slot variables
+#[derive(Default)]
 pub struct NoUnusedVars {
-    /// Pattern for variables to ignore (default: starts with '_')
+    /// Optional pattern for variables to ignore.
     ignore_pattern: Option<String>,
-}
-
-impl Default for NoUnusedVars {
-    fn default() -> Self {
-        Self {
-            ignore_pattern: None,
-        }
-    }
 }
 
 impl NoUnusedVars {

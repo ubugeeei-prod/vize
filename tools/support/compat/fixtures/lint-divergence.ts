@@ -339,8 +339,7 @@ function findingOffset(finding: LintRecord, source: string): number | null {
   const lines = source.split("\n");
   if (finding.line > lines.length) return null;
   let offset = 0;
-  for (let line = 1; line < finding.line; line += 1)
-    offset += (lines[line - 1]?.length ?? 0) + 1;
+  for (let line = 1; line < finding.line; line += 1) offset += (lines[line - 1]?.length ?? 0) + 1;
   return offset + finding.column - 1;
 }
 
@@ -371,7 +370,10 @@ function isDirectThisEventsApiCall(finding: LintRecord, source: string): boolean
 function findingInsideTypeCastStyleBinding(finding: LintRecord, source: string): boolean {
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
-  const start = Math.max(source.lastIndexOf(":style", offset), source.lastIndexOf("v-bind:style", offset));
+  const start = Math.max(
+    source.lastIndexOf(":style", offset),
+    source.lastIndexOf("v-bind:style", offset),
+  );
   if (start < 0 || offset - start > 20_000) return false;
   const end = source.indexOf(">", offset);
   if (end < 0) return false;
@@ -455,8 +457,8 @@ function authoredForeignNativeOpening(finding: LintRecord, source: string): stri
 function findingPrecedesLocalRefDeclaration(finding: LintRecord, source: string): boolean {
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
-  const name = /'([^']*)'/.exec(finding.message)?.[1] ??
-    /^[A-Za-z_$][\w$]*/u.exec(source.slice(offset))?.[0];
+  const name =
+    /'([^']*)'/.exec(finding.message)?.[1] ?? /^[A-Za-z_$][\w$]*/u.exec(source.slice(offset))?.[0];
   if (name === undefined || !source.startsWith(name, offset)) return false;
   const scriptEnd = source.indexOf("</script>", offset),
     tail = source.slice(offset + name.length, scriptEnd < 0 ? source.length : scriptEnd),

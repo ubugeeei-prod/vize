@@ -390,8 +390,7 @@ function findingEndOffset(finding: LintRecord, source: string): number | null {
   const lines = source.split("\n");
   if (finding.endLine > lines.length) return null;
   let offset = 0;
-  for (let line = 1; line < finding.endLine; line++)
-    offset += (lines[line - 1]?.length ?? 0) + 1;
+  for (let line = 1; line < finding.endLine; line++) offset += (lines[line - 1]?.length ?? 0) + 1;
   return offset + Number(finding.endColumn) - 1;
 }
 
@@ -413,7 +412,10 @@ function isDirectThisEventsApiCall(finding: LintRecord, source: string): boolean
 function findingInsideTypeCastStyleBinding(finding: LintRecord, source: string): boolean {
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
-  const start = Math.max(source.lastIndexOf(":style", offset), source.lastIndexOf("v-bind:style", offset));
+  const start = Math.max(
+    source.lastIndexOf(":style", offset),
+    source.lastIndexOf("v-bind:style", offset),
+  );
   if (start < 0 || offset - start > 20_000) return false;
   const end = source.indexOf(">", offset);
   if (end < 0) return false;

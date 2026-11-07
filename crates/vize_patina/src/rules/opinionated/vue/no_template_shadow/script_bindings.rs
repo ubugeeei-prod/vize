@@ -29,13 +29,12 @@ pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
             collect_vue_objects(&parsed.program, source, &mut names);
         }
     }
-    if let Some(parsed) = scripts.script() {
-        if let Some(source) = descriptor
+    if let Some(parsed) = scripts.script()
+        && let Some(source) = descriptor
             .and_then(|descriptor| descriptor.script.as_ref())
             .map(|block| block.content.as_ref())
-        {
-            collect_vue_objects(&parsed.program, source, &mut names);
-        }
+    {
+        collect_vue_objects(&parsed.program, source, &mut names);
     }
     names
 }

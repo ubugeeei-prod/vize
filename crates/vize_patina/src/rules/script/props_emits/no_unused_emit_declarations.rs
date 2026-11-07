@@ -651,10 +651,9 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
         if let Expression::Identifier(callee) = &it.callee
             && callee.name.as_str() == self.emit_name
             && callee.span.start > self.after
+            && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
         {
-            if let Some(Argument::StringLiteral(literal)) = it.arguments.first() {
-                self.used.insert(CompactString::new(literal.value.as_str()));
-            }
+            self.used.insert(CompactString::new(literal.value.as_str()));
         }
         walk_call_expression(self, it);
     }
