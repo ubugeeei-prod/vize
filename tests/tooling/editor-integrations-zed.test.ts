@@ -116,6 +116,30 @@ test("zed art-vue config.toml declares comments, brackets, autoclose and tailwin
   assert.match(config, /^close_tag_node_name = "end_tag"$/m);
 });
 
+test("zed extension registers Vue.js for ordinary .vue files", () => {
+  const config = readRepoFile("editors/zed/languages/vue/config.toml");
+
+  assert.match(config, /^name = "Vue\.js"$/m);
+  assert.match(config, /^grammar = "vue"$/m);
+  assert.match(config, /^path_suffixes = \["vue"\]$/m);
+  assert.match(config, /^prettier_parser_name = "vue"$/m);
+
+  for (const filename of [
+    "brackets.scm",
+    "highlights.scm",
+    "indents.scm",
+    "injections.scm",
+    "outline.scm",
+    "overrides.scm",
+  ]) {
+    assert.equal(
+      fs.existsSync(path.join(root, "editors/zed/languages/vue", filename)),
+      true,
+      `missing zed vue language file: ${filename}`,
+    );
+  }
+});
+
 test("zed art-vue injections.scm routes every embedded region to the right language", () => {
   const injections = readRepoFile("editors/zed/languages/art-vue/injections.scm");
 

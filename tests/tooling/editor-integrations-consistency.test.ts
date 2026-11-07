@@ -36,6 +36,7 @@ test("VS Code and Zed agree on language ids, display names, and extensions", () 
   const vscode = readJson<VscodeManifest>("editors/vscode/package.json");
   const zedExtension = readText("editors/zed/extension.toml");
   const zedArtConfig = readText("editors/zed/languages/art-vue/config.toml");
+  const zedVueConfig = readText("editors/zed/languages/vue/config.toml");
 
   const vscodeLanguages = new Map(
     (vscode.contributes?.languages ?? []).map((language) => [language.id, language]),
@@ -58,12 +59,15 @@ test("VS Code and Zed agree on language ids, display names, and extensions", () 
   assert.match(zedArtConfig, /^path_suffixes = \["art\.vue"\]$/m);
   assert.equal(`.${"art.vue"}`, vscodeArt.extensions?.[0]);
 
-  // Vue identity: VS Code keeps the "Vue" alias; Zed's built-in language is "Vue.js".
+  // Vue identity: VS Code keeps the "Vue" alias; Zed uses the "Vue.js" display name.
   const vscodeVue = vscodeLanguages.get("vue");
   assert.ok(vscodeVue, "vscode should declare the vue language");
   assert.ok(vscodeVue.aliases?.includes("Vue"), "vscode vue should expose the 'Vue' display alias");
   assert.deepEqual(vscodeVue.extensions, [".vue"]);
   assert.match(zedExtension, /^"Vue.js" = "vue"$/m);
+  assert.match(zedVueConfig, /^name = "Vue\.js"$/m);
+  assert.match(zedVueConfig, /^path_suffixes = \["vue"\]$/m);
+  assert.equal(`.${"vue"}`, vscodeVue.extensions?.[0]);
 
   // Zed formats art-vue with the shared Vue prettier parser, keeping formatting
   // behavior consistent with the VS Code extension's Vue handling.
