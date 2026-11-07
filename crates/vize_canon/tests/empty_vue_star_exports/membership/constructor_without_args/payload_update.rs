@@ -6,6 +6,7 @@ use std::fs;
 mod checker_augmentations;
 mod constructor_emit_export;
 mod current_loose_emit;
+mod emit_member_infer;
 mod emit_overload_stall;
 mod emit_overload_window;
 mod emit_overloads;
@@ -181,6 +182,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     generic_event_specialization::retain_provenance(manifest);
     integrated_source::retain_provenance(manifest);
     listener_relations::retain_provenance(manifest);
+    emit_member_infer::retain_provenance(manifest);
 }
 
 #[cfg(test)]

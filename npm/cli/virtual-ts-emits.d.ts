@@ -5,6 +5,34 @@ import type {
   $EmitOwnedKeys,
   __EmitProps,
 } from "./virtual-ts.js" with { "resolution-mode": "import" };
+type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $EmitRequiredFields<T> = T extends unknown
+  ? {} extends T
+    ? Pick<T, never>
+    : Pick<T, $EmitRequiredKeys<T>>
+  : never;
+type $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+type $EmitFallthrough<F> =
+  $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown
+  ? F extends unknown
+    ? {
+        [K in keyof A]: K extends O
+          ? K extends keyof P
+            ? P[K]
+            : never
+          : K extends keyof F
+            ? F[K]
+            : K extends keyof P
+              ? P[K]
+              : unknown;
+      } & $EmitRequiredFields<P> &
+        $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>>
+    : never
+  : never;
+type $UnionConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (
+  component: unknown,
+) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
 type $LooseEmitProps = { readonly __vizeLooseListener: [] };
 type $DeferredEmitProps<E, P = __EmitProps<E>> = `on${Capitalize<string>}` extends keyof P
   ? $EmitIsWide<new () => { $emit: E }> extends true
@@ -39,7 +67,43 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
         component: new (props: P, ...args: any[]) => { $emit: E },
       ) => (props: P) => $DeferredEmitProps<E>
   : $LooseEmitPropsFactory<C>;
-type $EmitPropsFactory<C> =
+type $UnionToIntersection<U> = (U extends unknown ? (member: U) => void : never) extends (
+  member: infer I,
+) => void
+  ? I
+  : never;
+type $IsSingleComponent<C> =
+  (<T>() => T extends C ? 1 : 2) extends <T>() => T extends $UnionToIntersection<C> ? 1 : 2
+    ? true
+    : false;
+type $UnionEmit<All> = All extends new (...args: any[]) => { $emit: infer E } ? E : never;
+type $UnionNativeEmitPropsFactory<C, E> = C extends new (
+  props: infer P,
+  ...args: any[]
+) => { $emit: any }
+  ? C extends { readonly __vizeComponentMarker: true }
+    ? $UnionConstructorEmitPropsFactory<
+        P,
+        E,
+        C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
+        $EmitOwnedKeys<C>
+      >
+    : (component: unknown) => (props: P) => $DeferredEmitProps<E>
+  : C extends (props: infer P, ...args: any[]) => any
+    ? $IsAny<P> extends true
+      ? (component: unknown) => (props: {}) => $LooseEmitProps
+      : (component: unknown) => (props: P) => {}
+    : never;
+type $UnionEmitPropsFactory<C, All = C> = C extends { __vizeResolveEmitProps?: infer F }
+  ? F extends (...args: any[]) => any
+    ? (component: unknown) => F
+    : $UnionNativeEmitPropsFactory<C, $UnionEmit<All>>
+  : C extends { __vizeResolveProps?: infer F }
+    ? F extends (...args: any[]) => any
+      ? (component: unknown) => F
+      : $UnionNativeEmitPropsFactory<C, $UnionEmit<All>>
+    : $UnionNativeEmitPropsFactory<C, $UnionEmit<All>>;
+type $MemberEmitPropsFactory<C> =
   $IsAny<C> extends true
     ? (component: C) => (props: {}) => $LooseEmitProps
     : C extends { __vizeResolveEmitProps?: infer F }
@@ -51,4 +115,6 @@ type $EmitPropsFactory<C> =
           ? (component: C) => F
           : $NativeEmitPropsFactory<C>
         : $NativeEmitPropsFactory<C>;
+type $EmitPropsFactory<C> =
+  $IsSingleComponent<C> extends true ? $MemberEmitPropsFactory<C> : $UnionEmitPropsFactory<C>;
 export type { $NativeEmitPropsFactory, $EmitPropsFactory };

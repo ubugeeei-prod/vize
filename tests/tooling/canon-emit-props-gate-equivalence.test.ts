@@ -273,13 +273,20 @@ void test("the oracle reads the generator's own text", () => {
 void test("the gate mirrors every $EmitPropsFactory route", () => {
   const factory = inference
     .split("\n")
-    .find((line) => line.startsWith("type $EmitPropsFactory<C> ="));
+    .find((line) => line.startsWith("type $MemberEmitPropsFactory<C> ="));
   assert.ok(factory);
   // The shared module declares the same factory for hoisted modules.
   for (const name of [
     "$EmitPropsFactory",
+    "$MemberEmitPropsFactory",
+    "$UnionEmitPropsFactory",
+    "$UnionNativeEmitPropsFactory",
+    "$UnionEmit",
+    "$IsSingleComponent",
+    "$UnionToIntersection",
     "$NativeEmitPropsFactory",
     "$ConstructorEmitPropsFactory",
+    "$UnionConstructorEmitPropsFactory",
     "$LooseEmitPropsFactory",
     "$EmitIsWide",
   ]) {
@@ -294,7 +301,7 @@ void test("the gate mirrors every $EmitPropsFactory route", () => {
   }
   // A generic resolver reads the props (`true`); every other route does not.
   const mirror = factory
-    .slice("type $EmitPropsFactory<C> = ".length, -1)
+    .slice("type $MemberEmitPropsFactory<C> = ".length, -1)
     .replace(
       "$IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps",
       "0 extends (1 & C) ? false",
@@ -480,7 +487,8 @@ void test("a gated result still feeds the listener args, so the call stays", () 
   const read = {
     sfc: "[value: number]",
     unmarked: "[value: boolean]",
-    specificUnion: "[value: number]",
+    // A heterogeneous union carries every member's payload, not the first member's.
+    specificUnion: "[value: boolean] | [value: number]",
   };
   const discarded = ["loose", "columns"];
   for (const name of [...Object.keys(read), ...discarded]) {
