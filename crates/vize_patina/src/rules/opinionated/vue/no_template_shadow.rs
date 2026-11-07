@@ -131,4 +131,20 @@ const items = []
         assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
         assert!(result.diagnostics[0].message.contains("item"));
     }
+
+    #[test]
+    fn component_registration_name_is_not_a_template_value_binding() {
+        let result = create_linter().lint_sfc(
+            r#"<template><notification v-for="notification in notifications" /></template>
+<script>
+import notification from './notification'
+export default {
+  components: { notification },
+  data: () => ({ notifications: [] })
+}
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
 }

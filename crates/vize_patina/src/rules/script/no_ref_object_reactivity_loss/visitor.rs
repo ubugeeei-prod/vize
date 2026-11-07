@@ -38,6 +38,23 @@ impl Visitor<'_, '_> {
         }
     }
 
+    pub(super) fn assign(&mut self, name: &str, kind: Kind) {
+        if let Some(frame) = self
+            .frames
+            .iter_mut()
+            .rev()
+            .find(|frame| frame.contains_key(name))
+        {
+            frame.insert(CompactString::from(name), kind);
+        }
+    }
+
+    pub(super) fn assigned_kind(&self, expression: &Expression<'_>) -> Option<Kind> {
+        self.bag_depth(expression)
+            .map(Kind::Bag)
+            .or_else(|| self.ref_depth(expression).map(Kind::Ref))
+    }
+
     fn lookup(&self, name: &str) -> Option<Kind> {
         self.frames
             .iter()

@@ -394,6 +394,7 @@ fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
                 "script/no-use-computed-property-like-method"
             }
             "vue/require-valid-default-prop" => "script/require-valid-default-prop",
+            "vue/require-default-prop" => "script/require-default-prop",
             "vue/require-prop-types" => "script/require-prop-types",
             "vue/no-computed-properties-in-data" => "script/no-computed-properties-in-data",
             "vue/no-deprecated-delete-set" => "script/no-deprecated-delete-set",

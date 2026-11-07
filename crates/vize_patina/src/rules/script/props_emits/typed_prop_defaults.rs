@@ -37,6 +37,7 @@ pub(crate) struct SetupPropsDeclaration<'a> {
     pub(crate) defaults: Vec<PropDefault>,
     pub(crate) uses_destructure: bool,
     pub(crate) uses_with_defaults: bool,
+    pub(crate) has_unknown_defaults: bool,
 }
 
 impl SetupPropsDeclaration<'_> {
@@ -147,10 +148,11 @@ fn declaration_from_expression<'a>(
     }
 
     let mut defaults = Vec::new();
+    let mut has_unknown_defaults = false;
     if let Some(wrapper) = with_defaults
         && let Some(Argument::ObjectExpression(object)) = wrapper.arguments.get(1)
     {
-        collect_object_defaults(object, &mut defaults);
+        has_unknown_defaults = collect_object_defaults(object, &mut defaults);
     }
     let uses_destructure = matches!(binding, Some(BindingPattern::ObjectPattern(_)));
     if let Some(BindingPattern::ObjectPattern(pattern)) = binding {
@@ -177,12 +179,18 @@ fn declaration_from_expression<'a>(
         defaults,
         uses_destructure,
         uses_with_defaults: with_defaults.is_some(),
+        has_unknown_defaults,
     })
 }
 
-fn collect_object_defaults(object: &ObjectExpression<'_>, defaults: &mut Vec<PropDefault>) {
+fn collect_object_defaults(
+    object: &ObjectExpression<'_>,
+    defaults: &mut Vec<PropDefault>,
+) -> bool {
+    let mut has_unknown_defaults = false;
     for property in &object.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
+            has_unknown_defaults = true;
             continue;
         };
         if property.computed {
@@ -196,6 +204,7 @@ fn collect_object_defaults(object: &ObjectExpression<'_>, defaults: &mut Vec<Pro
             span: property.value.span(),
         });
     }
+    has_unknown_defaults
 }
 
 fn expression_call<'a>(expression: &'a Expression<'a>) -> Option<&'a CallExpression<'a>> {

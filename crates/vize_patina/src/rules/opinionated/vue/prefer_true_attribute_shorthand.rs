@@ -64,6 +64,12 @@ impl Rule for PreferTrueAttributeShorthand {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
+        // A bare attribute on <slot> is a string-valued slot prop, not a
+        // component Boolean prop. Rewriting `:open="true"` to `open` would
+        // therefore change the value exposed to the slot consumer.
+        if element.tag_type == ElementType::Slot {
+            return;
+        }
         if !matches!(directive.name, "bind" | "model") {
             return;
         }
@@ -109,6 +115,16 @@ mod tests {
     fn allows_native_boolean_true_binding() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input :disabled="true" />"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_true_bindings_on_slot_outlets() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<slot :button="true" :open="true" />"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 

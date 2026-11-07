@@ -270,6 +270,7 @@ fn is_skipped_statement(statement: &Statement<'_>) -> bool {
     match statement {
         Statement::ImportDeclaration(_)
         | Statement::TSEnumDeclaration(_)
+        | Statement::TSGlobalDeclaration(_)
         | Statement::TSModuleDeclaration(_)
         | Statement::TSInterfaceDeclaration(_)
         | Statement::TSTypeAliasDeclaration(_)

@@ -56,6 +56,10 @@ impl NoRootVIf {
         match child {
             TemplateChildNode::Comment(_) => true,
             TemplateChildNode::Text(text) => text.content.trim().is_empty(),
+            // eslint-plugin-vue defines this rule around the root element.
+            // Root interpolations do not provide an alternate element for the
+            // conditional root and therefore do not make it safe.
+            TemplateChildNode::Interpolation(_) => true,
             _ => false,
         }
     }
@@ -162,6 +166,15 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_single_element_root_with_a_sibling_interpolation() {
+        let result = create_linter().lint_template(
+            r#"<div v-if="show">content</div>{{ diagnostic }}"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

@@ -13,7 +13,6 @@ use vize_l0::{CompactString, FxHashSet};
 pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
     let mut names = FxHashSet::default();
     if let Some(analysis) = ctx.analysis() {
-        names.extend(analysis.bindings.bindings.keys().cloned());
         names.extend(analysis.macros.props().iter().map(|prop| prop.name.clone()));
     }
     let Some(scripts) = ctx.sfc_scripts() else {

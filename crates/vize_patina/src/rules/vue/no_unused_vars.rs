@@ -97,13 +97,7 @@ impl Rule for NoUnusedVars {
             if self.should_ignore(unused.name.as_str()) {
                 continue;
             }
-            if matches!(
-                unused.context,
-                UnusedVarContext::VForValue
-                    | UnusedVarContext::VForKey
-                    | UnusedVarContext::VForIndex
-            ) && same_element_directive_uses(root, unused.name.as_str(), unused.offset)
-            {
+            if same_element_directive_uses(root, unused.name.as_str(), unused.offset) {
                 continue;
             }
 
@@ -164,12 +158,12 @@ fn children_contain_same_element_use(
     for child in children {
         match child {
             TemplateChildNode::Element(element) => {
-                if element_owns_v_for_binding(element, offset)
+                if element_owns_template_binding(element, offset)
                     && element.props.iter().any(|prop| {
                         let PropNode::Directive(directive) = prop else {
                             return false;
                         };
-                        directive.name != "for"
+                        !matches!(directive.name, "for" | "slot")
                             && directive
                                 .exp
                                 .as_ref()
@@ -207,12 +201,18 @@ fn children_contain_same_element_use(
     false
 }
 
-fn element_owns_v_for_binding(element: &ElementNode<'_>, offset: u32) -> bool {
-    element.props.iter().any(|prop| {
-        matches!(prop, PropNode::Directive(directive)
-            if directive.name == "for"
+fn element_owns_template_binding(element: &ElementNode<'_>, offset: u32) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Directive(directive) => {
+            matches!(directive.name, "for" | "slot")
                 && directive.loc.span.start <= offset
-                && offset < directive.loc.span.end)
+                && offset < directive.loc.span.end
+        }
+        PropNode::Attribute(attribute) => {
+            matches!(attribute.name, "slot-scope" | "scope")
+                && attribute.loc.span.start <= offset
+                && offset < attribute.loc.span.end
+        }
     })
 }
 
@@ -317,5 +317,43 @@ mod tests {
             "{:?}",
             result.diagnostics
         );
+    }
+
+    #[test]
+    fn same_element_slot_prop_directive_counts_as_usage() {
+        let source = r#"<template>
+  <FormKit v-slot="{ state: { loading }, unused }" :label="loading ? 'Wait' : 'Go'" />
+</template>"#;
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["vue/no-unused-vars".into()]))
+            .lint_sfc(source, "Probe.vue");
+        let messages: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-vars")
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
+        assert!(messages[0].contains("unused"), "{messages:?}");
+    }
+
+    #[test]
+    fn vue2_slot_scope_and_unparenthesized_v_for_report_unused_aliases() {
+        let source = r#"<template>
+  <Child><template slot-scope="{ used, unused }">{{ used }}</template></Child>
+  <div v-for="item,index in items">{{ item }}</div>
+</template>"#;
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["vue/no-unused-vars".into()]))
+            .lint_sfc(source, "Probe.vue");
+        let messages: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-vars")
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(messages.len(), 2, "{:?}", result.diagnostics);
+        assert!(messages.iter().any(|message| message.contains("unused")));
+        assert!(messages.iter().any(|message| message.contains("index")));
     }
 }

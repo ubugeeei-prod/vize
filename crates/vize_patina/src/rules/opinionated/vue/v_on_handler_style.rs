@@ -89,25 +89,19 @@ impl Rule for VOnHandlerStyle {
             return;
         }
 
-        // Moving a handler that closes over the current/parent v-for scope to
-        // a component method would lose those template-local bindings. The one
-        // safe conversion is a zero-argument identifier call; an inline
-        // function is also convertible when it forwards every parameter.
-        let references_template_scope = simple
-            .is_some_and(|exp| references_v_for_variable(ctx, exp))
-            || text_references_v_for_variable(ctx, expr);
-        if references_template_scope {
-            let inline_function = simple.is_some_and(retained_inline_function)
-                || simple.is_none() && is_inline_function_text(expr);
-            let safely_convertible = if inline_function {
-                simple.is_some_and(inline_function_forwards_parameters)
-                    || simple.is_none() && text_inline_function_forwards_parameters(expr)
-            } else {
-                is_zero_argument_identifier_call(expr)
-            };
-            if !safely_convertible {
-                return;
-            }
+        // Moving an inline function that closes over the current/parent v-for
+        // scope to a component method would lose those template-local
+        // bindings. An inline handler can instead be wrapped in a function, so
+        // it remains reportable.
+        if simple.is_some_and(retained_inline_function)
+            && !simple.is_some_and(inline_function_forwards_parameters)
+            && simple.is_some_and(|exp| references_v_for_variable(ctx, exp))
+            || simple.is_none()
+                && is_inline_function_text(expr)
+                && !text_inline_function_forwards_parameters(expr)
+                && text_references_v_for_variable(ctx, expr)
+        {
+            return;
         }
 
         // The parser location includes whitespace inside the quotes, while
@@ -242,17 +236,6 @@ fn retained_method_reference(expression: &SimpleExpressionNode<'_>) -> bool {
 
 fn is_inline_function_text(expr: &str) -> bool {
     expr.contains("=>") || expr.trim_start().starts_with("function")
-}
-
-fn is_zero_argument_identifier_call(expr: &str) -> bool {
-    let expr = expr.trim().trim_end_matches(';').trim();
-    let Some(callee) = expr.strip_suffix("()") else {
-        return false;
-    };
-    let callee = callee.trim();
-    !callee.is_empty()
-        && callee.chars().next().is_some_and(is_ident_start)
-        && callee.chars().skip(1).all(is_ident_continue)
 }
 
 fn text_references_v_for_variable(ctx: &LintContext<'_>, expr: &str) -> bool {
@@ -585,11 +568,11 @@ mod tests {
     }
 
     #[test]
-    fn allows_inline_handler_that_uses_v_for_variables() {
+    fn warns_on_inline_handler_that_uses_v_for_variables() {
         let result = create_linter().lint_template(
             r#"<div v-for="item in items"><button @click="save(item)" /></div>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 }

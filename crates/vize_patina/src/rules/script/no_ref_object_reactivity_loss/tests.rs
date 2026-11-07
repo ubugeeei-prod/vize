@@ -114,6 +114,23 @@ unknown.value
 }
 
 #[test]
+fn tracks_a_ref_factory_assigned_after_declaration() {
+    assert_copies(
+        r#"
+import { shallowRef } from 'vue'
+function ensure(file) {
+  let blobRef = cache.get(file.id)
+  if (!blobRef) {
+    blobRef = shallowRef(file)
+  }
+  return blobRef.value
+}
+"#,
+        1,
+    );
+}
+
+#[test]
 fn stays_opt_in_until_same_scope_value_reads_are_precise() {
     let meta = crate::linter::script_rules::builtin_script_rules()
         .into_iter()

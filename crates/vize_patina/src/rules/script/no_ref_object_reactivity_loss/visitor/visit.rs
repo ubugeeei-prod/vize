@@ -1,6 +1,7 @@
 use super::{Kind, Visitor};
 use oxc_ast::ast::{
-    CallExpression, Expression, Function, Program, Statement, TSAsExpression, VariableDeclarator,
+    AssignmentTarget, CallExpression, Expression, Function, Program, Statement, TSAsExpression,
+    VariableDeclarator,
 };
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{
@@ -118,6 +119,11 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
         self.visit_assignment_target(&it.left);
         self.writing = writing;
         self.visit_expression(&it.right);
+        if let AssignmentTarget::AssignmentTargetIdentifier(identifier) = &it.left
+            && let Some(kind) = self.assigned_kind(&it.right)
+        {
+            self.assign(identifier.name.as_str(), kind);
+        }
     }
 
     fn visit_update_expression(&mut self, it: &oxc_ast::ast::UpdateExpression<'a>) {

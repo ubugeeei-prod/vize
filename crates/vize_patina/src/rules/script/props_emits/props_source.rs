@@ -111,6 +111,24 @@ pub(super) fn collect_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSo
 /// Collect runtime props from every statically recognized component object,
 /// including local `defineComponent({...})` values, plus setup macros.
 pub(super) fn collect_all_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
+    let mut sources = collect_component_props(program);
+    let mut seen = sources
+        .iter()
+        .map(props_source_start)
+        .collect::<FxHashSet<_>>();
+    let mut setup = Vec::new();
+    collect_define_props_sources(program, &mut setup);
+    for source in setup {
+        if seen.insert(props_source_start(&source)) {
+            sources.push(source);
+        }
+    }
+    sources
+}
+
+/// Collect props from every statically recognized Options API component,
+/// excluding setup macros so typed-default rules can correlate those once.
+pub(super) fn collect_component_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
     let bindings = collect_object_bindings(program);
     let mut sources = Vec::new();
     let mut seen = FxHashSet::default();
@@ -118,13 +136,6 @@ pub(super) fn collect_all_runtime_props<'a>(program: &'a Program<'a>) -> Vec<Pro
         let Some(source) = option_props_source(options, &bindings) else {
             continue;
         };
-        if seen.insert(props_source_start(&source)) {
-            sources.push(source);
-        }
-    }
-    let mut setup = Vec::new();
-    collect_define_props_sources(program, &mut setup);
-    for source in setup {
         if seen.insert(props_source_start(&source)) {
             sources.push(source);
         }

@@ -208,6 +208,21 @@ const props = withDefaults(defineProps<{
 }
 
 #[test]
+fn with_defaults_spread_does_not_claim_a_default_is_missing() {
+    let source = r#"
+interface Props {
+  title?: string
+  count?: number
+}
+const props = withDefaults(defineProps<Props>(), {
+  ...importedDefaults,
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_runtime_custom_constructors_and_shorthand_are_ignored_like_upstream() {
     let source = r#"
 const custom = {}
@@ -236,6 +251,19 @@ export default defineComponent({
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_local_define_component_props() {
+    let source = r#"
+const Child = defineComponent({
+  props: {
+    name: String
+  }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
 }
 
 #[test]

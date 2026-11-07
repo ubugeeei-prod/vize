@@ -55,7 +55,7 @@ use oxc_span::Span;
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
-use super::props_source::{PropDescriptor, PropsSource, collect_options_props};
+use super::props_source::{PropDescriptor, PropsSource, collect_component_props};
 use super::typed_prop_defaults::collect_setup_props_with_types;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -102,7 +102,7 @@ impl ScriptRule for RequireDefaultProp {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if let Some(source) = collect_options_props(program) {
+        for source in collect_component_props(program) {
             for prop in source.object_props() {
                 check_prop(prop, false, offset, result);
             }
@@ -123,7 +123,11 @@ impl ScriptRule for RequireDefaultProp {
             }
             if declaration.uses_destructure || declaration.uses_with_defaults {
                 for prop in &declaration.typed {
-                    if prop.required || prop.boolean || declaration.has_default(&prop.name) {
+                    if prop.required
+                        || prop.boolean
+                        || declaration.has_unknown_defaults
+                        || declaration.has_default(&prop.name)
+                    {
                         continue;
                     }
                     report(&prop.name, prop.span, prop.offset, result);

@@ -1,1 +1,1 @@
-<template><Widget><template slot-scope="slotProps">ok</template></Widget></template>
+<template><Widget><template slot-scope="slotProps">{{ slotProps }}</template></Widget></template>

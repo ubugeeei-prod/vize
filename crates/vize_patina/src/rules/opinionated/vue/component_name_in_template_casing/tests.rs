@@ -63,6 +63,26 @@ export default { components: { Popover } }
 }
 
 #[test]
+fn script_setup_can_use_components_imported_by_its_sibling_module_script() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    let source = r#"<template><va-checkbox /></template>
+<script lang="ts">
+import { VaCheckbox } from './va-checkbox'
+</script>
+<script lang="ts" generic="Item extends Record<string, any>" setup>
+defineProps<{ item: Item }>()
+</script>"#;
+    let result = Linter::with_registry(registry).lint_sfc(source, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/component-name-in-template-casing")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_configured_kebab_case_allows_kebab_tags() {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(

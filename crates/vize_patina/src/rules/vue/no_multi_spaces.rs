@@ -21,7 +21,7 @@ use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::ir::ByteRange;
 use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-multi-spaces",
@@ -50,6 +50,17 @@ impl Rule for NoMultiSpaces {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         self.check_element(ctx, &MarkupElement::new(element));
     }
+
+    fn check_interpolation<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        interpolation: &InterpolationNode<'a>,
+    ) {
+        self.check_expression_range(
+            ctx,
+            ByteRange::new(interpolation.loc.span.start, interpolation.loc.span.end),
+        );
+    }
 }
 
 impl MarkupRule for NoMultiSpaces {
@@ -59,6 +70,10 @@ impl MarkupRule for NoMultiSpaces {
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         self.check_element(ctx.lint(), element);
+    }
+
+    fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
+        self.check_expression_range(ctx.lint(), range);
     }
 }
 
@@ -174,6 +189,17 @@ impl NoMultiSpaces {
                 self.check_gap(ctx, (start + run_start) as u32, (start + cursor) as u32);
             }
         }
+    }
+
+    fn check_expression_range(&self, ctx: &mut LintContext<'_>, range: ByteRange) {
+        let Some(expression) = ctx
+            .source
+            .get(range.start as usize..range.end as usize)
+            .map(str::as_bytes)
+        else {
+            return;
+        };
+        self.check_expression(ctx, range.start as usize, expression);
     }
 }
 
@@ -335,5 +361,21 @@ mod tests {
             (result.diagnostics[0].start, result.diagnostics[0].end),
             (start, start + 2)
         );
+    }
+
+    #[test]
+    fn reports_multiple_spaces_in_interpolations_and_slot_patterns() {
+        for source in [
+            r#"<template><p>{{ value ?  'yes' : 'no' }}</p></template>"#,
+            r#"<template><p>{{  }}</p></template>"#,
+            r#"<template><Child><template #item="{ row,  expanded }">{{ row }}</template></Child></template>"#,
+        ] {
+            let result = create_linter().lint_sfc(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 1,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 }

@@ -278,6 +278,8 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   } catch {
     return null;
   }
+  if (/<script\b[^>]*\blang\s*=\s*(?:["']uts["']|uts)(?:\s|>)/u.test(source))
+    return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
@@ -294,11 +296,6 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
     source.split("\n")[finding.line - 1]?.includes("v-text")
   )
     return "Patina checks each authored text segment surrounding a v-text code example; the upstream visitor drops those adjacent segments.";
-  if (
-    finding.ruleId === "vue/html-self-closing" &&
-    /<script\b[^>]*\blang\s*=\s*(?:["']uts["']|uts)(?:\s|>)/u.test(source)
-  )
-    return "Patina preserves template linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run this rule.";
   if (
     finding.ruleId === "script/return-in-computed-property" &&
     ((/\bcomputed\s*\(/u.test(source) &&
@@ -330,7 +327,8 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
         (match) =>
           match.index !== undefined &&
           offset - match.index <= 20_000 &&
-          new RegExp(`\\bprops\\s*:\\s*${match[1]}\\b`, "u").test(source.slice(offset)),
+          (new RegExp(`\\bprops\\s*:\\s*${match[1]}\\b`, "u").test(source.slice(offset)) ||
+            (match[1] === "props" && /\bprops\s*[,}]/u.test(source.slice(offset)))),
       )
     )
       return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound prop-contract coverage.";
@@ -346,6 +344,13 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
     !isDirectThisEventsApiCall(finding, source)
   )
     return "Patina follows proven Vue-instance aliases and wrapped or optional callees; eslint-plugin-vue only recognizes an unwrapped, non-optional call directly on this.";
+  if (
+    finding.ruleId === "script/one-component-per-file" &&
+    /<script\b[^>]*\bsetup\b[^>]*>/iu.test(source) &&
+    /\bdefineOptions\s*\(/u.test(source) &&
+    /\bdefineComponent\s*\(/u.test(source)
+  )
+    return "Patina counts both the script-setup SFC described by defineOptions and its local defineComponent declaration; eslint-plugin-vue misses these script-setup component definitions.";
   if (
     finding.ruleId === "vue/no-static-inline-styles" &&
     findingInsideTypeCastStyleBinding(finding, source)
@@ -579,6 +584,13 @@ function findingPrecedesLocalRefDeclaration(finding: LintRecord, source: string)
   ).test(tail);
 }
 
+function hasModuleAndSetupScripts(source: string): boolean {
+  return (
+    /<script\b(?=[^>]*>)(?![^>]*\bsetup\b)[^>]*>/iu.test(source) &&
+    /<script\b[^>]*\bsetup\b[^>]*>/iu.test(source)
+  );
+}
+
 function baselineIntentionalReason(finding: LintRecord, cwd: string): string | null {
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
@@ -612,6 +624,24 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     pugTemplateEmitsDeclaredEvent(finding, source)
   )
     return "Patina reads authored Pug template expressions and sees this declared event being emitted; eslint-plugin-vue does not expose that Pug expression to this rule.";
+  if (
+    finding.ruleId === "vue/no-deprecated-filter" &&
+    /\bas\s+['"][^'"]+['"]\s*\|\s*['"][^'"]+['"]/u.test(authoredFindingText(finding, source) ?? "")
+  )
+    return "vue-eslint-parser mistakes a TypeScript cast union in this directive expression for Vue 2 filter syntax; Patina preserves the authored TypeScript expression.";
+  const shiftedScriptSetupToken = {
+    "script/prefer-use-template-ref": "ref",
+    "script/define-props-destructuring": "defineProps",
+    "vue/no-setup-props-reactivity-loss": "props",
+  }[finding.ruleId];
+  if (
+    shiftedScriptSetupToken !== undefined &&
+    hasModuleAndSetupScripts(source) &&
+    !new RegExp(`\\b${shiftedScriptSetupToken}\\b`, "u").test(
+      authoredFindingText(finding, source) ?? "",
+    )
+  )
+    return "eslint-plugin-vue shifts this second-script diagnostic by the preceding module-script length; Patina preserves the authored SFC coordinates.";
   if (
     finding.ruleId === "vue/attribute-hyphenation" &&
     authoredForeignNativeOpening(finding, source) !== null
@@ -902,6 +932,57 @@ const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = 
       return slot !== undefined && containsSpan(negative, positive) ? `slot:${slot}` : null;
     },
   },
+  "script/no-unused-emit-declarations": {
+    reason:
+      "patina reports the declared event name while eslint-plugin-vue reports the complete emit declaration entry.",
+    subject(positive, negative) {
+      const event = emitDeclarationName(positive.message);
+      return event !== null && event === emitDeclarationName(negative.message)
+        ? `event:${event}`
+        : null;
+    },
+  },
+  "script/no-computed-properties-in-data": {
+    reason:
+      "patina reports the computed property identifier while eslint-plugin-vue includes the this receiver.",
+    subject(positive, negative) {
+      return positive.line === negative.line &&
+        positive.endLine === negative.endLine &&
+        negative.column <= positive.column &&
+        negative.endColumn === positive.endColumn
+        ? `computed-read:${positive.line}:${positive.column}`
+        : null;
+    },
+  },
+  "vue/no-use-v-else-with-v-for": {
+    reason:
+      "both tools report the same authored element; their recovered end differs after nested template branches.",
+    subject(positive, negative) {
+      return positive.line === negative.line &&
+        positive.column === negative.column &&
+        containsSpan(positive, negative)
+        ? `element:${positive.line}:${positive.column}`
+        : null;
+    },
+  },
+  "script/prefer-import-from-vue": {
+    reason:
+      "patina reports the complete import source literal while eslint-plugin-vue excludes the opening quote.",
+    subject(positive, negative) {
+      return containsSpan(positive, negative)
+        ? `expression:${negative.line}:${negative.column}`
+        : null;
+    },
+  },
+  "vue/no-dupe-v-else-if": {
+    reason:
+      "patina reports the complete v-else-if condition while eslint-plugin-vue reports only the duplicated subexpression.",
+    subject(positive, negative) {
+      return containsSpan(positive, negative)
+        ? `expression:${negative.line}:${negative.column}`
+        : null;
+    },
+  },
   "vue/no-unused-components": {
     reason:
       "patina reports the SFC/script anchor while eslint-plugin-vue reports the component registration property.",
@@ -984,6 +1065,14 @@ function shiftedScriptSetupSubject(positive: Compared, negative: Compared): stri
     right = quoted(negative.message);
   if (left !== undefined && right !== undefined && left !== right) return null;
   return left === undefined ? `line-shift:${positive.column}` : `binding:${left}`;
+}
+
+function emitDeclarationName(message: string): string | null {
+  return (
+    /(?:The ['`]|^['`])([^'`]+)(?:['`] event|['`] is)/u.exec(
+      message.replace(/^\[[^\]]*\]\s*/u, ""),
+    )?.[1] ?? null
+  );
 }
 
 function ruleLocationDivergence(

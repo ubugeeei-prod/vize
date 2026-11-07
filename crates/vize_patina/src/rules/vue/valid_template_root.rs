@@ -92,7 +92,7 @@ impl Rule for ValidTemplateRoot {
         };
 
         let has_src = template.src.is_some() || template.attrs.contains_key(":src");
-        let has_inline_content = !template.content.trim().is_empty();
+        let has_inline_content = has_rendered_content(&template.content);
         let (message, start, end) = if has_src && has_inline_content {
             (
                 ctx.t("vue/valid-template-root.non_empty_src"),
@@ -113,6 +113,33 @@ impl Rule for ValidTemplateRoot {
             LintDiagnostic::error(META.name, message, start, end)
                 .with_help(ctx.t("vue/valid-template-root.help")),
         );
+    }
+}
+
+fn has_rendered_content(mut content: &str) -> bool {
+    loop {
+        let Some(comment_start) = content.find("<!--") else {
+            return !content.trim().is_empty();
+        };
+        let Some(before_comment) = content.get(..comment_start) else {
+            return true;
+        };
+        if !before_comment.trim().is_empty() {
+            return true;
+        }
+        let Some(after_open) = content
+            .get(comment_start..)
+            .and_then(|rest| rest.strip_prefix("<!--"))
+        else {
+            return true;
+        };
+        let Some(relative_end) = after_open.find("-->") else {
+            return true;
+        };
+        let Some(after_comment) = after_open.get(relative_end + 3..) else {
+            return true;
+        };
+        content = after_comment;
     }
 }
 
@@ -226,6 +253,15 @@ mod tests {
         let result = create_linter().lint_sfc("<template></template>", "test.vue");
         assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
         assert_eq!(result.diagnostics[0].rule_name, "vue/valid-template-root");
+    }
+
+    #[test]
+    fn test_invalid_comment_only_sfc_template() {
+        let result = create_linter().lint_sfc(
+            "<template>\n  <!-- Renderless component -->\n</template>",
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]
