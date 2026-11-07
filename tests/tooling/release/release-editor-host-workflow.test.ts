@@ -137,7 +137,7 @@ test("release Zed profile changes run in the actual pinned editor before merge",
     jobs: Record<string, Job>;
   };
   assert.ok(host.on.pull_request.paths.includes("tests/editor-conformance/release-zed*"));
-  const serialized = JSON.stringify(host.jobs.host.steps);
+  const serialized = JSON.stringify(host.jobs.zed.steps);
   assert.match(serialized, /cargo build --profile ci -p vize/);
   assert.match(serialized, /zed-linux-x86_64\.tar\.gz/);
   assert.match(serialized, /node tests\/editor-conformance\/release-zed\.ts/);

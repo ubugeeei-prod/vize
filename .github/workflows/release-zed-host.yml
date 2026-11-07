@@ -16,7 +16,7 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
-  host:
+  zed:
     name: Packaged extension in actual Zed
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
