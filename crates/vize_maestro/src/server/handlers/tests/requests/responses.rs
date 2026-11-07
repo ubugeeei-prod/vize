@@ -1,6 +1,56 @@
 use super::*;
 use tower_lsp::lsp_types::CompletionList;
 
+#[cfg(feature = "native")]
+#[test]
+fn exact_navigation_cache_hits_do_not_wait_for_the_native_transaction() {
+    crate::runtime::block_on(async {
+        let service = service_with_options(serde_json::json!({
+            "definition": true,
+            "references": true,
+            "typecheck": true,
+            "crossFile": true,
+            "lint": false,
+            "ecosystem": false,
+        }));
+        let server = service.inner();
+        let uri = uri("CachedNavigation.vue");
+        open_vue(server, &uri, SAMPLE);
+        server.state.set_corsa_disk_watcher_registered();
+
+        let position = Position::new(0, 0);
+        let location = Location::new(uri.clone(), range());
+        let definition = Some(DefResponse::Scalar(location.clone()));
+        let references = Some(vec![location]);
+        let stamp = server.state.corsa_request_stamp();
+        server
+            .state
+            .cache_native_definition(&uri, position, stamp, definition.clone());
+        server
+            .state
+            .cache_native_references(&uri, position, true, stamp, references.clone());
+
+        let _native = server.state.corsa_request_scope().await;
+        let returned_definition = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.goto_definition(definition_params(&uri)),
+        )
+        .await
+        .expect("an exact definition cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_definition, definition);
+
+        let returned_references = crate::runtime::timeout(
+            std::time::Duration::from_secs(3),
+            server.references(references_params(&uri)),
+        )
+        .await
+        .expect("an exact references cache hit must not wait for the held transaction")
+        .unwrap();
+        assert_eq!(returned_references, references);
+    });
+}
+
 #[test]
 fn references_preserve_structural_results_without_starting_a_disabled_checker() {
     for cross_file in [false, true] {

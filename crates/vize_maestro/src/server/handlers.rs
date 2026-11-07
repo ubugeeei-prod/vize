@@ -226,6 +226,16 @@ impl LanguageServer for MaestroServer {
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
         let server = self.for_pos(&params.text_document_position_params).await;
+        #[cfg(feature = "native")]
+        if server.state.lsp_features().definition {
+            let request = &params.text_document_position_params;
+            let uri = &request.text_document.uri;
+            let position = request.position;
+            let stamp = server.state.corsa_request_stamp();
+            if let Some(response) = server.state.cached_native_definition(uri, position, stamp) {
+                return server.authored_response(Ok(response));
+            }
+        }
         server
             .native_request(async { navigation::goto_definition(&server, params).await })
             .await
@@ -275,6 +285,21 @@ impl LanguageServer for MaestroServer {
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
         let server = self.for_pos(&params.text_document_position).await;
+        #[cfg(feature = "native")]
+        if server.state.lsp_features().references {
+            let request = &params.text_document_position;
+            let uri = &request.text_document.uri;
+            let position = request.position;
+            let include_declaration = params.context.include_declaration;
+            let stamp = server.state.corsa_request_stamp();
+            if let Some(response) =
+                server
+                    .state
+                    .cached_native_references(uri, position, include_declaration, stamp)
+            {
+                return server.authored_response(Ok(response));
+            }
+        }
         server
             .workspace_native_request(|| references::references(&server, params.clone()))
             .await
