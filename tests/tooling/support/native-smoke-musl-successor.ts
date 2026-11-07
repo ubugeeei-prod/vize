@@ -13,7 +13,7 @@ const predecessorMatrixStart =
   "        # containerized musl tarball staging is added.\n" +
   "        platform:\n";
 
-/** Admit the exact #11505 musl job while retaining the complete earlier workflow. */
+/** Admit the exact #11505 musl job and named release packages while retaining the earlier workflow. */
 export function assertMuslFreshInstallSuccessor(historical: string, current: string): void {
   const predecessor = packedSmokeTimingSuccessor(historical);
   const relocations = [
@@ -24,6 +24,10 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
   for (const [relocated, historicalPath] of relocations) {
     assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
     sealed = sealed.replace(relocated, historicalPath);
+  }
+  for (const packagePath of ["npm/compose/router"] as const) {
+    assert.equal(sealed.split(packagePath).length, 2, `one admitted ${packagePath} package path`);
+    sealed = sealed.replace(` ${packagePath}`, "");
   }
   assert.equal(
     createHash("sha256").update(sealed).digest("hex"),

@@ -73,7 +73,7 @@ export function createRouter<const Routes extends readonly RouteDefinition[]>(
       if (!initial) {
         const result: NavigationResult<Routes> = {
           status: "error",
-          error: new Error(`No route matches ${String(location)}`),
+          error: new Error(`No route matches ${locationLabel(location)}`),
         };
         publish({ ...state, status: "error", pending: undefined, error: result.error });
         return result;
@@ -104,7 +104,8 @@ export function createRouter<const Routes extends readonly RouteDefinition[]>(
           }
           if (isRouteLocation<Routes>(guarded)) {
             const next: ResolvedLocation<Routes> | undefined = resolveLocation(matcher, guarded);
-            if (!next) throw new Error(`Redirect does not match a route: ${String(guarded)}`);
+            if (!next)
+              throw new Error(`Redirect does not match a route: ${locationLabel(guarded)}`);
             resolved = next;
             redirected = true;
             publish({ ...state, status: "pending", pending: resolved.match, error: undefined });
@@ -189,6 +190,14 @@ function isNamedLocation<Routes extends readonly RouteDefinition[]>(
   location: RouteLocation<Routes>,
 ): location is NamedRouteLocation<Routes> {
   return typeof location === "object" && !(location instanceof URL) && "name" in location;
+}
+
+function locationLabel<Routes extends readonly RouteDefinition[]>(
+  location: RouteLocation<Routes>,
+): string {
+  if (typeof location === "string") return location;
+  if (location instanceof URL) return location.href;
+  return location.name;
 }
 
 function isRouteLocation<Routes extends readonly RouteDefinition[]>(

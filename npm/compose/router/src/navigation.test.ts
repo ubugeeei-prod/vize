@@ -40,7 +40,7 @@ void test("runs loaders and commits history, focus, scroll and announcements", a
     initial: "/",
     history: {
       push: (url, leaving) => {
-        effects.push(`push:${url}:${leaving.scroll}:${leaving.focus}`);
+        effects.push(`push:${url}:${String(leaving.scroll)}:${String(leaving.focus)}`);
       },
       replace: (url) => {
         effects.push(`replace:${url}`);
