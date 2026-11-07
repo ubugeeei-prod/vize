@@ -5,8 +5,8 @@ mod namespace;
 
 use crate::markup::{Component, LexOptions, Lexer};
 use namespace::NamespaceSink;
-use vize_l0::ErrorCode;
 use vize_l0::{Allocator, Vec};
+use vize_l0::{ErrorCode, TemplateSyntaxMode};
 
 use crate::build::build;
 use crate::event::{Event, Recorder};
@@ -24,6 +24,9 @@ pub use crate::dialect::vue3::surface::{
 pub struct SurfaceParseOptions {
     /// Accept Vue's experimental `//` comments inside opening tag attrs.
     pub experimental_in_tag_comments: bool,
+    /// File-wide recovery policy. Native nonstandard admission remains typed;
+    /// carrying the selection here prevents a second parser-only axis.
+    pub syntax: TemplateSyntaxMode,
 }
 
 /// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps

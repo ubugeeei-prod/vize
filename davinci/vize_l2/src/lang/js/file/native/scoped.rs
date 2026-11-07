@@ -2,10 +2,7 @@
 
 use super::{NativeTemplateFile, NativeTemplateIssue, NativeTemplateView};
 use crate::file::FileArtifact;
-use vize_l0::{
-    Span,
-    config::{VueDialect, VueVersion},
-};
+use vize_l0::{Span, config::VueVersion};
 use vize_l1::{
     container::vue::{AdmittedDescriptor, DescriptorObservation},
     css::{EmptyClassStyle, StyleIssue, StyleSyntax},
@@ -108,8 +105,7 @@ impl<'arena> NativeTemplateFile<'arena> {
         let whole = Span::new(0, original.source().len() as u32);
         let reject = |kind| NativeScopedTemplateIssue { span: whole, kind };
         let options = original.options();
-        if options.version != VueVersion::V3
-            || options.dialect != VueDialect::Vue
+        if !original.dialect().is_standard_vue_component(VueVersion::V3)
             || options.template != SurfaceParseOptions::default()
         {
             return Err(reject(Kind::Profile));

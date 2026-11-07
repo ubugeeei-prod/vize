@@ -119,3 +119,36 @@ test("dialect modules, test code and module declarations are exempt; code is not
   assert.equal(referencesDialect("if version != VueVersion::V3 {}\n"), true);
   assert.equal(referencesDialect("fn f(caps: LegacyCaps) {}\n"), true);
 });
+
+test("one L0 file descriptor owns every input axis and legacy types only re-export it", () => {
+  const owner = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l0/src/dialect/file.rs"),
+    "utf8",
+  );
+  for (const field of ["version", "framework", "syntax", "profile", "lang"])
+    assert.match(owner, new RegExp(`\\b${field}:`, "u"), `missing FileDialect.${field}`);
+
+  const relief = fs.readFileSync(path.join(repoRoot, "crates/vize_relief/src/options.rs"), "utf8");
+  assert.match(relief, /pub use vize_l0::dialect::TemplateSyntaxMode;/u);
+  assert.doesNotMatch(relief, /pub enum TemplateSyntaxMode/u);
+
+  const descriptor = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l1/src/container/vue/descriptor.rs"),
+    "utf8",
+  );
+  assert.match(descriptor, /dialect: FileDialect/u);
+  assert.match(descriptor, /options\.resolve\(state\.lang\(\)\)/u);
+
+  const document = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l1/src/markup/document.rs"),
+    "utf8",
+  );
+  assert.match(document, /FileDialect::document\(configured, root\.source\(\), syntax, lang\)/u);
+
+  const target = fs.readFileSync(
+    path.join(repoRoot, "davinci/vize_l4/src/targets/ts/vue.rs"),
+    "utf8",
+  );
+  assert.match(target, /\.dialect\(\)[\s\S]*\.is_standard_vue_component/u);
+  assert.doesNotMatch(target, /options\.(?:version|dialect)/u);
+});

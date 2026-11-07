@@ -53,6 +53,7 @@ mod namespace;
 pub use namespace::Namespace;
 pub mod config;
 pub mod dialect;
+pub use dialect::{FileDialect, Lang, ProfileKind, TemplateSyntaxMode};
 pub mod directive;
 pub mod dom_tag_config;
 pub mod expression_guard;

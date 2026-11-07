@@ -38,6 +38,7 @@ fn historical_profile_is_explicit_and_existing_vue2_and_modern_entries_are_uncha
             DescriptorOptions {
                 template: SurfaceParseOptions {
                     experimental_in_tag_comments: true,
+                    ..SurfaceParseOptions::default()
                 },
                 ..options()
             },

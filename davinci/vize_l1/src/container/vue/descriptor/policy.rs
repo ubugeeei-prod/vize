@@ -65,6 +65,10 @@ impl<'a> Policy<'a> {
                 options.template.experimental_in_tag_comments,
                 Code::UnsupportedOptions,
             ),
+            (
+                options.template.syntax != vize_l0::TemplateSyntaxMode::Standard,
+                Code::UnsupportedOptions,
+            ),
         ] {
             if unsupported {
                 state.issue(code, None, Span::new(0, 0));
@@ -85,6 +89,12 @@ impl<'a> Policy<'a> {
         if self.ordinary.is_none() && self.setup.is_none() && self.template.is_none() {
             self.issue(Code::MissingComponentBlock, None, Span::new(0, 0));
         }
+    }
+
+    pub(super) fn lang(&self) -> Lang {
+        self.ordinary
+            .or(self.setup)
+            .map_or(Lang::Js, |selected| selected.lang)
     }
 
     pub(super) fn record(

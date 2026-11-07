@@ -34,6 +34,7 @@ fn every_wrong_profile_refuses_without_changing_the_modern_entry() {
             DescriptorOptions {
                 template: SurfaceParseOptions {
                     experimental_in_tag_comments: true,
+                    ..SurfaceParseOptions::default()
                 },
                 ..options()
             },

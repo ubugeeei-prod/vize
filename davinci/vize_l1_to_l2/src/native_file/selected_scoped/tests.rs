@@ -259,6 +259,7 @@ fn nondefault_public_profile_and_uncompleted_file_cannot_grant_scoped_authority(
         DescriptorOptions {
             template: SurfaceParseOptions {
                 experimental_in_tag_comments: true,
+                ..SurfaceParseOptions::default()
             },
             ..options()
         },

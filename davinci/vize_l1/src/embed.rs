@@ -12,6 +12,7 @@ pub use source::{
     DecodeMap, DecodeSegment, DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value,
     prepare_vue_interpolation_in,
 };
+pub use vize_l0::Lang;
 
 /// The syntactic role selected by the markup dialect, independently of language.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,16 +25,6 @@ pub enum Shape {
     SlotParams,
     /// Composite syntax; the dialect builds its constituent language pieces.
     FilterChain,
-}
-
-/// Host language resolved once from the file's container syntax.
-///
-/// File resolution and mismatched script-language diagnostics remain
-/// unimplemented under #6836. This enum does not select an emitter.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Lang {
-    Js,
-    Ts,
 }
 
 /// Independent language and syntactic role of one embedded source.

@@ -1,10 +1,31 @@
 use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, NativeDocument};
 use crate::markup::{LexErrorCode, ProfileKind, parse_component};
 use alloc::vec::Vec;
-use vize_l0::{Allocator, SourceRoot, Span};
+use vize_l0::config::VueDialect;
+use vize_l0::{Allocator, Lang, SourceRoot, Span, TemplateSyntaxMode};
 
 fn root(source: &str) -> SourceRoot<'_> {
     SourceRoot::new(source).expect("small original source")
+}
+
+#[test]
+fn document_resolves_one_descriptor_before_the_sole_lex() {
+    let source = r#"<script src="petite-vue"></script><main v-scope></main>"#;
+    let allocator = Allocator::default();
+    let detected = NativeDocument::lex_in(&allocator, root(source));
+    assert!(detected.dialect().is_petite_document());
+    assert_eq!(detected.dialect().lang(), Lang::Js);
+
+    let configured = NativeDocument::lex_in_with_dialect(
+        &allocator,
+        root(source),
+        Some(VueDialect::Vue),
+        TemplateSyntaxMode::Strict,
+        Lang::Ts,
+    );
+    assert_eq!(configured.dialect().framework(), VueDialect::Vue);
+    assert_eq!(configured.dialect().syntax(), TemplateSyntaxMode::Strict);
+    assert_eq!(configured.dialect().lang(), Lang::Ts);
 }
 
 #[test]

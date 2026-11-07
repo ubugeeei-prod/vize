@@ -5,7 +5,8 @@
 //! neither a Component nor caller-built token vectors can mint them. Browser
 //! tree policies belong to the bounded [`DocumentHtmlStructure`] provider.
 
-use vize_l0::{Allocator, SourceRoot, Span, Vec};
+use vize_l0::config::VueDialect;
+use vize_l0::{Allocator, FileDialect, Lang, SourceRoot, Span, TemplateSyntaxMode, Vec};
 
 use super::{Document, LexErrorCode, LexOptions, Lexer, ProfileKind, QuoteType};
 use crate::markup::entity::DecodedEntity;
@@ -114,6 +115,7 @@ pub struct DocumentLexicalError {
 pub struct NativeDocument<'a> {
     allocator: &'a Allocator,
     root: SourceRoot<'a>,
+    dialect: FileDialect,
     events: Vec<'a, Event>,
     errors: Vec<'a, DocumentLexicalError>,
     normal_end: bool,
@@ -124,6 +126,7 @@ impl core::fmt::Debug for NativeDocument<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("NativeDocument")
             .field("root", &self.root)
+            .field("dialect", &self.dialect)
             .field("events", &self.events)
             .field("errors", &self.errors)
             .field("normal_end", &self.normal_end)
@@ -137,6 +140,26 @@ impl<'a> NativeDocument<'a> {
     /// The checked root supplies the source limit and base-zero coordinates.
     #[must_use]
     pub fn lex_in(allocator: &'a Allocator, root: SourceRoot<'a>) -> Self {
+        Self::lex_in_with_dialect(
+            allocator,
+            root,
+            None,
+            TemplateSyntaxMode::Standard,
+            Lang::Js,
+        )
+    }
+
+    /// Resolve the standalone selectors once and retain that descriptor beside
+    /// the sole Document-profile lexer run.
+    #[must_use]
+    pub fn lex_in_with_dialect(
+        allocator: &'a Allocator,
+        root: SourceRoot<'a>,
+        configured: Option<VueDialect>,
+        syntax: TemplateSyntaxMode,
+        lang: Lang,
+    ) -> Self {
+        let dialect = FileDialect::document(configured, root.source(), syntax, lang);
         let mut events = Vec::new_in(&allocator);
         let mut errors = Vec::new_in(&allocator);
         let recorder = sink::Recorder {
@@ -155,6 +178,7 @@ impl<'a> NativeDocument<'a> {
         Self {
             allocator,
             root,
+            dialect,
             events,
             errors,
             normal_end,
@@ -165,6 +189,12 @@ impl<'a> NativeDocument<'a> {
     #[must_use]
     pub fn root(&self) -> SourceRoot<'a> {
         self.root
+    }
+
+    /// The complete file descriptor selected before lexing.
+    #[must_use]
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
 
     #[must_use]

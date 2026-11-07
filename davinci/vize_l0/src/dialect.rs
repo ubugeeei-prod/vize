@@ -10,7 +10,9 @@
 
 use serde::{Deserialize, Serialize};
 
+mod file;
 mod scan;
+pub use file::{FileDialect, Lang, ProfileKind, TemplateSyntaxMode};
 use scan::{skip_while, slice};
 
 /// The Vue template dialect a document is written in.

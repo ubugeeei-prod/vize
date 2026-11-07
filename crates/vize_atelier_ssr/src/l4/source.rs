@@ -43,6 +43,7 @@ fn lower_and_emit_plain(
         source,
         SurfaceParseOptions {
             experimental_in_tag_comments: request.options.experimental_in_tag_comments,
+            ..SurfaceParseOptions::default()
         },
     );
     let lowered = match request.frozen {
@@ -160,6 +161,7 @@ fn lower_and_emit<C: CaptureSink>(
         source,
         SurfaceParseOptions {
             experimental_in_tag_comments: request.options.experimental_in_tag_comments,
+            ..SurfaceParseOptions::default()
         },
     );
     capture.page(Level::L1, "parse", || {

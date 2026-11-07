@@ -4,7 +4,7 @@
 //! owner or its admitted views. No JavaScript/template syntax is parsed here.
 
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, Vec};
+use vize_l0::{Allocator, FileDialect, SourceBlock, SourceRoot, Span, Vec};
 
 use super::super::{Container, ContainerError};
 use crate::{embed::Lang, markup::parse::SurfaceParseOptions};
@@ -31,6 +31,15 @@ pub struct DescriptorOptions {
     pub version: VueVersion,
     pub dialect: VueDialect,
     pub template: SurfaceParseOptions,
+}
+
+impl DescriptorOptions {
+    /// Collapse the compatibility input fields and the container-selected
+    /// language into the one descriptor retained for this file.
+    #[must_use]
+    pub const fn resolve(self, lang: Lang) -> FileDialect {
+        FileDialect::component(self.version, self.dialect, self.template.syntax, lang)
+    }
 }
 
 /// Why the first bounded descriptor family cannot admit this original input.
@@ -131,6 +140,7 @@ pub struct DescriptorObservation<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
+    dialect: FileDialect,
     issues: Vec<'a, DescriptorIssue>,
     ordinary: Option<Selection<'a>>,
     setup: Option<Selection<'a>>,
@@ -150,6 +160,10 @@ impl<'a> DescriptorObservation<'a> {
     }
     pub fn options(&self) -> DescriptorOptions {
         self.options
+    }
+    /// The complete file dialect resolved once during descriptor observation.
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
     pub fn issues(&self) -> &[DescriptorIssue] {
         &self.issues
@@ -234,10 +248,11 @@ impl<'o, 'a> AdmittedDescriptor<'o, 'a> {
     }
     /// Matching real script roles determine template language; no scripts means JS.
     pub fn template_lang(self) -> Lang {
-        self.owner
-            .ordinary
-            .or(self.owner.setup)
-            .map_or(Lang::Js, |selected| selected.lang)
+        self.owner.dialect.lang()
+    }
+    /// The same resolved descriptor every downstream level consumes.
+    pub const fn dialect(self) -> FileDialect {
+        self.owner.dialect
     }
 }
 
@@ -319,10 +334,12 @@ pub(super) fn observe<'a>(
         },
     );
     state.finish();
+    let dialect = options.resolve(state.lang());
     DescriptorObservation {
         container,
         root: state.root,
         options,
+        dialect,
         issues: state.issues,
         ordinary: state.ordinary,
         setup: state.setup,

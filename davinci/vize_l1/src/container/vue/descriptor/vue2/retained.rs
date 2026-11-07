@@ -4,7 +4,7 @@ use super::super::{DescriptorIssue, DescriptorOptions, TemplateNamePair, Templat
 use super::{Vue2DescriptorObservation, Vue2DescriptorRefusal};
 use crate::container::Container;
 use crate::dialect::vue2::surface::ComponentExpressionPool;
-use vize_l0::{SourceBlock, SourceRoot, Span, Vec};
+use vize_l0::{FileDialect, SourceBlock, SourceRoot, Span, Vec};
 
 /// The original complete envelope and Component, with owning expression slots.
 /// Fields are private; no capture, replacement component or caller frame can
@@ -73,6 +73,7 @@ pub struct Vue2DescriptorExpressionPool<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
+    dialect: FileDialect,
     issues: Vec<'a, DescriptorIssue>,
     selection: Option<TemplateSelection<'a>>,
     component: Option<ComponentExpressionPool<'a>>,
@@ -89,6 +90,9 @@ impl<'a> Vue2DescriptorExpressionPool<'a> {
     }
     pub fn options(&self) -> DescriptorOptions {
         self.options
+    }
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
     pub fn container(&self) -> &Container<'a> {
         &self.container
@@ -148,6 +152,7 @@ impl<'a> Vue2DescriptorObservation<'a> {
             container,
             root,
             options,
+            dialect,
             issues,
             selection,
             component,
@@ -158,6 +163,7 @@ impl<'a> Vue2DescriptorObservation<'a> {
             container,
             root,
             options,
+            dialect,
             issues,
             selection,
             component: component.map(|component| component.into_expression_pool()),

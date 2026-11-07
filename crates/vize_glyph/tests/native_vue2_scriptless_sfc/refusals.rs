@@ -63,6 +63,7 @@ fn dedicated_native_options_preserve_every_historical_profile_refusal() {
             vize_l1::container::vue::DescriptorOptions {
                 template: SurfaceParseOptions {
                     experimental_in_tag_comments: true,
+                    ..SurfaceParseOptions::default()
                 },
                 ..NativeVue2SfcOptions::default().descriptor
             },

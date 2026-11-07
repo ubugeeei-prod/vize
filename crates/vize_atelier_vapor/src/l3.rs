@@ -181,6 +181,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
                 source,
                 SurfaceParseOptions {
                     experimental_in_tag_comments: options.experimental_in_tag_comments,
+                    ..SurfaceParseOptions::default()
                 },
             )
         );

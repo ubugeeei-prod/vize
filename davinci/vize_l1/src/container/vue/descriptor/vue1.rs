@@ -3,7 +3,7 @@
 use super::{DescriptorIssue, DescriptorOptions, TemplateSelection};
 use crate::container::{Container, ContainerError};
 use crate::dialect::vue1::surface::ComponentParse;
-use vize_l0::{SourceRoot, Vec};
+use vize_l0::{FileDialect, SourceRoot, Vec};
 
 mod observe;
 mod view;
@@ -73,6 +73,7 @@ pub struct Vue1DescriptorObservation<'a> {
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
+    dialect: FileDialect,
     issues: Vec<'a, DescriptorIssue>,
     selection: Option<TemplateSelection<'a>>,
     component: Option<ComponentParse<'a>>,
@@ -87,6 +88,9 @@ impl<'a> Vue1DescriptorObservation<'a> {
     }
     pub fn options(&self) -> DescriptorOptions {
         self.options
+    }
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
     pub fn container(&self) -> &Container<'a> {
         &self.container

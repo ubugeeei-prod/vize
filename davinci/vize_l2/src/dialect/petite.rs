@@ -1,7 +1,7 @@
 //! Petite-vue meaning derived from one completed L1 Document owner.
 
 use oxc_ast::ast::Expression;
-use vize_l0::{Allocator, Span, Vec};
+use vize_l0::{Allocator, FileDialect, Span, Vec};
 use vize_l1::{
     embed::{DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value},
     markup::{
@@ -165,6 +165,12 @@ impl<'o, 'a> PetiteDocument<'o, 'a> {
     #[must_use]
     pub const fn owner(&self) -> &'o NativeDocument<'a> {
         self.owner
+    }
+
+    /// The same once-resolved descriptor retained by the L1 document owner.
+    #[must_use]
+    pub const fn dialect(&self) -> FileDialect {
+        self.owner.dialect()
     }
 
     /// Resolve one authored callback frame without rescanning earlier directives.

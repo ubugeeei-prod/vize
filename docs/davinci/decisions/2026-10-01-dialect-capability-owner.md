@@ -71,10 +71,31 @@ three fields into a second type. The Vue 3 legalization fast path remains the
 same three-field predicate, while newly added dialect facts become immediately
 available on both sides of the L1→L2 boundary without a synchronization test.
 
+### 2026-11-07 per-file descriptor follow-up
+
+`vize_l0::FileDialect` is now the single resolved value for the input axes a
+Davinci file carries: Vue version, Vue versus petite-vue, standard/strict/
+quirks recovery, document versus component markup, and JS versus TS embedded
+language. `TemplateSyntaxMode`, `ProfileKind` and `Lang` have the same L0 owner;
+Relief and L1 retain source-compatible re-exports of those exact types.
+
+The original Vue SFC descriptor resolves the value after its sole container
+walk determines the real script language and retains it beside the original
+owner. The original Document owner resolves configured or structurally
+detected petite-vue before its sole lexer run. Downstream scoped-file and L4
+projection admission read that retained value instead of independently
+matching version and framework selectors. Existing `DescriptorOptions` fields
+remain a compatibility input surface; they are collapsed once and are not a
+second retained descriptor.
+
+Quirks is therefore an explicit descriptor feature, not a parser-only bool.
+The currently bounded native SFC admissions continue to reject nonstandard
+recovery with their existing `UnsupportedOptions` result, so this ownership
+change does not broaden syntax admission or alter emitted bytes. The legacy
+compiler consumes the same moved enum through its old public path.
+
 ## Remaining work under #6841
 
-- Resolve one file descriptor across Vue version, petite, quirks, markup and
-  embedded language axes; quirks remains a dialect.
 - Move all dialect-specific legalization policy out of generic conversion
   modules, with a gate enforcing core isolation.
 - Complete per-level residual dialect-op semantics and L4 target options.

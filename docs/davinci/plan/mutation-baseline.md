@@ -89,12 +89,17 @@ above; cargo-mutants writes it to `mutants.out/` (`missed.txt`,
 | `vize_carton/src/corsa_resolver.rs:503` | `find_in_npm_global_root`                  | `replace find_in_npm_global_root -> Option<PathBuf> with Some(Default::default())`                        |
 | `vize_carton/src/corsa_resolver.rs:507` | `find_in_npm_global_root`                  | `delete ! in find_in_npm_global_root`                                                                     |
 
-### vize_relief — 7 missed
+### vize_l0 — 2 missed
 
 | location                                    | function                                 | mutation                                                   |
 | ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| `vize_relief/src/options.rs:51`             | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with true`  |
-| `vize_relief/src/options.rs:51`             | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with false` |
+| `vize_l0/src/dialect/file.rs`               | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with true`  |
+| `vize_l0/src/dialect/file.rs`               | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with false` |
+
+### vize_relief — 5 missed
+
+| location                                    | function                                 | mutation                                                   |
+| ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
 | `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `replace <impl Drop for IfBranchNode<'_>>::drop with ()`   |
 | `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `delete ! in <impl Drop for IfBranchNode<'_>>::drop`       |
 | `vize_relief/src/relief/control_flow.rs:97` | `<impl Drop for ForNode<'_>>::drop`      | `delete ! in <impl Drop for ForNode<'_>>::drop`            |
@@ -122,9 +127,9 @@ downstream crates (which the default test scope deliberately excludes):
   five are the bump-allocator surface (`with_capacity`/`reset`/`Deref`) —
   used by every downstream crate, asserted by none of carton's own tests.
 
-`vize_relief`'s 7 misses are two coherent gaps: five are `Drop` impls of
-arena nodes (`IfBranchNode`, `ForNode`, `ElementNode`) — deleting the drop
-body changes nothing any test observes — and two are
+`vize_relief`'s five misses and `vize_l0`'s two misses are two coherent gaps:
+five are `Drop` impls of arena nodes (`IfBranchNode`, `ForNode`, `ElementNode`)
+— deleting the drop body changes nothing any test observes — and two are
 `TemplateSyntaxMode::is_quirks` surviving both polarities, i.e. no test
 distinguishes quirks-mode from standard-mode behavior.
 
