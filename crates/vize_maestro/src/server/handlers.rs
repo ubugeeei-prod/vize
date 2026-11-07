@@ -1,6 +1,7 @@
 //! LSP protocol handler implementations.
 
 mod formatting;
+mod hover;
 mod inlay_hint;
 mod linked_editing;
 mod properties;
@@ -144,9 +145,24 @@ impl LanguageServer for MaestroServer {
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let server = self.for_pos(&params.text_document_position_params).await;
-        if let Some(response) = server.local_hover_response(&params)? {
-            return server.authored_response(Ok(response));
+        if crate::utils::is_jsx_path(
+            params
+                .text_document_position_params
+                .text_document
+                .uri
+                .path(),
+        ) {
+            if let Some(response) = server.local_hover_response(&params)? {
+                return server.authored_response(Ok(response));
+            }
+            return server.native_request(server.hover_request(params)).await;
         }
+        let ctx = match server.prepare_hover(&params)? {
+            hover::PreparedHover::Response(response) => {
+                return server.authored_response(Ok(response));
+            }
+            hover::PreparedHover::Backend(ctx) => ctx,
+        };
         #[cfg(feature = "native")]
         {
             let request = &params.text_document_position_params;
@@ -160,7 +176,10 @@ impl LanguageServer for MaestroServer {
                 return server.authored_response(Ok(response));
             }
         }
-        server.native_request(server.hover_request(params)).await
+        let position = params.text_document_position_params.position;
+        server
+            .native_request(server.prepared_hover_request(ctx, position))
+            .await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
