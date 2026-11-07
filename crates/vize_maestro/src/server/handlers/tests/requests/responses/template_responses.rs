@@ -3,14 +3,15 @@ use super::*;
 #[cfg(feature = "native")]
 #[test]
 fn component_prop_colon_completion_does_not_wait_for_a_type_project() {
-    let root = tempfile::tempdir().unwrap();
-    let dialog = root.path().join("dialog");
-    let text_field = root.path().join("text-field");
-    std::fs::create_dir_all(&dialog).unwrap();
-    std::fs::create_dir_all(&text_field).unwrap();
-    std::fs::write(
-        text_field.join("afs-text-field.vue"),
-        r#"<script setup lang="ts">
+    crate::runtime::block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let dialog = root.path().join("dialog");
+        let text_field = root.path().join("text-field");
+        std::fs::create_dir_all(&dialog).unwrap();
+        std::fs::create_dir_all(&text_field).unwrap();
+        std::fs::write(
+            text_field.join("afs-text-field.vue"),
+            r#"<script setup lang="ts">
 defineProps<{
   modelValue: string
   placeholder?: string
@@ -20,9 +21,9 @@ defineProps<{
 }>()
 </script>
 "#,
-    )
-    .unwrap();
-    let source = r#"<script setup lang="ts">
+        )
+        .unwrap();
+        let source = r#"<script setup lang="ts">
 import AfsTextField from "../text-field/afs-text-field.vue";
 </script>
 <template>
@@ -32,46 +33,49 @@ import AfsTextField from "../text-field/afs-text-field.vue";
     : />
 </template>
 "#;
-    let parent = dialog.join("reported.vue");
-    std::fs::write(&parent, source).unwrap();
-    let uri = Url::from_file_path(parent).unwrap();
-    let service = service_with_options(serde_json::json!({
-        "completion": true,
-        "typecheck": true,
-        "crossFile": true,
-        "lint": false,
-        "ecosystem": false,
-    }));
-    let server = service.inner();
-    server.state.set_workspace_root(root.path().to_path_buf());
-    open_vue(server, &uri, source);
+        let parent = dialog.join("reported.vue");
+        std::fs::write(&parent, source).unwrap();
+        let uri = Url::from_file_path(parent).unwrap();
+        let service = service_with_options(serde_json::json!({
+            "completion": true,
+            "typecheck": true,
+            "crossFile": true,
+            "lint": false,
+            "ecosystem": false,
+        }));
+        let server = service.inner();
+        server.state.set_workspace_root(root.path().to_path_buf());
+        open_vue(server, &uri, source);
 
-    let offset = source.find("    : />").unwrap() + "    :".len();
-    let (line, character) = crate::ide::offset_to_position(source, offset);
-    let mut params = completion_params(&uri);
-    params.text_document_position.position = Position::new(line, character);
-    params.context = Some(tower_lsp::lsp_types::CompletionContext {
-        trigger_kind: tower_lsp::lsp_types::CompletionTriggerKind::TRIGGER_CHARACTER,
-        trigger_character: Some(":".into()),
-    });
-    let response = futures::executor::block_on(server.completion(params))
-        .unwrap()
-        .expect("component prop completion after colon");
-    let labels: Vec<_> = match response {
-        CompletionResponse::Array(items) => items.into_iter().map(|item| item.label).collect(),
-        CompletionResponse::List(tower_lsp::lsp_types::CompletionList { items, .. }) => {
-            items.into_iter().map(|item| item.label).collect()
-        }
-    };
+        let offset = source.find("    : />").unwrap() + "    :".len();
+        let (line, character) = crate::ide::offset_to_position(source, offset);
+        let mut params = completion_params(&uri);
+        params.text_document_position.position = Position::new(line, character);
+        params.context = Some(tower_lsp::lsp_types::CompletionContext {
+            trigger_kind: tower_lsp::lsp_types::CompletionTriggerKind::TRIGGER_CHARACTER,
+            trigger_character: Some(":".into()),
+        });
+        let _native = server.state.corsa_request_scope().await;
+        let response =
+            crate::runtime::timeout(std::time::Duration::from_secs(3), server.completion(params))
+                .await
+                .expect("component prop completion must bypass a held native transaction")
+                .unwrap()
+                .expect("component prop completion after colon");
+        let labels: Vec<_> = match response {
+            CompletionResponse::Array(items) => items.into_iter().map(|item| item.label).collect(),
+            CompletionResponse::List(tower_lsp::lsp_types::CompletionList { items, .. }) => {
+                items.into_iter().map(|item| item.label).collect()
+            }
+        };
 
-    for prop in ["modelValue", "placeholder", "type", "appendIcon", "rules"] {
-        assert!(
-            labels.iter().any(|label| label == prop),
-            "missing {prop}: {labels:?}"
+        assert_eq!(
+            labels,
+            ["modelValue", "placeholder", "type", "appendIcon", "rules"]
         );
-    }
-    assert_eq!(server.state.canonical_bridge_request_count(), 0);
-    assert!(!server.state.has_corsa_bridge());
+        assert_eq!(server.state.canonical_bridge_request_count(), 0);
+        assert!(!server.state.has_corsa_bridge());
+    });
 }
 
 #[test]
