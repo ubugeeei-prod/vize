@@ -245,51 +245,24 @@ export function requireCandidateStableStderr(bytes: Uint8Array) {
   assert.equal(bytes.byteLength, 0, "Candidate stable stderr must be empty");
 }
 
+type StableWatchContextArgs = [
+  client: readonly unknown[],
+  server: readonly unknown[],
+  context: WatcherContext,
+  io: readonly WatcherTimedIo[],
+  eofReads: readonly NativeTimedObservation[],
+];
 /** One historical log split across protocol stdout and post-EOF stderr. */
-export function stableWatchContext(
-  client: readonly unknown[],
-  server: readonly unknown[],
-  context: WatcherContext,
-  io: readonly WatcherTimedIo[],
-  eofReads: readonly NativeTimedObservation[],
-) {
-  const actor = watchContext(
-    client,
-    server,
-    context,
-    io,
-    eofReads,
-    (ack, eof) => {
-      for (const part of ack.parts) requireCompletedBefore(part, eof);
-    },
-    "required",
-  );
-  assert.ok(actor.header);
-  return { ...actor, header: actor.header };
-}
-export function stableWatchContextWithoutStdoutLog(
-  client: readonly unknown[],
-  server: readonly unknown[],
-  context: WatcherContext,
-  io: readonly WatcherTimedIo[],
-  eofReads: readonly NativeTimedObservation[],
-) {
-  const actor = watchContext(
-    client,
-    server,
-    context,
-    io,
-    eofReads,
-    (ack, eof) => {
-      for (const part of ack.parts) requireCompletedBefore(part, eof);
-    },
-    "absent",
-  );
-  assert.equal(actor.header, null);
-  return { ...actor, header: null };
-}
+const completedRootAck = (
+  ack: ReturnType<typeof timedPackets>[number],
+  eof: NativeTimedObservation,
+) => ack.parts.forEach((part) => requireCompletedBefore(part, eof));
+export const stableWatchContext = (...args: StableWatchContextArgs) =>
+  watchContext(...args, completedRootAck, "required");
+export const stableWatchContextWithoutStdoutLog = (...args: StableWatchContextArgs) =>
+  watchContext(...args, completedRootAck, "absent");
 export function historicalSplitWatchContext(
-  ...args: [...Parameters<typeof stableWatchContext>, ReturnType<typeof nativeOwnerTerminalState>]
+  ...args: [...StableWatchContextArgs, ReturnType<typeof nativeOwnerTerminalState>]
 ) {
   const [client, server, context, io, eofReads, owner] = args;
   const proof: { value: ReturnType<typeof historicalRootAckFragments> } = { value: null };
@@ -304,7 +277,6 @@ export function historicalSplitWatchContext(
     },
     "required",
   );
-  assert.ok(actor.header);
   return { ...actor, rootAckFragmentOrder: proof.value };
 }
 function watchContext(
@@ -481,14 +453,6 @@ function watchContext(
 /** Strict default: every stderr attempt must follow observed EOF completion. */
 export function stableWatchActor(...args: Parameters<typeof stableWatchContext>) {
   const actor = stableWatchContext(...args);
-  for (const row of actor.stderr) requireCompletedBefore(actor.eof, row);
-  return actor;
-}
-
-export function stableWatchActorWithoutStdoutLog(
-  ...args: Parameters<typeof stableWatchContextWithoutStdoutLog>
-) {
-  const actor = stableWatchContextWithoutStdoutLog(...args);
   for (const row of actor.stderr) requireCompletedBefore(actor.eof, row);
   return actor;
 }
