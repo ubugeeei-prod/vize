@@ -18,7 +18,9 @@ void test("fetch adapter preserves endpoint input, cancellation and typed JSON",
     source: "../fixtures/ArticleView.vue",
     endpoint: ({ id }) => `https://example.test/articles/${id}`,
     fetch: async (input, init) => {
-      requests.push(`${String(input)}:${String(init?.signal?.aborted)}`);
+      const target =
+        typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      requests.push(`${target}:${String(init?.signal?.aborted)}`);
       return new Response(JSON.stringify({ title: "Adapters" }), {
         headers: { "content-type": "application/json" },
       });

@@ -36,7 +36,7 @@ export interface FetchDataResourceOptions<
   readonly init?: (input: Input) => RequestInit;
   readonly fetch?: typeof globalThis.fetch;
   readonly decode?: (response: Response) => Data | Promise<Data>;
-  readonly decodeError?: (response: Response) => unknown | Promise<unknown>;
+  readonly decodeError?: (response: Response) => unknown;
   readonly serializeError?: (error: unknown) => ErrorPayload;
   readonly meta?: Meta;
 }
