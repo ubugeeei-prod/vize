@@ -34,6 +34,9 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   ]);
   assert.equal(job.if, "needs.version.outputs.ref != ''");
   assert.ok((job["timeout-minutes"] ?? 0) >= 45);
+  const node = job.steps?.find((step) => step.uses?.startsWith("actions/setup-node@"));
+  assert.equal(node?.with?.["node-version-file"], "package.json");
+  assert.equal(node?.with?.["package-manager-cache"], false);
   const serialized = JSON.stringify(job.steps);
   assert.match(serialized, /"name":"cli-x86_64-unknown-linux-gnu"/);
   assert.match(serialized, /"name":"editor-extensions"/);
