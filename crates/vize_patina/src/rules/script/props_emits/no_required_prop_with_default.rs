@@ -25,7 +25,7 @@ use oxc_span::{GetSpan, Span};
 
 use vize_l0::{CompactString, FxHashMap};
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 mod runtime;
@@ -61,7 +61,29 @@ impl ScriptRule for NoRequiredPropWithDefault {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        typed::check(program, offset, result);
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        typed::check(
+            program,
+            offset,
+            sfc.sibling_program.zip(sfc.sibling_offset),
+            result,
+        );
         let object_bindings = collect_object_bindings(program);
         let Some(options) = resolve_options_object(program, &object_bindings) else {
             return;

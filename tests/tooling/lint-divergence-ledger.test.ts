@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 
-import { compareLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
+import { compareLintFindings as compareCompatibleLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
+import { compareLintFindings as compareCurrentLintFindings } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.ts";
 import {
   compare,
@@ -64,6 +65,603 @@ test("a ledger entry cancels exactly one false positive against one false negati
     },
   ]);
   assert.equal(documented.summary.documentedDivergenceCount, 1);
+});
+
+test("the stronger direct defineProps policy is intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  const direct = '<script setup lang="ts">\ndefineProps<{ label: string }>()\n</script>\n';
+  const wrapped =
+    '<script setup lang="ts">\nwithDefaults(defineProps<{ label?: string }>(), { label: "" })\n</script>\n';
+  fs.writeFileSync(`${directory}/BareProps.vue`, direct);
+  fs.writeFileSync(`${directory}/WrappedProps.vue`, wrapped);
+  fs.writeFileSync(
+    `${directory}/ModuleProps.vue`,
+    `<script lang="ts">\nexport interface Props { label?: string }\n</script>\n<script setup lang="ts">\nconst props = defineProps<Props>()\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/define-props-destructuring": {
+        status: "mapped",
+        patinaRule: "script/define-props-destructuring",
+      },
+    },
+  };
+  const findings = [
+    {
+      file: "src/BareProps.vue",
+      ruleId: "script/define-props-destructuring",
+      severity: 1,
+      ...span(2, 1, 2, 35),
+      message: "Prefer destructuring the return value of defineProps().",
+    },
+    {
+      file: "src/WrappedProps.vue",
+      ruleId: "script/define-props-destructuring",
+      severity: 1,
+      ...span(2, 14, 2, 49),
+      message: "Prefer destructuring the return value of defineProps().",
+    },
+    {
+      file: "src/ModuleProps.vue",
+      ruleId: "script/define-props-destructuring",
+      severity: 1,
+      ...span(5, 7, 5, 12),
+      message: "Prefer destructuring the return value of defineProps().",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+    files: ["src/BareProps.vue", "src/WrappedProps.vue", "src/ModuleProps.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 3);
+    assert.deepEqual(result.intentionalDivergences.map((finding) => finding.file).sort(), [
+      "src/BareProps.vue",
+      "src/ModuleProps.vue",
+      "src/WrappedProps.vue",
+    ]);
+  }
+});
+
+test("stable defineProps and self-closing anchor differences are not false findings", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/LocationAnchors.vue`,
+    `<script setup lang="ts">\nconst props =\n  defineProps<{\n    label: string\n  }>()\n</script>\n<template>\n  <p>label</p>\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/define-props-destructuring": {
+        status: "mapped",
+        patinaRule: "script/define-props-destructuring",
+      },
+      "vue/html-self-closing": {
+        status: "mapped",
+        patinaRule: "vue/html-self-closing",
+      },
+    },
+  };
+  const findings = [
+    {
+      file: "src/LocationAnchors.vue",
+      ruleId: "script/define-props-destructuring",
+      severity: 1,
+      ...span(2, 7, 2, 12),
+      message: "Prefer destructuring the return value of defineProps().",
+    },
+    {
+      file: "src/LocationAnchors.vue",
+      ruleId: "vue/html-self-closing",
+      severity: 1,
+      ...span(7, 3, 7, 15),
+      message: "Empty element should be self-closing.",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/LocationAnchors.vue", [
+      {
+        ruleId: "vue/define-props-destructuring",
+        severity: 1,
+        ...span(3, 3, 5, 6),
+        message: "Prefer destructuring from defineProps directly.",
+      },
+      {
+        ruleId: "vue/html-self-closing",
+        severity: 1,
+        ...span(7, 16, 7, 20),
+        message: "Require self-closing on HTML elements.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, baseline, {
+    files: ["src/LocationAnchors.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0, JSON.stringify(result.falsePositives));
+    assert.equal(result.summary.falseNegativeCount, 0, JSON.stringify(result.falseNegatives));
+    assert.equal(result.summary.ruleLocationDivergenceCount, 2);
+  }
+});
+
+test("runtime-sensitive ordering, UTS, and proven unused registrations stay intentional", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/MergeOrder.vue`,
+    `<template><button @click="save" v-bind="attrs">Save</button></template>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Native.vue`,
+    `<template><view></view></template>\n<script setup lang="uts">\nconst props = defineProps({ label: String })\n</script>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Unused.vue`,
+    `<template><div><!-- <SfButton /> --></div></template>\n<script>\nimport { SfButton } from "ui"\nexport default { components: { SfButton } }\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/attributes-order": {
+        status: "mapped",
+        patinaRule: "vue/attribute-order",
+      },
+      "vue/define-props-destructuring": {
+        status: "mapped",
+        patinaRule: "script/define-props-destructuring",
+      },
+      "vue/html-self-closing": {
+        status: "mapped",
+        patinaRule: "vue/html-self-closing",
+      },
+      "vue/no-unused-components": {
+        status: "mapped",
+        patinaRule: "vue/no-unused-components",
+      },
+    },
+  };
+  const findings = [
+    {
+      file: "src/Unused.vue",
+      ruleId: "vue/no-unused-components",
+      severity: 1,
+      ...span(4, 32, 4, 40),
+      message: "Component 'SfButton' is registered but never used in template",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/MergeOrder.vue", [
+      {
+        ruleId: "vue/attributes-order",
+        severity: 1,
+        ...span(1, 32, 1, 46),
+        message: 'Attribute "v-bind" should go before "@click".',
+      },
+    ]),
+    eslintResult("src/Native.vue", [
+      {
+        ruleId: "vue/define-props-destructuring",
+        severity: 1,
+        ...span(3, 15, 3, 53),
+        message: "Prefer destructuring from defineProps directly.",
+      },
+      {
+        ruleId: "vue/html-self-closing",
+        severity: 1,
+        ...span(1, 17, 1, 24),
+        message: "Require self-closing on Vue.js custom components.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, baseline, {
+    files: ["src/MergeOrder.vue", "src/Native.vue", "src/Unused.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0, JSON.stringify(result.falsePositives));
+    assert.equal(result.summary.falseNegativeCount, 0, JSON.stringify(result.falseNegatives));
+    assert.equal(result.summary.intentionalDivergenceCount, 4);
+  }
+});
+
+test("upstream rule ids classify second-script shifts and resolved default spreads", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/TwoScripts.vue`,
+    `<script lang="ts">\nexport const defaults = { label: "" }\nexport interface Props { label?: string }\n</script>\n<script setup lang="ts">\nconst props = withDefaults(defineProps<Props>(), { ...defaults })\nconst element = ref(null)\n</script>\n<template><div ref="element" /></template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/define-props-destructuring": {
+        status: "mapped",
+        patinaRule: "script/define-props-destructuring",
+      },
+      "vue/prefer-use-template-ref": {
+        status: "mapped",
+        patinaRule: "script/prefer-use-template-ref",
+      },
+      "vue/require-default-prop": {
+        status: "mapped",
+        patinaRule: "script/require-default-prop",
+      },
+    },
+  };
+  const baseline = [
+    eslintResult("src/TwoScripts.vue", [
+      {
+        ruleId: "vue/define-props-destructuring",
+        severity: 1,
+        ...span(2, 7, 2, 12),
+        message: "Prefer destructuring from defineProps.",
+      },
+      {
+        ruleId: "vue/prefer-use-template-ref",
+        severity: 1,
+        ...span(3, 7, 3, 14),
+        message: "Use useTemplateRef() instead of ref().",
+      },
+      {
+        ruleId: "vue/require-default-prop",
+        severity: 2,
+        ...span(3, 26, 3, 40),
+        message: "Prop 'label' requires default value to be set.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: [],
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falseNegativeCount, 0, JSON.stringify(result.falseNegatives));
+    assert.equal(result.summary.intentionalDivergenceCount, 3);
+  }
+});
+
+test("static styles recovered through a TypeScript cast are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/CastStyle.vue`,
+    `<template>\n  <div :style="{ color: 'red', width: size } as StyleValue" />\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-static-inline-styles": {
+        status: "mapped",
+        patinaRule: "vue/no-static-inline-styles",
+      },
+    },
+  };
+  const findings = [
+    {
+      file: "src/CastStyle.vue",
+      ruleId: "vue/no-static-inline-styles",
+      severity: 1,
+      ...span(2, 18, 2, 30),
+      message: "Static inline style attributes are not allowed.",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+    files: ["src/CastStyle.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 1);
+  }
+});
+
+test("native-only dynamic components are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/NativeDynamic.vue`,
+    `<template>\n  <component :is="inline ? 'label' : 'p'" v-html="content" />\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-v-text-v-html-on-component": {
+        status: "mapped",
+        patinaRule: "vue/no-v-text-v-html-on-component",
+      },
+    },
+  };
+  const baseline = [
+    eslintResult("src/NativeDynamic.vue", [
+      {
+        ruleId: "vue/no-v-text-v-html-on-component",
+        severity: 2,
+        ...span(2, 48, 2, 64),
+        message: "Using v-html on component may break component's content.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: [],
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 1);
+  }
+});
+
+test("fragment-root foreign elements are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/ForeignRoot.vue`,
+    `<template>\n  <g v-for="item in items" v-html="content" />\n  <text fontSize="16" />\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/attribute-hyphenation": {
+        status: "mapped",
+        patinaRule: "vue/attribute-hyphenation",
+      },
+      "vue/no-v-text-v-html-on-component": {
+        status: "mapped",
+        patinaRule: "vue/no-v-text-v-html-on-component",
+      },
+      "vue/require-v-for-key": {
+        status: "mapped",
+        patinaRule: "vue/require-v-for-key",
+      },
+      "vue/valid-v-for": { status: "mapped", patinaRule: "vue/valid-v-for" },
+    },
+  };
+  const patina = [
+    {
+      file: "src/ForeignRoot.vue",
+      ruleId: "vue/require-v-for-key",
+      severity: 2,
+      ...span(2, 3, 2, 51),
+      message: "Elements in iteration expect a v-bind:key directive.",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/ForeignRoot.vue", [
+      {
+        ruleId: "vue/valid-v-for",
+        severity: 2,
+        ...span(2, 6, 2, 27),
+        message: "Custom elements in iteration require v-bind:key directives.",
+      },
+      {
+        ruleId: "vue/no-v-text-v-html-on-component",
+        severity: 2,
+        ...span(2, 29, 2, 45),
+        message: "Using v-html on component may break component content.",
+      },
+      {
+        ruleId: "vue/attribute-hyphenation",
+        severity: 1,
+        ...span(3, 9, 3, 22),
+        message: "Attribute 'fontSize' must be hyphenated.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+    files: ["src/ForeignRoot.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 4);
+  }
+});
+
+test("references before local ref declarations are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/EarlyRef.vue`,
+    `<script setup lang="ts">\nconst chosen = palette || []\nconst palette = computed(() => [])\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-ref-as-operand": {
+        status: "mapped",
+        patinaRule: "script/no-ref-as-operand",
+      },
+    },
+  };
+  const patina = [
+    {
+      file: "src/EarlyRef.vue",
+      ruleId: "script/no-ref-as-operand",
+      severity: 1,
+      ...span(2, 16, 2, 23),
+      message: "Ref 'palette' must be accessed through .value.",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, [], {
+    files: ["src/EarlyRef.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 1);
+  }
+});
+
+test("whitespace mustaches and imported Slot anchors are classified on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/Slots.vue`,
+    `<template>\n  {{ ' ' }}\n  <Slot>\n    <slot />\n  </Slot>\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-useless-mustaches": {
+        status: "mapped",
+        patinaRule: "vue/no-useless-mustaches",
+      },
+      "vue/require-explicit-slots": {
+        status: "mapped",
+        patinaRule: "script/require-explicit-slots",
+      },
+    },
+  };
+  const patina = [
+    {
+      file: "src/Slots.vue",
+      ruleId: "script/require-explicit-slots",
+      severity: 1,
+      ...span(4, 5, 4, 13),
+      message: "Slot 'default' is rendered but not declared.",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/Slots.vue", [
+      {
+        ruleId: "vue/no-useless-mustaches",
+        severity: 1,
+        ...span(2, 3, 2, 12),
+        message: "Unexpected mustache interpolation with a string literal value.",
+      },
+      {
+        ruleId: "vue/require-explicit-slots",
+        severity: 1,
+        ...span(3, 3, 5, 10),
+        message: "Slots must be explicitly defined.",
+      },
+      {
+        ruleId: "vue/require-explicit-slots",
+        severity: 1,
+        ...span(4, 5, 4, 13),
+        message: "Slots must be explicitly defined.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+    files: ["src/Slots.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 2);
+    assert.equal(result.summary.ruleLocationDivergenceCount, 0);
+  }
+});
+
+test("formatter-safe quotes and resolved props objects are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/Calendar.vue`,
+    `<template><x-input :title='\`<span style="\${style}">hello</span>\`' /></template>\n<script>\nconst Props = {\n  placeholder: String\n}\nexport default { props: Props }\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/html-quotes": { status: "mapped", patinaRule: "vue/html-quotes" },
+      "vue/require-default-prop": {
+        status: "mapped",
+        patinaRule: "script/require-default-prop",
+      },
+    },
+  };
+  const patina = [
+    {
+      file: "src/Calendar.vue",
+      ruleId: "script/require-default-prop",
+      severity: 1,
+      ...span(4, 3, 4, 22),
+      message: "Prop 'placeholder' requires a default value.",
+    },
+  ];
+  const baseline = [
+    eslintResult("src/Calendar.vue", [
+      {
+        ruleId: "vue/html-quotes",
+        severity: 1,
+        ...span(1, 27, 1, 66),
+        message: "Expected to be enclosed by double quotes.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, patina, baseline, {
+    files: ["src/Calendar.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: patina,
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 2);
+  }
 });
 
 test("a ledger entry only cancels a divergence that is actually present", () => {
@@ -157,10 +755,181 @@ test("a ledger entry without a tracking issue is rejected", () => {
   );
 });
 
+test("recovered templates and conservative legacy surfaces are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/Emit.vue`,
+    `<template><button @click="$emit('save')" /></template>\n<script>\nexport default { emits: ['save'] }\n</script>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Table.vue`,
+    `<template><table><tbody ref="list"><transition-group><slot name="row" /></transition-group></tbody></table></template>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Events.vue`,
+    `<script>\nexport default { methods: { show(options) {\nextend(this, options)\nthis.$on('save', () => {})\n} } }\n</script>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Legacy.vue`,
+    `<script setup>\nconst state = $ref({ count: 0 }); consume($(state))\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-unused-emit-declarations": {
+        status: "mapped",
+        patinaRule: "script/no-unused-emit-declarations",
+      },
+      "vue/require-explicit-slots": {
+        status: "mapped",
+        patinaRule: "script/require-explicit-slots",
+      },
+      "vue/no-unused-refs": { status: "mapped", patinaRule: "vue/no-unused-refs" },
+      "vue/no-deprecated-events-api": {
+        status: "mapped",
+        patinaRule: "script/no-deprecated-events-api",
+      },
+      "vue/no-ref-object-reactivity-loss": {
+        status: "mapped",
+        patinaRule: "script/no-ref-object-reactivity-loss",
+      },
+    },
+  };
+  const baseline = [
+    eslintResult("src/Emit.vue", [
+      {
+        ruleId: "vue/no-unused-emit-declarations",
+        severity: 1,
+        ...span(3, 27, 3, 33),
+        message: "`save` is defined as emit but never used.",
+      },
+    ]),
+    eslintResult("src/Table.vue", [
+      {
+        ruleId: "vue/require-explicit-slots",
+        severity: 1,
+        ...span(1, 60, 1, 79),
+        message: "Slots must be explicitly defined.",
+      },
+      {
+        ruleId: "vue/no-unused-refs",
+        severity: 1,
+        ...span(1, 29, 1, 39),
+        message: "'list' is defined as ref, but never used.",
+      },
+    ]),
+    eslintResult("src/Events.vue", [
+      {
+        ruleId: "vue/no-deprecated-events-api",
+        severity: 2,
+        ...span(4, 6, 4, 9),
+        message: "The Events API is deprecated.",
+      },
+    ]),
+    eslintResult("src/Legacy.vue", [
+      {
+        ruleId: "vue/no-ref-object-reactivity-loss",
+        severity: 1,
+        ...span(2, 48, 2, 53),
+        message: "Getting a reactive variable loses reactivity.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: [],
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falseNegativeCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 5);
+  }
+});
+
+test("sound Patina-only real-project findings are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(`${directory}/TemplateOnly.vue`, `<template><main>Settings</main></template>\n`);
+  fs.writeFileSync(
+    `${directory}/Props.vue`,
+    `<script setup lang="ts">\ninterface Props extends Base {\n  label?: string\n}\nwithDefaults(defineProps<Props>(), {})\n</script>\n`,
+  );
+  fs.writeFileSync(
+    `${directory}/Mutation.vue`,
+    `<script setup lang="ts">\n(props.item.value as Ref<any>).value = next\n</script>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/multi-word-component-names": {
+        status: "mapped",
+        patinaRule: "vue/multi-word-component-names",
+      },
+      "vue/no-bare-strings-in-template": {
+        status: "mapped",
+        patinaRule: "vue/no-bare-strings-in-template",
+      },
+      "vue/require-default-prop": {
+        status: "mapped",
+        patinaRule: "script/require-default-prop",
+      },
+      "vue/no-mutating-props": { status: "mapped", patinaRule: "vue/no-mutating-props" },
+    },
+  };
+  const findings = [
+    {
+      file: "src/TemplateOnly.vue",
+      ruleId: "vue/multi-word-component-names",
+      severity: 2,
+      ...span(1, 1, 1, 1),
+      message: 'Component name "TemplateOnly" should be multi-word.',
+    },
+    {
+      file: "src/TemplateOnly.vue",
+      ruleId: "vue/no-bare-strings-in-template",
+      severity: 1,
+      ...span(1, 17, 1, 25),
+      message: "Raw text should be translated.",
+    },
+    {
+      file: "src/Props.vue",
+      ruleId: "script/require-default-prop",
+      severity: 2,
+      ...span(3, 3, 3, 17),
+      message: "Prop 'label' requires a default value.",
+    },
+    {
+      file: "src/Mutation.vue",
+      ruleId: "vue/no-mutating-props",
+      severity: 2,
+      ...span(2, 1, 2, 38),
+      message: "Unexpected mutation of prop '(props.item.value as Ref<any>).value'.",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
+    files: ["src/TemplateOnly.vue", "src/Props.vue", "src/Mutation.vue"],
+  });
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 4);
+  }
+});
+
 test("the checked-in divergence ledger validates against the checked-in rule map", () => {
   const ledger = JSON.parse(fs.readFileSync(ledgerPath, "utf8"));
   assert.ok(Array.isArray(ledger), "the ledger must be an array of divergence entries");
-  const result = compareLintFindings({
+  const result = compareCompatibleLintFindings({
     projectId: "unhydrated",
     cwd,
     ruleMap: readRuleMap(),

@@ -1,6 +1,6 @@
 //! script/require-typed-ref
 //!
-//! Require an explicit type argument on a `ref()` whose initial value cannot be
+//! Require an explicit type argument on a `ref()` or `shallowRef()` whose initial value cannot be
 //! inferred.
 //!
 //! When `ref()` is called with no argument, or with `null` / `undefined`, the
@@ -11,10 +11,10 @@
 //! known up front. A direct identifier binding annotation also supplies that
 //! explicit type, for example `const value: Ref<string | null> = ref(null)`.
 //!
-//! Only the un-inferable initializers are flagged — `ref()`, `ref(null)`, and
-//! `ref(undefined)` *without* a type argument. A `ref(0)` (inferable from the
-//! literal) or any `ref<T>(...)` (already typed) is left alone. The `ref` must be
-//! the one imported from `vue` (directly or under an alias).
+//! Only the un-inferable initializers are flagged — empty, `null`, and
+//! `undefined` calls *without* a type argument. An inferable literal or any
+//! explicitly typed call is left alone. The helper must be imported from `vue`
+//! directly or under an alias.
 //!
 //! Mirrors [`vue/require-typed-ref`](https://eslint.vuejs.org/rules/require-typed-ref.html),
 //! which applies to TypeScript only.
@@ -39,7 +39,7 @@
 //! const c = ref(0)          // inferred Ref<number>
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
@@ -83,25 +83,69 @@ impl ScriptRule for RequireTypedRef {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = RequireTypedRefVisitor {
-            offset,
-            result,
-            ref_aliases: FxHashSet::default(),
-            ref_imported: false,
-            annotated_initializer: None,
-        };
-        visitor.visit_program(program);
+        check_program_with_aliases(program, offset, FxHashSet::default(), result);
     }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if !sfc.typescript_jsx {
+            let aliases = sfc
+                .sibling_program
+                .map(collect_ref_aliases)
+                .unwrap_or_default();
+            let _ = source;
+            check_program_with_aliases(program, offset, aliases, result);
+        }
+    }
+}
+
+fn check_program_with_aliases<'a>(
+    program: &'a Program<'a>,
+    offset: usize,
+    ref_aliases: FxHashSet<CompactString>,
+    result: &mut ScriptLintResult,
+) {
+    let mut visitor = RequireTypedRefVisitor {
+        offset,
+        result,
+        ref_aliases,
+        annotated_initializer: None,
+    };
+    visitor.visit_program(program);
+}
+
+fn collect_ref_aliases(program: &Program<'_>) -> FxHashSet<CompactString> {
+    let mut aliases = FxHashSet::default();
+    for statement in &program.body {
+        let oxc_ast::ast::Statement::ImportDeclaration(import) = statement else {
+            continue;
+        };
+        if import.source.value.as_str() != "vue" {
+            continue;
+        }
+        for specifier in import.specifiers.iter().flatten() {
+            let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
+                continue;
+            };
+            if matches!(specifier.imported.name().as_str(), "ref" | "shallowRef") {
+                aliases.insert(CompactString::new(specifier.local.name.as_str()));
+            }
+        }
+    }
+    aliases
 }
 
 struct RequireTypedRefVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
-    /// Local names bound to the `ref` import from `vue` (handles `ref as r`).
+    /// Local names bound to `ref` / `shallowRef` imports from `vue`.
     ref_aliases: FxHashSet<CompactString>,
-    /// Whether `ref` was imported from `vue` at all. Only then do bare `ref(...)`
-    /// calls refer to the reactivity helper rather than some unrelated function.
-    ref_imported: bool,
     /// Only the annotated binding's direct call, never an arbitrary nested ref.
     annotated_initializer: Option<Span>,
 }
@@ -115,8 +159,7 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
                 let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
                     continue;
                 };
-                if specifier.imported.name().as_str() == "ref" {
-                    self.ref_imported = true;
+                if matches!(specifier.imported.name().as_str(), "ref" | "shallowRef") {
                     self.ref_aliases
                         .insert(CompactString::new(specifier.local.name.as_str()));
                 }
@@ -166,9 +209,6 @@ impl RequireTypedRefVisitor<'_> {
     /// Whether the callee is the `ref` helper imported from `vue`. Requires the
     /// import to be present so a local `ref` in a non-vue file is not flagged.
     fn is_ref_call(&self, call: &CallExpression<'_>) -> bool {
-        if !self.ref_imported {
-            return false;
-        }
         matches!(
             &call.callee,
             Expression::Identifier(identifier) if self.ref_aliases.contains(identifier.name.as_str())
@@ -202,6 +242,7 @@ fn is_null_or_undefined(expression: &Expression<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::RequireTypedRef;
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -244,6 +285,20 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_untyped_shallow_ref() {
+        let source = "import { shallowRef } from 'vue'\nconst value = shallowRef()";
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_aliased_shallow_ref() {
+        let source = "import { shallowRef as shallow } from 'vue'\nconst value = shallow(null)";
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
     fn test_invalid_bare_ref() {
         let result = create_linter().lint(&format!("{IMPORT}const a = ref()"), 0);
         assert_eq!(result.warning_count, 1);
@@ -281,6 +336,29 @@ mod tests {
         assert_eq!(result.warning_count, 1);
         let call_start = source.find("ref()").unwrap() as u32 + 100;
         assert_eq!(result.diagnostics[0].start, call_start);
+    }
+
+    #[test]
+    fn test_vue_tsx_block_matches_upstream_exclusion() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-typed-ref".into()]))
+            .lint_sfc(
+                "<script setup lang=\"tsx\">import { ref } from 'vue'; const input = ref()</script>",
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn setup_uses_ref_imported_by_sibling_script() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-typed-ref".into()]))
+            .lint_sfc(
+                r#"<script lang="ts">import { ref } from 'vue'</script>
+<script setup lang="ts">const value = ref()</script>"#,
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }
 

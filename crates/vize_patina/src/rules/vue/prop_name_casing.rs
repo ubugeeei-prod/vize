@@ -85,15 +85,8 @@ pub struct PropNameCasing {
     pub casing: PropNameCasingOption,
 }
 
-impl Rule for PropNameCasing {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
-        if !ctx.has_analysis() {
-            return;
-        }
+impl PropNameCasing {
+    fn check(&self, ctx: &mut LintContext<'_>) {
         let offending: Vec<_> = declarations(ctx)
             .into_iter()
             .filter(|declaration| !self.casing.accepts(declaration.name.as_str()))
@@ -115,5 +108,27 @@ impl Rule for PropNameCasing {
                     .with_help(help),
             );
         }
+    }
+}
+
+impl Rule for PropNameCasing {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        if ctx
+            .sfc_descriptor()
+            .is_some_and(|descriptor| descriptor.template.is_none())
+        {
+            self.check(ctx);
+        }
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        if !ctx.has_analysis() {
+            return;
+        }
+        self.check(ctx);
     }
 }

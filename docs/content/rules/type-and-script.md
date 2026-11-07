@@ -75,7 +75,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 
 | Rule | What it checks | Presets | Auto-fix |
 | --- | --- | --- | --- |
-| <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Enforce PascalCase for the component `name` option. | `opinionated`, `nuxt` |  |
+| <span id="script-component-options-name-casing"></span>[`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Enforce PascalCase for registered component names. | `opinionated`, `nuxt` |  |
 | <span id="script-consistent-props-emits-key-quotes"></span>[`script/consistent-props-emits-key-quotes`](./reference/script-consistent-props-emits-key-quotes.md) | Require consistent quoted keys in props and emits declarations. | `opinionated` |  |
 | <span id="script-custom-event-name-casing"></span>[`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Enforce configured casing for emitted custom event names. | `opinionated`, `nuxt` |  |
 | <span id="script-define-emits-declaration"></span>[`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form. | `opinionated`, `nuxt` |  |
@@ -89,7 +89,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="script-no-with-defaults"></span>[`script/no-with-defaults`](./reference/script-no-with-defaults.md) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+). | `opinionated` |  |
 | <span id="script-one-component-per-file"></span>[`script/one-component-per-file`](./reference/script-one-component-per-file.md) | Disallow more than one component definition in a file. | `opinionated`, `nuxt` |  |
 | <span id="script-order-in-components"></span>[`script/order-in-components`](./reference/script-order-in-components.md) | Enforce the default order of properties in component options. | `opinionated`, `nuxt` |  |
-| <span id="script-prefer-define-options"></span>[`script/prefer-define-options`](./reference/script-prefer-define-options.md) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs. | `opinionated`, `nuxt` |  |
+| <span id="script-prefer-define-options"></span>[`script/prefer-define-options`](./reference/script-prefer-define-options.md) | Prefer defineOptions() over a default export paired with &lt;script setup&gt;. | `opinionated`, `nuxt` |  |
 | <span id="script-prefer-use-template-ref"></span>[`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | Recommend useTemplateRef over ref for template references (Vue 3.5+). | `opinionated`, `nuxt` |  |
 | <span id="script-require-default-prop"></span>[`script/require-default-prop`](./reference/script-require-default-prop.md) | Require a default value for every optional, non-Boolean prop. | `opinionated`, `nuxt` |  |
 | <span id="script-require-explicit-slots"></span>[`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;(). | `opinionated`, `nuxt` |  |

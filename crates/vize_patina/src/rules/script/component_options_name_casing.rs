@@ -1,35 +1,31 @@
 //! script/component-options-name-casing
 //!
-//! Enforce PascalCase for the component `name` option.
+//! Enforce PascalCase for registered component names.
 //!
-//! Vue's style guide recommends PascalCase for component names. The `name`
-//! option (and its `<script setup>` equivalent, `defineOptions({ name })`) is
-//! used for `<KeepAlive>` `include`/`exclude`, recursive self-reference, and
-//! devtools display, so a kebab-case, camelCase, or snake_case value here is
-//! inconsistent with the recommended casing.
+//! Vue's style guide recommends PascalCase for names in the Options API
+//! `components` registration object. A camelCase, kebab-case, or snake_case
+//! key there makes the registered template name inconsistent with that style.
 //!
 //! This rule resolves the component options object — `export default {...}`,
 //! `defineComponent({...})`, or an identifier bound to one (unwrapping TS
 //! `as`/`satisfies`/non-null/parenthesized wrappers, mirroring `no_dupe_keys`
-//! and `no_arrow_functions_in_watch`) — finds the `name` property whose value is
-//! a string literal, and reports it when the string is not PascalCase (does not
-//! match `^[A-Z][a-zA-Z0-9]*$`). The `<script setup>` `defineOptions({ name })`
-//! macro call is checked the same way when it is cleanly reachable at the top
-//! level. Non-string-literal `name` values are skipped.
+//! and `no_arrow_functions_in_watch`) — and checks the static keys of an inline
+//! `components: { ... }` object. Computed keys, spreads, and component maps held
+//! in a separate variable are skipped, matching `eslint-plugin-vue`.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```ts
 //! export default {
-//!   name: 'my-component' // kebab-case
+//!   components: { myComponent }
 //! }
 //! ```
 //!
 //! ### Valid
 //! ```ts
 //! export default {
-//!   name: 'MyComponent'
+//!   components: { MyComponent }
 //! }
 //! ```
 
@@ -37,17 +33,17 @@ use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
-    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, StringLiteral,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use vize_l0::{CompactString, FxHashMap};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/component-options-name-casing",
-    description: "Enforce PascalCase for the component `name` option",
+    description: "Enforce PascalCase for registered component names",
     default_severity: Severity::Error,
 };
 
-/// Enforce PascalCase for the component `name` option.
+/// Enforce PascalCase for registered component names.
 pub struct ComponentOptionsNameCasing;
 
 impl ScriptRule for ComponentOptionsNameCasing {
@@ -70,39 +66,67 @@ impl ScriptRule for ComponentOptionsNameCasing {
     ) {
         // Options API: `export default {...}` / `defineComponent({...})` / an
         // identifier bound to an options object.
-        if let Some(options) = find_component_options(program)
-            && let Some(name) = name_string_literal(options)
-        {
-            check_name(name, offset, result);
-        }
-
-        // `<script setup>`: `defineOptions({ name: "..." })`.
-        if let Some(name) = define_options_name(program) {
-            check_name(name, offset, result);
+        if let Some(options) = find_component_options(program) {
+            check_registered_components(options, offset, result);
         }
     }
 }
 
-/// Report the `name` literal when its value is not PascalCase.
-fn check_name(name: &StringLiteral<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let value = name.value.as_str();
-    if is_pascal_case(value) {
+fn check_registered_components(
+    options: &ObjectExpression<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    for property in &options.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed || property_key_name(&property.key) != Some("components") {
+            continue;
+        }
+        let Expression::ObjectExpression(components) = &property.value else {
+            continue;
+        };
+        for registration in &components.properties {
+            let ObjectPropertyKind::ObjectProperty(registration) = registration else {
+                continue;
+            };
+            if registration.computed {
+                continue;
+            }
+            let Some((name, start, end)) = static_property_key(&registration.key) else {
+                continue;
+            };
+            check_name(name, start, end, offset, result);
+        }
+    }
+}
+
+/// Report a component registration key when it is not PascalCase.
+fn check_name(
+    name: &str,
+    local_start: u32,
+    local_end: u32,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if is_pascal_case(name) {
         return;
     }
 
-    let start = offset as u32 + name.span.start;
-    let end = offset as u32 + name.span.end;
+    let start = offset as u32 + local_start;
+    let end = offset as u32 + local_end;
 
-    let mut message = CompactString::with_capacity(value.len() + 48);
+    let mut message = CompactString::with_capacity(name.len() + 48);
     message.push_str("Component name '");
-    message.push_str(value);
+    message.push_str(name);
     message.push_str("' is not PascalCase.");
 
     let diagnostic = LintDiagnostic::error(META.name, message, start, end)
         .with_label("expected PascalCase", start, end)
         .with_help(
-            "Vue's style guide recommends PascalCase for component names; rename this \
-             to PascalCase (e.g. `MyComponent`).",
+            "Rename this registered component key to PascalCase (for example, \
+             `MyComponent`).",
         );
     result.add_diagnostic(diagnostic);
 }
@@ -117,46 +141,18 @@ fn is_pascal_case(value: &str) -> bool {
     chars.all(|c| c.is_ascii_alphanumeric())
 }
 
-/// The string-literal value of the `name` property of an options object.
-fn name_string_literal<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a StringLiteral<'a>> {
-    for property in &options.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if property.computed {
-            continue;
+fn static_property_key<'a>(key: &'a PropertyKey<'a>) -> Option<(&'a str, u32, u32)> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some((
+            identifier.name.as_str(),
+            identifier.span.start,
+            identifier.span.end,
+        )),
+        PropertyKey::StringLiteral(literal) => {
+            Some((literal.value.as_str(), literal.span.start, literal.span.end))
         }
-        if !matches!(property_key_name(&property.key), Some("name")) {
-            continue;
-        }
-        if let Expression::StringLiteral(literal) = &property.value {
-            return Some(literal);
-        }
+        _ => None,
     }
-    None
-}
-
-/// The `name` string literal from a top-level `defineOptions({ name: "..." })`
-/// call, when one is cleanly reachable.
-fn define_options_name<'a>(program: &'a Program<'a>) -> Option<&'a StringLiteral<'a>> {
-    for statement in program.body.iter() {
-        let Statement::ExpressionStatement(expression) = statement else {
-            continue;
-        };
-        let Expression::CallExpression(call) = &expression.expression else {
-            continue;
-        };
-        let Expression::Identifier(callee) = &call.callee else {
-            continue;
-        };
-        if !matches!(callee.name.as_str(), "defineOptions") {
-            continue;
-        }
-        if let Some(Argument::ObjectExpression(object)) = call.arguments.first() {
-            return name_string_literal(object);
-        }
-    }
-    None
 }
 
 fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {

@@ -183,7 +183,9 @@ fn legacy_slot_scope(el: &ElementNode<'_>, source: &str) -> Option<super::scopes
         })
         .or_else(|| {
             el.props.iter().find_map(|prop| match prop {
-                PropNode::Attribute(attr) if attr.name == "scope" => Some(attr.as_ref()),
+                PropNode::Attribute(attr) if el.tag == "template" && attr.name == "scope" => {
+                    Some(attr.as_ref())
+                }
                 _ => None,
             })
         })?;

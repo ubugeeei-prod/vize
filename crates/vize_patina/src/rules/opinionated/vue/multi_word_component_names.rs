@@ -7,9 +7,12 @@
 //! existing and future HTML elements, since all HTML elements are
 //! a single word.
 //!
-//! This rule checks the **component definition** (filename), NOT the
-//! names of other components used in the template. This matches the
-//! behavior of eslint-plugin-vue.
+//! This rule checks the explicit component `name` when one is declared and
+//! otherwise falls back to the SFC filename. It does not inspect component
+//! usages in the template. This matches eslint-plugin-vue.
+//! Filename fallback is intentionally strict for route-shaped names too:
+//! `index.vue`, `default.vue`, `error.vue`, and dynamic Nuxt route filenames
+//! are not implicit exemptions from the selected rule.
 //!
 //! ## Examples
 //!
@@ -26,9 +29,13 @@
 //! AppHeader.vue
 //! ```
 
+mod scan;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use scan::{NameFinding, Scan, scan_normal_script, scan_setup_script};
 use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
@@ -48,20 +55,14 @@ pub struct MultiWordComponentNames {
 impl Default for MultiWordComponentNames {
     fn default() -> Self {
         Self {
-            ignore: vec!["App", "Nuxt", "NuxtPage", "NuxtLayout"],
+            ignore: vec!["App", "app"],
         }
     }
 }
 
 impl MultiWordComponentNames {
     fn is_multi_word(name: &str) -> bool {
-        // kebab-case: check for hyphen
-        if name.contains('-') {
-            return true;
-        }
-        // PascalCase: count uppercase letters (at least 2 means multi-word)
-        let uppercase_count = name.chars().filter(|c| c.is_uppercase()).count();
-        uppercase_count >= 2
+        kebab_case(name).split('-').count() > 1
     }
 
     /// Extract the component name from a filename.
@@ -73,6 +74,45 @@ impl MultiWordComponentNames {
         // Remove .vue extension
         basename.strip_suffix(".vue")
     }
+
+    fn is_valid_name(&self, name: &str) -> bool {
+        self.ignore
+            .iter()
+            .any(|ignore| *ignore == name || (is_pascal_case(ignore) && kebab_case(ignore) == name))
+            || is_vue_builtin(name)
+            || Self::is_multi_word(name)
+    }
+
+    fn report(&self, ctx: &mut LintContext<'_>, finding: NameFinding) {
+        if self.is_valid_name(finding.name.as_str()) {
+            return;
+        }
+        ctx.error_at_with_help(
+            ctx.t_fmt(
+                "vue/multi-word-component-names.message",
+                &[("name", finding.name.as_str())],
+            ),
+            ByteRange::new(finding.start, finding.end),
+            ctx.t("vue/multi-word-component-names.help"),
+        );
+    }
+
+    fn report_filename(&self, ctx: &mut LintContext<'_>) {
+        if ctx.filename.ends_with(".art.vue") {
+            return;
+        }
+        let Some(name) = Self::extract_component_name(ctx.filename) else {
+            return;
+        };
+        self.report(
+            ctx,
+            NameFinding {
+                name: name.into(),
+                start: 0,
+                end: 0,
+            },
+        );
+    }
 }
 
 impl Rule for MultiWordComponentNames {
@@ -80,57 +120,81 @@ impl Rule for MultiWordComponentNames {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        let filename = ctx.filename;
-
-        // Musea Art files describe variants, not component definitions.
-        if filename.ends_with(".art.vue") {
-            return;
-        }
-
-        // Only check .vue files
-        let Some(component_name) = Self::extract_component_name(filename) else {
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let (Some(descriptor), Some(scripts)) = (ctx.sfc_descriptor(), ctx.sfc_scripts()) else {
             return;
         };
-
-        // Skip ignored components
-        if self.ignore.contains(&component_name) {
-            return;
-        }
-
-        // Skip index files (common in file-based routing)
-        if component_name == "index" || component_name == "Index" {
-            return;
-        }
-
-        // Skip filenames that start with lowercase (likely page routes, not components)
-        // e.g., pages/about.vue, pages/login.vue
-        if component_name
-            .chars()
-            .next()
-            .map(|c| c.is_lowercase())
-            .unwrap_or(false)
+        let mut scan = Scan::default();
+        if let Some(script) = descriptor.script.as_ref()
+            && script.src.is_none()
+            && let Some(parsed) = scripts.script()
         {
-            return;
+            scan_normal_script(parsed, script.loc.start as u32, &mut scan);
         }
-
-        // Skip filenames with brackets (dynamic routes like [id].vue, [...slug].vue)
-        if component_name.starts_with('[') || component_name.starts_with('_') {
-            return;
+        if let Some(script) = descriptor.script_setup.as_ref()
+            && script.src.is_none()
+            && let Some(parsed) = scripts.script_setup()
+        {
+            scan_setup_script(parsed, script.loc.start as u32, &mut scan);
         }
-
-        // Check if the component name is multi-word
-        if !Self::is_multi_word(component_name) {
-            ctx.error_with_help(
-                ctx.t_fmt(
-                    "vue/multi-word-component-names.message",
-                    &[("name", component_name)],
-                ),
-                &root.loc,
-                ctx.t("vue/multi-word-component-names.help"),
-            );
+        for finding in scan.findings {
+            self.report(ctx, finding);
+        }
+        if !scan.has_name && (scan.has_vue || !scan.has_non_vue_program) {
+            self.report_filename(ctx);
         }
     }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        if ctx.sfc_descriptor().is_none() {
+            self.report_filename(ctx);
+        }
+    }
+}
+
+fn kebab_case(value: &str) -> vize_l0::String {
+    let dashed: Vec<char> = value.replace('_', "-").chars().collect();
+    let mut out = vize_l0::String::with_capacity(dashed.len() + 4);
+    for (index, ch) in dashed.iter().copied().enumerate() {
+        if ch.is_ascii_uppercase()
+            && index > 0
+            && dashed
+                .get(index - 1)
+                .is_some_and(|previous| previous.is_ascii_alphanumeric() || *previous == '_')
+        {
+            out.push('-');
+        }
+        out.extend(ch.to_lowercase());
+    }
+    out
+}
+
+fn is_pascal_case(value: &str) -> bool {
+    value
+        .chars()
+        .next()
+        .is_some_and(|first| !first.is_ascii_lowercase())
+        && !value.contains(['-', '_', ' '])
+}
+
+fn is_vue_builtin(name: &str) -> bool {
+    matches!(
+        name,
+        "template"
+            | "slot"
+            | "component"
+            | "Component"
+            | "transition"
+            | "Transition"
+            | "transition-group"
+            | "TransitionGroup"
+            | "keep-alive"
+            | "KeepAlive"
+            | "teleport"
+            | "Teleport"
+            | "suspense"
+            | "Suspense"
+    )
 }
 
 #[cfg(test)]
@@ -186,9 +250,22 @@ mod tests {
     }
 
     #[test]
-    fn test_skips_index_files() {
+    fn test_reports_route_shaped_single_word_filenames_like_upstream() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div>hello</div>"#, "index.vue");
+        for filename in ["index.vue", "default.vue", "error.vue", "pages/[id].vue"] {
+            let result = linter.lint_template(r#"<div>hello</div>"#, filename);
+            assert_eq!(
+                result.error_count, 1,
+                "{filename}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn test_accepts_camel_case_multi_word_name() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div />"#, "todoItem.vue");
         assert_eq!(result.error_count, 0);
     }
 
@@ -211,5 +288,64 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>hello</div>"#, "src/components/Item.vue");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn sfc_filename_fallback_reports_the_program_start() {
+        let result = create_linter().lint_sfc("<template><div /></template>", "Item.vue");
+        assert_eq!(result.error_count, 1);
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (0, 0)
+        );
+    }
+
+    #[test]
+    fn explicit_options_name_owns_the_diagnostic_and_suppresses_the_filename() {
+        let source = "<script>export default { name: 'Item' }</script><template><div /></template>";
+        let result = create_linter().lint_sfc(source, "SingleFile.vue");
+        let start = source.find("'Item'").unwrap() as u32;
+        assert_eq!(result.error_count, 1);
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (start, start + 6)
+        );
+
+        let valid = source.replace("'Item'", "'TodoItem'");
+        assert_eq!(create_linter().lint_sfc(&valid, "Item.vue").error_count, 0);
+    }
+
+    #[test]
+    fn define_options_and_dynamic_names_follow_upstream_fallback_rules() {
+        let source =
+            "<script setup>defineOptions({ name: 'Item' })</script><template><div /></template>";
+        let result = create_linter().lint_sfc(source, "MultiWord.vue");
+        let start = source.find("'Item'").unwrap() as u32;
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].start, start);
+
+        let dynamic = "<script setup>defineOptions({ name: componentName })</script><template><div /></template>";
+        assert_eq!(create_linter().lint_sfc(dynamic, "Item.vue").error_count, 0);
+    }
+
+    #[test]
+    fn ordinary_non_component_program_does_not_infer_a_component_name() {
+        let source = "<script>console.log('utility')</script><template><div /></template>";
+        assert_eq!(create_linter().lint_sfc(source, "Item.vue").error_count, 0);
+    }
+
+    #[test]
+    fn only_vue_extend_and_mixin_calls_define_components() {
+        let vue = "<script>Vue.extend({ name: 'Item' })</script><template><div /></template>";
+        assert_eq!(create_linter().lint_sfc(vue, "Utility.vue").error_count, 1);
+
+        let unrelated =
+            "<script>Library.extend({ name: 'Item' })</script><template><div /></template>";
+        assert_eq!(
+            create_linter()
+                .lint_sfc(unrelated, "Utility.vue")
+                .error_count,
+            0
+        );
     }
 }

@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 252 件で、対応付け 151 件、意図的な差異 2 件、未実装 99 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 252 件で、対応付け 150 件、意図的な差異 3 件、未実装 99 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -254,7 +254,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/v-for-delimiter-style` | — | 未実装 |
 | `vue/v-if-else-key` | — | 未実装 |
 | `vue/v-on-event-hyphenation` | [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | 対応付け |
-| `vue/v-on-handler-style` | [`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | 対応付け |
+| `vue/v-on-handler-style` | — | 意図的な差異 |
 | `vue/v-on-style` | [`vue/v-on-style`](./reference/vue-v-on-style.md) | 対応付け |
 | `vue/v-slot-style` | [`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 対応付け |
 | `vue/valid-attribute-name` | [`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 対応付け |

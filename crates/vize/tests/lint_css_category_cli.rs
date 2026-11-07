@@ -23,7 +23,7 @@ fn output_details(output: &std::process::Output) -> String {
 fn write_button_sfc(root: &Path) {
     write_file(
         root,
-        "src/Button.vue",
+        "src/AppButton.vue",
         r#"<style scoped>
 .button { color: red !important; }
 </style>
@@ -58,7 +58,7 @@ fn lint_config_style_category_disables_builtin_css_rules() {
             "vite.config.mjs",
             "--format",
             "json",
-            "src/Button.vue",
+            "src/AppButton.vue",
         ])
         .output()
         .unwrap();
@@ -68,7 +68,7 @@ fn lint_config_style_category_disables_builtin_css_rules() {
     assert_eq!(
         actual,
         serde_json::json!([{
-          "file": "src/Button.vue",
+          "file": "src/AppButton.vue",
           "messages": [],
           "errorCount": 0,
           "warningCount": 0
@@ -105,7 +105,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
             "vite.config.mjs",
             "--format",
             "json",
-            "src/Button.vue",
+            "src/AppButton.vue",
         ])
         .output()
         .unwrap();
@@ -115,7 +115,7 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
     assert_eq!(
         actual,
         serde_json::json!([{
-          "file": "src/Button.vue",
+          "file": "src/AppButton.vue",
           "messages": [{
             "ruleId": "css/no-hardcoded-values",
             "ruleDocsPath": "docs/content/rules/reference/css-no-hardcoded-values.md",

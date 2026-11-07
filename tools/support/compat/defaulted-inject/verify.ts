@@ -27,6 +27,7 @@ type Input = {
   removed: number;
   required: number;
   retainedSeverity?: number;
+  generalDefaultWarnings?: number;
 };
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const output = process.env.VIZE_DEFAULTED_INJECT_PROOF;
@@ -84,7 +85,14 @@ for (const [name, call, removed, required, provider, outer] of [
     );
   if (!outer)
     files["src/App.vue"] = files["src/App.vue"].replace("  <MyDivider />\n  <MyDivider />\n", "");
-  cases.push({ name, files, call, removed, required });
+  cases.push({
+    name,
+    files,
+    call,
+    removed,
+    required,
+    generalDefaultWarnings: provider ? 0 : 2,
+  });
 }
 for (const [name, call, prelude, removed, retainedSeverity] of [
   ["empty-literal-spread", "inject(InListKey, ...[])", "", 0, 1],
@@ -189,6 +197,15 @@ function optional(message: Message) {
     bodies.some((body) => message.message.endsWith(body))
   );
 }
+function newlyDefaultedUnusedProviderImport(message: Message) {
+  return (
+    message.ruleId === "vue/no-unused-setup-bindings" &&
+    [
+      "[vize:vue/no-unused-setup-bindings] Setup binding 'provide' is never read",
+      "[vize:vue/no-unused-setup-bindings] Setup binding 'InListKey' is never read",
+    ].includes(message.message)
+  );
+}
 try {
   evidence.publicBefore = invoke(baseline, ["--version"]);
   persist();
@@ -234,6 +251,26 @@ try {
     for (const packet of [before, after, beforeDoctor, afterDoctor]) valid(packet);
     const original = JSON.parse(before.stdout) as Packet[],
       actual = JSON.parse(after.stdout) as Packet[];
+    let generalDefaultWarnings = 0;
+    for (const packet of actual) {
+      const additions = packet.messages.filter(newlyDefaultedUnusedProviderImport);
+      if (additions.length > 0) {
+        assert.equal(
+          path.relative(workspace, path.resolve(workspace, packet.file)).replaceAll("\\", "/"),
+          "src/components/MyList.vue",
+        );
+        packet.messages = packet.messages.filter(
+          (message) => !newlyDefaultedUnusedProviderImport(message),
+        );
+        packet.warningCount -= additions.length;
+        generalDefaultWarnings += additions.length;
+      }
+    }
+    assert.equal(
+      generalDefaultWarnings,
+      input.generalDefaultWarnings ?? 0,
+      input.name + ": exact general-default additions",
+    );
     const expected = structuredClone(original);
     let removed = 0;
     for (const packet of expected) {

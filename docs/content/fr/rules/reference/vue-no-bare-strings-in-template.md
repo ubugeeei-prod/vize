@@ -30,12 +30,11 @@ Le texte visible et les attributs de nommage contiennent des chaînes non tradui
 
 Le contenu traduisible appelle $t ; les exemples de ponctuation et de valeurs uniquement numériques sont des exceptions autorisées.
 
-```vue annotate="add:2,3,4,5,6"
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
 <div>-</div>
-<div>123</div>
 <button :title="$t('close')">{{ $t('x') }}</button>
 </template>
 ```
@@ -61,4 +60,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)

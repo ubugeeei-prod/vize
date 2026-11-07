@@ -17,7 +17,6 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::ensure_sufficient_stack;
 use vize_relief::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -66,33 +65,47 @@ fn start_tag_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
     element.loc.clone()
 }
 
-/// Recover the whole element range. Relief intentionally keeps the start tag
-/// in `ElementNode::loc`, so the closing tag is found after the complete AST
-/// subtree. Starting after every child also handles nested elements with the
-/// same tag without a lexical nesting counter.
+fn tag_end(source: &[u8], start: usize) -> Option<usize> {
+    let mut quote = None;
+    for (offset, &byte) in source.get(start..)?.iter().enumerate() {
+        match (quote, byte) {
+            (Some(open), close) if open == close => quote = None,
+            (Some(_), _) => {}
+            (None, b'\'' | b'"') => quote = Some(byte),
+            (None, b'>') => return Some(start + offset),
+            (None, _) => {}
+        }
+    }
+    None
+}
+
+fn tag_name_matches(bytes: &[u8], start: usize, tag: &[u8]) -> bool {
+    let end = start + tag.len();
+    bytes
+        .get(start..end)
+        .is_some_and(|name| name.eq_ignore_ascii_case(tag))
+        && bytes
+            .get(end)
+            .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(*byte, b'/' | b'>'))
+}
+
+/// Recover the whole authored element range. Relief intentionally keeps only
+/// the start tag in `ElementNode::loc`. Counting same-name authored tags avoids
+/// relying on a repaired AST subtree: browser tree construction can split a
+/// nested interactive element into siblings, while recovered component trees
+/// can conversely retain a later authored root among the first node's children.
 fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
     let mut loc = element.loc.clone();
     if element.is_self_closing {
         return loc;
     }
 
-    let search_from = element
-        .children
-        .iter()
-        .fold(loc.span.end as usize, |end, child| {
-            let child_end = match child {
-                TemplateChildNode::Element(child) => {
-                    ensure_sufficient_stack(|| full_element_loc(source, child).span.end as usize)
-                }
-                other => other.loc().span.end as usize,
-            };
-            end.max(child_end)
-        });
     let bytes = source.as_bytes();
     let tag = element.tag.as_bytes();
-    let mut cursor = search_from;
+    let mut cursor = loc.span.end as usize;
+    let mut depth = 1usize;
 
-    while cursor + tag.len() + 3 <= bytes.len() {
+    while cursor < bytes.len() {
         let Some(relative) = bytes
             .get(cursor..)
             .and_then(|rest| rest.iter().position(|&byte| byte == b'<'))
@@ -100,23 +113,33 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
             break;
         };
         let start = cursor + relative;
-        let name_start = start + 2;
-        let name_end = name_start + tag.len();
-        if bytes.get(start + 1) == Some(&b'/')
-            && bytes
-                .get(name_start..name_end)
-                .is_some_and(|name| name.eq_ignore_ascii_case(tag))
-            && bytes
-                .get(name_end)
-                .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b'>')
-            && let Some(end_relative) = bytes
-                .get(name_end..)
-                .and_then(|rest| rest.iter().position(|&byte| byte == b'>'))
+        if bytes
+            .get(start..)
+            .is_some_and(|rest| rest.starts_with(b"<!--"))
         {
-            loc.span.end = (name_end + end_relative + 1) as u32;
-            return loc;
+            cursor = bytes
+                .get(start + 4..)
+                .and_then(|rest| memchr::memmem::find(rest, b"-->"))
+                .map_or(bytes.len(), |offset| start + 4 + offset + 3);
+            continue;
         }
-        cursor = start + 1;
+        let Some(end) = tag_end(bytes, start) else {
+            break;
+        };
+        if bytes.get(start + 1) == Some(&b'/') && tag_name_matches(bytes, start + 2, tag) {
+            depth -= 1;
+            if depth == 0 {
+                loc.span.end = (end + 1) as u32;
+                return loc;
+            }
+        } else if tag_name_matches(bytes, start + 1, tag)
+            && bytes.get(start + 1..end).is_some_and(|inside| {
+                inside.iter().rfind(|byte| !byte.is_ascii_whitespace()) != Some(&b'/')
+            })
+        {
+            depth += 1;
+        }
+        cursor = end + 1;
     }
 
     loc
@@ -191,6 +214,19 @@ impl Rule for NoMultipleTemplateRoot {
 
         // Only the last additional element is reported.
         if let Some(element) = shape.extra_element {
+            // HTML tree construction splits authored nested interactive
+            // elements such as `<button><button>` into root siblings. If the
+            // apparent extra root still lies before the authored closing tag
+            // of the first root, it was not authored as a Vue root.
+            let repaired_nested_root = root.children.iter().find_map(|child| {
+                let TemplateChildNode::Element(first) = child else {
+                    return None;
+                };
+                Some(element.loc.span.start < full_element_loc(ctx.source, first).span.end)
+            });
+            if repaired_nested_root == Some(true) {
+                return;
+            }
             let loc = full_element_loc(ctx.source, element);
             ctx.error_with_help(
                 ctx.t("vue/no-multiple-template-root.multiple_root"),
@@ -264,6 +300,85 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(NoMultipleTemplateRoot));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn browser_repaired_nested_interactive_content_is_not_an_extra_vue_root() {
+        for source in [
+            r#"<button><span>label</span><button>eject</button></button>"#,
+            r#"<form><section><form>nested</form></section></form>"#,
+        ] {
+            let result = linter().lint_template(source, "Probe.vue");
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| diagnostic.rule_name != RULE),
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn nested_template_in_an_authored_extra_root_is_still_reported() {
+        for source in [
+            r#"<first-root/><br/><br/><second-root><template #label><span>label</span></template></second-root>"#,
+            r#"<first-root><span>one</span></first-root><second-root><template #icon><span>two</span></template></second-root>"#,
+            r#"
+  <a-float-button-group shape="circle">
+    <a-float-button />
+  </a-float-button-group>
+  <a-float-button-group shape="square">
+    <a-float-button>
+      <template #icon><span>icon</span></template>
+    </a-float-button>
+  </a-float-button-group>
+"#,
+        ] {
+            let result = linter().lint_template(source, "Probe.vue");
+            assert_eq!(
+                result
+                    .diagnostics
+                    .iter()
+                    .filter(|diagnostic| diagnostic.rule_name == RULE)
+                    .count(),
+                1,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn sfc_custom_block_does_not_hide_an_extra_root_with_a_nested_template() {
+        let source = r#"<docs>
+`<FloatButton.Group />`
+</docs>
+
+<template>
+  <a-float-button-group shape="circle">
+    <a-float-button />
+  </a-float-button-group>
+  <a-float-button-group shape="square">
+    <a-float-button>
+      <template #icon><span>icon</span></template>
+    </a-float-button>
+  </a-float-button-group>
+</template>"#;
+        let result = crate::linter::Linter::with_all()
+            .with_enabled_rules(Some(vec![RULE.into()]))
+            .lint_sfc(source, "Probe.vue");
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == RULE)
+                .count(),
+            1,
+            "{:?}",
+            result.diagnostics
+        );
     }
 
     fn reported(result: &LintResult) -> Vec<(&'static str, String, u32, u32)> {

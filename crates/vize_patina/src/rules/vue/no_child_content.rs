@@ -27,6 +27,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
+use super::authored_closing;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-child-content",
     description: "Disallow child content when using v-html or v-text",
@@ -83,12 +85,17 @@ impl Rule for NoChildContent {
         if let Some(directive_name) = Self::has_v_html_or_v_text(element)
             && Self::has_child_content(element)
         {
+            let loc = authored_closing::find(ctx.source, element.loc.span.end, element.tag)
+                .map(|closing| {
+                    vize_relief::SourceLocation::new(element.loc.span.end, closing.start)
+                })
+                .unwrap_or_else(|| element.loc.clone());
             ctx.error_with_help(
                 ctx.t_fmt(
                     "vue/no-child-content.message",
                     &[("directive", directive_name)],
                 ),
-                &element.loc,
+                &loc,
                 ctx.t("vue/no-child-content.help"),
             );
         }
@@ -157,5 +164,17 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-html="content">   </div>"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn reports_only_the_authored_child_content() {
+        let source = "<div v-html=\"content\">\n  <span>child</span>\n</div>";
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            "\n  <span>child</span>\n"
+        );
     }
 }

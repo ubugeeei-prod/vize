@@ -17,9 +17,12 @@ Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la for
 
 La seule instruction significative du script ordinaire exporte un objet contenant uniquement `name` et `inheritAttrs` ; ces options peuvent être exprimées par `defineOptions`.
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,3,4,5"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
+</script>
+<script setup lang="ts">
+const ready = true
 </script>
 ```
 
@@ -58,4 +61,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de type et de script](../type-and-script.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L49)

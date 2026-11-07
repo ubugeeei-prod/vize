@@ -2,8 +2,8 @@
 //! No aliases, control flow, factory names or other option groups are resolved.
 
 use oxc_ast::ast::{
-    ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind, Program,
-    PropertyKey, Statement,
+    ArrayExpressionElement, ExportDefaultDeclarationKind, Expression, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 
 const MAX_ITEMS: usize = 4096;
@@ -39,26 +39,33 @@ pub(super) fn normal_setup_is_complete(program: &Program<'_>) -> bool {
                 PropertyKey::StringLiteral(key) => key.value.as_str(),
                 _ => return false,
             };
-            // These groups/inheritance can expose values; this bounded bridge
-            // does not infer their binding ownership or absence from metadata.
-            if matches!(
-                name,
-                "data" | "methods" | "computed" | "props" | "inject" | "mixins" | "extends"
-            ) {
-                return false;
-            }
-            if name == "setup" {
-                if setup_seen || !setup_keys_complete(&property.value) {
+            match name {
+                "props" | "inject" if !object_or_string_array_keys_complete(&property.value) => {
                     return false;
                 }
-                setup_seen = true;
+                "methods" | "computed" if !object_value_keys_complete(&property.value) => {
+                    return false;
+                }
+                "data" if !returned_keys_complete(&property.value) => return false,
+                "setup" => {
+                    if setup_seen || !returned_keys_complete(&property.value) {
+                        return false;
+                    }
+                    setup_seen = true;
+                }
+                // Vue's `$listeners` and `$scopedSlots` instance properties
+                // remain framework-owned even when a component uses mixins or
+                // extends another options object. Those composition surfaces
+                // cannot turn the reserved names into setup-owned bindings.
+                "mixins" | "extends" => {}
+                _ => {}
             }
         }
     }
     true
 }
 
-fn setup_keys_complete(value: &Expression<'_>) -> bool {
+fn returned_keys_complete(value: &Expression<'_>) -> bool {
     let statements = match value {
         Expression::FunctionExpression(function) => {
             if function.generator {
@@ -95,6 +102,24 @@ fn setup_keys_complete(value: &Expression<'_>) -> bool {
         }
     }
     true
+}
+
+fn object_or_string_array_keys_complete(value: &Expression<'_>) -> bool {
+    match value {
+        Expression::ObjectExpression(object) => object_keys_complete(object),
+        Expression::ArrayExpression(array) => {
+            array.elements.len() <= MAX_ITEMS
+                && array
+                    .elements
+                    .iter()
+                    .all(|element| matches!(element, ArrayExpressionElement::StringLiteral(_)))
+        }
+        _ => false,
+    }
+}
+
+fn object_value_keys_complete(value: &Expression<'_>) -> bool {
+    matches!(value, Expression::ObjectExpression(object) if object_keys_complete(object))
 }
 
 fn static_return_keys(value: &Expression<'_>) -> bool {

@@ -33,7 +33,7 @@ description: "禁止 v-for 和 v-slot 指令中未使用的变量定义。"
 ```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ data }">
     <span>{{ data }}</span>
   </template>
@@ -61,4 +61,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L47)

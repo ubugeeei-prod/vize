@@ -70,7 +70,7 @@ impl RequireVForKey {
         }
         let exact = ctx.is_template();
         if is_transparent(element, exact) {
-            if !element.has_directive("slot") && !has_markup_key(element, exact) {
+            if !has_markup_key(element, exact) {
                 Self::check_children(ctx, element, exact);
             }
             return;
@@ -255,12 +255,20 @@ impl MarkupRule for RequireVForKey {
     }
 
     fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
-        if list.has_authored_directive() {
-            return;
-        }
-        // Transformed scopes carry no authored directive attribute.
+        // Raw Relief retains the authored directive on the element and the
+        // attribute hook owns it. Lowered L2 consumes a valid v-for into the
+        // list op, while malformed directives remain attributes. Choose the
+        // one visible owner so neither form is missed or reported twice.
+        let authored_template_loop = ctx.is_template() && list.has_authored_directive();
         list.walk_elements(&mut |element| {
-            Self::check_keyed_element(ctx, &element, element.range(), false);
+            let mut visible_authored_directive = false;
+            element.walk_authored_directive_ranges("for", &mut |_| {
+                visible_authored_directive = true;
+            });
+            if authored_template_loop && visible_authored_directive {
+                return;
+            }
+            Self::check_keyed_element(ctx, &element, list.range(), authored_template_loop);
         });
     }
 }

@@ -103,6 +103,12 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         drawer
     };
     let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
+    // Linting still needs declarations from explicitly authored deprecated
+    // slot-scope syntax. Apply this after scripts were analyzed so it cannot
+    // opt the component into Vue 2 Options API behavior.
+    if options.legacy_template_scopes && !mode.legacy_vue2 {
+        drawer = drawer.with_legacy_vue2();
+    }
 
     if let Some(root) = template_ast {
         profile!("atelier.sfc.croquis.template", drawer.draw_template(root));

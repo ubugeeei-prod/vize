@@ -10,7 +10,7 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
 
   assert.equal(ruleMap.upstream.version, "10.9.2");
   assert.equal(ruleMap.upstream.ruleCount, 252);
-  assert.deepEqual(ruleMap.summary, { mapped: 151, unimplemented: 99, intentionalDivergence: 2 });
+  assert.deepEqual(ruleMap.summary, { mapped: 150, unimplemented: 99, intentionalDivergence: 3 });
   assert.deepEqual(ruleMap.entries["vue/component-definition-name-casing"], {
     status: "intentional-divergence",
     reason:
@@ -20,5 +20,10 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
     status: "intentional-divergence",
     reason:
       "Patina intentionally checks defineProps declarations only; eslint-plugin-vue also checks Options API props, so the surfaces are not comparable.",
+  });
+  assert.deepEqual(ruleMap.entries["vue/v-on-handler-style"], {
+    status: "intentional-divergence",
+    reason:
+      "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
   });
 });

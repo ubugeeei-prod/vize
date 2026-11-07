@@ -27,8 +27,58 @@ export function currentPresetCases(body: Buffer, essentialCases: string[], manif
 // Remove only the exact 2026-11-06 general-default additions before older
 // byte-identity audits replay their frozen source ledgers.
 export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffer {
-  if (name === "crates/vize_patina/src/rule/happy_path.rs") {
+  if (name === "crates/vize_patina/src/rules/script/define_macros_order.rs") {
     const text = body.toString();
+    const after = `        Statement::ImportDeclaration(_)
+        | Statement::TSEnumDeclaration(_)
+        | Statement::TSGlobalDeclaration(_)
+        | Statement::TSModuleDeclaration(_)`;
+    const before = `        Statement::ImportDeclaration(_)
+        | Statement::TSEnumDeclaration(_)
+        | Statement::TSModuleDeclaration(_)`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/linter/script_rules/registry.rs") {
+    const text = body.toString();
+    const after = `    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,
+    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
+    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,`;
+    const before = `    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,
+    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/rules/opinionated/vue.rs") {
+    const text = body.toString();
+    const after = `pub(crate) mod authored_element;
+mod component_name_in_template_casing;
+mod component_registration;`;
+    const before = `mod authored_element;
+mod component_name_in_template_casing;`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/rule/happy_path.rs") {
+    let text = body.toString();
+    const strictSlotDefault = `        // Match eslint-plugin-vue's strict default. Component libraries which
+        // intentionally encode dots in slot names can opt into
+        // \`allowModifiers: true\`.
+        registry.register(Box::new(crate::rules::vue::ValidVSlot));`;
+    const legacySlotDefault = `        // Vue's parser records dots in static slot names as directive
+        // modifiers. Component libraries intentionally use names such as
+        // \`item.name\`, so the default preset keeps the historical behavior
+        // of accepting them. Projects that need the stricter eslint-plugin-vue
+        // policy can still set \`allowModifiers: false\` explicitly.
+        registry.register(Box::new(
+            crate::rules::vue::ValidVSlot::allowing_static_name_dots(),
+        ));`;
+    assert.equal(text.split(strictSlotDefault).length, 2);
+    text = text.replace(strictSlotDefault, legacySlotDefault);
     const after = `        registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
         registry.register(Box::new(crate::rules::vue::NoUndefinedRefs));
         registry.register(Box::new(crate::rules::facts::NoUnusedSetupBindings));
@@ -179,6 +229,21 @@ export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffe
       ]);
       value.entries[rule].patinaPresets = [];
     }
+    assert.deepEqual(value.entries["vue/v-on-handler-style"], {
+      reason:
+        "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
+      status: "intentional-divergence",
+    });
+    value.entries["vue/v-on-handler-style"] = {
+      patinaPresets: ["nuxt", "opinionated"],
+      patinaRule: "vue/v-on-handler-style",
+      patinaSeverity: "warning",
+      status: "mapped",
+    };
+    assert.equal(value.summary.intentionalDivergence, 3);
+    assert.equal(value.summary.mapped, 150);
+    value.summary.intentionalDivergence = 2;
+    value.summary.mapped = 151;
     return jsonBytes(value);
   }
   if (

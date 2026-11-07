@@ -35,6 +35,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::tag_policy::DEPRECATED_ELEMENTS;
 use oxc_parser::ParserReturn;
 use vize_croquis::builtins::is_builtin_component;
 use vize_l0::String;
@@ -256,7 +257,10 @@ impl NoReservedComponentNames {
 }
 
 fn is_reserved_native_component_name(name: &str) -> bool {
-    is_html_tag(name) || is_svg_tag(name) || is_capitalized_lowercase_native_name(name)
+    is_html_tag(name)
+        || is_svg_tag(name)
+        || DEPRECATED_ELEMENTS.contains(&name)
+        || is_capitalized_lowercase_native_name(name)
 }
 
 fn is_capitalized_lowercase_native_name(name: &str) -> bool {
@@ -272,7 +276,9 @@ fn is_capitalized_lowercase_native_name(name: &str) -> bool {
     // Only the first byte is uppercase, and it is ASCII.
     let mut lowercase = String::from(name);
     lowercase.make_ascii_lowercase();
-    is_html_tag(lowercase.as_str()) || is_svg_tag(lowercase.as_str())
+    is_html_tag(lowercase.as_str())
+        || is_svg_tag(lowercase.as_str())
+        || DEPRECATED_ELEMENTS.contains(&lowercase.as_str())
 }
 
 struct ComponentNameFinding {

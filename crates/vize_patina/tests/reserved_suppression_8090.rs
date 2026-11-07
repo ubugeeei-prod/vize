@@ -133,7 +133,7 @@ fn registered_aliases_preserve_complete_rule_and_comment_scope_packets() {
             ),
         ];
         for (route, linter, findings) in routes {
-            let findings = if case["id"] == "setup-block-cannot-leak" {
+            let findings = if case["id"] == "setup-block-cannot-leak" && route != "essential" {
                 &[]
             } else {
                 findings

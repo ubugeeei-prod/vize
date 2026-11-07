@@ -39,6 +39,15 @@ fn test_explicit_pascal_case_html_name_is_invalid_like_eslint_plugin_vue() {
 }
 
 #[test]
+fn test_deprecated_pascal_case_html_name_is_reserved() {
+    let result = create_linter().lint_sfc(
+        r#"<script>export default { name: 'Menuitem' }</script><template><div /></template>"#,
+        "Menuitem.vue",
+    );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_all_caps_html_name_is_valid_like_eslint_plugin_vue() {
     let linter = create_linter();
     let result = linter.lint_sfc(

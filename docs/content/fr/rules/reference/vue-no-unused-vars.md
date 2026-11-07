@@ -33,7 +33,7 @@ Les exemples utilisent index ou indiquent qu’il est volontairement inutilisé 
 ```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ data }">
     <span>{{ data }}</span>
   </template>
@@ -61,4 +61,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L47)

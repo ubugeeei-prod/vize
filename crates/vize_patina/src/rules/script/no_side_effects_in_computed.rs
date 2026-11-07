@@ -145,7 +145,7 @@ fn check_computed_object(
 ///
 /// Accepts the shorthand `foo() {}` / `foo: () => {}` getter forms and the
 /// accessor-object form `foo: { get() {} }`.
-fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
+pub(super) fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
     match &property.value {
         Expression::FunctionExpression(function) => Some(GetterBody::Function(function)),
         Expression::ArrowFunctionExpression(arrow) => Some(GetterBody::Arrow(arrow)),
@@ -181,7 +181,7 @@ fn accessor_object_getter<'a>(object: &'a ObjectExpression<'a>) -> Option<Getter
     None
 }
 
-enum GetterBody<'a> {
+pub(super) enum GetterBody<'a> {
     Function(&'a Function<'a>),
     Arrow(&'a oxc_ast::ast::ArrowFunctionExpression<'a>),
 }
@@ -260,8 +260,21 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Expression::StaticMemberExpression(member) = &it.callee
+            && member.property.name == "$set"
+            && matches!(
+                member.object.get_inner_expression(),
+                Expression::ThisExpression(_)
+            )
+        {
+            self.report(member.property.span, "a call to `this.$set`");
+        }
+        if let Expression::StaticMemberExpression(member) = &it.callee
             && MUTATING_ARRAY_METHODS.contains(&member.property.name.as_str())
-            && (expression_root_is_this(&member.object)
+            && ((expression_root_is_this(&member.object)
+                && matches!(
+                    member.object.without_parentheses(),
+                    Expression::StaticMemberExpression(_) | Expression::ComputedMemberExpression(_)
+                ))
                 || composition::root_is_external(&member.object, self.scoping, self.getter_span))
         {
             self.report(
@@ -295,7 +308,9 @@ impl SideEffectVisitor<'_> {
     }
 }
 
-fn find_computed_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {
+pub(super) fn find_computed_object<'a>(
+    options: &'a ObjectExpression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     for property in &options.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -328,7 +343,9 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
 // expression wrappers.
 // ---------------------------------------------------------------------------
 
-fn find_component_options<'a>(program: &'a Program<'a>) -> Option<&'a ObjectExpression<'a>> {
+pub(super) fn find_component_options<'a>(
+    program: &'a Program<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     let mut bindings: FxHashMap<&'a str, &'a ObjectExpression<'a>> = FxHashMap::default();
 
     for statement in program.body.iter() {
@@ -617,6 +634,21 @@ export default {
     }
 
     #[test]
+    fn test_component_method_named_sort_is_not_assumed_to_mutate() {
+        let source = r#"
+export default {
+  computed: {
+    items() {
+      return this.sort()
+    }
+  }
+}
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_valid_assignment_to_local_variable() {
         let source = r#"
 export default {
@@ -724,5 +756,26 @@ export default {
 "#;
         let result = create_linter().lint(source, 0);
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn reports_this_set_in_options_computed() {
+        let source = r#"
+export default {
+  computed: {
+    rows() {
+      this.$set(row, index, cell)
+      return row
+    }
+  }
+}
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            "$set"
+        );
     }
 }

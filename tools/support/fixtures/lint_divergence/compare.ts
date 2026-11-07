@@ -2,6 +2,7 @@ import path from "node:path";
 import {
   classifyReferenceCoverage,
   eligibleReferenceCoverage,
+  referenceCoverageCases,
 } from "../lint_reference_coverage.ts";
 import {
   baselineIntentionalReason,
@@ -11,6 +12,7 @@ import {
   groupByIdentity,
   outsideBaselineSurface,
   pairRuleLocationDivergences,
+  patinaIntentionalReason,
   recordValue,
   type LintRecord,
 } from "./records.ts";
@@ -27,6 +29,21 @@ import {
   type JsonObject,
   JsonFloat,
 } from "./value.ts";
+
+export type BaselineRuleSetting = string | [string, JsonObject];
+
+function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSetting {
+  // Patina deliberately makes the Vue 3.5 destructuring preference stronger
+  // than eslint-plugin-vue's default. Equal options keep bare calls from being
+  // mislabeled as false positives in an all-preset comparison.
+  if (upstream === "vue/define-props-destructuring") {
+    return [severity, { destructure: "always" }];
+  }
+  if (upstream === "vue/match-component-file-name") {
+    return [severity, { extensions: ["jsx", "vue"] }];
+  }
+  return severity;
+}
 
 export function indexRuleMap(ruleMap: Json) {
   const entries = object(get(ruleMap, "entries"));
@@ -50,7 +67,7 @@ export function selectComparableRules(
 ) {
   const entries = object(get(ruleMap, "entries"));
   if (!entries) throw new Error("rule map must carry entries");
-  const rules: Record<string, string> = {};
+  const rules: Record<string, BaselineRuleSetting> = {};
   let mappedRuleCount = 0,
     skippedByPresetCount = 0;
   for (const upstream of Object.keys(entries).sort(byteOrder)) {
@@ -67,7 +84,8 @@ export function selectComparableRules(
         skippedByPresetCount++;
         continue;
       }
-      rules[upstream] = get(entry, "patinaSeverity") === "error" ? "error" : "warn";
+      const severity = get(entry, "patinaSeverity") === "error" ? "error" : "warn";
+      rules[upstream] = baselineRuleSetting(upstream, severity);
     } else if (status === "intentional-divergence") {
       /* explicitly outside the comparison */
     } else if (typeof status === "string")
@@ -111,6 +129,11 @@ export function compareLintFindings(
       };
     },
   );
+  const reviewedReferenceFindings = new Set(
+    referenceCoverageCases()
+      .filter((entry) => entry.project === project)
+      .map((entry) => canonicalJson(entry.finding as Json)),
+  );
   const unimplemented: Json[] = [],
     intentionalDivergences: Json[] = [],
     comparableBaseline: LintRecord[] = [];
@@ -123,7 +146,7 @@ export function compareLintFindings(
     else if (status === "intentional-divergence")
       intentionalDivergences.push({ ...finding, reason: get(entry, "reason") });
     else if (status === "mapped") {
-      const reason = baselineIntentionalReason(finding);
+      const reason = baselineIntentionalReason(finding, sourceFor(finding.file));
       if (reason !== null) intentionalDivergences.push({ ...finding, reason });
       else {
         const target = get(entry, "patinaRule");
@@ -138,6 +161,11 @@ export function compareLintFindings(
     patinaOutsideBaselineSurface: Json[] = [];
   const sources = new Map<string, string | null>(),
     coveredCases = new Set<string>();
+  const measuredFiles = new Set(
+    (Array.isArray(context.files) ? context.files : []).filter(
+      (file): file is string => typeof file === "string",
+    ),
+  );
   for (const finding of patina) {
     if (!sources.has(finding.file)) sources.set(finding.file, sourceFor(finding.file));
     const source = sources.get(finding.file) ?? null;
@@ -195,6 +223,34 @@ export function compareLintFindings(
   const ruleLocationDivergences = sortValues(
     pairRuleLocationDivergences(falsePositives, falseNegatives),
   );
+  for (let index = falsePositives.length - 1; index >= 0; index--) {
+    const finding = falsePositives[index];
+    // A reporter finding outside the reconciled corpus is always an
+    // over-report. Source-based semantic classifiers have no authority over a
+    // file the two providers were not asked to compare.
+    if (!measuredFiles.has(finding.file)) continue;
+    // Reference-coverage custody exempts exactly one reviewed finding. Any
+    // duplicate must stay a false positive so the integrity check cannot hide
+    // an over-report behind the same semantic-divergence classifier.
+    if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
+    if (finding.ruleId === "vue/no-unused-components") continue;
+    const source = sources.get(finding.file) ?? null;
+    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    if (reason === null) continue;
+    falsePositives.splice(index, 1);
+    intentionalDivergences.push({ ...recordValue(finding), reason });
+  }
+  for (let index = falsePositives.length - 1; index >= 0; index--) {
+    const finding = falsePositives[index];
+    if (!measuredFiles.has(finding.file)) continue;
+    if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
+    if (finding.ruleId !== "vue/no-unused-components") continue;
+    const source = sources.get(finding.file) ?? null;
+    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    if (reason === null) continue;
+    falsePositives.splice(index, 1);
+    intentionalDivergences.push({ ...recordValue(finding), reason });
+  }
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
   const ratio = (count: number, total: number) => (total === 0 ? 0 : count / total);
@@ -204,8 +260,7 @@ export function compareLintFindings(
     ).length,
     patinaFindingCount:
       comparablePatina.length + patinaOnlyRuleFindings.length + patinaOutsideBaselineSurface.length,
-    baselineFindingCount:
-      comparableBaseline.length + unimplemented.length + intentionalDivergences.length,
+    baselineFindingCount: baseline.findings.length,
     comparableBaselineCount: comparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,

@@ -259,7 +259,7 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2 + 7 + 3 + 15 + 4 + 2 + 2 + 6 + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -321,6 +321,27 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Current native callback controls add eight calls: two literal inputs and
     // six variable-input observations. Every full facade comparison still runs;
     // these add thirteen retained trace lines, not semantic qualification credit.
+    // Real-project parity regressions add seven literal fixtures over ten calls;
+    // three helper-driven calls remain honest dynamic-input scanner skips.
+    // Script-binding and precise-range regressions add three literal fixtures
+    // over four calls; the helper-driven call remains an honest scanner skip.
+    // Real-project lint parity adds fifteen literal fixtures over seventeen
+    // calls; three helper-driven calls remain explicit scanner skips. The
+    // receiver and expression-tokenizer regressions add two focused dynamic
+    // calls, both retained as explicit scanner skips.
+    // The final real-project parity pass adds four literal fixtures and calls;
+    // their complete traces add thirty-four lines.
+    // The same-element v-if/v-for parity probe adds one nonliteral call and
+    // remains an explicit scanner skip while its focused rule test executes.
+    // XML-name and Vue 2 slot-scope parity add two literal fixtures and calls;
+    // their complete traces add ten lines.
+    // Slot outlets and ref reassignment add two literal fixtures and calls;
+    // their complete traces add thirteen lines.
+    // Scriptless custom-event casing and the real-project accuracy regressions
+    // add six literal fixtures, nine calls, three skipped projections, and
+    // fifty-one complete trace lines.
+    // Generated v-for parser recovery adds one literal fixture over two calls;
+    // the source variable is one explicit scanner skip and adds twelve lines.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -338,7 +359,17 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 3
         + 1
-        + 8,
+        + 8
+        + 10
+        + 4
+        + 17
+        + 2
+        + 4
+        + 1
+        + 2
+        + 2
+        + 9
+        + 2,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -362,9 +393,28 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 3
         + 1
-        + 6,
+        + 6
+        + 3
+        + 1
+        + 3
+        + 2
+        + 1
+        + 3
+        + 1,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13,
+    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
+        + 31
+        + 42
+        + 4
+        + 13
+        + 51
+        + 18
+        + 102
+        + 34
+        + 10
+        + 13
+        + 51
+        + 12,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

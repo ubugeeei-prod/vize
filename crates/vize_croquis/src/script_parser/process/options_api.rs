@@ -874,9 +874,17 @@ fn collect_descriptor_members(
                 push_object_key_members(object, group, members);
             }
         }
-        // `data`/`setup` are functions whose returned object literal declares
-        // members.
-        OptionGroup::Data | OptionGroup::Setup => {
+        // Vue 2 also accepted a direct object for `data`; keep its keys visible
+        // so migration rules can still detect collisions with the function
+        // form or other option groups.
+        OptionGroup::Data => {
+            if let Expression::ObjectExpression(object) = value {
+                push_object_key_members(object, group, members);
+            } else if let Some(object) = descriptor_returned_object(value) {
+                push_object_key_members(object, group, members);
+            }
+        }
+        OptionGroup::Setup => {
             if let Some(object) = descriptor_returned_object(value) {
                 push_object_key_members(object, group, members);
             }

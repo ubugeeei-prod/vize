@@ -64,11 +64,13 @@ impl Rule for ValidVElse {
 
         // Check 1: v-else should not have an expression
         if directive.exp.is_some() {
+            let span =
+                unexpected_expression_span(ctx.source, directive).unwrap_or(directive.loc.span);
             let mut diagnostic = crate::diagnostic::LintDiagnostic::error(
                 META.name,
                 ctx.t("vue/valid-v-else.unexpected_expression").as_ref(),
-                directive.loc.span.start,
-                directive.loc.span.end,
+                span.start,
+                span.end,
             )
             .with_help(ctx.t("vue/valid-v-else.help").as_ref());
             if let Some(fix) = unexpected_expression_fix(ctx.source, directive) {
@@ -90,6 +92,16 @@ impl Rule for ValidVElse {
             );
         }
     }
+}
+
+fn unexpected_expression_span(source: &str, directive: &DirectiveNode) -> Option<vize_l0::Span> {
+    let authored =
+        source.get(directive.loc.span.start as usize..directive.loc.span.end as usize)?;
+    let separator = authored.find('=')?;
+    let leading =
+        authored.get(separator + 1..)?.len() - authored.get(separator + 1..)?.trim_start().len();
+    let start = directive.loc.span.start + u32::try_from(separator + 1 + leading).ok()?;
+    Some(vize_l0::Span::new(start, directive.loc.span.end))
 }
 
 fn unexpected_expression_fix(source: &str, directive: &DirectiveNode) -> Option<Fix> {
@@ -171,6 +183,12 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        let source = r#"<div v-if="foo"></div><div v-else="bar"></div>"#;
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            "\"bar\""
+        );
         assert_eq!(
             result.diagnostics[0]
                 .fix

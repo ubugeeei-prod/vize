@@ -87,7 +87,7 @@ mod valid_define_options;
 mod valid_define_props;
 mod valid_model_definition;
 mod valid_next_tick;
-mod vue_object;
+pub(crate) mod vue_object;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 
@@ -206,6 +206,21 @@ pub trait ScriptRule: Send + Sync {
     ) {
         let _ = sfc;
         self.check_program(program, source, offset, result);
+    }
+
+    /// Check an SFC that has a template but no script block.
+    ///
+    /// Rules whose evidence can live entirely in the template use this hook
+    /// instead of requiring the dispatcher to manufacture an empty script
+    /// program. The default is deliberately silent.
+    fn check_scriptless_sfc(&self, sfc: SfcScriptContext<'_>, result: &mut ScriptLintResult) {
+        let _ = (sfc, result);
+    }
+
+    /// Whether this rule needs a validated template AST for a scriptless SFC.
+    #[inline]
+    fn runs_on_scriptless_sfc(&self) -> bool {
+        false
     }
 
     /// Actual configured native SFC capability; default refusal prevents namesake admission.

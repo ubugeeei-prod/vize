@@ -389,7 +389,7 @@ export default {
 }
 </script>
 "#;
-    let result = linter.lint_sfc(sfc, "test.vue");
+    let result = linter.lint_sfc(sfc, "OptionsApiFixture.vue");
     assert_eq!(result.error_count, 1);
     assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
 }

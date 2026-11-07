@@ -7,23 +7,24 @@
 //! ### Invalid (default config)
 //! ```vue
 //! <div></div>  <!-- should be <div /> when empty -->
-//! <img>        <!-- should be <img /> -->
-//! <br>         <!-- should be <br /> -->
+//! <img />      <!-- should be <img> -->
+//! <br />       <!-- should be <br> -->
 //! ```
 //!
 //! ### Valid
 //! ```vue
 //! <div />
-//! <img />
-//! <br />
+//! <img>
+//! <br>
 //! <div>content</div>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
-use vize_relief::{ElementNode, ElementType, Namespace};
+use crate::rules::opinionated::vue::authored_element::closing;
+use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
+use vize_relief::{ElementNode, ElementType, ExpressionNode, Namespace, PropNode};
 
 mod fix;
 
@@ -57,8 +58,8 @@ pub struct HtmlSelfClosingHtmlOptions {
 impl Default for HtmlSelfClosingHtmlOptions {
     fn default() -> Self {
         Self {
-            void: HtmlSelfClosingStyle::Always,
-            normal: HtmlSelfClosingStyle::Any,
+            void: HtmlSelfClosingStyle::Never,
+            normal: HtmlSelfClosingStyle::Always,
             component: HtmlSelfClosingStyle::Always,
         }
     }
@@ -144,6 +145,18 @@ fn check_element<'a>(
     options: HtmlSelfClosingOptions,
     allow_vuetify_tags: bool,
 ) {
+    // vue-eslint-parser treats the contents of <noscript> as raw text. Relief
+    // retains the authored nodes for editor features, but this compatibility
+    // rule must not lint markup that upstream cannot observe.
+    if ctx
+        .element_stack
+        .iter()
+        .take(ctx.element_stack.len().saturating_sub(1))
+        .any(|ancestor| ancestor.tag == "noscript")
+    {
+        return;
+    }
+
     let tag = element.tag;
     if allow_vuetify_tags && is_vuetify_tag(tag) {
         return;
@@ -168,11 +181,11 @@ fn check_element<'a>(
         return;
     }
 
-    let has_children = !element.children.is_empty();
     let is_self_closing = element.is_self_closing || authored_self_closing(ctx, element);
+    let is_empty = authored_empty(ctx, element);
 
     match style {
-        HtmlSelfClosingStyle::Always if !has_children && !is_self_closing => {
+        HtmlSelfClosingStyle::Always if is_empty && !is_self_closing => {
             report(
                 ctx,
                 element,
@@ -201,7 +214,7 @@ fn report(
     message: std::borrow::Cow<'_, str>,
     help: std::borrow::Cow<'_, str>,
 ) {
-    let span = element.loc.span;
+    let span = diagnostic_span(ctx, element, style);
     let message: vize_l0::String = message.as_ref().into();
     let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
     if let Some(processed) = ctx.help_level().process(&help) {
@@ -213,6 +226,32 @@ fn report(
         diagnostic = diagnostic.with_fix(fix);
     }
     ctx.report(diagnostic);
+}
+
+fn authored_empty(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
+    if element.ns == Namespace::Html && is_void_tag(element.tag) {
+        return true;
+    }
+    let Some(close) = closing(ctx.source, element) else {
+        // Do not infer emptiness from a recovered parser node. Invalid or
+        // mismatched end tags can leave a node with no children even though the
+        // authored range is not provably empty.
+        return !ctx.filename.ends_with(".vue") && element.children.is_empty();
+    };
+    ctx.source
+        .get(element.loc.span.end as usize..close.start)
+        .is_some_and(|content| content.trim().is_empty())
+}
+
+fn diagnostic_span(
+    _ctx: &LintContext<'_>,
+    element: &ElementNode<'_>,
+    _style: HtmlSelfClosingStyle,
+) -> Span {
+    // eslint-plugin-vue reports the authored start tag for both directions.
+    // The closing tag (or just its slash) is an implementation detail of the
+    // edit and is a much less useful diagnostic anchor.
+    element.loc.span
 }
 
 #[derive(Clone, Copy)]
@@ -227,14 +266,17 @@ enum SelfClosingElementKind {
 
 fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
     let tag = element.tag;
+    // A custom element named <view> is also an SVG tag. Relief consequently
+    // propagates the SVG namespace to its children, while vue-eslint-parser
+    // only enters SVG mode for an authored <svg>. HTML void tags retain their
+    // HTML closing contract even in that recovered namespace.
+    if is_void_tag(tag) {
+        return SelfClosingElementKind::VoidHtml;
+    }
     match element.ns {
         Namespace::Svg => return SelfClosingElementKind::Svg,
         Namespace::MathMl => return SelfClosingElementKind::Math,
         Namespace::Html => {}
-    }
-
-    if is_void_tag(tag) {
-        return SelfClosingElementKind::VoidHtml;
     }
 
     if is_svg_tag(tag) {
@@ -245,8 +287,9 @@ fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
         return SelfClosingElementKind::Math;
     }
 
-    if (element.tag_type == ElementType::Component || is_component_like_tag(tag))
-        && !is_nuxt_builtin_component(tag)
+    if element.tag_type == ElementType::Component
+        || has_component_cast(element)
+        || !is_html_element_name(tag)
     {
         return SelfClosingElementKind::Component;
     }
@@ -259,14 +302,28 @@ fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
 }
 
 fn is_html_element_name(tag: &str) -> bool {
+    if tag == "slot" {
+        return true;
+    }
     if tag.bytes().all(|b| !b.is_ascii_uppercase()) {
         return is_html_tag(tag);
     }
     is_html_tag(&tag.to_lowercase())
 }
 
-fn is_component_like_tag(tag: &str) -> bool {
-    tag.contains('-') || tag.chars().next().is_some_and(char::is_uppercase)
+fn has_component_cast(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attribute) => attribute.name == "is",
+        PropNode::Directive(directive) => {
+            directive.name == "is"
+                || (directive.name == "bind"
+                    && matches!(
+                        directive.arg.as_ref(),
+                        Some(ExpressionNode::Simple(arg))
+                            if arg.is_static && arg.content == "is"
+                    ))
+        }
+    })
 }
 
 fn authored_self_closing(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
@@ -286,30 +343,6 @@ fn authored_self_closing(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bo
         }
     }
     false
-}
-
-fn is_nuxt_builtin_component(tag: &str) -> bool {
-    matches!(
-        tag,
-        "nuxt"
-            | "nuxt-child"
-            | "nuxt-page"
-            | "nuxt-layout"
-            | "nuxt-link"
-            | "nuxt-loading-indicator"
-            | "nuxt-error-boundary"
-            | "client-only"
-            | "no-ssr"
-            | "Nuxt"
-            | "NuxtChild"
-            | "NuxtPage"
-            | "NuxtLayout"
-            | "NuxtLink"
-            | "NuxtLoadingIndicator"
-            | "NuxtErrorBoundary"
-            | "ClientOnly"
-            | "NoSsr"
-    )
 }
 
 /// Matches the Vuetify `v-*` tag convention (e.g. `v-btn`, `v-dialog`).

@@ -3366,6 +3366,7 @@
       "revision": "881e6803832b535aff3ef90a9aee9fba6aae1a9a",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
+      "lintDivergenceExcludePaths": ["packages/loader/test/fixtures/pre.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "curator-compare"
     },

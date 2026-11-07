@@ -15,28 +15,30 @@ description: "要素の種類ごとに自己終了タグの形式を揃えます
 
 ## 悪い例
 
-空のコンポーネントを開始タグと終了タグの組で書き、img と br に設定された自己終了タグの表記を使っていません。
+空のコンポーネントと通常の div を開始タグと終了タグの組で書いており、設定された自己終了タグの表記に合いません。
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:3,4"
 <template>
-  <MyComponent></MyComponent>
-  <img>
-  <br>
+  <section>
+    <MyComponent></MyComponent>
+    <div></div>
+  </section>
 </template>
 ```
 
 ## 良い例
 
-コンポーネントと void 要素を自己終了タグで書きます。内容がある div は終了タグを残します。
+空のコンポーネントと通常要素は自己終了タグにし、void 要素はスラッシュを付けません。内容がある要素は終了タグを残します。
 
-```vue annotate="add:2,3,4,5,6,7"
+```vue annotate="add:3,4,5,6,7"
 <template>
-  <MyComponent />
-  <div></div>
-  <div />
-  <img />
-  <br />
-  <div>content</div>
+  <section>
+    <MyComponent />
+    <div />
+    <img>
+    <br>
+    <div>content</div>
+  </section>
 </template>
 ```
 
@@ -62,4 +64,4 @@ export default defineConfig({}).withVue({
 - [Vue ルール](../vue.md)
 - [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L31)

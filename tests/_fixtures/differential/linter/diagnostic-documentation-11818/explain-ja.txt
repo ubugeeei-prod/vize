@@ -1764,12 +1764,12 @@ script/component-options-name-casing · lint ルール
 
 不正な例:
   export default {
-    name: 'my-component' // kebab-case
+    components: { myComponent }
   }
 
 正しい例:
   export default {
-    name: 'MyComponent'
+    components: { MyComponent }
   }
 === script/consistent-props-emits-key-quotes
 script/consistent-props-emits-key-quotes · lint ルール
@@ -1819,7 +1819,7 @@ script/custom-event-name-casing · lint ルール
 script/define-emits-declaration · lint ルール
 defineEmits にはランタイム・配列形式ではなく型ベースの defineEmits<{}>() 形式を強制する
 
-精度: exact
+精度: complete
 対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 重大度: 警告
 カテゴリー: script
@@ -1867,7 +1867,7 @@ script/define-macros-order · lint ルール
 script/define-props-declaration · lint ルール
 defineProps にはランタイム・オブジェクト形式ではなく型ベースの defineProps<{ ... }>() を強制する
 
-精度: exact
+精度: complete
 対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 重大度: 警告
 カテゴリー: script
@@ -2172,12 +2172,10 @@ Vue 3 で削除された $scopedSlots インスタンスプロパティを禁止
 
 不正な例:
   const header = this.$scopedSlots.header
-  const footer = ctx.$scopedSlots.footer
   render($scopedSlots.default)
 
 正しい例:
   const header = this.$slots.header
-  const footer = ctx.$slots.footer
   render($slots.default)
 === script/no-deprecated-events-api
 script/no-deprecated-events-api · lint ルール
@@ -2258,12 +2256,6 @@ props の default・validator 関数の中での `this` を禁止する（Vue 3 
           return this.defaultSize
         }
       },
-      value: {
-        type: Number,
-        validator() {
-          return this.value > 0
-        }
-      }
     }
   }
 
@@ -2913,12 +2905,8 @@ script/one-component-per-file · lint ルール
 ドキュメント: docs/content/rules/reference/script-one-component-per-file.md
 
 不正な例:
-  export default {
-    name: 'Parent',
-    components: {
-      Child: { name: 'Child' }
-    }
-  }
+  const First = defineComponent({ name: 'First' })
+  const Second = defineComponent({ name: 'Second' })
 
 正しい例:
   export default {
@@ -2982,7 +2970,12 @@ name や inheritAttrs を設定するだけの通常の <script> より defineOp
 ドキュメント: docs/content/rules/reference/script-prefer-define-options.md
 
 不正な例:
+  <script lang="ts">
   export default { name: 'MyComponent', inheritAttrs: false }
+  </script>
+  <script setup lang="ts">
+  const ready = true
+  </script>
 
 正しい例:
   // Real options logic — keep the plain script.
@@ -3226,8 +3219,12 @@ useSlots() で使うスロットに defineSlots<...>() での明示的な型付�
 ドキュメント: docs/content/rules/reference/script-require-explicit-slots.md
 
 不正な例:
-  const props = defineProps<{ id: number }>()
-  const slots = useSlots()
+  <script setup lang="ts">
+  defineSlots<{ default(): unknown }>()
+  </script>
+  <template>
+    <div><slot /><slot name="footer" /></div>
+  </template>
 
 正しい例:
   defineSlots<{ default(props: { msg: string }): unknown }>()
@@ -3359,7 +3356,7 @@ $slots のプロパティを関数として呼び出すことを必須にする
 不正な例:
   export default {
     render() {
-      return this.$slots.default
+      return [this.$slots.default]
     }
   }
 
@@ -4002,13 +3999,13 @@ vue/html-self-closing · lint ルール
 
 不正な例:
   <div></div>  <!-- should be <div /> when empty -->
-  <img>        <!-- should be <img /> -->
-  <br>         <!-- should be <br /> -->
+  <img />      <!-- should be <img> -->
+  <br />       <!-- should be <br> -->
 
 正しい例:
   <div />
-  <img />
-  <br />
+  <img>
+  <br>
   <div>content</div>
 
 ヒント:
@@ -4156,7 +4153,6 @@ vue/no-bare-strings-in-template · lint ルール
   <div>{{ $t('hello') }}</div>
   <img :alt="$t('cat')" />
   <div>-</div>
-  <div>123</div>
   <button :title="$t('close')">{{ $t('x') }}</button>
 
 ヒント:
@@ -4821,7 +4817,7 @@ vue/no-script-non-standard-lang · lint ルール
 vue/no-setup-props-reactivity-loss · lint ルール
 リアクティビティを失う setup の props 参照を禁止する
 
-精度: exact
+精度: complete
 対象: the syntax of <script> and <script setup> programs, without type information
 重大度: 警告
 カテゴリー: script
@@ -5116,9 +5112,6 @@ v-forディレクティブで未使用の変数定義を禁止する
 正しい例:
   <li v-for="(item, index) in items" :key="index">{{ item }}</li>
   <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-  
-  <!-- Underscore prefix indicates intentionally unused -->
-  <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
   
   <template v-slot="{ data }">
     <span>{{ data }}</span>
@@ -5432,12 +5425,11 @@ trueをバインドする真偽値属性は省略形を推奨する
 ドキュメント: docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md
 
 不正な例:
-  <input :disabled="true" />
+  <MyComponent :visible="true" />
 
 正しい例:
-  <input disabled />
-  <input :disabled="false" />
-  <MyComponent :visible="true" />
+  <MyComponent visible />
+  <MyComponent :visible="false" />
   <MyComponent :visible="isVisible" />
 
 ヒント:
@@ -5487,7 +5479,7 @@ vue/require-component-is · lint ルール
 
 正しい例:
   <component :is="currentComponent" />
-  <component is="MyComponent" />
+  <component :is="'MyComponent'" />
 
 ヒント:
   <component>は動的コンポーネントであり、レンダリングするコンポーネントを決定するためにis属性が必要です
@@ -5643,16 +5635,12 @@ v-slotで使用する名前付きスロットにケバブケースを強制す�
 ドキュメント: docs/content/rules/reference/vue-slot-name-casing.md
 
 不正な例:
-  <MyComponent>
-    <template #mySlot>...</template>
-    <template #my_slot>...</template>
-  </MyComponent>
+  <slot name="my-slot" />
+  <slot name="MySlot" />
 
 正しい例:
-  <MyComponent>
-    <template #my-slot>...</template>
-    <template #default>...</template>
-  </MyComponent>
+  <slot name="mySlot" />
+  <slot name="default" />
 
 ヒント:
   スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。
@@ -5790,7 +5778,7 @@ vue/v-on-event-hyphenation · lint ルール
   発行されるイベント名と一致するように、リスナー名をケバブケースに変更してください。
 === vue/v-on-handler-style
 vue/v-on-handler-style · lint ルール
-v-onハンドラをメソッド参照またはインライン関数として記述することを強制する
+v-onハンドラをメソッド参照として記述することを強制する
 
 精度: exact
 対象: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5807,11 +5795,9 @@ v-onハンドラをメソッド参照またはインライン関数として記�
 正しい例:
   <button @click="handler"></button>
   <button @click="foo.bar"></button>
-  <button @click="() => count++"></button>
-  <button @click="function () { count++ }"></button>
 
 ヒント:
-  ハンドラをインライン文ではなく、メソッド参照（例: @click="handler"）またはインライン関数（例: @click="() => count++"）として記述してください。
+  ハンドラをインライン関数やインライン文ではなく、メソッド参照（例: @click="handler"）として記述してください。
 === vue/v-on-style
 vue/v-on-style · lint ルール
 v-onディレクティブのスタイルを強制する
@@ -5897,9 +5883,7 @@ Vue 3のフラグメントセマンティクスに対して有効な `<template>
 ドキュメント: docs/content/rules/reference/vue-valid-template-root.md
 
 不正な例:
-  <template>
-    <template>content</template>
-  </template>
+  <template></template>
 
 正しい例:
   <template>
@@ -5907,7 +5891,7 @@ Vue 3のフラグメントセマンティクスに対して有効な `<template>
   </template>
 
 ヒント:
-  <template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。
+  描画されるテンプレートコンテンツを追加するか、src を持つテンプレートを空にしてください。
 === vue/valid-v-bind
 vue/valid-v-bind · lint ルール
 有効なv-bindディレクティブを強制する

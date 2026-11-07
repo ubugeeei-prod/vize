@@ -48,7 +48,7 @@ pub(super) fn opening<'a>(source: &'a str, element: &ElementNode<'_>) -> Option<
     None
 }
 
-pub(super) fn closing(source: &str, element: &ElementNode<'_>) -> Option<Range<usize>> {
+pub(crate) fn closing(source: &str, element: &ElementNode<'_>) -> Option<Range<usize>> {
     closing_with_depth(source, element, 0)
 }
 

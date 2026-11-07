@@ -103,13 +103,13 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | 建议使用 context:event 格式的作用域事件名称。 | `nuxt`, `opinionated` |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | 要求 SFC 顶层元素保持一致的顺序。 | `happy-path` |  |
 | <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | 建议只使用一个 style 块。 | `happy-path` |  |
-| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 要求通过 v-slot 使用的具名插槽采用 kebab-case。 | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 要求渲染的插槽出口静态名称采用 camelCase。 | `nuxt`, `opinionated` |  |
 | <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | 禁止在模板表达式中使用 `this.`。 | `happy-path` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量。 | `nuxt`, `opinionated` |  |
 | <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | 存在带按键修饰符的处理器时，要求在 `v-on` 上使用 `.exact`。 | `essential` |  |
 | <span id="vue-v-bind-style"></span>[`vue/v-bind-style`](./reference/vue-v-bind-style.md) | 规范 `v-bind` 指令风格。 | `happy-path` | ✓ |
 | <span id="vue-v-on-event-hyphenation"></span>[`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | 要求组件上 v-on 中的自定义事件名称使用连字符。 | `happy-path` | ✓ |
-| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | 要求 v-on 处理器写为方法引用或内联函数。 | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | 要求 v-on 处理器写为方法引用。 | `nuxt`, `opinionated` |  |
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | 规范 `v-on` 指令风格。 | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 规范 `v-slot` 指令风格。 | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 要求属性名称有效。 | `essential` |  |

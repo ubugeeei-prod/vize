@@ -30,7 +30,7 @@ use super::return_in_computed_property::body_returns_value;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Expression, ObjectPropertyKind, Program};
-use oxc_span::Span;
+use oxc_span::{GetSpan, Span};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-render-return",
@@ -71,7 +71,7 @@ impl ScriptRule for RequireRenderReturn {
                     continue;
                 }
                 if render_returns(&property.value) == Some(false) {
-                    report(property.span, offset, result);
+                    report(property.key.span(), offset, result);
                 }
             }
         }
@@ -126,5 +126,17 @@ mod tests {
             0
         );
         assert_eq!(lint("export default { render: h }").error_count, 0);
+    }
+
+    #[test]
+    fn reports_the_render_key_only() {
+        let source = "export default { render () {} }";
+        let result = lint(source);
+        assert_eq!(result.error_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            "render"
+        );
     }
 }

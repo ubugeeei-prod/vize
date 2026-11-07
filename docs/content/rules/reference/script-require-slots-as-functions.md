@@ -21,7 +21,7 @@ Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or
 <script lang="ts">
 export default {
   render() {
-    return this.$slots.default
+    return [this.$slots.default]
   }
 }
 </script>
@@ -62,4 +62,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L43)

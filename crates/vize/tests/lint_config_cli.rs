@@ -268,7 +268,7 @@ import { nextTick } from 'vue'
 await nextTick()
 </script>
 "#;
-    write_project_file(&project_root, "src/Dialog.vue", sfc);
+    write_project_file(&project_root, "src/AppDialog.vue", sfc);
 
     let opinionated_default = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
@@ -277,7 +277,7 @@ await nextTick()
             "--preset",
             "opinionated",
             "--no-config",
-            "src/Dialog.vue",
+            "src/AppDialog.vue",
         ])
         .output()
         .unwrap();
@@ -300,7 +300,7 @@ import { nextTick } from 'vue'
 await nextTick()
 </script>
 "#;
-    write_project_file(&project_root, "src/Dialog.vue", sfc);
+    write_project_file(&project_root, "src/AppDialog.vue", sfc);
     write_project_file(
         &project_root,
         "vite.config.mjs",
@@ -314,7 +314,13 @@ await nextTick()
 
     let nuxt_default = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--preset", "nuxt", "--no-config", "src/Dialog.vue"])
+        .args([
+            "lint",
+            "--preset",
+            "nuxt",
+            "--no-config",
+            "src/AppDialog.vue",
+        ])
         .output()
         .unwrap();
     assert!(
@@ -326,7 +332,7 @@ await nextTick()
 
     let non_vapor = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
-        .args(["lint", "--config", "vite.config.mjs", "src/Dialog.vue"])
+        .args(["lint", "--config", "vite.config.mjs", "src/AppDialog.vue"])
         .output()
         .unwrap();
     assert!(
