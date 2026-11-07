@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/tests.rs
-assertion_line: 275
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -288,29 +287,13 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
-  const __vize_slot_props_host_8_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof MyList>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof MyList>>)({
-    "items": items,
-  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof MyList>>)));
-  const __vize_slot_props_host_8 = (undefined as unknown as $SlotHostSelector<typeof MyList>)((undefined as unknown as $SlotConstructorInstance<$SlotConstructor<typeof MyList>, typeof __vize_slot_props_host_8_instances.withoutArguments, typeof __vize_slot_props_host_8_instances.withArguments>), (undefined as unknown as $SlotsFactory<typeof MyList>)(MyList)({
-    "items": items,
-  }));
-  void __vize_slot_props_host_8;
-  void function _slot_props_default_8({ item, index }: $SlotPayload<typeof __vize_slot_props_host_8, "default", typeof MyList>) {
+  void function _slot_props_default_8({ item, index }: $SlotPayload<typeof __vize_slot_host_8, "default", typeof MyList>) {
     void item;
     void index;
   };
 
   // Component props in v-slot scope: #header
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
-  const __vize_slot_props_host_9_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof MyList>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof MyList>>)({
-    "items": items,
-  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof MyList>>)));
-  const __vize_slot_props_host_9 = (undefined as unknown as $SlotHostSelector<typeof MyList>)((undefined as unknown as $SlotConstructorInstance<$SlotConstructor<typeof MyList>, typeof __vize_slot_props_host_9_instances.withoutArguments, typeof __vize_slot_props_host_9_instances.withArguments>), (undefined as unknown as $SlotsFactory<typeof MyList>)(MyList)({
-    "items": items,
-  }));
-  void __vize_slot_props_host_9;
-  void function _slot_props_header_9({ title }: $SlotPayload<typeof __vize_slot_props_host_9, "header", typeof MyList>) {
+  void function _slot_props_header_9({ title }: $SlotPayload<typeof __vize_slot_host_9, "header", typeof MyList>) {
     void title;
   };
 

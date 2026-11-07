@@ -136,17 +136,19 @@ fn slot_constructor_calls_adapt_the_first_argument_without_replacing_the_signatu
             "expected one exact {helper} declaration:\n{code}",
         );
     }
+    // The props pass annotates from the template pass's host, so one
+    // slot-host constructor selects its exact direct construction.
     assert_eq!(
         code.matches("__vizeSlotConstructorInstance<$SlotConstructor<typeof el_badge>>()(",)
             .count(),
-        2,
-        "the template and props slot-host constructors must select their exact direct constructions:\n{code}",
+        1,
+        "the template slot-host constructor must select its exact direct construction:\n{code}",
     );
     assert_eq!(
         code.matches("$SlotConstructorWithArguments<$SlotConstructor<typeof el_badge>>)(",)
             .count(),
-        2,
-        "both non-empty branches must preserve the direct props construction:\n{code}",
+        1,
+        "the non-empty branch must preserve the direct props construction:\n{code}",
     );
 }
 
@@ -171,9 +173,9 @@ fn kebab_case_slot_host_uses_pascal_case_setup_binding() {
 
     assert_eq!(
         slot_factory_owners(&output.code),
-        // The slot body and restored canonical prop-check scope each keep the
-        // same actual PascalCase constructor, as for configured globals below.
-        ["ElBadge", "ElBadge"],
+        // The slot body keeps the actual PascalCase constructor, as for
+        // configured globals below; the prop-check scope reads its host.
+        ["ElBadge"],
         "{}",
         output.code,
     );
@@ -201,7 +203,7 @@ fn kebab_case_slot_host_uses_ambient_pascal_global_component() {
 
     assert_eq!(
         slot_factory_owners(&output.code),
-        ["ElBadge", "ElBadge"],
+        ["ElBadge"],
         "{}",
         output.code,
     );
@@ -260,7 +262,7 @@ type BadgeInstance = typeof ElBadge
     );
     assert_eq!(
         slot_factory_owners(&output.code),
-        ["$Component_el_badge", "$Component_el_badge"],
+        ["$Component_el_badge"],
         "{}",
         output.code,
     );
@@ -293,7 +295,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
     );
     assert_eq!(
         slot_factory_owners(&output.code),
-        ["el_badge", "el_badge"],
+        ["el_badge"],
         "{}",
         output.code,
     );
@@ -413,8 +415,8 @@ fn hoisted_slot_constructor_branches_keep_the_component_owner() {
         let reference = format!("import(\"vize:virtual-ts\").{helper}<{constructor}>");
         assert_eq!(
             code.matches(&reference).count(),
-            2,
-            "the template and props branches each use one collision-proof {helper} reference:\n{code}",
+            1,
+            "the template branch uses one collision-proof {helper} reference and the props branch reads its host:\n{code}",
         );
         assert_eq!(
             crate::virtual_ts::helpers::SHARED_PREAMBLE_DTS

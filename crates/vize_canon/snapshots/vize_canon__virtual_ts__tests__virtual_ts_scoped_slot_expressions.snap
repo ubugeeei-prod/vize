@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -258,15 +257,7 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #default
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
-  const __vize_slot_props_host_7_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof MyList>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof MyList>>)({
-    "items": items,
-  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof MyList>>)));
-  const __vize_slot_props_host_7 = (undefined as unknown as $SlotHostSelector<typeof MyList>)((undefined as unknown as $SlotConstructorInstance<$SlotConstructor<typeof MyList>, typeof __vize_slot_props_host_7_instances.withoutArguments, typeof __vize_slot_props_host_7_instances.withArguments>), (undefined as unknown as $SlotsFactory<typeof MyList>)(MyList)({
-    "items": items,
-  }));
-  void __vize_slot_props_host_7;
-  void function _slot_props_default_7({ item }: $SlotPayload<typeof __vize_slot_props_host_7, "default", typeof MyList>) {
+  void function _slot_props_default_7({ item }: $SlotPayload<typeof __vize_slot_host_7, "default", typeof MyList>) {
     void item;
   };
 

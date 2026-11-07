@@ -1,4 +1,6 @@
 //! Parse the complete declaration, including its owner and both native results.
+//! The props pass annotates from this template-pass host instead of declaring
+//! a second one, so exactly one selector declaration exists.
 use oxc_ast::ast::{BindingPattern, VariableDeclaration};
 use oxc_ast_visit::{Visit, walk::walk_variable_declaration};
 use oxc_parser::Parser;
@@ -11,7 +13,7 @@ impl<'a> Visit<'a> for Selectors {
     fn visit_variable_declaration(&mut self, declaration: &VariableDeclaration<'a>) {
         if declaration.declarations.iter().any(|declarator| {
             matches!(&declarator.id, BindingPattern::BindingIdentifier(name)
-                if name.name == "__vize_slot_host_1" || name.name == "__vize_slot_props_host_1")
+                if name.name == "__vize_slot_host_1" || name.name.starts_with("__vize_slot_props_host_"))
         }) {
             self.0.push(declaration.span);
         }
@@ -26,7 +28,7 @@ pub(super) fn assert_selector(code: &str, constructor: &str) {
     assert_eq!(parsed.diagnostics.len(), 0);
     let mut selectors = Selectors::default();
     selectors.visit_program(&parsed.program);
-    let selectors_expected = ["__vize_slot_host_1", "__vize_slot_props_host_1"].map(|owner| format!(
+    let selectors_expected = ["__vize_slot_host_1"].map(|owner| format!(
         "const {owner} = (undefined as unknown as import(\"vize:virtual-ts\").$SlotHostSelector<typeof el_badge>)((undefined as unknown as import(\"vize:virtual-ts\").$SlotConstructorInstance<{constructor}, typeof {owner}_instances.withoutArguments, typeof {owner}_instances.withArguments>), (undefined as unknown as import(\"vize:virtual-ts\").$SlotsFactory<typeof el_badge>)(el_badge)({{\n    \"value\": 1,\n  }}));",
     ));
     assert_eq!(
@@ -39,6 +41,6 @@ pub(super) fn assert_selector(code: &str, constructor: &str) {
             .iter()
             .map(|selector| Some(selector.as_str()))
             .collect::<Vec<_>>(),
-        "both complete AST declarations preserve constructor results and their distinct template/props owners",
+        "the one complete AST declaration preserves both constructor results under the template-pass owner",
     );
 }
