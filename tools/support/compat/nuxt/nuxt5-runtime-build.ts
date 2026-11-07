@@ -372,9 +372,11 @@ try {
   });
   await lazyPage.goto(lazyUrl, { waitUntil: "domcontentloaded" });
   const hydrationState = () =>
-    lazyPage
-      .locator("#lazy .hydrated")
-      .evaluateAll((elements) => elements.map((element) => element.getAttribute("data-hydrated")));
+    lazyPage.evaluate(() =>
+      [...document.querySelectorAll("#lazy .hydrated")].map((element) =>
+        element.getAttribute("data-hydrated"),
+      ),
+    );
   await lazyPage.waitForFunction(
     () =>
       [...document.querySelectorAll("#lazy .hydrated")][0]?.getAttribute("data-hydrated") ===
@@ -386,8 +388,6 @@ try {
     () =>
       [...document.querySelectorAll("#lazy .hydrated")][1]?.getAttribute("data-hydrated") ===
       "true",
-    undefined,
-    { timeout: 5_000 },
   );
   const settledHydration = await hydrationState();
   assert.deepEqual(settledHydration, ["true", "true", "false"]);
