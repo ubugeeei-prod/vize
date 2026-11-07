@@ -191,6 +191,14 @@ jobs:
           FIXTURE_IDS: ${{ matrix.job.ids }}
         run: |
           tools="$RUNNER_TEMP/tools/node_modules"
+          rounds="$ROUNDS"
+          cycles="$CYCLES"
+          # Keep the 10,000-block SFC in PR correctness coverage without making
+          # every benchmark change repeat its full dispatch-only sample budget.
+          if [ "$GITHUB_EVENT_NAME" = pull_request ] && [ "$JOB" = scale-giant-sfc ]; then
+            rounds=1
+            cycles=1
+          fi
           args=(--vize "head=$RUNNER_TEMP/vize-head")
           for id in $FIXTURE_IDS; do args+=(--fixture "$id"); done
           if [ -n "$COMPARE_REF" ]; then
@@ -215,8 +223,9 @@ jobs:
           free -g; df -h /tmp "$RUNNER_TEMP"
           taskset -c "0-$((CPUS - 1))" node tools/benchmarks/scripts/lsp-vs-volar.ts "${args[@]}" \
             --tsgo "$tools/@typescript/typescript-linux-x64/lib/tsc" --volar-root "$RUNNER_TEMP/tools" \
-            --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$ROUNDS" --cycles "$CYCLES" \
+            --fixtures-dir "$RUNNER_TEMP/projects" --rounds "$rounds" --cycles "$cycles" \
             --meta "head=$(git rev-parse HEAD)" --meta "cpus=$CPUS" \
+            --meta "rounds=$rounds" --meta "cycles=$cycles" \
             --out "lsp-vs-volar-$JOB.md" --json "lsp-vs-volar-$JOB.json" --logs "lsp-vs-volar-logs-$JOB"
           cat "lsp-vs-volar-$JOB.md" >> "$GITHUB_STEP_SUMMARY"
 

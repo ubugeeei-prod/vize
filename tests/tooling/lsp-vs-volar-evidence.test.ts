@@ -306,6 +306,11 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
     .find((step) => step.startsWith("uses: actions/upload-artifact@"));
   assert.match(upload ?? "", /^        if: always\(\)$/m);
   assert.match(workflow, /--meta "head=\$\(git rev-parse HEAD\)"/);
+  assert.match(
+    workflow,
+    /\[ "\$GITHUB_EVENT_NAME" = pull_request \] && \[ "\$JOB" = scale-giant-sfc \]/,
+  );
+  assert.match(workflow, /--rounds "\$rounds" --cycles "\$cycles"/);
   // Versions come from the workspace catalog, not from the workflow.
   assert.doesNotMatch(workflow, /@vue\/language-server@\d/);
 });
