@@ -1,6 +1,8 @@
 use super::*;
 use tower_lsp::lsp_types::CompletionList;
 
+mod template_responses;
+
 #[cfg(feature = "native")]
 #[test]
 fn exact_navigation_cache_hits_do_not_wait_for_the_native_transaction() {
@@ -268,9 +270,7 @@ fn document_symbols_list_sfc_blocks_with_editor_labels() {
         panic!("expected nested document symbols");
     };
     let names: Vec<_> = symbols.into_iter().map(|symbol| symbol.name).collect();
-    assert!(names.contains(&"template".to_string()));
-    assert!(names.contains(&"script setup".to_string()));
-    assert!(names.contains(&"style scoped".to_string()));
+    assert_eq!(names, ["template", "script setup", "style scoped"]);
 }
 
 #[test]
@@ -317,9 +317,7 @@ fn folding_ranges_cover_multiline_sfc_blocks() {
         .filter_map(|range| range.collapsed_text)
         .collect();
 
-    assert!(labels.contains(&"template".to_string()));
-    assert!(labels.contains(&"script setup".to_string()));
-    assert!(labels.contains(&"style".to_string()));
+    assert_eq!(labels, ["template", "script setup", "style"]);
 }
 
 fn diagnostic_hover_fixture() -> serde_json::Value {

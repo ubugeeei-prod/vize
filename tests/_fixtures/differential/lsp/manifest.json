@@ -841,6 +841,54 @@
       }
     },
     {
+      "id": "lsp/fix-history/template-colon-props-12068",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "template-colon-props-12068",
+        "files": [
+          {
+            "path": "Parent.vue.txt",
+            "sha256": "2fcadf4354ed858a8c94162ab6f408d781f1d461a515b16b30061ac1b3876b69"
+          },
+          {
+            "path": "AfsTextField.vue.txt",
+            "sha256": "fab12adfd2dc863bd9a65432f1e106272f774d4a8b9018397d1f936d33fa914f"
+          }
+        ]
+      },
+      "case": {
+        "path": "template-colon-props-12068/case.json",
+        "sha256": "1272b49a10b541ce27f03be5470fb198076f5fbe5ba934ad838e43e1d873875f"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true,
+        "crossFile": true,
+        "completion": true,
+        "ecosystem": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/workspace-symbol-qualification-11153",
       "state": "active",
       "targets": [

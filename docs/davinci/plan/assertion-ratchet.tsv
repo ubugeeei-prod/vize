@@ -379,7 +379,6 @@ crates/vize_maestro/src/server/handlers/tests/css.rs	5
 crates/vize_maestro/src/server/handlers/tests/initial_diagnostics.rs	1
 crates/vize_maestro/src/server/handlers/tests/lifecycle.rs	15
 crates/vize_maestro/src/server/handlers/tests/requests.rs	1
-crates/vize_maestro/src/server/handlers/tests/requests/responses.rs	6
 crates/vize_maestro/src/server/project_contexts/tests.rs	1
 crates/vize_maestro/src/server/project_contexts/tests/reload_protocol_tests.rs	1
 crates/vize_maestro/src/server/state/config_tests.rs	4

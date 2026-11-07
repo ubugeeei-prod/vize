@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<{
+  modelValue: string
+  appendIcon?: string
+}>()
+</script>

@@ -1,0 +1,58 @@
+[
+  {
+    "label": "modelValue",
+    "labelDetails": {
+      "detail": ": string",
+      "description": "required"
+    },
+    "kind": 10,
+    "detail": "prop: string (required)",
+    "documentation": {
+      "kind": "markdown",
+      "value": "**Prop `modelValue`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  modelValue: string\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component :modelValue=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "sortText": "00-prop-model-value",
+    "insertTextFormat": 2,
+    "textEdit": {
+      "range": {
+        "start": {
+          "line": 7,
+          "character": 4
+        },
+        "end": {
+          "line": 7,
+          "character": 5
+        }
+      },
+      "newText": ":modelValue=\"$1\""
+    }
+  },
+  {
+    "label": "appendIcon",
+    "labelDetails": {
+      "detail": ": string",
+      "description": "optional"
+    },
+    "kind": 10,
+    "detail": "prop: string (optional)",
+    "documentation": {
+      "kind": "markdown",
+      "value": "**Prop `appendIcon`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  appendIcon: string\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component :appendIcon=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    },
+    "sortText": "00-prop-append-icon",
+    "insertTextFormat": 2,
+    "textEdit": {
+      "range": {
+        "start": {
+          "line": 7,
+          "character": 4
+        },
+        "end": {
+          "line": 7,
+          "character": 5
+        }
+      },
+      "newText": ":appendIcon=\"$1\""
+    }
+  }
+]
