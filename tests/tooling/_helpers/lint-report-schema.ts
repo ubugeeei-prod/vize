@@ -275,6 +275,8 @@ export function assertParity(expected: Result, actual: Result, oracle: Oracle) {
   }
   hostSeams(expected, true);
   hostSeams(actual, false);
+  if (/^warning: stripping debug info with `rust-objcopy` failed:[\s\S]+$/u.test(expected.stderr))
+    expected.stderr = "";
   if (oracle === "original") {
     assert.deepEqual(expected.rawUnknownTokens, {});
     actual.rawUnknownTokens = {};
@@ -322,15 +324,18 @@ export function assertMembershipCorrection(
   actual: Result,
   entry: Record<string, unknown>,
 ) {
-  const project = String(entry.project),
+  const expected = structuredClone(old),
+    project = String(entry.project),
     finding = object(entry.finding);
-  assert.equal(old.status, 0);
+  assert.equal(expected.status, 0);
   assert.match(
-    old.stderr,
+    expected.stderr,
     /^(?:|warning: stripping debug info with `rust-objcopy` failed:[\s\S]+)$/u,
   );
-  const oldReport = reportFile(old, `${project}-lint-divergence.json`);
-  assertDigest(oldReport.divergence);
+  expected.stderr = "";
+  const report = reportFile(expected, `${project}-lint-divergence.json`),
+    index = indexFile(expected);
+  assertDigest(report.divergence);
   const coverage = {
     case: entry.id,
     category: "reference-coverage-gap",
@@ -348,33 +353,38 @@ export function assertMembershipCorrection(
       ].map((key) => [key, entry[key]]),
     ),
   };
-  assert.deepEqual(oldReport.divergence.patinaOutsideBaselineSurface, [
+  assert.deepEqual(report.divergence.patinaOutsideBaselineSurface, [
     { ...finding, referenceCoverage: coverage },
   ]);
-  assert.deepEqual(oldReport.divergence.falsePositives, []);
-  assert.deepEqual(oldReport.divergence.referenceCoverageExpectations, []);
-
-  assert.equal(actual.status, 0, actual.stderr);
-  assert.equal(actual.stderr, "");
-  const report = reportFile(actual, `${project}-lint-divergence.json`),
-    index = indexFile(actual),
-    [intentional] = report.divergence.intentionalDivergences;
-  assertDigest(report.divergence);
-  assert.deepEqual(report.divergence.patinaOutsideBaselineSurface, []);
   assert.deepEqual(report.divergence.falsePositives, []);
-  assert.equal(report.divergence.intentionalDivergences.length, 1);
-  assert.deepEqual(
-    Object.fromEntries(Object.keys(finding).map((key) => [key, intentional?.[key]])),
-    finding,
-  );
-  assert.match(intentional?.reason ?? "", /bare default-slot shorthand/u);
-  assert.equal(report.divergence.summary.patinaOutsideBaselineSurfaceCount, 0);
-  assert.equal(report.divergence.summary.falsePositiveCount, 0);
-  assert.equal(report.divergence.summary.intentionalDivergenceCount, 1);
-  assert.equal(report.budget.passed, true);
-  assert.equal(report.budget.verdict, "passed");
-  assert.equal(object(index.totals).falsePositiveCount, 0);
-  assert.equal(object(index.totals).intentionalDivergenceCount, 1);
-  assert.equal(index.projects[0]?.intentionalDivergenceCount, 1);
-  assert.equal(index.budget.passed, true);
+  assert.deepEqual(report.divergence.referenceCoverageExpectations, []);
+  const targets: Record<string, Fields> = {
+    summary: report.divergence.summary,
+    budget: object(report.budget),
+    indexTotals: object(object(index).totals),
+    indexProject: index.projects[0],
+    indexBudget: object(index.budget),
+  };
+  for (const [name, delta] of Object.entries(referenceFixtures.membershipDelta.fields)) {
+    const target = targets[name];
+    assert.ok(target);
+    assert.deepEqual(
+      Object.fromEntries(Object.keys(delta.before).map((key) => [key, target[key]])),
+      delta.before,
+    );
+    Object.assign(target, delta.after);
+  }
+  report.divergence.falsePositives = [finding as Finding];
+  report.divergence.patinaOutsideBaselineSurface = [];
+  report.divergence.sha256 = hash(canonical(digestPayload(report.divergence)));
+  const file = `${project}-lint-divergence.md`;
+  let text = markdown(expected, file);
+  for (const [before, after] of referenceFixtures.membershipDelta.markdown) {
+    assert.equal(text.split(before).length, 2);
+    text = text.replace(before, after);
+  }
+  expected.files[file] = text;
+  expected.status = 1;
+  expected.stderr = referenceFixtures.membershipDelta.stderr;
+  assertParity(expected, actual, "updated");
 }

@@ -66,4 +66,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L59)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L62)

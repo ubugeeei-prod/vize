@@ -197,8 +197,20 @@ fn check_prop(
                 report(prop.name, prop.span, offset, result);
             }
         }
-        // Factory calls and member references are custom prop constructors;
-        // eslint-plugin-vue cannot prove that they need a default.
+        // Vue's language-tools helper is a typed prop declaration, not a
+        // constructor whose runtime semantics are unknown. The reference rule
+        // therefore still requires a default for an optional listener prop.
+        Expression::CallExpression(call)
+            if matches!(
+                call.callee.get_inner_expression(),
+                Expression::Identifier(identifier) if identifier.name == "defineListenerProp"
+            ) =>
+        {
+            report(prop.name, prop.span, offset, result);
+        }
+        // Other factory calls and member references are custom prop
+        // constructors; eslint-plugin-vue cannot prove that they need a
+        // default.
         Expression::CallExpression(_) | Expression::StaticMemberExpression(_) => {}
         _ => report(prop.name, prop.span, offset, result),
     }

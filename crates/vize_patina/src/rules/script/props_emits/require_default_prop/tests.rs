@@ -136,6 +136,19 @@ const props = defineProps({
 }
 
 #[test]
+fn options_listener_prop_requires_a_default() {
+    let source = r#"
+export default {
+  props: {
+    "onUpdate:modelValue": defineListenerProp<(value: string) => void>()
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_plain_type_only_define_props_has_no_default_surface() {
     let source = r#"
 const props = defineProps<{ name?: string }>()

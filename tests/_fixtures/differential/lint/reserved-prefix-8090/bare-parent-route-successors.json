@@ -283,6 +283,16 @@
           "fix": null
         },
         {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_custom\" is not in camelCase",
+          "start": 61,
+          "end": 76,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
           "message": "Prop name '$custom' is reserved.",

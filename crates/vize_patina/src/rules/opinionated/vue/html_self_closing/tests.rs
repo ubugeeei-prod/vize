@@ -22,7 +22,7 @@ fn test_invalid_self_closing_void() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<main><img /></main>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
-    assert_eq!(result.diagnostics[0].start, 11);
+    assert_eq!(result.diagnostics[0].start, 6);
     assert_eq!(result.diagnostics[0].end, 13);
 }
 
@@ -80,8 +80,8 @@ fn test_invalid_empty_component() {
         "test.vue",
     );
     assert_eq!(result.warning_count, 1);
-    assert_eq!(result.diagnostics[0].start, 22);
-    assert_eq!(result.diagnostics[0].end, 36);
+    assert_eq!(result.diagnostics[0].start, 9);
+    assert_eq!(result.diagnostics[0].end, 22);
 }
 
 #[test]
@@ -92,21 +92,25 @@ fn test_invalid_empty_lowercase_single_word_component() {
 }
 
 #[test]
-fn test_allows_direct_template_root() {
+fn test_flags_empty_direct_template_root() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (0, 13)
+    );
 }
 
 #[test]
-fn test_empty_html_and_whitespace_only_content_use_the_end_tag_range() {
+fn test_empty_html_and_whitespace_only_content_use_the_start_tag_range() {
     let linter = create_linter();
     let source = "<main><div> \n </div></main>";
     let result = linter.lint_template(source, "test.vue");
     assert_eq!(result.warning_count, 1);
-    let start = source.find("</div>").unwrap() as u32;
+    let start = source.find("<div>").unwrap() as u32;
     assert_eq!(result.diagnostics[0].start, start);
-    assert_eq!(result.diagnostics[0].end, start + 6);
+    assert_eq!(result.diagnostics[0].end, start + 5);
 }
 
 #[test]
@@ -115,8 +119,8 @@ fn test_empty_slot_is_an_html_element() {
     let source = "<main><slot></slot></main>";
     let result = linter.lint_template(source, "test.vue");
     assert_eq!(result.warning_count, 1);
-    assert_eq!(result.diagnostics[0].start, 12);
-    assert_eq!(result.diagnostics[0].end, 19);
+    assert_eq!(result.diagnostics[0].start, 6);
+    assert_eq!(result.diagnostics[0].end, 12);
 }
 
 #[test]
@@ -127,10 +131,14 @@ fn test_valid_component_with_content() {
 }
 
 #[test]
-fn test_valid_nuxt_child_builtin() {
+fn test_empty_nuxt_child_builtin_uses_the_component_policy() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<nuxt-child id="index"></nuxt-child>"#, "test.vue");
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (0, 23)
+    );
 }
 
 fn create_nuxt_linter() -> Linter {

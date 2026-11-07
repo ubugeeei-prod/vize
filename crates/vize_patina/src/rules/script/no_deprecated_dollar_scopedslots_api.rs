@@ -73,13 +73,14 @@ impl ScriptTemplateRule for NoDeprecatedDollarScopedSlotsApi {
     fn check_template(
         &self,
         references: &vize_croquis::drawer::TemplateReferences,
-        _component_bindings: &super::TemplateComponentBindings,
+        component_bindings: &super::TemplateComponentBindings,
         offset: u32,
         result: &mut ScriptLintResult,
     ) {
         for reference in references.references() {
             if reference.name != SCOPED_SLOTS
                 || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                || !component_bindings.can_report_component_reference(SCOPED_SLOTS)
             {
                 continue;
             }

@@ -140,10 +140,10 @@ impl<'a> Visit<'a> for DefinePropsDestructuringVisitor<'a, '_> {
                 BindingPattern::ObjectPattern(_) | BindingPattern::ArrayPattern(_)
             );
             match self.mode {
-                PropsDestructureMode::Never if destructured => self.report(call.call_span, "Avoid destructuring the return value of defineProps().", "Assign props to a single binding and access `props.foo` to follow the configured style preference."),
+                PropsDestructureMode::Never if destructured => self.report(it.id.span(), "Avoid destructuring the return value of defineProps().", "Assign props to a single binding and access `props.foo` to follow the configured style preference."),
                 PropsDestructureMode::Never => {},
-                _ if !destructured => self.prefer_destructuring(call.call_span),
-                _ if let Some(callee_span) = call.with_defaults_callee_span => self.report(callee_span, "Avoid using withDefaults() with props destructuring.", "Put defaults directly in the destructuring pattern for Vue 3.5+."),
+                _ if !destructured => self.prefer_destructuring(it.id.span()),
+                _ if call.with_defaults_callee_span.is_some() => self.report(init.span(), "Avoid using withDefaults() with props destructuring.", "Put defaults directly in the destructuring pattern for Vue 3.5+."),
                 _ => {},
             }
         }
@@ -352,8 +352,8 @@ mod tests {
         let source = "const { foo } = defineProps<{ foo: string }>()";
         let result = create_linter().lint(source, 200);
         assert_eq!(result.warning_count, 1);
-        let call_start = source.find("defineProps").unwrap() as u32 + 200;
-        assert_eq!(result.diagnostics[0].start, call_start);
+        let pattern_start = source.find('{').unwrap() as u32 + 200;
+        assert_eq!(result.diagnostics[0].start, pattern_start);
     }
 
     #[test]

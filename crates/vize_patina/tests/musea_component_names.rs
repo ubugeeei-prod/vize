@@ -48,13 +48,18 @@ fn ordinary_component_names_and_case_sensitive_suffix_keep_their_complete_findin
     for (filename, rules, counts) in [
         ("myButton.vue", vec![CASING], (0, 1)),
         ("Badge.vue", vec![MULTI_WORD], (1, 0)),
-        ("Bad_file.vue", vec![CASING, MULTI_WORD], (1, 1)),
-        ("Badge.Art.vue", vec![CASING], (0, 1)),
+        ("Bad_file.vue", vec![CASING], (0, 1)),
+        ("Badge.Art.vue", vec![CASING, MULTI_WORD], (1, 1)),
         ("src/.art.vue/myButton.vue", vec![CASING], (0, 1)),
     ] {
         let result = names().lint_template("<div />", filename);
         assert_eq!(result.filename.as_str(), filename);
-        assert_eq!((result.error_count, result.warning_count), counts);
+        assert_eq!(
+            (result.error_count, result.warning_count),
+            counts,
+            "{filename}: {:?}",
+            result.diagnostics
+        );
         assert_eq!(result.diagnostics.len(), rules.len());
         for (diagnostic, rule) in result.diagnostics.iter().zip(rules) {
             assert_eq!(diagnostic.rule_name, rule);

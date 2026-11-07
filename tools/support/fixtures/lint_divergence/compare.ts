@@ -2,6 +2,7 @@ import path from "node:path";
 import {
   classifyReferenceCoverage,
   eligibleReferenceCoverage,
+  referenceCoverageCases,
 } from "../lint_reference_coverage.ts";
 import {
   baselineIntentionalReason,
@@ -128,6 +129,11 @@ export function compareLintFindings(
       };
     },
   );
+  const reviewedReferenceFindings = new Set(
+    referenceCoverageCases()
+      .filter((entry) => entry.project === project)
+      .map((entry) => canonicalJson(entry.finding as Json)),
+  );
   const unimplemented: Json[] = [],
     intentionalDivergences: Json[] = [],
     comparableBaseline: LintRecord[] = [];
@@ -155,6 +161,11 @@ export function compareLintFindings(
     patinaOutsideBaselineSurface: Json[] = [];
   const sources = new Map<string, string | null>(),
     coveredCases = new Set<string>();
+  const measuredFiles = new Set(
+    (Array.isArray(context.files) ? context.files : []).filter(
+      (file): file is string => typeof file === "string",
+    ),
+  );
   for (const finding of patina) {
     if (!sources.has(finding.file)) sources.set(finding.file, sourceFor(finding.file));
     const source = sources.get(finding.file) ?? null;
@@ -211,6 +222,14 @@ export function compareLintFindings(
   }
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
+    // A reporter finding outside the reconciled corpus is always an
+    // over-report. Source-based semantic classifiers have no authority over a
+    // file the two providers were not asked to compare.
+    if (!measuredFiles.has(finding.file)) continue;
+    // Reference-coverage custody exempts exactly one reviewed finding. Any
+    // duplicate must stay a false positive so the integrity check cannot hide
+    // an over-report behind the same semantic-divergence classifier.
+    if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId === "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
     const reason = source === null ? null : patinaIntentionalReason(finding, source);
@@ -223,6 +242,8 @@ export function compareLintFindings(
   );
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
+    if (!measuredFiles.has(finding.file)) continue;
+    if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId !== "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
     const reason = source === null ? null : patinaIntentionalReason(finding, source);

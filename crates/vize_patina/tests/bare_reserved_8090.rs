@@ -105,6 +105,11 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
         assert_eq!(api_case["filename"], case["filename"]);
         assert_eq!(api_case["sourceSha256"], case["sourceSha256"]);
         let diagnostics = api_case["diagnostics"].as_array().unwrap();
+        let essential_diagnostics: Vec<_> = diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic["rule_name"] != "vue/prop-name-casing")
+            .cloned()
+            .collect();
         let off_diagnostics = route_successor["diagnostics"].as_array().unwrap();
         let projected = projected_rules
             .keys()
@@ -124,7 +129,7 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
             (
                 "essential",
                 crate::historical_linter(LintPreset::Essential),
-                diagnostics.as_slice(),
+                essential_diagnostics.as_slice(),
             ),
             (
                 "ecosystem",

@@ -145,14 +145,6 @@ fn check_element<'a>(
     options: HtmlSelfClosingOptions,
     allow_vuetify_tags: bool,
 ) {
-    // eslint-plugin-vue intentionally leaves direct template roots alone: making
-    // the only root self-closing can turn a component template into an empty one.
-    if ctx.filename.ends_with(".vue")
-        && ctx.element_stack.len() == 1
-        && ctx.sfc_descriptor().is_none()
-    {
-        return;
-    }
     // vue-eslint-parser treats the contents of <noscript> as raw text. Relief
     // retains the authored nodes for editor features, but this compatibility
     // rule must not lint markup that upstream cannot observe.
@@ -249,25 +241,14 @@ fn authored_empty(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
 }
 
 fn diagnostic_span(
-    ctx: &LintContext<'_>,
+    _ctx: &LintContext<'_>,
     element: &ElementNode<'_>,
-    style: HtmlSelfClosingStyle,
+    _style: HtmlSelfClosingStyle,
 ) -> Span {
-    match style {
-        HtmlSelfClosingStyle::Always => closing(ctx.source, element)
-            .and_then(|range| {
-                Some(Span::new(
-                    u32::try_from(range.start).ok()?,
-                    u32::try_from(range.end).ok()?,
-                ))
-            })
-            .unwrap_or(element.loc.span),
-        HtmlSelfClosingStyle::Never => {
-            let end = element.loc.span.end;
-            Span::new(end.saturating_sub(2), end)
-        }
-        HtmlSelfClosingStyle::Any => element.loc.span,
-    }
+    // eslint-plugin-vue reports the authored start tag for both directions.
+    // The closing tag (or just its slash) is an implementation detail of the
+    // edit and is a much less useful diagnostic anchor.
+    element.loc.span
 }
 
 #[derive(Clone, Copy)]

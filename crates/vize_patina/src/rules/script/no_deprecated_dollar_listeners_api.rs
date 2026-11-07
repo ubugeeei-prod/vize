@@ -133,13 +133,14 @@ impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
     fn check_template(
         &self,
         references: &vize_croquis::drawer::TemplateReferences,
-        _component_bindings: &super::TemplateComponentBindings,
+        component_bindings: &super::TemplateComponentBindings,
         offset: u32,
         result: &mut ScriptLintResult,
     ) {
         for reference in references.references() {
             if reference.name != DOLLAR_LISTENERS
                 || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
+                || !component_bindings.can_report_component_reference(DOLLAR_LISTENERS)
             {
                 continue;
             }

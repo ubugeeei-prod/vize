@@ -17,10 +17,9 @@ description: "禁止 Vue 3 已移除的 $scopedSlots 实例属性（使用 $slot
 
 `this.$scopedSlots`、`ctx.$scopedSlots` 和独立的 `$scopedSlots` 引用使用了 Vue 3 已移除的 Vue 2 作用域插槽 API。
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 const header = this.$scopedSlots.header
-const footer = ctx.$scopedSlots.footer
 render($scopedSlots.default)
 </script>
 ```
@@ -29,10 +28,9 @@ render($scopedSlots.default)
 
 将 `$scopedSlots` 替换为 `$slots`，使用统一插槽接口。示例移除弃用写法，并未为接收对象建立 setup 上下文。
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const header = this.$slots.header
-const footer = ctx.$slots.footer
 render($slots.default)
 </script>
 ```
@@ -58,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L36)
