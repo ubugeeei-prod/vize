@@ -15,7 +15,7 @@ is a contract violation.
 | A6  | SSR valid ratio   | isolated requests | renders byte-identical intrinsic-ratio markup with the same data and style hooks             | `renders byte-identical intrinsic ratio markup across isolated SSR requests` |
 | A7  | SSR invalid ratio | render            | renders fallback ratio markup without request-global state                                   | `renders fallback ratio markup for invalid server input`                     |
 | A8  | DOM/SSR/Vapor     | compile           | authored SFC compiles in every renderer lane without warnings or fallback                    | `scripts/check-renderers.ts`                                                 |
-| A9  | root/subpath      | consumer bundle   | root and subpath consumers retain only AspectRatio, emit no CSS, and stay within gzip budget | `scripts/check-tree-shaking.mjs`                                             |
+| A9  | root/subpath      | consumer bundle   | root and subpath consumers retain only AspectRatio, emit no CSS, and stay within gzip budget | `scripts/check-tree-shaking.ts`                                              |
 
 ## Props
 

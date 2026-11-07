@@ -17,7 +17,7 @@ packaging test. A row without a passing test is a contract violation.
 | S9  | SSR default      | render            | omits optional ARIA and styling hooks from default server markup                                                | `omits optional ARIA and data hooks from default SSR markup`                       |
 | S10 | SSR/hydration    | runtime fixture   | server markup hydrates without warnings or root node replacement                                                | `runtime-conformance.test.ts`                                                      |
 | S11 | DOM/SSR/Vapor    | compile           | authored SFC compiles in every renderer lane without warnings or fallback                                       | `scripts/check-renderers.ts`                                                       |
-| S12 | root/subpath     | consumer bundle   | root and subpath consumers retain only Surface, emit no CSS, and stay within gzip budget                        | `scripts/check-tree-shaking.mjs`                                                   |
+| S12 | root/subpath     | consumer bundle   | root and subpath consumers retain only Surface, emit no CSS, and stay within gzip budget                        | `scripts/check-tree-shaking.ts`                                                    |
 
 ## Props
 

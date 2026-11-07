@@ -14,7 +14,7 @@ passing test is a contract violation.
 | K6  | SSR custom    | render            | renders custom host markup with consumer-owned semantics and no default `aria-hidden` or style   | `renders consumer-owned server semantics without implicit accessibility attrs` |
 | K7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                        | `scripts/check-renderers.ts`                                                   |
 | K8  | SSR/hydration | hydrate           | server kbd markup hydrates without warnings, node replacement, or accessibility drift            | `src/conformance/runtime-conformance.test.ts`                                  |
-| K9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Kbd, emit no CSS, and stay within gzip budget             | `scripts/check-tree-shaking.mjs`                                               |
+| K9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Kbd, emit no CSS, and stay within gzip budget             | `scripts/check-tree-shaking.ts`                                                |
 
 ## Props
 

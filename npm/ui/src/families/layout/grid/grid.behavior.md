@@ -14,7 +14,7 @@ passing test is a contract violation.
 | G6  | any           | slot/expose       | exposes `element`, resolved columns, gaps, alignment, justification, auto flow, and native style        | `passes slot state and exposes live resolved grid state`                   |
 | G7  | SSR           | isolated requests | renders byte-identical headless grid markup without request-global state                                | `renders byte-identical grid markup across isolated SSR requests`          |
 | G8  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                               | `scripts/check-renderers.ts`                                               |
-| G9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Grid, emit no CSS, and stay within gzip budget                   | `scripts/check-tree-shaking.mjs`                                           |
+| G9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Grid, emit no CSS, and stay within gzip budget                   | `scripts/check-tree-shaking.ts`                                            |
 
 ## Props
 

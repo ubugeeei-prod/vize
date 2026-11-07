@@ -13,7 +13,7 @@ passing test is a contract violation.
 | C5  | any           | slot/expose       | exposes `element`, `size`, `maxInlineSize`, `paddingInline`, `centered`, and the resolved style    | `passes slot state and exposes live resolved logical sizing state`              |
 | C6  | SSR           | isolated requests | renders byte-identical logical container markup without request-global state                       | `renders byte-identical container markup across isolated SSR requests`          |
 | C7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                          | `scripts/check-renderers.ts`                                                    |
-| C8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Container, emit no CSS, and stay within gzip budget         | `scripts/check-tree-shaking.mjs`                                                |
+| C8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Container, emit no CSS, and stay within gzip budget         | `scripts/check-tree-shaking.ts`                                                 |
 
 ## Props
 

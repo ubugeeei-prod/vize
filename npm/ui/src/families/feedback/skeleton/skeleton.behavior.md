@@ -14,7 +14,7 @@ passing test is a contract violation.
 | K6  | SSR status       | isolated requests | renders byte-identical labelled status markup with the same data and style hooks                        | `renders byte-identical status skeleton markup across isolated SSR requests` |
 | K7  | SSR decorative   | render            | renders decorative hidden markup without status role or label                                           | `renders decorative server markup without status ARIA`                       |
 | K8  | DOM/SSR/Vapor    | compile           | authored SFC compiles in every renderer lane without warnings or fallback                               | `scripts/check-renderers.ts`                                                 |
-| K9  | root/subpath     | consumer bundle   | root and subpath consumers retain only Skeleton, emit no CSS, and stay within gzip budget               | `scripts/check-tree-shaking.mjs`                                             |
+| K9  | root/subpath     | consumer bundle   | root and subpath consumers retain only Skeleton, emit no CSS, and stay within gzip budget               | `scripts/check-tree-shaking.ts`                                              |
 
 ## Props
 

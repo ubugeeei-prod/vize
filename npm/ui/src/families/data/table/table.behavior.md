@@ -19,7 +19,7 @@ Source SFCs covered by this contract: `table.vue`, `table-caption.vue`,
 | T6  | SSR/hydration   | hydrate           | server table markup hydrates without warnings, node replacement, or parser repair drift                  | `hydrates semantic table markup without replacing SSR nodes`              |
 | T7  | DOM/SSR/Vapor   | compile           | authored SFCs and a compound consumer compile in every renderer lane without warnings or fallback        | `scripts/check-renderers.ts`                                              |
 | T8  | public types    | invalid contract  | TypeScript rejects unsupported layout, density, caption side, row state, scope, and alignment tokens     | `src/families/data/table/table.types.test-d.ts`                           |
-| T9  | root/subpath    | consumer bundle   | root and subpath consumers retain only Table, emit no CSS, and stay within gzip budget                   | `scripts/check-tree-shaking.mjs`                                          |
+| T9  | root/subpath    | consumer bundle   | root and subpath consumers retain only Table, emit no CSS, and stay within gzip budget                   | `scripts/check-tree-shaking.ts`                                           |
 
 ## Props
 
