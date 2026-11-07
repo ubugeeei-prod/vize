@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-js-tooling-layout-successor",
+  "sourceRevision": "c92ab3c30e259bebb96e00105b0522cfbe76b3ad",
+  "sourceTree": "704a966e8b678f5772017a707f6be96d6387d6c8",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-parcel-native-update-12011.json",
+    "bytes": 2814,
+    "sha256": "e48ee44b774800a5b0624ca168280f15541f9348fea25e2a6d3a422d6bec438a",
+    "gitBlob": "e0d0919ec904a662144b6f0f792956c23981c413"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1128440,
+    "sha256": "d95bd434f96244f90db5acdadc6805c75ab653a67a08c173f0fe8f553082b010",
+    "gitBlob": "5fd7c3928ed030c2ad09f45cf59c51b092993b31"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1128491,
+    "sha256": "0279e4f7979613a0d9a881da575099cef5e8a244c9427e0ebcb20025db891d8f",
+    "gitBlob": "5ad3a03e7937598942785ec302b49798d57b1a47"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1877,
+    "sha256": "703095a422cfc630a5d29ef5f4a5230b1c853c6013b8e8080809643cc5b4c6a0",
+    "gitBlob": "87b6e3c9788ffc6a4c9578e53a39b951cbbb5d8e"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9131,
+    "sha256": "5245e71952b332d1bebc7cb48b6ffae2957bbf219865f0af7df2dc09e16d7e0d",
+    "gitBlob": "4d572ca3da5a623394cfab97c57c81e39440d700"
+  },
+  "babelManifest": {
+    "path": "npm/builder/babel/package.json",
+    "bytes": 1888,
+    "sha256": "75cc24bbe92c21314bf6cebc5445db178e17b4c355f6f738f969ce49cb281ed0",
+    "gitBlob": "21aa1482962f770aa78860f49b891b5d44876ddc"
+  },
+  "eslintManifest": {
+    "path": "npm/linter/eslint/package.json",
+    "bytes": 1683,
+    "sha256": "73950b8c6618c327f58d3ab9a2fa6918f67f1ad9c8f67f1911335774f5415276",
+    "gitBlob": "591f70fe98fc918964766aec573feb6841b5ed4e"
+  },
+  "oxlintManifest": {
+    "path": "npm/linter/oxlint/package.json",
+    "bytes": 3183,
+    "sha256": "ded2f254973b1254a3cdf51deb7e02d8477a34c22c5d54bc3115439160737cbf",
+    "gitBlob": "251199389d57898ba51655f4cffc45a75872de7b"
+  },
+  "prettierManifest": {
+    "path": "npm/formatter/prettier/package.json",
+    "bytes": 1619,
+    "sha256": "8514bfaef320631f35f91c80fdbe1d7a72e34ff647846fc0ece46859488570a7",
+    "gitBlob": "7bd4cda1aca8835876339d01c4d802c5fb7954a4"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "0279e4f7979613a0d9a881da575099cef5e8a244c9427e0ebcb20025db891d8f"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Move the Babel builder, ESLint and Oxlint linters, and Prettier formatter into role-specific npm workspace directories while preserving their package manifests and the exact pnpm resolver fixed point. Root package, provider roster, provider bodies, and all native membership controls retain their prior authority; this record gives source provenance only."
+}

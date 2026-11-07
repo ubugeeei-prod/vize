@@ -11,8 +11,16 @@ const LOCKFILE_UPDATE_HASH: &str =
     "1191a1ee7876f54a25cc10aeaa46cf8c8cc61643ebaf7a8562a5d7c98ff107af";
 const PARCEL_UPDATE: &str = "malformed-membership/provider-parcel-native-update-12011.json";
 const PARCEL_UPDATE_HASH: &str = "e48ee44b774800a5b0624ca168280f15541f9348fea25e2a6d3a422d6bec438a";
+const TOOLING_UPDATE: &str = "malformed-membership/provider-js-tooling-layout-update-12082.json";
+const TOOLING_UPDATE_HASH: &str =
+    "fdcfb765b733d4ce0c66169c179ec8d78ec9068bd287e12ad3cdf1c54ca2f005";
 const LOCKFILE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-qualification-lockfile-update-11542.json";
+const PARCEL_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-parcel-native-update-12011.json";
 const PARCEL_MANIFEST: &str = "npm/builder/parcel-native/package.json";
+const BABEL_MANIFEST: &str = "npm/builder/babel/package.json";
+const ESLINT_MANIFEST: &str = "npm/linter/eslint/package.json";
+const OXLINT_MANIFEST: &str = "npm/linter/oxlint/package.json";
+const PRETTIER_MANIFEST: &str = "npm/formatter/prettier/package.json";
 const CARGO_WORKSPACE: &str = "Cargo.toml";
 const CARGO_LOCK: &str = "Cargo.lock";
 const JSX_ORACLE: &str = "tests/tooling/jsx-vapor-oracle/package.json";
@@ -56,6 +64,14 @@ fn parcel_update() -> Value {
         PARCEL_UPDATE,
         PARCEL_UPDATE_HASH,
         "exact-provider-qualification-parcel-native-successor",
+    )
+}
+
+fn tooling_update() -> Value {
+    load(
+        TOOLING_UPDATE,
+        TOOLING_UPDATE_HASH,
+        "exact-provider-qualification-js-tooling-layout-successor",
     )
 }
 
@@ -140,6 +156,16 @@ struct ParcelQualificationGraph<'a> {
     parcel_manifest: &'a [u8],
     cargo_workspace: &'a [u8],
     cargo_lock: &'a [u8],
+}
+
+struct ToolingQualificationGraph<'a> {
+    lock: &'a [u8],
+    package: &'a [u8],
+    workspace: &'a [u8],
+    babel_manifest: &'a [u8],
+    eslint_manifest: &'a [u8],
+    oxlint_manifest: &'a [u8],
+    prettier_manifest: &'a [u8],
 }
 
 fn verify_lockfile_update(
@@ -326,6 +352,100 @@ fn verify_parcel_update(
     Ok(())
 }
 
+fn verify_tooling_update(
+    predecessor: &Value,
+    predecessor_bytes: &[u8],
+    update: &Value,
+    graph: &ToolingQualificationGraph<'_>,
+) -> Checked<()> {
+    if update["previousQualificationLock"] != predecessor["finalQualificationLock"]
+        || update["finalQualificationPackage"] != predecessor["finalQualificationPackage"]
+        || !bound(
+            &update["previousProviderQualificationRecord"],
+            PARCEL_UPDATE_BINDING,
+            predecessor_bytes,
+        )
+    {
+        return Err("exact frozen JavaScript tooling qualification successor");
+    }
+    for (binding, path, body) in [
+        (
+            &update["finalQualificationLock"],
+            "pnpm-lock.yaml",
+            graph.lock,
+        ),
+        (
+            &update["finalQualificationPackage"],
+            "package.json",
+            graph.package,
+        ),
+        (&update["workspaceManifest"], WORKSPACE, graph.workspace),
+        (
+            &update["babelManifest"],
+            BABEL_MANIFEST,
+            graph.babel_manifest,
+        ),
+        (
+            &update["eslintManifest"],
+            ESLINT_MANIFEST,
+            graph.eslint_manifest,
+        ),
+        (
+            &update["oxlintManifest"],
+            OXLINT_MANIFEST,
+            graph.oxlint_manifest,
+        ),
+        (
+            &update["prettierManifest"],
+            PRETTIER_MANIFEST,
+            graph.prettier_manifest,
+        ),
+    ] {
+        if !bound(binding, path, body) {
+            return Err("exact current JavaScript tooling qualification graph bytes");
+        }
+    }
+    if update["resolver"]["command"]
+        != "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts"
+        || update["resolver"]["fixedPointSha256"] != update["finalQualificationLock"]["sha256"]
+    {
+        return Err("exact JavaScript tooling resolver fixed point");
+    }
+
+    let workspace = std::str::from_utf8(graph.workspace).map_err(|_| "UTF-8 workspace manifest")?;
+    for member in [
+        "  - \"npm/builder/*\"\n",
+        "  - \"npm/linter/*\"\n",
+        "  - \"npm/formatter/*\"\n",
+    ] {
+        if workspace.matches(member).count() != 1 {
+            return Err("one workspace glob for every JavaScript tooling role");
+        }
+    }
+    let lock = std::str::from_utf8(graph.lock).map_err(|_| "UTF-8 pnpm lockfile")?;
+    for importer in [
+        "  npm/builder/babel:\n",
+        "  npm/linter/eslint:\n",
+        "  npm/linter/oxlint:\n",
+        "  npm/formatter/prettier:\n",
+    ] {
+        if lock.matches(importer).count() != 1 {
+            return Err("one exact role-specific JavaScript tooling importer");
+        }
+    }
+    for retired in [
+        "  npm/babel:\n",
+        "  npm/eslint:\n",
+        "  npm/oxlint:\n",
+        "  npm/prettier:\n",
+    ] {
+        if lock.contains(retired) {
+            return Err("no retired flat JavaScript tooling importer");
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
     if final_graph(previous, lock, package).is_ok() {
         return Ok(None);
@@ -384,7 +504,33 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         cargo_workspace: &cargo_workspace,
         cargo_lock: &cargo_lock,
     };
-    verify_parcel_update(&predecessor, &predecessor_bytes, &update, &graph)?;
+    if verify_parcel_update(&predecessor, &predecessor_bytes, &update, &graph).is_ok() {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(PARCEL_UPDATE))
+        .map_err(|_| "complete JavaScript tooling qualification predecessor")?;
+    let update = tooling_update();
+    let workspace = fs::read(support::repository().join(WORKSPACE))
+        .map_err(|_| "complete workspace manifest")?;
+    let babel_manifest = fs::read(support::repository().join(BABEL_MANIFEST))
+        .map_err(|_| "complete Babel manifest")?;
+    let eslint_manifest = fs::read(support::repository().join(ESLINT_MANIFEST))
+        .map_err(|_| "complete ESLint manifest")?;
+    let oxlint_manifest = fs::read(support::repository().join(OXLINT_MANIFEST))
+        .map_err(|_| "complete Oxlint manifest")?;
+    let prettier_manifest = fs::read(support::repository().join(PRETTIER_MANIFEST))
+        .map_err(|_| "complete Prettier manifest")?;
+    let graph = ToolingQualificationGraph {
+        lock,
+        package,
+        workspace: &workspace,
+        babel_manifest: &babel_manifest,
+        eslint_manifest: &eslint_manifest,
+        oxlint_manifest: &oxlint_manifest,
+        prettier_manifest: &prettier_manifest,
+    };
+    verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph)?;
     Ok(Some(update))
 }
 
