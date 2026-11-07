@@ -9,6 +9,7 @@ import {
   applyDiscriminatedJsxUnionIn,
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import { strictOutputTransition } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
 
 const originals = [
@@ -283,15 +284,19 @@ test("the declaration constructor successor authenticates the whole source and b
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const integratedEnvelope = overloadOutputTransition(current, "inverse");
+  const strictEnvelope = overloadOutputTransition(current, "inverse");
+  const integratedEnvelope = strictOutputTransition(strictEnvelope, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
   const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
     overloadOutputTransition(
-      discriminatedOutputTransition(
-        integratedOutputTransition(ownedEnvelope, "forward"),
+      strictOutputTransition(
+        discriminatedOutputTransition(
+          integratedOutputTransition(ownedEnvelope, "forward"),
+          "forward",
+        ),
         "forward",
       ),
       "forward",
@@ -444,10 +449,14 @@ for (const [name, digest, successorDigest] of originals) {
     const integratedEnvelope = constructor
       ? overloadOutputTransition(currentSlot, "inverse")
       : currentSlot;
+    const strictEnvelope =
+      constructor === constructorSuccessor
+        ? strictOutputTransition(integratedEnvelope, "inverse")
+        : integratedEnvelope;
     const discriminatedEnvelope =
       constructor === constructorSuccessor
-        ? discriminatedOutputTransition(integratedEnvelope, "inverse")
-        : integratedEnvelope;
+        ? discriminatedOutputTransition(strictEnvelope, "inverse")
+        : strictEnvelope;
     const currentEnvelope =
       constructor === constructorSuccessor
         ? integratedOutputTransition(discriminatedEnvelope, "inverse")

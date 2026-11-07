@@ -11,7 +11,7 @@ fn generic_emit_overload_expansion_stays_bounded() {
             (
                 "src/Child.vue",
                 r#"<script setup lang="ts" generic="T extends keyof Payloads = any">
-export interface Payloads {
+interface Payloads {
   text: string
   count: number
 }

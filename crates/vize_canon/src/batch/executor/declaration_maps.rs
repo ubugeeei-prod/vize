@@ -218,10 +218,12 @@ mod tests {
 
         let vue_path = src.join("App.vue");
         let index_path = src.join("index.ts");
-        let vue_source = r#"<script setup lang="ts">
+        let vue_source = r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 "#;

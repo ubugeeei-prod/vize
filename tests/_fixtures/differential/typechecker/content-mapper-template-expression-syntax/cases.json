@@ -74,6 +74,14 @@
       ],
       "diagnostics": [
         {
+          "file": "src/Widget.vue",
+          "line": 2,
+          "column": 1,
+          "severity": 1,
+          "code": 1184,
+          "message": "Modifiers cannot appear here."
+        },
+        {
           "file": "src/broken.ts",
           "line": 1,
           "column": 19,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export interface Props { value?: string }
+interface Props { value?: string }
 defineProps<Props>();
 defineModel<string>('saveItem', { default: "" });
 </script>

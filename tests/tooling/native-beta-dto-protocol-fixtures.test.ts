@@ -104,7 +104,7 @@ void test("typed producers retain historical bytes and only the exact registered
   );
   assert.equal(
     current.currentRootWarningRegistration,
-    "before-stable-root-watch-warning-41214579457",
+    "before-stable-root-watch-warning-42307879844",
   );
   assert(
     custody
@@ -129,10 +129,10 @@ void test("typed producers retain historical bytes and only the exact registered
       .filter((entry) => entry !== current)
       .every((entry) => entry.currentMembershipRegistration === null),
   );
-  assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-41156819864");
+  assert.equal(current.currentTerminalRegistration, "before-stable-terminal-stderr-42309976393");
   assert.equal(
     current.currentUnavailableTerminalRegistration,
-    "before-stable-unavailable-terminal-stderr-41208964081",
+    "before-stable-unavailable-terminal-stderr-42311681980",
   );
   assert(
     custody

@@ -9,7 +9,7 @@ origin sites. One parent site follows an astral glyph on the same line.
 The complete input and updated files are authored independently. The source-only
 `author_contracts.ts` enumerates literal coordinates and expected packets; it
 does not run or inspect the product. Frozen `cases.json.txt` has SHA-256
-`dce60b59a09de699b8ba9aa928463790ff14627c8d5f6d46c8a50e23886c70b8`.
+`4f377bb40cddd9b89785306333b25baf2560288dc23a037402ad3a69c4bab669`.
 
 Before querying the native editor, the test binds only the three exact temporary
 file URIs into the expected packet. Request IDs, source ranges, complete reply

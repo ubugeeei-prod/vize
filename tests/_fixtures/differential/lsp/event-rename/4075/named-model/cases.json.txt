@@ -6,9 +6,9 @@
       "newline": "\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -2505,9 +2505,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -2526,9 +2526,9 @@
       "newline": "\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -5025,9 +5025,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -5046,9 +5046,9 @@
       "newline": "\r\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -7545,9 +7545,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -7566,9 +7566,9 @@
       "newline": "\r\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -10065,9 +10065,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -10086,9 +10086,9 @@
       "newline": "\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -15231,9 +15231,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -15252,9 +15252,9 @@
       "newline": "\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -20397,9 +20397,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -20418,9 +20418,9 @@
       "newline": "\r\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -25563,9 +25563,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -25584,9 +25584,9 @@
       "newline": "\r\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -30729,9 +30729,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -30750,9 +30750,9 @@
       "newline": "\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -40011,9 +40011,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -40032,9 +40032,9 @@
       "newline": "\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\n  <Child v-model:save-item=\"modelValue\" />\n  <Child @update:saveItem=\"handleUpdate\" />\n  <Child @update:save-item=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "fullReferences": [
         {
@@ -49293,9 +49293,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
+        "Child.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('nextValue', { default: \"\" });\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template><span>model</span></template>\n",
         "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nlet modelValue = \"\";\nlet otherValue = \"\";\nconst handleUpdate = (value: string) => value;\nconst untouched = \"saveItem\";\nvoid untouched;\n</script>\n\n<template>💥 <Child v-model:next-value=\"modelValue\" />\n  <Child v-model:next-value=\"modelValue\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Child @update:next-value=\"handleUpdate\" />\n  <Other v-model:save-item=\"otherValue\" />\n  <Other @update:save-item=\"handleUpdate\" />\n</template>\n",
-        "Other.vue": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
+        "Other.vue": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\ndefineModel<string>('saveItem', { default: \"\" });\n</script>\n\n<template><span>unrelated</span></template>\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -49314,9 +49314,9 @@
       "newline": "\r\n",
       "newName": "nextValue",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -58575,9 +58575,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],
@@ -58596,9 +58596,9 @@
       "newline": "\r\n",
       "newName": "next-value",
       "sources": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:saveItem=\"modelValue\" />\r\n  <Child v-model:save-item=\"modelValue\" />\r\n  <Child @update:saveItem=\"handleUpdate\" />\r\n  <Child @update:save-item=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "fullReferences": [
         {
@@ -67857,9 +67857,9 @@
       ],
       "selectedApplicationQueryIndex": 0,
       "completeGoldenFiles": {
-        "Child.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
+        "Child.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('nextValue', { default: \"\" });\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template><span>model</span></template>\r\n",
         "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nlet modelValue = \"\";\r\nlet otherValue = \"\";\r\nconst handleUpdate = (value: string) => value;\r\nconst untouched = \"saveItem\";\r\nvoid untouched;\r\n</script>\r\n\r\n<template>💥 <Child v-model:next-value=\"modelValue\" />\r\n  <Child v-model:next-value=\"modelValue\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Child @update:next-value=\"handleUpdate\" />\r\n  <Other v-model:save-item=\"otherValue\" />\r\n  <Other @update:save-item=\"handleUpdate\" />\r\n</template>\r\n",
-        "Other.vue": "<script setup lang=\"ts\">\r\nexport interface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+        "Other.vue": "<script setup lang=\"ts\">\r\ninterface Props { value?: string }\r\ndefineProps<Props>();\r\ndefineModel<string>('saveItem', { default: \"\" });\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
       },
       "expectedVersion2Diagnostics": {
         "Child.vue": [],

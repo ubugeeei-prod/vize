@@ -96,7 +96,7 @@ mod tests {
         .unwrap();
         std::fs::write(
             &widget,
-            "<script setup lang=\"ts\">\nexport interface Item { id: number }\n</script>\n",
+            "<script setup lang=\"ts\">\ninterface Item { id: number }\n</script>\n",
         )
         .unwrap();
         std::fs::write(&notes, "export const notes = 1\n").unwrap();

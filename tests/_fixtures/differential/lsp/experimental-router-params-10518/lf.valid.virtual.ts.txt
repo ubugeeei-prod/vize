@@ -47,7 +47,7 @@ type $MissingRequiredInputKeys<T, Authored, K extends $RequiredKeys<T> & string 
 type $IsPropKeyUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : false;
 type $IsSinglePropKey<T> = [T] extends [never] ? false : $IsPropKeyUnion<T> extends true ? false : true;
 type $RelaxedDynamicUnionExtra<T, Declared, Authored, K extends keyof Authored> = [keyof Declared] extends [never] ? $IsSinglePropKey<$RequiredKeys<T>> extends true ? K extends string ? K extends `on${string}` ? false : Authored[K] extends true ? false : true : false : false : false;
-type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;
+type $ExtraInputKeys<_T, _Declared, Authored, Allowed> = Exclude<keyof Authored, keyof Allowed>;
 type $ComponentMissingInputGuard<T, Authored> = T extends unknown ? [$MissingRequiredInputKeys<T, Authored>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: never; } } : never;
 type $ComponentInputGuardFor<T, Declared, Authored, Allowed> = [$MissingRequiredInputKeys<T, Authored> | $ExtraInputKeys<T, Declared, Authored, Allowed>] extends [never] ? {} : { readonly __vizeInvalidComponentProps: { readonly missing: $MissingRequiredInputKeys<T, Authored>; readonly extra: $ExtraInputKeys<T, Declared, Authored, Allowed>; } };
 type $ComponentInputGuard<T, Declared, Authored> = $UsePublicInstance<Authored> extends true ? {} : T extends unknown ? $ComponentInputGuardFor<T, Declared, Authored, $ComponentInputProps<T, Declared>> : never;
@@ -64,7 +64,7 @@ type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & s
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
 type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;
-export type { __RuntimePropShape, __LooseRequired, __DefineProps, __WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, $UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps };
+export type { __RuntimePropShape, __LooseRequired, __DefineProps, __WithDefaultsArgs, __WithDefaultsResult, __Ref, __ShallowRef, $UnownedComponentAttrs, $Prettify, $ComponentFallthroughProps, $RelaxedDynamicUnionExtra };
 // ========== Module Scope (imports) ==========
 import { useRoute } from 'vue-router'
 import { definePage } from 'vue-router/experimental'
@@ -101,7 +101,7 @@ function __setup() {
   const at: Date | undefined = route.params.at
   const heading: string | undefined = route.params.heading
   
-  // @vize-map: 11133:11645 -> 0:572
+  // @vize-map: 11029:11541 -> 0:572
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

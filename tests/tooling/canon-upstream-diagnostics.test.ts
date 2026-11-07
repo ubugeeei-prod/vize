@@ -76,6 +76,7 @@ test("every documented difference names an authored line the oracle keeps clean"
     [
       ["component-default-export-identity", 6253],
       ["v-generic-event-parameters", 3984],
+      ["script-setup-export-modifier-diagnostics", 11497],
     ],
   );
   for (const difference of documented.differences) {
@@ -91,6 +92,9 @@ test("every documented difference names an authored line the oracle keeps clean"
     "v-generic/main.vue:8:33:2345",
     "v-generic/main.vue:11:13:2345",
     "v-generic/main.vue:12:13:2345",
+    "#3257/child.vue:2:1:1184",
+    "#3656/child.vue:2:1:1184",
+    "components/script-setup-default-props.vue:2:1:1184",
   ]);
   const oracle = new Set(manifest.expectedDiagnostics.map(identity));
   const corpus = new Set(manifest.files.map((file) => file.path));

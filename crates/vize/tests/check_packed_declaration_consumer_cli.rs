@@ -16,12 +16,14 @@ use vize_l0::cstr;
 
 mod marker_text;
 
-const BUTTON_VUE: &str = r#"<script setup lang="ts">
+const BUTTON_VUE: &str = r#"<script lang="ts">
 export interface ButtonProps {
   label: string
   count?: number
 }
+</script>
 
+<script setup lang="ts">
 const props = defineProps<ButtonProps>()
 
 const emit = defineEmits<{

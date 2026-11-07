@@ -204,13 +204,7 @@ export async function main(argv: string[]): Promise<void> {
         base.diagnostics.some((before) => JSON.stringify(before) === JSON.stringify(diagnostic)),
         row.id + ": retained complete diagnostic changed",
       );
-    if (row.original)
-      assert.deepEqual(
-        base.diagnostics
-          .map((diagnostic) => diagnostic.code)
-          .sort((left, right) => (left ?? 0) - (right ?? 0)),
-        [2339, 2578],
-      );
+    if (row.original) assertErrors(row, base.diagnostics);
     const reference = path.join(output, "references", row.id);
     fs.mkdirSync(reference, { recursive: true });
     fs.symlinkSync(

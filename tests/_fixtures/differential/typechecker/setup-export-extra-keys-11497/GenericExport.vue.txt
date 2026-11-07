@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="TValue extends string">
+interface Item {
+  value: TValue;
+}
+
+export interface Props {
+  items: Item[];
+}
+
+defineProps<Props>();
+</script>
+
+<template><div>{{ items }}</div></template>

@@ -68,7 +68,7 @@ void props;
 "#;
 
 #[test]
-fn setup_value_dependent_exports_are_captured_and_reexported() {
+fn classic_value_dependent_exports_are_captured_and_reexported() {
     let virtual_ts = type_check_sfc(
         COMPONENT,
         &SfcTypeCheckOptions::new("Button.vue").with_virtual_ts(),
@@ -78,11 +78,11 @@ fn setup_value_dependent_exports_are_captured_and_reexported() {
 
     assert!(
         !virtual_ts.contains("  export type ButtonNativeType"),
-        "an export modifier must not remain inside __setup:\n{virtual_ts}"
+        "the classic export must not move inside __setup:\n{virtual_ts}"
     );
     assert!(
         !virtual_ts.contains("  export interface BadgeOptions"),
-        "an interface export modifier must not remain inside __setup:\n{virtual_ts}"
+        "the classic interface export must not move inside __setup:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains("type ButtonNativeType = typeof NATIVE_TYPES[number]"),
@@ -127,6 +127,16 @@ fn downstream_imports_accept_exact_types_and_reject_invalid_values() {
         .check_project()
         .expect("project should type check")
         .diagnostics;
+
+    let modifier_diagnostics: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.code == Some(1184))
+        .collect();
+    assert_eq!(
+        modifier_diagnostics.len(),
+        0,
+        "legal classic exports must not produce TS1184: {diagnostics:#?}"
+    );
 
     let structural_failures: Vec<_> = diagnostics
         .iter()

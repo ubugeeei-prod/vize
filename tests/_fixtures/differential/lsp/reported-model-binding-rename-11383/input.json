@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "lsp/regression/reported-model-binding-rename-11383",
-  "sourceTemplate": "<script setup lang=\"ts\">\nexport interface Props { value?: string }\ndefineProps<Props>();\nconst prefix = '🌸'; defineModel<string>(__VIZE_MODEL_LITERAL__, { default: \"\" });\n</script>\n<template><span /></template>",
+  "sourceTemplate": "<script setup lang=\"ts\">\ninterface Props { value?: string }\ndefineProps<Props>();\nconst prefix = '🌸'; defineModel<string>(__VIZE_MODEL_LITERAL__, { default: \"\" });\n</script>\n<template><span /></template>",
   "names": ["x", "title", "valueId", "saveItem"],
   "quotes": ["'", "\""]
 }
