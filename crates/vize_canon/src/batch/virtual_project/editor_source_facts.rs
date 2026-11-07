@@ -51,7 +51,8 @@ impl VirtualProject {
                 let resolution = self
                     .pre_rewrite_code
                     .get(&file.virtual_path)
-                    .or_else(|| self.original_contents.get(&file.virtual_path));
+                    .map(String::as_str)
+                    .or_else(|| self.original_content_for_virtual(&file.virtual_path));
                 ArtifactFacts {
                     virtual_path: file.virtual_path.clone(),
                     registered: sorted(facts.collect_occurrences(&file.content, walked)),
@@ -78,7 +79,7 @@ impl VirtualProject {
     }
 
     /// The text the reachable walk collects a file's specifiers from.
-    pub(super) fn walked_source<'a>(&'a self, file: &'a VirtualFile) -> &'a String {
+    pub(super) fn walked_source<'a>(&'a self, file: &'a VirtualFile) -> &'a str {
         self.module_source(file).unwrap_or(&file.content)
     }
 
@@ -86,8 +87,7 @@ impl VirtualProject {
     /// synthetic references would pull in the whole project.
     pub(super) fn walked_references(&self, file: &VirtualFile, walked: &str) -> Vec<String> {
         if file.source_map.sfc_map.is_some() {
-            self.original_contents
-                .get(&file.virtual_path)
+            self.original_content_for_virtual(&file.virtual_path)
                 .map_or_else(Vec::new, |source| {
                     super::dependency_scan::path_references(source)
                 })

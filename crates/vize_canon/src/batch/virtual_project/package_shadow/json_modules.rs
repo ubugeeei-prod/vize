@@ -91,7 +91,7 @@ impl VirtualProject {
             .into_iter()
             .flatten()
             .filter_map(|(source, (_, virtual_path))| {
-                let content = self.original_contents.get(virtual_path)?;
+                let content = self.original_content_for_virtual(virtual_path)?;
                 let json_files = collect_relative_json_modules(source, content);
                 (!json_files.is_empty()).then(|| (source.clone(), virtual_path.clone(), json_files))
             })

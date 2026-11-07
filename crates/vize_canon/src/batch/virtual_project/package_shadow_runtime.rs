@@ -49,9 +49,8 @@ impl VirtualProject {
             // surface through a re-export barrel. The authored bytes are also
             // the only sound authority for import/export mode and diagnostics.
             return Ok(self
-                .original_contents
-                .get(canonical_path)
-                .cloned()
+                .original_content_for_virtual(canonical_path)
+                .map(vize_carton::String::from)
                 .unwrap_or_else(|| file.content.clone()));
         }
         if shadow_path

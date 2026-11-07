@@ -68,6 +68,11 @@ impl std::fmt::Debug for ImportSourceMap {
 }
 
 impl ImportSourceMap {
+    /// Whether materialized offsets and authored offsets are identical.
+    pub fn is_empty(&self) -> bool {
+        self.adjustments.is_empty() && self.replacement_ranges.is_empty()
+    }
+
     pub fn new(adjustments: Vec<OffsetAdjustment>) -> Self {
         Self {
             adjustments,
