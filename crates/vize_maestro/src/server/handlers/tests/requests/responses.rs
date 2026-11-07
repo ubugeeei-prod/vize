@@ -295,8 +295,15 @@ const inputPassword = ref("");
     let hover = futures::executor::block_on(server.hover(params))
         .unwrap()
         .expect("script binding hover");
-    let rendered = serde_json::to_string(&hover.contents).unwrap();
-    assert!(rendered.contains("inputPassword"), "{rendered}");
+    assert_eq!(hover.range, None);
+    let tower_lsp::lsp_types::HoverContents::Markup(markup) = hover.contents else {
+        panic!("expected markdown script binding hover");
+    };
+    assert_eq!(markup.kind, tower_lsp::lsp_types::MarkupKind::Markdown);
+    assert_eq!(
+        markup.value,
+        "**inputPassword**\n\n_Script binding_\n\n```typescript\ninputPassword: Ref<string>\n```\n\nReactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template.\n\n**Tip**\n\nUse `inputPassword.value` to read or write this ref in script."
+    );
 }
 
 #[test]
@@ -314,9 +321,7 @@ fn document_symbols_list_sfc_blocks_with_editor_labels() {
         panic!("expected nested document symbols");
     };
     let names: Vec<_> = symbols.into_iter().map(|symbol| symbol.name).collect();
-    assert!(names.contains(&"template".to_string()));
-    assert!(names.contains(&"script setup".to_string()));
-    assert!(names.contains(&"style scoped".to_string()));
+    assert_eq!(names, ["template", "script setup", "style scoped"]);
 }
 
 #[test]
@@ -363,9 +368,7 @@ fn folding_ranges_cover_multiline_sfc_blocks() {
         .filter_map(|range| range.collapsed_text)
         .collect();
 
-    assert!(labels.contains(&"template".to_string()));
-    assert!(labels.contains(&"script setup".to_string()));
-    assert!(labels.contains(&"style".to_string()));
+    assert_eq!(labels, ["template", "script setup", "style"]);
 }
 
 fn diagnostic_hover_fixture() -> serde_json::Value {
