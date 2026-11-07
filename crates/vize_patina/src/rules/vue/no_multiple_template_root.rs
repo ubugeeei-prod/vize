@@ -191,6 +191,19 @@ impl Rule for NoMultipleTemplateRoot {
 
         // Only the last additional element is reported.
         if let Some(element) = shape.extra_element {
+            // HTML tree construction splits authored nested interactive
+            // elements such as `<button><button>` into root siblings. If the
+            // apparent extra root still lies before the authored closing tag
+            // of the first root, it was not authored as a Vue root.
+            let repaired_nested_root = root.children.iter().find_map(|child| {
+                let TemplateChildNode::Element(first) = child else {
+                    return None;
+                };
+                Some(element.loc.span.start < full_element_loc(ctx.source, first).span.end)
+            });
+            if repaired_nested_root == Some(true) {
+                return;
+            }
             let loc = full_element_loc(ctx.source, element);
             ctx.error_with_help(
                 ctx.t("vue/no-multiple-template-root.multiple_root"),
@@ -264,6 +277,24 @@ mod tests {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(NoMultipleTemplateRoot));
         Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn browser_repaired_nested_interactive_content_is_not_an_extra_vue_root() {
+        for source in [
+            r#"<button><span>label</span><button>eject</button></button>"#,
+            r#"<form><section><form>nested</form></section></form>"#,
+        ] {
+            let result = linter().lint_template(source, "Probe.vue");
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| diagnostic.rule_name != RULE),
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 
     fn reported(result: &LintResult) -> Vec<(&'static str, String, u32, u32)> {

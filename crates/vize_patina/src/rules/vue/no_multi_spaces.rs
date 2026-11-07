@@ -85,6 +85,9 @@ impl NoMultiSpaces {
             let gap_start = previous_binding_end
                 .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
             self.check_gap(ctx, gap_start, range.start);
+            if !self.ignore_properties {
+                self.check_structural_directive_expression(ctx, range);
+            }
             previous_binding_end = Some(range.end);
         });
 
@@ -143,6 +146,32 @@ impl NoMultiSpaces {
         );
     }
 
+    fn check_structural_directive_expression(&self, ctx: &mut LintContext<'_>, range: ByteRange) {
+        let Some(item) = ctx.source.get(range.start as usize..range.end as usize) else {
+            return;
+        };
+        let Some((raw_name, raw_value)) = item.split_once('=') else {
+            return;
+        };
+        let name = raw_name.trim();
+        if !matches!(name, "v-if" | "v-else-if" | "v-for") {
+            return;
+        }
+        let raw_value = raw_value.trim_start();
+        let Some(quote @ ('\'' | '"')) = raw_value.chars().next() else {
+            return;
+        };
+        let Some(value) = raw_value
+            .strip_prefix(quote)
+            .and_then(|value| value.strip_suffix(quote))
+        else {
+            return;
+        };
+        let value_start =
+            range.start as usize + item.len().saturating_sub(raw_value.len()) + quote.len_utf8();
+        self.check_expression(ctx, value_start, value.as_bytes());
+    }
+
     fn check_expression(&self, ctx: &mut LintContext<'_>, start: usize, expression: &[u8]) {
         let mut cursor = 0;
         while cursor < expression.len() {
@@ -150,7 +179,11 @@ impl NoMultiSpaces {
                 break;
             };
             match byte {
-                b'\'' | b'"' | b'`' => {
+                b'`' => {
+                    cursor = skip_template_literal(expression, cursor);
+                    continue;
+                }
+                b'\'' | b'"' => {
                     cursor = skip_quoted(expression, cursor, byte);
                     continue;
                 }
@@ -209,6 +242,51 @@ fn skip_quoted(source: &[u8], mut cursor: usize, delimiter: u8) -> usize {
         match byte {
             b'\\' => cursor = (cursor + 2).min(source.len()),
             byte if byte == delimiter => return cursor + 1,
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_template_literal(source: &[u8], mut cursor: usize) -> usize {
+    cursor += 1;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            b'`' => return cursor + 1,
+            b'$' if source.get(cursor + 1) == Some(&b'{') => {
+                cursor = skip_template_expression(source, cursor + 2);
+            }
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_template_expression(source: &[u8], mut cursor: usize) -> usize {
+    let mut depth = 1usize;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            b'\'' | b'"' => cursor = skip_quoted(source, cursor, byte),
+            b'`' => cursor = skip_template_literal(source, cursor),
+            b'/' if source.get(cursor + 1) == Some(&b'/') => {
+                cursor = skip_line_comment(source, cursor + 2);
+            }
+            b'/' if source.get(cursor + 1) == Some(&b'*') => {
+                cursor = skip_block_comment(source, cursor + 2);
+            }
+            b'{' => {
+                depth += 1;
+                cursor += 1;
+            }
+            b'}' => {
+                depth -= 1;
+                cursor += 1;
+                if depth == 0 {
+                    return cursor;
+                }
+            }
             _ => cursor += 1,
         }
     }
@@ -361,6 +439,20 @@ mod tests {
             (result.diagnostics[0].start, result.diagnostics[0].end),
             (start, start + 2)
         );
+    }
+
+    #[test]
+    fn nested_template_literal_content_is_not_template_spacing() {
+        let source = r#"<style>{{ `outer ${items.map(item => `  --color-${item}: red;`).join("\n")}` }}</style>"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_spacing_before_a_string_literal_in_a_directive() {
+        let source = r#"<span v-if="related && level ===  'error'" />"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

@@ -76,24 +76,34 @@ impl Rule for NoDeprecatedHtmlElementIs {
         }
 
         for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "is"
-            {
-                // `is="vue:Foo"` opts into the customized built-in lookup and is
-                // still supported in Vue 3, so it must not be flagged.
-                let is_vue_prefixed = attr
-                    .value
-                    .as_ref()
-                    .is_some_and(|v| v.content.starts_with("vue:"));
-                if is_vue_prefixed {
-                    continue;
+            match prop {
+                PropNode::Attribute(attr) if attr.name == "is" => {
+                    // `is="vue:Foo"` opts into the customized built-in lookup and is
+                    // still supported in Vue 3, so it must not be flagged.
+                    if attr
+                        .value
+                        .as_ref()
+                        .is_some_and(|value| value.content.starts_with("vue:"))
+                    {
+                        continue;
+                    }
+                    ctx.error_with_help(
+                        ctx.t("vue/no-deprecated-html-element-is.message"),
+                        &attr.loc,
+                        ctx.t("vue/no-deprecated-html-element-is.help"),
+                    );
                 }
-
-                ctx.error_with_help(
-                    ctx.t("vue/no-deprecated-html-element-is.message"),
-                    &attr.loc,
-                    ctx.t("vue/no-deprecated-html-element-is.help"),
-                );
+                PropNode::Directive(directive)
+                    if directive.name == "bind"
+                        && matches!(directive.arg.as_ref(), Some(vize_relief::ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "is") =>
+                {
+                    ctx.error_with_help(
+                        ctx.t("vue/no-deprecated-html-element-is.message"),
+                        &directive.loc,
+                        ctx.t("vue/no-deprecated-html-element-is.help"),
+                    );
+                }
+                _ => {}
             }
         }
     }
@@ -148,11 +158,10 @@ mod tests {
     }
 
     #[test]
-    fn allows_dynamic_is_binding_on_native_element() {
-        // A bound `:is` is a directive, not the removed static substitution.
+    fn reports_dynamic_is_binding_on_native_element() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :is="something" />"#, "App.vue");
-        assert_eq!(result.error_count, 0);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]

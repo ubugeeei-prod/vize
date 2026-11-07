@@ -83,13 +83,7 @@ impl ScriptRule for RequireTypedRef {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = RequireTypedRefVisitor {
-            offset,
-            result,
-            ref_aliases: FxHashSet::default(),
-            annotated_initializer: None,
-        };
-        visitor.visit_program(program);
+        check_program_with_aliases(program, offset, FxHashSet::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
@@ -101,9 +95,50 @@ impl ScriptRule for RequireTypedRef {
         result: &mut ScriptLintResult,
     ) {
         if !sfc.typescript_jsx {
-            self.check_program(program, source, offset, result);
+            let aliases = sfc
+                .sibling_program
+                .map(collect_ref_aliases)
+                .unwrap_or_default();
+            let _ = source;
+            check_program_with_aliases(program, offset, aliases, result);
         }
     }
+}
+
+fn check_program_with_aliases<'a>(
+    program: &'a Program<'a>,
+    offset: usize,
+    ref_aliases: FxHashSet<CompactString>,
+    result: &mut ScriptLintResult,
+) {
+    let mut visitor = RequireTypedRefVisitor {
+        offset,
+        result,
+        ref_aliases,
+        annotated_initializer: None,
+    };
+    visitor.visit_program(program);
+}
+
+fn collect_ref_aliases(program: &Program<'_>) -> FxHashSet<CompactString> {
+    let mut aliases = FxHashSet::default();
+    for statement in &program.body {
+        let oxc_ast::ast::Statement::ImportDeclaration(import) = statement else {
+            continue;
+        };
+        if import.source.value.as_str() != "vue" {
+            continue;
+        }
+        for specifier in import.specifiers.iter().flatten() {
+            let ImportDeclarationSpecifier::ImportSpecifier(specifier) = specifier else {
+                continue;
+            };
+            if matches!(specifier.imported.name().as_str(), "ref" | "shallowRef") {
+                aliases.insert(CompactString::new(specifier.local.name.as_str()));
+            }
+        }
+    }
+    aliases
 }
 
 struct RequireTypedRefVisitor<'result> {
@@ -312,6 +347,18 @@ mod tests {
                 "Probe.vue",
             );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn setup_uses_ref_imported_by_sibling_script() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-typed-ref".into()]))
+            .lint_sfc(
+                r#"<script lang="ts">import { ref } from 'vue'</script>
+<script setup lang="ts">const value = ref()</script>"#,
+                "Probe.vue",
+            );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }
 

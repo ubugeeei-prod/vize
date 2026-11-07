@@ -41,10 +41,10 @@ use oxc_ast::ast::{CallExpression, Expression, ObjectPropertyKind, Program};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::no_side_effects_in_computed::{
     GetterBody, computed_getter_body, find_component_options, find_computed_object,
 };
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-async-in-computed",
@@ -174,9 +174,15 @@ struct AsyncActionVisitor<'result> {
 }
 
 impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
-    fn visit_function(&mut self, _it: &oxc_ast::ast::Function<'a>, _flags: oxc_syntax::scope::ScopeFlags) {}
+    fn visit_function(
+        &mut self,
+        _it: &oxc_ast::ast::Function<'a>,
+        _flags: oxc_syntax::scope::ScopeFlags,
+    ) {
+    }
 
-    fn visit_arrow_function_expression(&mut self, _it: &oxc_ast::ast::ArrowFunctionExpression<'a>) {}
+    fn visit_arrow_function_expression(&mut self, _it: &oxc_ast::ast::ArrowFunctionExpression<'a>) {
+    }
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         let asynchronous = match call.callee.get_inner_expression() {
@@ -207,7 +213,8 @@ impl<'a> Visit<'a> for AsyncActionVisitor<'_> {
     }
 
     fn visit_new_expression(&mut self, expression: &oxc_ast::ast::NewExpression<'a>) {
-        if matches!(&expression.callee, Expression::Identifier(identifier) if identifier.name == "Promise") {
+        if matches!(&expression.callee, Expression::Identifier(identifier) if identifier.name == "Promise")
+        {
             report(expression.span, self.offset, self.result);
         }
     }
@@ -316,5 +323,28 @@ export default {
             &source[diagnostic.start as usize..diagnostic.end as usize],
             "this.$nextTick(this.refresh)"
         );
+    }
+
+    #[test]
+    fn reports_next_tick_after_nested_callbacks_in_options_computed() {
+        let source = r#"
+export default {
+  computed: {
+    events () {
+      let events = this.view.events.slice(0)
+      events = events.filter(e => e.visible)
+      events = events.filter(e => {
+        const visible = e.start < this.end
+        return visible
+      })
+      events.sort((a, b) => a.start < b.start ? -1 : 1)
+      if (!this.cellSplits.length) this.$nextTick(this.refresh)
+      return events
+    }
+  }
+}
+"#;
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 }

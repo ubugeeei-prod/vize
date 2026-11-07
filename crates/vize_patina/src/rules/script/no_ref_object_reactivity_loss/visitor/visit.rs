@@ -78,14 +78,19 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
     }
 
     fn visit_ts_as_expression(&mut self, it: &TSAsExpression<'a>) {
-        let suppress_reads = self.suppress_reads;
-        if matches!(it.expression.get_inner_expression(), Expression::CallExpression(call)
-            if self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee))
+        if let Expression::CallExpression(call) = it.expression.get_inner_expression()
+            && (self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee))
         {
-            self.suppress_reads = true;
+            self.visit_expression(&call.callee);
+            for argument in &call.arguments {
+                let previous = self.suppress_reads;
+                self.suppress_reads = argument.as_expression().is_some_and(direct_value_read);
+                self.visit_argument(argument);
+                self.suppress_reads = previous;
+            }
+            return;
         }
         walk_ts_as_expression(self, it);
-        self.suppress_reads = suppress_reads;
     }
 
     fn visit_static_member_expression(&mut self, it: &oxc_ast::ast::StaticMemberExpression<'a>) {
@@ -132,4 +137,13 @@ impl<'a> Visit<'a> for Visitor<'_, 'a> {
         self.visit_simple_assignment_target(&it.argument);
         self.writing = writing;
     }
+}
+
+fn direct_value_read(expression: &Expression<'_>) -> bool {
+    expression
+        .get_inner_expression()
+        .as_member_expression()
+        .and_then(|member| member.static_property_name())
+        .as_deref()
+        == Some("value")
 }

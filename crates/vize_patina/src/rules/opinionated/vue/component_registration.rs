@@ -7,23 +7,44 @@
 
 use crate::context::LintContext;
 use oxc_ast::ast::{
-    Argument, ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind,
-    Program, PropertyKey, Statement,
+    Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use vize_croquis::naming::to_pascal_case;
+use vize_l0::FxHashMap;
 
 pub(super) fn options_api_registers(ctx: &LintContext<'_>, tag: &str) -> bool {
     ctx.sfc_scripts()
         .and_then(|scripts| scripts.script())
-        .is_some_and(|parsed| program_registers(&parsed.program, tag))
+        .is_some_and(|parsed| {
+            program_registers(&parsed.program, tag)
+                || (ctx
+                    .sfc_descriptor()
+                    .is_some_and(|descriptor| descriptor.script_setup.is_some())
+                    && program_imports(&parsed.program, tag))
+        })
 }
 
 fn program_registers(program: &Program<'_>, tag: &str) -> bool {
+    let mut bindings = FxHashMap::default();
+    for statement in &program.body {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            let BindingPattern::BindingIdentifier(binding) = &declarator.id else {
+                continue;
+            };
+            if let Some(options) = declarator.init.as_ref().and_then(options_expression) {
+                bindings.insert(binding.name.as_str(), options);
+            }
+        }
+    }
     program.body.iter().any(|statement| {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             return false;
         };
-        options_object(&export.declaration)
+        options_object(&export.declaration, &bindings)
             .and_then(components_object)
             .is_some_and(|components| {
                 components.properties.iter().any(|property| {
@@ -41,8 +62,30 @@ fn program_registers(program: &Program<'_>, tag: &str) -> bool {
     })
 }
 
+fn program_imports(program: &Program<'_>, tag: &str) -> bool {
+    let expected = to_pascal_case(tag);
+    program.body.iter().any(|statement| {
+        let Statement::ImportDeclaration(import) = statement else {
+            return false;
+        };
+        import.specifiers.as_ref().is_some_and(|specifiers| {
+            specifiers.iter().any(|specifier| match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                    !specifier.import_kind.is_type()
+                        && specifier.local.name.as_str() == expected.as_str()
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                    specifier.local.name.as_str() == expected.as_str()
+                }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(_) => false,
+            })
+        })
+    })
+}
+
 fn options_object<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
 ) -> Option<&'a ObjectExpression<'a>> {
     match declaration {
         ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
@@ -54,8 +97,24 @@ fn options_object<'a>(
                 _ => None,
             })
         }
+        ExportDefaultDeclarationKind::Identifier(identifier) => {
+            bindings.get(identifier.name.as_str()).copied()
+        }
         _ => None,
     }
+}
+
+fn options_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+        return None;
+    };
+    if !is_component_options_callee(&call.callee) {
+        return None;
+    }
+    call.arguments.iter().find_map(|argument| match argument {
+        Argument::ObjectExpression(object) => Some(object.as_ref()),
+        _ => None,
+    })
 }
 
 fn is_component_options_callee(callee: &Expression<'_>) -> bool {
@@ -120,6 +179,7 @@ mod tests {
         for source in [
             "export default { components: { Popover, 'algolia-search': Search } }",
             "export default defineComponent({ components: { Popover } })",
+            "const Dialog = defineComponent({ components: { Popover } }); export default Dialog",
         ] {
             let allocator = Allocator::default();
             let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();

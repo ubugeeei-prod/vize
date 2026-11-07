@@ -22,8 +22,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::is_native_tag;
-use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/prefer-true-attribute-shorthand",
@@ -36,9 +36,22 @@ static META: RuleMeta = RuleMeta {
 /// Prefer the shorthand for a boolean attribute bound to `true`.
 pub struct PreferTrueAttributeShorthand;
 
-fn is_custom_component(element: &ElementNode<'_>) -> bool {
+fn is_custom_component(ctx: &LintContext<'_>, element: &ElementNode<'_>) -> bool {
+    let is_native_in_namespace = match element.ns {
+        Namespace::Html => is_html_tag(element.tag),
+        Namespace::Svg => {
+            is_svg_tag(element.tag)
+                && (element.tag == "svg"
+                    || authored_inside_namespace(
+                        ctx.source,
+                        element.loc.span.start as usize,
+                        "svg",
+                    ))
+        }
+        Namespace::MathMl => is_math_ml_tag(element.tag),
+    };
     element.tag_type == ElementType::Component
-        || !is_native_tag(element.tag)
+        || !is_native_in_namespace
         || element.props.iter().any(|prop| match prop {
             PropNode::Attribute(attribute) => attribute.name == "is",
             PropNode::Directive(directive) => {
@@ -51,6 +64,15 @@ fn is_custom_component(element: &ElementNode<'_>) -> bool {
                         ))
             }
         })
+}
+
+fn authored_inside_namespace(source: &str, offset: usize, tag: &str) -> bool {
+    let Some(prefix) = source.get(..offset) else {
+        return false;
+    };
+    let open = prefix.rmatch_indices(&format!("<{tag}")).next();
+    let close = prefix.rmatch_indices(&format!("</{tag}")).next();
+    open.is_some_and(|(open, _)| close.is_none_or(|(close, _)| open > close))
 }
 
 impl Rule for PreferTrueAttributeShorthand {
@@ -81,7 +103,7 @@ impl Rule for PreferTrueAttributeShorthand {
             return;
         }
         let name = arg.content;
-        if !is_custom_component(element) {
+        if !is_custom_component(ctx, element) {
             return;
         }
         let is_true =
@@ -121,10 +143,7 @@ mod tests {
     #[test]
     fn allows_true_bindings_on_slot_outlets() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<slot :button="true" :open="true" />"#,
-            "App.vue",
-        );
+        let result = linter.lint_template(r#"<slot :button="true" :open="true" />"#, "App.vue");
         assert_eq!(result.warning_count, 0);
     }
 
@@ -166,6 +185,22 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.warning_count, 2);
+    }
+
+    #[test]
+    fn reports_platform_component_true_binding() {
+        let result =
+            create_linter().lint_template(r#"<view :catch-move="true" />"#, "Range.taro.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn allows_true_binding_on_view_inside_svg() {
+        let result = create_linter().lint_template(
+            r#"<svg><view :preserveAspectRatio="true" /></svg>"#,
+            "Icon.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

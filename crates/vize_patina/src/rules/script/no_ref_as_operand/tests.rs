@@ -1,4 +1,5 @@
 use super::NoRefAsOperand;
+use crate::linter::Linter;
 use crate::rules::script::{ScriptLintResult, ScriptLinter};
 
 const IMPORTS: &str = "import { ref, computed, shallowRef, toRef, customRef } from \"vue\";\n";
@@ -36,6 +37,30 @@ fn test_valid_passing_ref_itself() {
         lint("const count = ref(0)\nreturn { count }").error_count,
         0
     );
+}
+
+#[test]
+fn emit_payload_must_unwrap_a_ref() {
+    let result = lint(
+        "const emit = defineEmits(['change'])\nconst active = computed(() => true)\nemit('change', active)",
+    );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn setup_resolves_ref_factories_imported_by_sibling_script() {
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/no-ref-as-operand".into()]))
+        .lint_sfc(
+            r#"<script lang="ts">import { computed } from 'vue'</script>
+<script setup lang="ts">
+const emit = defineEmits(['change'])
+const active = computed(() => true)
+emit('change', active)
+</script>"#,
+            "Probe.vue",
+        );
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
 }
 
 #[test]

@@ -110,7 +110,12 @@ impl Rule for NoRootVIf {
         let Some(template) = ctx.sfc_descriptor().and_then(|sfc| sfc.template.as_ref()) else {
             return;
         };
-        if template.src.is_some() || template.lang.is_some() {
+        if template.src.is_some()
+            || template
+                .lang
+                .as_deref()
+                .is_some_and(|lang| !lang.eq_ignore_ascii_case("html"))
+        {
             return;
         }
         let allocator = vize_l0::Allocator::default();
@@ -188,6 +193,13 @@ mod tests {
             result.diagnostics[0].end,
             source.find("</template>").unwrap() as u32 + "</template>".len() as u32
         );
+    }
+
+    #[test]
+    fn explicit_html_template_language_is_still_vue_template_syntax() {
+        let source = r#"<template lang="html"><div v-if="show" /></template>"#;
+        let result = create_linter().lint_sfc(source, "ConditionalRoot.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

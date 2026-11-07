@@ -197,6 +197,17 @@ const slots = useSlots()
     }
 
     #[test]
+    fn test_invalid_template_computed_dollar_scoped_slots() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><slot v-if=\"$scopedSlots['default']\" /></template><script>export default {}</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
     fn test_valid_non_instance_scoped_slots_member() {
         let result = lint("const footer = ctx.$scopedSlots.footer");
         assert_eq!(result.error_count, 0);

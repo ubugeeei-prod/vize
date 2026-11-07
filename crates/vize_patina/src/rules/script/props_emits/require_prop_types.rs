@@ -56,7 +56,7 @@ use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use super::compiler_macro_is_shadowed;
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::props_source::{PropDescriptor, collect_all_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -85,7 +85,7 @@ impl ScriptRule for RequirePropTypes {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
+        for source in collect_all_runtime_props(program) {
             // Array-form entries declare only a name — always untyped.
             for literal in source.array_names() {
                 report(literal.value.as_str(), literal.span, offset, result);

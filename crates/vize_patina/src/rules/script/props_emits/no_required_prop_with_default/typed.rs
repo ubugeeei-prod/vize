@@ -13,9 +13,9 @@ pub(super) fn check<'a>(
 ) {
     for declaration in collect_setup_props_with_types(program, offset, sibling) {
         for prop in declaration.typed.iter().filter(|prop| prop.required) {
-            for default in declaration.default_spans(&prop.name) {
+            for (default, default_offset) in declaration.default_spans(&prop.name) {
                 let base = prop.offset as u32;
-                let default_base = offset as u32;
+                let default_base = default_offset as u32;
                 result.add_diagnostic(
                     LintDiagnostic::error(
                         META.name,

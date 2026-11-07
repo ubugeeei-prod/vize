@@ -101,6 +101,22 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             result.filename.as_str(),
         ) && let Some((root, offset)) = template_ast
         {
+            let context = SfcScriptContext {
+                is_sfc: true,
+                template_source: descriptor
+                    .template
+                    .as_ref()
+                    .map(|block| block.content.as_ref()),
+                template_root: Some(root),
+                template_offset: Some(offset),
+                sole_script_block: true,
+                ..Default::default()
+            };
+            for entry in active_builtin_script_rule_entries(linter, true) {
+                let mut lint = ScriptLintResult::default();
+                resolved_rule(linter, entry).check_scriptless_sfc(context, &mut lint);
+                merge_script_result(linter, result, lint);
+            }
             let mut lint = ScriptLintResult::default();
             profile!(
                 "patina.script_rule.no_duplicate_attr_inheritance",

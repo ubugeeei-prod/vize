@@ -59,6 +59,16 @@ export default {
 }
 
 #[test]
+fn local_define_component_array_props_require_types() {
+    let source = r#"
+const ModalForm = defineComponent({ props: ['email', 'password'] })
+export default { components: { ModalForm } }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_valid_null_value() {
     let source = r#"
 export default {

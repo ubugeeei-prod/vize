@@ -92,7 +92,18 @@ impl TypeResolver {
             return None;
         }
 
-        let colon_pos = trimmed.find(':')?;
+        let Some(colon_pos) = trimmed.find(':') else {
+            // TypeScript accepts an unannotated property signature (`{ value }`)
+            // and treats its type as `any`. The public prop name remains valid
+            // evidence even though no useful type can be recovered.
+            let optional = trimmed.ends_with('?');
+            let name = trimmed.trim_end_matches('?').trim();
+            return is_valid_identifier(name).then(|| TypeProperty {
+                name: CompactString::new(name),
+                prop_type: None,
+                optional,
+            });
+        };
         let raw_name_part = trimmed.get(..colon_pos).unwrap_or_default();
         let name_part = raw_name_part.trim_end();
         let type_part = trimmed.get(colon_pos + 1..).unwrap_or_default();

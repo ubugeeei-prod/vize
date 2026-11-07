@@ -407,7 +407,7 @@ const reviewed = reviewedCases.map((value: unknown): ReviewedCase => {
   return row as unknown as ReviewedCase;
 });
 for (const entry of reviewed) {
-  test(`updated real Rust and TS preserve full reviewed case ${entry.id} and missing/duplicate findings`, () => {
+  test(`current reporter preserves full reviewed case ${entry.id} and missing/duplicate findings`, () => {
     const input = fixture();
     try {
       fs.rmSync(path.join(input.directory, "App.vue"));
@@ -428,7 +428,10 @@ for (const entry of reviewed) {
         input.configure([project], {
           results: [{ file, messages: Array.from({ length: count }, () => message) }],
         });
-        const result = compare(input, input.args, ["updated"]);
+        // The current reporter classifies the single source-bound finding as
+        // intentional. The frozen Rust reporter predates those semantic
+        // classifiers, so exact cross-version parity ends at this boundary.
+        const result = runReporter(input, nodeCommand, input.args);
         assert.equal(
           result.status,
           count === 1 && falseNegatives.length === 0 ? 0 : 1,
@@ -437,6 +440,8 @@ for (const entry of reviewed) {
         const report = reportFile(result, `${entry.project}-lint-divergence.json`);
         assert.deepEqual(report.divergence.falseNegatives, falseNegatives);
         assert.equal(report.divergence.summary.falseNegativeCount, falseNegatives.length);
+        assert.equal(report.divergence.summary.falsePositiveCount, 0);
+        assert.equal(report.divergence.summary.intentionalDivergenceCount, Math.max(count - 1, 0));
         assert.equal(
           report.budget.verdict,
           count !== 1 ? "unusable" : falseNegatives.length ? "breached" : "passed",

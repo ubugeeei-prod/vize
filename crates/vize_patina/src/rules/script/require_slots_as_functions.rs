@@ -80,6 +80,7 @@ impl ScriptRule for RequireSlotsAsFunctions {
             offset,
             result,
             scopes: vec![FxHashMap::default()],
+            vue2_render_depth: 0,
         };
         visitor.visit_program(program);
     }
@@ -89,13 +90,19 @@ struct SlotsVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
     scopes: Vec<FxHashMap<CompactString, Kind>>,
+    vue2_render_depth: u32,
 }
 
 impl<'a> Visit<'a> for SlotsVisitor<'_> {
     fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
+        let vue2_render = function.params.items.iter().any(|parameter| {
+            matches!(&parameter.pattern, BindingPattern::BindingIdentifier(identifier) if identifier.name == "createElement")
+        });
+        self.vue2_render_depth += u32::from(vue2_render);
         self.push_function_scope(function);
         walk_function(self, function, flags);
         self.scopes.pop();
+        self.vue2_render_depth -= u32::from(vue2_render);
     }
 
     fn visit_arrow_function_expression(
@@ -182,6 +189,9 @@ impl SlotsVisitor<'_> {
     }
 
     fn slot_function_origin(&self, expression: &Expression<'_>) -> Option<Span> {
+        if self.vue2_render_depth > 0 {
+            return None;
+        }
         let expression = expression.get_inner_expression();
         if let Expression::Identifier(identifier) = expression {
             return match self.lookup(identifier.name.as_str()) {
@@ -325,6 +335,13 @@ mod tests {
         let property = source.find("foo").unwrap() as u32;
         assert_eq!(result.diagnostics[0].start, property);
         assert_eq!(result.diagnostics[0].end, property + 3);
+    }
+
+    #[test]
+    fn vue2_create_element_render_slots_are_arrays() {
+        let source = "export default { render(createElement) { const slot = this.$slots.default; return slot.length > 1 ? createElement('div', slot) : slot[0] } }";
+        let result = lint(source);
+        assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

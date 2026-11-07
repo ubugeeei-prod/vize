@@ -114,6 +114,18 @@ unknown.value
 }
 
 #[test]
+fn reports_nested_value_copies_inside_a_ref_initializer() {
+    assert_copies(
+        r#"
+import { ref } from 'vue'
+const locale = ref('en-US')
+const month = ref(createMonth({ locale: locale.value })) as Ref<Month>
+"#,
+        1,
+    );
+}
+
+#[test]
 fn tracks_a_ref_factory_assigned_after_declaration() {
     assert_copies(
         r#"

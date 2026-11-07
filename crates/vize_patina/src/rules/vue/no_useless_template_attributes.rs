@@ -56,10 +56,16 @@ impl NoUselessTemplateAttributes {
     /// Check if a template has a structural directive (which justifies its existence)
     fn has_structural_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop
-                && STRUCTURAL_DIRECTIVES.contains(&dir.name)
-            {
-                return true;
+            match prop {
+                PropNode::Directive(dir) if STRUCTURAL_DIRECTIVES.contains(&dir.name) => {
+                    return true;
+                }
+                PropNode::Attribute(attr)
+                    if matches!(attr.name, "slot" | "scope" | "slot-scope") =>
+                {
+                    return true;
+                }
+                _ => {}
             }
         }
         false
@@ -196,6 +202,15 @@ mod tests {
                 result.diagnostics
             );
         }
+    }
+
+    #[test]
+    fn reports_non_slot_attributes_on_a_vue_2_slot_template() {
+        let result = create_linter().lint_template(
+            r#"<MyComponent><template class="expand" slot="details"><div /></template></MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

@@ -208,6 +208,21 @@ pub trait ScriptRule: Send + Sync {
         self.check_program(program, source, offset, result);
     }
 
+    /// Check an SFC that has a template but no script block.
+    ///
+    /// Rules whose evidence can live entirely in the template use this hook
+    /// instead of requiring the dispatcher to manufacture an empty script
+    /// program. The default is deliberately silent.
+    fn check_scriptless_sfc(&self, sfc: SfcScriptContext<'_>, result: &mut ScriptLintResult) {
+        let _ = (sfc, result);
+    }
+
+    /// Whether this rule needs a validated template AST for a scriptless SFC.
+    #[inline]
+    fn runs_on_scriptless_sfc(&self) -> bool {
+        false
+    }
+
     /// Actual configured native SFC capability; default refusal prevents namesake admission.
     fn as_native_sfc_setup_rule(&self) -> Option<&dyn crate::native::sfc::NativeSfcSetupRule> {
         None

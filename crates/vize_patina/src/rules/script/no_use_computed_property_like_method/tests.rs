@@ -88,6 +88,11 @@ const CASES: &[(&str, usize)] = &[
         "export default { computed: { validate: { get() { return function (value) { return Boolean(value) } } } }, methods: { m() { return this.validate('ok') } } }",
         0,
     ),
+    // Valid: a computed can resolve a callable member through a logical fallback.
+    (
+        "export default { computed: { round() { return Math.custom || Math.floor } }, methods: { m() { return this.round(1.2) } } }",
+        0,
+    ),
     // Invalid: computed called from a method.
     (
         "export default { computed: { c() { return 1 } }, methods: { m() { return this.c() } } }",

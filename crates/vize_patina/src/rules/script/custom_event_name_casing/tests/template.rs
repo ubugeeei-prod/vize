@@ -57,6 +57,18 @@ const a = 1;
 }
 
 #[test]
+fn reports_a_kebab_case_dollar_emit_without_a_script_block() {
+    let sfc = r#"<template>
+  <button @click="$emit('foo-bar')">go</button>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![not_camel_case(sfc, "'foo-bar'", "foo-bar")]
+    );
+}
+
+#[test]
 fn reports_a_pascal_case_dollar_emit() {
     let sfc = r#"<script setup lang="ts">
 const a = 1;

@@ -382,8 +382,6 @@ fn binding_uses_template_ref(ctx: &LintContext<'_>, name: &str) -> bool {
                 | BindingType::SetupReactiveConst
                 | BindingType::SetupConst
                 | BindingType::LiteralConst
-                | BindingType::Props
-                | BindingType::PropsAliased
                 | BindingType::ExternalModule
         )
 }

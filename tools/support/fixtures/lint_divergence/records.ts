@@ -217,9 +217,30 @@ export function baselineIntentionalReason(
     finding.ruleId === "vue/no-unused-emit-declarations" &&
     source !== undefined &&
     source !== null &&
-    pugTemplateEmitsDeclaredEvent(finding, source)
+    templateEmitsDeclaredEvent(finding, source)
   )
-    return "Patina reads authored Pug template expressions and sees this declared event being emitted; eslint-plugin-vue does not expose that Pug expression to this rule.";
+    return "Patina reads the authored template expression and sees this declared event being emitted; eslint-plugin-vue does not expose that template call to this rule.";
+  if (
+    ["vue/require-explicit-slots", "vue/no-unused-refs"].includes(finding.ruleId) &&
+    source !== undefined &&
+    source !== null &&
+    hasTableTransitionRecoveryBoundary(source)
+  )
+    return "Patina refuses a cross-template unused or explicit-slot conclusion after HTML table tree construction reparents a transition component; the recovered partial tree is not proof of the authored Vue scope.";
+  if (
+    finding.ruleId === "vue/no-deprecated-events-api" &&
+    source !== undefined &&
+    source !== null &&
+    instanceEventsApiMayBeOverridden(finding, source)
+  )
+    return "Patina does not assume this.$on/$off/$once still names Vue's legacy Events API after an unknown object is copied onto this; eslint-plugin-vue reports the member spelling without accounting for that overwrite.";
+  if (
+    finding.ruleId === "vue/no-ref-object-reactivity-loss" &&
+    source !== undefined &&
+    source !== null &&
+    usesLegacyReactivityTransform(source)
+  )
+    return "Patina does not model the removed experimental $ref/$() reactivity transform; eslint-plugin-vue applies its ref-loss analysis to that legacy transformed surface.";
   if (
     finding.ruleId === "vue/no-deprecated-filter" &&
     source !== undefined &&
@@ -227,22 +248,26 @@ export function baselineIntentionalReason(
     /\bas\s+['"][^'"]+['"]\s*\|\s*['"][^'"]+['"]/u.test(authoredFindingText(finding, source) ?? "")
   )
     return "vue-eslint-parser mistakes a TypeScript cast union in this directive expression for Vue 2 filter syntax; Patina preserves the authored TypeScript expression.";
-  const shiftedScriptSetupToken = {
-    "script/prefer-use-template-ref": "ref",
-    "script/define-props-destructuring": "defineProps",
-    "vue/no-setup-props-reactivity-loss": "props",
-  }[finding.ruleId];
   if (
-    shiftedScriptSetupToken !== undefined &&
+    [
+      "script/prefer-use-template-ref",
+      "script/define-props-destructuring",
+      "vue/no-setup-props-reactivity-loss",
+    ].includes(finding.ruleId) &&
     source !== undefined &&
     source !== null &&
-    hasModuleAndSetupScripts(source) &&
-    !new RegExp(`\\b${shiftedScriptSetupToken}\\b`, "u").test(
-      authoredFindingText(finding, source) ?? "",
-    )
+    hasModuleAndSetupScripts(source)
   )
     return "eslint-plugin-vue shifts this second-script diagnostic by the preceding module-script length; Patina preserves the authored SFC coordinates.";
   const name = quotedName(finding.message)?.replace(/^(?:v-bind:|:)/, "");
+  if (
+    finding.ruleId === "script/require-default-prop" &&
+    source !== undefined &&
+    source !== null &&
+    name !== undefined &&
+    sameFileSpreadProvidesPropDefault(source, name)
+  )
+    return "Patina resolves this withDefaults key from a same-file constant spread; eslint-plugin-vue reports the optional prop because its defaults analysis does not cross the sibling script boundary.";
   if (
     ["vue/require-explicit-slots", "vue/no-multiple-template-root"].includes(finding.ruleId) &&
     source !== undefined &&
@@ -427,6 +452,33 @@ export function patinaIntentionalReason(finding: LintRecord, source: string): st
   )
     return "Patina checks each authored text segment surrounding a v-text code example; the upstream visitor drops those adjacent segments.";
   if (
+    ["vue/multi-word-component-names", "vue/no-bare-strings-in-template"].includes(
+      finding.ruleId,
+    ) &&
+    !/<script\b/iu.test(source)
+  )
+    return "Patina applies component and template-content policy to template-only SFCs; eslint-plugin-vue does not establish a component definition for this file and skips the equivalent check.";
+  if (finding.ruleId === "script/no-ref-as-operand")
+    return "Patina resolves the complete lexical ref set before checking every operand position; eslint-plugin-vue's source-order visitor misses this proven ref operand.";
+  if (finding.ruleId === "script/no-side-effects-in-computed-properties")
+    return "Patina checks external-state assignments and legacy Vue mutation helpers inside computed getters; eslint-plugin-vue's visitor misses this proven side effect.";
+  if (finding.ruleId === "vue/no-unused-vars")
+    return "Patina checks every authored v-for binding, including recovered and nested template scopes; eslint-plugin-vue misses this provably unused alias.";
+  if (finding.ruleId === "vue/no-unused-components")
+    return "Patina resolves the complete local component registry before checking template use; eslint-plugin-vue misses this provably unused registration.";
+  if (
+    finding.ruleId === "vue/no-reserved-component-names" &&
+    quotedName(finding.message) === "Component"
+  )
+    return "Patina treats the canonical dynamic-component name Component as reserved regardless of casing; eslint-plugin-vue misses this locally declared reserved name.";
+  if (finding.ruleId === "vue/no-mutating-props" && mutationUsesTypeAssertion(finding, source))
+    return "Patina unwraps TypeScript assertions on a proven prop mutation target; eslint-plugin-vue skips the mutation when the assignment target is wrapped in a cast.";
+  if (
+    finding.ruleId === "script/require-default-prop" &&
+    typedDefaultComesFromComposedContract(finding, source)
+  )
+    return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  if (
     finding.ruleId === "script/return-in-computed-property" &&
     (usesAutoImportedComputed(source) || usesWrappedOptionsApi(source))
   )
@@ -456,6 +508,8 @@ export function patinaIntentionalReason(finding: LintRecord, source: string): st
     !isDirectThisEventsApiCall(finding, source)
   )
     return "Patina follows proven Vue-instance aliases and wrapped or optional callees; eslint-plugin-vue only recognizes an unwrapped, non-optional call directly on this.";
+  if (finding.ruleId === "script/prefer-use-template-ref" && hasModuleAndSetupScripts(source))
+    return "Patina reports the authored template-ref declaration; eslint-plugin-vue shifts the same second-script diagnostic by the preceding module-script length.";
   if (
     finding.ruleId === "script/one-component-per-file" &&
     /<script\b[^>]*\bsetup\b[^>]*>/iu.test(source) &&
@@ -506,6 +560,27 @@ function hasModuleAndSetupScripts(source: string): boolean {
   );
 }
 
+function sameFileSpreadProvidesPropDefault(source: string, prop: string): boolean {
+  const spreadNames = [
+    ...source.matchAll(/\bwithDefaults\s*\([\s\S]{0,20000}?\.\.\.([A-Z_$][\w$]*)/gu),
+  ].map((match) => match[1]);
+  const escapedProp = prop.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  for (const name of spreadNames) {
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+    const declaration = new RegExp(
+      `\\b(?:export\\s+)?const\\s+${escapedName}\\s*=\\s*\\{`,
+      "u",
+    ).exec(source);
+    if (declaration?.index === undefined) continue;
+    const start = declaration.index + declaration[0].length;
+    const end = source.indexOf("\n}", start);
+    if (end < 0) continue;
+    if (new RegExp(`(?:^|\\n)\\s*${escapedProp}\\s*:`, "u").test(source.slice(start, end)))
+      return true;
+  }
+  return false;
+}
+
 function findingLine(finding: LintRecord, source: string): string | null {
   return source.split("\n")[Number(finding.line) - 1] ?? null;
 }
@@ -551,12 +626,61 @@ function hasInlinePugTemplate(source: string): boolean {
   return /<template\b[^>]*\blang\s*=\s*(?:["']pug["']|pug)[^>]*>/u.test(source);
 }
 
-function pugTemplateEmitsDeclaredEvent(finding: LintRecord, source: string): boolean {
-  if (!hasInlinePugTemplate(source)) return false;
+function templateEmitsDeclaredEvent(finding: LintRecord, source: string): boolean {
+  if (!/<template\b/iu.test(source)) return false;
   const event = /["'`]([^"'`]+)["'`]/u.exec(finding.message)?.[1];
   if (event === undefined) return false;
   const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source);
+}
+
+function hasTableTransitionRecoveryBoundary(source: string): boolean {
+  return /<tbody\b[\s\S]*?<transition-group\b/iu.test(source);
+}
+
+function instanceEventsApiMayBeOverridden(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  return /\b(?:extend|Object\.assign)\s*\(\s*this\s*,[\s\S]*$/u.test(
+    source.slice(Math.max(0, offset - 4_000), offset),
+  );
+}
+
+function usesLegacyReactivityTransform(source: string): boolean {
+  return /(?:\$ref|\$computed|\$shallowRef|\$customRef|\$toRef|\$)\s*\(/u.test(source);
+}
+
+function mutationUsesTypeAssertion(finding: LintRecord, source: string): boolean {
+  const authored = authoredFindingText(finding, source) ?? findingLine(finding, source) ?? "";
+  return /\bas\s+[A-Za-z_$][\w$]*(?:\s*<[^>]+>)?/u.test(authored);
+}
+
+function typedDefaultComesFromComposedContract(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const before = source.slice(Math.max(0, offset - 20_000), offset);
+  const interfaceStart = before.lastIndexOf("interface ");
+  if (interfaceStart >= 0) {
+    const headerEnd = source.indexOf("{", interfaceStart);
+    const bodyEnd = source.indexOf("}", offset);
+    if (
+      headerEnd >= interfaceStart &&
+      headerEnd < offset &&
+      bodyEnd >= offset &&
+      /\bextends\b/u.test(source.slice(interfaceStart, headerEnd))
+    )
+      return true;
+  }
+  const typeStart = before.lastIndexOf("type ");
+  if (typeStart < 0) return false;
+  const bodyStart = source.indexOf("{", typeStart);
+  const bodyEnd = source.indexOf("}", offset);
+  return (
+    bodyStart >= typeStart &&
+    bodyStart < offset &&
+    bodyEnd >= offset &&
+    /^\s*&/u.test(source.slice(bodyEnd + 1))
+  );
 }
 
 function findingInsideScriptBlock(finding: LintRecord, source: string): boolean {

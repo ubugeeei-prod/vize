@@ -129,6 +129,28 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
+fn reports_deep_v_model_on_runtime_and_untyped_props() {
+    for sfc in [
+        r#"<script setup>const props = defineProps({ store: Object, storeProp: String })</script>
+<template><draggable v-model="store[storeProp].items" /></template>"#,
+        r#"<script setup lang="ts">defineProps<{ modelValue }>()</script>
+<template><Checkbox v-model="modelValue.repeat" /></template>"#,
+    ] {
+        let result = lint_sfc(sfc);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props")
+                .count(),
+            1,
+            "{sfc}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
 fn shallow_only_reports_direct_template_mutations_but_allows_nested_values() {
     let sfc = r#"<script setup lang="ts">
 const props = defineProps<{ user: { name: string }; count: number }>();

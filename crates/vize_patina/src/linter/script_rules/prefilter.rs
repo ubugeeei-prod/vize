@@ -43,7 +43,25 @@ use ref_operand::source_may_contain_ref_operand;
 pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
     let bytes = source.as_bytes();
     match rule_name {
-        RULE_NO_ASYNC_IN_COMPUTED => contains(bytes, b"computed") && contains(bytes, b"async"),
+        RULE_NO_ASYNC_IN_COMPUTED => {
+            contains(bytes, b"computed")
+                && contains_any(
+                    bytes,
+                    &[
+                        b"async",
+                        b"await",
+                        b"$nextTick",
+                        b"fetch",
+                        b"setTimeout",
+                        b"setInterval",
+                        b"queueMicrotask",
+                        b"Promise",
+                        b".then",
+                        b".catch",
+                        b".finally",
+                    ],
+                )
+        }
         RULE_NO_IMPORT_COMPILER_MACROS => {
             imports_from_vue(bytes) && contains_any(bytes, COMPILER_MACRO_NEEDLES)
         }

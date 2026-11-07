@@ -118,8 +118,8 @@ impl ScriptRule for NoBooleanDefault {
                 if !prop.boolean {
                     continue;
                 }
-                for default in declaration.default_spans(&prop.name) {
-                    report(default, offset, result);
+                for (default, default_offset) in declaration.default_spans(&prop.name) {
+                    report(default, default_offset, result);
                 }
             }
         }
@@ -205,8 +205,8 @@ fn check_setup_props_object(
         {
             report(default.value.span(), offset, result);
         }
-        for default in declaration.default_spans(name) {
-            report(default, offset, result);
+        for (default, default_offset) in declaration.default_spans(name) {
+            report(default, default_offset, result);
         }
     }
 }

@@ -70,7 +70,12 @@ impl RequireVForKey {
         }
         let exact = ctx.is_template();
         if is_transparent(element, exact) {
-            if !element.has_directive("slot") && !has_markup_key(element, exact) {
+            let mut declares_slot = false;
+            element.walk_authored_directive_ranges("slot", &mut |_| declares_slot = true);
+            if declares_slot {
+                return;
+            }
+            if !has_markup_key(element, exact) {
                 Self::check_children(ctx, element, exact);
             }
             return;

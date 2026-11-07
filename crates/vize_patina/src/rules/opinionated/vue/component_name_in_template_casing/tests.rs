@@ -83,6 +83,22 @@ defineProps<{ item: Item }>()
 }
 
 #[test]
+fn sibling_import_registration_survives_template_recovery() {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    let source = r#"<template><table><tbody><transition-group><va-checkbox /></transition-group></tbody></table></template>
+<script lang="ts">import { VaCheckbox } from './va-checkbox'</script>
+<script setup lang="ts">defineProps<{ item: string }>()</script>"#;
+    let result = Linter::with_registry(registry).lint_sfc(source, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/component-name-in-template-casing")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_configured_kebab_case_allows_kebab_tags() {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(

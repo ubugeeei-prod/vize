@@ -251,6 +251,18 @@ fn test_options_api_typescript_slot_requires_slots_type() {
 }
 
 #[test]
+fn dual_script_setup_slot_requires_define_slots() {
+    let result = lint_sfc(
+        r#"<template><slot name="footer" /></template>
+<script lang="ts">export type Item = string</script>
+<script lang="ts" generic="T extends Item" setup>
+defineProps<{ item: T }>()
+</script>"#,
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_options_api_slots_type_declares_inline_slot_names() {
     let valid = r#"
 <template><slot name="footer" /></template>

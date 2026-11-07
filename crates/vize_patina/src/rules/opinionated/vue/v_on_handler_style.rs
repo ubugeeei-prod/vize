@@ -2,8 +2,8 @@
 //!
 //! Prefer method handlers for `v-on` directives.
 //!
-//! A handler such as `@click="handler"` is directly reusable. Inline statements
-//! and inline functions are reported when they can be moved to a method.
+//! A handler such as `@click="handler"` is directly reusable. Inline functions
+//! are also accepted, while inline statements are reported.
 //!
 //! ## Examples
 //!
@@ -12,21 +12,19 @@
 //! <button @click="count++"></button>
 //! <button @click="doThis(); doThat()"></button>
 //! <button @click="foo = bar"></button>
-//! <button @click="() => count++"></button>
 //! ```
 //!
 //! ### Valid
 //! ```vue
 //! <button @click="handler"></button>
 //! <button @click="foo.bar"></button>
+//! <button @click="() => count++"></button>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use oxc_ast::ast::{Argument, BindingPattern, Expression as JsExpression, IdentifierReference};
-use oxc_ast_visit::Visit;
-use vize_l0::CompactString;
+use oxc_ast::ast::Expression as JsExpression;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
 };
@@ -85,21 +83,15 @@ impl Rule for VOnHandlerStyle {
             return;
         }
 
-        if simple.is_some_and(retained_method_reference) || is_method_reference(expr) {
+        if simple.is_some_and(retained_method_reference)
+            || is_method_reference(expr)
+            || is_typescript_asserted_method_reference(expr)
+        {
             return;
         }
 
-        // Moving an inline function that closes over the current/parent v-for
-        // scope to a component method would lose those template-local
-        // bindings. An inline handler can instead be wrapped in a function, so
-        // it remains reportable.
         if simple.is_some_and(retained_inline_function)
-            && !simple.is_some_and(inline_function_forwards_parameters)
-            && simple.is_some_and(|exp| references_v_for_variable(ctx, exp))
-            || simple.is_none()
-                && is_inline_function_text(expr)
-                && !text_inline_function_forwards_parameters(expr)
-                && text_references_v_for_variable(ctx, expr)
+            || simple.is_none() && is_inline_function_text(expr)
         {
             return;
         }
@@ -128,175 +120,26 @@ fn retained_inline_function(expression: &SimpleExpressionNode<'_>) -> bool {
         })
 }
 
-fn references_v_for_variable(ctx: &LintContext<'_>, expression: &SimpleExpressionNode<'_>) -> bool {
-    let Some(parsed) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
-        return false;
-    };
-    let ignored = inline_function_parameter_names(parsed.ast);
-    let mut visitor = VForReferenceVisitor {
-        ctx,
-        ignored,
-        found: false,
-    };
-    visitor.visit_expression(parsed.ast);
-    visitor.found
-}
-
-struct VForReferenceVisitor<'ctx, 'source> {
-    ctx: &'ctx LintContext<'source>,
-    ignored: Vec<CompactString>,
-    found: bool,
-}
-
-impl<'a> Visit<'a> for VForReferenceVisitor<'_, '_> {
-    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
-        self.found |= !self
-            .ignored
-            .iter()
-            .any(|name| name.as_str() == identifier.name.as_str())
-            && self.ctx.is_v_for_var(identifier.name.as_str());
-    }
-}
-
-fn inline_function_parameter_names(expression: &JsExpression<'_>) -> Vec<CompactString> {
-    let params = match expression.get_inner_expression() {
-        JsExpression::ArrowFunctionExpression(function) => &function.params,
-        JsExpression::FunctionExpression(function) => &function.params,
-        _ => return Vec::new(),
-    };
-    params
-        .items
-        .iter()
-        .filter_map(|parameter| match &parameter.pattern {
-            BindingPattern::BindingIdentifier(identifier) => {
-                Some(CompactString::new(identifier.name.as_str()))
-            }
-            _ => None,
-        })
-        .collect()
-}
-
-fn inline_function_forwards_parameters(expression: &SimpleExpressionNode<'_>) -> bool {
-    let Some(parsed) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
-        return false;
-    };
-    let JsExpression::ArrowFunctionExpression(function) = parsed.ast.get_inner_expression() else {
-        return false;
-    };
-    let Some(call) = function
-        .expression
-        .then(|| function.body.statements.first())
-        .flatten()
-        .and_then(|statement| {
-            let oxc_ast::ast::Statement::ExpressionStatement(statement) = statement else {
-                return None;
-            };
-            let JsExpression::CallExpression(call) = statement.expression.get_inner_expression()
-            else {
-                return None;
-            };
-            Some(call)
-        })
-    else {
-        return false;
-    };
-    matches!(
-        call.callee.get_inner_expression(),
-        JsExpression::Identifier(_)
-    ) && function.params.items.len() == call.arguments.len()
-        && function
-            .params
-            .items
-            .iter()
-            .zip(&call.arguments)
-            .all(|(param, argument)| {
-                let BindingPattern::BindingIdentifier(param) = &param.pattern else {
-                    return false;
-                };
-                let Argument::Identifier(argument) = argument else {
-                    return false;
-                };
-                param.name == argument.name
-            })
-}
-
 fn retained_method_reference(expression: &SimpleExpressionNode<'_>) -> bool {
     let Some(parsed) = expression.js_ast.and_then(|ast| ast.as_expression()) else {
         return false;
     };
-    match parsed.ast {
+    match parsed.ast.get_inner_expression() {
         JsExpression::Identifier(_) => true,
-        // Optional member access (`actions?.save`) is not a stable method
-        // reference: it conditionally evaluates to `undefined`, and upstream
-        // classifies it as an inline handler.
-        JsExpression::ChainExpression(_) => false,
+        JsExpression::ChainExpression(chain) => chain.expression.as_member_expression().is_some(),
         expression => expression.as_member_expression().is_some(),
     }
 }
 
+fn is_typescript_asserted_method_reference(expr: &str) -> bool {
+    let Some((reference, assertion)) = expr.rsplit_once(" as ") else {
+        return false;
+    };
+    !assertion.trim().is_empty() && is_method_reference(reference.trim())
+}
+
 fn is_inline_function_text(expr: &str) -> bool {
     expr.contains("=>") || expr.trim_start().starts_with("function")
-}
-
-fn text_references_v_for_variable(ctx: &LintContext<'_>, expr: &str) -> bool {
-    let ignored = text_inline_function_parameters(expr);
-    let mut start = None;
-    for (index, ch) in expr.char_indices() {
-        if start.is_none() {
-            if is_ident_start(ch) {
-                start = Some(index);
-            }
-        } else if !is_ident_continue(ch) {
-            let from = start.take().unwrap_or(index);
-            let Some(name) = expr.get(from..index) else {
-                continue;
-            };
-            if !ignored.contains(&name) && ctx.is_v_for_var(name) {
-                return true;
-            }
-        }
-    }
-    start.is_some_and(|from| {
-        expr.get(from..)
-            .is_some_and(|name| !ignored.contains(&name) && ctx.is_v_for_var(name))
-    })
-}
-
-fn text_inline_function_parameters(expr: &str) -> Vec<&str> {
-    let Some((params, _)) = expr.split_once("=>") else {
-        return Vec::new();
-    };
-    let params = params.trim().trim_start_matches('(').trim_end_matches(')');
-    params
-        .split(',')
-        .filter_map(|param| {
-            let name = param.split_once(':').map_or(param, |(name, _)| name).trim();
-            let name = name.trim_end_matches('?');
-            (!name.is_empty() && name.chars().all(is_ident_continue)).then_some(name)
-        })
-        .collect()
-}
-
-fn text_inline_function_forwards_parameters(expr: &str) -> bool {
-    let Some((_, body)) = expr.split_once("=>") else {
-        return false;
-    };
-    let params = text_inline_function_parameters(expr);
-    let body = body.trim();
-    let Some(open) = body.find('(') else {
-        return false;
-    };
-    let Some(method) = body.get(..open) else {
-        return false;
-    };
-    if !is_method_reference(method.trim()) || !body.ends_with(')') {
-        return false;
-    }
-    let Some(arguments) = body.get(open + 1..body.len() - 1) else {
-        return false;
-    };
-    let arguments: Vec<_> = arguments.split(',').map(str::trim).collect();
-    params == arguments
 }
 
 /// Whether `expr` is a bare method reference: a single identifier or a
@@ -384,28 +227,37 @@ mod tests {
     }
 
     #[test]
-    fn warns_on_optional_member_reference() {
+    fn allows_optional_member_reference() {
         let result =
             create_linter().lint_template(r#"<button @click="actions?.save"></button>"#, "App.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn warns_on_typescript_annotated_inline_function() {
+    fn allows_typescript_asserted_method_reference() {
+        let result = create_linter().lint_template(
+            r#"<button @click="actions.save as any"></button>"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_typescript_annotated_inline_function() {
         let result = create_linter().lint_template(
             r#"<button @click="(settings: Settings) => save(settings)"></button>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn warns_when_inline_function_forwards_a_scoped_slot_value() {
+    fn allows_inline_function_that_forwards_a_scoped_slot_value() {
         let result = create_linter().lint_template(
             r#"<Widget v-slot="{ onSave }"><button @click="(value: Model) => onSave(value)" /></Widget>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
@@ -414,32 +266,32 @@ mod tests {
             r#"<button v-for="column in columns" @click="(column) => save(column?.id)" />"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn warns_on_arrow_function_that_can_be_a_method() {
+    fn allows_arrow_function_that_can_be_a_method() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<button @click="() => count++"></button>"#, "App.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn warns_on_arrow_function_with_arg() {
+    fn allows_arrow_function_with_arg() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<button @click="(e) => onClick(e)"></button>"#, "App.vue");
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn warns_on_function_expression() {
+    fn allows_function_expression() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<button @click="function () { count++ }"></button>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

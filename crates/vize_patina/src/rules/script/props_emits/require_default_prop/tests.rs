@@ -186,6 +186,18 @@ const { title, enabled, count } = defineProps<Props>()
 }
 
 #[test]
+fn typed_boolean_literal_props_do_not_require_defaults() {
+    let source = r#"
+const { enabled, disabled } = defineProps<{
+  enabled?: true
+  disabled?: false
+}>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_typed_destructure_and_with_defaults_honor_declared_defaults() {
     let destructure = r#"
 const { title = '' } = defineProps<{ title?: string }>()
@@ -220,6 +232,51 @@ const props = withDefaults(defineProps<Props>(), {
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn with_defaults_resolves_a_same_file_sibling_script_spread() {
+    let source = r#"<script lang="ts">
+export const defaults = {
+  title: '',
+  count: 0,
+}
+export interface Props {
+  title?: string
+  count?: number
+  label?: string
+}
+</script>
+<script setup lang="ts">
+const props = withDefaults(defineProps<Props>(), {
+  ...defaults,
+})
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(source, "Probe.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: string"
+    );
+}
+
+#[test]
+fn union_props_report_each_shared_missing_default_once() {
+    let source = r#"
+type Base = { label?: string; enabled?: boolean }
+type Props = (Base & { mode?: 'a' }) | (Base & { mode?: 'b' })
+const props = withDefaults(defineProps<Props>(), { mode: 'a' })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: string;"
+    );
 }
 
 #[test]

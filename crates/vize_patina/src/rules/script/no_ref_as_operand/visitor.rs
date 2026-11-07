@@ -6,7 +6,7 @@ use super::{
     },
 };
 use oxc_ast::ast::{
-    AssignmentExpression, BinaryExpression, BlockStatement, CatchClause, Class,
+    AssignmentExpression, BinaryExpression, BlockStatement, CallExpression, CatchClause, Class,
     ComputedMemberExpression, ConditionalExpression, DoWhileStatement, Expression, ForInStatement,
     ForOfStatement, ForStatement, ForStatementLeft, Function, FunctionBody, IfStatement,
     LogicalExpression, Program, Statement, StaticBlock, StaticMemberExpression, SwitchStatement,
@@ -16,7 +16,7 @@ use oxc_ast_visit::{
     Visit,
     walk::{
         walk_assignment_expression, walk_binary_expression, walk_block_statement,
-        walk_catch_clause, walk_class, walk_computed_member_expression,
+        walk_call_expression, walk_catch_clause, walk_class, walk_computed_member_expression,
         walk_conditional_expression, walk_do_while_statement, walk_for_in_statement,
         walk_for_of_statement, walk_for_statement, walk_function, walk_function_body,
         walk_if_statement, walk_logical_expression, walk_program, walk_static_block,
@@ -213,6 +213,19 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
             self.check_operand(&it.right);
         }
         walk_assignment_expression(self, it);
+    }
+
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if matches!(&it.callee, Expression::Identifier(identifier)
+            if self.emit_bindings.contains(identifier.name.as_str()))
+        {
+            for argument in it.arguments.iter().skip(1) {
+                if let Some(expression) = argument.as_expression() {
+                    self.check_operand(expression);
+                }
+            }
+        }
+        walk_call_expression(self, it);
     }
 
     fn visit_unary_expression(&mut self, it: &UnaryExpression<'a>) {

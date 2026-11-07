@@ -51,6 +51,15 @@ const inputEl = ref(null)
 }
 
 #[test]
+fn a_prop_binding_does_not_count_as_a_template_ref_binding() {
+    let sfc = r#"<template><label ref="label" /></template>
+<script setup>
+defineProps({ label: String })
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
 fn test_valid_use_template_ref_differing_var_name() {
     // The ref is wired via the string key, not a matching variable name.
     let sfc = r#"<template><input ref="inputEl" /></template>

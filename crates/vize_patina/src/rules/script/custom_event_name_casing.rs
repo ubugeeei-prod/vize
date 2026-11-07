@@ -167,6 +167,15 @@ impl ScriptRule for CustomEventNameCasing {
 
         check_template(emit_binding.map(|(name, _)| name), self.casing, sfc, result);
     }
+
+    fn check_scriptless_sfc(&self, sfc: SfcScriptContext<'_>, result: &mut ScriptLintResult) {
+        check_template(None, self.casing, sfc, result);
+    }
+
+    #[inline]
+    fn runs_on_scriptless_sfc(&self) -> bool {
+        true
+    }
 }
 
 /// The template half: `$emit('foo-bar')`, or a call of the captured binding.

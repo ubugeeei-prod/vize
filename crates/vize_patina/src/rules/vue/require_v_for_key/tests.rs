@@ -140,3 +140,31 @@ fn test_template_v_for_dynamic_slot_forwarder_is_not_missing_key() {
     );
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn dynamic_slot_v_for_does_not_require_keys_for_slot_content() {
+    let result = create_linter().lint_template(
+        r#"<Component>
+  <template v-for="name in names" #[name]="slotProps">
+    <span v-if="slotProps.visible" />
+  </template>
+</Component>"#,
+        "test.vue",
+    );
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn nested_template_scopes_keep_native_v_for_checks() {
+    let result = create_linter().lint_template(
+        r#"<svg>
+  <template v-for="series in allSeries">
+    <template v-if="show">
+      <circle v-for="point in series.points" :cx="point.x" />
+    </template>
+  </template>
+</svg>"#,
+        "test.vue",
+    );
+    assert!(result.error_count >= 1, "{:?}", result.diagnostics);
+}

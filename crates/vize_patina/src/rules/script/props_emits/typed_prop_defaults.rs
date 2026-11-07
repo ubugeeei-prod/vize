@@ -18,6 +18,7 @@ use super::{compiler_macro_is_shadowed, props_source::property_key_name};
 pub(crate) struct PropDefault {
     pub(super) name: CompactString,
     pub(super) span: Span,
+    pub(super) offset: usize,
 }
 
 #[derive(Clone)]
@@ -45,11 +46,14 @@ impl SetupPropsDeclaration<'_> {
         self.defaults.iter().any(|default| default.name == name)
     }
 
-    pub(crate) fn default_spans<'a>(&'a self, name: &'a str) -> impl Iterator<Item = Span> + 'a {
+    pub(crate) fn default_spans<'a>(
+        &'a self,
+        name: &'a str,
+    ) -> impl Iterator<Item = (Span, usize)> + 'a {
         self.defaults
             .iter()
             .filter(move |default| default.name == name)
-            .map(|default| default.span)
+            .map(|default| (default.span, default.offset))
     }
 }
 
@@ -145,6 +149,8 @@ fn declaration_from_expression<'a>(
             &mut FxHashSet::default(),
             &mut typed,
         );
+        let mut names = FxHashSet::default();
+        typed.retain(|prop| names.insert(prop.name.clone()));
     }
 
     let mut defaults = Vec::new();
@@ -152,7 +158,17 @@ fn declaration_from_expression<'a>(
     if let Some(wrapper) = with_defaults
         && let Some(Argument::ObjectExpression(object)) = wrapper.arguments.get(1)
     {
-        has_unknown_defaults = collect_object_defaults(object, &mut defaults);
+        let sources = sibling.map_or_else(
+            || vec![(program, offset)],
+            |(sibling, sibling_offset)| vec![(program, offset), (sibling, sibling_offset)],
+        );
+        has_unknown_defaults = collect_object_defaults(
+            object,
+            offset,
+            &sources,
+            &mut FxHashSet::default(),
+            &mut defaults,
+        );
     }
     let uses_destructure = matches!(binding, Some(BindingPattern::ObjectPattern(_)));
     if let Some(BindingPattern::ObjectPattern(pattern)) = binding {
@@ -169,6 +185,7 @@ fn declaration_from_expression<'a>(
             defaults.push(PropDefault {
                 name: CompactString::new(name),
                 span: assignment.right.span(),
+                offset,
             });
         }
     }
@@ -185,26 +202,86 @@ fn declaration_from_expression<'a>(
 
 fn collect_object_defaults(
     object: &ObjectExpression<'_>,
+    offset: usize,
+    sources: &[(&Program<'_>, usize)],
+    seen: &mut FxHashSet<CompactString>,
     defaults: &mut Vec<PropDefault>,
 ) -> bool {
     let mut has_unknown_defaults = false;
     for property in &object.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            has_unknown_defaults = true;
-            continue;
-        };
-        if property.computed {
-            continue;
+        match property {
+            ObjectPropertyKind::ObjectProperty(property) => {
+                if property.computed {
+                    continue;
+                }
+                let Some(name) = property_key_name(&property.key) else {
+                    continue;
+                };
+                defaults.push(PropDefault {
+                    name: CompactString::new(name),
+                    span: property.value.span(),
+                    offset,
+                });
+            }
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                has_unknown_defaults |=
+                    !collect_spread_defaults(&spread.argument, offset, sources, seen, defaults);
+            }
         }
-        let Some(name) = property_key_name(&property.key) else {
-            continue;
-        };
-        defaults.push(PropDefault {
-            name: CompactString::new(name),
-            span: property.value.span(),
-        });
     }
     has_unknown_defaults
+}
+
+fn collect_spread_defaults(
+    expression: &Expression<'_>,
+    offset: usize,
+    sources: &[(&Program<'_>, usize)],
+    seen: &mut FxHashSet<CompactString>,
+    defaults: &mut Vec<PropDefault>,
+) -> bool {
+    match expression.get_inner_expression() {
+        Expression::ObjectExpression(object) => {
+            !collect_object_defaults(object, offset, sources, seen, defaults)
+        }
+        Expression::Identifier(identifier) => {
+            let name = CompactString::new(identifier.name.as_str());
+            if !seen.insert(name.clone()) {
+                return false;
+            }
+            let resolved = sources.iter().find_map(|(program, offset)| {
+                program.body.iter().find_map(|statement| {
+                    let Some(Declaration::VariableDeclaration(declaration)) =
+                        statement_declaration(statement)
+                    else {
+                        return None;
+                    };
+                    if !declaration.kind.is_const() {
+                        return None;
+                    }
+                    declaration.declarations.iter().find_map(|declarator| {
+                        let BindingPattern::BindingIdentifier(binding) = &declarator.id else {
+                            return None;
+                        };
+                        if binding.name != identifier.name {
+                            return None;
+                        }
+                        let Expression::ObjectExpression(object) =
+                            declarator.init.as_ref()?.get_inner_expression()
+                        else {
+                            return None;
+                        };
+                        Some((object.as_ref(), *offset))
+                    })
+                })
+            });
+            let result = resolved.is_some_and(|(object, offset)| {
+                !collect_object_defaults(object, offset, sources, seen, defaults)
+            });
+            seen.remove(&name);
+            result
+        }
+        _ => false,
+    }
 }
 
 fn expression_call<'a>(expression: &'a Expression<'a>) -> Option<&'a CallExpression<'a>> {
@@ -241,6 +318,11 @@ fn collect_type_props(
         }
         TSType::TSIntersectionType(intersection) => {
             for ty in &intersection.types {
+                collect_type_props(ty, sources, origin_offset, depth + 1, seen, props);
+            }
+        }
+        TSType::TSUnionType(union) => {
+            for ty in &union.types {
                 collect_type_props(ty, sources, origin_offset, depth + 1, seen, props);
             }
         }
@@ -354,6 +436,9 @@ fn is_boolean_type(ty: &TSType<'_>, sources: &[(&Program<'_>, usize)], depth: us
     }
     match ty {
         TSType::TSBooleanKeyword(_) => true,
+        TSType::TSLiteralType(literal) => {
+            matches!(literal.literal, oxc_ast::ast::TSLiteral::BooleanLiteral(_))
+        }
         TSType::TSParenthesizedType(parenthesized) => {
             is_boolean_type(&parenthesized.type_annotation, sources, depth + 1)
         }

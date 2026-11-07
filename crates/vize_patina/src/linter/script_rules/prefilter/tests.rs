@@ -1,8 +1,16 @@
 use super::{is_nuxt_config_filename, script_rule_applies_to_language, script_rule_may_match};
 use crate::linter::script_rules::registry::{
-    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_IMPORT_COMPILER_MACROS,
+    RULE_NO_ARROW_FUNCTIONS_IN_WATCH, RULE_NO_ASYNC_IN_COMPUTED, RULE_NO_IMPORT_COMPILER_MACROS,
     RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_VALID_DEFINE_PROPS,
 };
+
+#[test]
+fn keeps_non_async_next_tick_computed_candidates() {
+    assert!(script_rule_may_match(
+        RULE_NO_ASYNC_IN_COMPUTED,
+        "export default { computed: { events() { this.$nextTick(this.refresh) } } }"
+    ));
+}
 
 #[test]
 fn recognizes_supported_nuxt_config_paths() {

@@ -134,6 +134,7 @@ impl ScriptRule for NoUnusedEmitDeclarations {
                 collector.visit_program(program);
                 escaped = collector.escaped;
             }
+            collect_define_model_events(program, &mut used);
 
             // Top-level `<script setup>` bindings are template-visible, so emit
             // calls in template expressions count as usage too (#3209).
@@ -192,6 +193,7 @@ struct OptionsFrame {
     used: FxHashSet<CompactString>,
     emit: Option<SymbolId>,
     context: Option<SymbolId>,
+    escaped: bool,
 }
 
 struct OptionsUnusedCollector<'o, 'r, 'a> {
@@ -217,12 +219,13 @@ impl<'a> Visit<'a> for OptionsUnusedCollector<'_, '_, 'a> {
                 used: self.template_used.clone(),
                 emit,
                 context,
+                escaped: false,
             });
         }
         walk_object_expression(self, object);
         if pushed && let Some(frame) = self.frames.pop() {
             for event in frame.events {
-                if !frame.used.contains(event.name.as_str()) {
+                if !frame.escaped && !frame.used.contains(event.name.as_str()) {
                     report(&event.name, event.span, self.offset, self.result);
                 }
             }
@@ -235,6 +238,19 @@ impl<'a> Visit<'a> for OptionsUnusedCollector<'_, '_, 'a> {
             && let Some(frame) = self.frames.last_mut()
         {
             frame.used.insert(CompactString::new(event.value.as_str()));
+        }
+        let escaped = self.frames.last().is_some_and(|frame| {
+            [frame.emit, frame.context]
+                .into_iter()
+                .flatten()
+                .any(|symbol| {
+                    call.arguments
+                        .iter()
+                        .any(|argument| self.argument_references_symbol(argument, symbol))
+                })
+        });
+        if escaped && let Some(frame) = self.frames.last_mut() {
+            frame.escaped = true;
         }
         walk_call_expression(self, call);
     }
@@ -278,6 +294,33 @@ impl<'a> OptionsUnusedCollector<'_, '_, 'a> {
             .get_reference(identifier.reference_id.get()?)
             .symbol_id()
     }
+
+    fn argument_references_symbol(&self, argument: &Argument<'a>, symbol: SymbolId) -> bool {
+        match argument {
+            Argument::ObjectExpression(object) => object.properties.iter().any(|property| {
+                matches!(property, ObjectPropertyKind::ObjectProperty(property)
+                    if self.expression_is_symbol(&property.value, symbol))
+            }),
+            Argument::ArrayExpression(array) => array.elements.iter().any(|element| {
+                element
+                    .as_expression()
+                    .is_some_and(|expression| self.expression_is_symbol(expression, symbol))
+            }),
+            _ => argument
+                .as_expression()
+                .is_some_and(|expression| self.expression_is_symbol(expression, symbol)),
+        }
+    }
+
+    fn expression_is_symbol(&self, expression: &Expression<'a>, symbol: SymbolId) -> bool {
+        match expression.without_parentheses() {
+            Expression::Identifier(identifier) => self.symbol(identifier) == Some(symbol),
+            expression => expression.as_member_expression().is_some_and(|member| {
+                matches!(member.object().without_parentheses(), Expression::Identifier(identifier)
+                    if self.symbol(identifier) == Some(symbol))
+            }),
+        }
+    }
 }
 
 fn collect_options_declared_events(object: &ObjectExpression<'_>) -> Option<Vec<DeclaredEvent>> {
@@ -293,8 +336,10 @@ fn collect_options_declared_events(object: &ObjectExpression<'_>) -> Option<Vec<
         Expression::ArrayExpression(array) => {
             for element in &array.elements {
                 let ArrayExpressionElement::StringLiteral(literal) = element else {
-                    // Unknown declarations must not create false positives.
-                    return None;
+                    // Keep independently known literal declarations even when
+                    // the array also contains a dynamic event name. The
+                    // unknown entry cannot make a different literal event used.
+                    continue;
                 };
                 events.push(DeclaredEvent {
                     name: CompactString::new(literal.value.as_str()),
@@ -306,12 +351,14 @@ fn collect_options_declared_events(object: &ObjectExpression<'_>) -> Option<Vec<
         Expression::ObjectExpression(object) => {
             for property in &object.properties {
                 let ObjectPropertyKind::ObjectProperty(property) = property else {
-                    return None;
+                    continue;
                 };
                 if property.computed {
-                    return None;
+                    continue;
                 }
-                let name = property_key_name(&property.key)?;
+                let Some(name) = property_key_name(&property.key) else {
+                    continue;
+                };
                 events.push(DeclaredEvent {
                     name: CompactString::new(name),
                     span: property.key.span(),
@@ -322,6 +369,34 @@ fn collect_options_declared_events(object: &ObjectExpression<'_>) -> Option<Vec<
         _ => return None,
     }
     Some(events)
+}
+
+fn collect_define_model_events(program: &Program<'_>, used: &mut FxHashSet<CompactString>) {
+    if super::compiler_macro_is_shadowed(program, "defineModel") {
+        return;
+    }
+    for statement in &program.body {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            let Some(call) = declarator.init.as_ref().and_then(unwrap_call) else {
+                continue;
+            };
+            if !matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineModel")
+            {
+                continue;
+            }
+            let model = match call.arguments.first() {
+                Some(Argument::StringLiteral(literal)) => literal.value.as_str(),
+                None => "modelValue",
+                _ => continue,
+            };
+            let mut event = CompactString::new("update:");
+            event.push_str(model);
+            used.insert(event);
+        }
+    }
 }
 
 /// A single declared event name with the span to report it at.

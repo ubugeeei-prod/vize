@@ -145,9 +145,7 @@ fn check_computed_object(
 ///
 /// Accepts the shorthand `foo() {}` / `foo: () => {}` getter forms and the
 /// accessor-object form `foo: { get() {} }`.
-pub(super) fn computed_getter_body<'a>(
-    property: &'a ObjectProperty<'a>,
-) -> Option<GetterBody<'a>> {
+pub(super) fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
     match &property.value {
         Expression::FunctionExpression(function) => Some(GetterBody::Function(function)),
         Expression::ArrowFunctionExpression(arrow) => Some(GetterBody::Arrow(arrow)),
@@ -263,10 +261,12 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Expression::StaticMemberExpression(member) = &it.callee
             && member.property.name == "$set"
-            && let Expression::ThisExpression(this_expression) =
-                member.object.get_inner_expression()
+            && matches!(
+                member.object.get_inner_expression(),
+                Expression::ThisExpression(_)
+            )
         {
-            self.report(this_expression.span, "a call to `this.$set`");
+            self.report(member.property.span, "a call to `this.$set`");
         }
         if let Expression::StaticMemberExpression(member) = &it.callee
             && MUTATING_ARRAY_METHODS.contains(&member.property.name.as_str())
@@ -775,7 +775,7 @@ export default {
         let diagnostic = &result.diagnostics[0];
         assert_eq!(
             &source[diagnostic.start as usize..diagnostic.end as usize],
-            "this"
+            "$set"
         );
     }
 }

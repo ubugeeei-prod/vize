@@ -224,6 +224,18 @@ const props = withDefaults(defineProps<{ active?: boolean; count?: number }>(), 
 }
 
 #[test]
+fn typed_boolean_literal_union_default_is_reported_once() {
+    let source = r#"
+interface Enabled { enabled?: true }
+interface Disabled { enabled?: false }
+type Props = Enabled | Disabled
+const props = withDefaults(defineProps<Props>(), { enabled: false })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn generic_boolean_prop_from_sibling_script_is_resolved() {
     let source = r#"<script lang="ts">
 interface Props<T> {
