@@ -64,14 +64,9 @@ impl ScriptRule for OneComponentPerFile {
         program: &'a Program<'a>,
         _source: &str,
         offset: usize,
-        sfc: SfcScriptContext<'_>,
+        _sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        // Local defineComponent values are ordinary template-visible bindings
-        // in script setup, not additional exported component definitions.
-        if sfc.is_script_setup {
-            return;
-        }
         let definitions = component_definitions(program);
         if definitions.len() < 2 {
             return;
@@ -91,6 +86,7 @@ fn report(span: Span, offset: usize, result: &mut ScriptLintResult) {
 #[cfg(test)]
 mod tests {
     use super::OneComponentPerFile;
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn lint(source: &str) -> crate::rules::script::ScriptLintResult {
@@ -107,5 +103,19 @@ mod tests {
         let mixed = lint("export default { name: 'Parent', mixins: [{ data() { return {} } }] }");
         assert_eq!(mixed.warning_count, 0);
         assert_eq!(lint("export default { name: 'Parent' }").warning_count, 0);
+    }
+
+    #[test]
+    fn warns_for_multiple_local_components_in_script_setup() {
+        let source = r#"<script setup lang="ts">
+import { defineComponent } from 'vue'
+const First = defineComponent({ name: 'First' })
+const Second = defineComponent({ name: 'Second' })
+</script>
+<template><First /><Second /></template>"#;
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["script/one-component-per-file".into()]))
+            .lint_sfc(source, "test.vue");
+        assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
     }
 }

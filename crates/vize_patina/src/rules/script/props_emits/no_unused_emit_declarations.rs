@@ -662,28 +662,41 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
             self.used.insert(CompactString::new(literal.value.as_str()));
         }
         if it.span.start > self.after {
-            for argument in &it.arguments {
-                let mut finder = EmitReferenceFinder {
-                    emit_name: self.emit_name,
-                    found: false,
-                };
-                finder.visit_argument(argument);
-                self.escaped |= finder.found;
-            }
+            self.escaped |= it
+                .arguments
+                .iter()
+                .any(|argument| argument_references_emit(argument, self.emit_name));
         }
         walk_call_expression(self, it);
     }
 }
 
-struct EmitReferenceFinder<'a> {
-    emit_name: &'a str,
-    found: bool,
+fn argument_references_emit(argument: &Argument<'_>, emit_name: &str) -> bool {
+    match argument {
+        Argument::ObjectExpression(object) => object.properties.iter().any(|property| {
+            matches!(property, ObjectPropertyKind::ObjectProperty(property)
+                if direct_emit_reference(&property.value, emit_name))
+        }),
+        Argument::ArrayExpression(array) => array.elements.iter().any(|element| {
+            element
+                .as_expression()
+                .is_some_and(|expression| direct_emit_reference(expression, emit_name))
+        }),
+        _ => argument
+            .as_expression()
+            .is_some_and(|expression| direct_emit_reference(expression, emit_name)),
+    }
 }
 
-impl<'a> Visit<'a> for EmitReferenceFinder<'_> {
-    fn visit_identifier_reference(&mut self, identifier: &IdentifierReference<'a>) {
-        self.found |= identifier.name.as_str() == self.emit_name;
+fn direct_emit_reference(expression: &Expression<'_>, emit_name: &str) -> bool {
+    let expression = expression.without_parentheses();
+    if matches!(expression, Expression::Identifier(identifier) if identifier.name == emit_name) {
+        return true;
     }
+    expression.as_member_expression().is_some_and(|member| {
+        matches!(member.object().without_parentheses(), Expression::Identifier(identifier)
+            if identifier.name == emit_name)
+    })
 }
 
 /// Whether the callee is the bare `defineEmits` compiler macro.

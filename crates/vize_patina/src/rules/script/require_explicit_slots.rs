@@ -116,13 +116,13 @@ impl ScriptRule for RequireExplicitSlots {
         if !sfc.sole_script_block && !sfc.is_script_setup {
             return;
         }
-        let slots = declared::collect(program);
+        let slots = declared::collect(program, sfc.sibling_program);
         match &slots.declared {
             DeclaredSlots::Absent => {
                 check_template(&vize_l0::FxHashSet::default(), sfc, result);
             }
-            // eslint-plugin-vue cannot resolve imported/referenced types here;
-            // such a declaration contributes no statically known slot names.
+            // eslint-plugin-vue cannot resolve imported types here; such a
+            // declaration contributes no statically known slot names.
             DeclaredSlots::Unknown => {
                 check_template(&vize_l0::FxHashSet::default(), sfc, result);
             }

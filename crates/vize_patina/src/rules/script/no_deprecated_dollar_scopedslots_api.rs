@@ -73,14 +73,13 @@ impl ScriptTemplateRule for NoDeprecatedDollarScopedSlotsApi {
     fn check_template(
         &self,
         references: &vize_croquis::drawer::TemplateReferences,
-        component_bindings: &super::TemplateComponentBindings,
+        _component_bindings: &super::TemplateComponentBindings,
         offset: u32,
         result: &mut ScriptLintResult,
     ) {
         for reference in references.references() {
             if reference.name != SCOPED_SLOTS
                 || reference.owner != vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
-                || !component_bindings.can_report_component_reference(SCOPED_SLOTS)
             {
                 continue;
             }
@@ -140,7 +139,8 @@ impl NoDeprecatedDollarScopedSlotsApiVisitor<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::NoDeprecatedDollarScopedSlotsApi;
+    use super::{META, NoDeprecatedDollarScopedSlotsApi};
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -183,6 +183,17 @@ const slots = useSlots()
     fn test_invalid_this_scoped_slots() {
         let result = lint("const header = this.$scopedSlots.header");
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_template_dollar_scoped_slots() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><slot v-if=\"$scopedSlots.default\" /></template><script>export default {}</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
     }
 
     #[test]

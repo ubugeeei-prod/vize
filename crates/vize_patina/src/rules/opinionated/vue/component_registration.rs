@@ -46,13 +46,34 @@ fn options_object<'a>(
 ) -> Option<&'a ObjectExpression<'a>> {
     match declaration {
         ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
-        ExportDefaultDeclarationKind::CallExpression(call) => {
+        ExportDefaultDeclarationKind::CallExpression(call)
+            if is_component_options_callee(&call.callee) =>
+        {
             call.arguments.iter().find_map(|argument| match argument {
                 Argument::ObjectExpression(object) => Some(object.as_ref()),
                 _ => None,
             })
         }
         _ => None,
+    }
+}
+
+fn is_component_options_callee(callee: &Expression<'_>) -> bool {
+    match callee {
+        Expression::Identifier(identifier) => matches!(
+            identifier.name.as_str(),
+            "defineComponent" | "_defineComponent" | "extend"
+        ),
+        Expression::StaticMemberExpression(member) => match member.property.name.as_str() {
+            "defineComponent" | "_defineComponent" => true,
+            "extend" => matches!(
+                &member.object,
+                Expression::Identifier(identifier)
+                    if matches!(identifier.name.as_str(), "Vue" | "_Vue")
+            ),
+            _ => false,
+        },
+        _ => false,
     }
 }
 
@@ -95,7 +116,7 @@ mod tests {
     use oxc_span::SourceType;
 
     #[test]
-    fn reads_direct_and_wrapped_options_api_registrations() {
+    fn reads_direct_and_recognized_wrapped_options_api_registrations() {
         for source in [
             "export default { components: { Popover, 'algolia-search': Search } }",
             "export default defineComponent({ components: { Popover } })",
@@ -104,6 +125,18 @@ mod tests {
             let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
             assert!(program_registers(&parsed.program, "popover"));
         }
+    }
+
+    #[test]
+    fn ignores_unrecognized_options_wrappers() {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(
+            &allocator,
+            "export default create({ components: { Popover } })",
+            SourceType::ts(),
+        )
+        .parse();
+        assert!(!program_registers(&parsed.program, "popover"));
     }
 
     #[test]

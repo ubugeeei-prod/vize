@@ -72,6 +72,8 @@ impl Visitor<'_> {
                 .or_else(|| self.access_scope(&member.expression)),
             Expression::ChainExpression(chain) => self.access_chain(&chain.expression),
             Expression::CallExpression(call) => self.call_access(call),
+            Expression::AwaitExpression(await_) => self.access_scope(&await_.argument),
+            Expression::ImportExpression(import) => self.access_scope(&import.source),
             Expression::ArrayExpression(array) => array
                 .elements
                 .iter()

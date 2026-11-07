@@ -124,7 +124,11 @@ pub(super) fn record_binding_names(
     }
 }
 
-fn expression_binding(expression: &Expression<'_>, local: &Frame, outer: &[Frame]) -> Binding {
+pub(super) fn expression_binding(
+    expression: &Expression<'_>,
+    local: &Frame,
+    outer: &[Frame],
+) -> Binding {
     match expression {
         Expression::Identifier(id) => resolve(id.name.as_str(), local, outer),
         Expression::CallExpression(call) => {

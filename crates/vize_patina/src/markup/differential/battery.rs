@@ -259,7 +259,7 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2 + 7 + 3 + 15 + 4,
+    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2 + 7 + 3 + 15 + 4 + 2,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -333,6 +333,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // their complete traces add thirty-four lines.
     // The same-element v-if/v-for parity probe adds one nonliteral call and
     // remains an explicit scanner skip while its focused rule test executes.
+    // XML-name and Vue 2 slot-scope parity add two literal fixtures and calls;
+    // their complete traces add ten lines.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -356,7 +358,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 17
         + 2
         + 4
-        + 1,
+        + 1
+        + 2,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -387,7 +390,7 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 2
         + 1,
     matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13 + 51 + 18 + 102 + 34,
+    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13 + 51 + 18 + 102 + 34 + 10,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

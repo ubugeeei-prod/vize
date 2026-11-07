@@ -150,6 +150,23 @@ export default defineComponent({
 }
 
 #[test]
+fn test_invalid_nested_define_components() {
+    let source = r#"
+import { defineComponent } from 'vue'
+
+const First = defineComponent({
+  props: { active: { type: Boolean, default: true } }
+})
+const Second = defineComponent({
+  props: { disabled: { type: Boolean, default: false } }
+})
+export default { components: { First, Second } }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 2);
+}
+
+#[test]
 fn test_invalid_runtime_define_props() {
     let source = r#"
 const props = defineProps({

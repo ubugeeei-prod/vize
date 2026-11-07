@@ -234,7 +234,7 @@ const attrs = { name: 'footer' };
 }
 
 #[test]
-fn an_unresolved_declaration_contributes_no_statically_known_slot_names() {
+fn a_local_type_reports_only_an_undeclared_slot() {
     let sfc = r#"<script setup lang="ts">
 type Slots = { default(): unknown; footer(): unknown };
 defineSlots<Slots>();
@@ -248,6 +248,42 @@ defineSlots<Slots>();
         owned(&lint_sfc(sfc)),
         vec![undeclared(sfc, r#"<slot name="other" />"#, "other")]
     );
+}
+
+#[test]
+fn a_local_interface_contributes_its_declared_slot_names() {
+    let sfc = r#"<script setup lang="ts">
+export interface Slots {
+  default?: () => unknown;
+  title?: () => unknown;
+}
+defineSlots<Slots>();
+</script>
+
+<template>
+  <div><slot /><slot name="title" /></div>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn an_interface_in_the_normal_script_contributes_slots_to_script_setup() {
+    let sfc = r#"<script lang="ts">
+export interface Slots<T = unknown> {
+  default?(props: { value: T }): unknown;
+  title?(): unknown;
+}
+</script>
+<script setup lang="ts" generic="T">
+defineSlots<Slots<T>>();
+</script>
+
+<template>
+  <div><slot /><slot name="title" /></div>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
 #[test]

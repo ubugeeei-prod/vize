@@ -132,6 +132,16 @@ const { close } = useClose(emit);
 }
 
 #[test]
+fn test_type_cast_emit_argument_does_not_escape_upstream_analysis() {
+    let source = r#"
+const emit = defineEmits<{ close: [] }>()
+useVModel(props, 'modelValue', emit as any)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_emit_stored_does_not_count_as_direct_usage() {
     let source = r#"
 const emit = defineEmits(['close', 'save'])

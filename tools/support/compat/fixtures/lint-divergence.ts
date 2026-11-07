@@ -278,6 +278,34 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   } catch {
     return null;
   }
+  if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
+    return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
+  if (
+    ["script/define-props-declaration", "script/define-emits-declaration"].includes(
+      finding.ruleId,
+    ) &&
+    /<script\b[^>]*\b(?:setup\b[^>]*\blang\s*=\s*["']tsx["']|lang\s*=\s*["']tsx["'][^>]*\bsetup\b)/u.test(
+      source,
+    )
+  )
+    return 'Patina extends the declaration-style rule to <script setup lang="tsx">; eslint-plugin-vue only activates it for an exact lang="ts" block.';
+  if (
+    finding.ruleId === "vue/no-bare-strings-in-template" &&
+    source.split("\n")[finding.line - 1]?.includes("v-text")
+  )
+    return "Patina checks each authored text segment surrounding a v-text code example; the upstream visitor drops those adjacent segments.";
+  if (
+    finding.ruleId === "vue/html-self-closing" &&
+    /<script\b[^>]*\blang\s*=\s*(?:["']uts["']|uts)(?:\s|>)/u.test(source)
+  )
+    return "Patina preserves template linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run this rule.";
+  if (
+    finding.ruleId === "script/return-in-computed-property" &&
+    ((/\bcomputed\s*\(/u.test(source) &&
+      !/\bimport\s*\{[^}]*\bcomputed\b[^}]*\}\s*from\s*["'](?:vue|#imports)["']/su.test(source)) ||
+      /\bexport\s+default\s+new\s+[A-Z_$][\w$]*\s*\(\s*\{[\s\S]*?\bcomputed\s*:/u.test(source))
+  )
+    return "Patina checks computed getters reached through framework auto-imports and component-option wrappers; eslint-plugin-vue does not recognize that component surface.";
   if (finding.ruleId === "script/prefer-use-template-ref" && hasInlinePugTemplate(source))
     return "Patina correlates ref attributes in authored Pug templates with script refs; eslint-plugin-vue does not expose those Pug ref attributes to this rule.";
   if (
@@ -288,7 +316,7 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
     findingInsideScriptBlock(finding, source)
   )
     return "Patina preserves script-side legacy instance API coverage when the fixture's eslint-plugin-vue path only reports equivalent template references.";
-  if (finding.ruleId === "script/require-default-prop") {
+  if (["script/require-default-prop", "script/require-prop-types"].includes(finding.ruleId)) {
     const lines = source.split("\n");
     if (finding.line > lines.length) return null;
     let offset = 0;
@@ -305,7 +333,7 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
           new RegExp(`\\bprops\\s*:\\s*${match[1]}\\b`, "u").test(source.slice(offset)),
       )
     )
-      return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound default-prop coverage.";
+      return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound prop-contract coverage.";
     return null;
   }
   if (
@@ -333,6 +361,13 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
     authoredForeignNativeOpening(finding, source)?.includes("v-for")
   )
     return "Patina recognizes this fragment-root SVG or MathML tag as native and requires its v-for key; eslint-plugin-vue loses the foreign-element namespace and treats the tag as a custom component that is exempt from this rule.";
+  if (
+    finding.ruleId === "vue/v-slot-style" &&
+    authoredFindingText(finding, source)?.trimStart().startsWith("#=")
+  )
+    return "Patina parses Vue's bare default-slot shorthand and enforces the configured component-slot style; vue-eslint-parser exposes it as a plain attribute, so eslint-plugin-vue cannot visit it.";
+  if (finding.ruleId === "vue/no-mutating-props" && mutatesClassDecoratorProp(finding, source))
+    return "Patina recognizes vue-property-decorator @Prop class members as component props and catches their template mutation; eslint-plugin-vue does not recover this class-decorator prop binding.";
   if (finding.ruleId !== "script/define-props-destructuring") return null;
   const lines = source.split("\n");
   if (finding.line > lines.length) return null;
@@ -351,7 +386,7 @@ function hasInlinePugTemplate(source: string): boolean {
 
 function pugTemplateEmitsDeclaredEvent(finding: LintRecord, source: string): boolean {
   if (!hasInlinePugTemplate(source)) return false;
-  const event = /["']([^"']+)["']/u.exec(finding.message)?.[1];
+  const event = /["'`]([^"'`]+)["'`]/u.exec(finding.message)?.[1];
   if (event === undefined) return false;
   const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source);
@@ -382,6 +417,48 @@ function findingEndOffset(finding: LintRecord, source: string): number | null {
   for (let line = 1; line < finding.endLine; line += 1)
     offset += (lines[line - 1]?.length ?? 0) + 1;
   return offset + finding.endColumn - 1;
+}
+
+function authoredFindingText(finding: LintRecord, source: string): string | null {
+  const start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  return start === null || end === null || end < start ? null : source.slice(start, end);
+}
+
+function mismatchedCaseClosingTag(finding: LintRecord, source: string): boolean {
+  const start = findingOffset(finding, source);
+  if (start === null) return false;
+  const authored = authoredFindingText(finding, source) ?? "";
+  const closing = /<\/([A-Za-z][\w.-]*)\s*>/u.exec(authored);
+  if (closing === null) return false;
+  const closingOffset = start + (closing.index ?? 0);
+  const prefix = source.slice(Math.max(0, closingOffset - 1000), closingOffset);
+  const opening = /<([A-Z][\w.-]*)\b[^<>]*>\s*$/u.exec(prefix)?.[1];
+  return (
+    opening !== undefined &&
+    opening !== closing[1] &&
+    opening.toLowerCase() === closing[1]?.toLowerCase()
+  );
+}
+
+function findingInsideElement(finding: LintRecord, source: string, tag: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const open = source.lastIndexOf(`<${tag}`, offset);
+  const closeBefore = source.lastIndexOf(`</${tag}>`, offset);
+  if (open < 0 || closeBefore > open) return false;
+  const closeAfter = source.indexOf(`</${tag}>`, open);
+  return closeAfter < 0 || offset <= closeAfter + tag.length + 3;
+}
+
+function mutatesClassDecoratorProp(finding: LintRecord, source: string): boolean {
+  const name = quotedName(finding.message)?.split(/[.[]/u)[0];
+  if (name === undefined || name === "") return false;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(
+    `@Prop\\b[\\s\\S]{0,500}?\\b(?:public\\s+|private\\s+|protected\\s+|readonly\\s+)*${escaped}\\b`,
+    "u",
+  ).test(source);
 }
 
 function findingPrecedesDefineEmits(finding: LintRecord, source: string): boolean {
@@ -473,6 +550,7 @@ const FOREIGN_NATIVE_TAGS = new Set([
   "textPath",
   "tspan",
   "use",
+  "view",
 ]);
 
 function authoredForeignNativeOpening(finding: LintRecord, source: string): string | null {
@@ -522,6 +600,13 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     /\bcreateApp\s*\([^,]+,\s*\{/su.test(source)
   )
     return "eslint-plugin-vue counts createApp's root-props object as another component definition; Patina excludes that ordinary props object.";
+  if (finding.ruleId === "vue/html-self-closing" && mismatchedCaseClosingTag(finding, source))
+    return "Patina refuses to propose a self-closing rewrite for a component whose authored closing tag has mismatched casing; the malformed tag must be repaired first.";
+  if (
+    finding.ruleId === "vue/no-bare-strings-in-template" &&
+    findingInsideElement(finding, source, "noscript")
+  )
+    return "Patina treats noscript contents as raw fallback markup and does not report its embedded template-like text as a user-facing bare string.";
   if (
     finding.ruleId === "vue/no-unused-emit-declarations" &&
     pugTemplateEmitsDeclaredEvent(finding, source)
@@ -542,12 +627,11 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     authoredForeignNativeOpening(finding, source) !== null
   )
     return "Patina recognizes the authored SVG or MathML tag as native even when it is a fragment root; eslint-plugin-vue loses the foreign-element namespace and incorrectly applies its custom-component v-for exemption.";
-  if (finding.ruleId === "vue/require-explicit-slots") {
-    const lines = source.split("\n"),
-      startLine = lines[finding.line - 1],
-      selected = lines.slice(finding.line - 1, finding.endLine).join("\n");
-    return startLine?.slice(finding.column - 1).startsWith("<Slot") && selected.includes("<slot")
-      ? "eslint-plugin-vue treats an imported uppercase <Slot> component as a slot outlet case-insensitively; Patina reports only the nested lowercase <slot> outlet that Vue actually renders as a slot."
+  if (["vue/require-explicit-slots", "vue/no-multiple-template-root"].includes(finding.ruleId)) {
+    return importedUppercaseSlotRange(finding, source)
+      ? finding.ruleId === "vue/require-explicit-slots"
+        ? "eslint-plugin-vue treats an imported uppercase <Slot> component as a slot outlet case-insensitively; Patina reports only the nested lowercase <slot> outlet that Vue actually renders as a slot."
+        : "eslint-plugin-vue treats an imported uppercase <Slot> component as a native slot outlet case-insensitively and rejects its nested lowercase <slot>; Patina preserves Vue's case-sensitive component semantics."
       : null;
   }
   if (finding.ruleId === "vue/no-useless-mustaches") {
@@ -558,6 +642,16 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     const match = /^\{\{\s*(['"`])([\s\S]*?)\1\s*\}\}$/u.exec(authored);
     return match !== null && match[2].length > 0 && /^(?:\s|\\[tnrfv ])+$/u.test(match[2])
       ? "Patina keeps whitespace-only string interpolations because replacing them with static whitespace can be removed by Vue's whitespace condensing and change the rendered output."
+      : null;
+  }
+  if (finding.ruleId === "vue/v-on-handler-style") {
+    const authored = authoredFindingText(finding, source);
+    if (authored === null) return null;
+    const compact = authored.trim().replaceAll(/\p{White_Space}+/gu, "");
+    return /^[A-Za-z_$][\w$]*(?:(?:\??\.[A-Za-z_$][\w$]*)|(?:\[['"][^'"\\]+['"]\]))*$/u.test(
+      compact,
+    )
+      ? "Patina preserves a stable method reference across formatting whitespace and computed member syntax; eslint-plugin-vue misclassifies the authored reference as an inline handler."
       : null;
   }
   if (finding.ruleId === "vue/html-quotes") {
@@ -614,6 +708,7 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
       "select",
       "small",
       "span",
+      "style",
       "strong",
       "svg",
       "table",
@@ -774,6 +869,14 @@ function findRuleLocationDivergence(
   return null;
 }
 
+function importedUppercaseSlotRange(finding: LintRecord, source: string): boolean {
+  const start = findingOffset(finding, source);
+  if (start === null || !source.startsWith("<Slot", start)) return false;
+  const tail = source.slice(start),
+    close = tail.indexOf("</Slot>");
+  return close >= 0 && tail.slice(0, close).includes("<slot");
+}
+
 const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = {
   ...Object.fromEntries(
     [
@@ -811,6 +914,51 @@ const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = 
         return null;
       }
       return `component:${positiveComponent}`;
+    },
+  },
+  "vue/no-multiple-template-root": {
+    reason:
+      "patina reports the extra root element itself while eslint-plugin-vue extends the diagnostic through the following root content.",
+    subject(positive, negative) {
+      return positive.line === negative.line && positive.column === negative.column
+        ? `root:${positive.line}:${positive.column}`
+        : null;
+    },
+  },
+  "vue/html-button-has-type": {
+    reason:
+      "patina reports the complete button opening element while eslint-plugin-vue reports only the invalid type attribute value.",
+    subject(positive, negative) {
+      return containsSpan(positive, negative) ? `button:${positive.line}:${negative.column}` : null;
+    },
+  },
+  "vue/v-on-handler-style": {
+    reason:
+      "patina includes leading comments and formatting whitespace in the recovered handler span while eslint-plugin-vue starts at the executable expression.",
+    subject(positive, negative) {
+      return containsSpan(positive, negative)
+        ? `handler:${negative.line}:${negative.column}`
+        : null;
+    },
+  },
+  "vue/no-setup-props-reactivity-loss": {
+    reason:
+      "patina reports the complete root-scope expression while eslint-plugin-vue reports the inner props access.",
+    subject(positive, negative) {
+      return containsSpan(positive, negative)
+        ? `props-read:${negative.line}:${negative.column}`
+        : null;
+    },
+  },
+  "script/no-deprecated-data-object-declaration": {
+    reason:
+      "patina reports the data property key while eslint-plugin-vue reports the complete object-valued property.",
+    subject(positive, negative) {
+      return positive.line === negative.line &&
+        positive.column === negative.column &&
+        containsSpan(negative, positive)
+        ? `data:${positive.line}:${positive.column}`
+        : null;
     },
   },
   "vue/require-v-for-key": {

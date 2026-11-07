@@ -184,6 +184,52 @@ export default {
 }
 
 #[test]
+fn static_computed_refs_access_does_not_hide_other_unused_refs() {
+    let sfc = r#"<template>
+  <input ref="used" />
+  <input ref="dead" />
+</template>
+<script>
+export default {
+  mounted() {
+    this.$refs['used'].focus()
+  }
+}
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert!(findings[0].message.contains("dead"));
+}
+
+#[test]
+fn refs_text_in_a_script_comment_does_not_hide_an_unused_ref() {
+    let sfc = r#"<template><input ref="dead" /></template>
+<script>
+// this.$refs[`dynamic-${name}`]
+export default {}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn reports_unused_ref_on_the_sfc_template_element() {
+    let sfc = r#"<template ref="container"><div /></template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &sfc[diagnostic.start as usize..diagnostic.end as usize],
+        "\"container\""
+    );
+}
+
+#[test]
 fn test_bailout_whole_refs_passed() {
     // `$refs` handed off as a whole object: bail out.
     let sfc = r#"<template><input ref="inputEl" /></template>
@@ -195,6 +241,19 @@ export default {
 }
 </script>"#;
     assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn a_bare_refs_comparison_does_not_hide_an_unrelated_unused_ref() {
+    let sfc = r#"<template><input ref="img" /></template>
+<script>
+export default {
+  mounted() {
+    if (document.activeElement !== this.$refs) return
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
 }
 
 #[test]

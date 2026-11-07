@@ -39,9 +39,13 @@ fn test_valid_passing_ref_itself() {
 }
 
 #[test]
-fn test_valid_plain_reassignment() {
-    // `count = x` rebinds the variable; only compound assignment reads it.
+fn test_valid_ref_replacement() {
     assert_eq!(lint("let count = ref(0)\ncount = ref(1)").error_count, 0);
+}
+
+#[test]
+fn test_invalid_plain_value_assignment() {
+    assert_eq!(lint("let count = ref(0)\ncount = 1").error_count, 1);
 }
 
 #[test]

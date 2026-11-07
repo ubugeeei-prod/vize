@@ -127,9 +127,9 @@ fn the_tier_census_is_pinned() {
         census,
         [
             (("complete", "error"), 11),
-            (("complete", "warning"), 25),
+            (("complete", "warning"), 28),
             (("exact", "error"), 106),
-            (("exact", "warning"), 121),
+            (("exact", "warning"), 118),
             (("heuristic", "warning"), 17),
             (("sound", "warning"), 1),
         ]

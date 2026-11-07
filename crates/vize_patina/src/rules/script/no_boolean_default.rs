@@ -48,8 +48,9 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::GetSpan;
-use vize_l0::FxHashMap;
+use vize_l0::{FxHashMap, FxHashSet};
 
 use super::props_emits::typed_prop_defaults::collect_setup_props_with_types;
 
@@ -97,11 +98,17 @@ impl ScriptRule for NoBooleanDefault {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if let Some(options) = find_component_options(program)
-            && let Some(props) = find_props_object(options)
-        {
-            check_props_object(props, offset, result);
+        let mut seen = FxHashSet::default();
+        if let Some(options) = find_component_options(program) {
+            check_component_options(options, offset, result);
+            seen.insert(options.span().start);
         }
+        let mut visitor = DefineComponentVisitor {
+            offset,
+            result,
+            seen: &mut seen,
+        };
+        visitor.visit_program(program);
         let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
         for declaration in collect_setup_props_with_types(program, offset, sibling) {
             if let Some(props) = declaration.runtime {
@@ -116,6 +123,35 @@ impl ScriptRule for NoBooleanDefault {
                 }
             }
         }
+    }
+}
+
+fn check_component_options(
+    options: &ObjectExpression<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if let Some(props) = find_props_object(options) {
+        check_props_object(props, offset, result);
+    }
+}
+
+struct DefineComponentVisitor<'rule, 'seen> {
+    offset: usize,
+    result: &'rule mut ScriptLintResult,
+    seen: &'seen mut FxHashSet<u32>,
+}
+
+impl<'a> Visit<'a> for DefineComponentVisitor<'_, '_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let Expression::Identifier(callee) = &call.callee
+            && matches!(callee.name.as_str(), "defineComponent" | "_defineComponent")
+            && let Some(Argument::ObjectExpression(options)) = call.arguments.first()
+            && self.seen.insert(options.span().start)
+        {
+            check_component_options(options, self.offset, self.result);
+        }
+        walk_call_expression(self, call);
     }
 }
 

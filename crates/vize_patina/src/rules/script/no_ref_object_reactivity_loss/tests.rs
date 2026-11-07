@@ -37,8 +37,9 @@ if (foo) {
   const value1 = count.value
 }
 const direct = ref(0).value
+const copiedIntoAnotherRef = ref(count.value)
 "#,
-        6,
+        7,
     );
 }
 
@@ -103,7 +104,7 @@ const watched = computed(() => item.value)
 const refs = toRefs(foo)
 const watchedBag = computed(() => refs.item.value)
 const [a] = ref(0)
-const copiedIntoAnotherRef = ref(count.value)
+const copiedIntoAnotherRef = ref(count.value) as Ref<number>
 foo.bar = ref(0)
 let alias = ref(0)
 alias = alias

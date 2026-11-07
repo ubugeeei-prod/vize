@@ -84,8 +84,9 @@ impl NoUselessTemplateAttributes {
                 false
             }
             PropNode::Attribute(attr) => {
-                // `slot` is the Vue 2 plain-attribute spelling.
-                matches!(attr.name, "key" | "slot")
+                // Vue 2 slot syntax is represented as plain attributes by the
+                // template parser, not directives.
+                matches!(attr.name, "key" | "slot" | "scope" | "slot-scope")
             }
         }
     }
@@ -186,6 +187,7 @@ mod tests {
             r#"<MyComponent><template slot="header"><h1 /></template></MyComponent>"#,
             r#"<MyComponent><template slot-scope="props"><h1 /></template></MyComponent>"#,
             r#"<MyComponent><template scope="props"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template v-if="ok" slot-scope="props"><h1 /></template></MyComponent>"#,
         ] {
             let result = linter.lint_template(template, "test.vue");
             assert_eq!(

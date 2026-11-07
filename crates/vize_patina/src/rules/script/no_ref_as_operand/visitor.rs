@@ -1,8 +1,8 @@
 use super::{
     RefOperandVisitor,
     scope::{
-        Binding, Frame, collect_function_scope, collect_scope_bindings, prime_scope_bindings,
-        record_binding_names, record_declaration,
+        Binding, Frame, collect_function_scope, collect_scope_bindings, expression_binding,
+        prime_scope_bindings, record_binding_names, record_declaration,
     },
 };
 use oxc_ast::ast::{
@@ -196,13 +196,21 @@ impl<'a> Visit<'a> for RefOperandVisitor<'_> {
     }
 
     fn visit_assignment_expression(&mut self, it: &AssignmentExpression<'a>) {
-        // A compound assignment (`count += 1`, `count ??= x`) reads the target
-        // as a value first. A plain `count = x` only rebinds and is left alone.
-        if !it.operator.is_assign()
-            && let oxc_ast::ast::AssignmentTarget::AssignmentTargetIdentifier(id) = &it.left
+        if let oxc_ast::ast::AssignmentTarget::AssignmentTargetIdentifier(id) = &it.left
             && self.is_ref(&id.name)
         {
-            self.report(id.span, &id.name);
+            let replacement_is_ref = self.scopes.split_last().is_some_and(|(local, outer)| {
+                expression_binding(&it.right, local, outer) == Binding::Ref
+            });
+            // Replacing a ref binding with another ref is allowed. Assigning an
+            // ordinary value must write through `.value`; compound assignments
+            // always read and write the wrapped value.
+            if !it.operator.is_assign() || !replacement_is_ref {
+                self.report(id.span, &id.name);
+            }
+        }
+        if !it.operator.is_assign() {
+            self.check_operand(&it.right);
         }
         walk_assignment_expression(self, it);
     }

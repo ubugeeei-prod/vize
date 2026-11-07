@@ -153,6 +153,17 @@ fn check_element<'a>(
     {
         return;
     }
+    // vue-eslint-parser treats the contents of <noscript> as raw text. Relief
+    // retains the authored nodes for editor features, but this compatibility
+    // rule must not lint markup that upstream cannot observe.
+    if ctx
+        .element_stack
+        .iter()
+        .take(ctx.element_stack.len().saturating_sub(1))
+        .any(|ancestor| ancestor.tag == "noscript")
+    {
+        return;
+    }
 
     let tag = element.tag;
     if allow_vuetify_tags && is_vuetify_tag(tag) {
@@ -271,14 +282,17 @@ enum SelfClosingElementKind {
 
 fn classify_element(element: &ElementNode<'_>) -> SelfClosingElementKind {
     let tag = element.tag;
+    // A custom element named <view> is also an SVG tag. Relief consequently
+    // propagates the SVG namespace to its children, while vue-eslint-parser
+    // only enters SVG mode for an authored <svg>. HTML void tags retain their
+    // HTML closing contract even in that recovered namespace.
+    if is_void_tag(tag) {
+        return SelfClosingElementKind::VoidHtml;
+    }
     match element.ns {
         Namespace::Svg => return SelfClosingElementKind::Svg,
         Namespace::MathMl => return SelfClosingElementKind::Math,
         Namespace::Html => {}
-    }
-
-    if is_void_tag(tag) {
-        return SelfClosingElementKind::VoidHtml;
     }
 
     if is_svg_tag(tag) {

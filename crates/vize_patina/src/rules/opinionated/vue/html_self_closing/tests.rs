@@ -27,6 +27,28 @@ fn test_invalid_self_closing_void() {
 }
 
 #[test]
+fn test_invalid_self_closing_void_in_sfc() {
+    let source = r#"<template>
+  <view class="card">
+    <div><img :src="imgUrl" alt="" /></div>
+  </view>
+</template>
+<script lang="ts">export default {}</script>
+"#;
+    let result = create_linter().lint_sfc(source, "card.vue");
+    assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+}
+
+#[test]
+fn test_ignores_markup_inside_noscript() {
+    let result = create_linter().lint_sfc(
+        "<template><main><noscript><br /></noscript></main></template>",
+        "home.vue",
+    );
+    assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
+}
+
+#[test]
 fn test_valid_void_not_self_closing() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<img>"#, "test.vue");

@@ -51,8 +51,9 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Expression, ObjectExpression, ObjectPropertyKind,
-    Program, PropertyKey, Statement, StaticMemberExpression, VariableDeclarator,
+    Argument, BindingPattern, CallExpression, ComputedMemberExpression, Declaration, Expression,
+    ForInStatement, ImportDeclarationSpecifier, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey, ReturnStatement, Statement, StaticMemberExpression, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::SemanticBuilder;
@@ -86,6 +87,69 @@ impl Rule for NoUnusedRefs {
         &META
     }
 
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let Some(descriptor) = ctx.sfc_descriptor() else {
+            return;
+        };
+        let Some(template) = descriptor.template.as_ref() else {
+            return;
+        };
+        let Some(name) = template.attrs.get("ref").filter(|name| !name.is_empty()) else {
+            return;
+        };
+        let template_source = template.content.as_ref();
+        let scripts = ctx.sfc_scripts();
+        let used_in_script = scripts.is_some_and(|scripts| {
+            scripts.script().is_some_and(|parsed| {
+                program_uses_template_ref(
+                    &parsed.program,
+                    descriptor
+                        .script
+                        .as_ref()
+                        .map(|block| block.content.as_ref())
+                        .unwrap_or(""),
+                    true,
+                    name,
+                )
+            }) || scripts.script_setup().is_some_and(|parsed| {
+                program_uses_template_ref(
+                    &parsed.program,
+                    descriptor
+                        .script_setup
+                        .as_ref()
+                        .map(|block| block.content.as_ref())
+                        .unwrap_or(""),
+                    false,
+                    name,
+                )
+            })
+        });
+        if has_opaque_refs_access(template_source)
+            || template_uses_static_ref(template_source, name)
+            || binding_uses_template_ref(ctx, name)
+            || used_in_script
+        {
+            return;
+        }
+        let Some((start, end)) = sfc_attribute_value_span(
+            ctx.source,
+            template.loc.tag_start,
+            template.loc.start,
+            "ref",
+        ) else {
+            return;
+        };
+        let loc = SourceLocation::new(start, end);
+        ctx.warn_with_help(
+            cstr!("Template ref '{name}' is never referenced in <script>"),
+            &loc,
+            cstr!(
+                "Remove the unused ref=\"{name}\" attribute, or reference it in <script> \
+                 (e.g. a ref named {name}, useTemplateRef('{name}'), or this.$refs.{name})."
+            ),
+        );
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         // Collect every static `ref="x"` in the template up front.
         let mut refs: Vec<TemplateRef> = Vec::new();
@@ -116,13 +180,6 @@ impl Rule for NoUnusedRefs {
                 .as_ref()
                 .map(|block| block.content.as_ref())
                 .unwrap_or("");
-            // Opaque `$refs` usage in script (computed access or whole-object
-            // handling) can reach any ref without naming it; bail out to avoid
-            // false positives.
-            if has_opaque_refs_access(script) || has_opaque_refs_access(script_setup) {
-                return;
-            }
-
             // A dynamic or whole-object `$refs` use in the template can reach
             // any name. Static member reads, however, only keep that exact ref
             // alive; one `$refs.calendar` must not hide an unrelated dead
@@ -170,6 +227,76 @@ impl Rule for NoUnusedRefs {
             );
         }
     }
+}
+
+fn sfc_attribute_value_span(
+    source: &str,
+    start: usize,
+    end: usize,
+    target: &str,
+) -> Option<(u32, u32)> {
+    let header = source.get(start..end)?.as_bytes();
+    let mut cursor = 1;
+    while header
+        .get(cursor)
+        .is_some_and(|&byte| !byte.is_ascii_whitespace() && !matches!(byte, b'>' | b'/'))
+    {
+        cursor += 1;
+    }
+    while cursor < header.len() {
+        while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if header
+            .get(cursor)
+            .is_none_or(|&byte| matches!(byte, b'>' | b'/'))
+        {
+            break;
+        }
+        let name_start = cursor;
+        while header
+            .get(cursor)
+            .is_some_and(|&byte| !byte.is_ascii_whitespace() && !matches!(byte, b'=' | b'>' | b'/'))
+        {
+            cursor += 1;
+        }
+        let name_end = cursor;
+        while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if header.get(cursor) != Some(&b'=') {
+            continue;
+        }
+        cursor += 1;
+        while header.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        let value_start = cursor;
+        if let Some(quote @ (b'\'' | b'"')) = header.get(cursor).copied() {
+            cursor += 1;
+            while header.get(cursor).is_some_and(|byte| *byte != quote) {
+                cursor += 1;
+            }
+            if header.get(cursor) != Some(&quote) {
+                return None;
+            }
+            cursor += 1;
+        } else {
+            while header
+                .get(cursor)
+                .is_some_and(|&byte| !byte.is_ascii_whitespace() && !matches!(byte, b'>' | b'/'))
+            {
+                cursor += 1;
+            }
+        }
+        if header.get(name_start..name_end) == Some(target.as_bytes()) {
+            return Some((
+                u32::try_from(start + value_start).ok()?,
+                u32::try_from(start + cursor).ok()?,
+            ));
+        }
+    }
+    None
 }
 
 /// Recursively gather static `ref="..."` attributes from the template tree.
@@ -267,20 +394,86 @@ fn program_uses_template_ref(
     export_default: bool,
     name: &str,
 ) -> bool {
+    if !export_default && script_setup_defines(program, name) {
+        return true;
+    }
     let built = SemanticBuilder::new().with_build_nodes(true).build(program);
     let objects = VueObjects::collect(program, source, &built.semantic, export_default);
     let mut visitor = RefUseVisitor {
         name,
         used: false,
+        opaque: false,
         objects: &objects,
     };
     visitor.visit_program(program);
-    visitor.used
+    visitor.used || visitor.opaque
+}
+
+fn script_setup_defines(program: &Program<'_>, name: &str) -> bool {
+    let declaration_defines = |declaration: &Declaration<'_>| match declaration {
+        Declaration::VariableDeclaration(declaration) => declaration
+            .declarations
+            .iter()
+            .any(|declarator| binding_declares(&declarator.id, name)),
+        Declaration::FunctionDeclaration(function) => function
+            .id
+            .as_ref()
+            .is_some_and(|identifier| identifier.name == name),
+        Declaration::ClassDeclaration(class) => class
+            .id
+            .as_ref()
+            .is_some_and(|identifier| identifier.name == name),
+        _ => false,
+    };
+    program.body.iter().any(|statement| match statement {
+        Statement::ImportDeclaration(import) if !import.import_kind.is_type() => {
+            import.specifiers.as_ref().is_some_and(|specifiers| {
+                specifiers.iter().any(|specifier| match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                        if !specifier.import_kind.is_type() =>
+                    {
+                        specifier.local.name == name
+                    }
+                    ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                        specifier.local.name == name
+                    }
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                        specifier.local.name == name
+                    }
+                    _ => false,
+                })
+            })
+        }
+        Statement::VariableDeclaration(declaration) => declaration
+            .declarations
+            .iter()
+            .any(|declarator| binding_declares(&declarator.id, name)),
+        Statement::FunctionDeclaration(function) => function
+            .id
+            .as_ref()
+            .is_some_and(|identifier| identifier.name == name),
+        Statement::ClassDeclaration(class) => class
+            .id
+            .as_ref()
+            .is_some_and(|identifier| identifier.name == name),
+        Statement::ExportNamedDeclaration(export) if !export.export_kind.is_type() => {
+            export.declaration.as_ref().is_some_and(declaration_defines)
+        }
+        _ => false,
+    })
+}
+
+fn binding_declares(pattern: &BindingPattern<'_>, name: &str) -> bool {
+    pattern
+        .get_binding_identifiers()
+        .into_iter()
+        .any(|identifier| identifier.name == name)
 }
 
 struct RefUseVisitor<'n> {
     name: &'n str,
     used: bool,
+    opaque: bool,
     objects: &'n VueObjects,
 }
 
@@ -299,13 +492,18 @@ impl RefUseVisitor<'_> {
 
 impl<'a> Visit<'a> for RefUseVisitor<'_> {
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
-        if let (BindingPattern::ObjectPattern(pattern), Some(init)) =
-            (&declarator.id, &declarator.init)
+        if let Some(init) = &declarator.init
             && Self::refs_object(init)
         {
-            self.used |= pattern.properties.iter().any(|property| {
-                !property.computed && property_key_name(&property.key) == Some(self.name)
-            });
+            if let BindingPattern::ObjectPattern(pattern) = &declarator.id {
+                self.used |= pattern.properties.iter().any(|property| {
+                    !property.computed && property_key_name(&property.key) == Some(self.name)
+                });
+                self.opaque |= pattern.rest.is_some()
+                    || pattern.properties.iter().any(|property| property.computed);
+            } else {
+                self.opaque = true;
+            }
         }
         walk::walk_variable_declarator(self, declarator);
     }
@@ -343,6 +541,13 @@ impl<'a> Visit<'a> for RefUseVisitor<'_> {
         {
             self.used = true;
         }
+        if call
+            .arguments
+            .iter()
+            .any(|argument| argument.as_expression().is_some_and(Self::refs_object))
+        {
+            self.opaque = true;
+        }
         walk::walk_call_expression(self, call);
     }
 
@@ -351,6 +556,31 @@ impl<'a> Visit<'a> for RefUseVisitor<'_> {
             self.used = true;
         }
         walk::walk_static_member_expression(self, member);
+    }
+
+    fn visit_computed_member_expression(&mut self, member: &ComputedMemberExpression<'a>) {
+        if Self::refs_object(&member.object) {
+            if let Some(property) = member.static_property_name() {
+                self.used |= property == self.name;
+            } else {
+                self.opaque = true;
+            }
+        }
+        walk::walk_computed_member_expression(self, member);
+    }
+
+    fn visit_return_statement(&mut self, statement: &ReturnStatement<'a>) {
+        if statement.argument.as_ref().is_some_and(Self::refs_object) {
+            self.opaque = true;
+        }
+        walk::walk_return_statement(self, statement);
+    }
+
+    fn visit_for_in_statement(&mut self, statement: &ForInStatement<'a>) {
+        if Self::refs_object(&statement.right) {
+            self.opaque = true;
+        }
+        walk::walk_for_in_statement(self, statement);
     }
 }
 
@@ -438,12 +668,26 @@ fn has_opaque_refs_access(source: &str) -> bool {
             // Static object destructuring enumerates the exact ref names and
             // is handled by `RefUseVisitor`; it is not a whole-object escape.
             _ if is_static_refs_destructure(source, index) => {}
+            // eslint-plugin-vue does not treat a bare `$refs` value observed by
+            // an equality comparison as an escape. It continues to report
+            // unrelated static refs in the same component.
+            _ if is_refs_comparison(source, index, cursor) => {}
             // `$refs` at end of input, or anything else (`[`, `,`, `)`, `;`, `=`,
             // operators, etc.) is treated as opaque to stay sound.
             _ => return true,
         }
     }
     false
+}
+
+fn is_refs_comparison(source: &str, refs_start: usize, after_refs: usize) -> bool {
+    const OPERATORS: [&str; 4] = ["===", "!==", "==", "!="];
+    let before = source.get(..refs_start).map(str::trim_end).unwrap_or("");
+    let before = before.strip_suffix("this.").unwrap_or(before).trim_end();
+    let after = source.get(after_refs..).map(str::trim_start).unwrap_or("");
+    OPERATORS
+        .iter()
+        .any(|operator| before.ends_with(operator) || after.starts_with(operator))
 }
 
 fn is_static_refs_destructure(source: &str, refs_start: usize) -> bool {

@@ -2,7 +2,7 @@
 mod support;
 
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
-use crate::{HelpLevel, Linter, Locale, Severity};
+use crate::{HelpLevel, Locale, Severity};
 use support::*;
 use vize_l0::{Span, config::VueVersion};
 
