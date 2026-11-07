@@ -46,7 +46,9 @@ export function createDataClient(options: DataClientOptions = {}): DataClient {
   const now = options.now ?? Date.now;
   const sleep = options.sleep ?? defaultSleep;
   const cache = new Map<string, DataState>();
-  const inflight = new Map<string, Promise<DataState>>();
+  const inflight = new Map<string, InflightLoad>();
+  const versions = new Map<string, number>();
+  const listeners = new Set<(state: DataState) => void>();
 
   for (const state of options.snapshot?.resources ?? []) cache.set(state.requestKey, state);
 
@@ -57,20 +59,53 @@ export function createDataClient(options: DataClientOptions = {}): DataClient {
       const cached = cache.get(requestKey);
       const policy = loadOptions?.policy ?? "dedupe";
 
-      if (policy !== "revalidate" && policy !== "replace" && cached?.status === "success") {
+      if (
+        policy !== "revalidate" &&
+        policy !== "replace" &&
+        policy !== "stale-while-revalidate" &&
+        cached?.status === "success"
+      ) {
         return Promise.resolve(cached as TypedState<typeof resource>);
       }
       if (policy === "cache-first" && cached != null && cached.status !== "pending") {
         return Promise.resolve(cached as TypedState<typeof resource>);
       }
-      if (policy === "dedupe") {
-        const current = inflight.get(requestKey);
-        if (current) return current as Promise<TypedState<typeof resource>>;
+      const current = inflight.get(requestKey);
+      if (policy === "dedupe" && current) {
+        return current.promise as Promise<TypedState<typeof resource>>;
       }
+      const staleWhileRevalidate =
+        policy === "stale-while-revalidate" &&
+        cached !== undefined &&
+        (cached.status === "success" || cached.status === "stale");
+      if (staleWhileRevalidate && current) {
+        return Promise.resolve(cached as TypedState<typeof resource>);
+      }
+      if (policy === "replace") current?.controller.abort("replaced");
+
+      const version = (versions.get(requestKey) ?? 0) + 1;
+      versions.set(requestKey, version);
 
       const controller = createLinkedAbortController(loadOptions);
+      const commit = (state: DataState): boolean => {
+        if (versions.get(requestKey) !== version) return false;
+        cache.set(requestKey, state);
+        for (const listener of listeners) listener(state);
+        return true;
+      };
+      let immediate = cached;
+      if (staleWhileRevalidate && cached.status === "success") {
+        const stale = {
+          ...cached,
+          status: "stale",
+          staleAt: now(),
+          reason: "stale-while-revalidate",
+        } as DataStaleState<DataResourceKey, unknown, unknown>;
+        commit(stale);
+        immediate = stale;
+      }
       const task = runLoadAttempt({
-        cache,
+        commit,
         input,
         loadOptions,
         now,
@@ -79,12 +114,14 @@ export function createDataClient(options: DataClientOptions = {}): DataClient {
         signal: controller.signal,
         sleep,
       }).finally(() => {
-        if (inflight.get(requestKey) === task) inflight.delete(requestKey);
+        if (inflight.get(requestKey)?.version === version) inflight.delete(requestKey);
         controller.dispose();
       });
 
-      inflight.set(requestKey, task);
-      return task as Promise<TypedState<typeof resource>>;
+      inflight.set(requestKey, { controller, promise: task, version });
+      return staleWhileRevalidate
+        ? Promise.resolve(immediate as TypedState<typeof resource>)
+        : (task as Promise<TypedState<typeof resource>>);
     },
     peek(resource, input) {
       validateResource(resource);
@@ -98,15 +135,50 @@ export function createDataClient(options: DataClientOptions = {}): DataClient {
         if (input !== undefined && requestKey !== createRequestKey(resource.key, input)) continue;
         if (input === undefined && !requestKey.startsWith(prefix)) continue;
         if (state.status !== "success") continue;
-        cache.set(requestKey, {
+        const stale = {
           ...state,
           status: "stale",
           staleAt: now(),
           reason,
-        } as DataStaleState<DataResourceKey, unknown, unknown>);
+        } as DataStaleState<DataResourceKey, unknown, unknown>;
+        cache.set(requestKey, stale);
+        for (const listener of listeners) listener(stale);
         changed += 1;
       }
       return changed;
+    },
+    optimistic(resource, input, update) {
+      validateResource(resource);
+      const requestKey = createRequestKey(resource.key, input);
+      const previous = cache.get(requestKey);
+      if (previous?.status !== "success" && previous?.status !== "stale") return () => false;
+      const optimistic = {
+        ...previous,
+        status: "stale",
+        data: update(previous.data as never),
+        staleAt: now(),
+        reason: "optimistic",
+      } as DataStaleState<DataResourceKey, unknown, unknown>;
+      cache.set(requestKey, optimistic);
+      for (const listener of listeners) listener(optimistic);
+      return () => {
+        if (cache.get(requestKey) !== optimistic) return false;
+        cache.set(requestKey, previous);
+        for (const listener of listeners) listener(previous);
+        return true;
+      };
+    },
+    cancel(resource, input, reason = "cancelled") {
+      validateResource(resource);
+      const requestKey = createRequestKey(resource.key, input);
+      const current = inflight.get(requestKey);
+      if (!current) return false;
+      current.controller.abort(reason);
+      return true;
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
     },
     snapshot: () => ({
       schemaVersion: 1,
@@ -157,8 +229,14 @@ type TypedState<Resource extends AnyDataResourceDefinition> = DataState<
   InferError<Resource>
 >;
 
+interface InflightLoad {
+  readonly controller: ReturnType<typeof createLinkedAbortController>;
+  readonly promise: Promise<DataState>;
+  readonly version: number;
+}
+
 interface LoadAttemptOptions<Resource extends AnyDataResourceDefinition> {
-  cache: Map<string, DataState>;
+  commit: (state: DataState) => boolean;
   input: InferInput<Resource>;
   loadOptions: DataLoadOptions<InferKey<Resource>, InferInput<Resource>> | undefined;
   now: () => number;
@@ -171,9 +249,21 @@ interface LoadAttemptOptions<Resource extends AnyDataResourceDefinition> {
 async function runLoadAttempt<Resource extends AnyDataResourceDefinition>(
   options: LoadAttemptOptions<Resource>,
 ): Promise<DataState> {
+  const support = options.resource.supports?.(options.input);
+  if (support === false || typeof support === "string") {
+    const unsupported = {
+      status: "unsupported",
+      key: options.resource.key,
+      input: options.input,
+      requestKey: options.requestKey,
+      reason: typeof support === "string" ? support : "unsupported",
+    } satisfies DataState;
+    options.commit(unsupported);
+    return unsupported;
+  }
   const retries = normalizeRetries(options.loadOptions?.retries);
   for (let attempt = 1; ; attempt += 1) {
-    options.cache.set(options.requestKey, {
+    options.commit({
       status: "pending",
       key: options.resource.key,
       input: options.input,
@@ -200,7 +290,7 @@ async function runLoadAttempt<Resource extends AnyDataResourceDefinition>(
         data,
         updatedAt: options.now(),
       } satisfies DataState;
-      options.cache.set(options.requestKey, success);
+      options.commit(success);
       return success;
     } catch (error) {
       if (options.signal.aborted) return cacheCancelled(options);
@@ -213,7 +303,7 @@ async function runLoadAttempt<Resource extends AnyDataResourceDefinition>(
           error: options.resource.serializeError?.(error) ?? error,
           updatedAt: options.now(),
         } satisfies DataState;
-        options.cache.set(options.requestKey, failed);
+        options.commit(failed);
         return failed;
       }
       const delay = retryDelay(options.loadOptions?.retryDelayMs, {
@@ -234,7 +324,7 @@ async function runLoadAttempt<Resource extends AnyDataResourceDefinition>(
           error: options.resource.serializeError?.(sleepError) ?? sleepError,
           updatedAt: options.now(),
         } satisfies DataState;
-        options.cache.set(options.requestKey, failed);
+        options.commit(failed);
         return failed;
       }
     }
@@ -252,7 +342,7 @@ function cacheCancelled<Resource extends AnyDataResourceDefinition>(
     reason: String(options.signal.reason ?? "aborted"),
     cancelledAt: options.now(),
   } satisfies DataState;
-  options.cache.set(options.requestKey, cancelled);
+  options.commit(cancelled);
   return cancelled;
 }
 
@@ -294,6 +384,9 @@ function createLinkedAbortController(
 
   return {
     signal: controller.signal,
+    abort(reason?: unknown) {
+      controller.abort(reason);
+    },
     dispose() {
       if (deadline) clearTimeout(deadline);
       loadOptions?.signal?.removeEventListener("abort", abort);

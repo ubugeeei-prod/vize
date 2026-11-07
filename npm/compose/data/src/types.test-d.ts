@@ -1,5 +1,6 @@
 import {
   createDataClient,
+  createFetchDataResource,
   defineDataResource,
   type InferData,
   type InferInput,
@@ -59,8 +60,24 @@ createDataClient({
   },
 });
 
+client.optimistic(article, { id: "intro" }, (current) => ({
+  id: current.id,
+  title: current.title.toUpperCase(),
+}));
+
+const fetched = createFetchDataResource<"article.fetch", { id: string }, { title: string }>({
+  key: "article.fetch",
+  source: "../fixtures/ArticleView.vue",
+  endpoint: ({ id }) => `/articles/${id}`,
+});
+await client.load(fetched, { id: "intro" });
+
 // @ts-expect-error missing resource input
 await client.load(article, {});
+// @ts-expect-error optimistic updates must preserve the resource payload shape.
+client.optimistic(article, { id: "intro" }, () => ({ title: 42 }));
+// @ts-expect-error fetch resources preserve their endpoint input shape.
+await client.load(fetched, { slug: "intro" });
 
 defineDataResource({
   key: "broken",
