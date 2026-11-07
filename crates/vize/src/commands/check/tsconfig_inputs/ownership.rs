@@ -101,6 +101,36 @@ pub(crate) fn resolve_tsconfig_for_files(
     }
 }
 
+/// Keep the authored imports this program reports: a source no project of the
+/// reference graph owns stays, while one a referenced project owns is dropped.
+/// `tsc -b` checks that source in its owning project alone, so an importing
+/// program neither reports it nor checks it without the owner's ambient
+/// declarations (#11642). A program without references keeps everything.
+pub(crate) fn retain_program_owned_sources(
+    tsconfig_path: Option<&Path>,
+    files: &mut Vec<PathBuf>,
+    include_jsx: bool,
+    cache: &mut TsconfigInputCache,
+) {
+    let Some(tsconfig_path) = tsconfig_path else {
+        return;
+    };
+    let projects = cache.project_paths(tsconfig_path);
+    let (Some(root_project), true) = (projects.first(), projects.len() > 1) else {
+        return;
+    };
+    let root_project = root_project.clone();
+    files.retain(|file| {
+        let file = normalize_input_path(file);
+        is_nuxt_import_manifest_path(&file)
+            || cache.effective_config_for_source(
+                tsconfig_path,
+                &file,
+                source_kind(&file, include_jsx),
+            ) == root_project
+    });
+}
+
 fn source_kind(path: &Path, include_jsx: bool) -> TsconfigSourceKind {
     match path.extension().and_then(|extension| extension.to_str()) {
         Some("js" | "mjs" | "cjs") => TsconfigSourceKind::JavaScript,

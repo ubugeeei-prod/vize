@@ -53,6 +53,7 @@ pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
 pub(super) use loader::{read_extends_entries, resolve_extended_tsconfig};
 pub(crate) use ownership::{
     TsconfigProgramInputs, resolve_tsconfig_for_files, resolve_tsconfig_program_inputs,
+    retain_program_owned_sources,
 };
 pub(crate) use spec::TsconfigDeclarationOptions;
 pub(crate) use type_references::{

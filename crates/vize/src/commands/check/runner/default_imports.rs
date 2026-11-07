@@ -21,7 +21,7 @@ use crate::commands::check::{
     tsconfig_inputs::{
         TsconfigInputCache, collect_ambient_declaration_files, collect_default_check_files,
         collect_hidden_ambient_declaration_files, collect_tsconfig_type_declaration_files,
-        resolve_tsconfig_program_inputs,
+        resolve_tsconfig_program_inputs, retain_program_owned_sources,
     },
 };
 
@@ -188,8 +188,18 @@ fn complete_default_run_files(
             &mut import_session,
         )
     );
-    reported_files.extend(canonical_file_set(&discovered.authored, canonical_paths));
-    let mut package_routes = discovered.package_routes;
+    let RegisteredLocalImports {
+        mut authored,
+        mut package_routes,
+    } = discovered;
+    // A referenced project's source is reported by its own program (#11642).
+    retain_program_owned_sources(
+        context.tsconfig_path,
+        &mut authored,
+        context.import_options.include_jsx,
+        tsconfig_input_cache,
+    );
+    reported_files.extend(canonical_file_set(&authored, canonical_paths));
     let before_ambient_files = files.len();
     vize_l0::profile!(
         "cli.check.collect.ambient",
