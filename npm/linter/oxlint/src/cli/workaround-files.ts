@@ -79,8 +79,7 @@ export function registerLocationVariants(
   map: BridgeLocations,
 ): void {
   for (const name of [
-    filename,
-    toCliPath(filename),
+    ...reportedPathVariants(filename),
     path.relative(cwd, filename),
     toCliPath(path.relative(cwd, filename)),
   ])
@@ -133,8 +132,13 @@ export function registerPathReplacementVariants(
   const relativeTempFilename = path.relative(cwd, tempFilename);
   const relativeOriginalFilename = getReportedOriginalFilename(cwd, originalFilename);
   const variants = new Set([
-    [tempFilename, relativeOriginalFilename],
-    [toCliPath(tempFilename), toCliPath(relativeOriginalFilename)],
+    ...reportedPathVariants(tempFilename).map(
+      (name) =>
+        [
+          name,
+          name.includes("/") ? toCliPath(relativeOriginalFilename) : relativeOriginalFilename,
+        ] as [string, string],
+    ),
     [relativeTempFilename, relativeOriginalFilename],
     [toCliPath(relativeTempFilename), toCliPath(relativeOriginalFilename)],
   ]);
@@ -161,4 +165,24 @@ function getReportedOriginalFilename(cwd: string, filename: string): string {
   }
 
   return filename;
+}
+
+function reportedPathVariants(filename: string): string[] {
+  const paths = new Set([filename]);
+  try {
+    paths.add(fs.realpathSync.native(filename));
+  } catch {
+    // Callers also register names before they exist; retain the lexical path.
+  }
+  const variants = new Set<string>();
+  for (const candidate of paths) {
+    const namespaced = path.win32.isAbsolute(candidate)
+      ? path.win32.toNamespacedPath(candidate)
+      : path.toNamespacedPath(candidate);
+    variants.add(candidate);
+    variants.add(toCliPath(candidate));
+    variants.add(namespaced);
+    variants.add(toCliPath(namespaced));
+  }
+  return [...variants];
 }

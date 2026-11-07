@@ -99,7 +99,10 @@ void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
   assert.deepEqual(uses(pr.jobs, upstream), ["pr-native-runtime"]);
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(uses(js.jobs, local), []);
-  assert.deepEqual(uses(js.jobs, upstream), Object.keys(js.jobs));
+  assert.deepEqual(
+    uses(js.jobs, upstream),
+    Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
+  );
   const canonical = parse(
     fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );

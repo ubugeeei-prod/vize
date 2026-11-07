@@ -78,9 +78,15 @@ export function validateNestedConfigs(config: ScopedConfig, files: readonly stri
   }
 }
 
-export function validateScopedConfig(config: ScopedConfig, args: readonly string[]): void {
+export function validateScopedConfig(
+  config: ScopedConfig,
+  args: readonly string[],
+  platform: NodeJS.Platform = process.platform,
+): void {
   const value = config.value;
-  if (path.parse(config.file).root !== "/")
+  const hasPortableWindowsRoot =
+    platform === "win32" && path.win32.isAbsolute(config.file) && !hasPathSelection(value);
+  if (path.parse(config.file).root !== "/" && !hasPortableWindowsRoot)
     throw new Error("Scoped Vue transport cannot preserve non-POSIX filesystem roots.");
   if (
     !config.module &&
@@ -94,7 +100,7 @@ export function validateScopedConfig(config: ScopedConfig, args: readonly string
     if (!Array.isArray(value.extends) || value.extends.some((parent) => !isRecord(parent)))
       throw new Error("Scoped Vue transport requires config objects in TypeScript extends.");
     for (const parent of value.extends)
-      validateScopedConfig({ ...config, value: parent as Config }, args);
+      validateScopedConfig({ ...config, value: parent as Config }, args, platform);
   }
   if (args.includes("--cwd") || args.some((arg) => arg.startsWith("--cwd=")))
     throw new Error("Scoped Vue transport requires the process cwd; remove --cwd.");
@@ -119,10 +125,17 @@ export function validateScopedConfig(config: ScopedConfig, args: readonly string
     throw new Error("Scoped Vue transport cannot preserve Oxlint's import/project resolution.");
 }
 
-export function validateSelectionPaths(cwd: string, candidates: Iterable<string>): void {
+export function validateSelectionPaths(
+  cwd: string,
+  candidates: Iterable<string>,
+  platform: NodeJS.Platform = process.platform,
+): void {
   // Stock --debug files emits unescaped lines and converts every backslash to
-  // '/'. Refuse ambiguous names across all candidates, including non-Vue files.
-  if (/[\r\n\\]/u.test(cwd) || [...candidates].some((file) => /[\r\n\\]/u.test(file)))
+  // '/'. On Windows, backslashes are separators rather than legal filename
+  // bytes, so only CR/LF remain ambiguous after the engine normalizes them.
+  // Refuse ambiguous names across all candidates, including non-Vue files.
+  const ambiguous = platform === "win32" ? /[\r\n]/u : /[\r\n\\]/u;
+  if (ambiguous.test(cwd) || [...candidates].some((file) => ambiguous.test(file)))
     throw new Error(
       "Scoped Vue transport cannot preserve filenames containing CR, LF or backslash.",
     );
@@ -244,6 +257,15 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
 
 function isRecord(value: unknown): value is Config {
   return typeof value === "object" && value != null && !Array.isArray(value);
+}
+
+function hasPathSelection(value: Config): boolean {
+  return (
+    value.ignorePatterns != null ||
+    value.overrides != null ||
+    (Array.isArray(value.extends) &&
+      value.extends.some((parent) => isRecord(parent) && hasPathSelection(parent)))
+  );
 }
 
 function strings(value: unknown): string[] {
