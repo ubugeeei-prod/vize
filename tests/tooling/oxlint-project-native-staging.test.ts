@@ -24,7 +24,9 @@ void test("the actual caller stages standalone and emits its exact owned path on
   fs.writeFileSync(source, bytes);
   fs.writeFileSync(sourceReceipt, '{"source":"standalone caller"}\n');
   const caller = fs.readFileSync(
-    fileURLToPath(new URL("../../npm/linter/oxlint/scripts/check-project-transport.mjs", import.meta.url)),
+    fileURLToPath(
+      new URL("../../npm/linter/oxlint/scripts/check-project-transport.mjs", import.meta.url),
+    ),
     "utf8",
   );
   const start = caller.indexOf("const staged = stageProjectNative(");
@@ -182,7 +184,9 @@ function sourcePreloadFixture(t: { after: (cleanup: () => void) => void }) {
   fs.mkdirSync(path.dirname(helper), { recursive: true });
   fs.mkdirSync(path.dirname(wrapper));
   fs.copyFileSync(
-    fileURLToPath(new URL("../../npm/linter/oxlint/scripts/project-native-staging.ts", import.meta.url)),
+    fileURLToPath(
+      new URL("../../npm/linter/oxlint/scripts/project-native-staging.ts", import.meta.url),
+    ),
     helper,
   );
   const binary = path.join(root, "authored-image.cjs");

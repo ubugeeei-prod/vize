@@ -141,7 +141,9 @@ test("JS workspace edges include transitive consumers and exclude unrelated grou
   assert.deepEqual(plan.packages, ["npm/fresco", "npm/fresco-native"]);
   assert.deepEqual(plan.groups, ["ui"]);
   assert.deepEqual(plan.conformance, { fresco: true, ui: false });
-  assert.deepEqual(planAffectedJs(workspace, ["npm/linter/oxlint/src/index.ts"]).groups, ["oxlint"]);
+  assert.deepEqual(planAffectedJs(workspace, ["npm/linter/oxlint/src/index.ts"]).groups, [
+    "oxlint",
+  ]);
   assert.equal(planAffectedJs(workspace, ["npm/deleted/index.ts"]).scope, "workspace");
   assert.equal(planAffectedJs(workspace, ["pnpm-lock.yaml"]).scope, "workspace");
 });

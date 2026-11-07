@@ -134,7 +134,12 @@ describe("SourceControls", () => {
         "@typescript/typescript-darwin-arm64",
         "catalog:wrong",
       ],
-      ["npm/linter/oxlint/package.json", "optionalDependencies", "@vizejs/native-darwin-arm64", "0.998.0"],
+      [
+        "npm/linter/oxlint/package.json",
+        "optionalDependencies",
+        "@vizejs/native-darwin-arm64",
+        "0.998.0",
+      ],
     ];
     for (const [name, field, child, value] of mutations) {
       f.writeShape("0.999.0");

@@ -85,7 +85,10 @@ export async function prepareReferenceSource(output) {
       bytes: bytes.stdout.length,
     });
   }
-  fs.symlinkSync(path.join(repository, "npm/linter/oxlint/node_modules"), path.join(root, "node_modules"));
+  fs.symlinkSync(
+    path.join(repository, "npm/linter/oxlint/node_modules"),
+    path.join(root, "node_modules"),
+  );
   const args = ["pack"];
   const built = await captureProjectCommand(path.join(repository, "node_modules/.bin/vp"), args, {
     cwd: root,

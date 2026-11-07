@@ -106,7 +106,10 @@ test("native package catalog pins and generated loader version checks stay align
   assert.match(nativeTargetsLoader, /execFileSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(nativeTargetsLoader, /execSync\(/);
 
-  const oxlintNativeLoader = fs.readFileSync(path.join(root, "npm/linter/oxlint/src/native.ts"), "utf-8");
+  const oxlintNativeLoader = fs.readFileSync(
+    path.join(root, "npm/linter/oxlint/src/native.ts"),
+    "utf-8",
+  );
   assert.match(oxlintNativeLoader, /spawnSync\("ldd", \["--version"\]/);
   assert.doesNotMatch(oxlintNativeLoader, /execSync\(/);
 });
