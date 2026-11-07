@@ -121,10 +121,7 @@ test("dialect modules, test code and module declarations are exempt; code is not
 });
 
 test("one L0 file descriptor owns every input axis and legacy types only re-export it", () => {
-  const owner = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l0/src/dialect/file.rs"),
-    "utf8",
-  );
+  const owner = fs.readFileSync(path.join(repoRoot, "davinci/vize_l0/src/dialect/file.rs"), "utf8");
   for (const field of ["version", "framework", "syntax", "profile", "lang"])
     assert.match(owner, new RegExp(`\\b${field}:`, "u"), `missing FileDialect.${field}`);
 

@@ -91,20 +91,20 @@ above; cargo-mutants writes it to `mutants.out/` (`missed.txt`,
 
 ### vize_l0 — 2 missed
 
-| location                                    | function                                 | mutation                                                   |
-| ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| `vize_l0/src/dialect/file.rs`               | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with true`  |
-| `vize_l0/src/dialect/file.rs`               | `TemplateSyntaxMode::is_quirks`          | `replace TemplateSyntaxMode::is_quirks -> bool with false` |
+| location                      | function                        | mutation                                                   |
+| ----------------------------- | ------------------------------- | ---------------------------------------------------------- |
+| `vize_l0/src/dialect/file.rs` | `TemplateSyntaxMode::is_quirks` | `replace TemplateSyntaxMode::is_quirks -> bool with true`  |
+| `vize_l0/src/dialect/file.rs` | `TemplateSyntaxMode::is_quirks` | `replace TemplateSyntaxMode::is_quirks -> bool with false` |
 
 ### vize_relief — 5 missed
 
-| location                                    | function                                 | mutation                                                   |
-| ------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `replace <impl Drop for IfBranchNode<'_>>::drop with ()`   |
-| `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `delete ! in <impl Drop for IfBranchNode<'_>>::drop`       |
-| `vize_relief/src/relief/control_flow.rs:97` | `<impl Drop for ForNode<'_>>::drop`      | `delete ! in <impl Drop for ForNode<'_>>::drop`            |
-| `vize_relief/src/relief/control_flow.rs:97` | `<impl Drop for ForNode<'_>>::drop`      | `replace <impl Drop for ForNode<'_>>::drop with ()`        |
-| `vize_relief/src/relief/elements.rs:62`     | `<impl Drop for ElementNode<'_>>::drop`  | `replace <impl Drop for ElementNode<'_>>::drop with ()`    |
+| location                                    | function                                 | mutation                                                 |
+| ------------------------------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `replace <impl Drop for IfBranchNode<'_>>::drop with ()` |
+| `vize_relief/src/relief/control_flow.rs:69` | `<impl Drop for IfBranchNode<'_>>::drop` | `delete ! in <impl Drop for IfBranchNode<'_>>::drop`     |
+| `vize_relief/src/relief/control_flow.rs:97` | `<impl Drop for ForNode<'_>>::drop`      | `delete ! in <impl Drop for ForNode<'_>>::drop`          |
+| `vize_relief/src/relief/control_flow.rs:97` | `<impl Drop for ForNode<'_>>::drop`      | `replace <impl Drop for ForNode<'_>>::drop with ()`      |
+| `vize_relief/src/relief/elements.rs:62`     | `<impl Drop for ElementNode<'_>>::drop`  | `replace <impl Drop for ElementNode<'_>>::drop with ()`  |
 
 ### Reading the misses
 
