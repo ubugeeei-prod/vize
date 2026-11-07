@@ -73,6 +73,10 @@ impl VirtualProject {
             .collect();
     }
 
+    pub(crate) fn set_prevalidated_diagnostic_paths(&mut self, canonical_paths: &[PathBuf]) {
+        self.diagnostic_paths = canonical_paths.par_iter().cloned().collect();
+    }
+
     pub(crate) fn diagnostic_path(&self, path: &Path) -> Option<&Path> {
         find_diagnostic_path(
             &self.diagnostic_paths,

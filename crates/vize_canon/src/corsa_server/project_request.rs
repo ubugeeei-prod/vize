@@ -38,10 +38,11 @@ impl CorsaServer {
     }
 
     fn check_project(&mut self, params: ProjectCheckParams) -> Result<ProjectCheckResult, String> {
+        let working_dir = request_working_dir(&self.working_dir())?;
         let paths = params
             .files
             .iter()
-            .map(|file| request_path(&file.uri, &self.working_dir()))
+            .map(|file| request_path(&file.uri, &working_dir))
             .collect::<Result<Vec<_>, _>>()?;
         if paths.is_empty() {
             return Ok(ProjectCheckResult {
@@ -98,9 +99,8 @@ impl CorsaServer {
             )
             .map_err(|error| cstr!("{error}"))?;
             checker
-                .scan_paths(&paths)
+                .scan_paths_with_diagnostics(&paths)
                 .map_err(|error| cstr!("{error}"))?;
-            checker.set_diagnostic_paths(paths.iter().map(PathBuf::as_path));
             let result = checker.check_persistent_project();
             if result.is_ok() {
                 self.project_session = Some(ProjectCheckSession {
@@ -142,10 +142,26 @@ impl CorsaServer {
     }
 }
 
+fn request_working_dir(working_dir: &Path) -> Result<PathBuf, String> {
+    let absolute = if working_dir.is_absolute() {
+        working_dir.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|error| cstr!("Could not resolve the working directory: {error}"))?
+            .join(working_dir)
+    };
+    Ok(vize_carton::typescript_project::normalize_path_lexically(
+        &absolute,
+    ))
+}
+
 fn request_path(uri: &str, working_dir: &Path) -> Result<PathBuf, String> {
+    debug_assert!(working_dir.is_absolute());
     let path = super::sfc_semantics::uri_to_path(uri, working_dir)
         .ok_or_else(|| cstr!("Unsupported check path: {uri}"))?;
-    Ok(vize_carton::path::canonicalize_non_verbatim(&path))
+    Ok(vize_carton::typescript_project::normalize_path_lexically(
+        &path,
+    ))
 }
 
 fn rpc_error(id: Option<u64>, code: i64, message: String) -> JsonRpcResponse {
@@ -158,5 +174,39 @@ fn rpc_error(id: Option<u64>, code: i64, message: String) -> JsonRpcResponse {
             message,
             data: None,
         }),
+    }
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use std::os::unix::fs::symlink;
+    use std::path::Path;
+
+    use super::{request_path, request_working_dir};
+
+    #[test]
+    fn request_working_dir_is_absolutized_once_per_packet() {
+        let current = std::env::current_dir().unwrap();
+        assert_eq!(
+            request_working_dir(Path::new("relative/../project")).unwrap(),
+            current.join("project")
+        );
+    }
+
+    #[test]
+    fn request_path_preserves_the_logical_symlink_for_the_shared_snapshot() {
+        let root = tempfile::tempdir().unwrap();
+        let physical = root.path().join("physical");
+        std::fs::create_dir_all(&physical).unwrap();
+        std::fs::write(physical.join("App.vue"), "<template />\n").unwrap();
+        symlink(&physical, root.path().join("logical")).unwrap();
+
+        let path = request_path("logical/./App.vue", root.path()).unwrap();
+
+        assert_eq!(path, root.path().join("logical/App.vue"));
+        assert_ne!(
+            path,
+            vize_carton::path::canonicalize_non_verbatim(&physical.join("App.vue"))
+        );
     }
 }
