@@ -22,10 +22,13 @@ fn a_pass_materializes_only_the_documents_that_changed() {
     // Cold pass reads every open document exactly once.
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 40);
+    assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 1);
 
-    // A pass with nothing changed reads none of them.
+    // A pass with nothing changed clones the complete snapshot pointer without
+    // reading or even walking the open documents again.
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 40);
+    assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 1);
 
     // Ten keystrokes on one file read one document each, regardless of the 40
     // that are open.
@@ -39,16 +42,19 @@ fn a_pass_materializes_only_the_documents_that_changed() {
         let _ = state.corsa_overlays();
     }
     assert_eq!(state.corsa_overlay_materializations(), 50);
+    assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 11);
 
     // Opening one more document reads only that one.
     open(&state, "C40.vue", &document);
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 51);
+    assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 12);
 
     // Closing one reads nothing.
     state.close_document(&uri("C40.vue"));
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 51);
+    assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 13);
 }
 
 /// Average cost of one overlay pass over `documents` open buffers of

@@ -43,6 +43,10 @@ struct OverlayCacheState {
     /// Monotonic pass counter; see [`OverlayEntry::seen`].
     pass: u64,
     entries: FxHashMap<Url, OverlayEntry>,
+    /// Complete result for one stable open-document set. Repeated language
+    /// features can clone this pointer without walking every document again.
+    snapshot_revision: Option<u64>,
+    snapshot: Arc<[(PathBuf, Arc<str>)]>,
 }
 
 /// Cached overlay set, refreshed incrementally per diagnostics pass.
@@ -53,6 +57,8 @@ pub(crate) struct CorsaOverlayCache {
     /// per changed document per pass once warm, which is the property the
     /// perf tests assert (a wall-clock bound could not).
     materializations: AtomicU64,
+    #[cfg(test)]
+    snapshot_rebuilds: AtomicU64,
 }
 
 impl CorsaOverlayCache {
@@ -73,8 +79,15 @@ impl CorsaOverlayCache {
         &self,
         documents: &DocumentStore,
         projectable: impl Fn(&Url, &str) -> bool,
-    ) -> Vec<(PathBuf, Arc<str>)> {
+    ) -> Arc<[(PathBuf, Arc<str>)]> {
+        let revision = documents.stable_revision();
         let mut state = self.state.write();
+        if revision.is_some()
+            && state.snapshot_revision == revision
+            && documents.stable_revision() == revision
+        {
+            return Arc::clone(&state.snapshot);
+        }
         let pass = state.pass.wrapping_add(1);
         state.pass = pass;
 
@@ -134,7 +147,16 @@ impl CorsaOverlayCache {
         }
 
         state.entries.retain(|_, entry| entry.seen == pass);
-        overlays
+        let snapshot = Arc::from(overlays);
+        if revision.is_some() && documents.stable_revision() == revision {
+            state.snapshot_revision = revision;
+            state.snapshot = Arc::clone(&snapshot);
+        } else {
+            state.snapshot_revision = None;
+        }
+        #[cfg(test)]
+        self.snapshot_rebuilds.fetch_add(1, Ordering::Relaxed);
+        snapshot
     }
 
     /// Drop every cached overlay.
@@ -145,11 +167,16 @@ impl CorsaOverlayCache {
     pub(crate) fn invalidate(&self) {
         let mut state = self.state.write();
         state.entries.clear();
+        state.snapshot_revision = None;
+        state.snapshot = Arc::default();
     }
 
     /// Stop retaining the buffer for a document removed from the store.
     pub(super) fn remove(&self, uri: &Url) {
-        self.state.write().entries.remove(uri);
+        let mut state = self.state.write();
+        state.entries.remove(uri);
+        state.snapshot_revision = None;
+        state.snapshot = Arc::default();
     }
 
     /// How many documents this cache has materialized text for since creation.
@@ -162,13 +189,18 @@ impl CorsaOverlayCache {
     pub(crate) fn entry_count(&self) -> usize {
         self.state.read().entries.len()
     }
+
+    #[cfg(test)]
+    pub(crate) fn snapshot_rebuilds(&self) -> u64 {
+        self.snapshot_rebuilds.load(Ordering::Relaxed)
+    }
 }
 
 impl ServerState {
     /// The last projectable Corsa overlay set for the currently open documents.
     ///
     /// See [`CorsaOverlayCache::snapshot`].
-    pub(crate) fn corsa_overlays(&self) -> Vec<(PathBuf, Arc<str>)> {
+    pub(crate) fn corsa_overlays(&self) -> Arc<[(PathBuf, Arc<str>)]> {
         self.corsa_overlays.snapshot(&self.documents, |uri, text| {
             !uri.path().ends_with(".vue")
                 || matches!(
@@ -191,5 +223,10 @@ impl ServerState {
     #[cfg(test)]
     pub(crate) fn corsa_overlay_entries(&self) -> usize {
         self.corsa_overlays.entry_count()
+    }
+
+    #[cfg(test)]
+    pub(crate) fn corsa_overlay_snapshot_rebuilds(&self) -> u64 {
+        self.corsa_overlays.snapshot_rebuilds()
     }
 }
