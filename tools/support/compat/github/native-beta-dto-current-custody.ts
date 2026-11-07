@@ -43,9 +43,9 @@ export const watcherSuccessor = {
   terminalId: "before-stable-terminal-stderr-42309976393",
   unavailableTerminalId: "before-stable-unavailable-terminal-stderr-42311681980",
   unavailableTerminalPath: "tests/tooling/support/native-beta-dto/terminal-stderr-unavailable.ts",
-  unavailableTerminalSha256: "0609c0341bde68a97b1f815dcc88f855be476c1c04a22293d03b1e8039bbeb89",
+  unavailableTerminalSha256: "947f9e0128d09f3be8278251993806033d16e0852edb99dcd8be38ca5978b9ac",
   unavailableTerminalRuntimeSha256:
-    "a19f8224029155bccd905353882d4ea4182ac4e63c60a2f2a96abeef9adc500d",
+    "c507d408f15af0360d6757fd7393605e3e23415ec7d39745598970180d44ec53",
   mixedEofId: "before-stable-unproven-eof-return-41171790405",
   lateRootId: "before-stable-late-root-program-41176048826",
   lateRootPath: "tests/tooling/support/native-beta-dto/stable-watcher-late-root.ts",
