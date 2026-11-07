@@ -42,6 +42,12 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   env: Record<string, string>;
   jobs: Record<string, Job>;
 };
+const smokeContracts = parse(
+  readRepoFile(".github", "workflows", "release-smoke-contracts.yml"),
+) as {
+  on: { pull_request: { paths: string[] } };
+  jobs: Record<string, Job>;
+};
 const needs = (job: string) => [workflow.jobs[job]?.needs ?? []].flat();
 const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
@@ -219,6 +225,17 @@ test("release npm artifacts install their tools-owned helper dependencies", () =
   assert.equal(
     install?.run,
     "vp install --frozen-lockfile --prefer-offline --filter './npm/native...' --filter './npm/fresco-native...' --filter '@vize/tools'",
+  );
+
+  const contractInstall = smokeContracts.jobs.parity.steps?.find((step) =>
+    step.run?.startsWith("vp install "),
+  );
+  assert.equal(
+    contractInstall?.run,
+    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tools' --ignore-scripts",
+  );
+  assert.ok(
+    smokeContracts.on.pull_request.paths.includes(".github/actions/release-npm-artifacts/**"),
   );
 });
 
