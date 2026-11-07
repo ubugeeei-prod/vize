@@ -135,9 +135,9 @@
               "severity": 2,
               "message": "[vize:script/no-deprecated-dollar-listeners-api] $listeners was removed in Vue 3 and merged into $attrs",
               "line": 1,
-              "column": 34,
+              "column": 35,
               "endLine": 1,
-              "endColumn": 44,
+              "endColumn": 45,
               "help": "Replace $listeners with $attrs. In Vue 3 listeners are passed as on-prefixed props and are exposed through $attrs (or useAttrs() in the Composition API)."
             }
           ],
