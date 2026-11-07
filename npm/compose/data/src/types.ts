@@ -24,6 +24,10 @@ export type DataLoader<Input, Data> = {
   bivarianceHack(context: DataLoadContext<Input>): Data | Promise<Data>;
 }["bivarianceHack"];
 
+export type DataSupport<Input> = {
+  bivarianceHack(input: Input): boolean | string;
+}["bivarianceHack"];
+
 /** Typed data endpoint accepted by createDataClient. */
 export interface DataResourceDefinition<
   Key extends DataResourceKey = DataResourceKey,
@@ -37,6 +41,8 @@ export interface DataResourceDefinition<
   readonly meta?: Meta;
   readonly loader: DataLoader<Input, Data>;
   readonly serializeError?: (error: unknown) => ErrorPayload;
+  /** Return false or a reason when the active host cannot load this resource. */
+  readonly supports?: DataSupport<Input>;
 }
 
 export type AnyDataResourceDefinition = DataResourceDefinition<
@@ -122,6 +128,7 @@ export interface DataStaleState<Key extends DataResourceKey, Input, Data> extend
   readonly data: Data;
   readonly staleAt: number;
   readonly updatedAt: number;
+  readonly reason?: string;
 }
 
 export interface DataCancelledState<Key extends DataResourceKey, Input> extends DataStateBase<
@@ -173,7 +180,7 @@ export type DataSleep = (milliseconds: number, signal: AbortSignal) => Promise<v
 export interface DataLoadOptions<Key extends DataResourceKey = DataResourceKey, Input = unknown> {
   readonly reason?: DataLoadReason;
   readonly signal?: AbortSignal;
-  readonly policy?: "dedupe" | "cache-first" | "revalidate" | "replace";
+  readonly policy?: "dedupe" | "cache-first" | "revalidate" | "replace" | "stale-while-revalidate";
   /**
    * Additional attempts after the first loader call.
    *
@@ -215,6 +222,17 @@ export interface DataClient {
     input?: InferInput<Resource>,
     reason?: string,
   ) => number;
+  readonly optimistic: <Resource extends AnyDataResourceDefinition>(
+    resource: Resource,
+    input: InferInput<Resource>,
+    update: (current: InferData<Resource>) => InferData<Resource>,
+  ) => () => boolean;
+  readonly cancel: <Resource extends AnyDataResourceDefinition>(
+    resource: Resource,
+    input: InferInput<Resource>,
+    reason?: unknown,
+  ) => boolean;
+  readonly subscribe: (listener: (state: DataState) => void) => () => void;
   readonly snapshot: () => DataSnapshot;
 }
 
