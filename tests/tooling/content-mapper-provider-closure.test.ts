@@ -12,6 +12,8 @@ type Step = {
   name?: string;
   if?: string;
   run?: string;
+  uses?: string;
+  shell?: string;
   env?: Record<string, string>;
   with?: Record<string, string>;
 };
@@ -34,15 +36,27 @@ test("scheduled conformance always runs and retains the provider closure", () =>
   const workflow = parse(readRepoFile(".github/workflows/content-mapper-conformance.yml")) as {
     jobs: Record<string, { steps: Step[] }>;
   };
+  const action = parse(
+    readRepoFile(".github/actions/qualify-content-mapper-provider-closure/action.yml"),
+  ) as { runs: { using: string; steps: Step[] } };
   const steps = workflow.jobs["exact-tsgo-project"].steps;
-  const closure = steps.find((step) => step.name === "Qualify the complete provider closure");
+  const invocation = steps.find(
+    (step) => step.uses === "./.github/actions/qualify-content-mapper-provider-closure",
+  );
+  const closure = action.runs.steps.find(
+    (step) => step.name === "Qualify the complete provider closure",
+  );
   const upload = steps.find(
     (step) => step.name === "Preserve whole owner calibration observations",
   );
-  assert.equal(closure?.if, "${{ always() && inputs.targeted-test != 'generic-body-error' }}");
+  assert.equal(action.runs.using, "composite");
+  assert.equal(invocation?.if, undefined);
+  assert.equal(closure?.if, "${{ github.event.inputs['targeted-test'] != 'generic-body-error' }}");
+  assert.equal(closure?.shell, "bash");
   assert.equal(closure?.run, "node tools/support/compat/content-mapper/provider-closure.ts");
   assert.deepEqual(closure?.env, {
-    VIZE_CONTENT_MAPPER_PROVIDER_CLOSURE_DIR: "${{ runner.temp }}/content-mapper-provider-closure",
+    VIZE_CONTENT_MAPPER_PROVIDER_CLOSURE_DIR:
+      "${{ runner.temp }}/content-mapper-editor-stress/provider-closure",
     VIZE_TEST_CONTENT_MAPPER_TSGO: "${{ runner.temp }}/tsgo",
     VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC:
       "${{ github.workspace }}/npm/cli/node_modules/.bin/tsc",
@@ -50,8 +64,8 @@ test("scheduled conformance always runs and retains the provider closure", () =>
     VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: "standard-go-d6-vue35",
     VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED: "1",
     VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR:
-      "${{ runner.temp }}/content-mapper-provider-closure/dynamic-targets",
+      "${{ runner.temp }}/content-mapper-editor-stress/provider-closure/dynamic-targets",
   });
-  assert.match(upload?.with?.path ?? "", /content-mapper-provider-closure/u);
-  assert.ok(steps.indexOf(closure ?? {}) < steps.indexOf(upload ?? {}));
+  assert.match(upload?.with?.path ?? "", /content-mapper-editor-stress/u);
+  assert.ok(steps.indexOf(invocation ?? {}) < steps.indexOf(upload ?? {}));
 });

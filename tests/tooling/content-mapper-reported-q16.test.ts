@@ -24,12 +24,11 @@ const actualWorkflow = fs.readFileSync(
   "utf8",
 );
 function stripProviderClosure(value: string): string {
-  const start = value.indexOf("      - name: Qualify the complete provider closure\n");
-  const end = value.indexOf("      - name: Preserve whole owner calibration observations\n", start);
-  assert.ok(start > 0 && end > start);
-  const artifact = "            ${{ runner.temp }}/content-mapper-provider-closure\n";
-  assert.equal(value.split(artifact).length, 2);
-  return (value.slice(0, start) + value.slice(end)).replace(artifact, "");
+  const invocation = "      - uses: ./.github/actions/qualify-content-mapper-provider-closure\n";
+  assert.equal(value.split(invocation).length, 2);
+  const nextJob = "\n  router-experimental:\n";
+  assert.equal(value.split(nextJob).length, 2);
+  return value.replace(invocation, "").replace(nextJob, "\n" + nextJob);
 }
 // Keep the historical whole-workflow inverses independent of this command-local
 // provider declaration, its child under the existing owner artifact path, and
