@@ -72,13 +72,17 @@ function assertComponentUnit(componentName: string): void {
 }
 
 function assertComponentStyles(source: string): void {
+  // source-contract: semantic selector ownership is an authored CSS API invariant.
   assert.match(
     source,
     /:where\(\[data-vize-ui=/u,
     "styles must start from a semantic component hook",
   );
+  // source-contract: native nesting is required in source before Lightning CSS lowering.
   assert.match(source, /&(?::|\[)/u, "component states must use native CSS nesting");
+  // source-contract: public source must never establish a BEM selector contract.
   assert.doesNotMatch(source, /\.[a-z0-9-]+(?:__|--)[a-z0-9-]+/iu, "BEM is not a public API");
+  // source-contract: component states stay nested beneath the semantic root in authored CSS.
   assert.doesNotMatch(
     source,
     /\[data-vize-ui=[^\]]+\][^{\n]*(?::(?:active|focus|hover)|\[data-(?:size|state|tone|variant)=)/u,

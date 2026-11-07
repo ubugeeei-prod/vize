@@ -38,15 +38,20 @@ export function familyArea(entry: UiFamilyCatalogEntry): string {
   return /^src\/families\/([^/]+)\//.exec(entry.entryFile)?.[1] ?? "other";
 }
 
-/** Absolute paths of a family's examples (`examples/<family>-*.vue`), sorted. */
+/** Absolute paths of a family's colocated examples, sorted. */
 export function familyExamples(entry: UiFamilyCatalogEntry): readonly string[] {
   const directory = path.join(packageRoot, path.dirname(entry.entryFile), "examples");
   if (!existsSync(directory)) return [];
+  const componentUnit = entry.entryFile.startsWith("src/components/");
   const siblings = uiFamilyCatalog
     .filter((candidate) => path.dirname(candidate.entryFile) === path.dirname(entry.entryFile))
     .map((candidate) => candidate.canonicalName);
   return readdirSync(directory)
-    .filter((name) => name.endsWith(".vue") && exampleOwner(name, siblings) === entry.canonicalName)
+    .filter(
+      (name) =>
+        name.endsWith(".vue") &&
+        (componentUnit || exampleOwner(name, siblings) === entry.canonicalName),
+    )
     .sort()
     .map((name) => path.join(directory, name));
 }
@@ -167,7 +172,7 @@ if (
   const missing = familiesMissingExamples();
   if (missing.length > 0) {
     process.stderr.write(
-      `families without examples/<family>-basic.vue:\n${missing.map((name) => `  ${name}`).join("\n")}\n`,
+      `families without a canonical colocated example:\n${missing.map((name) => `  ${name}`).join("\n")}\n`,
     );
     process.exitCode = 1;
   } else {

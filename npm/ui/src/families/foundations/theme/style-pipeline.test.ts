@@ -92,8 +92,11 @@ test("semantic component nesting is lowered by Lightning CSS", async () => {
   const source = await readFile(path.resolve("src/components/button/styles.css"), "utf8");
   const stylesheet = await readFile(path.resolve("dist/component-button.css"), "utf8");
 
+  // source-contract: the semantic root is the public authored selector boundary.
   assert.match(source, /:where\(\[data-vize-ui="button"\]\)\s*\{/u);
+  // source-contract: state selectors use native nesting before package lowering.
   assert.match(source, /&:where\(\[data-state="idle"\]\)/u);
+  // source-contract: BEM is intentionally absent from the authored public API.
   assert.doesNotMatch(source, /\.[a-z0-9-]+(?:__|--)[a-z0-9-]+/iu);
 
   assert.doesNotMatch(stylesheet, /&/u, "Lightning CSS must lower component nesting");
