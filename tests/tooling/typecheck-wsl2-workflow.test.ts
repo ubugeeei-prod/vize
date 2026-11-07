@@ -15,6 +15,17 @@ test("the Windows mount path survives PowerShell and WSL argument parsing", () =
   assert.doesNotMatch(workflow, /wsl\.exe wslpath/);
 });
 
+test("workflow inputs and generated paths cross the Windows to WSL boundary", () => {
+  assert.match(
+    workflow,
+    /WSLENV: VIZE_SPEC\/u:SIZES\/u:GIANT_BLOCKS\/u:MONOREPO_SFCS\/u:RUNS\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
+  );
+  assert.match(
+    workflow,
+    /WSLENV: VIZE_SPEC\/u:LSP_FIXTURES\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
+  );
+});
+
 test("editor qualification keeps native TypeScript and tsrs fast as distinct lanes", () => {
   assert.match(workflow, /tsrs_spec=.*typecheck-hosts\/package\.json/);
   assert.match(workflow, /--vize "published-tsgo=\$tools\/node_modules\/\.bin\/vize"/);
