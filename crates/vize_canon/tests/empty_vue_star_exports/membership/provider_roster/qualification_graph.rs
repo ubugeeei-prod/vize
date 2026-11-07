@@ -1,6 +1,11 @@
 //! Source-only graph successors; every provider and native membership gate remains live.
 use super::{Checked, Value, final_graph, fs, json, support};
 
+mod fresco;
+use fresco::{
+    FRESCO_MANIFEST, FrescoQualificationGraph, TOOLING_UPDATE, TOOLING_UPDATE_HASH, fresco_update,
+    verify_fresco_update,
+};
 mod tooling;
 use tooling::{
     BABEL_MANIFEST, ESLINT_MANIFEST, OXLINT_MANIFEST, PRETTIER_MANIFEST, ToolingQualificationGraph,
@@ -416,7 +421,21 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         oxlint_manifest: &oxlint_manifest,
         prettier_manifest: &prettier_manifest,
     };
-    verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph)?;
+    if verify_tooling_update(&parcel_update(), &predecessor_bytes, &update, &graph).is_ok() {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(TOOLING_UPDATE))
+        .map_err(|_| "complete Fresco qualification predecessor")?;
+    let update = fresco_update();
+    let fresco_manifest = fs::read(support::repository().join(FRESCO_MANIFEST))
+        .map_err(|_| "complete Fresco manifest")?;
+    let graph = FrescoQualificationGraph {
+        lock,
+        package,
+        fresco_manifest: &fresco_manifest,
+    };
+    verify_fresco_update(&tooling_update(), &predecessor_bytes, &update, &graph)?;
     Ok(Some(update))
 }
 
