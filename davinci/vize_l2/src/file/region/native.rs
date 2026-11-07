@@ -282,7 +282,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
 }
 
 #[cfg(test)]
-mod interruption;
+mod interruption_tests;
 impl Drop for NativeTemplateWalk<'_, '_> {
     fn drop(&mut self) {
         if self.armed {

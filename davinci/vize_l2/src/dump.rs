@@ -36,7 +36,7 @@ mod codec;
 pub mod historical;
 mod owned;
 mod parse;
-mod print;
+pub(crate) mod print;
 pub mod provenance;
 
 pub use crate::dump::owned::{

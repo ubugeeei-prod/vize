@@ -41,15 +41,7 @@ const owed = [
   "vize_l1_to_l2/src/native_vue2/element.rs",
   "vize_l1_to_l2/src/pass/legacy.rs",
   "vize_l1_to_l2/src/pass/plan.rs",
-  "vize_l2/src/artifact/check/original_for.rs",
-  "vize_l2/src/dump/owned/expr.rs",
-  "vize_l2/src/dump/parse/expr_token.rs",
-  "vize_l2/src/dump/print.rs",
-  "vize_l2/src/expr/foreign.rs",
   "vize_l2/src/file/region/native/body/header.rs",
-  "vize_l2/src/file/region/native/interruption.rs",
-  "vize_l2_to_l3/src/lower/operands.rs",
-  "vize_l4/src/targets/ts/vue.rs",
 ];
 
 function rustFiles(root: string): string[] {
@@ -143,7 +135,7 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
   assert.match(document, /FileDialect::document\(configured, root\.source\(\), syntax, lang\)/u);
 
   const target = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l4/src/targets/ts/vue.rs"),
+    path.join(repoRoot, "davinci/vize_l4/src/framework/vue.rs"),
     "utf8",
   );
   assert.match(target, /\.dialect\(\)\s*\.is_standard_vue_component/u);

@@ -94,7 +94,7 @@ where
             return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
         }
         #[cfg(test)]
-        super::interruption::after_park();
+        super::interruption_tests::after_park();
         let name = self
             .facts
             .pending_handlers

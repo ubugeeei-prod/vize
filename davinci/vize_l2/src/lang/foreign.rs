@@ -36,6 +36,14 @@ pub struct ForeignExpr<'a> {
     pub facts: Vec<'a, ForeignFact<'a>>,
 }
 
+impl<'a> ForeignExpr<'a> {
+    /// Stable target qualifier for this residual language payload.
+    #[must_use]
+    pub const fn qualifier(&self) -> &'a str {
+        self.dialect
+    }
+}
+
 /// See [`crate::op`] for both guard rationales.
 const _: () = assert!(!core::mem::needs_drop::<ForeignExpr<'static>>());
 #[cfg(target_pointer_width = "64")]

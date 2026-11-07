@@ -138,7 +138,7 @@ fn check_node(
 }
 
 #[cfg(test)]
-mod original_for;
+mod original_for_tests;
 
 pub(super) fn expression(
     source: &str,
