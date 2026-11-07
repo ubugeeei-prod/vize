@@ -19,19 +19,23 @@ impl CorsaBridge {
     ) -> Result<Option<LspHover>, CorsaBridgeError> {
         let _timer = self.profiler.timer("corsa_hover");
         let uri = uri.to_owned();
-        let result = self
-            .with_client(move |client| {
+        let result = vize_l0::profile!("canon.editor.hover_transport", {
+            self.with_client(move |client| {
                 client
                     .hover_raw(uri.as_str(), line, character)
                     .map_err(CorsaBridgeError::CommunicationError)
             })
-            .await?;
+            .await
+        })?;
 
         if let Some(timer) = _timer {
             timer.record(&self.profiler);
         }
 
-        result.map(parse_json_value::<LspHover>).transpose()
+        vize_l0::profile!(
+            "canon.editor.hover_decode",
+            result.map(parse_json_value::<LspHover>).transpose()
+        )
     }
 
     /// Get definition location for a symbol at a position.

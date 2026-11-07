@@ -198,19 +198,22 @@ impl CorsaBridge {
         ),
         CorsaBridgeError,
     > {
-        let project = build_vue_virtual_workspace_project(
-            source_path,
-            content,
-            options,
-            overlays,
-            requested_sources,
-            CorsaProjectEnvironment {
-                virtual_ts_options,
-                package_routes: &self.package_route_resolver,
-                project_root: self.config.working_dir.as_deref(),
-                tsconfig_path: self.config.tsconfig_path.as_deref(),
-                editor_session: &self.editor_session,
-            },
+        let project = vize_l0::profile!(
+            "canon.editor.project_prepare",
+            build_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                overlays,
+                requested_sources,
+                CorsaProjectEnvironment {
+                    virtual_ts_options,
+                    package_routes: &self.package_route_resolver,
+                    project_root: self.config.working_dir.as_deref(),
+                    tsconfig_path: self.config.tsconfig_path.as_deref(),
+                    editor_session: &self.editor_session,
+                },
+            )
         )?;
         let CorsaVueVirtualProject {
             host,
@@ -244,18 +247,23 @@ impl CorsaBridge {
         let phase = super::preparation_trace::Phase::start("project_synchronize", documents.len());
         let timer = self.profiler().timer("corsa_project_synchronize");
         if let Some(project_root) = session_project_root {
-            self.with_client(move |client| {
-                client
-                    .synchronize_materialized_project(
-                        &project_root,
-                        session_config_path.as_deref(),
-                        &materialized_changes,
-                    )
-                    .map_err(CorsaBridgeError::CommunicationError)
-            })
-            .await?;
+            vize_l0::profile!("canon.editor.project_activate", {
+                self.with_client(move |client| {
+                    client
+                        .synchronize_materialized_project(
+                            &project_root,
+                            session_config_path.as_deref(),
+                            &materialized_changes,
+                        )
+                        .map_err(CorsaBridgeError::CommunicationError)
+                })
+                .await
+            })?;
         }
-        self.open_native_document_batch(documents).await?;
+        vize_l0::profile!(
+            "canon.editor.native_batch_open",
+            self.open_native_document_batch(documents).await
+        )?;
         phase.finish();
         if let Some(timer) = timer {
             timer.record(self.profiler());
