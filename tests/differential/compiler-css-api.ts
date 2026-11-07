@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import {
   compilerCssSpec,
   cssMapProducerPaths,
+  historicalCompilerCssPath,
   knownCompilerCssSource,
 } from "./compiler-css-api-registry.ts";
 export { compilerCssApiSources, cssMapProducerPaths } from "./compiler-css-api-registry.ts";
@@ -135,7 +136,8 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
     assert.equal(authority.sourceFiles.length, spec.paths.length);
     const sourceFiles = authority.sourceFiles.map((raw: unknown, index: number) => {
       const file = object(raw, ["path", "beforeSha256", "afterSha256"]);
-      assert.equal(file.path, spec.paths[index]);
+      const historicalPath = historicalCompilerCssPath(spec.paths[index]);
+      assert.equal(file.path, historicalPath);
       assert(typeof file.afterSha256 === "string");
       assert.match(file.afterSha256, /^[0-9a-f]{64}$/u);
       if (spec.missingBefore.includes(index)) assert.equal(file.beforeSha256, null);
@@ -145,6 +147,7 @@ export function loadCompilerCssApiCases(value: unknown, read: Reader) {
       }
       return {
         path: spec.paths[index],
+        historicalPath,
         beforeSha256: file.beforeSha256,
         afterSha256: file.afterSha256,
       };
@@ -172,8 +175,8 @@ export function newCompilerCssApiCases(previous: unknown, current: unknown, read
     .filter((row) => !old.has(row.id))
     .map((row) => {
       for (const file of row.sourceFiles) {
-        const before = read("base", file.path),
-          after = read("head", file.path);
+        const before = read("base", file.historicalPath),
+          after = read("head", file.historicalPath);
         assert.equal(
           before === null ? null : hash(before),
           file.beforeSha256,

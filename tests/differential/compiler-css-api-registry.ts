@@ -14,6 +14,10 @@ export const cssBindingProducerPaths = [
   "crates/vize_croquis/src/sfc/css_transform.rs",
 ] as const;
 
+export function historicalCompilerCssPath(path: string) {
+  return path.replace(/^upstream\/forks\//u, "vendor/");
+}
+
 type Spec = {
   id: string;
   root: string;
