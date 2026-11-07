@@ -19,6 +19,7 @@ import {
   projectDigest,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-fixtures.ts";
 import {
+  giantSfcProject,
   monorepoProject,
   scaleProject,
 } from "../../tools/benchmarks/scripts/lsp-vs-volar-scale.ts";
@@ -100,6 +101,7 @@ test("every generated fixture plants once and resolves each anchor and target", 
   assert.equal(projectDigest(monorepoProject(VUE)), projectDigest(monorepo));
   const projects = [
     ...[...scale].map(([sfcs, files]) => [`scale-${sfcs / 1000}k`, files] as const),
+    ["scale-giant-sfc", giantSfcProject(VUE, 100)] as const,
     ["scale-monorepo", monorepo] as const,
   ];
   for (const [id, files] of projects) {
@@ -120,6 +122,18 @@ test("every generated fixture plants once and resolves each anchor and target", 
     }
     for (const tsconfig of fixture.tsconfigs) assert.ok(files.has(tsconfig), tsconfig);
   }
+});
+
+test("the giant profile grows only the edited SFC", () => {
+  const small = giantSfcProject(VUE, 10);
+  const large = giantSfcProject(VUE, 100);
+  const focus = spec("scale-giant-sfc").file;
+  assert.ok(large.get(focus)!.length - small.get(focus)!.length > 8_000);
+  assert.deepEqual(
+    [...small].filter(([path]) => path !== focus),
+    [...large].filter(([path]) => path !== focus),
+  );
+  assert.match(large.get(focus)!, /data-giant-block="99"/u);
 });
 
 test("the monorepo joins its packages by references and declares the mapper where .vue lives", () => {
@@ -159,9 +173,9 @@ test("generated projects pin Vue from the workspace catalog", () => {
 });
 
 test("a size curve shares one job; other fixtures get their own", () => {
-  const ids = ["misskey", "scale-1k", "scale-monorepo", "scale-20k", "scale-5k"];
+  const ids = ["scale-giant-sfc", "scale-1k", "scale-monorepo", "scale-20k", "scale-5k"];
   assert.deepEqual(planJobs(ids.map(spec)), [
-    { name: "misskey", ids: "misskey" },
+    { name: "scale-giant-sfc", ids: "scale-giant-sfc" },
     { name: "scale", ids: "scale-1k scale-20k scale-5k" },
     { name: "scale-monorepo", ids: "scale-monorepo" },
   ]);

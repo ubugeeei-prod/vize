@@ -43,6 +43,30 @@ export interface EditorSummary {
   failures: string[];
 }
 
+export const EDITOR_COLD_SPEEDUP_TARGET = 100;
+export const EDITOR_INTERACTIVE_SPEEDUP_TARGET = 10;
+export const EDITOR_MEMORY_REDUCTION_TARGET = 10;
+
+export interface OperationPerformanceTarget {
+  operation: string;
+  accurate: boolean;
+  p50Speedup: number | null;
+  p99Speedup: number | null;
+  met: boolean;
+}
+
+export interface EditorPerformanceTarget {
+  editor: string;
+  reference: string;
+  accurate: boolean;
+  coldSpeedup: number | null;
+  coldMemoryReduction: number | null;
+  warmMemoryReduction: number | null;
+  operations: OperationPerformanceTarget[];
+  met: boolean;
+  missing: string[];
+}
+
 const mib = (bytes: number | null | undefined) => (bytes == null ? null : bytes / 1048576);
 
 function latency(samples: Array<{ ms: number; ok: boolean }>): Latency {
@@ -113,9 +137,87 @@ export function summarize(sessions: SessionResult[]): EditorSummary[] {
   });
 }
 
+const divide = (numerator: number | null, denominator: number | null): number | null =>
+  numerator != null && denominator != null && denominator > 0 ? numerator / denominator : null;
+
+const operationLatencies = (summary: EditorSummary): Array<[string, Latency]> => [
+  ["diagnostics after script edit", summary.diagnostics.script],
+  ["diagnostics after template edit", summary.diagnostics.template],
+  ["diagnostics cleared after repair", summary.diagnostics.repair],
+  ...REQUEST_KINDS.map((kind) => [kind, summary.requests[kind]] as [string, Latency]),
+];
+
+/**
+ * Compare every Vize row with the pinned Vue language-tools row on the same
+ * fixture. Missing or incorrect samples are target misses, never fast results.
+ */
+export function performanceTargets(summaries: EditorSummary[]): EditorPerformanceTarget[] {
+  const reference = summaries.find((summary) => summary.kind === "volar");
+  if (!reference) return [];
+  return summaries
+    .filter((summary) => summary.kind === "vize")
+    .map((candidate) => {
+      const referenceOperations = new Map(operationLatencies(reference));
+      const operations = operationLatencies(candidate).map(([operation, latency]) => {
+        const baseline = referenceOperations.get(operation)!;
+        const accurate =
+          latency.n > 0 && latency.ok === latency.n && baseline.n > 0 && baseline.ok === baseline.n;
+        const p50Speedup = divide(baseline.p50, latency.p50);
+        const p99Speedup = divide(baseline.p99, latency.p99);
+        return {
+          operation,
+          accurate,
+          p50Speedup,
+          p99Speedup,
+          met:
+            accurate &&
+            (p50Speedup ?? 0) >= EDITOR_INTERACTIVE_SPEEDUP_TARGET &&
+            (p99Speedup ?? 0) >= EDITOR_INTERACTIVE_SPEEDUP_TARGET,
+        };
+      });
+      const accurate =
+        candidate.failures.length === 0 &&
+        reference.failures.length === 0 &&
+        candidate.cold.ok === candidate.sessions &&
+        reference.cold.ok === reference.sessions &&
+        operations.every((operation) => operation.accurate);
+      const coldSpeedup = divide(reference.cold.totalMs, candidate.cold.totalMs);
+      const coldMemoryReduction = divide(
+        reference.cold.pssMiB ?? reference.cold.rssMiB,
+        candidate.cold.pssMiB ?? candidate.cold.rssMiB,
+      );
+      const warmMemoryReduction = divide(
+        reference.warm.peakPssMiB ?? reference.warm.peakRssMiB,
+        candidate.warm.peakPssMiB ?? candidate.warm.peakRssMiB,
+      );
+      const missing: string[] = [];
+      if (!accurate) missing.push("accuracy");
+      if ((coldSpeedup ?? 0) < EDITOR_COLD_SPEEDUP_TARGET) missing.push("cold start 100x");
+      if ((coldMemoryReduction ?? 0) < EDITOR_MEMORY_REDUCTION_TARGET)
+        missing.push("cold memory 10x");
+      if ((warmMemoryReduction ?? 0) < EDITOR_MEMORY_REDUCTION_TARGET)
+        missing.push("warm memory 10x");
+      for (const operation of operations) {
+        if (!operation.met) missing.push(`${operation.operation} 10x`);
+      }
+      return {
+        editor: candidate.editor,
+        reference: reference.editor,
+        accurate,
+        coldSpeedup,
+        coldMemoryReduction,
+        warmMemoryReduction,
+        operations,
+        met: missing.length === 0,
+        missing,
+      };
+    });
+}
+
 const fixed = (value: number | null, digits = 0) => (value == null ? "–" : value.toFixed(digits));
 const ms = (value: number | null) =>
   value == null ? "–" : value < 10 ? value.toFixed(1) : value.toFixed(0);
+const times = (value: number | null) => (value == null ? "–" : `×${value.toFixed(2)}`);
 
 function cell(value: Latency): string {
   const counts = value.ok === value.n ? `${value.n}` : `**${value.ok}/${value.n} ok**`;
@@ -137,6 +239,7 @@ export function markdown(
   meta: Record<string, string>,
   crashes: string[] = [],
 ): string {
+  const targets = performanceTargets(summaries);
   const names = summaries.map((summary) => summary.editor);
   const column = (pick: (summary: EditorSummary) => string) => summaries.map(pick);
   const lines: string[] = [`## ${fixture}`, ""];
@@ -187,6 +290,39 @@ export function markdown(
     ),
     "",
   );
+  if (targets.length > 0) {
+    lines.push(
+      "## Performance targets",
+      "",
+      `Cold start targets ${EDITOR_COLD_SPEEDUP_TARGET}x lower wall time; every interactive p50 and p99 targets ${EDITOR_INTERACTIVE_SPEEDUP_TARGET}x lower latency; cold and warm process-tree memory target ${EDITOR_MEMORY_REDUCTION_TARGET}x lower usage. Both rows must satisfy the same fixture contract for every sample. Missing or incorrect answers are misses, not timings.`,
+      "",
+      table(
+        ["candidate", "accuracy", "cold wall", "cold memory", "warm memory", "verdict"],
+        targets.map((target) => [
+          target.editor,
+          target.accurate ? "exact fixture contract" : "**miss**",
+          times(target.coldSpeedup),
+          times(target.coldMemoryReduction),
+          times(target.warmMemoryReduction),
+          target.met ? "**met**" : `miss: ${target.missing.join(", ")}`,
+        ]),
+      ),
+      "",
+      table(
+        ["candidate", "operation", "accuracy", "p50 / p99 speedup", "verdict"],
+        targets.flatMap((target) =>
+          target.operations.map((operation) => [
+            target.editor,
+            operation.operation,
+            operation.accurate ? "exact fixture contract" : "**miss**",
+            `${times(operation.p50Speedup)} / ${times(operation.p99Speedup)}`,
+            operation.met ? "**met**" : "miss",
+          ]),
+        ),
+      ),
+      "",
+    );
+  }
   const first = names.map((name) => sessions.find((session) => session.editor === name));
   const keys = [...new Set(first.flatMap((session) => Object.keys(session?.answers ?? {})))];
   lines.push(

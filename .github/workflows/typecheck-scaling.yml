@@ -1,5 +1,5 @@
 name: Type-check scaling
-run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
+run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
 on:
   workflow_dispatch:
     inputs:
@@ -19,6 +19,10 @@ on:
         description: SFCs of the project-references monorepo (0 skips it)
         type: string
         default: "5000"
+      giant_blocks:
+        description: Template blocks in one oversized SFC (0 skips it)
+        type: string
+        default: "10000"
       nuxt_sizes:
         description: Comma-separated SFC counts of generated Nuxt apps (empty skips them)
         type: string
@@ -28,7 +32,7 @@ on:
     paths: [.github/workflows/typecheck-scaling.yml]
 permissions: { contents: read }
 concurrency:
-  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.monorepo_sfcs }}
+  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -44,6 +48,7 @@ jobs:
       SIZES: ${{ inputs.sizes }}
       RUNS: ${{ inputs.runs }}
       MONOREPO_SFCS: ${{ inputs.monorepo_sfcs }}
+      GIANT_BLOCKS: ${{ inputs.giant_blocks }}
       NUXT_SIZES: ${{ inputs.nuxt_sizes }}
     steps:
       - name: Validate inputs
@@ -53,6 +58,7 @@ jobs:
           [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
           [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
           [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
+          [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
           [[ "$NUXT_SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -106,7 +112,8 @@ jobs:
         run: |
           node tools/benchmarks/scripts/typecheck-scaling.ts \
             --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
-            --sizes "$SIZES" --runs "$RUNS" --monorepo-sfcs "$MONOREPO_SFCS" --nuxt-sizes "$NUXT_SIZES" \
+            --sizes "$SIZES" --runs "$RUNS" --giant-blocks "$GIANT_BLOCKS" \
+            --monorepo-sfcs "$MONOREPO_SFCS" --nuxt-sizes "$NUXT_SIZES" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --work "$RUNNER_TEMP/scaling-work" --out "$RUNNER_TEMP/scaling-out"
       - name: Write job summary

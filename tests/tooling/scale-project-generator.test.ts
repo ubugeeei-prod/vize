@@ -97,7 +97,20 @@ void test("plants scale with the project and always reach the last feature", () 
   );
 });
 
-void test("fixed model plants stay required while remaining handler misses stay pinned", () => {
+void test("the giant profile keeps all work in one oversized SFC", () => {
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 100 });
+  assert.equal(vueFiles(project.files), 1);
+  assert.equal(project.features, 100);
+  assert.ok((project.files.get("src/App.vue")?.length ?? 0) > 70_000);
+  assert.equal(project.plants.length, 1);
+  assert.match(plantLine(project.files, project.plants[0]!), PLANT_TEXT.script);
+  assert.throws(
+    () => generateScaleProject({ sfcs: 2, kind: "giant", giantBlocks: 100 }),
+    /exactly 1 SFC/u,
+  );
+});
+
+void test("fixed model and listener plants stay required", () => {
   const { plants } = generateScaleProject({ sfcs: minSfcs("vue"), kind: "vue" });
   const vModel = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "v-model")?.count;
@@ -106,7 +119,10 @@ void test("fixed model plants stay required while remaining handler misses stay 
   assert.equal(vModel("tsrs-fast-vize-mapper"), 1);
   const listener = (lane: string) =>
     expectedPlants(plants, lane).find((plant) => plant.kind === "listener-prop")?.count;
-  assert.deepEqual(["vize-check", "tsc-vize-mapper", "vue-tsc"].map(listener), [2, 1, 1]);
+  assert.deepEqual(
+    ["vize-check", "tsc-vize-mapper", "tsrs-fast-vize-mapper", "vue-tsc"].map(listener),
+    [2, 2, 2, 1],
+  );
 });
 
 void test("a Nuxt project is a Nuxt 4 app tree with auto-imported, path-prefixed components", () => {

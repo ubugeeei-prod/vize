@@ -22,7 +22,7 @@ import {
 } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 
-import { SCALE_FIXTURES } from "./lsp-vs-volar-scale.ts";
+import { SCALE_FIXTURES } from "./lsp-vs-volar-scale-fixtures.ts";
 import { type Anchor, anchorIn } from "./lsp-vs-volar-text.ts";
 
 export type RequestSpec =
