@@ -35,7 +35,7 @@ description: "禁止在含有 v-else 的条件链中使用否定的 v-if 条件�
 
 <div v-if="!ok">A</div>
 
-<div v-if="a !== b">A</div>
+<div v-if="a === b">A</div>
 <div v-else>B</div>
 </template>
 ```

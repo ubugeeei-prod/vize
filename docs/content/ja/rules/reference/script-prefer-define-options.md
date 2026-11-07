@@ -17,9 +17,12 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 
 通常の script の処理が `name` と `inheritAttrs` だけを持つオブジェクトの export に限られ、`defineOptions` で表せるオプションだけを宣言しています。
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,3,4,5"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
+</script>
+<script setup lang="ts">
+const ready = true
 </script>
 ```
 
@@ -58,4 +61,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L44)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L49)

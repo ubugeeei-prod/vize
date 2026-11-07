@@ -25,11 +25,6 @@
 //! ## Examples
 //!
 //! ### Invalid
-//! ```ts
-//! const props = defineProps<{ id: number }>()
-//! const slots = useSlots()
-//! ```
-//!
 //! ```vue
 //! <script setup lang="ts">
 //! defineSlots<{ default(): unknown }>()

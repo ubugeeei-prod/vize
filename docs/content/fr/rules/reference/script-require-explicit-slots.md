@@ -17,18 +17,20 @@ Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la for
 
 La déclaration typée `defineProps<{ id: number }>()` établit une syntaxe TypeScript, mais setup utilise `useSlots()` sans déclaration `defineSlots`. La règle détecte donc des slots utilisés sans contrat de slots explicite.
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,4,5,6"
 <script setup lang="ts">
-const props = defineProps<{ id: number }>()
-const slots = useSlots()
+defineSlots<{ default(): unknown }>()
 </script>
+<template>
+  <div><slot /><slot name="footer" /></div>
+</template>
 ```
 
 ## Bon
 
 `defineSlots` déclare un slot `default` dont les props incluent `msg: string` ; `useSlots()` apparaît désormais aux côtés d’un contrat de slots explicitement typé.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -56,4 +58,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de type et de script](../type-and-script.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L62)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L57)

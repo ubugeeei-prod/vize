@@ -1,11 +1,11 @@
 ---
 title: "vue/slot-name-casing"
-description: "要求通过 v-slot 使用的具名插槽采用 kebab-case。"
+description: "要求渲染的插槽出口静态名称采用 camelCase。"
 ---
 
 # `vue/slot-name-casing`
 
-要求通过 v-slot 使用的具名插槽采用 kebab-case。
+要求渲染的插槽出口静态名称采用 camelCase。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
@@ -13,23 +13,25 @@ description: "要求通过 v-slot 使用的具名插槽采用 kebab-case。"
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
+检查渲染的插槽出口的静态名称。父组件侧的 v-slot 和 #name 提供语法不在此规则范围内。
+
 ## 错误示例
 
-具名插槽 `mySlot` 使用驼峰命名，而规则要求连字符名称。
+渲染的插槽出口使用连字符静态名称 `my-slot`，而默认规范要求 camelCase。
 
 ```vue annotate="remove:2"
 <template>
-<MyCard><template #mySlot>Content</template></MyCard>
+<MyCard><slot name="my-slot" /></MyCard>
 </template>
 ```
 
 ## 正确示例
 
-`#my-slot` 使用 kebab-case。将对应的插槽出口重命名为相同名称。
+出口的静态名称使用 camelCase。父组件侧的 `#name` 提供语法不在此规则范围内。
 
 ```vue annotate="add:2"
 <template>
-<MyCard><template #my-slot>Content</template></MyCard>
+<MyCard><slot name="mySlot" /></MyCard>
 </template>
 ```
 

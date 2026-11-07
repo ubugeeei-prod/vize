@@ -97,7 +97,7 @@ impl<'a> PropsSource<'a> {
 
 /// Collect every runtime props declaration in the program: the Options API
 /// `props` option (if any) and every top-level `defineProps(...)` runtime call.
-pub(super) fn collect_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
+pub(crate) fn collect_runtime_props<'a>(program: &'a Program<'a>) -> Vec<PropsSource<'a>> {
     let mut sources = Vec::new();
     if let Some(props) = collect_options_props(program) {
         sources.push(props);

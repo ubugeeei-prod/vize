@@ -133,7 +133,7 @@ Only in `opinionated`, `nuxt` or `ecosystem`. The Presets column lists which.
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | Recommend scoped event names using context:event format. | `nuxt`, `opinionated` |  |
 | <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | Enforce camelCase for rendered slot names. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Enforce unique element IDs using useId() instead of static literals. | `nuxt`, `opinionated` |  |
-| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Enforce writing v-on handlers as a method reference or an inline function. | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Enforce writing v-on handlers as method references. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Warn about custom blocks in SFC files. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Warn about custom directives that need registration. | `nuxt`, `opinionated` |  |
 

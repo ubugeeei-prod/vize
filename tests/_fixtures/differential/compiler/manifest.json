@@ -2273,6 +2273,61 @@
       }
     },
     {
+      "id": "compiler/sfc/real-project-lint-scopes-12069",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "real-project-lint-scopes-12069",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "4d052e2cd2c96392f19670e5046dc912dc3ab23aa6850c7609b51b9e2a339a31",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "real-project-lint-scopes-12069/module.expected.txt",
+        "sha256": "ad058faec0244d0ef39a8aeb77c184a37b3fd9cd10d29f6ed819ea5119539f75",
+        "source": "crates/vize_croquis/src/drawer/helpers/v_for/tests.rs:unparenthesized_vue2_tuple_aliases_are_retained"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis template scope extraction remains legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/recovered-attribute-boundary-11731",
       "state": "active",
       "targets": [

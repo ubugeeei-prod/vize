@@ -93,16 +93,6 @@ impl Rule for NoDeprecatedHtmlElementIs {
                         ctx.t("vue/no-deprecated-html-element-is.help"),
                     );
                 }
-                PropNode::Directive(directive)
-                    if directive.name == "bind"
-                        && matches!(directive.arg.as_ref(), Some(vize_relief::ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "is") =>
-                {
-                    ctx.error_with_help(
-                        ctx.t("vue/no-deprecated-html-element-is.message"),
-                        &directive.loc,
-                        ctx.t("vue/no-deprecated-html-element-is.help"),
-                    );
-                }
                 _ => {}
             }
         }
@@ -158,10 +148,10 @@ mod tests {
     }
 
     #[test]
-    fn reports_dynamic_is_binding_on_native_element() {
+    fn allows_dynamic_is_binding_on_native_element() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :is="something" />"#, "App.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

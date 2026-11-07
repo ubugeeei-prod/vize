@@ -26,21 +26,21 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     // vue/v-on-handler-style
     (
         "vue/v-on-handler-style.description",
-        "Enforce writing v-on handlers as a method reference or an inline function",
-        "v-onハンドラをメソッド参照またはインライン関数として記述することを強制する",
-        "强制将v-on处理函数写成方法引用或内联函数",
+        "Enforce writing v-on handlers as method references",
+        "v-onハンドラをメソッド参照として記述することを強制する",
+        "强制将v-on处理函数写成方法引用",
     ),
     (
         "vue/v-on-handler-style.message",
-        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
-        "このv-onハンドラにはインライン文ではなく、メソッド参照またはインライン関数を使用してください",
-        "此v-on处理函数应优先使用方法引用或内联函数，而非内联语句",
+        "Prefer a method reference over an inline function or statement for this v-on handler",
+        "このv-onハンドラにはインライン関数やインライン文ではなく、メソッド参照を使用してください",
+        "此v-on处理函数应优先使用方法引用，而非内联函数或内联语句",
     ),
     (
         "vue/v-on-handler-style.help",
-        "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
-        "ハンドラをインライン文ではなく、メソッド参照（例: @click=\"handler\"）またはインライン関数（例: @click=\"() => count++\"）として記述してください。",
-        "请将处理函数写成方法引用（例如 @click=\"handler\"）或内联函数（例如 @click=\"() => count++\"），而不是内联语句。",
+        "Write the handler as a method reference (e.g. @click=\"handler\") instead of an inline function or statement.",
+        "ハンドラをインライン関数やインライン文ではなく、メソッド参照（例: @click=\"handler\"）として記述してください。",
+        "请将处理函数写成方法引用（例如 @click=\"handler\"），而不是内联函数或内联语句。",
     ),
     // vue/this-in-template
     (

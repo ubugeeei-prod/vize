@@ -28,12 +28,12 @@ v-for / v-slot に宣言しているのに使わない変数を検出します�
 
 ## 良い例
 
-index を参照するか、未使用を意図する _index という名前にし、スロットでは data を表示します。index の key は使用例であり、項目の安定した識別子として推奨するものではありません。
+index を参照するか、不要な別名自体を省略し、スロットでは data を表示します。index の key は使用例であり、項目の安定した識別子として推奨するものではありません。
 
 ```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ data }">
     <span>{{ data }}</span>
   </template>
@@ -61,4 +61,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L45)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L47)

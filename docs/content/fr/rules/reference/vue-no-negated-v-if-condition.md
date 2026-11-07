@@ -35,7 +35,7 @@ Une condition ok positive vient en premier ; lors de l’inversion d’une condi
 
 <div v-if="!ok">A</div>
 
-<div v-if="a !== b">A</div>
+<div v-if="a === b">A</div>
 <div v-else>B</div>
 </template>
 ```

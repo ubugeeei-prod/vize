@@ -81,23 +81,17 @@ impl ScriptRule for RequireDefaultProp {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        self.check_program_with_sfc(
-            program,
-            _source,
-            offset,
-            SfcScriptContext::default(),
-            result,
-        );
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -126,6 +120,7 @@ impl ScriptRule for RequireDefaultProp {
                     if prop.required
                         || prop.boolean
                         || declaration.has_unknown_defaults
+                            && !prop_is_inline_intersection_extension(source, prop, offset)
                         || declaration.has_default(&prop.name)
                     {
                         continue;
@@ -135,6 +130,36 @@ impl ScriptRule for RequireDefaultProp {
             }
         }
     }
+}
+
+/// Unknown spreads can supply defaults for imported/base contracts, but they
+/// cannot erase a prop explicitly appended by an inline intersection member:
+/// `type Props = ImportedProps & { local?: string }`.
+fn prop_is_inline_intersection_extension(
+    source: &str,
+    prop: &super::typed_prop_defaults::TypedProp,
+    offset: usize,
+) -> bool {
+    if prop.offset != offset {
+        return false;
+    }
+    let start = prop.span.start as usize;
+    let Some(prefix) = source.get(..start) else {
+        return false;
+    };
+    let Some(open) = prefix.rfind('{') else {
+        return false;
+    };
+    let Some(type_start) = prefix.get(..open).and_then(|text| text.rfind("type ")) else {
+        return false;
+    };
+    let declaration_prefix = &source[type_start..open];
+    declaration_prefix.contains('=')
+        && declaration_prefix.contains('&')
+        && source
+            .get(start..)
+            .and_then(|suffix| suffix.find('}'))
+            .is_some()
 }
 
 /// Flag an object-descriptor prop that is optional, not Boolean-typed, and

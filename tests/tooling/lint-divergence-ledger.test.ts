@@ -118,6 +118,66 @@ test("the stronger direct defineProps policy is intentional on both reporters", 
   }
 });
 
+test("upstream rule ids classify second-script shifts and resolved default spreads", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/TwoScripts.vue`,
+    `<script lang="ts">\nexport const defaults = { label: "" }\nexport interface Props { label?: string }\n</script>\n<script setup lang="ts">\nconst props = withDefaults(defineProps<Props>(), { ...defaults })\nconst element = ref(null)\n</script>\n<template><div ref="element" /></template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/define-props-destructuring": {
+        status: "mapped",
+        patinaRule: "script/define-props-destructuring",
+      },
+      "vue/prefer-use-template-ref": {
+        status: "mapped",
+        patinaRule: "script/prefer-use-template-ref",
+      },
+      "vue/require-default-prop": {
+        status: "mapped",
+        patinaRule: "script/require-default-prop",
+      },
+    },
+  };
+  const baseline = [
+    eslintResult("src/TwoScripts.vue", [
+      {
+        ruleId: "vue/define-props-destructuring",
+        severity: 1,
+        ...span(2, 7, 2, 12),
+        message: "Prefer destructuring from defineProps.",
+      },
+      {
+        ruleId: "vue/prefer-use-template-ref",
+        severity: 1,
+        ...span(3, 7, 3, 14),
+        message: "Use useTemplateRef() instead of ref().",
+      },
+      {
+        ruleId: "vue/require-default-prop",
+        severity: 2,
+        ...span(3, 26, 3, 40),
+        message: "Prop 'label' requires default value to be set.",
+      },
+    ]),
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, [], baseline, {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: [],
+    eslintResults: baseline,
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falseNegativeCount, 0, JSON.stringify(result.falseNegatives));
+    assert.equal(result.summary.intentionalDivergenceCount, 3);
+  }
+});
+
 test("static styles recovered through a TypeScript cast are intentional on both reporters", () => {
   const directory = `${cwd}/src`;
   fs.mkdirSync(directory, { recursive: true });

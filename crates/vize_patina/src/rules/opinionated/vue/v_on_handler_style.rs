@@ -3,7 +3,7 @@
 //! Prefer method handlers for `v-on` directives.
 //!
 //! A handler such as `@click="handler"` is directly reusable. Inline functions
-//! are also accepted, while inline statements are reported.
+//! and inline statements are reported by the default method-handler policy.
 //!
 //! ## Examples
 //!
@@ -18,7 +18,6 @@
 //! ```vue
 //! <button @click="handler"></button>
 //! <button @click="foo.bar"></button>
-//! <button @click="() => count++"></button>
 //! ```
 
 use crate::context::LintContext;
@@ -31,13 +30,13 @@ use vize_relief::{
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-handler-style",
-    description: "Enforce writing v-on handlers as a method reference or an inline function",
+    description: "Enforce writing v-on handlers as method references",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,
 };
 
-/// Enforce v-on handler style (method reference or inline function).
+/// Enforce v-on handler style (method reference).
 pub struct VOnHandlerStyle;
 
 impl Rule for VOnHandlerStyle {
@@ -90,12 +89,6 @@ impl Rule for VOnHandlerStyle {
             return;
         }
 
-        if simple.is_some_and(retained_inline_function)
-            || simple.is_none() && is_inline_function_text(expr)
-        {
-            return;
-        }
-
         // The parser location includes whitespace inside the quotes, while
         // eslint-plugin-vue reports the JavaScript node itself.
         let loc = trimmed_expression_location(ctx.source, loc);
@@ -106,18 +99,6 @@ impl Rule for VOnHandlerStyle {
             ctx.t("vue/v-on-handler-style.help"),
         );
     }
-}
-
-fn retained_inline_function(expression: &SimpleExpressionNode<'_>) -> bool {
-    expression
-        .js_ast
-        .and_then(|ast| ast.as_expression())
-        .is_some_and(|parsed| {
-            matches!(
-                parsed.ast.get_inner_expression(),
-                JsExpression::ArrowFunctionExpression(_) | JsExpression::FunctionExpression(_)
-            )
-        })
 }
 
 fn retained_method_reference(expression: &SimpleExpressionNode<'_>) -> bool {
@@ -136,10 +117,6 @@ fn is_typescript_asserted_method_reference(expr: &str) -> bool {
         return false;
     };
     !assertion.trim().is_empty() && is_method_reference(reference.trim())
-}
-
-fn is_inline_function_text(expr: &str) -> bool {
-    expr.contains("=>") || expr.trim_start().starts_with("function")
 }
 
 /// Whether `expr` is a bare method reference: a single identifier or a
@@ -243,21 +220,21 @@ mod tests {
     }
 
     #[test]
-    fn allows_typescript_annotated_inline_function() {
+    fn reports_typescript_annotated_inline_function() {
         let result = create_linter().lint_template(
             r#"<button @click="(settings: Settings) => save(settings)"></button>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
-    fn allows_inline_function_that_forwards_a_scoped_slot_value() {
+    fn reports_inline_function_that_forwards_a_scoped_slot_value() {
         let result = create_linter().lint_template(
             r#"<Widget v-slot="{ onSave }"><button @click="(value: Model) => onSave(value)" /></Widget>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -266,32 +243,32 @@ mod tests {
             r#"<button v-for="column in columns" @click="(column) => save(column?.id)" />"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
-    fn allows_arrow_function_that_can_be_a_method() {
+    fn reports_arrow_function_that_can_be_a_method() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<button @click="() => count++"></button>"#, "App.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
-    fn allows_arrow_function_with_arg() {
+    fn reports_arrow_function_with_arg() {
         let linter = create_linter();
         let result =
             linter.lint_template(r#"<button @click="(e) => onClick(e)"></button>"#, "App.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
-    fn allows_function_expression() {
+    fn reports_function_expression() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<button @click="function () { count++ }"></button>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -307,15 +284,15 @@ mod tests {
         for (locale, expected) in [
             (
                 Locale::En,
-                "Write the handler as a method reference or an inline function instead of an inline statement.",
+                "Write the handler as a method reference instead of an inline function or statement.",
             ),
             (
                 Locale::Ja,
-                "ハンドラをインライン文ではなく、メソッド参照またはインライン関数として記述してください。",
+                "ハンドラをインライン関数やインライン文ではなく、メソッド参照として記述してください。",
             ),
             (
                 Locale::Zh,
-                "请将处理函数写成方法引用或内联函数，而不是内联语句。",
+                "请将处理函数写成方法引用，而不是内联函数或内联语句。",
             ),
         ] {
             let result = create_linter()
@@ -411,12 +388,12 @@ mod tests {
     }
 
     #[test]
-    fn allows_handler_that_closes_over_v_for_variables() {
+    fn reports_handler_that_closes_over_v_for_variables() {
         let result = create_linter().lint_template(
             r#"<div v-for="(item, index) in items"><button @click="(event) => save(event, item, index)" /></div>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

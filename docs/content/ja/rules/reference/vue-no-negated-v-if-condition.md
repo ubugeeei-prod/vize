@@ -35,7 +35,7 @@ v-else と対になる v-if を、否定した条件で始めています。
 
 <div v-if="!ok">A</div>
 
-<div v-if="a !== b">A</div>
+<div v-if="a === b">A</div>
 <div v-else>B</div>
 </template>
 ```

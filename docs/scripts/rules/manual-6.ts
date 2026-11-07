@@ -52,12 +52,13 @@ export const manual6: Record<string, RuleExample> = {
   "vue/html-self-closing": {
     bad: {
       language: "vue",
-      source: "<template>\n  <MyComponent></MyComponent>\n  <img>\n  <br>\n</template>",
+      source:
+        "<template>\n  <section>\n    <MyComponent></MyComponent>\n    <div></div>\n  </section>\n</template>",
     },
     good: {
       language: "vue",
       source:
-        "<template>\n  <MyComponent />\n  <div></div>\n  <div />\n  <img />\n  <br />\n  <div>content</div>\n</template>",
+        "<template>\n  <section>\n    <MyComponent />\n    <div />\n    <img>\n    <br>\n    <div>content</div>\n  </section>\n</template>",
     },
     evidence: "docs/content/rules/vue-formatting.md",
   },

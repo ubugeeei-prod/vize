@@ -22,9 +22,14 @@
 //!
 //! ## Examples
 //!
-//! ### Invalid (plain `<script>` carrying only name/inheritAttrs)
-//! ```ts
+//! ### Invalid (plain `<script>` carrying only name/inheritAttrs beside setup)
+//! ```vue
+//! <script lang="ts">
 //! export default { name: 'MyComponent', inheritAttrs: false }
+//! </script>
+//! <script setup lang="ts">
+//! const ready = true
+//! </script>
 //! ```
 //!
 //! ### Valid

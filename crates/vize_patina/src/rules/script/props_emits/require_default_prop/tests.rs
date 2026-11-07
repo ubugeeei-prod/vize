@@ -235,6 +235,26 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 #[test]
+fn unknown_defaults_spreads_do_not_hide_inline_intersection_props() {
+    let source = r#"
+type Props<T> = ImportedStatefulProps<T> & ImportedValidationProps<T> & {
+  clearValue?: T
+}
+const props = withDefaults(defineProps<Props<string>>(), {
+  ...statefulPropsDefaults,
+  ...validationPropsDefaults,
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "clearValue?: T"
+    );
+}
+
+#[test]
 fn with_defaults_resolves_a_same_file_sibling_script_spread() {
     let source = r#"<script lang="ts">
 export const defaults = {

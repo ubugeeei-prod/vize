@@ -669,14 +669,39 @@ fn collect_event_from_parameters(
 ) {
     if let Some(first) = params.items.first()
         && let Some(annotation) = &first.type_annotation
-        && let TSType::TSLiteralType(literal_type) = &annotation.type_annotation
-        && let TSLiteral::StringLiteral(string) = &literal_type.literal
     {
-        events.push(DeclaredEvent {
-            name: CompactString::new(string.value.as_str()),
+        collect_event_names_from_type(&annotation.type_annotation, span, origin_offset, events);
+    }
+}
+
+fn collect_event_names_from_type(
+    ty: &TSType<'_>,
+    span: Span,
+    origin_offset: Option<usize>,
+    events: &mut Vec<DeclaredEvent>,
+) {
+    match ty {
+        TSType::TSLiteralType(literal_type) => {
+            if let TSLiteral::StringLiteral(string) = &literal_type.literal {
+                events.push(DeclaredEvent {
+                    name: CompactString::new(string.value.as_str()),
+                    span,
+                    origin_offset,
+                });
+            }
+        }
+        TSType::TSUnionType(union) => {
+            for ty in &union.types {
+                collect_event_names_from_type(ty, span, origin_offset, events);
+            }
+        }
+        TSType::TSParenthesizedType(parenthesized) => collect_event_names_from_type(
+            &parenthesized.type_annotation,
             span,
             origin_offset,
-        });
+            events,
+        ),
+        _ => {}
     }
 }
 

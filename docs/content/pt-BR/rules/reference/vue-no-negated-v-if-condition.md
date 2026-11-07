@@ -35,7 +35,7 @@ Uma condição positiva ok vem primeiro; ao inverter uma condição, coloque pri
 
 <div v-if="!ok">A</div>
 
-<div v-if="a !== b">A</div>
+<div v-if="a === b">A</div>
 <div v-else>B</div>
 </template>
 ```

@@ -1,11 +1,11 @@
 ---
 title: "vue/v-on-handler-style"
-description: "Exigir manipuladores de v-on escritos como referência a método ou função inline."
+description: "Exigir manipuladores de v-on escritos como referência a método."
 ---
 
 # `vue/v-on-handler-style`
 
-Exigir manipuladores de v-on escritos como referência a método ou função inline.
+Exigir manipuladores de v-on escritos como referência a método.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
@@ -15,20 +15,19 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 ## Incorreto
 
-Os manipuladores colocam mutações e várias instruções diretamente no atributo de evento.
+Os manipuladores usam funções inline, mutações ou várias instruções em vez de referências de método reutilizáveis.
 
-```vue annotate="remove:2,3,4,5"
+```vue annotate="remove:2,3,4"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
-<button @click="() => count++"></button>
 </template>
 ```
 
 ## Correto
 
-Use uma referência a manipulador ou uma expressão de função, comum ou de seta, quando for necessária lógica inline. O limite da função torna explícita a forma do manipulador.
+Use uma referência a manipulador. Mova a lógica inline para um método nomeado, mantendo no template um manipulador estável e reutilizável.
 
 ```vue annotate="add:2,3"
 <template>
@@ -58,4 +57,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Vue](../vue.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)

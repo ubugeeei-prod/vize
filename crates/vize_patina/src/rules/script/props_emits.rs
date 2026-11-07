@@ -23,6 +23,7 @@ mod template_emits;
 pub(crate) mod typed_prop_defaults;
 
 pub(crate) use props_source::collect_options_props;
+pub(crate) use props_source::collect_runtime_props;
 
 pub use consistent_key_quotes::ConsistentPropsEmitsKeyQuotes;
 pub use no_required_prop_with_default::NoRequiredPropWithDefault;

@@ -211,6 +211,7 @@ export function compareLintFindings(
   }
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
+    if (finding.ruleId === "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
     const reason = source === null ? null : patinaIntentionalReason(finding, source);
     if (reason === null) continue;
@@ -220,6 +221,15 @@ export function compareLintFindings(
   const ruleLocationDivergences = sortValues(
     pairRuleLocationDivergences(falsePositives, falseNegatives),
   );
+  for (let index = falsePositives.length - 1; index >= 0; index--) {
+    const finding = falsePositives[index];
+    if (finding.ruleId !== "vue/no-unused-components") continue;
+    const source = sources.get(finding.file) ?? null;
+    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    if (reason === null) continue;
+    falsePositives.splice(index, 1);
+    intentionalDivergences.push({ ...recordValue(finding), reason });
+  }
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
   const ratio = (count: number, total: number) => (total === 0 ? 0 : count / total);

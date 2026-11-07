@@ -142,7 +142,7 @@ fn test_template_v_for_dynamic_slot_forwarder_is_not_missing_key() {
 }
 
 #[test]
-fn dynamic_slot_v_for_does_not_require_keys_for_slot_content() {
+fn dynamic_slot_v_for_requires_a_key_for_native_slot_content() {
     let result = create_linter().lint_template(
         r#"<Component>
   <template v-for="name in names" #[name]="slotProps">
@@ -151,7 +151,7 @@ fn dynamic_slot_v_for_does_not_require_keys_for_slot_content() {
 </Component>"#,
         "test.vue",
     );
-    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
 }
 
 #[test]

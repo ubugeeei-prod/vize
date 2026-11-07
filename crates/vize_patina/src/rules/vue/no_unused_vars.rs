@@ -146,7 +146,183 @@ impl Rule for NoUnusedVars {
                 .with_help(help),
             );
         }
+
+        // Some template generators parenthesize a string containing ` in ` as
+        // the v-for source. Croquis deliberately rejects that ambiguous
+        // recovery shape, but eslint-plugin-vue still recovers the aliases.
+        // Keep this fallback narrow (authored empty elements only) so malformed
+        // hand-written templates do not acquire speculative scope diagnostics.
+        report_recovered_empty_v_for(ctx, self);
     }
+}
+
+fn report_recovered_empty_v_for(ctx: &mut LintContext<'_>, rule: &NoUnusedVars) {
+    let source = ctx.source;
+    let bytes = source.as_bytes();
+    let mut search_from = 0;
+
+    while let Some(relative) = source
+        .get(search_from..)
+        .and_then(|rest| rest.find("v-for"))
+    {
+        let directive_start = search_from + relative;
+        search_from = directive_start + "v-for".len();
+        if directive_start > 0
+            && bytes
+                .get(directive_start - 1)
+                .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
+        {
+            continue;
+        }
+
+        let Some(open) = source
+            .get(..directive_start)
+            .and_then(|prefix| prefix.rfind('<'))
+        else {
+            continue;
+        };
+        let Some(close_relative) = source
+            .get(directive_start..)
+            .and_then(|rest| rest.find('>'))
+        else {
+            continue;
+        };
+        let close = directive_start + close_relative;
+        if !authored_element_is_empty(source, open, close) {
+            continue;
+        }
+
+        let mut cursor = search_from;
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        if bytes.get(cursor) != Some(&b'=') {
+            continue;
+        }
+        cursor += 1;
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+        }
+        let Some(quote @ (b'\'' | b'"')) = bytes.get(cursor).copied() else {
+            continue;
+        };
+        let value_start = cursor + 1;
+        let Some(value_end_relative) = source
+            .get(value_start..close)
+            .and_then(|value| value.find(quote as char))
+        else {
+            continue;
+        };
+        let value_end = value_start + value_end_relative;
+        let Some(value) = source.get(value_start..value_end) else {
+            continue;
+        };
+        let Some((aliases, rhs)) = value.split_once(" in ") else {
+            continue;
+        };
+        if !rhs.contains(" in ") || !(rhs.contains('\'') || rhs.contains('"')) {
+            continue;
+        }
+
+        let opening_before = source.get(open..directive_start).unwrap_or_default();
+        let opening_after = source.get(value_end + 1..=close).unwrap_or_default();
+        let aliases = aliases.trim();
+        let aliases = aliases
+            .strip_prefix('(')
+            .and_then(|aliases| aliases.strip_suffix(')'))
+            .unwrap_or(aliases);
+        let mut alias_search = value_start;
+        for (index, alias) in aliases.split(',').map(str::trim).enumerate() {
+            if alias.is_empty()
+                || !alias
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
+                || rule.should_ignore(alias)
+                || authored_identifier_reference_present(opening_before, alias)
+                || authored_identifier_reference_present(opening_after, alias)
+            {
+                continue;
+            }
+            let Some(relative_start) = source
+                .get(alias_search..value_end)
+                .and_then(|remaining| remaining.find(alias))
+            else {
+                continue;
+            };
+            let start = alias_search + relative_start;
+            alias_search = start + alias.len();
+            if ctx.diagnostics.iter().any(|diagnostic| {
+                diagnostic.rule_name == META.name && diagnostic.start == start as u32
+            }) {
+                continue;
+            }
+            let (message, help) = if index == 0 {
+                (
+                    cstr!("Variable '{}' is defined by v-for but never used", alias),
+                    "If the variable is intentionally unused, prefix it with underscore: _item",
+                )
+            } else if index == 1 {
+                (
+                    cstr!(
+                        "Key variable '{}' is defined by v-for but never used",
+                        alias
+                    ),
+                    "Consider removing the key variable or prefix it with underscore: _key",
+                )
+            } else {
+                (
+                    cstr!(
+                        "Index variable '{}' is defined by v-for but never used",
+                        alias
+                    ),
+                    "Consider removing the index variable or prefix it with underscore: _index",
+                )
+            };
+            ctx.report(
+                crate::diagnostic::LintDiagnostic::warn(
+                    ctx.current_rule,
+                    message,
+                    start as u32,
+                    (start + alias.len()) as u32,
+                )
+                .with_help(help),
+            );
+        }
+    }
+}
+
+fn authored_element_is_empty(source: &str, open: usize, close: usize) -> bool {
+    let Some(opening) = source.get(open..=close) else {
+        return false;
+    };
+    if opening.trim_end_matches('>').trim_end().ends_with('/') {
+        return true;
+    }
+    let Some(tag) = opening
+        .strip_prefix('<')
+        .and_then(|opening| opening.split_ascii_whitespace().next())
+        .map(|tag| tag.trim_end_matches('>'))
+        .filter(|tag| !tag.is_empty())
+    else {
+        return false;
+    };
+    source
+        .get(close + 1..)
+        .is_some_and(|tail| tail.trim_start().starts_with(&format!("</{tag}>")))
+}
+
+fn authored_identifier_reference_present(source: &str, name: &str) -> bool {
+    source.match_indices(name).any(|(start, matched)| {
+        let end = start + matched.len();
+        !source
+            .as_bytes()
+            .get(start.wrapping_sub(1))
+            .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$' | b'.'))
+            && !source
+                .as_bytes()
+                .get(end)
+                .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
+    })
 }
 
 fn authored_opening_directive_uses(source: &str, name: &str, offset: u32) -> bool {
@@ -476,5 +652,41 @@ mod tests {
         assert_eq!(messages.len(), 2, "{:?}", result.diagnostics);
         assert!(messages.iter().any(|message| message.contains("unused")));
         assert!(messages.iter().any(|message| message.contains("index")));
+    }
+
+    #[test]
+    fn generated_parenthesized_v_for_reports_the_unused_index() {
+        let source = r#"<template>
+  <view v-for="(item,index) in ('item in 12')" :key="item.index" v-if="type === 'spinner'" />
+</template>"#;
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["vue/no-unused-vars".into()]))
+            .lint_sfc(source, "Probe.vue");
+        let messages: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-vars")
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
+        assert!(messages[0].contains("index"), "{messages:?}");
+    }
+
+    #[test]
+    fn generated_parenthesized_v_for_on_explicit_empty_element_reports_the_unused_index() {
+        let source = r#"<template>
+  <view v-for="(item,index) in ('item in 12')" :key="item.index"></view>
+</template>"#;
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec!["vue/no-unused-vars".into()]))
+            .lint_sfc(source, "Probe.vue");
+        let messages: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-vars")
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(messages.len(), 1, "{:?}", result.diagnostics);
+        assert!(messages[0].contains("index"), "{messages:?}");
     }
 }

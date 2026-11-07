@@ -88,6 +88,25 @@ defineEmits<{ save: []; cancel: [] }>();
 }
 
 #[test]
+fn unassigned_union_call_signature_reports_only_the_unused_event() {
+    let sfc = r#"<script setup lang="ts">
+defineEmits<{ (e: "save" | "cancel" | "delete"): void }>();
+</script>
+<template>
+  <button @click="$emit('save')" />
+  <button @click="$emit('cancel')" />
+</template>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert!(diagnostics[0].message.contains("delete"));
+}
+
+#[test]
 fn test_type_based_property_form() {
     let source = r#"
 const emit = defineEmits<{ change: [id: number]; unused: [] }>()

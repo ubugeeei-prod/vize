@@ -236,6 +236,22 @@ const props = withDefaults(defineProps<Props>(), { enabled: false })
 }
 
 #[test]
+fn boolean_literal_discriminant_with_shared_base_default_is_reported() {
+    let source = r#"
+interface BaseProps { class?: string; width?: number }
+interface StaticProps extends BaseProps { isStatic?: true; imageSrc?: string }
+interface UrlProps extends BaseProps { isStatic?: false; url?: string }
+type Props = StaticProps | UrlProps
+const props = withDefaults(defineProps<Props>(), {
+  isStatic: false,
+  width: 200,
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn generic_boolean_prop_from_sibling_script_is_resolved() {
     let source = r#"<script lang="ts">
 interface Props<T> {

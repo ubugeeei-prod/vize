@@ -1,11 +1,11 @@
 ---
 title: "vue/slot-name-casing"
-description: "名前付きスロットを kebab-case に揃えます。"
+description: "描画する slot outlet の静的な名前を camelCase に揃えます。"
 ---
 
 # `vue/slot-name-casing`
 
-名前付きスロットを kebab-case に揃えます。
+描画する slot outlet の静的な名前を camelCase に揃えます。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
@@ -13,23 +13,25 @@ description: "名前付きスロットを kebab-case に揃えます。"
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
+描画する slot outlet の静的な name を検査します。親側の v-slot や #name による提供構文は、このルールの対象外です。
+
 ## 悪い例
 
-名前付きスロット `mySlot` が camelCase で、ハイフン区切りの規約に合いません。
+描画する slot outlet の静的な名前 `my-slot` がハイフン区切りで、既定の camelCase 規約に合いません。
 
 ```vue annotate="remove:2"
 <template>
-<MyCard><template #mySlot>Content</template></MyCard>
+<MyCard><slot name="my-slot" /></MyCard>
 </template>
 ```
 
 ## 良い例
 
-スロット名を kebab-case の `#my-slot` にします。対応するスロットの出口の名前も合わせます。
+outlet の静的な name を camelCase にします。親側の `#name` による提供構文は、このルールの対象外です。
 
 ```vue annotate="add:2"
 <template>
-<MyCard><template #my-slot>Content</template></MyCard>
+<MyCard><slot name="mySlot" /></MyCard>
 </template>
 ```
 

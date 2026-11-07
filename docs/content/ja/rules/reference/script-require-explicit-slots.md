@@ -17,18 +17,20 @@ useSlots() で使う slot を defineSlots の型で宣言します。
 
 型付きの `defineProps<{ id: number }>()` から、この例が TypeScript の構文を使っていることが分かります。しかし setup では `defineSlots` を宣言せずに `useSlots()` を使っており、利用するスロットの型が明示されていません。
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,4,5,6"
 <script setup lang="ts">
-const props = defineProps<{ id: number }>()
-const slots = useSlots()
+defineSlots<{ default(): unknown }>()
 </script>
+<template>
+  <div><slot /><slot name="footer" /></div>
+</template>
 ```
 
 ## 良い例
 
 `defineSlots` で `msg: string` を props に持つ `default` slot を宣言し、`useSlots()` と明示的な型付き slot 契約を併記します。
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -56,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L62)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L57)

@@ -72,19 +72,16 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
     let Some(analysis) = ctx.analysis() else {
         return declarations;
     };
-    let Some(call) = analysis.macros.define_props() else {
+    let Some(_) = analysis.macros.define_props() else {
         return declarations;
     };
-    declarations.extend(analysis.macros.props().iter().map(|prop| {
-        let (start, end) = analysis
-            .macros
-            .prop_declaration(prop.name.as_str())
-            .unwrap_or((call.start, call.end));
-        Declaration {
+    declarations.extend(analysis.macros.props().iter().filter_map(|prop| {
+        let (start, end) = analysis.macros.prop_declaration(prop.name.as_str())?;
+        Some(Declaration {
             name: prop.name.clone(),
             start: declaring_offset + start.saturating_sub(setup_shift),
             end: declaring_offset + end.saturating_sub(setup_shift),
-        }
+        })
     }));
     declarations
 }

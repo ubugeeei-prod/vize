@@ -1,11 +1,11 @@
 ---
 title: "vue/slot-name-casing"
-description: "Exigir kebab-case nos slots nomeados usados por v-slot."
+description: "Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados."
 ---
 
 # `vue/slot-name-casing`
 
-Exigir kebab-case nos slots nomeados usados por v-slot.
+Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
@@ -13,23 +13,25 @@ Exigir kebab-case nos slots nomeados usados por v-slot.
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
+Verifica o nome estático de um ponto de inserção de slot renderizado. A sintaxe de provedor v-slot e #name no componente pai fica fora desta regra.
+
 ## Incorreto
 
-O slot nomeado `mySlot` usa camelCase onde a regra exige um nome separado por hífen.
+O ponto de inserção de slot renderizado usa o nome estático com hífen `my-slot`, enquanto a convenção padrão exige camelCase.
 
 ```vue annotate="remove:2"
 <template>
-<MyCard><template #mySlot>Content</template></MyCard>
+<MyCard><slot name="my-slot" /></MyCard>
 </template>
 ```
 
 ## Correto
 
-`#my-slot` usa kebab-case. Renomeie o ponto de inserção do slot correspondente para o mesmo nome.
+O nome estático do ponto de inserção usa camelCase. A sintaxe de provedor `#name` no componente pai fica fora desta regra.
 
 ```vue annotate="add:2"
 <template>
-<MyCard><template #my-slot>Content</template></MyCard>
+<MyCard><slot name="mySlot" /></MyCard>
 </template>
 ```
 

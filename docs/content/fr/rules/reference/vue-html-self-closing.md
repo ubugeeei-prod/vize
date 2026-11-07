@@ -17,11 +17,12 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 Le composant vide utilise une paire de balises, tandis que les éléments vides img et br omettent la syntaxe autofermante configurée.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:3,4"
 <template>
-  <MyComponent></MyComponent>
-  <img>
-  <br>
+  <section>
+    <MyComponent></MyComponent>
+    <div></div>
+  </section>
 </template>
 ```
 
@@ -29,14 +30,15 @@ Le composant vide utilise une paire de balises, tandis que les éléments vides 
 
 Le composant et les éléments vides utilisent une syntaxe autofermante ; un div contenant du contenu conserve sa balise de fermeture.
 
-```vue annotate="add:2,3,4,5,6,7"
+```vue annotate="add:3,4,5,6,7"
 <template>
-  <MyComponent />
-  <div></div>
-  <div />
-  <img />
-  <br />
-  <div>content</div>
+  <section>
+    <MyComponent />
+    <div />
+    <img>
+    <br>
+    <div>content</div>
+  </section>
 </template>
 ```
 

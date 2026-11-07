@@ -109,7 +109,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | Enforce `.exact` modifier on `v-on` when there are modifier-based handlers. | `essential` |  |
 | <span id="vue-v-bind-style"></span>[`vue/v-bind-style`](./reference/vue-v-bind-style.md) | Enforce `v-bind` directive style. | `happy-path` | ✓ |
 | <span id="vue-v-on-event-hyphenation"></span>[`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | Enforce hyphenation of custom event names in v-on on components. | `happy-path` | ✓ |
-| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Enforce writing v-on handlers as a method reference or an inline function. | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Enforce writing v-on handlers as method references. | `nuxt`, `opinionated` |  |
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | Enforce `v-on` directive style. | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | Enforce `v-slot` directive style. | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | Require valid attribute names. | `essential` |  |

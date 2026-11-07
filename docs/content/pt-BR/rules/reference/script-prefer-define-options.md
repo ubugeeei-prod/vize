@@ -17,9 +17,12 @@ Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante d
 
 A única instrução significativa do script comum exporta um objeto contendo apenas `name` e `inheritAttrs`; essas opções podem ser expressas por `defineOptions`.
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,3,4,5"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
+</script>
+<script setup lang="ts">
+const ready = true
 </script>
 ```
 
@@ -58,4 +61,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de tipo e script](../type-and-script.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L44)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L49)

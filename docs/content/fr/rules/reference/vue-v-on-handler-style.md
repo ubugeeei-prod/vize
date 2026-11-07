@@ -1,11 +1,11 @@
 ---
 title: "vue/v-on-handler-style"
-description: "Imposer une référence de méthode ou une fonction en ligne pour les gestionnaires v-on."
+description: "Imposer une référence de méthode pour les gestionnaires v-on."
 ---
 
 # `vue/v-on-handler-style`
 
-Imposer une référence de méthode ou une fonction en ligne pour les gestionnaires v-on.
+Imposer une référence de méthode pour les gestionnaires v-on.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
@@ -15,20 +15,19 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 ## Mauvais
 
-Les gestionnaires placent des modifications et plusieurs instructions directement dans l’attribut d’événement.
+Les gestionnaires utilisent des fonctions en ligne, des modifications ou plusieurs instructions au lieu de références de méthode réutilisables.
 
-```vue annotate="remove:2,3,4,5"
+```vue annotate="remove:2,3,4"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
 <button @click="foo = bar"></button>
-<button @click="() => count++"></button>
 </template>
 ```
 
 ## Bon
 
-Utilisez une référence de gestionnaire, ou une expression de fonction fléchée ou classique lorsqu’une logique en ligne est nécessaire. La limite de la fonction rend la forme du gestionnaire explicite.
+Utilisez une référence de gestionnaire. Déplacez la logique en ligne dans une méthode nommée afin que le template conserve un gestionnaire stable et réutilisable.
 
 ```vue annotate="add:2,3"
 <template>
@@ -58,4 +57,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L34)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)

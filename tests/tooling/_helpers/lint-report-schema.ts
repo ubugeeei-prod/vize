@@ -89,6 +89,7 @@ interface ProjectReport extends BaseReport {
 }
 interface IndexReport extends BaseReport {
   schema: "vize.fixtureLintDivergenceIndex";
+  totals: Record<string, number>;
   projects: Record<string, number>[];
 }
 interface OriginalProjectReport extends Omit<ProjectReport, "raw" | "divergence"> {

@@ -40,9 +40,9 @@ export const frenchVue2 = {
     "Les deux sélecteurs restent scoped dans un seul bloc style, respectant la convention du bloc unique sans supprimer aucun style.",
   ],
   "vue/slot-name-casing": [
-    "Imposer kebab-case aux slots nommés utilisés avec v-slot",
-    "Le slot nommé `mySlot` utilise camelCase là où la règle exige un nom séparé par des tirets.",
-    "`#my-slot` utilise kebab-case. Renommez le point d’insertion du slot correspondant avec le même nom.",
+    "Imposer camelCase aux noms statiques des points d’insertion de slot rendus",
+    "Le point d’insertion de slot rendu utilise le nom statique `my-slot`, séparé par des tirets, alors que la convention par défaut exige camelCase.",
+    "Le nom statique du point d’insertion utilise camelCase. La syntaxe de fourniture `#name` côté parent est hors du champ de cette règle.",
   ],
   "vue/this-in-template": [
     "Interdire `this.` dans les expressions des templates",
@@ -70,9 +70,9 @@ export const frenchVue2 = {
     "`@my-event` utilise la graphie exigée pour les événements personnalisés. Les écouteurs d’éléments natifs et les arguments d’événements dynamiques montrés ci-dessous sont hors du champ de ce contrôle.",
   ],
   "vue/v-on-handler-style": [
-    "Imposer une référence de méthode ou une fonction en ligne pour les gestionnaires v-on",
-    "Les gestionnaires placent des modifications et plusieurs instructions directement dans l’attribut d’événement.",
-    "Utilisez une référence de gestionnaire, ou une expression de fonction fléchée ou classique lorsqu’une logique en ligne est nécessaire. La limite de la fonction rend la forme du gestionnaire explicite.",
+    "Imposer une référence de méthode pour les gestionnaires v-on",
+    "Les gestionnaires utilisent des fonctions en ligne, des modifications ou plusieurs instructions au lieu de références de méthode réutilisables.",
+    "Utilisez une référence de gestionnaire. Déplacez la logique en ligne dans une méthode nommée afin que le template conserve un gestionnaire stable et réutilisable.",
   ],
   "vue/v-on-style": [
     "Imposer un style de directive `v-on`",
@@ -187,6 +187,8 @@ export const frenchVue2 = {
 } satisfies Record<string, readonly [purpose: string, bad: string, good: string]>;
 
 export const frenchVueNotes = {
+  "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
+    "Contrôle le nom statique d’un point d’insertion de slot rendu. La syntaxe de fourniture v-slot et #name côté parent est hors du champ de cette règle.",
   "The rule compares listeners for the same event on a native element. It ignores custom component events unless both listeners use `.native`. Different event names and disjoint keyboard filters do not conflict.":
     "La règle compare les écouteurs du même événement sur un élément natif. Elle ignore les événements des composants personnalisés, sauf si les deux écouteurs utilisent `.native`. Des noms d’événements différents et des filtres de touches sans touche commune n’entrent pas en conflit.",
   "System modifiers are required keys, so `@keydown.alt.shift` also accepts Ctrl+Alt+Shift. If a second handler uses `@keydown.alt.ctrl.shift`, add `.exact` to the broader handler to keep those actions separate. `.exact` permits its declared system modifiers and rejects additional Ctrl, Shift, Alt or Meta keys.":

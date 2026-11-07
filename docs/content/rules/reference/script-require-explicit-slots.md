@@ -17,18 +17,20 @@ Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or
 
 The typed `defineProps<{ id: number }>()` establishes TypeScript syntax, but setup uses `useSlots()` without a `defineSlots` declaration. The rule therefore finds consumed slots without an explicit slot contract.
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,4,5,6"
 <script setup lang="ts">
-const props = defineProps<{ id: number }>()
-const slots = useSlots()
+defineSlots<{ default(): unknown }>()
 </script>
+<template>
+  <div><slot /><slot name="footer" /></div>
+</template>
 ```
 
 ## Good
 
 `defineSlots` declares a `default` slot whose props include `msg: string`; `useSlots()` now appears alongside an explicit typed slot contract.
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -56,4 +58,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L62)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L57)
