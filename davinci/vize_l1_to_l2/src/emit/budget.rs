@@ -240,6 +240,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             source,
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
+                ..SurfaceParseOptions::default()
             },
         );
         if let Some(preflight) = preflight
@@ -308,6 +309,7 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             source,
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
+                ..SurfaceParseOptions::default()
             },
         );
         if let Some(preflight) = preflight

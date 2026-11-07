@@ -4,10 +4,7 @@ use super::{
     NativeSelectedSfcIssue, NativeSelectedSfcIssueKind, NativeSelectedSfcObservation,
     selected::{self, SelectedMode},
 };
-use vize_l0::{
-    Allocator, Span,
-    config::{VueDialect, VueVersion},
-};
+use vize_l0::{Allocator, Span, config::VueVersion};
 use vize_l1::{
     container::vue::{DescriptorObservation, DescriptorOptions},
     css::StyleSyntax,
@@ -124,8 +121,7 @@ pub(super) fn observe<'a>(
         kind: NativeSelectedSfcIssueKind::ScopedStyle(kind),
     };
     let whole = Span::new(0, original.source().len() as u32);
-    if options.version != VueVersion::V3
-        || options.dialect != VueDialect::Vue
+    if !original.dialect().is_standard_vue_component(VueVersion::V3)
         || options.template != SurfaceParseOptions::default()
     {
         return Err(reject(None, whole, Kind::Profile));

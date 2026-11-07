@@ -229,6 +229,7 @@ fn differing_title_and_comment_policies_keep_the_complete_callback_result_once()
             source,
             vize_l1::markup::SurfaceParseOptions {
                 experimental_in_tag_comments: comments,
+                ..vize_l1::markup::SurfaceParseOptions::default()
             },
         );
         let mut check = Preflight::new(&template, true, comments);

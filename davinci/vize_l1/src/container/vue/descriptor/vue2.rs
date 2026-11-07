@@ -3,7 +3,7 @@
 use super::{DescriptorIssue, DescriptorOptions, TemplateSelection};
 use crate::container::{Container, ContainerError};
 use crate::dialect::vue2::surface::ComponentParse;
-use vize_l0::{SourceRoot, Vec};
+use vize_l0::{FileDialect, SourceRoot, Vec};
 
 mod observe;
 mod view;
@@ -70,16 +70,32 @@ mod tests;
 /// };
 /// let _ = owner.container();
 /// ```
-#[derive(Debug)]
 pub struct Vue2DescriptorObservation<'a> {
     #[cfg(test)]
     _drop_probe: hooks::OwnerDrop,
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
+    dialect: FileDialect,
     issues: Vec<'a, DescriptorIssue>,
     selection: Option<TemplateSelection<'a>>,
     component: Option<ComponentParse<'a>>,
+}
+
+impl core::fmt::Debug for Vue2DescriptorObservation<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut debug = formatter.debug_struct("Vue2DescriptorObservation");
+        #[cfg(test)]
+        debug.field("_drop_probe", &self._drop_probe);
+        debug
+            .field("container", &self.container)
+            .field("root", &self.root)
+            .field("options", &self.options)
+            .field("issues", &self.issues)
+            .field("selection", &self.selection)
+            .field("component", &self.component)
+            .finish()
+    }
 }
 
 impl<'a> Vue2DescriptorObservation<'a> {
@@ -91,6 +107,9 @@ impl<'a> Vue2DescriptorObservation<'a> {
     }
     pub fn options(&self) -> DescriptorOptions {
         self.options
+    }
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
     pub fn container(&self) -> &Container<'a> {
         &self.container

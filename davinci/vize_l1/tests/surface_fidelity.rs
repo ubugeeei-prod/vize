@@ -324,6 +324,7 @@ fn experimental_in_tag_comments_ride_in_leading_without_holes() {
         source,
         SurfaceParseOptions {
             experimental_in_tag_comments: true,
+            ..SurfaceParseOptions::default()
         },
     );
 

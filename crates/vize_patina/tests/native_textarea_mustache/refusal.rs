@@ -211,6 +211,7 @@ fn unsupported_descriptor_version_dialect_and_options_never_mint_marker_custody(
             DescriptorOptions {
                 template: SurfaceParseOptions {
                     experimental_in_tag_comments: true,
+                    ..SurfaceParseOptions::default()
                 },
                 ..supported
             },

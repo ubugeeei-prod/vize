@@ -1,7 +1,8 @@
 use super::*;
 use crate::container::{ContainerFormat, Vue};
 use crate::embed::EmbedSource;
-use vize_l0::{SourceFrameError, String};
+use alloc::format;
+use vize_l0::{ProfileKind, SourceFrameError, String, TemplateSyntaxMode};
 
 fn options() -> DescriptorOptions {
     DescriptorOptions {
@@ -9,6 +10,20 @@ fn options() -> DescriptorOptions {
         dialect: VueDialect::Vue,
         template: SurfaceParseOptions::default(),
     }
+}
+
+#[test]
+fn descriptor_options_keep_the_established_debug_surface() {
+    let mut nonstandard = options();
+    nonstandard.template.syntax = TemplateSyntaxMode::Quirks;
+    assert_eq!(
+        format!("{:?}", options()),
+        "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
+    );
+    assert_eq!(
+        format!("{nonstandard:?}"),
+        "DescriptorOptions { version: V3, dialect: Vue, template: SurfaceParseOptions { experimental_in_tag_comments: false } }"
+    );
 }
 
 fn has_issue(source: &str, code: DescriptorIssueCode) {
@@ -46,6 +61,12 @@ fn reversed_roles_keep_original_indices_whole_source_and_raw_unicode() {
         (ordinary.lang(), setup.lang(), view.template_lang()),
         (Lang::Ts, Lang::Ts, Lang::Ts)
     );
+    assert_eq!(observation.dialect(), view.dialect());
+    assert_eq!(view.dialect().version(), VueVersion::V3);
+    assert_eq!(view.dialect().framework(), VueDialect::Vue);
+    assert_eq!(view.dialect().syntax(), TemplateSyntaxMode::Standard);
+    assert_eq!(view.dialect().profile(), ProfileKind::Component);
+    assert_eq!(view.dialect().lang(), Lang::Ts);
     assert_eq!(view.source().as_ptr(), source.as_ptr());
     assert_eq!(ordinary.source().as_ptr(), source.as_ptr());
     assert_eq!(template.source().as_ptr(), source.as_ptr());
@@ -272,6 +293,7 @@ fn explicit_unsupported_dialect_and_options_stay_retained() {
             DescriptorOptions {
                 template: SurfaceParseOptions {
                     experimental_in_tag_comments: true,
+                    ..SurfaceParseOptions::default()
                 },
                 ..options()
             },

@@ -5,8 +5,8 @@ mod namespace;
 
 use crate::markup::{Component, LexOptions, Lexer};
 use namespace::NamespaceSink;
-use vize_l0::ErrorCode;
 use vize_l0::{Allocator, Vec};
+use vize_l0::{ErrorCode, TemplateSyntaxMode};
 
 use crate::build::build;
 use crate::event::{Event, Recorder};
@@ -20,10 +20,29 @@ pub use crate::dialect::vue3::surface::{
 };
 
 /// Parse-time switches L1 owns for the L2 consumers.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct SurfaceParseOptions {
     /// Accept Vue's experimental `//` comments inside opening tag attrs.
     pub experimental_in_tag_comments: bool,
+    /// File-wide recovery policy carried into the canonical file descriptor.
+    /// [`parse_with_options`] does not read this field: surface parsing applies
+    /// only [`Self::experimental_in_tag_comments`], while native nonstandard
+    /// admission remains typed at the descriptor boundary.
+    pub syntax: TemplateSyntaxMode,
+}
+
+// Keep the established public Debug surface stable while the canonical file
+// descriptor privately carries the additional syntax axis.
+impl core::fmt::Debug for SurfaceParseOptions {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter
+            .debug_struct("SurfaceParseOptions")
+            .field(
+                "experimental_in_tag_comments",
+                &self.experimental_in_tag_comments,
+            )
+            .finish()
+    }
 }
 
 /// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps

@@ -50,10 +50,12 @@ impl Vue {
             },
         );
         state.finish();
+        let dialect = options.resolve(state.lang());
         let mut owner = Vue2DescriptorObservation {
             container,
             root: state.root,
             options,
+            dialect,
             issues: state.issues,
             selection: state.template,
             component: None,

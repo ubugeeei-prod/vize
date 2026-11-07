@@ -81,6 +81,7 @@ fn generic_projection_retains_neutral_heads_entities_comments_and_errors() {
             source,
             vize_l1::markup::SurfaceParseOptions {
                 experimental_in_tag_comments: in_tag_comments,
+                ..vize_l1::markup::SurfaceParseOptions::default()
             },
         );
         assert!(errors.is_empty(), "{source}: {errors:?}");

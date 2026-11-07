@@ -4,7 +4,7 @@ use super::super::{DescriptorIssue, DescriptorOptions, TemplateNamePair, Templat
 use super::{Vue2DescriptorObservation, Vue2DescriptorRefusal};
 use crate::container::Container;
 use crate::dialect::vue2::surface::ComponentExpressionPool;
-use vize_l0::{SourceBlock, SourceRoot, Span, Vec};
+use vize_l0::{FileDialect, SourceBlock, SourceRoot, Span, Vec};
 
 /// The original complete envelope and Component, with owning expression slots.
 /// Fields are private; no capture, replacement component or caller frame can
@@ -66,18 +66,35 @@ use vize_l0::{SourceBlock, SourceRoot, Span, Vec};
 /// };
 /// println!("{root:?}");
 /// ```
-#[derive(Debug)]
 pub struct Vue2DescriptorExpressionPool<'a> {
     #[cfg(test)]
     _drop_probe: super::hooks::OwnerDrop,
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,
+    dialect: FileDialect,
     issues: Vec<'a, DescriptorIssue>,
     selection: Option<TemplateSelection<'a>>,
     component: Option<ComponentExpressionPool<'a>>,
     // Set only by the actual original selected() before consuming that owner.
     selected: bool,
+}
+
+impl core::fmt::Debug for Vue2DescriptorExpressionPool<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut debug = formatter.debug_struct("Vue2DescriptorExpressionPool");
+        #[cfg(test)]
+        debug.field("_drop_probe", &self._drop_probe);
+        debug
+            .field("container", &self.container)
+            .field("root", &self.root)
+            .field("options", &self.options)
+            .field("issues", &self.issues)
+            .field("selection", &self.selection)
+            .field("component", &self.component)
+            .field("selected", &self.selected)
+            .finish()
+    }
 }
 
 impl<'a> Vue2DescriptorExpressionPool<'a> {
@@ -89,6 +106,9 @@ impl<'a> Vue2DescriptorExpressionPool<'a> {
     }
     pub fn options(&self) -> DescriptorOptions {
         self.options
+    }
+    pub const fn dialect(&self) -> FileDialect {
+        self.dialect
     }
     pub fn container(&self) -> &Container<'a> {
         &self.container
@@ -148,6 +168,7 @@ impl<'a> Vue2DescriptorObservation<'a> {
             container,
             root,
             options,
+            dialect,
             issues,
             selection,
             component,
@@ -158,6 +179,7 @@ impl<'a> Vue2DescriptorObservation<'a> {
             container,
             root,
             options,
+            dialect,
             issues,
             selection,
             component: component.map(|component| component.into_expression_pool()),

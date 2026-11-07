@@ -79,6 +79,7 @@ fn native_entities_quotes_and_in_tag_comment_switch_keep_authored_bytes() {
         "<Comp // @vue-expect-error API\n :title='日'/>",
         SurfaceParseOptions {
             experimental_in_tag_comments: true,
+            ..SurfaceParseOptions::default()
         },
     );
 }

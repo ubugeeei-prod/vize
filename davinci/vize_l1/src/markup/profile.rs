@@ -8,11 +8,7 @@
 //! reads the name, self-closing, implied-end, select and table rules.
 
 /// Which profile a generic function was instantiated with.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ProfileKind {
-    Document,
-    Component,
-}
+pub use vize_l0::ProfileKind;
 
 /// Host rules for one markup profile. Implemented by zero-sized markers only.
 pub trait Profile: Copy + Default + 'static {
