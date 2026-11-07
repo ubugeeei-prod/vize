@@ -9,6 +9,7 @@ import {
   writeFiles,
 } from "../../../tools/support/compat/npm/smoke-release-init-project.ts";
 import { satisfiesVersionRange } from "../../../tools/support/compat/npm/smoke-release-semver.ts";
+import { readRepoFile } from "../support/github-workflows.ts";
 
 test("fresh-project toolchain uses npm-compatible semver ranges", () => {
   assert.equal(satisfiesVersionRange("0.1.9", "^0.1.0"), true);
@@ -16,6 +17,15 @@ test("fresh-project toolchain uses npm-compatible semver ranges", () => {
   assert.equal(satisfiesVersionRange("1.2.3-beta.1", "^1.2.3"), false);
   assert.equal(satisfiesVersionRange("1.2.3-beta.1", "^1.2.3-beta.1"), true);
   assert.equal(satisfiesVersionRange("7.0.1", "^7.0.0"), true);
+});
+
+test("release smoke installs dependencies from their owning tooling packages", () => {
+  const restore = readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml");
+  assert.match(restore, /--filter '@vize\/tools'/);
+
+  const contracts = readRepoFile(".github", "workflows", "release-smoke-contracts.yml");
+  assert.match(contracts, /- "\.github\/actions\/release-npm-artifacts\/\*\*"/);
+  assert.match(contracts, /--filter '@vize\/tests' --filter '@vize\/tools' --ignore-scripts/);
 });
 
 test("fresh-project toolchain accepts package-local vize without manager shims", (t) => {

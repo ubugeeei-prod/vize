@@ -209,15 +209,6 @@ test("npm resume preserves the trusted workflow and restores only the selected r
   assert.match(restore, /git show "FETCH_HEAD:\$file" > "\$file"/);
 });
 
-test("release smoke installs dependencies from their owning tooling packages", () => {
-  const restore = readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml");
-  assert.match(restore, /--filter '@vize\/tools'/);
-
-  const contracts = readRepoFile(".github", "workflows", "release-smoke-contracts.yml");
-  assert.match(contracts, /- "\.github\/actions\/release-npm-artifacts\/\*\*"/);
-  assert.match(contracts, /--filter '@vize\/tests' --filter '@vize\/tools' --ignore-scripts/);
-});
-
 test("builds use the untagged candidate; only a fully built release is tagged", () => {
   const prePublish = (name: string) =>
     name.startsWith("build-") || name.startsWith("smoke") || name === "tag";
