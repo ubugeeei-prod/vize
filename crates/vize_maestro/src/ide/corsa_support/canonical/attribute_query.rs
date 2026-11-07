@@ -23,6 +23,16 @@ pub(crate) fn component_attribute_position(
     )
 }
 
+pub(crate) fn instantiated_component_attribute_position(
+    ctx: &IdeContext<'_>,
+    document: &CanonicalVirtualDocument,
+) -> Option<(u32, u32)> {
+    if !is_component_attribute_query(ctx) {
+        return None;
+    }
+    prop_key::instantiated_source_position(&ctx.content, &document.virtual_result, ctx.offset)
+}
+
 /// A failed/unavailable typed attribute route cannot authorize a block-local
 /// fallback at a different symbol. Art/model/event/native DOM policies remain
 /// on their existing routes, which do not use this canonical Vue document.

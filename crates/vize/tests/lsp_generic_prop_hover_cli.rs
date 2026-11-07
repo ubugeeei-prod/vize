@@ -1,4 +1,4 @@
-//! Original generic component props retain declared types through real stdio.
+//! Generic prop hover retains declared fallbacks and call-site instantiations.
 #![cfg(test)]
 #![expect(
     clippy::disallowed_types,
@@ -29,6 +29,13 @@ const CHILD: &str =
     include_str!("../../../tests/_fixtures/differential/lsp/generic-prop-hover-8015/Child.vue.txt");
 const EXPECTED: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/generic-prop-hover-8015/hover.expected.json"
+);
+const INSTANTIATED_APP: &str =
+    include_str!("../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/App.vue.txt");
+const INSTANTIATED_LIST: &str =
+    include_str!("../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/List.vue.txt");
+const INSTANTIATED_EXPECTED: &str = include_str!(
+    "../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/hover.expected.json"
 );
 
 #[test]
@@ -88,5 +95,41 @@ fn original_native_generic_prop_hovers_keep_whole_declared_types_and_authored_ra
         let actual = project.request("textDocument/hover", APP, needle);
         assert_eq!(actual, expected[name], "complete restored {name} hover");
     }
+    project.shutdown();
+}
+
+#[test]
+fn generic_prop_hover_uses_the_instantiated_type_at_the_call_site() {
+    let source: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lsp/generic-prop-hover-11504/source.json"
+    ))
+    .unwrap();
+    for (name, bytes) in [
+        ("App.vue.txt", INSTANTIATED_APP),
+        ("List.vue.txt", INSTANTIATED_LIST),
+    ] {
+        assert_eq!(
+            source_digest(bytes),
+            source["originalSha256"][name].as_str().unwrap()
+        );
+    }
+    assert_eq!(
+        source_digest(INSTANTIATED_EXPECTED),
+        source["expectedSha256"]["hover.expected.json"]
+            .as_str()
+            .unwrap()
+    );
+    let expected: Value = serde_json::from_str(INSTANTIATED_EXPECTED).unwrap();
+    let mut project = Fixture::new_with_vue_component_project(
+        INSTANTIATED_APP,
+        "App.vue",
+        &[("List.vue", INSTANTIATED_LIST)],
+    );
+    project.open(INSTANTIATED_APP);
+    let actual = project.request("textDocument/hover", INSTANTIATED_APP, "items=\"nums\"");
+    assert_eq!(
+        actual, expected,
+        "generic prop hover must use call-site inference"
+    );
     project.shutdown();
 }

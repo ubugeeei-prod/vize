@@ -54,6 +54,15 @@ impl HoverDocument {
         }
     }
 
+    fn instantiated_component_prop_position(&self, ctx: &IdeContext<'_>) -> Option<(u32, u32)> {
+        match self {
+            Self::Owned(document) => {
+                corsa_support::instantiated_component_attribute_position(ctx, document)
+            }
+            Self::Shared(document) => document.instantiated_component_prop_position(ctx.offset),
+        }
+    }
+
     fn map_range(&self, ctx: &IdeContext<'_>, range: &LspRange) -> Option<Range> {
         match self {
             Self::Owned(document) => corsa_support::map_canonical_lsp_range(ctx, document, range),
@@ -121,6 +130,7 @@ pub(super) async fn hover(
     if let Some(started) = started {
         profiler.record("maestro.hover.canonical.backend", started.elapsed());
     }
+    let mut query_position = (line, character);
     let mut hover = match response {
         Ok(Some(hover)) => hover,
         Ok(None) => return Some(Answer::Empty),
@@ -134,13 +144,25 @@ pub(super) async fn hover(
             return None;
         }
     };
+    if follow_declaration
+        && is_unknown_prop_hover(&hover)
+        && let Some(position) = document.instantiated_component_prop_position(ctx)
+        && position != query_position
+        && let Ok(Some(instantiated)) = bridge
+            .hover(document.request_uri(), position.0, position.1)
+            .await
+        && !is_unknown_prop_hover(&instantiated)
+    {
+        hover = instantiated;
+        query_position = position;
+    }
     // Native quick info can omit JSDoc after a mapped type. Follow the
     // checker's declaration identities for documentation while retaining the
     // instantiated signature and the authored hover range from this use.
     if follow_declaration
         && documentation(&hover).is_none()
         && let Ok(definitions) = bridge
-            .definition(document.request_uri(), line, character)
+            .definition(document.request_uri(), query_position.0, query_position.1)
             .await
     {
         for definition in definitions.into_iter().take(8) {
@@ -174,6 +196,31 @@ pub(super) async fn hover(
     })
 }
 
+fn is_unknown_prop_hover(hover: &LspHover) -> bool {
+    let LspHoverContents::Markup(content) = &hover.contents else {
+        return false;
+    };
+    if content.kind != "markdown" {
+        return false;
+    }
+    let value = content.value.trim();
+    if value == "unknown" {
+        return true;
+    }
+    let Some(signature) = value
+        .strip_prefix("```typescript\n")
+        .and_then(|value| value.split_once("\n```").map(|(signature, _)| signature))
+    else {
+        return false;
+    };
+    let signature = signature.trim();
+    signature == "unknown"
+        || signature
+            .strip_prefix("(property) ")
+            .and_then(|property| property.split_once(':'))
+            .is_some_and(|(_, ty)| ty.trim() == "unknown")
+}
+
 fn documentation(hover: &LspHover) -> Option<&str> {
     let LspHoverContents::Markup(content) = &hover.contents else {
         return None;
@@ -196,12 +243,43 @@ mod tests {
     use oxc_span::SourceType;
     use tower_lsp::lsp_types::{Position, Url};
     use vize_canon::{
-        CorsaSourceCatalog, CorsaVueVirtualDocument, LspPosition, virtual_ts::ProjectionMapping,
+        CorsaSourceCatalog, CorsaVueVirtualDocument, LspMarkupContent, LspPosition,
+        virtual_ts::ProjectionMapping,
     };
 
     use super::*;
     use crate::ide::DiagnosticService;
     use crate::server::ServerState;
+
+    fn markup_hover(value: &str) -> LspHover {
+        LspHover {
+            contents: LspHoverContents::Markup(LspMarkupContent {
+                kind: "markdown".into(),
+                value: value.into(),
+            }),
+            range: None,
+        }
+    }
+
+    #[test]
+    fn contextual_retry_only_replaces_an_exact_unknown_type() {
+        for value in [
+            "unknown",
+            "```typescript\nunknown\n```",
+            "```typescript\n(property) items: unknown\n```\n\nDocumentation",
+            "```typescript\n(property) \"items\": unknown\n```",
+        ] {
+            assert!(is_unknown_prop_hover(&markup_hover(value)), "{value}");
+        }
+        for value in [
+            "```typescript\n(property) items: unknown[]\n```",
+            "```typescript\n(property) items: T[]\n```",
+            "```typescript\n(property) items: Record<string, unknown>\n```",
+            "```typescript\nfunction unknown(): void\n```",
+        ] {
+            assert!(!is_unknown_prop_hover(&markup_hover(value)), "{value}");
+        }
+    }
 
     #[test]
     fn shared_hover_mapping_matches_owned_nested_expression_mapping() {

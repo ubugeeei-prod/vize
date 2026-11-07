@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "kind": "markdown",
+    "value": "**items**\n\n_Component prop_\n\n```typescript\n(property) \"items\": number[]\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<List items=\"...\" />\n<List :items=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+  },
+  "range": {
+    "start": {
+      "line": 4,
+      "character": 17
+    },
+    "end": {
+      "line": 4,
+      "character": 22
+    }
+  }
+}
