@@ -862,6 +862,10 @@ test("sound Patina-only real-project findings are intentional on both reporters"
     `${directory}/Mutation.vue`,
     `<script setup lang="ts">\n(props.item.value as Ref<any>).value = next\n</script>\n`,
   );
+  fs.writeFileSync(
+    `${directory}/UnusedPug.vue`,
+    `<script>\nexport default { components: { IpfsImageViewer } }\n</script>\n<template lang="pug">\nmain\n  token-logo\n</template>\n`,
+  );
   const map = {
     upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
     entries: {
@@ -878,6 +882,10 @@ test("sound Patina-only real-project findings are intentional on both reporters"
         patinaRule: "script/require-default-prop",
       },
       "vue/no-mutating-props": { status: "mapped", patinaRule: "vue/no-mutating-props" },
+      "vue/no-unused-components": {
+        status: "mapped",
+        patinaRule: "vue/no-unused-components",
+      },
     },
   };
   const findings = [
@@ -909,9 +917,17 @@ test("sound Patina-only real-project findings are intentional on both reporters"
       ...span(2, 1, 2, 38),
       message: "Unexpected mutation of prop '(props.item.value as Ref<any>).value'.",
     },
+    {
+      file: "src/UnusedPug.vue",
+      ruleId: "vue/no-unused-components",
+      severity: 1,
+      ...span(2, 32, 2, 47),
+      message:
+        "[vize:vue/no-unused-components] Component 'IpfsImageViewer' is registered but never used in template",
+    },
   ];
   const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {
-    files: ["src/TemplateOnly.vue", "src/Props.vue", "src/Mutation.vue"],
+    files: ["src/TemplateOnly.vue", "src/Props.vue", "src/Mutation.vue", "src/UnusedPug.vue"],
   });
   const compatible = compareCompatibleLintFindings({
     projectId: "fixture",
@@ -922,8 +938,41 @@ test("sound Patina-only real-project findings are intentional on both reporters"
   });
   for (const result of [current, compatible]) {
     assert.equal(result.summary.falsePositiveCount, 0);
-    assert.equal(result.summary.intentionalDivergenceCount, 4);
+    assert.equal(result.summary.intentionalDivergenceCount, 5);
   }
+});
+
+test("a registered component used by a Pug template cannot be classified as intentional", () => {
+  fs.mkdirSync(`${cwd}/src`, { recursive: true });
+  fs.writeFileSync(
+    `${cwd}/src/UsedPug.vue`,
+    `<script>\nexport default { components: { UsedPanel } }\n</script>\n<template lang="pug">\nmain\n  used-panel\n</template>\n`,
+  );
+  const finding = {
+    file: "src/UsedPug.vue",
+    ruleId: "vue/no-unused-components",
+    severity: 1,
+    ...span(2, 32, 2, 41),
+    message:
+      "[vize:vue/no-unused-components] Component 'UsedPanel' is registered but never used in template",
+  };
+  const result = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: {
+      upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+      entries: {
+        "vue/no-unused-components": {
+          status: "mapped",
+          patinaRule: "vue/no-unused-components",
+        },
+      },
+    },
+    patinaFindings: [finding],
+    eslintResults: [],
+  });
+  assert.equal(result.summary.falsePositiveCount, 1);
+  assert.equal(result.summary.intentionalDivergenceCount, 0);
 });
 
 test("the checked-in divergence ledger validates against the checked-in rule map", () => {

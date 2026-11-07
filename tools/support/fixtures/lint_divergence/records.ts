@@ -620,12 +620,11 @@ function hasUtsScript(source: string): boolean {
 }
 
 function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string): boolean {
-  const name = /^Component '([^']+)' is registered but never used in template$/u.exec(
-    finding.message,
-  )?.[1];
+  const name = unusedComponentName(finding.message);
   if (name === undefined) return false;
-  const template = /<template\b[^>]*>([\s\S]*?)<\/template>/iu.exec(source)?.[1];
-  if (template === undefined || /<component\b/iu.test(template)) return false;
+  const templateMatch = /<template\b([^>]*)>([\s\S]*?)<\/template>/iu.exec(source);
+  if (templateMatch === null) return false;
+  const [, attributes, template] = templateMatch;
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   if (!new RegExp(`\\bcomponents\\s*:\\s*\\{[\\s\\S]{0,20000}\\b${escaped}\\b`, "u").test(source))
     return false;
@@ -634,7 +633,30 @@ function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string
     .replace(/_/gu, "-")
     .toLowerCase();
   const escapedKebab = kebab.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  if (/\blang\s*=\s*(?:["']pug["']|pug)(?:\s|$)/iu.test(attributes)) {
+    const executable: string[] = [];
+    let commentIndent: number | null = null;
+    for (const raw of template.split(/\r?\n/u)) {
+      const line = raw.trimStart(),
+        indent = raw.length - line.length;
+      if (commentIndent !== null) {
+        if (line === "" || indent > commentIndent) continue;
+        commentIndent = null;
+      }
+      if (/^\/\/-?(?:\s|$)/u.test(line)) {
+        commentIndent = indent;
+        continue;
+      }
+      executable.push(line);
+    }
+    const pug = executable.join("\n");
+    if (new RegExp(`(?:^|\\n|:\\s*)component(?=[.#(\\s]|$)`, "iu").test(pug)) return false;
+    return !new RegExp(`(?:^|\\n|:\\s*)(?:${escaped}|${escapedKebab})(?=[.#(\\s]|$)`, "iu").test(
+      pug,
+    );
+  }
   const executable = template.replace(/<!--[\s\S]*?-->/gu, "");
+  if (/<component\b/iu.test(executable)) return false;
   return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
 }
 
