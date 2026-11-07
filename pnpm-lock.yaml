@@ -1227,7 +1227,7 @@ importers:
         version: jiti@1.21.7
       oxlint-plugin-vize:
         specifier: workspace:*
-        version: link:../../oxlint
+        version: link:../../linter/oxlint
       typescript:
         specifier: catalog:typescript
         version: 6.0.3

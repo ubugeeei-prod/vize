@@ -25,8 +25,8 @@ export const requiredMerges = [
 export const checkout = fileURLToPath(new URL("../../../../", import.meta.url));
 export const digest = (bytes: Uint8Array | string): string =>
   createHash("sha256").update(bytes).digest("hex");
-export const custodySha256 = "a033d844772d6109143c4faf4ca94c1aef054e474af467358d72f70fdccec670";
-const consumerSuccessorSha256 = "2334eacebfdfc57e630d161772e53e78b85f5a714cdeb683c5345dfd7ac0d80f";
+export const custodySha256 = "0bfb9600b5e2251e31ba59c18504cc00f6bb14c5adaaa7049cf0debff6c6aafc";
+const consumerSuccessorSha256 = "1de5f35741488845e6eab11b38ae07ae3f823e979c0b2198ce5840bdd9b08012";
 
 export function consumerSuccessor(): JsonRecord {
   const bytes = readFileSync(new URL("consumer-successor.json", import.meta.url));
