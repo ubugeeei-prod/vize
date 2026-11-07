@@ -103,7 +103,11 @@ export function commonInitializeParams(
     processId: process.pid,
     rootUri,
     capabilities: {
-      workspace: { configuration: true, workspaceFolders: true },
+      workspace: {
+        configuration: true,
+        didChangeWatchedFiles: { dynamicRegistration: true },
+        workspaceFolders: true,
+      },
       textDocument: {
         completion: {
           completionItem: {

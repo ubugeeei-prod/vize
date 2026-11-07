@@ -391,6 +391,15 @@ test("primary operation receipts enforce human-readable exact method counts", ()
 
 test("the primary initialize and operation transcript is byte stable", () => {
   const params = commonInitializeParams("/workspace", "/typescript/lib");
+  assert.deepEqual(
+    (params.capabilities as { workspace: unknown }).workspace,
+    {
+      configuration: true,
+      didChangeWatchedFiles: { dynamicRegistration: true },
+      workspaceFolders: true,
+    },
+    "both products must observe the dependency-watcher capability used by production editors",
+  );
   const operations = [
     { kind: "request" as const, method: "initialize", params },
     { kind: "notification" as const, method: "initialized", params: {} },

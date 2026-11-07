@@ -43,17 +43,34 @@ pub(super) async fn references(
     }
     #[cfg(feature = "native")]
     {
-        if let Some(locations) =
+        let stamp = server.state.corsa_request_stamp();
+        if let Some(response) =
+            server
+                .state
+                .cached_native_references(uri, position, include_declaration, stamp)
+        {
+            return Ok(response);
+        }
+        let response = if let Some(locations) =
             ReferencesService::setup_local_references(&ctx, include_declaration)
         {
-            return Ok(Some(locations));
-        }
-        Ok(ReferencesService::project_references_with_corsa(
-            &ctx,
+            Some(locations)
+        } else {
+            ReferencesService::project_references_with_corsa(
+                &ctx,
+                include_declaration,
+                server.state.get_corsa_bridge().await,
+            )
+            .await
+        };
+        server.state.cache_native_references(
+            uri,
+            position,
             include_declaration,
-            server.state.get_corsa_bridge().await,
-        )
-        .await)
+            stamp,
+            response.clone(),
+        );
+        Ok(response)
     }
     #[cfg(not(feature = "native"))]
     Ok(ReferencesService::references(&ctx, include_declaration))
