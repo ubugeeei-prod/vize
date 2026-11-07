@@ -32,7 +32,7 @@ export const testedPackageGroups = [
       "./npm/framework/nuxt",
       "./npm/framework/musea-nuxt",
     ],
-    prebuilt: ["./npm/oxlint"],
+    prebuilt: ["./npm/linter/oxlint"],
   },
   {
     name: "ui",
@@ -50,7 +50,7 @@ export const testedPackageGroups = [
   },
   {
     name: "oxlint",
-    packages: ["./npm/oxlint"],
+    packages: ["./npm/linter/oxlint"],
     prebuilt: [],
   },
 ] as const satisfies readonly TestedPackageGroup[];

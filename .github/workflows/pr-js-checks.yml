@@ -174,7 +174,7 @@ jobs:
         if: ${{ inputs.run-js }}
         env:
           VIZE_N8N_BASELINE_MODE: partitioned
-        run: node npm/oxlint/scripts/check-project-transport.mjs
+        run: node npm/linter/oxlint/scripts/check-project-transport.mjs
       - name: Preserve public native formatter evidence
         if: ${{ !cancelled() && inputs.run-js }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -202,7 +202,7 @@ jobs:
         if: ${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}
         env:
           VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
-        run: node npm/oxlint/scripts/project-native-staging.ts --cleanup
+        run: node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup
   pr-js-package-conformance:
     name: PR package conformance (${{ matrix.surface }})
     strategy:

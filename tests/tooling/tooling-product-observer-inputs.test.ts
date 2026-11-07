@@ -40,7 +40,7 @@ void test("source, fixture, build and manually loaded runtime inputs retain both
     "crates/vize_atelier_sfc/src/lib.rs",
     "davinci/vize_l1_to_l2/src/pass/cfg/source.rs",
     "npm/native/scripts/build-local.mts",
-    "npm/oxlint/src/index.ts",
+    "npm/linter/oxlint/src/index.ts",
     "npm/ui/package.json",
     "tests/_fixtures/differential/compiler/enum-template-bindings-7893/Badge.vue.txt",
     "tests/_fixtures/differential/linter/art-public-boundaries-7900/cases.json",

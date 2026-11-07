@@ -9,12 +9,14 @@ description: Node・Deno・Bun で公開済みの JSR パッケージを使い�
 
 [`@vizejs/vize`](https://jsr.io/@vizejs/vize) は Vize の JavaScript API を提供します。各エントリーポイントは、同じ Vize バージョンの npm パッケージを再エクスポートします。コンパイラが使うネイティブバイナリは npm から取得します。
 
-| import                | API                                     | npm パッケージ        |
-| --------------------- | --------------------------------------- | --------------------- |
-| `@vizejs/vize`        | `defineConfig` と設定の型               | `vize`                |
-| `@vizejs/vize/config` | 設定の読み込みと正規化                  | `vize/config`         |
-| `@vizejs/vize/native` | コンパイラ・linter・formatter・解析 API | `@vizejs/native`      |
-| `@vizejs/vize/vite`   | Vite プラグインとオプション             | `@vizejs/vite-plugin` |
+| import                | API                                     | npm パッケージ         |
+| --------------------- | --------------------------------------- | ---------------------- |
+| `@vizejs/vize`        | `defineConfig` と設定の型               | `vize`                 |
+| `@vizejs/vize/babel`  | Vue SFC・JSX 用 Babel プラグイン        | `@vizejs/babel-plugin` |
+| `@vizejs/vize/config` | 設定の読み込みと正規化                  | `vize/config`          |
+| `@vizejs/vize/native` | コンパイラ・linter・formatter・解析 API | `@vizejs/native`       |
+| `@vizejs/vize/oxlint` | Oxlint プラグイン・preset・Vite+ 設定   | `oxlint-plugin-vize`   |
+| `@vizejs/vize/vite`   | Vite プラグインとオプション             | `@vizejs/vite-plugin`  |
 
 ## Node.js と Bun
 
@@ -22,21 +24,23 @@ Node.js 22 または 24 以降のプロジェクトで、JSR パッケージと 
 
 ```bash
 npm install vite@8 vue@3
-npx --yes jsr add @vizejs/vize@0.457.0
+npx --yes jsr add @vizejs/vize
 ```
 
 Bun の場合:
 
 ```bash
 bun add vite@8 vue@3
-bunx jsr add @vizejs/vize@0.457.0
+bunx jsr add @vizejs/vize
 ```
 
 インストールしたパッケージから API を読み込みます。
 
 ```ts
 import { defineConfig } from "@vizejs/vize";
+import vizeBabel from "@vizejs/vize/babel";
 import { compileSfc } from "@vizejs/vize/native";
+import vizeOxlint, { configs as vizeLintConfigs } from "@vizejs/vize/oxlint";
 import vize from "@vizejs/vize/vite";
 
 const config = defineConfig({ compiler: { vapor: false } });
@@ -44,9 +48,15 @@ const compiled = compileSfc("<template><h1>Hello</h1></template>", {
   filename: "Hello.vue",
 });
 const plugin = vize();
+const babelPlugin = vizeBabel;
+const oxlintPlugin = vizeOxlint;
+const recommendedRules = vizeLintConfigs.recommended;
+void babelPlugin;
+void oxlintPlugin;
+void recommendedRules;
 ```
 
-この例は公開済みの 0.457.0 を指定しています。依存する Vize の npm パッケージも同じリリースに固定されています。Vue アプリの設定は [Vite 連携](./vite-plugin.md)と[導入ガイド](../getting-started.md)を参照してください。
+導入された facade は、依存する Vize の npm パッケージを同じリリースへ厳密に固定します。生成された package manifest・lockfile・`.npmrc` はコミットしてください。Bun と npm は、その設定を通じて JSR の npm 互換 registry を利用します。Vue アプリの設定は [Vite 連携](./vite-plugin.md)と[導入ガイド](../getting-started.md)を参照してください。
 
 ## Deno 2.9.7
 
@@ -58,18 +68,18 @@ cd vize-jsr-example
 VIZE_JSR_EXAMPLES=https://raw.githubusercontent.com/ubugeeei-prod/vize/1b6f856f4f276b853f649df42943a1fd5ac2798d/tools/support/release/jsr
 curl -fsSL "$VIZE_JSR_EXAMPLES/consumer-deno.json" -o deno.json
 curl -fsSL "$VIZE_JSR_EXAMPLES/consumer.ts" -o consumer.ts
-deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0
+deno run --config deno.json --allow-all consumer.ts jsr:@vizejs/vize@0.457.0 --core-only
 ```
 
 成功時の出力:
 
 ```console
-Verified jsr:@vizejs/vize@0.457.0 (no flags)
+Verified jsr:@vizejs/vize@0.457.0 (--core-only)
 ```
 
 サンプルは設定・ネイティブ API を読み込み、Vue コンポーネントをコンパイルして結果を確認します。自分の Deno コードでは、`jsr:@vizejs/vize@0.457.0/native` のようにバージョン付きの指定を使えます。
 
-[共通設定](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer-deno.json)は、外部依存に `P1D`（24 時間）の公開後待機期間を維持します。リリース直後に取得できる例外は、明示した 13 個の Vize 所有パッケージだけです。`@vizejs` 名前空間全体への例外ではありません。`nodeModulesDir: "none"` も指定し、検証に使ったサンプルと同じ解決方法を使います。これにより、`package.json` がある場合に未インストールの手動 `node_modules` を参照する問題を避けます。既存プロジェクトでは、他の設定を残したままこれらの項目を統合してください。
+[共通設定](https://github.com/ubugeeei-prod/vize/blob/main/tools/support/release/jsr/consumer-deno.json)は、外部依存に `P1D`（24 時間）の公開後待機期間を維持します。リリース直後に取得できる例外は、明示した 15 個の Vize 所有パッケージだけです。`@vizejs` 名前空間全体への例外ではありません。`nodeModulesDir: "none"` も指定し、検証に使ったサンプルと同じ解決方法を使います。これにより、`package.json` がある場合に未インストールの手動 `node_modules` を参照する問題を避けます。既存プロジェクトでは、他の設定を残したままこれらの項目を統合してください。
 
 コマンドは検証に使ったサンプルと同じ `--allow-all` を使います。Node-API のネイティブコードを読み込む [FFI 権限](https://docs.deno.com/runtime/fundamentals/ffi/)を含め、すべての権限を許可するため、信頼するビルド依存に対して使ってください。この確認だけで、より小さな権限の組み合わせや、すべてのネイティブ対象での Deno 動作を保証するものではありません。[読み取り専用の Actions 検証](https://github.com/ubugeeei-prod/vize/actions/runs/38904123567)では、空キャッシュから公開済みの 0.457.0 を読み込み、SFC をコンパイルしています。公開直後の外部パッケージが拒否されることは、別の検証ケースで確認しています。
 
@@ -77,5 +87,6 @@ Verified jsr:@vizejs/vize@0.457.0 (no flags)
 
 - ネイティブパッケージの導入には `registry.npmjs.org` への接続と optional dependency が必要です。配布済みバイナリの対象は macOS x64/arm64、Windows x64/arm64、Linux x64/arm64（glibc・musl）です。バイナリの配布対象と、検証済みの Deno・ランタイムの組み合わせは別です。[ランタイムのサポート表](../stability.md)も確認してください。
 - `/vite` には、利用するプロジェクトの Vite と Vue が必要です。上の Deno 確認コマンドは Vite プラグインを実行しません。Vite の連携には Node または Bun を使ってください。
+- `/babel` には対応する Babel 7 または 8 の host が必要です。`/oxlint` は JavaScript プラグインと設定 helper を提供し、Oxlint または Vite+ から実行します。
 - JSR が提供するのは JavaScript API です。`vize` コマンドを使う[単独 CLI](./cli.md)は、npm の [`vize` パッケージ](https://www.npmjs.com/package/vize)から導入します。
 - ブラウザーでは npm の [`@vizejs/wasm` パッケージ](./wasm.md)を使います。JSR の native エントリーポイントには、JavaScript・ブラウザー用の代替実装はありません。

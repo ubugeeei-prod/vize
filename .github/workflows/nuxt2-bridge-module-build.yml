@@ -15,7 +15,7 @@ on:
       - npm/framework/nuxt-lint-config/**
       - npm/cli/**
       - npm/native/**
-      - npm/oxlint/**
+      - npm/linter/oxlint/**
       - crates/vize_carton/src/config/**
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**
@@ -39,7 +39,7 @@ on:
       - npm/framework/nuxt-lint-config/**
       - npm/cli/**
       - npm/native/**
-      - npm/oxlint/**
+      - npm/linter/oxlint/**
       - crates/vize_carton/src/config/**
       - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**
@@ -107,7 +107,7 @@ jobs:
         working-directory: npm/framework/nuxt
         run: vp pack
       - name: Build the source Oxlint bridge
-        working-directory: npm/oxlint
+        working-directory: npm/linter/oxlint
         run: vp pack
       - name: Verify transactional source fixture preparation
         run: vp node --test tests/tooling/nuxt2-bridge-*.test.ts

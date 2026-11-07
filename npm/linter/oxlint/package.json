@@ -1,0 +1,83 @@
+{
+  "name": "oxlint-plugin-vize",
+  "version": "0.474.0",
+  "description": "Oxlint JS plugin bridge for Vize Patina",
+  "keywords": [
+    "lint",
+    "oxlint",
+    "plugin",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/linter/oxlint"
+  },
+  "bin": {
+    "oxlint-vize": "bin/oxlint-vize"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    "./eslint": {
+      "import": "./dist/eslint.mjs",
+      "types": "./dist/eslint.d.mts"
+    },
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "test": "vp pack && vp test run src/file-state.test.ts src/batched-rules.test.ts src/script-safe-source.test.ts src/active-rule-collection.test.ts src/v-on-event-options.test.ts src/v-on-event-tuple-options.test.ts src/prop-name-options.test.ts src/component-name-options.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts && node src/router-globals.test.ts && node src/template-style-fixes.test.mjs && node src/html-binding.test.mjs && node --test src/eslint-source.test.ts src/attribute-options.test.ts src/attribute-ignore-tags.test.ts && node src/eslint-acceptance.test.mjs && node src/v-on-event-autofix-host.test.ts && node src/v-on-event-tuple-eslint.test.ts && node src/attribute-eslint.test.ts && node src/prop-name-eslint.test.ts && node src/component-name-eslint.test.ts && node src/attribute-ignore-tags-eslint.test.ts && node src/attribute-ignore-tags-oxlint.test.ts",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "catalog:linting"
+  },
+  "devDependencies": {
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "optionalDependencies": {
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
+  },
+  "engines": {
+    "node": "^22 || >= 24"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

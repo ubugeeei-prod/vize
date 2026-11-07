@@ -69,6 +69,8 @@ void test("UI conformance uses one closed observer route and retains only bounde
   assert.deepEqual(job.env, {
     NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169",
     CARGO_BUILD_JOBS: "12",
+    TEST_CASES_JOB: "PR package conformance (${{ matrix.surface }})",
+    VIZE_TEST_CASES: "test-cases-js-conformance-${{ matrix.surface }}.json",
   });
   assert.deepEqual(
     exactStep(job.steps, "Verify whole source CSS API maps with the built native image"),

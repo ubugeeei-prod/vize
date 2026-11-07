@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const releasePackageJsonPaths = [
-  "npm/babel/package.json",
+  "npm/builder/babel/package.json",
   "npm/builder/rspack/package.json",
   "npm/builder/unplugin/package.json",
   "npm/builder/vite/package.json",
@@ -20,7 +20,7 @@ const releasePackageJsonPaths = [
   "npm/marquette/package.json",
   "npm/mcp-musea/package.json",
   "npm/native/package.json",
-  "npm/oxlint/package.json",
+  "npm/linter/oxlint/package.json",
   "npm/plugin-sdk/package.json",
   "npm/wasm/package.json",
 ];

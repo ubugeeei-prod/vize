@@ -52,7 +52,7 @@ required `test-report` still gates on all of them.
    `test-preparation.mjs` wrapper and `VP_RUN_CONCURRENCY_LIMIT=1`, with the
    group's `--filter` arguments in `testedPackages` order.
 2. `pr-oxlint-project-qualification` runs the unchanged
-   `node npm/oxlint/scripts/check-project-transport.mjs` with
+   `node npm/linter/oxlint/scripts/check-project-transport.mjs` with
    `VIZE_N8N_BASELINE_MODE=partitioned`, then the same evidence upload and
    staging cleanup.
 3. `pr-js-package-conformance` runs the Fresco declaration and type checks,
@@ -96,7 +96,7 @@ by their dependencies.
 
 The qualification used to run only after `test:js` passed in the same job. It
 reads two outputs of that step: the formatter-history receipt of the native
-debug build, which names the binary it qualifies, and `npm/oxlint/dist`,
+debug build, which names the binary it qualifies, and `npm/linter/oxlint/dist`,
 which the Oxlint test packs. The qualification job builds both itself with
 the new `build:oxlint-qualification` task: the same `build:native:test`, then
 Oxlint's `build` script. It no longer waits for the package tests. Its result

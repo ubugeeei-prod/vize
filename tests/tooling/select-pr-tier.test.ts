@@ -21,7 +21,7 @@ test("a PR runs affected checks and explicitly requests duplicate heavy qualific
     "crates/vize_patina/src/linter/engine/rule_sets.rs",
     "davinci/vize_l2/src/lib.rs",
     "vendor/lightningcss/src/lib.rs",
-    "npm/oxlint/src/index.ts",
+    "npm/linter/oxlint/src/index.ts",
     "npm/native/index.d.ts",
     "playground/src/App.vue",
     "Cargo.lock",

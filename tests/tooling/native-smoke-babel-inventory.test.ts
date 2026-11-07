@@ -91,7 +91,7 @@ test("source provenance, original digest and archive membership cannot be omitte
 
 function assertLiveInventory(workflow: string, release: string): void {
   assertMuslFreshInstallSuccessor(after, workflow);
-  const expected = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  const expected = workflow.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   assert.ok(expected);
   assert.deepEqual(
     release.split("\n").filter((row) => row.startsWith("  RELEASE_JS_PACKAGES: ")),
@@ -117,16 +117,16 @@ test("smoke rollback or Babel publication rollback cannot reuse historical admis
     "utf8",
   );
   const oldLine = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
-  const newLine = after.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
-  assert.ok(oldLine && newLine);
+  const currentLine = workflow.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
+  assert.ok(oldLine && currentLine);
   assert.throws(() => assertLiveInventory(before, release));
-  assert.throws(() => assertLiveInventory(workflow, release.replace(newLine, oldLine)));
+  assert.throws(() => assertLiveInventory(workflow, release.replace(currentLine, oldLine)));
   for (const changed of [
-    newLine.replace(" npm/cli", ""),
-    newLine.replace(" npm/cli", " npm/cli npm/cli"),
-    newLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
+    currentLine.replace(" npm/cli", ""),
+    currentLine.replace(" npm/cli", " npm/cli npm/cli"),
+    currentLine.replace("npm/cli npm/builder/vite", "npm/builder/vite npm/cli"),
   ])
-    assert.throws(() => assertLiveInventory(workflow, release.replace(newLine, changed)));
+    assert.throws(() => assertLiveInventory(workflow, release.replace(currentLine, changed)));
 });
 
 test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {

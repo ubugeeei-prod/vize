@@ -36,7 +36,7 @@ export const releaseTasks = defineTasks({
     `${runTask("build:vite-plugin")} && ${releaseCommand("publish_npm_package", "npm/builder/vite")}`,
   ),
   "publish:oxlint-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/oxlint"])} && ${rustTool("release/npm/inject-native-optional-deps", "npm/oxlint/package.json", "npm/native/package.json")} && ${releaseCommand("publish_npm_package", "npm/oxlint")}`,
+    `${runInPackages("build", ["./npm/linter/oxlint"])} && ${rustTool("release/npm/inject-native-optional-deps", "npm/linter/oxlint/package.json", "npm/native/package.json")} && ${releaseCommand("publish_npm_package", "npm/linter/oxlint")}`,
   ),
   "publish:npm": noCacheTask(
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),

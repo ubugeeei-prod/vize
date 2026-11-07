@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   expectedRow,
   expectedStockVueRow,
-} from "../../npm/oxlint/src/test-support/mixed-directory-8507-assertions.mjs";
+} from "../../npm/linter/oxlint/src/test-support/mixed-directory-8507-assertions.mjs";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const corpus = path.join(root, "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507");

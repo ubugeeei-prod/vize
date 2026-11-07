@@ -4,12 +4,14 @@
 //! vize_tool_support = { path = "../../support" }
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
+//! sha2 = "0.11"
 //! tempfile = "3"
 //!
 //! [package]
 //! edition = "2024"
 //! ```
 
+use sha2::{Digest, Sha512};
 use vize_tool_support::common;
 
 use std::{
@@ -19,6 +21,7 @@ use std::{
 };
 
 const GIT_CLIFF_VERSION: &str = "2.6.1";
+const MAX_GIT_CLIFF_ARCHIVE_BYTES: u64 = 16 * 1024 * 1024;
 
 fn main() -> ExitCode {
     common::main_result(run())
@@ -105,7 +108,7 @@ fn ensure_git_cliff() -> Result<PathBuf, String> {
         return Ok(PathBuf::from("git-cliff"));
     }
 
-    let asset = resolve_asset()?;
+    let (asset, expected_sha512) = resolve_asset()?;
     let url = format!(
         "https://github.com/orhun/git-cliff/releases/download/v{GIT_CLIFF_VERSION}/{asset}"
     );
@@ -116,6 +119,7 @@ fn ensure_git_cliff() -> Result<PathBuf, String> {
         .keep();
     let archive = scratch.join(&asset);
     download_file(&url, &archive)?;
+    verify_sha512(&archive, expected_sha512)?;
 
     let archive_text = archive.to_string_lossy().into_owned();
     let scratch_text = scratch.to_string_lossy().into_owned();
@@ -149,22 +153,27 @@ fn ensure_git_cliff() -> Result<PathBuf, String> {
     Ok(bin)
 }
 
-fn resolve_asset() -> Result<String, String> {
+fn resolve_asset() -> Result<(String, &'static str), String> {
     match (env::consts::OS, env::consts::ARCH) {
-        ("linux", "x86_64") => Ok(format!(
-            "git-cliff-{GIT_CLIFF_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+        ("linux", "x86_64") => Ok((
+            format!("git-cliff-{GIT_CLIFF_VERSION}-x86_64-unknown-linux-gnu.tar.gz"),
+            "b1e7a6b70fc794accdccd9717eff5a8bf8b507f0308da44d837d935be31b18b19db3758d1a9bb4975fbca7d01ddaae251229a753ae2cd2ecc24845cfc50d067f",
         )),
-        ("linux", "aarch64") => Ok(format!(
-            "git-cliff-{GIT_CLIFF_VERSION}-aarch64-unknown-linux-gnu.tar.gz"
+        ("linux", "aarch64") => Ok((
+            format!("git-cliff-{GIT_CLIFF_VERSION}-aarch64-unknown-linux-gnu.tar.gz"),
+            "6e8aafddd1e1d163290561cd595fa86971b034012b0602fd8f554f831158af56d3c8f9d82793b4e79d1300f6620091602d81b49110f96ca87068d5df6127cf57",
         )),
-        ("macos", "aarch64") => Ok(format!(
-            "git-cliff-{GIT_CLIFF_VERSION}-aarch64-apple-darwin.tar.gz"
+        ("macos", "aarch64") => Ok((
+            format!("git-cliff-{GIT_CLIFF_VERSION}-aarch64-apple-darwin.tar.gz"),
+            "d507021de298ceba43fd5cc1594c9b868888b5f8a685bc6910d31dc0902eb7b09e25de06a6ef20fb9fc98a505127e695e647747bc97a3697d626d54d6992b394",
         )),
-        ("macos", "x86_64") => Ok(format!(
-            "git-cliff-{GIT_CLIFF_VERSION}-x86_64-apple-darwin.tar.gz"
+        ("macos", "x86_64") => Ok((
+            format!("git-cliff-{GIT_CLIFF_VERSION}-x86_64-apple-darwin.tar.gz"),
+            "acc7e28da2af6337fe67b05003d5468cba4fc3014b2d51e7cf9f7f01e8ee11d4bc10845ba282694320648e7627af67bfe62d00a7e7b6f9faec8b2c38fbbd00a3",
         )),
-        ("windows", "x86_64") => Ok(format!(
-            "git-cliff-{GIT_CLIFF_VERSION}-x86_64-pc-windows-msvc.zip"
+        ("windows", "x86_64") => Ok((
+            format!("git-cliff-{GIT_CLIFF_VERSION}-x86_64-pc-windows-msvc.zip"),
+            "9da4c3bb4c407ded67e411544c4d4b0c2b748c20db5181b9da72aeb652efc8c939a0e07411886d4132d49581c02e8b7ecae1d127dcc4508159a2f70fea780e76",
         )),
         (platform, arch) => Err(format!(
             "Unsupported platform/arch for git-cliff fallback: {platform}/{arch}"
@@ -173,12 +182,21 @@ fn resolve_asset() -> Result<String, String> {
 }
 
 fn download_file(url: &str, dest: &Path) -> Result<(), String> {
+    let maximum_archive_bytes = MAX_GIT_CLIFF_ARCHIVE_BYTES.to_string();
     let output = Command::new("curl")
         .args([
             "--fail",
             "--location",
             "--silent",
             "--show-error",
+            "--proto",
+            "=https",
+            "--proto-redir",
+            "=https",
+            "--max-redirs",
+            "5",
+            "--max-filesize",
+            maximum_archive_bytes.as_str(),
             "--output",
         ])
         .arg(dest)
@@ -194,6 +212,33 @@ fn download_file(url: &str, dest: &Path) -> Result<(), String> {
         )
         .trim()
         .to_string());
+    }
+    let metadata = fs::metadata(dest).map_err(|error| {
+        format!(
+            "cannot inspect downloaded archive {}: {error}",
+            dest.display()
+        )
+    })?;
+    if !metadata.is_file() || metadata.len() > MAX_GIT_CLIFF_ARCHIVE_BYTES {
+        return Err(format!(
+            "downloaded archive is not a regular file within the {MAX_GIT_CLIFF_ARCHIVE_BYTES}-byte limit"
+        ));
+    }
+    Ok(())
+}
+
+fn verify_sha512(path: &Path, expected: &str) -> Result<(), String> {
+    let bytes = fs::read(path)
+        .map_err(|error| format!("cannot read downloaded archive {}: {error}", path.display()))?;
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let digest = Sha512::digest(bytes);
+    let mut actual = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        actual.push(char::from(HEX[usize::from(byte >> 4)]));
+        actual.push(char::from(HEX[usize::from(byte & 0x0f)]));
+    }
+    if actual != expected {
+        return Err(format!("SHA-512 mismatch for {}", path.display()));
     }
     Ok(())
 }

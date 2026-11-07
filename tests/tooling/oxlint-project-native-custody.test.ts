@@ -9,7 +9,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const hook = fileURLToPath(
-  new URL("../../npm/oxlint/scripts/project-native-custody.cjs", import.meta.url),
+  new URL("../../npm/linter/oxlint/scripts/project-native-custody.cjs", import.meta.url),
 );
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 const program = String.raw`

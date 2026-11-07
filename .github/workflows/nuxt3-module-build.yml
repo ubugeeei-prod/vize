@@ -6,7 +6,7 @@ on:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
-      - npm/oxlint/**
+      - npm/linter/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
@@ -55,7 +55,7 @@ on:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
-      - npm/oxlint/**
+      - npm/linter/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.ts
@@ -146,7 +146,7 @@ jobs:
         working-directory: npm/framework/nuxt-lint-config
         run: vp pack
       - name: Build the candidate Oxlint bridge
-        working-directory: npm/oxlint
+        working-directory: npm/linter/oxlint
         run: vp pack
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt

@@ -80,7 +80,7 @@ graph LR
 | `@vizejs/nuxt`              | `npm/framework/nuxt/src/index.ts`                                  | Vite プラグインのオプションとコンポーネント連携            |
 | `@vizejs/wasm`              | `vize_vitrine` の WASM エクスポートから生成するパッケージ          | `crates/vize_vitrine/src/wasm`                             |
 | `@vizejs/vite-plugin-musea` | `npm/builder/vite-musea/src/index.ts` と関連するパッケージのコード | バインディングで公開する `vize_musea` の API               |
-| `oxlint-plugin-vize`        | `npm/oxlint/src/index.ts`                                          | バインディングで取得する `vize_patina` の診断              |
+| `oxlint-plugin-vize`        | `npm/linter/oxlint/src/index.ts`                                          | バインディングで取得する `vize_patina` の診断              |
 
 パッケージのテストでは連携を確認し、言語の意味に関わる動作は Rust のテストで確認してください。
 パッケージ側では主に、オプション、仮想モジュール、HMR、ネイティブ呼び出しが正しく接続されることを検証します。

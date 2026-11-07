@@ -4,11 +4,11 @@ on:
   workflow_dispatch: {}
   pull_request:
     paths:
-      - "npm/eslint/**"
-      - "npm/oxlint/src/eslint*"
-      - "npm/oxlint/src/native.ts"
-      - "npm/oxlint/src/configs.ts"
-      - "npm/oxlint/package.json"
+      - "npm/linter/eslint/**"
+      - "npm/linter/oxlint/src/eslint*"
+      - "npm/linter/oxlint/src/native.ts"
+      - "npm/linter/oxlint/src/configs.ts"
+      - "npm/linter/oxlint/package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/eslint-plugin-consumer.yml"
 
@@ -53,8 +53,8 @@ jobs:
       - name: Build the actual source native addon and shared rule bridge
         run: |
           vp run --filter './npm/native' build:ci
-          vp run --filter './npm/oxlint' build
-          vp run --filter './npm/eslint' build
+          vp run --filter './npm/linter/oxlint' build
+          vp run --filter './npm/linter/eslint' build
       - name: Preserve exact source and dependency authority
         shell: bash
         run: |
@@ -67,7 +67,7 @@ jobs:
           import { readFileSync, writeFileSync } from 'node:fs';
           const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           assert.equal(sha, process.env.SOURCE_SHA);
-          const files = ['Cargo.lock', 'pnpm-lock.yaml', 'npm/eslint/package.json', 'npm/eslint/src/index.ts', 'npm/eslint/test/consumer.test.mjs', 'npm/eslint/test/packed-consumer.mjs', 'npm/eslint/test/legacy-consumer.ts', '.github/workflows/eslint-plugin-consumer.yml', 'npm/oxlint/src/eslint.ts', 'npm/oxlint/src/eslint-source.ts', 'npm/oxlint/src/native.ts'];
+          const files = ['Cargo.lock', 'pnpm-lock.yaml', 'npm/linter/eslint/package.json', 'npm/linter/eslint/src/index.ts', 'npm/linter/eslint/test/consumer.test.mjs', 'npm/linter/eslint/test/packed-consumer.mjs', 'npm/linter/eslint/test/legacy-consumer.ts', '.github/workflows/eslint-plugin-consumer.yml', 'npm/linter/oxlint/src/eslint.ts', 'npm/linter/oxlint/src/eslint-source.ts', 'npm/linter/oxlint/src/native.ts'];
           const inputs = Object.fromEntries(files.map(file => { const bytes = readFileSync(file); return [file, { sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length }]; }));
           writeFileSync(`${process.env.VIZE_ESLINT_EVIDENCE}/source.json`, JSON.stringify({ sha, inputs }, null, 2) + '\n');
           JS
@@ -75,11 +75,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test npm/eslint/test/consumer.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/consumer.log"
-          (cd npm/oxlint && vp test run src/file-state.test.ts src/batched-rules.test.ts src/active-rule-collection.test.ts) 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/shared-routing.log"
-          node npm/oxlint/src/eslint-acceptance.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/legacy-export.log"
+          node --test npm/linter/eslint/test/consumer.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/consumer.log"
+          (cd npm/linter/oxlint && vp test run src/file-state.test.ts src/batched-rules.test.ts src/active-rule-collection.test.ts) 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/shared-routing.log"
+          node npm/linter/oxlint/src/eslint-acceptance.test.mjs 2>&1 | tee "$VIZE_ESLINT_EVIDENCE/legacy-export.log"
           for round in 1 2 3 4 5; do
-            node npm/eslint/test/startup-profile.mjs > "$VIZE_ESLINT_EVIDENCE/startup-$round.json"
+            node npm/linter/eslint/test/startup-profile.mjs > "$VIZE_ESLINT_EVIDENCE/startup-$round.json"
           done
       - name: Verify no physical SFC reads, including native code
         shell: bash
@@ -87,7 +87,7 @@ jobs:
           set -euo pipefail
           if ! command -v strace >/dev/null; then sudo apt-get update; sudo apt-get install -y strace; fi
           export VIZE_ESLINT_WATCHED_SOURCE="$RUNNER_TEMP/eslint-source-$SOURCE_SHA/Disk.vue"
-          strace -f -yy -e trace=open,openat,openat2 -o "$VIZE_ESLINT_EVIDENCE/source-opens.raw.log" node npm/eslint/test/source-read-probe.mjs "$VIZE_ESLINT_WATCHED_SOURCE" > "$VIZE_ESLINT_EVIDENCE/source-read-packets.json"
+          strace -f -yy -e trace=open,openat,openat2 -o "$VIZE_ESLINT_EVIDENCE/source-opens.raw.log" node npm/linter/eslint/test/source-read-probe.mjs "$VIZE_ESLINT_WATCHED_SOURCE" > "$VIZE_ESLINT_EVIDENCE/source-read-packets.json"
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { readFileSync, writeFileSync } from 'node:fs';
@@ -102,8 +102,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          vp exec pnpm --dir npm/oxlint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
-          vp exec pnpm --dir npm/eslint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+          vp exec pnpm --dir npm/linter/oxlint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+          vp exec pnpm --dir npm/linter/eslint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
           export VIZE_ESLINT_PACKED_CONSUMER="$RUNNER_TEMP/eslint-packed-$SOURCE_SHA"
           mkdir -p "$VIZE_ESLINT_PACKED_CONSUMER"
           node --input-type=module <<'JS'
@@ -118,7 +118,7 @@ jobs:
           mkdirSync(join(consumer, 'node_modules/@vizejs'), { recursive: true });
           symlinkSync(join(root, 'npm/native'), join(consumer, 'node_modules/@vizejs/native'), 'dir');
           JS
-          cp npm/eslint/test/packed-consumer.mjs "$VIZE_ESLINT_PACKED_CONSUMER/consumer.mjs"
+          cp npm/linter/eslint/test/packed-consumer.mjs "$VIZE_ESLINT_PACKED_CONSUMER/consumer.mjs"
           (cd "$VIZE_ESLINT_PACKED_CONSUMER" && node consumer.mjs) > "$VIZE_ESLINT_EVIDENCE/packed-consumer.json"
           cp "$VIZE_ESLINT_PACKED_CONSUMER/package.json" "$VIZE_ESLINT_EVIDENCE/packed-package.json"
           cp "$VIZE_ESLINT_PACKED_CONSUMER/pnpm-lock.yaml" "$VIZE_ESLINT_EVIDENCE/packed-pnpm-lock.yaml"
@@ -196,7 +196,7 @@ jobs:
           path: ${{ runner.temp }}/eslint-packed-source
       - name: Check installed public exports with the exact supported providers
         run: >-
-          node --experimental-strip-types npm/eslint/test/legacy-consumer.ts
+          node --experimental-strip-types npm/linter/eslint/test/legacy-consumer.ts
           --artifacts "$RUNNER_TEMP/eslint-packed-source"
           --output "$RUNNER_TEMP/eslint-compatibility"
           --node "${{ matrix.node }}"

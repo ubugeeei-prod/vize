@@ -164,7 +164,7 @@ fixtures and unreleased packages are not public-installed proof. Upstream n8n an
 OXC remain read-only: no comments, changes or fork-publication are authorized.
 
 [original-replay]: ./2026-10-08-oxlint-original-ignore-replay.md
-[wrapper]: ../../../npm/oxlint/src/cli/scoped-selection.ts
+[wrapper]: ../../../npm/linter/oxlint/src/cli/scoped-selection.ts
 [walk-178]: https://github.com/oxc-project/oxc/blob/c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd/apps/oxlint/src/walk.rs
 [walk-186]: https://github.com/oxc-project/oxc/blob/2ae2939bb2fd98796393658b21556b2a2467e047/apps/oxlint/src/walk.rs
 [loader-178]: https://github.com/oxc-project/oxc/blob/c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd/crates/oxc_linter/src/loader/partial_loader/mod.rs

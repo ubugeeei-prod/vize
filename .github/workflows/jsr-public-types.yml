@@ -74,7 +74,7 @@ jobs:
         run: |
           node --version | tee runtime-version.txt
           node node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
-          node consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
+          node consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log
       - name: Install the public JSR package (Bun)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'bun'
@@ -87,14 +87,14 @@ jobs:
         run: |
           bun --version | tee runtime-version.txt
           bun node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
-          bun run consumer.ts @vizejs/vize --vite 2>&1 | tee runtime.log
+          bun run consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log
       - name: Check the public types and execute every entry point (Deno)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'deno'
         run: |
           deno --version | tee runtime-version.txt
           deno check --config deno.json consumer-types.ts 2>&1 | tee types.log
-          deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@$PUBLIC_JSR_VERSION" --vite 2>&1 | tee runtime.log
+          deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@$PUBLIC_JSR_VERSION" --vite --core-only 2>&1 | tee runtime.log
       - name: Preserve public metadata and dependency locks
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: always()

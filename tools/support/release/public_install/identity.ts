@@ -205,7 +205,7 @@ export function sourceManifests(
   const version = source.tag.slice(1);
   const manifests = [
     ["npm/cli/package.json", "vize"],
-    ["npm/oxlint/package.json", "oxlint-plugin-vize"],
+    ["npm/linter/oxlint/package.json", "oxlint-plugin-vize"],
     ["npm/native/package.json", "@vizejs/native"],
   ] as const;
   const workspace = sourceFile(root, source.H, "pnpm-workspace.yaml");

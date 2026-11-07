@@ -74,16 +74,16 @@
       "sha256": "a6f58aa43898884f0ecdcf497b3b6a452837b40acbd9a5533bcee4acc7007477"
     },
     {
-      "path": "npm/oxlint/src/attribute-eslint.test.ts",
-      "bytes": 6192,
-      "gitBlob": "4597abcb29d1370e11b6dfa5ecdf473de08ac139",
-      "sha256": "816b878e680d84042f3c50630f3bb9e8e1c147fde2bdc7a93067ca68b8ed3b68"
+      "path": "npm/linter/oxlint/src/attribute-eslint.test.ts",
+      "bytes": 6204,
+      "gitBlob": "462b2ce7f7af0d6517e7e68c6561bc0b76686df0",
+      "sha256": "023e04530bcf9ea95d52c1958fe7a0810d6fff568c1ba238b5599a3973f86ff3"
     },
     {
-      "path": "npm/oxlint/src/casing-options.test.ts",
-      "bytes": 13587,
-      "gitBlob": "41186ca32d9ef9ef8eee65da764c3d5ba9778ffa",
-      "sha256": "25ef409313d03f99ce8d2c4d895078fb0d7373528bcbd925fd92ca84eb5ea95f"
+      "path": "npm/linter/oxlint/src/casing-options.test.ts",
+      "bytes": 13600,
+      "gitBlob": "cb0669aa24989e6c4afc0ffa67d9527892d1fd71",
+      "sha256": "0a78cd44e89f482121519b60bf653772a0c3837ad61f12db5a5995e8a924d747"
     },
     {
       "path": "tools/support/release/public_install/native-custody.cjs",

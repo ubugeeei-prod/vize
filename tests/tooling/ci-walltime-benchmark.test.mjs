@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
-import { stageProjectNative } from "../../npm/oxlint/scripts/project-native-staging.ts";
+import { stageProjectNative } from "../../npm/linter/oxlint/scripts/project-native-staging.ts";
 
 void test("walltime comparisons use the same source and runner without publishing authority", () => {
   const workflow = parse(
@@ -99,7 +99,7 @@ void test("baseline input partitions are manual-only, build once and retain both
   assert.equal(job.steps[1].uses, "./.github/actions/setup-js-package-tests");
   assert.equal(
     job.steps[2].run,
-    "vp run --workspace-root build:native:test\nvp run --filter './npm/oxlint' build\n",
+    "vp run --workspace-root build:native:test\nvp run --filter './npm/linter/oxlint' build\n",
   );
   const [serial, partitioned] = job.steps.slice(3, 5);
   assert.deepEqual(serial.env, { VIZE_N8N_BASELINE_MODE: "serial" });
@@ -110,7 +110,7 @@ void test("baseline input partitions are manual-only, build once and retain both
   ]) {
     assert.equal(
       arm.run,
-      `node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-${mode}.json`,
+      `node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-${mode}.json`,
     );
   }
   assert.equal(serial.if, undefined);
@@ -161,7 +161,7 @@ void test("preparation overlap is an opt-in complete same-source comparison with
     assert.equal(arm.env, undefined);
     assert.equal(
       arm.run,
-      `node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode ${mode} --phase-walltime target/ci-walltime/n8n-preparation-${mode}.json`,
+      `node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode ${mode} --phase-walltime target/ci-walltime/n8n-preparation-${mode}.json`,
     );
   }
   assert.equal(sequential.if, undefined);

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "lsp/regression/setup-type-exports-12073",
+  "provenance": {
+    "fixCommit": "7985df8786753209f0423ae492cde3667b673376",
+    "issue": 12073,
+    "witnessPath": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/setup_type_exports.rs",
+    "witnessTest": "setup_type_only_exports_have_no_modifier_diagnostics",
+    "inputOrigin": "Minimal authored script-setup type export reproduction from the setup type export acceptance contract.",
+    "contractOrigin": "Vue permits exported type aliases and interfaces in script setup, so the exact typecheck publication must remain empty."
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "1f87381395a4ac20ef610cdbac8c8004fe6159bfba359edfb309ce9ee7fbff00"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+    }
+  ],
+  "entry": "App.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [],
+  "method": "textDocument/foldingRange",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "2035eb18d8f1f078faa894b8c32478756fa88483847046c8a7b3293c99348919"
+  },
+  "scope": "The empty typecheck publication is the regression contract; folding is only a completed-request barrier."
+}

@@ -262,5 +262,5 @@ continue to use Oxlint's reporting policy.
 nix develop
 vp install --frozen-lockfile
 vp run --filter './npm/native' build
-vp run --filter './npm/oxlint' build
+vp run --filter './npm/linter/oxlint' build
 ```

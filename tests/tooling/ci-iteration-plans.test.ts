@@ -58,7 +58,7 @@ const workspace = [
   { name: "@vizejs/fresco-native", path: "npm/fresco-native", dependencies: [] },
   { name: "@vizejs/cli", path: "npm/cli", dependencies: ["@vizejs/native"] },
   { name: "@vizejs/ui", path: "npm/ui", dependencies: ["@vizejs/native"] },
-  { name: "@vizejs/oxlint", path: "npm/oxlint", dependencies: ["@vizejs/native"] },
+  { name: "@vizejs/oxlint", path: "npm/linter/oxlint", dependencies: ["@vizejs/native"] },
   { name: "@vizejs/fresco", path: "npm/fresco", dependencies: ["@vizejs/fresco-native"] },
 ];
 
@@ -141,7 +141,9 @@ test("JS workspace edges include transitive consumers and exclude unrelated grou
   assert.deepEqual(plan.packages, ["npm/fresco", "npm/fresco-native"]);
   assert.deepEqual(plan.groups, ["ui"]);
   assert.deepEqual(plan.conformance, { fresco: true, ui: false });
-  assert.deepEqual(planAffectedJs(workspace, ["npm/oxlint/src/index.ts"]).groups, ["oxlint"]);
+  assert.deepEqual(planAffectedJs(workspace, ["npm/linter/oxlint/src/index.ts"]).groups, [
+    "oxlint",
+  ]);
   assert.equal(planAffectedJs(workspace, ["npm/deleted/index.ts"]).scope, "workspace");
   assert.equal(planAffectedJs(workspace, ["pnpm-lock.yaml"]).scope, "workspace");
 });
@@ -152,7 +154,7 @@ test("actual workspace manifests retain native consumers without duplicate fixtu
   const plan = planAffectedJs(packages, ["npm/native/index.js"]);
   assert.ok(plan.packages.includes("npm/builder/vite"));
   assert.ok(plan.packages.includes("npm/framework/nuxt"));
-  assert.ok(plan.packages.includes("npm/oxlint"));
+  assert.ok(plan.packages.includes("npm/linter/oxlint"));
 });
 
 test("prose and tooling-only paths do not create affected product dependencies", () => {

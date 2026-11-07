@@ -1,8 +1,12 @@
 use super::{
-    EditorArgs, EditorOperation, editor_operation, vscode_extension_is_installed,
-    vscode_extension_spec, vscode_extension_version, zed_dev_extension_dir, zed_release_asset_url,
+    EditorArgs, EditorOperation, editor_operation, unpack_zed_extension_archive,
+    validate_zed_archive_member, vscode_extension_is_installed, vscode_extension_spec,
+    vscode_extension_version, zed_dev_extension_dir, zed_release_asset_url,
 };
 use crate::commands::lsp::{LspTransport, transport_from_port};
+use flate2::{Compression, write::GzEncoder};
+use std::collections::BTreeSet;
+use std::io::Cursor;
 
 #[test]
 fn vscode_status_accepts_published_extension_id() {
@@ -43,6 +47,120 @@ fn zed_release_asset_matches_the_cli_version() {
         zed_release_asset_url("0.493.0"),
         "https://github.com/ubugeeei-prod/vize/releases/download/v0.493.0/zed-vize-extension.tar.gz"
     );
+}
+
+#[test]
+fn zed_archive_member_rejects_traversal_links_and_duplicate_paths() {
+    for name in [
+        b"/zed/extension.toml".as_slice(),
+        b"zed/../escape".as_slice(),
+        b"zed/./extension.toml".as_slice(),
+        b"zed\\extension.toml".as_slice(),
+        b"other/extension.toml".as_slice(),
+    ] {
+        assert!(
+            validate_zed_archive_member(name, tar::EntryType::file(), 1, &mut BTreeSet::new())
+                .is_err()
+        );
+    }
+    for entry_type in [tar::EntryType::symlink(), tar::EntryType::hard_link()] {
+        assert!(
+            validate_zed_archive_member(
+                b"zed/extension.toml",
+                entry_type,
+                0,
+                &mut BTreeSet::new(),
+            )
+            .is_err()
+        );
+    }
+    let mut seen = BTreeSet::new();
+    assert!(
+        validate_zed_archive_member(b"zed/extension.toml", tar::EntryType::file(), 1, &mut seen)
+            .is_ok()
+    );
+    assert!(
+        validate_zed_archive_member(b"zed/extension.toml", tar::EntryType::file(), 1, &mut seen)
+            .is_err()
+    );
+}
+
+#[test]
+fn zed_archive_is_validated_before_any_member_is_extracted() {
+    let archive = zed_archive([
+        (
+            "zed/extension.toml",
+            tar::EntryType::file(),
+            b"id = \"vize\"".as_slice(),
+        ),
+        (
+            "zed/link",
+            tar::EntryType::symlink(),
+            b"../outside".as_slice(),
+        ),
+    ]);
+    let destination = tempfile::tempdir().unwrap();
+
+    assert!(unpack_zed_extension_archive(&archive, destination.path()).is_err());
+    assert!(!destination.path().join("zed").exists());
+}
+
+#[test]
+fn zed_archive_extracts_regular_source_beneath_the_destination() {
+    let archive = zed_archive([
+        ("zed/", tar::EntryType::dir(), b"".as_slice()),
+        (
+            "zed/extension.toml",
+            tar::EntryType::file(),
+            b"id = \"vize\"".as_slice(),
+        ),
+        (
+            "zed/src/lib.rs",
+            tar::EntryType::file(),
+            b"pub fn run() {}".as_slice(),
+        ),
+    ]);
+    let destination = tempfile::tempdir().unwrap();
+
+    unpack_zed_extension_archive(&archive, destination.path()).unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(destination.path().join("zed/extension.toml")).unwrap(),
+        "id = \"vize\""
+    );
+    assert_eq!(
+        std::fs::read_to_string(destination.path().join("zed/src/lib.rs")).unwrap(),
+        "pub fn run() {}"
+    );
+}
+
+fn zed_archive<const N: usize>(members: [(&str, tar::EntryType, &[u8]); N]) -> Vec<u8> {
+    let encoder = GzEncoder::new(Vec::new(), Compression::default());
+    let mut archive = tar::Builder::new(encoder);
+    for (name, entry_type, bytes) in members {
+        let mut header = tar::Header::new_gnu();
+        header.set_entry_type(entry_type);
+        header.set_mode(if entry_type.is_dir() { 0o755 } else { 0o644 });
+        header.set_size(if entry_type.is_file() {
+            bytes.len() as u64
+        } else {
+            0
+        });
+        if entry_type.is_symlink() {
+            header
+                .set_link_name(std::str::from_utf8(bytes).unwrap())
+                .unwrap();
+        }
+        header.set_cksum();
+        archive
+            .append_data(
+                &mut header,
+                name,
+                Cursor::new(if entry_type.is_file() { bytes } else { &[] }),
+            )
+            .unwrap();
+    }
+    archive.into_inner().unwrap().finish().unwrap()
 }
 
 #[test]

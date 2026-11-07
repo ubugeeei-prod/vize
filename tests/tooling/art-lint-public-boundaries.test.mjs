@@ -146,9 +146,16 @@ await test("original Art bindings remain correct through CLI, source NAPI and Ox
       );
       return observation;
     };
-    run("source-plugin-build", "vp", ["run", "--filter", "./npm/oxlint", "build"], 0, env, root);
-    const plugin = path.join(root, "npm/oxlint/dist/index.mjs");
-    const wrapper = path.join(root, "npm/oxlint/dist/cli.mjs");
+    run(
+      "source-plugin-build",
+      "vp",
+      ["run", "--filter", "./npm/linter/oxlint", "build"],
+      0,
+      env,
+      root,
+    );
+    const plugin = path.join(root, "npm/linter/oxlint/dist/index.mjs");
+    const wrapper = path.join(root, "npm/linter/oxlint/dist/cli.mjs");
     const oxlint = fs
       .readdirSync(path.join(root, "node_modules/.pnpm"))
       .filter((name) => name.startsWith("oxlint@"))

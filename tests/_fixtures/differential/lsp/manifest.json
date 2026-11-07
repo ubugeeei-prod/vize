@@ -3953,13 +3953,13 @@
       }
     },
     {
-      "id": "lsp/regression/setup-export-diagnostic-11497",
+      "id": "lsp/regression/setup-type-exports-12073",
       "state": "active",
       "targets": [
         "stdio"
       ],
       "inputs": {
-        "root": "setup-export-diagnostic-11497",
+        "root": "setup-type-exports-12073",
         "files": [
           {
             "path": "App.vue.txt",
@@ -3972,8 +3972,8 @@
         ]
       },
       "case": {
-        "path": "setup-export-diagnostic-11497/case.json",
-        "sha256": "3bff7394a0e790684257ad6fb8f5ddc3dec0a73f44e485c5c5831c6cd79d68ef"
+        "path": "setup-type-exports-12073/case.json",
+        "sha256": "e05dd632744ec5adcde09d815228ce313812305f3e3720959b49a50c1064df73"
       },
       "requestCount": 1,
       "initializationOptions": {
