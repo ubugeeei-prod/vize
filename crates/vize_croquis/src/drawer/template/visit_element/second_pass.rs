@@ -89,10 +89,26 @@ impl Drawer {
                     // expression; collecting it here is what lets it reach the
                     // type checker, and gives it the enclosing scope id and
                     // v-if guard for free, exactly like `v-show`.
-                    self.collect_basic_directive_expression(
-                        dir.exp.as_ref(),
-                        TemplateExpressionKind::CustomDirective,
-                    );
+                    let petite = matches!(dir.name, "scope" | "effect")
+                        .then(|| {
+                            self.template_semantic_reuse
+                                .as_ref()
+                                .and_then(|reuse| reuse.petite_expression(dir))
+                        })
+                        .flatten();
+                    if let Some((content, span)) = petite {
+                        self.collect_basic_expression_text(
+                            content.as_str(),
+                            span.start,
+                            span.end,
+                            TemplateExpressionKind::CustomDirective,
+                        );
+                    } else {
+                        self.collect_basic_directive_expression(
+                            dir.exp.as_ref(),
+                            TemplateExpressionKind::CustomDirective,
+                        );
+                    }
                 }
             }
         });
@@ -152,14 +168,28 @@ impl Drawer {
             return;
         };
 
-        let content = expression_content(exp, &self.template_source);
+        let content = CompactString::new(expression_content(exp, &self.template_source));
         let loc = exp.loc();
+        self.collect_basic_expression_text(content.as_str(), loc.span.start, loc.span.end, kind);
+    }
+
+    fn collect_basic_expression_text(
+        &mut self,
+        content: &str,
+        start: u32,
+        end: u32,
+        kind: TemplateExpressionKind,
+    ) {
+        if !self.options.collect_template_expressions {
+            return;
+        }
+
         let scope_id = self.croquis.scopes.current_id();
         self.croquis.template_expressions.push(TemplateExpression {
             content: CompactString::new(content),
             kind,
-            start: loc.span.start,
-            end: loc.span.end,
+            start,
+            end,
             scope_id,
             vif_guard: self.current_vif_guard(),
         });

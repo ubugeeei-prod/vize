@@ -138,15 +138,23 @@ impl Drawer {
                     // petite-vue `v-scope="{ ... }"`: the object's top-level
                     // keys become in-scope names for this element's subtree.
                     if let Some(ref exp) = dir.exp {
-                        let content = expression_content(exp, &self.template_source);
-                        let base = exp.loc().span.start;
                         let bindings: SmallVec<[(CompactString, u32); 4]> = profile!(
                             "croquis.template.v_scope.extract_keys",
-                            extract_v_scope_bindings(content)
-                        )
-                        .into_iter()
-                        .map(|(name, key_offset)| (name, base + key_offset))
-                        .collect();
+                            if let Some(bindings) = self
+                                .template_semantic_reuse
+                                .as_ref()
+                                .and_then(|reuse| reuse.petite_scope_bindings(dir))
+                            {
+                                bindings.iter().cloned().collect()
+                            } else {
+                                let content = expression_content(exp, &self.template_source);
+                                let base = exp.loc().span.start;
+                                extract_v_scope_bindings(content)
+                                    .into_iter()
+                                    .map(|(name, key_offset)| (name, base + key_offset))
+                                    .collect()
+                            }
+                        );
 
                         if !bindings.is_empty() {
                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));

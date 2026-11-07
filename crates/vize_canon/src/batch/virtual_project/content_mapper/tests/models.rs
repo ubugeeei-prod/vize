@@ -103,8 +103,10 @@ defineModel<string>("title", { required: true });
 
 #[test]
 fn maps_models_merged_with_an_authored_public_props_type() {
-    let source = r#"<script setup lang="ts">
+    let source = r#"<script lang="ts">
 export interface Props { value: string }
+</script>
+<script setup lang="ts">
 defineProps<Props>();
 defineModel<string>("title", { required: true });
 </script>

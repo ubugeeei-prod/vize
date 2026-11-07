@@ -73,12 +73,14 @@ fn resolve_test_corsa_path() -> Option<std::string::String> {
     corsa_path::resolve(workspace_root())
 }
 
-const BUTTON_VUE: &str = r#"<script setup lang="ts">
+const BUTTON_VUE: &str = r#"<script lang="ts">
 export interface ButtonProps {
   label: string
   count?: number
 }
+</script>
 
+<script setup lang="ts">
 const props = defineProps<ButtonProps>()
 
 const emit = defineEmits<{

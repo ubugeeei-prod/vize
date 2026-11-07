@@ -19,8 +19,10 @@ const TSCONFIG: &str = r#"{
 }
 "#;
 
-const WIDGET: &str = r#"<script setup lang="ts">
+const WIDGET: &str = r#"<script lang="ts">
 export interface Item { id: number }
+</script>
+<script setup lang="ts">
 defineProps<{ label: string }>()
 </script>
 <template>{{ label }}</template>

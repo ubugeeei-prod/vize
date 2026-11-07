@@ -43,7 +43,7 @@ fn canonical_model_event_rename_preserves_update_prefix_and_authored_casing() {
         .expect("tsconfig");
 
         let child_source = r#"<script setup lang="ts">
-export interface Props { value?: string }
+interface Props { value?: string }
 defineProps<Props>();
 defineModel<string>('title', { required: true });
 </script>

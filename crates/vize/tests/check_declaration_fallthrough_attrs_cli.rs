@@ -146,7 +146,8 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         "\"vueCompilerOptions\": { \"checkUnknownProps\": true },\n  \"include\"",
     );
     let tsx = "import Foo from \"./vendor/Foo.vue\";\n\nexport const probe = <Foo bar={1} id=\"r\" />;\nexport const owned = <Foo bar={1} class=\"r\" />;\n";
-    let cases: [Case; 10] = [
+    let single_without_emits = FOO.replace("defineEmits<{ change: [] }>();\n", "");
+    let cases: [Case; 11] = [
         ("original", FOO, PROBE.into(), CONFIG, vec![]),
         (
             "two-required",
@@ -209,6 +210,13 @@ fn emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates() {
         (
             "check-unknown-props",
             FOO,
+            PROBE.into(),
+            &strict,
+            vec![(6, 17, 2353)],
+        ),
+        (
+            "check-unknown-props-single-required-without-emits",
+            &single_without_emits,
             PROBE.into(),
             &strict,
             vec![(6, 17, 2353)],

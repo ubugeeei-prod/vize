@@ -4,7 +4,7 @@ import type { FixtureData } from "./lsp-types.ts";
 
 export const MODEL_BINDING_UNIT_ID = "lsp/regression/reported-model-binding-rename-11383";
 export const MODEL_BINDING_INPUT_SHA256 =
-  "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9";
+  "172d196ae0239dc816535cad59237a9ae01d75c905995746c4552586dac986d5";
 export const MODEL_BINDING_UNIT_REASON =
   "This pinned input is consumed by the Rust model-binding endpoint unit test; the generic stdio adapter executes no requests and supplies no wire, native, capture or qualification credit.";
 export const MODEL_BINDING_UNIT_SESSION = {

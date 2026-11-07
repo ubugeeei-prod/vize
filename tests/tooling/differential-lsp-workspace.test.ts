@@ -61,6 +61,11 @@ test("all pinned LSP cases retain their inputs and only the configured cases gai
       "vize.config.json.fixture",
       "vite.config.mjs",
     ],
+    "lsp/regression/precise-template-suppression-12022": [
+      "App.vue",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
     "lsp/regression/versioned-template-suppression-6876": [
       "App.vue",
       "vize.config.json.fixture",

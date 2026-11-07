@@ -8,6 +8,12 @@ import {
   discriminatedJsxUnionAfterSha256,
   discriminatedJsxUnionPath,
 } from "./discriminated-jsx-union-transition.ts";
+import {
+  beforeStrictExtraKeys,
+  certifyStrictExtraKeysTransition,
+  strictExtraKeysAfterSha256,
+  strictExtraKeysPath,
+} from "./strict-extra-keys-transition.ts";
 
 const recordUrl = new URL(
   "../../../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json",
@@ -30,6 +36,7 @@ interface JsxWitnessChangeProof {
   comparatorSha256: string;
   nativeAcceptanceCredit: false;
   successorRecordSha256?: string;
+  successorRecordSha256s?: string[];
 }
 
 export function certifyJsxWitnessChange(
@@ -37,6 +44,32 @@ export function certifyJsxWitnessChange(
   before: Buffer,
   after: Buffer,
 ): JsxWitnessChangeProof {
+  const strict = certifyStrictExtraKeysTransition(file, before, after);
+  if (strict)
+    return {
+      ...strict,
+      comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+    };
+  if (
+    file === strictExtraKeysPath &&
+    after.length === 5739 &&
+    digest(after) === strictExtraKeysAfterSha256
+  ) {
+    const predecessor = Buffer.from(beforeStrictExtraKeys(after.toString("utf8")));
+    const historical = certifyJsxWitnessChange(file, before, predecessor);
+    const current = certifyStrictExtraKeysTransition(file, predecessor, after);
+    assert.ok(current);
+    const predecessorSuccessors =
+      historical.successorRecordSha256s ??
+      (historical.successorRecordSha256 ? [historical.successorRecordSha256] : []);
+    return {
+      ...historical,
+      afterSha256: current.afterSha256,
+      successorRecordSha256: current.recordSha256,
+      successorRecordSha256s: [...predecessorSuccessors, current.recordSha256],
+      comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+    };
+  }
   const successor = certifyDiscriminatedJsxUnionTransition(file, before, after);
   if (successor)
     return {

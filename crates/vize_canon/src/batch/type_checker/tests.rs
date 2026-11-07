@@ -1779,10 +1779,12 @@ fn batch_type_checker_snapshots_declaration_emit_outputs() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   count: number
 }
+</script>
+<script setup lang="ts">
 
 const props = defineProps<PublicProps>()
 </script>
@@ -1799,7 +1801,6 @@ const props = defineProps<PublicProps>()
             ),
         ],
     );
-
     let mut checker = match BatchTypeChecker::new(&project_root) {
         Ok(checker) => checker,
         Err(_) => return,
@@ -1814,7 +1815,6 @@ const props = defineProps<PublicProps>()
         .into_iter()
         .map(|file| (relative_path(&out_dir, &file.path), file.content))
         .collect();
-
     insta::with_settings!({
         snapshot_path => "../../snapshots"
     }, {

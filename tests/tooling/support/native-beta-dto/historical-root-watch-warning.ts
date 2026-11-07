@@ -211,14 +211,14 @@ export function observeHistoricalRootWatchWarning(...args: [...Args, HistoricalP
   const completed = Buffer.concat(stderr.map((row) => Buffer.from(row.data)));
   const header = `Added new watch: root files for ${config} watcher 6.0\n\t${root}/**/*\n\n`;
   const unknown = owner.unknownWrites;
-  let kind: "completed-warning-unanswered-sdk" | "unobserved-warning-attempt";
+  let kind:
+    | "completed-warning-unanswered-sdk"
+    | "completed-warning-without-sdk-registration"
+    | "unobserved-warning-attempt";
   let stdoutWatchLog: typeof output = [];
   if (unknown.length === 0) {
-    kind = "completed-warning-unanswered-sdk";
     assert.deepEqual(completed, historicalRootWarning);
     assert.equal(owner.unfinishedOperations.length, 0);
-    assert.ok(relation);
-    assert.equal(relation.boundary, "post-shutdown-sdk-program-files");
     const headerIndex = output.findIndex(
       (row) =>
         row.packet.method === "window/logMessage" &&
@@ -226,24 +226,33 @@ export function observeHistoricalRootWatchWarning(...args: [...Args, HistoricalP
           `Added new watch: root files for ${config} watcher 6.0`,
     );
     assert.ok(headerIndex > output.indexOf(shutdownAck));
-    stdoutWatchLog = output.slice(headerIndex, headerIndex + 3);
+    const messages = [`Added new watch: root files for ${config} watcher 6.0`, `\t${root}/**/*`];
+    if (relation) {
+      kind = "completed-warning-unanswered-sdk";
+      assert.equal(relation.boundary, "post-shutdown-sdk-program-files");
+      messages.push("");
+    } else {
+      kind = "completed-warning-without-sdk-registration";
+      assert.equal(headerIndex + messages.length, output.length);
+    }
+    stdoutWatchLog = output.slice(headerIndex, headerIndex + messages.length);
     assert.deepEqual(
       stdoutWatchLog.map((row) => row.packet),
-      [`Added new watch: root files for ${config} watcher 6.0`, `\t${root}/**/*`, ""].map(
-        (message) => ({
-          jsonrpc: "2.0",
-          method: "window/logMessage",
-          params: { type: 3, message },
-        }),
-      ),
+      messages.map((message) => ({
+        jsonrpc: "2.0",
+        method: "window/logMessage",
+        params: { type: 3, message },
+      })),
     );
-    const sdkIndex = output.findIndex(
-      (row) =>
-        row.packet.method === "client/registerCapability" &&
-        id(row.packet.id) === id(relation.request.id),
-    );
-    assert.deepEqual(output[sdkIndex]?.packet, relation.request);
-    assert.ok(headerIndex + 2 < sdkIndex);
+    if (relation) {
+      const sdkIndex = output.findIndex(
+        (row) =>
+          row.packet.method === "client/registerCapability" &&
+          id(row.packet.id) === id(relation.request.id),
+      );
+      assert.deepEqual(output[sdkIndex]?.packet, relation.request);
+      assert.ok(headerIndex + 2 < sdkIndex);
+    }
   } else {
     kind = "unobserved-warning-attempt";
     assert.equal(relation, null);

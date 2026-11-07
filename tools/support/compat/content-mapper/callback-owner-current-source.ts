@@ -10,6 +10,7 @@ import {
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
+import { beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -105,7 +106,8 @@ export function currentCallbackSourceEdits(
   };
   assert.equal(transition.file.path, componentHelperSource);
   const currentHelper = readSource(componentHelperSource);
-  const integratedHelper = beforeDiscriminatedJsxUnion(currentHelper);
+  const strictExtraKeysPredecessor = beforeStrictExtraKeys(currentHelper);
+  const integratedHelper = beforeDiscriminatedJsxUnion(strictExtraKeysPredecessor);
   assert.equal(Buffer.byteLength(integratedHelper), transition.file.after.bytes);
   assert.equal(digest(integratedHelper), transition.file.after.sha256);
   let previousHelper = integratedHelper;
@@ -115,23 +117,42 @@ export function currentCallbackSourceEdits(
   }
   assert.equal(Buffer.byteLength(previousHelper), transition.file.before.bytes);
   assert.equal(digest(previousHelper), transition.file.before.sha256);
-  const helperCounts = [before, after].map((text) => [
-    text.split(previousHelper).length - 1,
-    text.split(currentHelper).length - 1,
-  ]);
-  if (helperCounts[0]![0] !== helperCounts[1]![0] || helperCounts[0]![1] !== helperCounts[1]![1]) {
+  const helperVariants = [
+    previousHelper,
+    integratedHelper,
+    strictExtraKeysPredecessor,
+    currentHelper,
+  ];
+  assert.equal(new Set(helperVariants).size, helperVariants.length);
+  const helperCounts = [before, after].map((text) =>
+    helperVariants.map((helper) => text.split(helper).length - 1),
+  );
+  if (helperCounts.some((counts) => counts.some((count, i) => count !== helperCounts[0]![i]))) {
+    const predecessor = helperCounts[0]!.findIndex((count, index) => {
+      return index < helperVariants.length - 1 && count === 1;
+    });
+    assert.notEqual(predecessor, -1, "one certified component helper predecessor is required");
     assert.deepEqual(
-      helperCounts,
-      [
-        [1, 0],
-        [0, 1],
-      ],
-      "only the whole certified component helper may migrate",
+      helperCounts[0],
+      helperVariants.map((_, index) => (index === predecessor ? 1 : 0)),
+      "only one whole certified component helper predecessor may migrate",
     );
-    add(before.indexOf(previousHelper), previousHelper.length, currentHelper);
+    assert.deepEqual(
+      helperCounts[1],
+      helperVariants.map((_, index) => (index === helperVariants.length - 1 ? 1 : 0)),
+      "the whole current component helper is required",
+    );
+    add(
+      before.indexOf(helperVariants[predecessor]!),
+      helperVariants[predecessor]!.length,
+      currentHelper,
+    );
   } else {
     assert.ok(
-      helperCounts.every((pair) => pair.every((count) => count <= 1) && pair[0]! + pair[1]! <= 1),
+      helperCounts.every(
+        (counts) =>
+          counts.every((count) => count <= 1) && counts.reduce((sum, count) => sum + count, 0) <= 1,
+      ),
       "canonical component helper is unique",
     );
   }

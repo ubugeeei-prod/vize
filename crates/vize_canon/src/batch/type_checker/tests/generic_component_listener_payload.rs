@@ -59,7 +59,7 @@ fn batch_type_checker_infers_generic_component_listener_payload_from_props() {
         &[
             (
                 "src/Form.vue",
-                r#"<script setup lang="ts" generic="FormShape extends object">
+                r#"<script lang="ts">
 export interface FormSubmitEvent<FormShape extends object> {
   data: FormShape
 }
@@ -68,6 +68,8 @@ export interface FormEmits<FormShape extends object> {
   (e: "submit", payload: FormSubmitEvent<FormShape>): void
   (e: "reset"): void
 }
+</script>
+<script setup lang="ts" generic="FormShape extends object">
 
 defineProps<{
   initialState: FormShape
@@ -169,10 +171,12 @@ fn batch_type_checker_accepts_hyphenated_component_emit_listeners() {
         &[
             (
                 "src/OverlayDialog.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface FolderPayload {
   id: string
 }
+</script>
+<script setup lang="ts">
 
 defineEmits<{
   (e: "click-folder", payload: FolderPayload): void

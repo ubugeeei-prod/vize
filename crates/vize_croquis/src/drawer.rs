@@ -14,7 +14,9 @@ mod script;
 mod template;
 mod template_references;
 mod template_semantic_reuse;
-pub use template_semantic_reuse::{TemplateSemanticReuse, collect_template_semantic_reuse};
+pub use template_semantic_reuse::{
+    TemplateSemanticReuse, collect_petite_semantic_reuse, collect_template_semantic_reuse,
+};
 mod unused;
 pub use template::{dynamic_component_alias, is_dynamic_component_alias};
 pub use template_references::{

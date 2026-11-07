@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import { beforeDiscriminatedJsxUnionIn } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import { beforeStrictExtraKeysIn } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 
 const root = new URL("../../", import.meta.url);
@@ -125,10 +126,15 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
     read(base + "pattern_matching.d.ts"),
   ].join("");
   assert.deepEqual(identity(current), {
+    bytes: 46426,
+    sha256: "8340b8b945e5e3ca8fcb61b7e8f0ca467ae1a603292c07f1e78f3e1226ca6522",
+  });
+  const relaxedCurrent = beforeStrictExtraKeysIn(current);
+  assert.deepEqual(identity(relaxedCurrent), {
     bytes: 46557,
     sha256: "635acca0b25877f2132902fe777d894287100a7c993066066a67812deab2f255",
   });
-  const integratedCurrent = beforeDiscriminatedJsxUnionIn(current);
+  const integratedCurrent = beforeDiscriminatedJsxUnionIn(relaxedCurrent);
   assert.deepEqual(identity(integratedCurrent), {
     bytes: 46534,
     sha256: "7be160e1798f4368642597b67db232b1a72309dc18eb637a4ec7d868f3457bcb",

@@ -7,6 +7,10 @@ import {
   beforeDiscriminatedJsxUnion,
   discriminatedJsxUnionAfterSha256,
 } from "../../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import {
+  beforeStrictExtraKeys,
+  strictExtraKeysAfterSha256,
+} from "../../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 
 interface Routes {
   cheap: string[];
@@ -70,6 +74,11 @@ function historicalProducer(
   current: string,
   expected: string,
 ): string {
+  if (
+    path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
+    sha256(current) === strictExtraKeysAfterSha256
+  )
+    current = beforeStrictExtraKeys(current);
   if (
     path === "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt" &&
     sha256(current) === discriminatedJsxUnionAfterSha256

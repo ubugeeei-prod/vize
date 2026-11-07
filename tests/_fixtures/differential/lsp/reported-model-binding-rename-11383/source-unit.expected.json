@@ -2,7 +2,7 @@
   "schema": "vize.lsp.reported-model-binding-source-unit",
   "version": 1,
   "genericAdapter": "unsupported-source-unit",
-  "inputSha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9",
+  "inputSha256": "172d196ae0239dc816535cad59237a9ae01d75c905995746c4552586dac986d5",
   "executor": "crates/vize_maestro/src/ide/corsa_support/canonical/model_links.rs",
   "test": "ide::corsa_support::canonical::model_links::tests::model_prop_locations_follow_the_distinct_native_update_identity",
   "sourceVariants": 8,

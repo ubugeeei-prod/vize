@@ -11,11 +11,13 @@ fn emitted_vue_declarations_typecheck_from_packed_consumer() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
 
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 

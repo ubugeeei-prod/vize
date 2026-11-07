@@ -1184,12 +1184,14 @@ fn check_resolves_named_exports_from_vue_imported_via_path_alias() {
         &[
             (
                 "src/AliasProvider.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface AliasConfig {
   key: string;
   label: string;
 }
+</script>
 
+<script setup lang="ts">
 defineProps<{ configs: AliasConfig[] }>();
 </script>
 
@@ -1213,7 +1215,6 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
             ),
         ],
     );
-
     // The default helper tsconfig has no path aliases; rewrite it with the
     // `@/*` -> `src/*` mapping that drives the repro.
     std::fs::write(
@@ -1231,7 +1232,6 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
 }"#,
     )
     .unwrap();
-
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
@@ -2554,11 +2554,13 @@ fn check_can_emit_declarations() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   count: number
 }
+</script>
 
+<script setup lang="ts">
 const props = defineProps<PublicProps>()
 </script>
 
@@ -2590,7 +2592,6 @@ const props = defineProps<PublicProps>()
         ])
         .output()
         .unwrap();
-
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let declarations = collect_declaration_snapshot(&declaration_dir);
@@ -2600,7 +2601,6 @@ const props = defineProps<PublicProps>()
         "declarations": json["declarations"],
         "files": declarations,
     });
-
     insta::with_settings!({
         snapshot_path => "snapshots"
     }, {
@@ -3175,11 +3175,13 @@ fn check_declaration_emit_uses_tsconfig_options() {
             ),
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
 
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 
@@ -3195,14 +3197,12 @@ defineProps<PublicProps>()
             ),
         ],
     );
-
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
         .args(["check", ".", "--format", "json", "--declaration"])
         .output()
         .unwrap();
-
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let stderr = std::string::String::from_utf8(output.stderr).unwrap();
     assert_eq!(
