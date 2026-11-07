@@ -32,6 +32,10 @@ async function main() {
   fs.cpSync(packaged, installed, { recursive: true });
   fs.writeFileSync(path.join(userData, "extensions", "installed", ".rescan"), "");
   const settings = {
+    // The release workspace is created by this isolated CI job. Zed otherwise
+    // opens every fresh worktree in Restricted Mode and refuses to spawn the
+    // packaged language server before an interactive trust decision.
+    session: { trust_all_worktrees: true },
     languages: {
       "Vue.js": {
         language_servers: ["vize", "..."],
