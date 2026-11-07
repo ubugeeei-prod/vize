@@ -14,8 +14,8 @@
  * `path.resolve` call count per hot update, which is deterministic. The index
  * moves that work to insert time, so insert-side resolves are reported too.
  *
- *   node tools/benchmarks/scripts/vite-hmr-owner-lookup.mjs
- *   node tools/benchmarks/scripts/vite-hmr-owner-lookup.mjs --sizes 1000,3000,10000 --iterations 200
+ *   node tools/benchmarks/scripts/vite-hmr-owner-lookup.ts
+ *   node tools/benchmarks/scripts/vite-hmr-owner-lookup.ts --sizes 1000,3000,10000 --iterations 200
  */
 
 import path from "node:path";
@@ -23,26 +23,52 @@ import path from "node:path";
 import {
   CompiledModuleCache,
   ownersOfDependency,
-} from "../npm/builder/vite/src/plugin/compiled-module-cache.ts";
+} from "../../../npm/builder/vite/src/plugin/compiled-module-cache.ts";
+
+type BenchmarkModule = {
+  code: string;
+  dependencies: string[];
+};
+
+type BenchmarkOptions = {
+  sizes: number[];
+  iterations: number;
+};
+
+type BenchmarkRow = {
+  size: number;
+  srcImports: string;
+  scanResolves: number;
+  indexResolves: number;
+  scanMs: number;
+  indexMs: number;
+  insertResolves: number;
+};
 
 const nativeResolve = path.resolve.bind(path);
 let resolveCalls = 0;
-path.resolve = (...args) => {
+(path as { resolve: (...paths: string[]) => string }).resolve = (...args: string[]) => {
   resolveCalls += 1;
   return nativeResolve(...args);
 };
 
-function parseArgs(argv) {
-  const options = { sizes: [1000, 3000, 10000], iterations: 200 };
+function parseArgs(argv: readonly string[]): BenchmarkOptions {
+  const options: BenchmarkOptions = { sizes: [1000, 3000, 10000], iterations: 200 };
   for (let i = 0; i < argv.length; i += 1) {
-    if (argv[i] === "--sizes") options.sizes = argv[++i].split(",").map(Number);
-    else if (argv[i] === "--iterations") options.iterations = Number(argv[++i]);
+    const value = argv[i + 1];
+    if (argv[i] === "--sizes" && value) {
+      options.sizes = value.split(",").map(Number);
+      i += 1;
+    } else if (argv[i] === "--iterations" && value) {
+      options.iterations = Number(value);
+      i += 1;
+    }
   }
   return options;
 }
 
-function buildEntries(size, withSrcImports) {
-  const entries = [];
+function buildEntries(size: number, withSrcImports: boolean): [string, BenchmarkModule][] {
+  const entries: [string, BenchmarkModule][] = [];
   for (let i = 0; i < size; i += 1) {
     entries.push([
       `/project/src/Component${i}.vue`,
@@ -56,7 +82,7 @@ function buildEntries(size, withSrcImports) {
 }
 
 /** The pre-#3403 lookup, reproduced exactly. */
-function scanOwners(caches, dependencyFile) {
+function scanOwners(caches: readonly Map<string, BenchmarkModule>[], dependencyFile: string) {
   const normalizedDependency = path.resolve(dependencyFile);
   const owners = new Set();
   for (const cache of caches) {
@@ -69,7 +95,7 @@ function scanOwners(caches, dependencyFile) {
   return [...owners];
 }
 
-function indexOwners(caches, dependencyFile) {
+function indexOwners(caches: readonly Map<string, BenchmarkModule>[], dependencyFile: string) {
   const normalizedDependency = path.resolve(dependencyFile);
   const owners = new Set();
   for (const cache of caches) {
@@ -78,7 +104,12 @@ function indexOwners(caches, dependencyFile) {
   return [...owners];
 }
 
-function measure(lookup, caches, changedFile, iterations) {
+function measure(
+  lookup: (caches: readonly Map<string, BenchmarkModule>[], changedFile: string) => string[],
+  caches: readonly Map<string, BenchmarkModule>[],
+  changedFile: string,
+  iterations: number,
+) {
   lookup(caches, changedFile);
   resolveCalls = 0;
   const started = process.hrtime.bigint();
@@ -88,7 +119,7 @@ function measure(lookup, caches, changedFile, iterations) {
 }
 
 const { sizes, iterations } = parseArgs(process.argv.slice(2));
-const rows = [];
+const rows: BenchmarkRow[] = [];
 
 for (const size of sizes) {
   for (const withSrcImports of [false, true]) {

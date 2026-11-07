@@ -16,17 +16,19 @@
  * across those would drift the first time a new writer appeared. Subclassing
  * puts the bookkeeping where the mutation is.
  *
- * The keys are `path.resolve`d exactly as the previous scan resolved them, so a
- * dependency recorded as a relative path indexes and looks up identically.
+ * Each key keeps both its resolved logical path and physical real path. This
+ * preserves constant-time lookup when a workspace link is reported from the
+ * opposite side by Vite or its watcher.
  */
 
-import path from "node:path";
-
 import type { CompiledModule } from "../types.ts";
+import { filesystemPathIdentities } from "./path-identity.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
   readonly #ownersByDependency = new Map<string, Set<string>>();
   readonly #dependenciesByOwner = new Map<string, Set<string>>();
+  readonly #ownersByFileIdentity = new Map<string, Set<string>>();
+  readonly #fileIdentitiesByOwner = new Map<string, Set<string>>();
 
   /**
    * Deliberately takes no entries: `Map`'s constructor would call the
@@ -41,16 +43,24 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
     super.set(file, compiled);
     const dependencies = new Set<string>();
     for (const dependency of compiled.dependencies ?? []) {
-      const key = path.resolve(dependency);
-      dependencies.add(key);
-      const owners = this.#ownersByDependency.get(key);
-      if (owners) {
-        owners.add(file);
-      } else {
-        this.#ownersByDependency.set(key, new Set([file]));
+      for (const key of filesystemPathIdentities(dependency)) {
+        dependencies.add(key);
+        const owners = this.#ownersByDependency.get(key);
+        if (owners) {
+          owners.add(file);
+        } else {
+          this.#ownersByDependency.set(key, new Set([file]));
+        }
       }
     }
     this.#dependenciesByOwner.set(file, dependencies);
+    const fileIdentities = new Set(filesystemPathIdentities(file));
+    for (const identity of fileIdentities) {
+      const owners = this.#ownersByFileIdentity.get(identity);
+      if (owners) owners.add(file);
+      else this.#ownersByFileIdentity.set(identity, new Set([file]));
+    }
+    this.#fileIdentitiesByOwner.set(file, fileIdentities);
     return this;
   }
 
@@ -62,6 +72,8 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   override clear(): void {
     this.#ownersByDependency.clear();
     this.#dependenciesByOwner.clear();
+    this.#ownersByFileIdentity.clear();
+    this.#fileIdentitiesByOwner.clear();
     super.clear();
   }
 
@@ -76,8 +88,20 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
 
   /** The cached SFCs that `src`-import `resolvedDependency`. */
   ownersOf(resolvedDependency: string): readonly string[] {
-    const owners = this.#ownersByDependency.get(resolvedDependency);
-    return owners ? [...owners] : [];
+    const owners = new Set<string>();
+    for (const identity of filesystemPathIdentities(resolvedDependency)) {
+      for (const owner of this.#ownersByDependency.get(identity) ?? []) owners.add(owner);
+    }
+    return [...owners];
+  }
+
+  /** Cached logical owner paths that name the same physical SFC as `file`. */
+  ownersOfFile(file: string): readonly string[] {
+    const owners = new Set<string>();
+    for (const identity of filesystemPathIdentities(file)) {
+      for (const owner of this.#ownersByFileIdentity.get(identity) ?? []) owners.add(owner);
+    }
+    return [...owners];
   }
 
   #unindex(file: string): void {
@@ -88,6 +112,13 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
       if (owners.size === 0) this.#ownersByDependency.delete(dependency);
     }
     this.#dependenciesByOwner.delete(file);
+    for (const identity of this.#fileIdentitiesByOwner.get(file) ?? []) {
+      const owners = this.#ownersByFileIdentity.get(identity);
+      if (!owners) continue;
+      owners.delete(file);
+      if (owners.size === 0) this.#ownersByFileIdentity.delete(identity);
+    }
+    this.#fileIdentitiesByOwner.delete(file);
   }
 }
 
@@ -114,11 +145,23 @@ export function ownersOfDependency(
   }
 
   const owners: string[] = [];
+  const requested = new Set(filesystemPathIdentities(resolvedDependency));
   for (const [file, compiled] of cache) {
     if (
-      compiled.dependencies?.some((dependency) => path.resolve(dependency) === resolvedDependency)
+      compiled.dependencies?.some((dependency) =>
+        filesystemPathIdentities(dependency).some((identity) => requested.has(identity)),
+      )
     )
       owners.push(file);
   }
   return owners;
+}
+
+/** Cached owner paths that are filesystem aliases of `file`. */
+export function ownersOfFile(cache: Map<string, CompiledModule>, file: string): readonly string[] {
+  if (cache instanceof CompiledModuleCache) return cache.ownersOfFile(file);
+  const requested = new Set(filesystemPathIdentities(file));
+  return [...cache.keys()].filter((owner) =>
+    filesystemPathIdentities(owner).some((identity) => requested.has(identity)),
+  );
 }
