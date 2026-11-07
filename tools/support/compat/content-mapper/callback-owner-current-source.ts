@@ -133,6 +133,234 @@ export function guardedInferenceEdits(before: string, after: string): Edit[] {
   return edits;
 }
 
+/**
+ * Certify a guarded sibling reusing only declarations that are byte-identical
+ * to an earlier listener contract after substituting its owner identity.
+ */
+function collapseGuardedContractOwnershipEdits(
+  before: string,
+  after: string,
+  previousTemplate: string,
+  currentTemplate: string,
+  guardedEdits: Edit[],
+): Edit[] {
+  const edits: Edit[] = [];
+  const byteAt = (offset: number) => Buffer.byteLength(before.slice(0, offset));
+  const add = (start: number, end: number, replacement: string) =>
+    edits.push({ start: byteAt(start), end: byteAt(end), replacement: Buffer.from(replacement) });
+  const guardedHeader = /^([ \t]*)const (__vize_emit_props_[0-9]+) = \(\(\) => \{\r?$/gmu;
+  for (const guarded of after.matchAll(guardedHeader)) {
+    const [, indent, emitProps] = guarded;
+    const directPattern = new RegExp(
+      `^${escape(indent!)}const ${escape(emitProps!)} = \\(undefined as unknown as [^\\r\\n]+$`,
+      "gmu",
+    );
+    const directMatches = [...before.matchAll(directPattern)];
+    const wrappedPattern = new RegExp(
+      `^${escape(indent!)}const ${escape(emitProps!)} = \\(\\(\\) => \\{\\r?$`,
+      "gmu",
+    );
+    const wrappedMatches = [...before.matchAll(wrappedPattern)];
+    const inferenceMatches = directMatches.length > 0 ? directMatches : wrappedMatches;
+    if (inferenceMatches.length === 0) continue;
+    assert.equal(inferenceMatches.length, 1, "one guarded-listener inference owner");
+    const directAt = inferenceMatches[0]!.index;
+
+    const ownerPattern = new RegExp(
+      `^${escape(indent!)}type ([^\\s<=>]+)__listener_missing<[^\\r\\n]+$`,
+      "gmu",
+    );
+    const owner = [...before.slice(0, directAt).matchAll(ownerPattern)].at(-1);
+    assert.ok(owner, "guarded inference follows one local listener contract");
+    const localOwner = owner[1]!;
+    const blockStart = owner.index;
+
+    const inferredPattern = new RegExp(
+      `^${escape(indent!)}type ([^\\s=]+_inferred_emit_args) = ([^\\s=]+)__library extends true [^\\r\\n]+$`,
+      "gmu",
+    );
+    const inferred = [...after.slice(guarded.index).matchAll(inferredPattern)][0];
+    assert.ok(inferred, "guarded inference retains its inferred listener tuple");
+    const inferredName = inferred[1]!;
+    const sharedOwner = inferred[2]!;
+    if (!inferredName.startsWith(`${localOwner}_`) || sharedOwner === localOwner) continue;
+    const eventStem = inferredName.slice(localOwner.length, -"_inferred_emit_args".length);
+    assert.ok(eventStem.startsWith("_") && eventStem.length > 1);
+    const listenerName = `${localOwner}${eventStem}_listener`;
+    const callbackAt = before.indexOf(`Parameters<${listenerName}>`, directAt);
+    assert.ok(callbackAt > directAt, "guarded listener retains its callback body");
+    const closingPattern = new RegExp(`^${escape(indent!)}\\}\\);\\r?$`, "gmu");
+    const closing = [...before.slice(callbackAt).matchAll(closingPattern)][0];
+    assert.ok(closing, "guarded listener retains one complete callback");
+    const closingEnd = callbackAt + closing.index + closing[0].length;
+    const newline = before.startsWith("\r\n", closingEnd) ? "\r\n" : "\n";
+    assert.equal(before.slice(closingEnd, closingEnd + newline.length), newline);
+    const blockEnd = closingEnd + newline.length;
+    const block = before.slice(blockStart, blockEnd);
+    const retained = new Set(
+      ["inferred_emit_args", "emit_args", "args", "event", "listener", "handler"].map(
+        (suffix) => `${localOwner}${eventStem}_${suffix}`,
+      ),
+    );
+
+    const declarations: Array<{
+      name: string;
+      shared: string;
+      start: number;
+      end: number;
+    }> = [];
+    let lineStart = blockStart;
+    for (const line of block.match(/[^\r\n]*(?:\r\n|\n|$)/gu) ?? []) {
+      if (!line) continue;
+      const declaration = line.match(
+        new RegExp(`^${escape(indent!)}type ([^\\s<=>]+)(?:<.*?>)? = `, "u"),
+      );
+      if (declaration?.[1]?.startsWith(localOwner) && !retained.has(declaration[1])) {
+        const normalized = line.replaceAll(localOwner, sharedOwner);
+        const earlierBefore = before.slice(0, blockStart).split(normalized).length - 1;
+        const earlierAfter = after.slice(0, guarded.index).split(normalized).length - 1;
+        if (earlierBefore === 1 && earlierAfter === 1) {
+          declarations.push({
+            name: declaration[1],
+            shared: declaration[1].replace(localOwner, sharedOwner),
+            start: lineStart,
+            end: lineStart + line.length,
+          });
+        }
+      }
+      lineStart += line.length;
+    }
+    assert.ok(declarations.length >= 10, "the complete duplicate listener contract is reused");
+    for (const declaration of declarations) add(declaration.start, declaration.end, "");
+
+    const removed = (offset: number) =>
+      declarations.some(({ start, end }) => start <= offset && offset < end);
+    const staticRanges: Array<{ start: number; end: number }> = [];
+    for (const match of block.matchAll(matcher(previousTemplate))) {
+      const start = blockStart + match.index;
+      const replacements = ["unknown[]", "__L"]
+        .map((loose_args) =>
+          render(currentTemplate, {
+            ...match.groups!,
+            loose_args,
+          }),
+        )
+        .map((replacement) => {
+          for (const declaration of declarations)
+            replacement = replacement.replaceAll(declaration.name, declaration.shared);
+          return replacement;
+        })
+        .filter((replacement, index, all) => all.indexOf(replacement) === index)
+        .filter((replacement) => after.split(replacement).length === 2);
+      assert.equal(replacements.length, 1, "one shared current static inference declaration");
+      add(start, start + match[0].length, replacements[0]!);
+      staticRanges.push({ start, end: start + match[0].length });
+    }
+    assert.equal(staticRanges.length, 1, "one guarded static listener migration");
+
+    const inStaticRange = (offset: number) =>
+      staticRanges.some(({ start, end }) => start <= offset && offset < end);
+    for (const declaration of [...declarations].sort(
+      (left, right) => right.name.length - left.name.length,
+    )) {
+      const identifier = new RegExp(
+        `(?<![A-Za-z0-9_$])${escape(declaration.name)}(?![A-Za-z0-9_$])`,
+        "gu",
+      );
+      for (const match of block.matchAll(identifier)) {
+        const start = blockStart + match.index;
+        if (removed(start) || inStaticRange(start)) continue;
+        add(start, start + match[0].length, declaration.shared);
+      }
+    }
+
+    const blockStartByte = byteAt(blockStart);
+    const blockEndByte = byteAt(blockEnd);
+    const blockEdits = [...guardedEdits, ...edits]
+      .filter(({ start, end }) => blockStartByte <= start && end <= blockEndByte)
+      .sort((left, right) => left.start - right.start);
+    for (let index = 1; index < blockEdits.length; index++)
+      assert.ok(blockEdits[index - 1]!.end <= blockEdits[index]!.start);
+    const source = Buffer.from(before).subarray(blockStartByte, blockEndByte);
+    const chunks: Buffer[] = [];
+    let position = blockStartByte;
+    for (const edit of blockEdits) {
+      chunks.push(
+        source.subarray(position - blockStartByte, edit.start - blockStartByte),
+        edit.replacement,
+      );
+      position = edit.end;
+    }
+    chunks.push(source.subarray(position - blockStartByte));
+    const expected = Buffer.concat(chunks).toString();
+    const firstLineEnd = expected.indexOf(newline) + newline.length;
+    const actualAt = after.indexOf(expected.slice(0, firstLineEnd));
+    const actualBlock = actualAt < 0 ? "" : after.slice(actualAt, actualAt + expected.length);
+    let mismatch = -1;
+    for (let index = 0; index < expected.length; index++) {
+      if (expected[index] !== actualBlock[index]) {
+        mismatch = index;
+        break;
+      }
+    }
+    assert.equal(
+      after.split(expected).length,
+      2,
+      `one exact guarded shared-contract block at ${mismatch}: ${JSON.stringify(expected.slice(Math.max(0, mismatch - 80), mismatch + 160))} != ${JSON.stringify(actualBlock.slice(Math.max(0, mismatch - 80), mismatch + 160))}`,
+    );
+  }
+  return edits;
+}
+
+function invertEdits(source: string, edits: Edit[]): Edit[] {
+  const bytes = Buffer.from(source);
+  const coalesced: Edit[] = [];
+  for (const edit of [...edits].sort((left, right) => left.start - right.start)) {
+    const previous = coalesced.at(-1);
+    if (previous?.end === edit.start) {
+      previous.end = edit.end;
+      previous.replacement = Buffer.concat([previous.replacement, edit.replacement]);
+    } else coalesced.push({ ...edit });
+  }
+  let delta = 0;
+  return coalesced.map((edit) => {
+    const start = edit.start + delta;
+    const inverse = {
+      start,
+      end: start + edit.replacement.length,
+      replacement: bytes.subarray(edit.start, edit.end),
+    };
+    delta += edit.replacement.length - (edit.end - edit.start);
+    return inverse;
+  });
+}
+
+function guardedContractOwnershipEdits(
+  before: string,
+  after: string,
+  previousTemplate: string,
+  currentTemplate: string,
+  guardedEdits: Edit[],
+): Edit[] {
+  const forward = collapseGuardedContractOwnershipEdits(
+    before,
+    after,
+    previousTemplate,
+    currentTemplate,
+    guardedEdits,
+  );
+  if (forward.length > 0) return forward;
+  const reverseGuarded = guardedInferenceEdits(after, before);
+  const reverse = collapseGuardedContractOwnershipEdits(
+    after,
+    before,
+    previousTemplate,
+    currentTemplate,
+    reverseGuarded,
+  );
+  return invertEdits(after, [...reverseGuarded, ...reverse]);
+}
+
 export function currentCallbackSourceEdits(
   before: string,
   after: string,
@@ -311,6 +539,11 @@ export function currentCallbackSourceEdits(
   }
   const oldTemplate = template(previousGenerator),
     newTemplate = template(currentGenerator);
+  const guardedEdits = guardedInferenceEdits(before, after);
+  edits.push(...guardedEdits);
+  edits.push(
+    ...guardedContractOwnershipEdits(before, after, oldTemplate, newTemplate, guardedEdits),
+  );
   const matches = [...before.matchAll(matcher(oldTemplate))];
   if (matches.length > 0) {
     assert.equal(
@@ -324,6 +557,9 @@ export function currentCallbackSourceEdits(
       "computed component targets need a separate certificate",
     );
     for (const match of matches) {
+      const start = Buffer.byteLength(before.slice(0, match.index));
+      const end = start + Buffer.byteLength(match[0]);
+      if (edits.some((edit) => edit.start <= start && end <= edit.end)) continue;
       const replacements = ["unknown[]", "__L"]
         .map((loose_args) =>
           render(newTemplate, {
@@ -341,6 +577,5 @@ export function currentCallbackSourceEdits(
       add(match.index, match[0].length, replacements[0]!);
     }
   }
-  edits.push(...guardedInferenceEdits(before, after));
   return { edits, addedMappings };
 }
