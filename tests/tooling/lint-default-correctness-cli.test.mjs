@@ -7,10 +7,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
-import { sha256, wholeJson } from "./lint-default-correctness-reference.mjs";
+import { sha256 } from "./lint-default-correctness-reference.mjs";
 import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
-import { loadCurrentCorpus as loadCorpus } from "./support/lint-current-correctness-corpus.mjs";
+import {
+  currentWholeJson,
+  loadCurrentCorpus as loadCorpus,
+} from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 // The CLI orders findings by range, then errors first, then rule (lint/aggregate.rs).
@@ -104,7 +107,9 @@ await test("configless CLI defaults retain whole correctness findings and explic
         error: run.error ? { name: run.error.name, message: run.error.message } : null,
         stdout: run.stdout ?? "",
         stderr: run.stderr ?? "",
-        expected: currentRuleDocumentationPacket(withoutHelp(wholeJson(entry, cliOrder(findings)))),
+        expected: currentRuleDocumentationPacket(
+          withoutHelp(currentWholeJson(entry, cliOrder(findings))),
+        ),
         expectedStderr: "",
         expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };

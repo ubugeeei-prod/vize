@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "17920a8e3275218a0f906b8c7d1b1e40e8f95355acf5713f5f341a7e94dc06b2"
+        "sha256": "f4e6f068b5c7c47af804dad479aea858d236c21598ea8ea682805c764337a5a1"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "e9161090b4f479b19fa44ae64dc6289d8a81938c9de50812a9b4eb616d64017e"
+    "sha256": "bc6f8cfd038a0443eb6fb9080eb9a8fc7e90af9462cad45d0d4c86ff0acd192c"
   },
   "cases": [
     {
@@ -2880,27 +2880,27 @@
           {
             "path": "unicode-crlf-columns.report.txt",
             "role": "whole-current-report-oracle",
-            "sha256": "2d8fd0eb3211193aeea73bc80057a0c74ad4ed2ab56eb525dd814d685946e6f3"
+            "sha256": "1143a16ceea5a00961894c8a962cf6a666b6c4be2f3347818410ea4e04bc238e"
           },
           {
             "path": "source-map-order-and-missing.report.txt",
             "role": "whole-current-report-oracle",
-            "sha256": "415145418a9c2231e826520c1f31090bfcd4f26cc6cbf6a0682e0aa13ca2ade6"
+            "sha256": "63f54c437cfcacda70ada192c1d07a4c3e86325556c8f3434955bd502639291c"
           },
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "6866fffb05bf9dec4be4e7308655cbc51cbe0905626605e11c7a03b3a198d6dd"
+            "sha256": "93031d8450ef896dde48b54b512fe7b60bd7d8bfbd6f321eabeddd462f953383"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "ca055a0f837e4e262c9ba6e4550408a325cf22a61eaf479d44265619d59fe936"
+            "sha256": "781350e1452de862389893441c083249ba54633aa14f9b07f44588d66ee6d2a2"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "9e82373cde6545af76e9c13abf903e107e6a4d4154b6d6ede0e92e6ef1aecf75"
+            "sha256": "436f98395dd7a2b4966c0180ef2e6414e7693939fb81aa58bbc6dc239a07ed3f"
           }
         ]
       },

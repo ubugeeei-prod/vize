@@ -19,8 +19,8 @@ test("the contract table declares a tier for 281 rules", () => {
   assert.deepEqual(
     [...census].sort(([a], [b]) => (a < b ? -1 : 1)),
     [
-      ["complete", 36],
-      ["exact", 227],
+      ["complete", 39],
+      ["exact", 224],
       ["heuristic", 17],
       ["sound", 1],
     ],

@@ -1,7 +1,30 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { loadCorpus } from "../lint-default-correctness-reference.mjs";
+import { loadCorpus, wholeJson } from "../lint-default-correctness-reference.mjs";
+
+function location(source, offset) {
+  const before = Buffer.from(source).subarray(0, offset).toString("utf8");
+  const lines = before.split("\n");
+  return [lines.length, lines.at(-1).length + 1];
+}
+
+// The frozen reference helper records Unicode scalar columns. Current CLI
+// output follows LSP and reports one-based UTF-16 columns.
+export function currentWholeJson(entry, findings) {
+  const packet = wholeJson(entry, findings);
+  assert.equal(packet[0].messages.length, findings.length);
+  for (const [index, finding] of findings.entries()) {
+    const message = packet[0].messages[index];
+    const [line, column] = location(entry.source, finding.start);
+    const [endLine, endColumn] = location(entry.source, finding.end);
+    assert.equal(message.line, line);
+    assert.equal(message.endLine, endLine);
+    message.column = column;
+    message.endColumn = endColumn;
+  }
+  return packet;
+}
 
 // Preserve the complete historical reader and all of its authored controls.
 export function loadCurrentCorpus(root) {
@@ -17,6 +40,7 @@ export function loadCurrentCorpus(root) {
   for (const [index, id, start, end, lspStart, lspEnd] of [
     [0, "sync", 18, 37, 18, 37],
     [2, "slot-scope", 28, 38, 28, 38],
+    [3, "scope", 28, 33, 28, 33],
     [4, "full-modifiers", 18, 49, 18, 49],
     [5, "utf8-crlf", 40, 59, 32, 51],
   ]) {

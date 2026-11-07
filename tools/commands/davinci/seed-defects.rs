@@ -15,6 +15,7 @@ use vize_tool_support::common;
 mod davinci_fpfn;
 mod seed_exact;
 mod seed_exact_gen;
+// Exact snippet markers follow the current rule diagnostic targets.
 mod seed_exact_snippets;
 mod seed_html;
 mod seed_html_run;

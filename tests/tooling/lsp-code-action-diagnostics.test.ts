@@ -275,7 +275,7 @@ test("source LSP selects each same-range original diagnostic and preserves valid
       message: "Multiple consecutive spaces",
     };
     const componentNameDiagnostic = {
-      range: { start: { line: 0, character: 10 }, end: { line: 0, character: 10 } },
+      range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
       severity: 1,
       code: "vue/multi-word-component-names",
       codeDescription: {

@@ -2365,7 +2365,7 @@
       },
       "reference": {
         "path": "real-project-lint-scopes-12069/module.expected.txt",
-        "sha256": "ad058faec0244d0ef39a8aeb77c184a37b3fd9cd10d29f6ed819ea5119539f75",
+        "sha256": "a840a12fd65a4e319639f76efcb90e757f2ad6387f6ddf4fa1c7b139c51ccec3",
         "source": "crates/vize_croquis/src/drawer/helpers/v_for/tests.rs:unparenthesized_vue2_tuple_aliases_are_retained"
       },
       "adapters": {

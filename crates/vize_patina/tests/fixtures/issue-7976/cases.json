@@ -783,9 +783,9 @@
               "severity": 1,
               "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
               "line": 3,
-              "column": 23,
+              "column": 22,
               "endLine": 3,
-              "endColumn": 30,
+              "endColumn": 29,
               "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
             }
           ],
