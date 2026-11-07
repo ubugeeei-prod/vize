@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import {
   resetTypeProjectWatches,
@@ -99,4 +102,43 @@ void test("runtime-only modules make no project query and stale revisions fail c
     /TypeScript project changed while compiling/,
   );
   assert.deepEqual(typeProjectDependencyRoots(cache, "/work/Ordinary.vue", api), []);
+});
+
+void test("symlinked monorepo inputs retain every physical TypeScript project owner", (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-type-project-link-"));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const physical = path.join(temporary, "packages", "types");
+  const logical = path.join(temporary, "apps", "web", "node_modules", "types");
+  fs.mkdirSync(physical, { recursive: true });
+  fs.mkdirSync(path.dirname(logical), { recursive: true });
+  const physicalInput = path.join(physical, "shared.d.ts");
+  fs.writeFileSync(physicalInput, "export interface Shared {}\n");
+  try {
+    fs.symlinkSync(physical, logical, process.platform === "win32" ? "junction" : "dir");
+  } catch {
+    t.skip("directory symlinks are unavailable");
+    return;
+  }
+  const logicalInput = path.join(logical, "shared.d.ts");
+  const physicalIdentity = fs.realpathSync.native(physicalInput);
+  const roots = [
+    path.join(temporary, "apps", "web", "tsconfig.json"),
+    path.join(temporary, "packages", "ui", "tsconfig.json"),
+  ];
+  const cache = new Map();
+  const queried: string[] = [];
+  const api = {
+    typeProjectInputs(root: string) {
+      return [root, logicalInput];
+    },
+    typeProjectOwners(file: string) {
+      queried.push(file);
+      return file === physicalIdentity ? roots : [];
+    },
+  };
+  watchTypeProject(cache, { root: roots[0], revision: "1" }, () => {}, api);
+
+  assert.deepEqual(typeProjectDependencyRoots(cache, logicalInput, api), roots);
+  assert(queried.includes(logicalInput));
+  assert(queried.includes(physicalIdentity));
 });

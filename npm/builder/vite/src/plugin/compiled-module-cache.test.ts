@@ -82,13 +82,12 @@ function scanOwners(
 }
 
 {
-  // Relative dependencies are indexed through the same `path.resolve` the scan
-  // used, so they answer the same question.
+  // Relative dependencies and queries share the same resolved identity.
   const cache = new CompiledModuleCache();
   cache.set("/src/App.vue", compiled(["./relative.css"]));
 
   assert.deepEqual(cache.ownersOf(path.resolve("./relative.css")), ["/src/App.vue"]);
-  assert.deepEqual(cache.ownersOf("./relative.css"), []);
+  assert.deepEqual(cache.ownersOf("./relative.css"), ["/src/App.vue"]);
 }
 
 {

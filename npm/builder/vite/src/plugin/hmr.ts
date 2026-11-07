@@ -4,7 +4,7 @@ import path from "node:path";
 
 import type { VizePluginState } from "./state.ts";
 import { getCompileOptionsForRequest } from "./state.ts";
-import { evictCompiledModule, ownersOfDependency } from "./compiled-module-cache.ts";
+import { evictCompiledModule, ownersOfDependency, ownersOfFile } from "./compiled-module-cache.ts";
 import { compileFile } from "../compiler.ts";
 import {
   detectHmrUpdateType,
@@ -46,6 +46,14 @@ type GenerateBundleItem =
 
 type GenerateBundle = Record<string, GenerateBundleItem>;
 
+type HotUpdateHookOptions = {
+  ensureAcceptingClientModule?: (vueFile: string) => Promise<ModuleNode>;
+  requireAcceptingClientModule?: boolean;
+  onRecompileError?: (error: unknown) => void;
+  /** The dev server's resolver, for the SFC's `src` module requests. */
+  resolve?: HostResolve;
+};
+
 /**
  * The cached SFCs that pulled `dependencyFile` in through
  * `<script src>` / `<template src>` / `<style src>`.
@@ -54,7 +62,8 @@ type GenerateBundle = Record<string, GenerateBundleItem>;
  * path, so editing an ordinary SFC pays for it too. It used to walk both caches
  * end to end with a `path.resolve` per dependency, which made HMR latency grow
  * with the number of components in the project; the caches now carry a reverse
- * index that answers it in constant time. See `compiled-module-cache.ts`.
+ * index of both logical and physical paths that answers it in constant time.
+ * See `compiled-module-cache.ts`.
  */
 function getVueFilesDependingOn(
   state: VizePluginState,
@@ -82,13 +91,7 @@ function getVueFilesDependingOn(
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
-  options: {
-    ensureAcceptingClientModule?: (vueFile: string) => Promise<ModuleNode>;
-    requireAcceptingClientModule?: boolean;
-    onRecompileError?: (error: unknown) => void;
-    /** The dev server's resolver, for the SFC's `src` module requests. */
-    resolve?: HostResolve;
-  } = {},
+  options: HotUpdateHookOptions = {},
 ): Promise<import("vite").ModuleNode[] | void> {
   const { file, server, read } = ctx;
 
@@ -141,125 +144,147 @@ export async function handleHotUpdateHook(
     return [...affectedModules];
   }
 
-  if (file.endsWith(".vue") && state.filter(file)) {
-    try {
-      const initialModules = options.requireAcceptingClientModule
-        ? preferAcceptingClientModules(
-            await collectModulesByFile(server, getVueModuleFileCandidates(file)),
-            true,
-          )
-        : undefined;
-      if (initialModules?.size === 0) return [];
-      const source = await read();
+  if (!file.endsWith(".vue")) return;
 
-      const prevCompiled = state.cache.get(file);
+  const cachedOwners = new Set([
+    ...ownersOfFile(state.cache, file),
+    ...ownersOfFile(state.ssrCache, file),
+  ]);
+  const vueFiles = cachedOwners.size > 0 ? [...cachedOwners] : state.filter(file) ? [file] : [];
+  if (vueFiles.length === 0) return;
 
-      if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, file, source);
-      compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
-      state.ssrCache.delete(file);
-
-      const newCompiled = state.cache.get(file)!;
-      try {
-        const stat = fs.statSync(file);
-        state.precompileMetadata.set(file, {
-          mtimeMs: stat.mtimeMs,
-          size: stat.size,
-        });
-      } catch {
-        state.precompileMetadata.delete(file);
-      }
-
-      if (!hasHmrChanges(prevCompiled, newCompiled)) {
-        state.pendingHmrUpdateTypes.delete(file);
-        state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (no-op)`);
-        return [];
-      }
-
-      const updateType: HmrUpdateType = detectHmrUpdateType(prevCompiled, newCompiled);
-
-      state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (${updateType})`);
-
-      const collectedModules =
-        initialModules ?? (await collectModulesByFile(server, getVueModuleFileCandidates(file)));
-      const modules = preferAcceptingClientModules(
-        collectedModules,
-        options.requireAcceptingClientModule,
-      );
-
-      const customElement = isPluginVueCustomElement(state.mergedOptions, file);
-
-      if (customElement && updateType === "style-only") {
-        if (modules.size > 0) {
-          state.pendingHmrUpdateTypes.set(file, "full-reload");
-          invalidateModules(server, modules);
-          return [...modules];
-        }
-        state.pendingHmrUpdateTypes.delete(file);
-        return [];
-      }
-
-      // Client SFC styles are imported as Vite CSS modules even when they are
-      // plain CSS. Invalidate those modules so Vite reruns the configured CSS
-      // transformer before sending the style update to the browser.
-      if (newCompiled.styles?.length && updateType === "style-only") {
-        const affectedModules = await collectStyleModules(server, file, newCompiled);
-        if (affectedModules.size > 0) {
-          return [...affectedModules];
-        }
-        if (modules.size > 0) {
-          return [...modules];
-        }
-        return [];
-      }
-
-      if (updateType === "style-only" && newCompiled.css && !hasDelegatedStyles(newCompiled)) {
-        state.pendingHmrUpdateTypes.delete(file);
-        server.ws.send({
-          type: "custom",
-          event: "vize:update",
-          data: {
-            id: newCompiled.scopeId,
-            type: "style-only",
-            css: resolveCssImports(
-              newCompiled.css,
-              file,
-              state.cssAliasRules,
-              true,
-              state.clientViteBase,
-            ),
-          },
-        });
-        return [];
-      }
-
-      if (modules.size > 0) {
-        state.pendingHmrUpdateTypes.set(file, updateType);
-        invalidateModules(server, modules);
-        const affected = new Set(modules);
-        // A save that changes the template (or script) together with a style
-        // reports a non-style update type, but the style modules are separate
-        // Vite modules and keep their cached CSS unless they are invalidated
-        // here as well (#7742). Custom-block modules are the same kind of edge:
-        // the user plugin only re-runs when that module is invalidated.
-        if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
-          const styleModules = await collectStyleModules(server, file, newCompiled);
-          invalidateModules(server, styleModules);
-          for (const module of styleModules) affected.add(module);
-        }
-        if (hasCustomBlockChanges(prevCompiled, newCompiled)) {
-          const blockModules = await collectCustomBlockModules(server, file, newCompiled);
-          invalidateModules(server, blockModules);
-          for (const module of blockModules) affected.add(module);
-        }
-        return [...affected];
-      }
-
-      state.pendingHmrUpdateTypes.delete(file);
-    } catch (e) {
-      state.logger.error(`Re-compilation failed for ${file}:`, e);
-      options.onRecompileError?.(e);
+  let source: Promise<string> | undefined;
+  const readSource = () => (source ??= read());
+  const affected = new Set<ModuleNode>();
+  let useDefaultHandling = false;
+  try {
+    for (const vueFile of vueFiles) {
+      const modules = await handleVueFileHotUpdate(state, ctx, vueFile, readSource, options);
+      if (modules === undefined) useDefaultHandling = true;
+      else for (const module of modules) affected.add(module);
     }
+  } catch (error) {
+    state.logger.error(`Re-compilation failed for ${file}:`, error);
+    options.onRecompileError?.(error);
+    return;
   }
+  if (affected.size > 0) return [...affected];
+  return useDefaultHandling ? undefined : [];
+}
+
+async function handleVueFileHotUpdate(
+  state: VizePluginState,
+  ctx: HmrContext,
+  file: string,
+  readSource: () => Promise<string>,
+  options: HotUpdateHookOptions,
+): Promise<ModuleNode[] | void> {
+  const { server } = ctx;
+  const initialModules = options.requireAcceptingClientModule
+    ? preferAcceptingClientModules(
+        await collectModulesByFile(server, getVueModuleFileCandidates(file)),
+        true,
+      )
+    : undefined;
+  if (initialModules?.size === 0) return [];
+  const source = await readSource();
+  const prevCompiled = state.cache.get(file);
+
+  if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, file, source);
+  compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
+  state.ssrCache.delete(file);
+
+  const newCompiled = state.cache.get(file)!;
+  try {
+    const stat = fs.statSync(file);
+    state.precompileMetadata.set(file, {
+      mtimeMs: stat.mtimeMs,
+      size: stat.size,
+    });
+  } catch {
+    state.precompileMetadata.delete(file);
+  }
+
+  if (!hasHmrChanges(prevCompiled, newCompiled)) {
+    state.pendingHmrUpdateTypes.delete(file);
+    state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (no-op)`);
+    return [];
+  }
+
+  const updateType: HmrUpdateType = detectHmrUpdateType(prevCompiled, newCompiled);
+  state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (${updateType})`);
+
+  const collectedModules =
+    initialModules ?? (await collectModulesByFile(server, getVueModuleFileCandidates(file)));
+  const modules = preferAcceptingClientModules(
+    collectedModules,
+    options.requireAcceptingClientModule,
+  );
+  const customElement = isPluginVueCustomElement(state.mergedOptions, file);
+
+  if (customElement && updateType === "style-only") {
+    if (modules.size > 0) {
+      state.pendingHmrUpdateTypes.set(file, "full-reload");
+      invalidateModules(server, modules);
+      return [...modules];
+    }
+    state.pendingHmrUpdateTypes.delete(file);
+    return [];
+  }
+
+  // Client SFC styles are imported as Vite CSS modules even when they are
+  // plain CSS. Invalidate those modules so Vite reruns the configured CSS
+  // transformer before sending the style update to the browser.
+  if (newCompiled.styles?.length && updateType === "style-only") {
+    const affectedModules = await collectStyleModules(server, file, newCompiled);
+    if (affectedModules.size > 0) return [...affectedModules];
+    if (modules.size > 0) return [...modules];
+    return [];
+  }
+
+  if (updateType === "style-only" && newCompiled.css && !hasDelegatedStyles(newCompiled)) {
+    state.pendingHmrUpdateTypes.delete(file);
+    server.ws.send({
+      type: "custom",
+      event: "vize:update",
+      data: {
+        id: newCompiled.scopeId,
+        type: "style-only",
+        css: resolveCssImports(
+          newCompiled.css,
+          file,
+          state.cssAliasRules,
+          true,
+          state.clientViteBase,
+        ),
+      },
+    });
+    return [];
+  }
+
+  if (modules.size > 0) {
+    state.pendingHmrUpdateTypes.set(file, updateType);
+    invalidateModules(server, modules);
+    const affected = new Set(modules);
+    // A save that changes the template (or script) together with a style
+    // reports a non-style update type, but the style modules are separate Vite
+    // modules and keep stale CSS unless they are invalidated here as well
+    // (#7742). Custom-block modules are the same kind of edge: the user plugin
+    // only re-runs when that module is invalidated.
+    if (newCompiled.styles?.length && hasStyleChanges(prevCompiled, newCompiled)) {
+      const styleModules = await collectStyleModules(server, file, newCompiled);
+      invalidateModules(server, styleModules);
+      for (const module of styleModules) affected.add(module);
+    }
+    if (hasCustomBlockChanges(prevCompiled, newCompiled)) {
+      const blockModules = await collectCustomBlockModules(server, file, newCompiled);
+      invalidateModules(server, blockModules);
+      for (const module of blockModules) affected.add(module);
+    }
+    return [...affected];
+  }
+
+  state.pendingHmrUpdateTypes.delete(file);
 }
 
 async function collectStyleModules(
