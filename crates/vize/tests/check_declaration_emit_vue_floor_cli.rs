@@ -53,11 +53,13 @@ const TSCONFIG: &str = r#"{
   "include": ["src/**/*"]
 }"#;
 
-const APP_VUE: &str = r#"<script setup lang="ts">
+const APP_VUE: &str = r#"<script lang="ts">
 export interface PublicProps {
   count: number
 }
+</script>
 
+<script setup lang="ts">
 const props = defineProps<PublicProps>()
 const vFocus = (_el: HTMLElement, _binding: { value: number }) => {}
 </script>

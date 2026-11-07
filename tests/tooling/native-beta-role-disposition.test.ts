@@ -82,8 +82,12 @@ test("old unproven and terminal observations retain their distinct registration 
   assert.equal(unavailable.registrationPass, false);
   assert.equal(unavailable.observedRootRegistrationAcknowledged, true);
 });
-test("both new historical transcripts deny all credit while retaining their separate byte completeness", () => {
-  for (const stderrOutputComplete of [true, false]) {
+test("historical root-warning transcripts deny all credit while retaining byte completeness", () => {
+  for (const [kind, stderrOutputComplete] of [
+    ["completed-warning-unanswered-sdk", true],
+    ["completed-warning-without-sdk-registration", true],
+    ["unobserved-warning-attempt", false],
+  ] as const) {
     const input = {
       ...candidate(),
       source: historicalSource,
@@ -92,9 +96,7 @@ test("both new historical transcripts deny all credit while retaining their sepa
       rootWarnings: [
         {
           observation: {
-            kind: stderrOutputComplete
-              ? "completed-warning-unanswered-sdk"
-              : "unobserved-warning-attempt",
+            kind,
             stderrOutputComplete,
           },
         },

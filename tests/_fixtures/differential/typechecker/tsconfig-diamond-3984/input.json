@@ -15,7 +15,7 @@
     "src/base/main.js": "/** @type {string} */ export const jsValue = 42;\n",
     "src/base/skip.ts": "export const skipped: string = 42;\n",
     "tsconfig.json": "{\n  \"extends\": [\n    \"./configs/first.json\",\n    \"./configs/second.json\"\n  ]\n}\n",
-    "src/base/App.vue": "<script setup lang=\"ts\">\nexport interface PublicProps { label: string }\ndefineProps<PublicProps>()\n</script>\n<template>{{ label }}</template>\n"
+    "src/base/App.vue": "<script lang=\"ts\">\nexport interface PublicProps { label: string }\n</script>\n\n<script setup lang=\"ts\">\ndefineProps<PublicProps>()\n</script>\n<template>{{ label }}</template>\n"
   },
   "repair": "export const value: string = \"ok\";\n",
   "consumer": "import { value } from \"@scope/diamond\";\nimport App from \"@scope/diamond/App.vue\";\ntype Props = InstanceType<typeof App>[\"$props\"];\nconst text: typeof value = \"ok\";\nconst props: Props = { label: text };\nvoid props;\n",

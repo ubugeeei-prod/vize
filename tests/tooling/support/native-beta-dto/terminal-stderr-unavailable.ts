@@ -3,6 +3,7 @@ import { observeTerminalStableStderr } from "./terminal-stderr.ts";
 import { createHash } from "node:crypto";
 import {
   stableWatchActor,
+  stableWatchContextWithoutStdoutLog,
   micros,
   type WatcherContext,
   type WatcherTimedIo,
@@ -26,7 +27,19 @@ export function observeUnavailableTerminalStableStderr(
   eofReads: readonly (NativeTimedObservation & { fd: number })[],
   terminal: ReturnType<typeof nativeOwnerTerminalState>,
 ) {
-  const actor = stableWatchActor(client, server, context, io, eofReads);
+  const hasStdoutWatchLog = server.some(
+    (packet) =>
+      packet &&
+      typeof packet === "object" &&
+      (packet as Record<string, unknown>).method === "window/logMessage" &&
+      String(
+        ((packet as Record<string, unknown>).params as Record<string, unknown> | undefined)
+          ?.message,
+      ).startsWith("Added new watch: root files for "),
+  );
+  const actor = hasStdoutWatchLog
+    ? stableWatchActor(client, server, context, io, eofReads)
+    : stableWatchContextWithoutStdoutLog(client, server, context, io, eofReads);
   const members = new Map(terminal.members.map((row) => [row.tid, row.parent]));
   assert.equal(members.size, terminal.members.length, "unique native threads required");
   assert.equal(members.get(terminal.nativeOwner), null, "actual native leader required");
@@ -84,13 +97,39 @@ export function observeUnavailableTerminalStableStderr(
   assert.equal(attempt.requestedBytes, expectedAttempt.length);
   const writerExit = exits.get(attempt.tid);
   assert.ok(writerExit, "attempt belongs to another native owner");
-  assert.equal(eof.tid, attempt.tid, "same-thread EOF completion order required");
-  assert.ok(eof.line < (attempt.startedLine ?? attempt.line));
   assert.ok(micros(eof.at) < micros(attempt.at));
-  requireCompletedBefore(eof, attempt);
+  let eofReturnOrder: "PROVEN" | "UNPROVEN";
+  if (hasStdoutWatchLog) {
+    assert.equal(eof.tid, attempt.tid, "same-thread EOF completion order required");
+    assert.ok(eof.line < (attempt.startedLine ?? attempt.line));
+    requireCompletedBefore(eof, attempt);
+    eofReturnOrder = "PROVEN";
+  } else {
+    assert.notEqual(eof.tid, attempt.tid);
+    assert.equal(eof.tid, group.tid);
+    const completion = eof.completion;
+    assert.ok(completion, "owned EOF completion bound required");
+    assert.equal(completion.returnedAt, null);
+    const upper = completion.returnedBy;
+    assert.ok(upper && upper.basis === "next-same-thread-event");
+    assert.equal(upper.at, group.at);
+    assert.equal(upper.line, group.line);
+    eofReturnOrder = "UNPROVEN";
+  }
   assert.ok(micros(attempt.at) < micros(group.at) && micros(group.at) < micros(writerExit.at));
   const completed = Buffer.concat(actor.stderr.map((row) => Buffer.from(row.data)));
-  assert.deepEqual(completed, Buffer.from("\n1 paths ineligible for watching\n"));
+  const stderrWatchLog =
+    `Added new watch: root files for ${actor.config} watcher 6.0\n` + `\t${actor.project}/**/*\n\n`;
+  assert.deepEqual(
+    completed,
+    Buffer.from((hasStdoutWatchLog ? "\n" : stderrWatchLog) + "1 paths ineligible for watching\n"),
+  );
+  if (!hasStdoutWatchLog)
+    for (const row of actor.stderr) {
+      assert.equal(row.tid, attempt.tid);
+      assert.ok(micros(eof.at) < micros(row.at) && micros(row.at) < micros(attempt.at));
+      requireCompletedBefore(row, attempt);
+    }
   assert.ok(
     terminal.unfinishedOperations.every(
       (row) =>
@@ -117,6 +156,8 @@ export function observeUnavailableTerminalStableStderr(
     candidateFunctionalPass: false,
     lifecyclePass: false,
     registrationPass: false,
+    watchLogTransport: hasStdoutWatchLog ? ("stdout" as const) : ("stderr" as const),
+    eofReturnOrder,
     observedRootRegistrationAcknowledged: true,
     stderrOutputComplete: false,
     rawIOComplete: false,
@@ -132,7 +173,9 @@ export function observeUnavailableTerminalStableStderr(
       deliveredBytes: null,
     },
     temporalRelation:
-      "owned EOF completion before attempt entry before exit-request entry before thread exit",
+      eofReturnOrder === "PROVEN"
+        ? "owned EOF completion before attempt entry before exit-request entry before thread exit"
+        : "owned EOF entry before completed stderr and attempt entries before exit-request entry; EOF return unproven",
     actualUnknownReturnTime: null,
     exitGroupRequestEntry: group,
     members: terminal.members,

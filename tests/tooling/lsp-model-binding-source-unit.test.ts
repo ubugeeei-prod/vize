@@ -64,7 +64,7 @@ function manifest(root: string) {
 }
 
 test("physical model-binding input loads with zero generic requests and explicit unsupported disposition", () => {
-  assert.equal(input.length, 401);
+  assert.equal(input.length, 394);
   assert.equal(sha256(input), MODEL_BINDING_INPUT_SHA256);
   assert.deepEqual(
     sourceInspectedDialectCoverage(modelBindingSourceUnitDialectInputs(files()), "actual source")

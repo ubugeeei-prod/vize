@@ -3584,7 +3584,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
+        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
       },
       "inputs": [
         {
@@ -3636,7 +3636,7 @@
       "sourceRevision": "a5ae4d313fa333c8bc7168d5da4acf3dc2bb8ee3",
       "packReference": {
         "path": "content-mapper-template-expression-syntax/cases.json",
-        "sha256": "ee92df51b87699769f43181cccab86e201043212e02baf053e97f8d7e9a7280f"
+        "sha256": "b470ff8befaea65b4bd364d5a56f51bd7c9cc8f054334680cf024e58eb083b14"
       },
       "inputs": [
         {
@@ -14907,6 +14907,55 @@
       }
     },
     {
+      "id": "typechecker/regression/setup-export-extra-keys-11497",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "setup-export-extra-keys-11497/GenericExport.vue.txt",
+          "sha256": "2effc05b2fb9d4e9905ecdffd063ff0dc1f4c513b6842be82df42a3469b05dd1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-export-extra-keys-11497/PlainExport.vue.txt",
+          "sha256": "1f87381395a4ac20ef610cdbac8c8004fe6159bfba359edfb309ce9ee7fbff00",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-export-extra-keys-11497/SingleRequired.vue.txt",
+          "sha256": "bb3d0a7e0e8e0b21785466e7c8876648e3ae8386372bb5621c072ef98cc5657f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-export-extra-keys-11497/Consumer.vue.txt",
+          "sha256": "72c072623262e5855a9d6e012e39ca9824c91a403a773168e198ae2acee8c122",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "setup-export-extra-keys-11497/tsconfig.json.txt",
+          "sha256": "8e7b08b710deaf7e2e18e9bd27d3277a45a3e76e51e528a652044cea03cb1760",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_generic_dependent_scope_cli::generic_alias_dependents_are_not_unused_module_copies and check_declaration_fallthrough_attrs_cli::emitted_declarations_accept_fallthrough_attributes_in_vue_tsc_templates; generic and non-generic authored setup exports retain TS1184, while checkUnknownProps rejects an undeclared boolean attribute on a one-required-prop component without emits. Input-only registration, no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/sfc-entry-grammar-11869",
       "state": "active",
       "targets": [
@@ -15071,7 +15120,7 @@
         },
         {
           "path": "tsx-single-required-exact-keys/Probe.tsx.txt",
-          "sha256": "cd8b78251133fa84de8d2987db8d06038b38a521738b0695f4f48d99272f4d04",
+          "sha256": "e6d4a2292502a127e80ce9d18f0dfeb127f77a86fb79baed5b1e6c7a413ba600",
           "role": "regression-reproduction"
         },
         {

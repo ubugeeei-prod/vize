@@ -236,6 +236,32 @@ pub(crate) fn project_template_fragment(
     clippy::too_many_arguments,
     reason = "one fragment owner and its anchored plan"
 )]
+pub(crate) fn project_petite_template_fragment(
+    script: Option<&str>,
+    script_setup: bool,
+    script_offset: u32,
+    generic: Option<&vize_canon::virtual_ts::GenericParameters>,
+    root: &vize_relief::RootNode<'_>,
+    template_offset: u32,
+    uri: String,
+    reuse: vize_croquis::drawer::TemplateSemanticReuse,
+) -> VirtualDocument {
+    checker_document::fragment_document_with_semantic_reuse(
+        script,
+        script_setup,
+        script_offset,
+        generic,
+        root,
+        template_offset,
+        uri,
+        reuse,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one fragment owner and its anchored plan"
+)]
 pub(crate) fn project_template_fragment_with_occurrences(
     script: Option<&str>,
     script_setup: bool,

@@ -13,7 +13,7 @@ import { type NativeTimedObservation } from "./native-beta-dto/native-io.ts";
 export type Packet = Record<string, unknown>;
 export const at = (n: number) => `1793460256.${String(n).padStart(6, "0")}`;
 // Constructed refusal contracts. Authenticated A/B replay uses the retained real traces separately.
-export function fixture(kind: "A" | "B") {
+export function fixture(kind: "A" | "B" | "C") {
   const root = "/tmp/.tmpUnit01",
     config = root + "/tsconfig.json";
   const context: WatcherContext = {
@@ -106,10 +106,20 @@ export function fixture(kind: "A" | "B") {
         15,
       ),
     );
+  } else if (kind === "C") {
+    server.push(
+      ...[`Added new watch: root files for ${config} watcher 6.0`, `\t${root}/**/*`].map(
+        (message, i) =>
+          timed(
+            { jsonrpc: "2.0", method: "window/logMessage", params: { type: 3, message } },
+            12 + i,
+          ),
+      ),
+    );
   }
   const header = `Added new watch: root files for ${config} watcher 6.0\n\t${root}/**/*\n\n`;
   const stderr =
-    kind === "A"
+    kind === "A" || kind === "C"
       ? [{ at: at(16), data: Buffer.from(historicalRootWarning) }]
       : [
           { at: at(12), data: Buffer.from(header.slice(0, header.indexOf("\n") + 1)) },
@@ -130,7 +140,7 @@ export function fixture(kind: "A" | "B") {
       { tid: 43, at: at(24), code: 0 },
       { tid: 44, at: at(23), code: 0 },
     ],
-    exitGroups: [{ tid: kind === "A" ? 43 : 42, at: at(18), code: 0 }],
+    exitGroups: [{ tid: kind === "B" ? 42 : 43, at: at(18), code: 0 }],
     unknownWrites: [],
     failedWrites: [],
     zeroCapacityReads: [],
@@ -173,7 +183,7 @@ export function fixture(kind: "A" | "B") {
       startedLine: 100,
       completion: {
         returnedAt: null,
-        returnedBy: { at: at(kind === "A" ? 18 : 24), line: 101, basis: "next-same-thread-event" },
+        returnedBy: { at: at(kind === "B" ? 24 : 18), line: 101, basis: "next-same-thread-event" },
       },
     },
   ];

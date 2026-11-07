@@ -93,11 +93,13 @@ fn check_declaration_emit_reports_module_declaration_outputs() {
         &[
             (
                 "src/App.vue",
-                r#"<script setup lang="ts">
+                r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
 
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 
@@ -108,11 +110,13 @@ defineProps<PublicProps>()
             ),
             (
                 "src/TsxWidget.vue",
-                r#"<script setup lang="tsx">
+                r#"<script lang="tsx">
 export interface TsxProps {
   active: boolean
 }
+</script>
 
+<script setup lang="tsx">
 defineProps<TsxProps>()
 const vnode = null as unknown
 </script>
@@ -219,11 +223,13 @@ fn check_declaration_emit_rewrites_declaration_map_sources() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
     };
-    let app_source = r#"<script setup lang="ts">
+    let app_source = r#"<script lang="ts">
 export interface PublicProps {
   label: string
 }
+</script>
 
+<script setup lang="ts">
 defineProps<PublicProps>()
 </script>
 

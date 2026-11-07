@@ -77,6 +77,7 @@ pub(super) fn preamble_edits_before(mut current: String) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::strict_extra_keys::source_before(path, current);
     let record = load();
     match record["files"]
         .as_array()
@@ -90,7 +91,10 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
-    invert(current.to_owned(), &load()["preamble"])
+    invert(
+        super::strict_extra_keys::preamble_before(current),
+        &load()["preamble"],
+    )
 }
 
 pub(super) fn retain_provenance(manifest: &mut Value) {
@@ -121,6 +125,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+            let body = super::super::strict_extra_keys::source_before(path, body);
             let body = super::super::integrated_source::repair_before(path, body);
             assert_eq!(forward(source_edits_before(path, body.clone()), file), body);
         }
@@ -147,6 +152,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let body = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+            let body = super::super::strict_extra_keys::source_before(path, body);
             let body = super::super::integrated_source::repair_before(path, body);
             let before = file["edits"][0]["before"].as_str().unwrap();
             let after = file["edits"][0]["after"].as_str().unwrap();

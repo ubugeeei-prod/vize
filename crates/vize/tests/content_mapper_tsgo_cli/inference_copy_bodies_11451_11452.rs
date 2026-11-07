@@ -87,7 +87,7 @@ function Child(props: { onBar?: (baz: Foo) => void }) {
 "#;
 
 const DESTRUCTURED_CHILD: &str = r#"<script setup lang="ts">
-export interface Foo {
+interface Foo {
   bar: (callback: (baz: { qux: number }) => void) => void;
 }
 defineProps<{ onQux?: (foo: Foo) => void }>();
@@ -97,7 +97,7 @@ defineProps<{ onQux?: (foo: Foo) => void }>();
 "#;
 
 const ASSIGNED_CHILD: &str = r#"<script setup lang="ts">
-export interface Foo {
+interface Foo {
   width: number;
 }
 defineProps<{ onBar?: (baz: Foo) => void }>();

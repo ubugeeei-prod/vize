@@ -25,6 +25,10 @@ import {
   applyDiscriminatedJsxUnionIn,
   beforeDiscriminatedJsxUnionIn,
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import {
+  applyStrictExtraKeysIn,
+  beforeStrictExtraKeysIn,
+} from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -140,8 +144,13 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
       );
     }
   }
-  const currentSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
-  assert.equal(beforeDiscriminatedJsxUnionIn(currentSourcePreamble), integratedSourcePreamble);
+  const discriminatedSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
+  const currentSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
+  assert.equal(beforeStrictExtraKeysIn(currentSourcePreamble), discriminatedSourcePreamble);
+  assert.equal(
+    beforeDiscriminatedJsxUnionIn(discriminatedSourcePreamble),
+    integratedSourcePreamble,
+  );
   assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
   assert.equal(currentSourcePreamble.includes("declare var __vizeTemplateChecker: true;"), false);
   assert.ok(currentSourcePreamble.includes("type $ComponentInstanceFor<"));

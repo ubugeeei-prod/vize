@@ -24,6 +24,35 @@ test("complete warning retains its exact unanswered SDK watcher and unproven EOF
   ] as const)
     assert.equal(result[key], false);
 });
+test("complete warning without an SDK request retains its exact terminal root log", () => {
+  const f = fixture("C"),
+    result = observe(f);
+  assert.equal(result.kind, "completed-warning-without-sdk-registration");
+  assert.equal(result.completedStderr.bytes, 32);
+  assert.equal(result.observedPairs.lsp.server.unanswered.length, 0);
+  assert.equal(result.unansweredRegistration, null);
+  assert.deepEqual(
+    result.stdoutWatchLog.map((row) => object(row.packet).params),
+    [
+      {
+        type: 3,
+        message: "Added new watch: root files for /tmp/.tmpUnit01/tsconfig.json watcher 6.0",
+      },
+      { type: 3, message: "\t/tmp/.tmpUnit01/**/*" },
+    ],
+  );
+  assert.deepEqual(
+    result.stderrWrites.map((row) => row.eofReturnOrder),
+    ["UNPROVEN"],
+  );
+  for (const key of [
+    "nativeQualification",
+    "candidateFunctionalPass",
+    "lifecyclePass",
+    "registrationPass",
+  ] as const)
+    assert.equal(result[key], false);
+});
 test("terminal warning keeps completed root header separate from the unknown 32-byte attempt", () => {
   const f = fixture("B"),
     result = observe(f);
@@ -174,7 +203,7 @@ test("source, SDK, owner, root, payload, paired channels and temporal counterexa
       },
     ],
   ];
-  for (const kind of ["A", "B"] as const)
+  for (const kind of ["A", "B", "C"] as const)
     for (const [name, mutate] of common) {
       const f = fixture(kind);
       mutate(f);

@@ -12,6 +12,7 @@ import {
 } from "./canon-slot-provider-preamble.ts";
 import { applyCurrentSlotPreamble } from "./canon-slot-provider-current-preamble.ts";
 import { applyDiscriminatedJsxUnionIn } from "../../support/compat/content-mapper/discriminated-jsx-union-transition.ts";
+import { applyStrictExtraKeysIn } from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
 
 export function slotCliPacket(
   process: { stdout: Buffer; stderr: Buffer; status: number | null },
@@ -54,8 +55,10 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyDiscriminatedJsxUnionIn(
-    applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+  const currentPreamble = applyStrictExtraKeysIn(
+    applyDiscriminatedJsxUnionIn(
+      applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+    ),
   );
   assert.equal(currentPreamble.split(replacement).length, 2);
   const files = observed.result.files.filter((file) => typeof file.virtualTs === "string");

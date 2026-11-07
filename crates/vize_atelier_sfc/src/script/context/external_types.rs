@@ -15,10 +15,11 @@ use crate::script::build_interface_type_source;
 use crate::types::SfcParseOptions;
 
 use super::ScriptCompileContext;
-use super::batch_epoch::{NO_EPOCH, current_batch_epoch};
+use super::batch_epoch::NO_EPOCH;
 use super::helpers::is_import_type_only;
 
 mod required;
+mod walk;
 
 #[derive(Default)]
 pub(crate) struct ImportedTypes {
@@ -27,17 +28,17 @@ pub(crate) struct ImportedTypes {
 }
 pub(super) mod resolution;
 mod sources;
-use resolution::{
-    canonical_base_file, path_key, project::Project, resolve_import_path_with_project,
-};
+use resolution::{canonical_base_file, path_key, project::Project};
+use walk::{RequestedExports, TypeDependency, TypeWalk};
 
-/// Type declarations and outgoing specifiers extracted from a source module.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub(super) struct FileTypeSummary {
     interfaces: Vec<(String, String)>,
     type_aliases: Vec<(String, String)>,
     /// Import/re-export specifiers to follow, in source order.
     specifiers: Vec<String>,
+    /// Type-bearing edges with enough export identity to prune named barrels.
+    dependencies: Vec<TypeDependency>,
     /// Local type names and their module requests, for checked macro imports.
     imports: Vec<(String, String)>,
 }
@@ -90,7 +91,7 @@ impl CachedFileSummary {
 }
 
 enum SummaryLookup {
-    Cached(Vec<String>),
+    Cached(Vec<TypeDependency>),
     Reload(Option<FileTypeSource>),
     Miss,
 }
@@ -199,25 +200,36 @@ fn extract_script_summary(
                 summary
                     .specifiers
                     .push(import_decl.source.value.to_compact_string());
+                let mut requested = Vec::new();
+                let mut namespace = false;
                 if let Some(specifiers) = &import_decl.specifiers {
                     for specifier in specifiers {
-                        let local = match specifier {
-                            ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
-                                &specifier.local
-                            }
+                        let (local, imported) = match specifier {
+                            ImportDeclarationSpecifier::ImportSpecifier(specifier) => (
+                                &specifier.local,
+                                Some(specifier.imported.name().to_compact_string()),
+                            ),
                             ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
-                                &specifier.local
+                                (&specifier.local, Some(String::from("default")))
                             }
                             ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                                &specifier.local
+                                namespace = true;
+                                (&specifier.local, None)
                             }
                         };
+                        if let Some(imported) = imported {
+                            requested.push(imported);
+                        }
                         summary.imports.push((
                             local.name.to_compact_string(),
                             import_decl.source.value.to_compact_string(),
                         ));
                     }
                 }
+                summary.dependencies.push(TypeDependency::Import {
+                    specifier: import_decl.source.value.to_compact_string(),
+                    names: (!namespace).then_some(requested),
+                });
             }
             // Plain (non-`type`) re-exports forward types as well in TS:
             // `export * from './Link.vue'` in a types barrel re-exports
@@ -254,12 +266,28 @@ fn extract_script_summary(
                     summary
                         .specifiers
                         .push(export_source.value.to_compact_string());
+                    summary.dependencies.push(TypeDependency::NamedReexport {
+                        specifier: export_source.value.to_compact_string(),
+                        bindings: export_decl
+                            .specifiers
+                            .iter()
+                            .map(|specifier| {
+                                (
+                                    specifier.exported.name().to_compact_string(),
+                                    specifier.local.name().to_compact_string(),
+                                )
+                            })
+                            .collect(),
+                    });
                 }
             }
             Statement::ExportAllDeclaration(export_decl) => {
                 summary
                     .specifiers
                     .push(export_decl.source.value.to_compact_string());
+                summary.dependencies.push(TypeDependency::StarReexport {
+                    specifier: export_decl.source.value.to_compact_string(),
+                });
             }
             _ => {}
         }
@@ -323,15 +351,23 @@ impl ScriptCompileContext {
         let project = selected.or(discovered.as_deref());
 
         let mut visited = FxHashSet::default();
+        let mut traversed = FxHashSet::default();
         let mut imports = root.imports;
-        for specifier in &root.specifiers {
-            self.collect_types_from_specifier(
-                specifier,
-                base_file,
-                &mut visited,
+        {
+            let mut walk = TypeWalk {
+                visited: &mut visited,
+                traversed: &mut traversed,
                 project,
-                &mut imports,
-            );
+                imports: &mut imports,
+            };
+            for dependency in &root.dependencies {
+                self.collect_types_from_dependency(
+                    dependency,
+                    &RequestedExports::All,
+                    base_file,
+                    &mut walk,
+                );
+            }
         }
         let mut dependencies: Vec<String> = visited.into_iter().collect();
         dependencies.extend(
@@ -350,52 +386,6 @@ impl ScriptCompileContext {
         })
     }
 
-    fn collect_types_from_specifier(
-        &mut self,
-        specifier: &str,
-        current_file: &Path,
-        visited: &mut FxHashSet<String>,
-        project: Option<&Project>,
-        imports: &mut Vec<(String, String)>,
-    ) {
-        let Some(resolved_path) =
-            resolve_import_path_with_project(current_file, specifier, project)
-        else {
-            return;
-        };
-
-        let key = path_key(&resolved_path);
-        if !visited.insert(key) {
-            return;
-        }
-
-        let epoch = current_batch_epoch();
-        let specifiers = match self.cached_file_summary(&resolved_path, epoch, imports) {
-            SummaryLookup::Cached(specifiers) => specifiers,
-            SummaryLookup::Reload(source) => {
-                let Some(specifiers) =
-                    self.merge_file_source(&resolved_path, source, epoch, imports)
-                else {
-                    return;
-                };
-                specifiers
-            }
-            SummaryLookup::Miss => {
-                let source = FileTypeSource::read(&resolved_path);
-                let Some(specifiers) =
-                    self.merge_file_source(&resolved_path, source, epoch, imports)
-                else {
-                    return;
-                };
-                specifiers
-            }
-        };
-
-        for specifier in &specifiers {
-            self.collect_types_from_specifier(specifier, &resolved_path, visited, project, imports);
-        }
-    }
-
     fn cached_file_summary(
         &mut self,
         path: &Path,
@@ -412,7 +402,7 @@ impl ScriptCompileContext {
             Ok(()) => {
                 self.merge_file_summary(&entry.summary);
                 imports.extend(entry.summary.imports.iter().cloned());
-                SummaryLookup::Cached(entry.summary.specifiers.clone())
+                SummaryLookup::Cached(entry.summary.dependencies.clone())
             }
             Err(source) => SummaryLookup::Reload(source),
         }
@@ -424,12 +414,12 @@ impl ScriptCompileContext {
         source: Option<FileTypeSource>,
         epoch: u64,
         imports: &mut Vec<(String, String)>,
-    ) -> Option<Vec<String>> {
+    ) -> Option<Vec<TypeDependency>> {
         let source = source?;
         let summary = file_summary_from_source(path, &source.text);
         self.merge_file_summary(&summary);
         imports.extend(summary.imports.iter().cloned());
-        let specifiers = summary.specifiers.clone();
+        let dependencies = summary.dependencies.clone();
         if let Ok(mut cache) = FILE_TYPE_CACHE.write() {
             cache.insert(
                 path.to_path_buf(),
@@ -440,7 +430,7 @@ impl ScriptCompileContext {
                 },
             );
         }
-        Some(specifiers)
+        Some(dependencies)
     }
 
     fn merge_file_summary(&mut self, summary: &FileTypeSummary) {

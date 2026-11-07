@@ -23,7 +23,7 @@ const component = Child;
     std::fs::write(
         &child_path,
         r#"<script setup lang="tsx">
-export interface ChildProps {
+interface ChildProps {
   label?: string
 }
 

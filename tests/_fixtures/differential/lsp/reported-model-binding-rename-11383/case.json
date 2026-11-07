@@ -14,13 +14,13 @@
     {
       "source": "input.json",
       "runtimePath": "input.json",
-      "sha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9"
+      "sha256": "172d196ae0239dc816535cad59237a9ae01d75c905995746c4552586dac986d5"
     }
   ],
   "entry": "input.json",
   "expected": {
     "source": "source-unit.expected.json",
-    "sha256": "1585eedd84816e7e2ed5c9d535fbea148c21931528f6e84e936f4c688a825fd5"
+    "sha256": "fc1953e9f5a2ae85c41d68c5ca068767e29532a27c2b267f0f13cd704b6912be"
   },
   "method": "source-session/reported-model-binding-unit",
   "sourceSession": {

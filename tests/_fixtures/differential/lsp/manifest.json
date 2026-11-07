@@ -3648,13 +3648,13 @@
         "files": [
           {
             "path": "input.json",
-            "sha256": "b0ed516dcd5c775548b863493f87a644d23d627e2e1ea171d997ed54c0b585a9"
+            "sha256": "172d196ae0239dc816535cad59237a9ae01d75c905995746c4552586dac986d5"
           }
         ]
       },
       "case": {
         "path": "reported-model-binding-rename-11383/case.json",
-        "sha256": "804f9b94903e3a33e2a9b7c66b5344f0c8a806a1609f4f818d5f3918a1aae524"
+        "sha256": "03e5e3084b818a82792019eee42631432291c830b6438ba0bf199ccb82dca683"
       },
       "requestCount": 0,
       "initializationOptions": {
@@ -3887,6 +3887,51 @@
         "editor": true,
         "lint": true,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/setup-export-diagnostic-11497",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "setup-export-diagnostic-11497",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "1f87381395a4ac20ef610cdbac8c8004fe6159bfba359edfb309ce9ee7fbff00"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "b6a08547ffda4a5fa53ae5a1d367c9261a1c4b8b6f91e7db6202088101460965"
+          }
+        ]
+      },
+      "case": {
+        "path": "setup-export-diagnostic-11497/case.json",
+        "sha256": "3bff7394a0e790684257ad6fb8f5ddc3dec0a73f44e485c5c5831c6cd79d68ef"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
       },
       "dialectCoverage": {
         "state": "source-inspected",

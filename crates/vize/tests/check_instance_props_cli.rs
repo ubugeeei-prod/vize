@@ -122,7 +122,7 @@ fn check_instance_type_props_preserves_camel_case_sfc_props() {
         &project_root,
         "src/AfKeyboardButton.vue",
         r#"<script setup lang="ts">
-export type KeyboardButtonType = "function" | "input" | "submit" | "system";
+type KeyboardButtonType = "function" | "input" | "submit" | "system";
 
 defineProps<{
   keyType?: KeyboardButtonType;

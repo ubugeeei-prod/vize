@@ -22,6 +22,7 @@ mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
 mod runtime_prop_call;
+mod strict_extra_keys;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [
@@ -171,6 +172,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     checker_augmentations::retain_provenance(manifest);
     constructor_emit_export::retain_provenance(manifest);
     runtime_prop_call::retain_provenance(manifest);
+    strict_extra_keys::retain_provenance(manifest);
     emit_overload_window::retain_provenance(manifest);
     current_loose_emit::retain_provenance(manifest);
     input_channels::retain_provenance(manifest);
