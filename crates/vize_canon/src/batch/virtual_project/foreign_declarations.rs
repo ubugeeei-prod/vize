@@ -132,28 +132,35 @@ mod tests {
         let virtual_root = project.virtual_root().to_path_buf();
         let button = virtual_root.join("packages/kit/src/Button.vue.d.ts");
         let model = virtual_root.join("packages/kit/src/model.d.ts");
-        let materialized = project.expected_materialized_files();
-        assert!(materialized.contains(&button), "{materialized:?}");
-        assert!(materialized.contains(&model), "{materialized:?}");
-        assert!(
-            !materialized
-                .iter()
-                .any(|path| path.to_string_lossy().contains("styles")),
-            "{materialized:?}"
+        let mut materialized: Vec<_> = project
+            .expected_materialized_files()
+            .into_iter()
+            .filter(|path| path.starts_with(virtual_root.join("packages")))
+            .collect();
+        materialized.sort();
+        assert_eq!(materialized, vec![button, model]);
+        let foreign_includes: Vec<_> = project
+            .include_paths(None, false)
+            .into_iter()
+            .filter(|path| path.starts_with("packages/"))
+            .collect();
+        assert_eq!(
+            foreign_includes,
+            [
+                "packages/kit/src/Button.vue.d.ts",
+                "packages/kit/src/model.d.ts"
+            ]
         );
-        let includes = project.include_paths(None, false);
-        assert!(
-            includes
-                .iter()
-                .any(|path| path.as_str() == "packages/kit/src/Button.vue.d.ts"),
-            "{includes:?}"
+        assert_eq!(
+            [
+                project.is_foreign_source(&kit.join("Button.vue")),
+                project.is_foreign_source(&kit.join("styles.css")),
+            ],
+            [true, false]
         );
-        assert!(project.is_foreign_source(&kit.join("Button.vue")));
-        assert!(!project.is_foreign_source(&kit.join("styles.css")));
-        assert!(
-            project
-                .emitted_mirror_declarations(&root.join("emitted"))
-                .is_empty()
+        assert_eq!(
+            project.emitted_mirror_declarations(&root.join("emitted")),
+            Vec::new()
         );
     }
 
