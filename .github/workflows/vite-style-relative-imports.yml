@@ -65,7 +65,7 @@ jobs:
           record_source after-native
           vp run --workspace-root build:vite-plugin
           record_source after-adapter-build
-          node npm/builder/vite/scripts/run-tests.mjs --require-prepared
+          node npm/builder/vite/scripts/run-tests.ts --require-prepared
       - name: Retain all locked adapter tests and cross-root build contracts
         working-directory: npm/builder/vite
         run: |

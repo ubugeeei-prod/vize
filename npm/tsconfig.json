@@ -1,5 +1,11 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["*/scripts/**/*.ts", "*/scripts/**/*.mts", "*/*/type-tests/*/check.ts"],
+  "include": [
+    "*/scripts/**/*.ts",
+    "*/scripts/**/*.mts",
+    "*/*/scripts/**/*.ts",
+    "*/*/scripts/**/*.mts",
+    "*/*/type-tests/*/check.ts"
+  ],
   "exclude": ["**/node_modules/**", "ui/**", "compose/**"]
 }
