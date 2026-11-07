@@ -306,6 +306,11 @@ fn custom_name<'a>(binding: &'a BindingOp<'a>) -> Option<&'a str> {
 }
 
 fn js_expr<'a>(expr: ExprRef<'a>) -> Result<RawJs<'a>, EmitError> {
+    if let ExprRef::Opaque(opaque) = expr
+        && opaque.reason == vize_l2::expr::OpaqueReason::DirectiveClause
+    {
+        return Ok(RawJs::Borrowed(opaque.source));
+    }
     expr_source(&expr, false)
         .ok_or_else(|| EmitError::unsupported_at(Reason::CustomDirectiveExprNotJs, expr.span()))
 }

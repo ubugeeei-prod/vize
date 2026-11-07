@@ -99,6 +99,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         if let Some(result) = stage_options::try_emit_l2_captured(
             allocator,
             source,
+            template_syntax,
             &options,
             &codegen_opts,
             &l2_custom_elements,
@@ -151,6 +152,7 @@ pub(in crate::compile) fn compile_template_inner_with_sections_captured<'a, C: C
         stage_options::try_emit_l2_captured(
             allocator,
             source,
+            template_syntax,
             &options,
             &codegen_opts,
             &l2_custom_elements,

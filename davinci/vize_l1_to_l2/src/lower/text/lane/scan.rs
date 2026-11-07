@@ -136,6 +136,7 @@ impl<'a> Lane<'a> {
                             text: String::from(content),
                             span,
                             dynamic: false,
+                            raw_html: false,
                         }),
                     }
                     end = span.end;
@@ -151,6 +152,7 @@ impl<'a> Lane<'a> {
                         text: String::from(slice),
                         span,
                         dynamic: true,
+                        raw_html: node.is_raw_html(),
                     });
                     end = span.end;
                 }

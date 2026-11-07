@@ -119,6 +119,10 @@ impl Sink for NamespaceSink<'_, '_> {
         on_error(code: LexErrorCode, index: usize);
     }
 
+    fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        self.recorder.raw_interpolation(start, end);
+    }
+
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
         let tag = self.source.get(start..end);
         if !self.live && tag.is_some_and(|tag| tag.eq_ignore_ascii_case("title")) {

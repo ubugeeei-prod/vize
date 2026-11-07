@@ -22,6 +22,10 @@ pub struct TextPart {
     pub span: Span,
     /// Whether the part renders an expression.
     pub dynamic: bool,
+    /// Whether a dynamic part is an unescaped raw-HTML interpolation.
+    ///
+    /// This is always false for static parts.
+    pub raw_html: bool,
 }
 
 /// The recorded parts of one merged mixed run, keyed by the compound
@@ -76,6 +80,10 @@ impl TextParts {
         let mut cursor = span.start;
         for part in &self.parts {
             assert!(
+                part.dynamic || !part.raw_html,
+                "compound law broken: op {id} marks a static part as raw HTML",
+            );
+            assert!(
                 part.span.start == cursor,
                 "compound law broken: op {id}'s parts do not tile its span (gap at {cursor})",
             );
@@ -113,20 +121,35 @@ const _: () = {
 };
 
 /// The rebuild rule: the canonical template spelling of a merged run —
-/// static parts verbatim, dynamic parts as `{{ <text> }}`. One home,
+/// static parts verbatim, escaped dynamic parts as `{{ <text> }}`, and
+/// raw-HTML dynamic parts as `{{{ <text> }}}`. One home,
 /// used by the lowering to mint [`OpaqueExpr::source`] and by the pass
 /// to re-derive it (`pass::text`), so the two can only disagree when one
 /// of them changed.
 ///
 /// [`OpaqueExpr::source`]: crate::expr::OpaqueExpr::source
 pub fn rebuild_source(parts: &[TextPart]) -> String {
-    // `{{ ` and ` }}` add six bytes per expression; one allocation suffices.
+    // Escaped delimiters add six bytes and raw delimiters eight; one
+    // allocation suffices.
     let capacity = (parts.iter())
-        .map(|part| part.text.len() + if part.dynamic { 6 } else { 0 })
+        .map(|part| {
+            part.text.len()
+                + if part.raw_html {
+                    8
+                } else if part.dynamic {
+                    6
+                } else {
+                    0
+                }
+        })
         .sum();
     let mut out = String::with_capacity(capacity);
     for part in parts {
-        if part.dynamic {
+        if part.raw_html {
+            out.push_str("{{{ ");
+            out.push_str(part.text.as_str());
+            out.push_str(" }}}");
+        } else if part.dynamic {
             out.push_str("{{ ");
             out.push_str(part.text.as_str());
             out.push_str(" }}");

@@ -26,4 +26,5 @@ pub const BASE: LegacyDialectCapabilities = LegacyDialectCapabilities {
     scoped_slot_attrs: false,
     raw_html_interpolation: false,
     v2_event_sugar: false,
+    duplicate_static_attrs_keep_last: false,
 };

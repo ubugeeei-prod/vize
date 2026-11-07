@@ -13,7 +13,20 @@ pub(super) fn vue_is<'a>(
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
 ) -> Option<(usize, &'a str)> {
-    let ordinal = analyzed.static_is?;
+    let ordinal = if cx.caps.duplicate_static_attrs_keep_last {
+        element
+            .open
+            .attrs
+            .iter()
+            .zip(&analyzed.forms)
+            .enumerate()
+            .rfind(|(_, (attribute, form))| {
+                attribute.name.text == "is" && matches!(form, AttrForm::Static)
+            })
+            .map(|(ordinal, _)| ordinal)?
+    } else {
+        analyzed.static_is?
+    };
     if cx.v_pre_suppressed()
         || analyzed.opens_v_pre
         || cx.is_custom_element(element.tag())
@@ -47,7 +60,9 @@ pub(in crate::lower) fn casts_component(
         {
             return false;
         }
-        if selector.is_none() && attribute.name.text == "is" {
+        if attribute.name.text == "is"
+            && (selector.is_none() || cx.caps.duplicate_static_attrs_keep_last)
+        {
             selector = Some(attribute);
         }
     }

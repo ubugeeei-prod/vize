@@ -20,6 +20,11 @@ pub struct TextOp<'a> {
 pub struct InterpolationOp<'a> {
     /// The rendered expression.
     pub expression: ExprRef<'a>,
+    /// Whether the expression is Vue 0.x/1.x triple-mustache raw HTML.
+    ///
+    /// Raw HTML bypasses display-string escaping but retains the parsed
+    /// expression and its authored coordinates for prefixing and diagnostics.
+    pub raw_html: bool,
     /// The interpolation's full source range, delimiters included.
     pub span: Span,
 }
@@ -37,6 +42,6 @@ pub struct CommentOp<'a> {
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<TextOp<'_>>() == 24);
-    assert!(core::mem::size_of::<InterpolationOp<'_>>() == 24);
+    assert!(core::mem::size_of::<InterpolationOp<'_>>() == 32);
     assert!(core::mem::size_of::<CommentOp<'_>>() == 24);
 };

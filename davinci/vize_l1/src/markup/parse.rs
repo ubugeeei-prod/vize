@@ -9,6 +9,7 @@ use vize_l0::{Allocator, Vec};
 use vize_l0::{ErrorCode, TemplateSyntaxMode};
 
 use crate::build::build;
+use crate::dialect::LegacyCaps;
 use crate::event::{Event, Recorder};
 use crate::markup::render::check_fidelity;
 use crate::markup::surface::{SurfaceChild, SurfaceTree, Token};
@@ -24,10 +25,8 @@ pub use crate::dialect::vue3::surface::{
 pub struct SurfaceParseOptions {
     /// Accept Vue's experimental `//` comments inside opening tag attrs.
     pub experimental_in_tag_comments: bool,
-    /// File-wide recovery policy carried into the canonical file descriptor.
-    /// [`parse_with_options`] does not read this field: surface parsing applies
-    /// only [`Self::experimental_in_tag_comments`], while native nonstandard
-    /// admission remains typed at the descriptor boundary.
+    /// File-wide recovery policy. Quirks keeps authored tree shape and accepts
+    /// adjacent attributes without the standard missing-whitespace diagnostic.
     pub syntax: TemplateSyntaxMode,
 }
 
@@ -81,8 +80,31 @@ pub fn parse_with_options<'a>(
     source: &'a str,
     options: SurfaceParseOptions,
 ) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
-    let (tree, _, errors) = parse_projection(allocator, source, options, false);
-    (tree, errors)
+    parse_with_options_and_caps(allocator, source, options, LegacyCaps::VUE3)
+}
+
+/// Parse with the file's resolved Vue capabilities and recovery policy.
+///
+/// The ordinary public entry remains the Vue 3 standard profile. DOM product
+/// callers use this entry after resolving the dialect once per file, so raw
+/// interpolation and quirks ancestry do not require a second parse or a
+/// compatibility AST conversion.
+#[doc(hidden)]
+pub fn parse_with_options_and_caps<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SurfaceParseOptions,
+    caps: LegacyCaps,
+) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
+    let authored = options.syntax.is_quirks();
+    let (tree, authored_tree, errors) = parse_projection(
+        allocator,
+        source,
+        options,
+        authored,
+        caps.raw_html_interpolation,
+    );
+    (authored_tree.unwrap_or(tree), errors)
 }
 
 /// Parse once, retaining a non-repairing authored projection when the normal
@@ -96,7 +118,13 @@ pub fn parse_with_authored<'a>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    parse_projection(allocator, source, SurfaceParseOptions::default(), true)
+    parse_projection(
+        allocator,
+        source,
+        SurfaceParseOptions::default(),
+        true,
+        false,
+    )
 }
 
 fn parse_projection<'a>(
@@ -104,24 +132,49 @@ fn parse_projection<'a>(
     source: &'a str,
     options: SurfaceParseOptions,
     authored: bool,
+    raw_interpolation: bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct::<false>(allocator, source, authored, |events, errors| {
-        let recorder = Recorder { events, errors };
-        let sink = NamespaceSink::new(allocator, source, recorder);
-        Lexer::<Component, _>::new(
-            source,
-            sink,
-            LexOptions {
-                in_tag_comments: options.experimental_in_tag_comments,
-                ..LexOptions::default()
-            },
-        )
-        .run();
-    })
+    if raw_interpolation {
+        parse_projection_mode::<true>(allocator, source, options, authored, true)
+    } else {
+        parse_projection_mode::<false>(allocator, source, options, authored, false)
+    }
+}
+
+fn parse_projection_mode<'a, const RAW: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SurfaceParseOptions,
+    authored: bool,
+    raw_interpolation: bool,
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    let (tree, authored_tree, mut errors) =
+        construct::<RAW>(allocator, source, authored, |events, errors| {
+            let recorder = Recorder { events, errors };
+            let sink = NamespaceSink::new(allocator, source, recorder);
+            Lexer::<Component, _>::new(
+                source,
+                sink,
+                LexOptions {
+                    in_tag_comments: options.experimental_in_tag_comments,
+                    raw_interpolation,
+                    ..LexOptions::default()
+                },
+            )
+            .run();
+        });
+    if options.syntax.is_quirks() {
+        errors.retain(|error| error.code != ErrorCode::MissingWhitespaceBetweenAttributes);
+    }
+    (tree, authored_tree, errors)
 }
 
 /// Both lexer entry points share the source limit, recovery and projection

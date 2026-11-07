@@ -23,6 +23,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, Span, String, Vec, cstr};
 
+use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{
     Attribute, BindingContract, BindingOp, DynamicName, ModelOp, SlotContentOp, VueDirectiveOp,
 };
@@ -32,7 +33,7 @@ use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive, Head};
 use super::element::attr_text;
-use super::expr::{desc, expr_at};
+use super::expr::{desc, expr_at, opaque_at};
 
 /// The op an attribute attaches to.
 pub(crate) struct Owner<'a> {
@@ -220,7 +221,22 @@ fn lower_custom<'a>(
     let value = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty())
-        .map(|text| expr_at(cx, text));
+        .map(|text| {
+            let expression = expr_at(cx, text);
+            if super::directive_values_are_clauses(cx)
+                && let ExprRef::Opaque(opaque) = expression
+                && opaque.reason == OpaqueReason::ParseRejected
+            {
+                opaque_at(
+                    cx,
+                    OpaqueReason::DirectiveClause,
+                    opaque.source,
+                    opaque.span,
+                )
+            } else {
+                expression
+            }
+        });
     cx.record(
         "lower.vue-directive",
         node,

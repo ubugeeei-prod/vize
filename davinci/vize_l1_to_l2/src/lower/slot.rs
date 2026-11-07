@@ -26,7 +26,7 @@ use super::binding::{defer, lower_slot_content};
 use super::bindop::{RULE_SAME_NAME, lower_bind, lower_on};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::directive::{Arg, AttrForm, Head};
-use super::element::{Analyzed, attr_text};
+use super::element::{Analyzed, attr_text, static_attribute_is_shadowed};
 use super::expr::{desc, expr_at};
 use super::structural::lower_children;
 
@@ -45,6 +45,11 @@ pub(crate) fn lower_slot<'a>(
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
     for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
+            continue;
+        }
+        if matches!(form, AttrForm::Static)
+            && static_attribute_is_shadowed(cx, element, analyzed, index)
+        {
             continue;
         }
         match form {

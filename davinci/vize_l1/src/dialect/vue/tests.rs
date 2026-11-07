@@ -85,11 +85,13 @@ fn default_dialect_resolves_to_the_all_off_vue3_set() {
     assert!(!caps.supports_filters);
     assert!(!caps.v_repeat_syntax);
     assert!(!caps.raw_html_interpolation);
+    assert!(!caps.duplicate_static_attrs_keep_last);
     assert_eq!(caps.directive_arg_style, DirectiveArgStyle::Colon);
     // Every legacy line differs from the default set, so a capability
     // check can never confuse a legacy document with a Vue 3 one.
     for version in LegacyVueVersion::ALL {
         assert_ne!(version.capabilities(), LegacyDialectCapabilities::VUE3);
+        assert!(version.capabilities().duplicate_static_attrs_keep_last);
     }
 }
 
@@ -117,43 +119,46 @@ fn composed_tables_match_the_pre_registry_capability_matrix() {
             caps.scoped_slot_attrs,
             caps.raw_html_interpolation,
             caps.v2_event_sugar,
+            caps.duplicate_static_attrs_keep_last,
         ]
     };
     let expected = [
         (
             VueVersion::V0_10,
             DirectiveArgStyle::Clause,
-            [true, true, true, true, true, true, true, false, true, false],
+            [
+                true, true, true, true, true, true, true, false, true, false, true,
+            ],
         ),
         (
             VueVersion::V0_11,
             DirectiveArgStyle::Clause,
             [
-                true, true, true, true, true, false, true, false, true, false,
+                true, true, true, true, true, false, true, false, true, false, true,
             ],
         ),
         (
             VueVersion::V1,
             DirectiveArgStyle::Colon,
             [
-                true, true, false, false, false, false, true, false, true, false,
+                true, true, false, false, false, false, true, false, true, false, true,
             ],
         ),
         (
             VueVersion::V2,
             DirectiveArgStyle::Colon,
             [
-                true, false, false, false, false, false, false, true, false, true,
+                true, false, false, false, false, false, false, true, false, true, true,
             ],
         ),
         (
             VueVersion::V2_7,
             DirectiveArgStyle::Colon,
             [
-                true, false, false, false, false, false, false, true, false, true,
+                true, false, false, false, false, false, false, true, false, true, true,
             ],
         ),
-        (VueVersion::V3, DirectiveArgStyle::Colon, [false; 10]),
+        (VueVersion::V3, DirectiveArgStyle::Colon, [false; 11]),
     ];
 
     for (version, directive_arg_style, expected_flags) in expected {

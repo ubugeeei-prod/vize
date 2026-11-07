@@ -6,6 +6,7 @@ pub mod text;
 use super::vue::{LegacyDialectCapabilities, feature};
 
 /// Existing V2 template syntax, resolved once per file.
-pub const CAPABILITIES: LegacyDialectCapabilities = feature::event::vue2_sugar(
-    feature::slot_scope::enable(feature::filters::call_style(feature::BASE)),
-);
+pub const CAPABILITIES: LegacyDialectCapabilities =
+    feature::attribute::keep_last_duplicate(feature::event::vue2_sugar(
+        feature::slot_scope::enable(feature::filters::call_style(feature::BASE)),
+    ));

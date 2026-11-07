@@ -11,7 +11,7 @@ use vize_l0::pass::{
     FailEvent, PassEvent, PassObserver, Pipeline, Remark, RemarkCollector, WalkTiming,
 };
 use vize_l0::{Allocator, String, ensure_sufficient_stack};
-use vize_l1::markup::{SurfaceParseOptions, parse_with_options};
+use vize_l1::markup::{SurfaceParseOptions, parse_with_options_and_caps};
 use vize_l2::dump::{Page as L2Page, ProvenancePage};
 
 use crate::lower::{LegacyCaps, Lowered, lower_with_caps_and_comment_policy};
@@ -184,6 +184,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
 ) -> Result<DomEmitObservation, EmitError> {
     let EmitInvocation {
         options,
+        syntax,
         strict_slot_params,
         no_slotted,
         development,
@@ -191,13 +192,14 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
     } = invocation;
     ensure_sufficient_stack(|| {
         let started = capture.clock_now();
-        let (tree, errors) = parse_with_options(
+        let (tree, errors) = parse_with_options_and_caps(
             allocator,
             source,
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
-                ..SurfaceParseOptions::default()
+                syntax,
             },
+            caps,
         );
         let mut timing_complete = record_step(capture, Level::L1, "parse", started);
         if let Some(preflight) = preflight

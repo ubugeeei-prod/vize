@@ -21,13 +21,14 @@
 use vize_l0::{Allocator, Box, String, Vec, cstr};
 use vize_l1::markup::Attribute;
 
+use vize_l2::expr::OpaqueReason;
 use vize_l2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 use vize_l2::provenance::ProvenanceSink;
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
 use super::element::attr_text;
-use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at};
+use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at, opaque_at};
 
 /// The provenance rule of the same-name expansion.
 pub(crate) const RULE_SAME_NAME: &str = "normalize.bind.same-name";
@@ -203,7 +204,19 @@ pub(crate) fn lower_on<'a>(
     }
     let handler = attr_text(attr)
         .filter(|text| !text.trim().is_empty())
-        .map(|text| handler_expr_at(cx, text));
+        .map(|text| {
+            let expression = handler_expr_at(cx, text);
+            if name.is_none() && super::directive_values_are_clauses(cx) {
+                opaque_at(
+                    cx,
+                    OpaqueReason::DirectiveClause,
+                    expression.source(),
+                    expression.span(),
+                )
+            } else {
+                expression
+            }
+        });
     cx.record(
         "lower.on",
         node,

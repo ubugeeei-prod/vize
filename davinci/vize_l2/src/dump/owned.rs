@@ -118,6 +118,8 @@ pub struct Text {
 pub struct Interpolation {
     /// The rendered expression.
     pub expression: Expr,
+    /// Whether this is Vue 0.x/1.x triple-mustache raw HTML.
+    pub raw_html: bool,
     /// Source range.
     pub span: Span,
 }
@@ -243,10 +245,12 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
         }),
         IrOp::Interpolation(interpolation) => Op::Interpolation(Interpolation {
             expression: own_expr(&interpolation.expression),
+            raw_html: interpolation.raw_html,
             span: interpolation.span,
         }),
         IrOp::JsxChildValue(child) => Op::JsxChildValue(Interpolation {
             expression: own_expr(&child.expression),
+            raw_html: child.raw_html,
             span: child.span,
         }),
         IrOp::Comment(comment) => Op::Comment(Comment {

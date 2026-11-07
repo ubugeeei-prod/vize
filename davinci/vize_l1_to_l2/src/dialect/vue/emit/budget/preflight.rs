@@ -3,7 +3,7 @@
 use super::{DomEmitBudget, EmitInvocation, emit_dom_source_with_options_and_observer_captured};
 use crate::{DomEmit, DomEmitOptions, EmitError, LegacyCaps};
 use vize_l0::{
-    Allocator,
+    Allocator, TemplateSyntaxMode,
     dump::capture::CaptureSink,
     pass::{BudgetObserver, NoObserver},
 };
@@ -65,8 +65,40 @@ pub fn emit_dom_source_with_preflight_and_environment<C: CaptureSink>(
     development: bool,
     capture: &mut C,
 ) -> Result<(DomEmit, Option<DomEmitBudget>), EmitError> {
+    emit_dom_source_with_preflight_environment_and_syntax(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        no_slotted,
+        preflight,
+        observe,
+        development,
+        TemplateSyntaxMode::Standard,
+        capture,
+    )
+}
+
+/// Reuse the exact parsed surface with the resolved recovery policy.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "SFC emission inputs")]
+pub fn emit_dom_source_with_preflight_environment_and_syntax<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+    preflight: &mut dyn SurfacePreflight,
+    observe: bool,
+    development: bool,
+    syntax: TemplateSyntaxMode,
+    capture: &mut C,
+) -> Result<(DomEmit, Option<DomEmitBudget>), EmitError> {
     let invocation = EmitInvocation {
         options,
+        syntax,
         strict_slot_params,
         no_slotted,
         development,

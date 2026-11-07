@@ -123,6 +123,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
             Op::Interpolation(Box::new_in(
                 InterpolationOp {
                     expression: expr,
+                    raw_html: false,
                     span,
                 },
                 &allocator,
@@ -130,6 +131,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
             Op::JsxChildValue(Box::new_in(
                 InterpolationOp {
                     expression: expr,
+                    raw_html: false,
                     span,
                 },
                 &allocator,
