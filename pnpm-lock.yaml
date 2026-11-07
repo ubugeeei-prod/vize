@@ -819,9 +819,6 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
-      yaml:
-        specifier: 2.9.0
-        version: 2.9.0
 
   npm/builder/unplugin:
     dependencies:
