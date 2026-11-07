@@ -6,6 +6,7 @@ import {
   genericEventRecordPath,
 } from "./support/generic-event-specialization-source.ts";
 import { beforeConstructorEmitExport } from "./support/constructor-emit-export-source.ts";
+import { emitMemberInferEditsBefore } from "./support/emit-member-infer-source.ts";
 
 const root = new URL("../../", import.meta.url);
 const read = (path: string) => fs.readFileSync(new URL(path, root), "utf8");
@@ -18,7 +19,11 @@ void test("generic specialization restores every exact previous source and rejec
   const record = JSON.parse(read(genericEventRecordPath)) as { files: Entry[] };
   assert.equal(record.files.length, 5);
   for (const entry of record.files) {
-    const current = beforeConstructorEmitExport(read, entry.path, read(entry.path));
+    const current = beforeConstructorEmitExport(
+      read,
+      entry.path,
+      emitMemberInferEditsBefore(read, entry.path, read(entry.path)),
+    );
     const previous = beforeGenericEventSpecializationBase(read, entry.path, current);
     assert.equal(Buffer.byteLength(previous), entry.before.bytes);
     for (const edit of entry.edits) {
@@ -37,7 +42,11 @@ void test("generic specialization restores every exact previous source and rejec
     beforeGenericEventSpecializationBase(
       (path) => read(path) + (path === genericEventRecordPath ? " " : ""),
       record.files[0]!.path,
-      beforeConstructorEmitExport(read, record.files[0]!.path, read(record.files[0]!.path)),
+      beforeConstructorEmitExport(
+        read,
+        record.files[0]!.path,
+        emitMemberInferEditsBefore(read, record.files[0]!.path, read(record.files[0]!.path)),
+      ),
     ),
   );
 });

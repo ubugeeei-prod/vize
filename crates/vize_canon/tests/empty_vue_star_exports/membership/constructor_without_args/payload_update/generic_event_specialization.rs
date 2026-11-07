@@ -94,6 +94,7 @@ mod tests {
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
             let actual = fs::read_to_string(support::repository().join(path)).unwrap();
+            let actual = super::super::emit_member_infer::source_before(path, actual);
             let current = super::super::constructor_emit_export::source_before(path, actual);
             authenticate(&source_before_base(path, current.clone()), &entry["before"]);
             for changed in [
