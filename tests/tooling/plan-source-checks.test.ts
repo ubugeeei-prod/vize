@@ -220,6 +220,15 @@ void test("every canonical level and conversion crate retains browser validation
   }
 });
 
+void test("upstream fork changes retain Rust and JavaScript validation", () => {
+  assert.deepEqual(planSourceChecks(["upstream/forks/oxc_parser/src/lib.rs"]), {
+    rust: true,
+    js: true,
+    tooling: false,
+    playground: false,
+  });
+});
+
 void test("deleted and moved source files still select both gates", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-source-checks-"));
   const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();

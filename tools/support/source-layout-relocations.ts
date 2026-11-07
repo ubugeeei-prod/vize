@@ -18,7 +18,7 @@ const reverse = new Map([...forward].map(([before, after]) => [after, before]));
 assert.equal(reverse.size, forward.size, "source relocation must be unambiguous");
 for (const [before, after] of forward) {
   for (const value of [before, after]) {
-    assert.match(value, /^(?:crates|davinci|editors|tests|tools|vendor)\//);
+    assert.match(value, /^(?:crates|davinci|editors|tests|tools|vendor|upstream\/forks)\//);
     assert(!value.split("/").some((part) => part === ".." || part === "."));
     assert(!value.includes("\0"));
   }

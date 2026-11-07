@@ -12,7 +12,10 @@ import {
   newCompilerCssApiCases,
   onlyCompilerCssChanges,
 } from "../differential/compiler-css-api.ts";
-import { cssBindingProducerPaths } from "../differential/compiler-css-api-registry.ts";
+import {
+  cssBindingProducerPaths,
+  historicalCompilerCssPath,
+} from "../differential/compiler-css-api-registry.ts";
 import { loadCompilerManifest } from "../differential/compiler.mjs";
 import { readCargoMetadata } from "../../tools/support/compat/github/plan-affected-rust.ts";
 import { readJsWorkspace } from "../../tools/support/compat/github/plan-affected-js.ts";
@@ -87,10 +90,11 @@ await test("the actual required fixture gate admits only the exact CSS producer 
     ...original,
     cssApiCases: manifest.cssApiCases.filter((row) => row.id === "compiler/css/source-map-10693"),
   };
+  const historicalCssMapProducerPaths = new Set(cssMapProducerPaths.map(historicalCompilerCssPath));
   const readSide = (side, file) => {
     if (side === "base") return historical(before, file);
     if (file === manifestRelative) return Buffer.from(JSON.stringify(cssOnly));
-    if (cssMapProducerPaths.includes(file)) return historical(after, file);
+    if (historicalCssMapProducerPaths.has(file)) return historical(after, file);
     return read(file);
   };
   const request = {
@@ -164,8 +168,9 @@ await test("CSS input, source-after map and forged completion cannot acquire gen
 });
 
 await test("CSS registration binds exact actual before/head producer bytes and refuses missing or unrelated files", () => {
+  const historicalCssMapProducerPaths = new Set(cssMapProducerPaths.map(historicalCompilerCssPath));
   const readSide = (side, file) => {
-    if (!cssMapProducerPaths.includes(file)) return read(file);
+    if (!historicalCssMapProducerPaths.has(file)) return read(file);
     const revision =
       side === "base"
         ? "b0033883518f364cfbd3dd0ab9464715e9f51758"
@@ -192,7 +197,9 @@ await test("CSS registration binds exact actual before/head producer bytes and r
     for (const source of cssMapProducerPaths)
       assert.throws(() =>
         newCompilerCssApiCases(undefined, manifest.cssApiCases.slice(0, 1), (actual, file) =>
-          actual === side && file === source ? Buffer.from("foreign") : readSide(actual, file),
+          actual === side && file === historicalCompilerCssPath(source)
+            ? Buffer.from("foreign")
+            : readSide(actual, file),
         ),
       );
   assert.equal(onlyCompilerCssChanges(cssMapProducerPaths), true);
