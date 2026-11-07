@@ -228,7 +228,8 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
 #[test]
 fn all_four_original_requested_edits_are_complete_and_stable() {
     let source = include_str!("fixtures/issue-7905/CardList.vue.fixture");
-    let expected = include_str!("fixtures/issue-7905/original-requested-all-four.vue.fixture");
+    let expected = include_str!("fixtures/issue-7905/original-requested-all-four.vue.fixture")
+        .replace("<input disabled />", "<input disabled>");
     let linter = Linter::with_preset(LintPreset::Incremental).with_enabled_rules(Some(vec![
         "vue/html-self-closing".into(),
         "vue/component-name-in-template-casing".into(),

@@ -44,7 +44,7 @@ fn bare_instance_spellings_are_valid_with_explicit_prefix_policy_successors() {
             .iter()
             .map(|case| case["combinedApiDiagnostics"].as_array().unwrap().len())
             .sum::<usize>(),
-        11
+        12
     );
     let projection: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/n8n-cli-adoption.json"

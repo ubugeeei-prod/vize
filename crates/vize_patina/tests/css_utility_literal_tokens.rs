@@ -78,9 +78,13 @@ fn complete_utility_findings_exclude_css_comments_strings_and_urls() {
                 .expect("independently authored complete output vector"),
         )
         .expect("valid complete vector");
-        expected["json"] = crate::current_css_documentation::packet(expected["json"].clone());
+        expected["json"] = crate::current_css_documentation::packet(
+            expected["json"].clone(),
+            crate::current_css_documentation::GeometryProjection::ReportUtf16,
+        );
         expected["plain"] = json!(crate::current_css_documentation::plain(
-            expected["plain"].as_str().unwrap()
+            expected["plain"].as_str().unwrap(),
+            crate::current_css_documentation::GeometryProjection::ReportUtf16,
         ));
         let result = linter.lint_sfc(&source, filename);
         let api = complete(&result);

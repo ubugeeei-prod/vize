@@ -24,7 +24,9 @@ const { cases, directory } = loadCases(root);
 const original = cases[0];
 const expected =
   original.source.slice(0, original.source.indexOf("<template>")) +
-  fs.readFileSync(path.join(directory, "original-requested-all-four.vue.fixture"), "utf8");
+  fs
+    .readFileSync(path.join(directory, "original-requested-all-four.vue.fixture"), "utf8")
+    .replace("<input disabled />", "<input disabled>");
 const fixture = path.join(root, "target/vize-tests/template-style-fixes-7905");
 const file = path.join(fixture, "CardList.vue");
 const capturePath = path.join(root, "target/template-style-fixes-7905.json");

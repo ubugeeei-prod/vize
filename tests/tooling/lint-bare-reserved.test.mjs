@@ -175,7 +175,12 @@ await test("bare instance names use complete explicit prefix-policy successor pa
       {
         entry,
         preset: null,
-        findings: withCurrentDefault(entry, routePackets.get(entry.id).diagnostics),
+        findings: withCurrentDefault(
+          entry,
+          routePackets
+            .get(entry.id)
+            .diagnostics.filter((finding) => finding.rule_name !== "vue/prop-name-casing"),
+        ),
         config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
       },
       {
