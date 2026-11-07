@@ -48,6 +48,12 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.match(serialized, /\$\{editor\}-vize-extension\.tar\.gz/);
   const install = job.steps?.find((step) => step.id === "artifacts")?.run ?? "";
   assert.match(install, /node "\$packaged_cli" init [\s\S]*--typecheck --editor --no-install/);
+  assert.match(install, /"typescript-native": "npm:typescript@7\.1\.0-beta"/);
+  assert.match(install, /typescript-native@npm:typescript@7\.1\.0-beta/);
+  assert.match(install, /typescript-native\/lib\/getExePath\.js/);
+  assert.match(install, /test -x "\$native_checker"/);
+  assert.match(install, /fresh_real=\$\(readlink -f "\$fresh"\)/);
+  assert.match(install, /native checker escapes the fresh project/);
   assert.match(serialized, /VIZE_TS45_EXISTING_WORKSPACE/);
   for (const client of ["neovim", "helix", "vscode"]) {
     assert.match(serialized, new RegExp(`tests/editor-conformance/run\\.ts ${client}`));
@@ -59,7 +65,7 @@ test("release editor hosts consume the packed candidate before the tag exists", 
   assert.match(serialized, /dependency-links\.txt/);
   assert.match(serialized, /dependency-links-after-hosts\.txt/);
   assert.equal(serialized.match(/target=\$\(readlink -f \\"\$link\\"\)/g)?.length, 2);
-  assert.equal(serialized.match(/node_modules\\"\/\*/g)?.length, 2);
+  assert.equal(serialized.match(/node_modules\\"\/\*/g)?.length, 3);
   assert.match(serialized, /workspace-links\.txt/);
   assert.match(serialized, /vue\/require-v-for-key/);
   const host = job.steps?.find((step) => step.uses === "./.github/actions/vscode-host-smoke");

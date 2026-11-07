@@ -346,7 +346,11 @@ jobs:
             type: "module",
             scripts: { dev: "vite", build: "vite build" },
             dependencies: { vue: "3.5.34" },
-            devDependencies: { typescript: "6.0.3", vite: "8.0.0" },
+            devDependencies: {
+              typescript: "6.0.3",
+              "typescript-native": "npm:typescript@7.1.0-beta",
+              vite: "8.0.0",
+            },
           }, null, 2)}\n`);
           fs.writeFileSync(path.join(root, "src/Lint.vue"), `<script setup lang="ts">
           const items = [1, 2]
@@ -359,8 +363,23 @@ jobs:
           dependency_root="$RUNNER_TEMP/release-editor-dependencies"
           mkdir -p "$dependency_root"
           npm install --prefix "$dependency_root" --ignore-scripts --no-audit --no-fund \
-            --package-lock=false --save=false vue@3.5.34 typescript@6.0.3
+            --package-lock=false --save=false vue@3.5.34 typescript@6.0.3 \
+            typescript-native@npm:typescript@7.1.0-beta
           mv "$dependency_root/node_modules" "$fresh/node_modules"
+          native_resolver="$fresh/node_modules/typescript-native/lib/getExePath.js"
+          test -f "$native_resolver"
+          native_checker=$(node --input-type=module -e \
+            'import {pathToFileURL} from "node:url";const {default:get}=await import(pathToFileURL(process.argv[1]).href);process.stdout.write(get());' \
+            "$native_resolver")
+          test -x "$native_checker"
+          fresh_real=$(readlink -f "$fresh")
+          case "$(readlink -f "$native_checker")" in
+            "$fresh_real/node_modules"/*) ;;
+            *)
+              echo "native checker escapes the fresh project: $native_checker" >&2
+              exit 1
+              ;;
+          esac
           test -f "$fresh/.vscode/extensions.json"
           grep -F 'ubugeeei.vize' "$fresh/.vscode/extensions.json"
           set +e
