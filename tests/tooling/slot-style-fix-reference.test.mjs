@@ -29,9 +29,9 @@ await test("7905 slot contracts retain whole original carriers, edits and comple
     wholeJson(original, false, true)[0].messages.map((finding) => finding.ruleId),
     [
       "vue/html-self-closing",
-      "vue/html-self-closing",
       "vue/component-name-in-template-casing",
       "vue/v-slot-style",
+      "vue/html-self-closing",
       "vue/no-boolean-attr-value",
     ],
   );

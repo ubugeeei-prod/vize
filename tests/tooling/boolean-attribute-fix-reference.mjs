@@ -70,12 +70,6 @@ export function wholeJson(entry, after = false, originalRules = false) {
       ),
       message(
         source,
-        '<input disabled="disabled" />',
-        "vue/html-self-closing",
-        "Element must not use self-closing syntax",
-      ),
-      message(
-        source,
         "<my-card",
         "vue/component-name-in-template-casing",
         "Component should use PascalCase",
@@ -90,6 +84,14 @@ export function wholeJson(entry, after = false, originalRules = false) {
           "Expected '#header' instead of 'v-slot:header'",
         ),
       );
+    messages.push(
+      message(
+        source,
+        '<input disabled="disabled" />',
+        "vue/html-self-closing",
+        "Element must not use self-closing syntax",
+      ),
+    );
   }
   for (const finding of entry.diagnostics) {
     if (after && finding.fix) continue;

@@ -82,12 +82,6 @@ export function wholeJson(entry, after = false, originalRules = false) {
       ),
       message(
         source,
-        '<input disabled="disabled" />',
-        "vue/html-self-closing",
-        "Element must not use self-closing syntax",
-      ),
-      message(
-        source,
         "<my-card",
         "vue/component-name-in-template-casing",
         "Component should use PascalCase",
@@ -99,6 +93,12 @@ export function wholeJson(entry, after = false, originalRules = false) {
   }
   if (originalRules && !after)
     messages.push(
+      message(
+        source,
+        '<input disabled="disabled" />',
+        "vue/html-self-closing",
+        "Element must not use self-closing syntax",
+      ),
       message(
         source,
         'disabled="disabled"',
