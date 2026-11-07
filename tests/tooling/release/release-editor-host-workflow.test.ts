@@ -5,7 +5,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { writeReleaseZedSettings } from "../../editor-conformance/release-zed-settings.ts";
+import {
+  prepareReleaseZedProfile,
+  writeReleaseZedSettings,
+} from "../../editor-conformance/release-zed-settings.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
@@ -109,7 +112,7 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
   assert.equal(zed?.if, "inputs.release-workspace != ''");
 });
 
-test("release Zed smoke trusts its isolated worktree, opts Vize in, and retains evidence", (t) => {
+test("release Zed settings trust the isolated worktree and opt Vize into Vue", (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-settings-"));
   t.after(() => fs.rmSync(temporary, { force: true, recursive: true }));
   const config = path.join(temporary, "config");
@@ -123,9 +126,31 @@ test("release Zed smoke trusts its isolated worktree, opts Vize in, and retains 
     JSON.parse(fs.readFileSync(path.join(evidence, "zed-settings.json"), "utf8")),
     settings,
   );
-  assert.match(releaseZed, /path\.join\(userData, "config"\)/);
-  assert.doesNotMatch(releaseZed, /XDG_CONFIG_HOME/);
-  assert.match(releaseZed, /writeReleaseZedSettings\(config, evidence\)/);
+});
+
+test("release Zed smoke prepares its packaged profile and retains failure evidence", (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-zed-profile-"));
+  t.after(() => fs.rmSync(temporary, { force: true, recursive: true }));
+  const packaged = path.join(temporary, "packaged");
+  const evidence = path.join(temporary, "evidence");
+  fs.mkdirSync(packaged);
+  fs.writeFileSync(path.join(packaged, "extension.toml"), 'id = "vize"\n');
+
+  const profile = prepareReleaseZedProfile(path.join(temporary, "session"), packaged, evidence);
+  const generated = JSON.parse(
+    fs.readFileSync(path.join(profile.userData, "config", "settings.json"), "utf8"),
+  );
+  assert.equal(generated.session?.trust_all_worktrees, true);
+  assert.equal(
+    fs.readFileSync(path.join(profile.installed, "extension.toml"), "utf8"),
+    'id = "vize"\n',
+  );
+  assert.ok(fs.statSync(profile.shim).isDirectory());
+  assert.ok(fs.existsSync(path.join(profile.userData, "extensions", "installed", ".rescan")));
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(evidence, "zed-settings.json"), "utf8")),
+    generated,
+  );
   assert.match(releaseZed, /if \(!passed\) retainFailureSession\(session, evidence\)/);
   assert.match(releaseZed, /path\.join\(evidence, "failure-session"\)/);
 });
