@@ -168,10 +168,22 @@ test("source LSP selects each same-range original diagnostic and preserves valid
     const [alt, style] = diagnostics;
     const expected = [
       {
-        title: "Fix: Use self-closing syntax",
+        title: "Fix: Use separate start and end tags",
         kind: "quickfix",
         diagnostics: [style],
-        edit: { changes: { [uri]: [{ range, newText: '<img src="/logo.png" />' }] } },
+        edit: {
+          changes: {
+            [uri]: [
+              {
+                range: {
+                  start: { line: 1, character: 22 },
+                  end: { line: 1, character: 24 },
+                },
+                newText: "",
+              },
+            ],
+          },
+        },
         isPreferred: true,
       },
       suppression(alt, 1),
@@ -230,7 +242,15 @@ test("source LSP selects each same-range original diagnostic and preserves valid
         diagnostics: [shiftedStyle],
         edit: {
           changes: {
-            [uri]: [{ range: shiftedStyle.range, newText: '<img src="/logo.png" />' }],
+            [uri]: [
+              {
+                range: {
+                  start: { line: 2, character: 22 },
+                  end: { line: 2, character: 24 },
+                },
+                newText: "",
+              },
+            ],
           },
         },
       },
