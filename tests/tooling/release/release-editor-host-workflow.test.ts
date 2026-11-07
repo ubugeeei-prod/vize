@@ -105,10 +105,11 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
   assert.equal(zed?.if, "inputs.release-workspace != ''");
 });
 
-test("release Zed smoke explicitly opts Vize into Vue and retains failure evidence", () => {
+test("release Zed smoke trusts its isolated worktree, opts Vize in, and retains evidence", () => {
   assert.match(releaseZed, /path\.join\(userData, "config"\)/);
   assert.match(releaseZed, /path\.join\(config, "settings\.json"\)/);
   assert.doesNotMatch(releaseZed, /XDG_CONFIG_HOME/);
+  assert.match(releaseZed, /session: \{ trust_all_worktrees: true \}/);
   assert.match(releaseZed, /"Vue\.js": \{/);
   assert.match(releaseZed, /language_servers: \["vize", "\.\.\."\]/);
   assert.match(releaseZed, /zed-settings\.json/);
