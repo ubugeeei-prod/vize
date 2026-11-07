@@ -100,6 +100,9 @@ function hashes(directory: string): Record<string, string> {
 }
 let server: ReturnType<typeof spawn> | undefined;
 let browser: Awaited<ReturnType<ReturnType<typeof loadChromium>["launch"]>> | undefined;
+let lazyServer: ReturnType<typeof spawn> | undefined;
+let lazyBrowser: Awaited<ReturnType<ReturnType<typeof loadChromium>["launch"]>> | undefined;
+let lazyProject: string | undefined;
 const swapped: string[] = [];
 try {
   for (const [name, source] of swaps) {
@@ -250,6 +253,150 @@ try {
     JSON.stringify(errors, null, 2) + "\n",
   );
   assert.deepEqual(errors, []);
+  const browserVersion = browser.version();
+
+  await browser.close();
+  browser = undefined;
+  server.kill("SIGTERM");
+  server = undefined;
+
+  const lazyInputDirectory = path.join(fixture, "lazy-hydration");
+  const lazyEvidence = path.join(output, "lazy-hydration");
+  const lazyInputs = path.join(lazyEvidence, "inputs");
+  fs.mkdirSync(lazyInputs, { recursive: true });
+  const lazyPins = readJson(path.join(lazyInputDirectory, "provenance.json"));
+  for (const file of ["app.vue.txt", "Hydrated.vue.txt"] as const) {
+    const source = path.join(lazyInputDirectory, file);
+    assert.equal(sha256(source), at(lazyPins, "files", file));
+    fs.copyFileSync(source, path.join(lazyInputs, file));
+  }
+  fs.copyFileSync(
+    path.join(lazyInputDirectory, "provenance.json"),
+    path.join(lazyInputs, "provenance.json"),
+  );
+
+  const lazyProjectDirectory = fs.mkdtempSync(
+    path.join(path.dirname(output), "nuxt5-lazy-hydration-"),
+  );
+  lazyProject = lazyProjectDirectory;
+  for (const file of ["package.json", "package-lock.json", "nuxt.config.ts"] as const) {
+    fs.copyFileSync(path.join(fixture, file), path.join(lazyProjectDirectory, file));
+  }
+  fs.mkdirSync(path.join(lazyProjectDirectory, "app", "components"), { recursive: true });
+  fs.copyFileSync(
+    path.join(lazyInputDirectory, "app.vue.txt"),
+    path.join(lazyProjectDirectory, "app", "app.vue"),
+  );
+  fs.copyFileSync(
+    path.join(lazyInputDirectory, "Hydrated.vue.txt"),
+    path.join(lazyProjectDirectory, "app", "components", "Hydrated.vue"),
+  );
+  fs.symlinkSync(
+    path.join(fixture, "node_modules"),
+    path.join(lazyProjectDirectory, "node_modules"),
+    process.platform === "win32" ? "junction" : "dir",
+  );
+
+  const lazyBuildLog = fs.openSync(path.join(lazyEvidence, "build.log"), "w");
+  let lazyBuild;
+  try {
+    lazyBuild = spawnSync(runtimeNode, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
+      cwd: lazyProjectDirectory,
+      env: {
+        ...sourceBinding.environment,
+        PATH: `${path.dirname(runtimeNode)}${path.delimiter}${process.env.PATH}`,
+        NO_COLOR: "1",
+        NUXT_TELEMETRY_DISABLED: "1",
+      },
+      stdio: ["ignore", lazyBuildLog, lazyBuildLog],
+      timeout: 180_000,
+    });
+  } finally {
+    fs.closeSync(lazyBuildLog);
+  }
+  fs.writeFileSync(
+    path.join(lazyEvidence, "build-process.json"),
+    JSON.stringify({
+      command: [runtimeNode, "node_modules/nuxt/bin/nuxt.mjs", "build"],
+      cwd: lazyProjectDirectory,
+      pid: lazyBuild.pid,
+      runtimeSha256,
+      status: lazyBuild.status,
+      signal: lazyBuild.signal,
+      error: lazyBuild.error?.message ?? null,
+    }) + "\n",
+  );
+  assert.equal(lazyBuild.error, undefined);
+  assert.equal(lazyBuild.status, 0, "Nuxt 5 lazy hydration fixture builds");
+
+  const lazyIsolated = path.join(lazyEvidence, "isolated");
+  fs.cpSync(path.join(lazyProjectDirectory, ".output"), lazyIsolated, { recursive: true });
+  const lazyPort = await freePort();
+  const lazyServerLog = fs.openSync(path.join(lazyEvidence, "server.log"), "w");
+  lazyServer = spawn(runtimeNode, [path.join(lazyIsolated, "server/index.mjs")], {
+    cwd: lazyIsolated,
+    env: {
+      ...process.env,
+      PATH: `${path.dirname(runtimeNode)}${path.delimiter}${process.env.PATH}`,
+      HOST: "127.0.0.1",
+      PORT: String(lazyPort),
+    },
+    stdio: ["ignore", lazyServerLog, lazyServerLog],
+  });
+  fs.closeSync(lazyServerLog);
+  const lazyUrl = `http://127.0.0.1:${lazyPort}/`;
+  let lazyHtml = "";
+  for (let attempt = 0; attempt < 100; attempt++) {
+    try {
+      const response = await fetch(lazyUrl, { signal: AbortSignal.timeout(1_000) });
+      lazyHtml = await response.text();
+      assert.equal(response.status, 200, "lazy hydration SSR must render");
+      break;
+    } catch (error) {
+      if (lazyServer.exitCode !== null) {
+        throw new Error("lazy hydration SSR server exited", { cause: error });
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  fs.writeFileSync(path.join(lazyEvidence, "ssr.html"), lazyHtml);
+  assert.equal(lazyHtml.match(/hydrated-marker/g)?.length, 3);
+  assert.doesNotMatch(lazyHtml, /\bhydrate-(?:on-visible|after|never)\b/);
+
+  lazyBrowser = await loadChromium(root).launch();
+  const lazyPage = await lazyBrowser.newPage();
+  const lazyErrors: string[] = [];
+  lazyPage.on("pageerror", (error) => lazyErrors.push(String(error)));
+  lazyPage.on("console", (message) => {
+    if (["warning", "error"].includes(message.type())) lazyErrors.push(message.text());
+  });
+  await lazyPage.goto(lazyUrl, { waitUntil: "domcontentloaded" });
+  const hydrationState = () =>
+    lazyPage.evaluate(() =>
+      [...document.querySelectorAll("#lazy .hydrated")].map((element) =>
+        element.getAttribute("data-hydrated"),
+      ),
+    );
+  await lazyPage.waitForFunction(
+    () =>
+      [...document.querySelectorAll("#lazy .hydrated")][0]?.getAttribute("data-hydrated") ===
+      "true",
+  );
+  const initialHydration = await hydrationState();
+  assert.deepEqual(initialHydration, ["true", "false", "false"]);
+  await lazyPage.waitForFunction(
+    () =>
+      [...document.querySelectorAll("#lazy .hydrated")][1]?.getAttribute("data-hydrated") ===
+      "true",
+  );
+  const settledHydration = await hydrationState();
+  assert.deepEqual(settledHydration, ["true", "true", "false"]);
+  assert.deepEqual(lazyErrors, []);
+  fs.writeFileSync(
+    path.join(lazyEvidence, "browser.json"),
+    JSON.stringify({ initialHydration, settledHydration, errors: lazyErrors }, null, 2) + "\n",
+  );
+
   assert.equal(sha256(runtimeNode), runtimeSha256, "consumer Node identity remains unchanged");
   fs.writeFileSync(
     path.join(output, "report.json"),
@@ -263,8 +410,13 @@ try {
         consumerNode: { identity: runtime, sha256: runtimeSha256 },
         platform: process.platform,
         arch: process.arch,
-        browser: browser.version(),
+        browser: browserVersion,
         counter: { before: 0, after: 1 },
+        lazyHydration: {
+          ssrAttributesLeaked: 0,
+          initial: initialHydration,
+          settled: settledHydration,
+        },
         isolatedSsr: 200,
         bareRuntimeImports: 0,
       },
@@ -280,7 +432,10 @@ try {
   throw error;
 } finally {
   await browser?.close();
+  await lazyBrowser?.close();
   server?.kill("SIGTERM");
+  lazyServer?.kill("SIGTERM");
+  if (lazyProject) fs.rmSync(lazyProject, { recursive: true, force: true });
   for (const name of swapped) {
     const installed = path.join(fixture, "node_modules/@vizejs", name, "dist");
     fs.rmSync(installed, { recursive: true });

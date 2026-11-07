@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const hydrated = ref(false);
+
+onMounted(() => {
+  hydrated.value = true;
+});
+</script>
+
+<template>
+  <div class="hydrated" :data-hydrated="hydrated">hydrated-marker</div>
+</template>
