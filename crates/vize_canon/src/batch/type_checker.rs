@@ -20,7 +20,7 @@ mod registered;
 mod result;
 pub use declarations::{DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput};
 pub use metrics::IncrementalCheckMetrics;
-use paths::{IncrementalPaths, collect_project_path_snapshot};
+use paths::{IncrementalPaths, collect_explicit_path_snapshot, collect_project_path_snapshot};
 
 /// Result of type checking.
 #[derive(Debug, Default)]
@@ -203,9 +203,12 @@ impl BatchTypeChecker {
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
         self.scope_initial_installed_sources(paths)?;
+        let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
         let previous_sources = self.project.registered_original_paths_sorted();
-        self.project.set_declaration_roots(paths);
-        self.project.register_paths(paths)?;
+        self.project
+            .set_prevalidated_declaration_roots(&canonical_paths);
+        self.project
+            .register_prevalidated_paths(valid_paths, &canonical_paths)?;
         self.project.register_package_route_targets()?;
         // Out-of-root workspace files reachable through imports register too,
         // so their consumers keep real types instead of the ambient stub
@@ -215,7 +218,7 @@ impl BatchTypeChecker {
         self.project.finalize_package_routes()?;
         self.scanned = true;
         self.incremental_paths
-            .after_explicit_scan(&self.project, paths);
+            .after_explicit_scan(&self.project, canonical_paths);
         Ok(())
     }
 
@@ -225,7 +228,8 @@ impl BatchTypeChecker {
             collect_project_path_snapshot(&self.project, self.project.source_file_policy())?
                 .into_parts();
         self.scope_initial_installed_sources(&paths)?;
-        self.project.set_scanned_declaration_roots(&canonical_paths);
+        self.project
+            .set_prevalidated_declaration_roots(&canonical_paths);
         self.project
             .register_scanned_paths(&paths, &canonical_paths)?;
         self.project.register_package_route_targets()?;
