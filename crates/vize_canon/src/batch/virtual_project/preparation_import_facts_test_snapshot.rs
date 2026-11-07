@@ -63,9 +63,12 @@ impl VirtualProject {
                 .map(|(path, content)| (path.clone(), content.clone()))
                 .collect(),
             pre_rewrite_code: self
-                .pre_rewrite_code
+                .virtual_files
                 .iter()
-                .map(|(path, content)| (path.clone(), content.clone()))
+                .filter_map(|(path, file)| {
+                    self.pre_rewrite_code(file)
+                        .map(|code| (path.clone(), vize_carton::String::from(code.as_ref())))
+                })
                 .collect(),
             diagnostics,
             bindings: self.package_routes_snapshot(),

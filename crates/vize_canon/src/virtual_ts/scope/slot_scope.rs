@@ -17,7 +17,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_croquis::{Croquis, Scope, VSlotScopeData};
+use vize_croquis::{Croquis, Scope, ScopeKind, VSlotScopeData};
 
 use crate::virtual_ts::expressions::{
     ComponentPropSource, ExpressionListEmitContext, generate_expressions,
@@ -49,9 +49,13 @@ struct SlotPayloadContext<'a> {
     syntactic_type_only_imported_names: &'a FxHashSet<vize_carton::CompactString>,
     template_binding_access: &'a TemplateBindingAccess<'a>,
     source_context: ComponentPropSource<'a>,
-    /// Name prefix of the emitted host binding. The two emitters share a block
-    /// scope, so each needs its own or the second would redeclare the first.
+    /// Name prefix of the host binding. The two emitters share a block scope:
+    /// the props pass reads the template pass's host wherever that host is
+    /// visible, and declares its own only where it is not.
     binding_prefix: &'a str,
+    /// The host binding (and a dynamic slot name's binding) already exist
+    /// under `binding_prefix` in this block: annotate from them, emit nothing.
+    reuse_host: bool,
     indent: &'a str,
     hoist_shared_preamble: bool,
     explicit_generics: &'a ExplicitGenerics,
@@ -110,7 +114,9 @@ fn slot_payload_type(
         None => resolved,
     };
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
-    if let Some(usage) = &host {
+    if ctx.reuse_host {
+        // Declared by the template pass in this block.
+    } else if let Some(usage) = &host {
         generate_slot_host_binding(
             ts,
             usage,
@@ -160,14 +166,17 @@ fn slot_payload_type(
         cstr!("\"{}\"", data.name.as_str())
     } else {
         let name_binding = cstr!("{binding}_name");
-        let name = crate::virtual_ts::expressions::rewrite_reserved_template_binding(
-            data.name.as_str(),
-            ctx.template_binding_access,
-        )
-        .unwrap_or_else(|| data.name.clone());
-        ts.push_str(
-            dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str()).as_str(),
-        );
+        if !ctx.reuse_host {
+            let name = crate::virtual_ts::expressions::rewrite_reserved_template_binding(
+                data.name.as_str(),
+                ctx.template_binding_access,
+            )
+            .unwrap_or_else(|| data.name.clone());
+            ts.push_str(
+                dynamic_slot_name_binding(ctx.indent, name_binding.as_str(), name.as_str())
+                    .as_str(),
+            );
+        }
         cstr!("typeof {name_binding}.name")
     };
     SlotTypes {
@@ -212,7 +221,8 @@ pub(super) fn generate_v_slot_scope(
             )
             .with_model_modifiers(ctx.checks.model_modifiers)
             .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
-            binding_prefix: "__vize_slot_host_",
+            binding_prefix: TEMPLATE_HOST_PREFIX,
+            reuse_host: false,
             indent,
             hoist_shared_preamble: ctx.hoist_shared_preamble,
             explicit_generics: ctx.explicit_generics,
@@ -324,6 +334,11 @@ pub(super) fn generate_v_slot_props_scope(
     let props_type = if data.props_pattern.is_none() {
         String::from("unknown")
     } else {
+        // The template pass declared this slot's host in the block both
+        // passes share, unless a closure scope between the slot and the
+        // template root put it inside that closure's own replay. Reading it
+        // spares a second inference call against the child's constructor.
+        let reuse_host = host_shares_template_block(ctx.summary, scope);
         slot_payload_type(
             ts,
             &SlotPayloadContext {
@@ -333,7 +348,12 @@ pub(super) fn generate_v_slot_props_scope(
                 syntactic_type_only_imported_names: ctx.syntactic_type_only_imported_names,
                 template_binding_access: ctx.template_binding_access,
                 source_context: ctx.source_context,
-                binding_prefix: "__vize_slot_props_host_",
+                binding_prefix: if reuse_host {
+                    TEMPLATE_HOST_PREFIX
+                } else {
+                    "__vize_slot_props_host_"
+                },
+                reuse_host,
                 indent,
                 hoist_shared_preamble: ctx.hoist_shared_preamble,
                 explicit_generics: ctx.explicit_generics,
@@ -385,6 +405,31 @@ pub(super) fn generate_v_slot_props_scope(
             );
         },
     );
+}
+
+/// Host binding prefix of the template pass, `__vize_slot_host_<scope>`.
+const TEMPLATE_HOST_PREFIX: &str = "__vize_slot_host_";
+
+/// Whether the template pass declared this slot's host in the block the props
+/// pass also writes to. Each pass replays a `v-for`, `v-slot`, `v-match` or
+/// `v-when` ancestor as its own closure, so a host declared inside one is out
+/// of the other's scope; every other ancestor leaves both passes in the
+/// template's block.
+fn host_shares_template_block(summary: &Croquis, scope: &Scope) -> bool {
+    let mut parent = scope.parent();
+    while let Some(parent_id) = parent {
+        let Some(ancestor) = summary.scopes.get_scope(parent_id) else {
+            return false;
+        };
+        if matches!(
+            ancestor.kind,
+            ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::VMatch | ScopeKind::VWhen
+        ) {
+            return false;
+        }
+        parent = ancestor.parent();
+    }
+    true
 }
 
 fn slot_props_pattern(data: &VSlotScopeData, scope_id: u32) -> String {

@@ -50,11 +50,11 @@ const c = { type: 'select', items: [] } as Item
             },
         )
         .code;
-        // The slot host and the slot-props host each restate the guard for the
-        // constructor and for the factory.
+        // The slot host restates the guard for the constructor and for the
+        // factory; the props pass reads that host instead of declaring one.
         assert_eq!(
             code.matches("((c.type === 'select')) ? {").count(),
-            4,
+            2,
             "{code}"
         );
         assert_eq!(

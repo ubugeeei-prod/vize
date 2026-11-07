@@ -86,7 +86,9 @@ pub use jsx_codegen::{
 };
 mod foreign_declarations;
 mod mapping;
+mod retained_bytes;
 pub(crate) use mapping::{MaterializedSourceDocument, MaterializedSourceMappingKind};
+pub use retained_bytes::RetainedBytes;
 mod materialize;
 mod materialize_delta;
 mod materialize_fingerprint;
@@ -354,7 +356,10 @@ pub struct VirtualProject {
     session_scripts: bool,
     /// Editor projections are generated once and reused by disk and overlays.
     editor_document_options: Option<VueDocumentVirtualTsOptions>,
-    pre_rewrite_code: FxHashMap<PathBuf, vize_carton::String>,
+    /// Materialized paths whose pre-rewrite projection text editor module
+    /// resolution reads; the text itself is restored from the materialized
+    /// code and its import source map instead of being kept twice.
+    pre_rewrite_sources: FxHashSet<PathBuf>,
     legacy_vue2: bool,
     /// Opt-in type-checking of `.jsx`/`.tsx` Vue components (#1497). Default-off:
     /// when disabled, `.jsx`/`.tsx` are passed to TypeScript verbatim (React

@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -269,15 +268,7 @@ function __setup() {
   void __vize_required_slots_0;
 
   // Component props in v-slot scope: #area-gradient
-  // @ts-ignore Inference-only constructor; authored props checks own diagnostics.
-  const __vize_slot_props_host_7_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => { readonly withoutArguments: __Z; readonly withArguments: __P })(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof TrendChart>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof TrendChart>>)({
-    "class": props["class"],
-  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof TrendChart>>)));
-  const __vize_slot_props_host_7 = (undefined as unknown as $SlotHostSelector<typeof TrendChart>)((undefined as unknown as $SlotConstructorInstance<$SlotConstructor<typeof TrendChart>, typeof __vize_slot_props_host_7_instances.withoutArguments, typeof __vize_slot_props_host_7_instances.withArguments>), (undefined as unknown as $SlotsFactory<typeof TrendChart>)(TrendChart)({
-    "class": props["class"],
-  }));
-  void __vize_slot_props_host_7;
-  void function _slot_props_area_gradient_7({ id }: $SlotPayload<typeof __vize_slot_props_host_7, "area-gradient", typeof TrendChart>) {
+  void function _slot_props_area_gradient_7({ id }: $SlotPayload<typeof __vize_slot_host_7, "area-gradient", typeof TrendChart>) {
     void id;
   };
 

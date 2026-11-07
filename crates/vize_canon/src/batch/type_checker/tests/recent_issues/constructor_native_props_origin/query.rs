@@ -105,11 +105,10 @@ pub(super) fn observe(
     if actual != generated {
         return Err("native snapshot does not own the exact generated VTS".into());
     }
+    // The template pass declares the one constructor instance pair; the props
+    // pass annotates from it instead of declaring a second.
     let mut hosts = Vec::new();
-    for name in [
-        "__vize_slot_host_9_instances",
-        "__vize_slot_props_host_9_instances",
-    ] {
+    for name in ["__vize_slot_host_9_instances"] {
         let offset = position(generated, &format!("const {name} ="))? + 6;
         let pair = required(
             record(
@@ -142,9 +141,6 @@ pub(super) fn observe(
         hosts.push(props);
     }
     let first = declarations(&hosts[0])?;
-    if declarations(&hosts[1])? != first {
-        return Err("the two actual instance hosts disagree on props declarations".into());
-    }
     // Follow the actual authored import binding, not a rewritten module spelling/path pattern.
     let component_import = record(
         calls,
@@ -237,11 +233,9 @@ pub(super) fn observe(
         declaration_sources.push(json!({"node":node,"path":path,"wholeSource":text,
             "parsedFullHandle":node.parse().ok().map(|value|json!({"pos":value.pos,"end":value.end,"kind":value.kind,"path":value.path}))}));
     }
-    Ok(
-        json!({"hostProps":hosts,"vueProps":vue_props,"bothHostsAgree":true,
+    Ok(json!({"hostProps":hosts,"vueProps":vue_props,
         "sameDeclarationIdentity":first == vue_declarations,"declarationSources":declaration_sources,
-        "flagInterpretation":"UNPROVED","metadataAvailabilityOnly":true,"propsAuthorityAdmitted":false}),
-    )
+        "flagInterpretation":"UNPROVED","metadataAvailabilityOnly":true,"propsAuthorityAdmitted":false}))
 }
 
 fn exact_component_source(actual: &str, expected: &str) -> Result<(), String> {

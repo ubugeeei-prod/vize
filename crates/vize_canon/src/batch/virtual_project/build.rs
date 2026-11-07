@@ -49,7 +49,8 @@ pub(super) struct RegisteredFile {
     /// Authored bytes when they differ from `file.content`. Identity scripts
     /// read the materialized buffer directly instead of retaining a duplicate.
     pub(super) original_content: Option<CompactString>,
-    pub(super) pre_rewrite_code: Option<CompactString>,
+    /// Whether editor module resolution reads this file's pre-rewrite text.
+    pub(super) pre_rewrite_code: bool,
     /// Authored `.vue.ts` literals whose generated spelling collides with an
     /// SFC mirror. Final graph passes must keep these on TypeScript's authored
     /// resolution path even though the containing document is generated Vue
@@ -292,10 +293,9 @@ pub(super) fn build_vue_registered_file(
             virtual_path,
         },
         extra_virtual_files,
-        pre_rewrite_code: (context.editor_document_options.is_some()
+        pre_rewrite_code: context.editor_document_options.is_some()
             || context.jsx_typecheck
-            || preserve_module_source)
-            .then_some(code),
+            || preserve_module_source,
         authored_vue_ts_specifiers,
         passthrough_files: collect_passthrough_modules(
             path,

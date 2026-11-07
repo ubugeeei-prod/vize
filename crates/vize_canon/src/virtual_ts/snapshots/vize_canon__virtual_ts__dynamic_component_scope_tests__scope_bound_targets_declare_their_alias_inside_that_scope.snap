@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/dynamic_component_scope_tests.rs
-assertion_line: 90
 expression: template
 ---
 ;(function __template() {
@@ -245,11 +244,7 @@ expression: template
   ];
 
   // Component props in v-slot scope: #qux
-  const __vize_slot_props_host_9 = (undefined as unknown as $SlotHostSelector<typeof Panel>)(__vizeSlotConstructorInstance<$SlotConstructor<typeof Panel>>()(new (undefined as unknown as $SlotConstructorWithoutArguments<$SlotConstructor<typeof Panel>>)(), new (undefined as unknown as $SlotConstructorWithArguments<$SlotConstructor<typeof Panel>>)({
-  }, ...([] as unknown as $SlotConstructorArgs<$SlotConstructor<typeof Panel>>))), (undefined as unknown as $SlotsFactory<typeof Panel>)(Panel)({
-  }));
-  void __vize_slot_props_host_9;
-  void function _slot_props_qux_9({ kind, open }: $SlotPayload<typeof __vize_slot_props_host_9, "qux", typeof Panel>) {
+  void function _slot_props_qux_9({ kind, open }: $SlotPayload<typeof __vize_slot_host_9, "qux", typeof Panel>) {
     void kind;
     void open;
     // @ts-ignore Inference-only alias; the authored v-bind statement owns diagnostics.

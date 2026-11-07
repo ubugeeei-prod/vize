@@ -122,12 +122,12 @@ fn legacy_adjustment_constructor_keeps_its_existing_contract() {
 #[test]
 fn overflowing_queries_cannot_wrap_onto_an_unrelated_document_byte() {
     let mut growing = ImportSourceMap::for_rewrites(1);
-    growing.record_replacement(10, 12, 20);
+    growing.record_replacement(10, 12, 20, "\"ab\"");
     growing.finish_descending_replacements();
     assert_eq!(growing.get_virtual_offset(u32::MAX), u32::MAX);
     assert_eq!(growing.get_original_offset(u32::MAX), u32::MAX - 18);
     let mut shrinking = ImportSourceMap::for_rewrites(1);
-    shrinking.record_replacement(10, 30, 2);
+    shrinking.record_replacement(10, 30, 2, "\"abcdefghijklmnopqrst\"");
     shrinking.finish_descending_replacements();
     assert_eq!(shrinking.get_original_offset(u32::MAX), u32::MAX);
     assert_eq!(shrinking.get_virtual_offset(u32::MAX), u32::MAX - 18);
@@ -136,8 +136,8 @@ fn overflowing_queries_cannot_wrap_onto_an_unrelated_document_byte() {
 #[test]
 fn zero_length_and_multiple_replacement_records_keep_exclusive_end_shifts() {
     let mut map = ImportSourceMap::for_rewrites(2);
-    map.record_replacement(20, 22, 4);
-    map.record_replacement(10, 14, 0);
+    map.record_replacement(20, 22, 4, "\"ab\"");
+    map.record_replacement(10, 14, 0, "\"abcd\"");
     map.finish_descending_replacements();
     assert_eq!(map.get_virtual_offset(10), 10);
     assert_eq!(map.get_virtual_offset(13), 10);
@@ -152,7 +152,7 @@ fn zero_length_and_multiple_replacement_records_keep_exclusive_end_shifts() {
 #[test]
 fn changed_module_map_composes_with_the_existing_star_replacement_carrier() {
     let mut map = ImportSourceMap::for_rewrites(1);
-    map.record_replacement(10, 14, 8);
+    map.record_replacement(10, 14, 8, "\"abcd\"");
     map.finish_descending_replacements();
     let combined = map.with_added_star_replacements(&[(20, 3)]);
     assert_eq!(combined.get_virtual_offset(10), 10);
@@ -278,4 +278,55 @@ fn lsp_utf16_positions_cross_the_actual_rewritten_byte_map() {
             assert_eq!(result.source_map.get_virtual_offset(original), generated);
         }
     }
+}
+
+/// The import source map restores the text the rewriter read from the
+/// rewritten text and the authored literals it recorded, for the plain
+/// replacement, the respelled literal and the untouched module.
+#[test]
+fn pre_rewrite_text_restores_the_rewriter_input() {
+    let rewriter = ImportRewriter::new();
+    let plain = "import A from './A.vue';\nimport B from \"./B.vue\";\nexport { A, B };\n";
+    let rewritten =
+        rewriter.rewrite_with_alias_resolver(plain, SourceType::ts(), None, &|specifier, _| {
+            specifier
+                .strip_suffix(".vue")
+                .map(|stem| [stem, ".vue.ts"].concat())
+        });
+    assert_eq!(
+        rewritten.code.as_str(),
+        "import A from './A.vue.ts';\nimport B from \"./B.vue.ts\";\nexport { A, B };\n"
+    );
+    assert_eq!(
+        rewritten
+            .source_map
+            .pre_rewrite_text(&rewritten.code)
+            .as_deref(),
+        Some(plain)
+    );
+
+    // A replacement the writer must respell changes the quotes with the content.
+    let respelled = "import A from './A.vue';\n";
+    let rewritten =
+        rewriter.rewrite_with_alias_resolver(respelled, SourceType::ts(), None, &|_, _| {
+            Some("./it's.vue.ts".to_owned())
+        });
+    assert_eq!(
+        rewritten.code.as_str(),
+        "import A from \"./it's.vue.ts\";\n"
+    );
+    assert_eq!(
+        rewritten
+            .source_map
+            .pre_rewrite_text(&rewritten.code)
+            .as_deref(),
+        Some(respelled)
+    );
+
+    // Nothing rewritten: the rewritten text is the input, and the map says so.
+    let untouched = "import A from './A.ts';\n";
+    let rewritten =
+        rewriter.rewrite_with_alias_resolver(untouched, SourceType::ts(), None, &|_, _| None);
+    assert_eq!(rewritten.code.as_str(), untouched);
+    assert_eq!(rewritten.source_map.pre_rewrite_text(&rewritten.code), None);
 }
