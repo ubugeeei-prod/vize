@@ -106,12 +106,19 @@ impl MaestroServer {
             Some(hover)
         } else {
             let stamp = self.state.corsa_request_stamp();
-            let (corsa_bridge, initial) = self
-                .state
-                .get_corsa_bridge_for_canonical_source(ctx.uri, &ctx.content)
-                .await;
-            ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
-            HoverService::hover_with_corsa(&ctx, corsa_bridge).await
+            if let Some(cached) = self.state.cached_native_hover(uri, position, stamp) {
+                cached
+            } else {
+                let (corsa_bridge, initial) = self
+                    .state
+                    .get_corsa_bridge_for_canonical_source(ctx.uri, &ctx.content)
+                    .await;
+                ctx.attach_initial_canonical_document(corsa_bridge.as_ref(), initial, stamp);
+                let response = HoverService::hover_with_corsa(&ctx, corsa_bridge).await;
+                self.state
+                    .cache_native_hover(uri, position, stamp, response.clone());
+                response
+            }
         };
 
         #[cfg(not(feature = "native"))]
