@@ -47,12 +47,18 @@ impl VirtualProject {
         let path = file.virtual_path.as_path();
         let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
         let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
-        rewrite_tsx_vue_shim_specifiers(&file.content, source_type, source_dir).unwrap_or_else(
-            || RewriteResult {
-                code: file.content.clone(),
-                source_map: ImportSourceMap::empty(),
-            },
+        rewrite_tsx_vue_shim_specifiers(
+            &file.content,
+            source_type,
+            source_dir,
+            file.original_path
+                .extension()
+                .is_some_and(|extension| extension == "vue"),
         )
+        .unwrap_or_else(|| RewriteResult {
+            code: file.content.clone(),
+            source_map: ImportSourceMap::empty(),
+        })
     }
 
     pub(super) fn declaration_emit_include_paths(&self) -> Vec<&Path> {
