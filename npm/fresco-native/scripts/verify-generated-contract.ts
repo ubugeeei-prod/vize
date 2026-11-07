@@ -7,8 +7,18 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const defaultPackageDir = path.resolve(scriptDir, "..");
 
-function parseArguments(args) {
-  const options = { generatedDir: undefined, packageDir: defaultPackageDir, profile: "ci" };
+interface VerifyOptions {
+  generatedDir: string | undefined;
+  packageDir: string;
+  profile: string;
+}
+
+function parseArguments(args: string[]): VerifyOptions {
+  const options: VerifyOptions = {
+    generatedDir: undefined,
+    packageDir: defaultPackageDir,
+    profile: "ci",
+  };
   for (let index = 0; index < args.length; index += 2) {
     const name = args[index];
     const value = args[index + 1];
@@ -21,7 +31,7 @@ function parseArguments(args) {
   return options;
 }
 
-function nativeRuntimeExports(declaration) {
+function nativeRuntimeExports(declaration: string): string[] {
   return [
     ...declaration.matchAll(
       /^export declare (?:class|const|function) ([A-Za-z_$][A-Za-z0-9_$]*)\b/gm,
@@ -29,8 +39,8 @@ function nativeRuntimeExports(declaration) {
   ].map((match) => match[1]);
 }
 
-function loaderExports(loader, label) {
-  const exports = [];
+function loaderExports(loader: string, label: string): string[] {
+  const exports: string[] = [];
   for (const match of loader.matchAll(
     /^module\.exports\.([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:nativeBinding\.)?([A-Za-z_$][A-Za-z0-9_$]*)\s*;?[ \t]*$/gm,
   )) {
@@ -42,7 +52,7 @@ function loaderExports(loader, label) {
   return exports;
 }
 
-function sortedUnique(values, label) {
+function sortedUnique(values: readonly string[], label: string): string[] {
   const sorted = [...values].sort((left, right) => left.localeCompare(right));
   for (let index = 1; index < sorted.length; index += 1) {
     if (sorted[index] === sorted[index - 1]) {
@@ -52,7 +62,11 @@ function sortedUnique(values, label) {
   return sorted;
 }
 
-function assertSameExports(actual, expected, label) {
+function assertSameExports(
+  actual: readonly string[],
+  expected: readonly string[],
+  label: string,
+): void {
   const actualJson = JSON.stringify(sortedUnique(actual, label));
   const expectedJson = JSON.stringify(sortedUnique(expected, "generated declaration"));
   if (actualJson !== expectedJson) {
@@ -62,7 +76,7 @@ function assertSameExports(actual, expected, label) {
   }
 }
 
-export function verifyGeneratedContract(packageDir, generatedDir) {
+export function verifyGeneratedContract(packageDir: string, generatedDir: string): void {
   const committedDeclaration = fs.readFileSync(path.join(packageDir, "index.d.ts"));
   const generatedDeclaration = fs.readFileSync(path.join(generatedDir, "index.d.ts"));
   if (!committedDeclaration.equals(generatedDeclaration)) {
@@ -98,7 +112,7 @@ export function verifyGeneratedContract(packageDir, generatedDir) {
   );
 }
 
-function buildGeneratedContract(packageDir, profile) {
+function buildGeneratedContract(packageDir: string, profile: string): string {
   if (!/^[A-Za-z0-9_-]+$/.test(profile)) throw new Error(`Invalid NAPI profile: ${profile}`);
   const generatedDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fresco-native-generated-"));
   try {
@@ -139,7 +153,7 @@ function buildGeneratedContract(packageDir, profile) {
 }
 
 const options = parseArguments(process.argv.slice(2));
-let temporaryGeneratedDir;
+let temporaryGeneratedDir: string | undefined;
 try {
   const generatedDir =
     options.generatedDir ?? buildGeneratedContract(options.packageDir, options.profile);

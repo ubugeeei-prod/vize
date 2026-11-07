@@ -387,7 +387,7 @@ if(args[0]==='exec' && args[1]==='napi') {
     const generated = spawnSync(
       process.execPath,
       [
-        join(originalPackage, "scripts/verify-generated-contract.mjs"),
+        join(originalPackage, "scripts/verify-generated-contract.ts"),
         "--package-dir",
         packageDir,
         "--profile",
