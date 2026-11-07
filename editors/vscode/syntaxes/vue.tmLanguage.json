@@ -196,7 +196,7 @@
           }
         },
         {
-          "match": "(@)(?:([a-zA-Z0-9_.-]+)|(\\[)([^\\]\\n]+)(\\]))(?:\\.[a-zA-Z_$][\\w$-]*)*",
+          "match": "(@)(?:([a-zA-Z0-9_:.-]+)|(\\[)([^\\]\\n]+)(\\]))(?:\\.[a-zA-Z_$][\\w$-]*)*",
           "captures": {
             "1": { "name": "punctuation.definition.directive.vue" },
             "2": { "name": "entity.other.attribute-name.event.vue" },
@@ -686,7 +686,7 @@
           "patterns": [{ "include": "#vue-ts-expression" }]
         },
         {
-          "begin": "(?<!\\S)(@)(?:([a-zA-Z_][\\w.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
+          "begin": "(?<!\\S)(@)(?:([a-zA-Z_][\\w:.-]*)|(\\[)([^\\]\\n]+)(\\]))((?:\\.[a-zA-Z_$][\\w$-]*)*)\\s*(=)\\s*([\"'])",
           "beginCaptures": {
             "1": { "name": "punctuation.definition.directive.vue" },
             "2": { "name": "entity.other.attribute-name.event.vue" },
@@ -758,14 +758,14 @@
           "patterns": [{ "include": "#vue-tag-content" }]
         },
         {
-          "begin": "(</)",
+          "begin": "(</)([a-zA-Z][\\w:.-]*)",
           "beginCaptures": {
-            "1": { "name": "punctuation.definition.tag.begin.html" }
+            "1": { "name": "punctuation.definition.tag.begin.html" },
+            "2": { "name": "entity.name.tag.html" }
           },
-          "end": "([a-zA-Z][\\w:.-]*)(>)",
+          "end": "(>)",
           "endCaptures": {
-            "1": { "name": "entity.name.tag.html" },
-            "2": { "name": "punctuation.definition.tag.end.html" }
+            "1": { "name": "punctuation.definition.tag.end.html" }
           }
         }
       ]
