@@ -91,11 +91,19 @@ fn build_dump_uses_the_same_product_compile_without_changing_output() {
         assert_eq!(feed["command"], "vize-build");
         assert_eq!(feed["outcome"]["kind"], "accepted");
         assert_eq!(feed["source"]["path"], format!("{name}.vue"));
-        assert!(!feed["pages"].as_array().unwrap().is_empty());
-        assert_eq!(
-            sorted_entries(&dir).len(),
-            feed["pages"].as_array().unwrap().len() + 1,
-        );
+        let pages = feed["pages"].as_array().unwrap();
+        assert!(!pages.is_empty());
+        let changed_pages = pages
+            .iter()
+            .map(|page| page["text"].as_str().unwrap())
+            .fold((None, 0usize), |(previous, count), text| {
+                (
+                    Some(text),
+                    count + if previous == Some(text) { 0 } else { 1 },
+                )
+            })
+            .1;
+        assert_eq!(sorted_entries(&dir).len(), changed_pages + 1,);
     }
     let _ = fs::remove_dir_all(root);
 }

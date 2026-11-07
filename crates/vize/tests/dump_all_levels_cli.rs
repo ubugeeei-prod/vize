@@ -16,10 +16,20 @@ use vize_atelier_dom::{
 };
 use vize_atelier_sfc::{
     SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-    compile_sfc_for_adapter_with_stage_capture, parse_sfc,
+    compile_sfc_for_adapter_with_stage_capture_and_clock, parse_sfc,
 };
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
 use vize_l0::{Allocator, dump::capture::StageCapture};
+
+fn zero_clock() -> u64 {
+    0
+}
+
+fn normalize_timing_nanos(value: &mut serde_json::Value) {
+    for timing in value["timings"].as_array_mut().unwrap() {
+        timing["nanos"] = 0.into();
+    }
+}
 
 fn run(path: &Path, extra: &[&str]) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
@@ -39,10 +49,10 @@ fn raw_template_uses_the_product_capture_constructor() {
     let output = run(&path, &[]);
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert!(output.stderr.is_empty());
-    let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let mut actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
 
     let allocator = Allocator::default();
-    let mut capture = StageCapture::new("dom");
+    let mut capture = StageCapture::new_with_clock("dom", zero_clock);
     let _ = compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture(
         &allocator,
         template,
@@ -53,7 +63,7 @@ fn raw_template_uses_the_product_capture_constructor() {
         CodegenExperimentalOptions::default(),
         &mut capture,
     );
-    let expected = product_capture_value(
+    let mut expected = product_capture_value(
         "vize-dump",
         ProductCaptureSource {
             path: Some(path.to_str().unwrap()),
@@ -64,6 +74,8 @@ fn raw_template_uses_the_product_capture_constructor() {
         },
         &capture,
     );
+    normalize_timing_nanos(&mut actual);
+    normalize_timing_nanos(&mut expected);
     assert_eq!(actual, expected);
     assert_eq!(actual["schema_version"], 2);
     assert_eq!(actual["outcome"]["kind"], "accepted");
@@ -182,10 +194,17 @@ fn page_directory_and_unobserved_channels_are_explicit() {
         serde_json::from_slice(&fs::read(timing).unwrap()).unwrap();
     let remarks_value: serde_json::Value =
         serde_json::from_slice(&fs::read(remarks).unwrap()).unwrap();
-    assert_eq!(timing_value["observed"], false);
-    assert_eq!(remarks_value["observed"], false);
-    assert!(timing_value["timings"].as_array().unwrap().is_empty());
-    assert!(remarks_value["remarks"].as_array().unwrap().is_empty());
+    assert_eq!(timing_value["observed"], true);
+    assert_eq!(remarks_value["observed"], true);
+    assert!(
+        timing_value["timings"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|timing| matches!(timing["scope"].as_str(), Some("step" | "walk")))
+    );
+    assert!(!timing_value["timings"].as_array().unwrap().is_empty());
+    assert!(!remarks_value["remarks"].as_array().unwrap().is_empty());
 }
 
 #[test]
@@ -267,7 +286,7 @@ fn scoped_sfc_capture_matches_filename_configured_product_compile() {
         fs::write(&path, source).unwrap();
         let output = run(&path, &[]);
         assert_eq!(output.status.code(), Some(0), "{output:?}");
-        let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        let mut actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
         let filename = path.to_str().unwrap();
         let descriptor = parse_sfc(
             source,
@@ -279,7 +298,7 @@ fn scoped_sfc_capture_matches_filename_configured_product_compile() {
         .unwrap();
         let mut options = SfcCompileOptions::default();
         options.parse.filename = filename.into();
-        let (compiled, capture) = compile_sfc_for_adapter_with_stage_capture(
+        let (compiled, capture) = compile_sfc_for_adapter_with_stage_capture_and_clock(
             &descriptor,
             options,
             TemplateSyntaxMode::Standard,
@@ -287,9 +306,10 @@ fn scoped_sfc_capture_matches_filename_configured_product_compile() {
             CodegenOptions::default(),
             SfcScriptOutputMode::SeparateTemplate,
             SfcCompileExperimentalOptions::default(),
+            zero_clock,
         )
         .unwrap();
-        let expected = product_capture_value(
+        let mut expected = product_capture_value(
             "vize-dump",
             ProductCaptureSource {
                 path: Some(filename),
@@ -303,6 +323,8 @@ fn scoped_sfc_capture_matches_filename_configured_product_compile() {
             },
             &capture,
         );
+        normalize_timing_nanos(&mut actual);
+        normalize_timing_nanos(&mut expected);
         assert_eq!(actual, expected);
         // Scoped CSS is assembled by the SFC host after the L4 render page.
         outputs.push(compiled.css.unwrap());
