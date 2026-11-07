@@ -109,10 +109,51 @@ test("the stronger direct defineProps policy is intentional on both reporters", 
     eslintResults: [],
   });
   for (const result of [current, compatible]) {
-    assert.equal(result.summary.falsePositiveCount, 1);
+    assert.equal(result.summary.falsePositiveCount, 0);
+    assert.equal(result.summary.intentionalDivergenceCount, 2);
+    assert.deepEqual(
+      result.intentionalDivergences.map((finding) => finding.file),
+      ["src/BareProps.vue", "src/WrappedProps.vue"],
+    );
+  }
+});
+
+test("static styles recovered through a TypeScript cast are intentional on both reporters", () => {
+  const directory = `${cwd}/src`;
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(
+    `${directory}/CastStyle.vue`,
+    `<template>\n  <div :style="{ color: 'red', width: size } as StyleValue" />\n</template>\n`,
+  );
+  const map = {
+    upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+    entries: {
+      "vue/no-static-inline-styles": {
+        status: "mapped",
+        patinaRule: "vue/no-static-inline-styles",
+      },
+    },
+  };
+  const findings = [
+    {
+      file: "src/CastStyle.vue",
+      ruleId: "vue/no-static-inline-styles",
+      severity: 1,
+      ...span(2, 18, 2, 30),
+      message: "Static inline style attributes are not allowed.",
+    },
+  ];
+  const current = compareCurrentLintFindings("fixture", cwd, map, findings, [], {});
+  const compatible = compareCompatibleLintFindings({
+    projectId: "fixture",
+    cwd,
+    ruleMap: map,
+    patinaFindings: findings,
+    eslintResults: [],
+  });
+  for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
     assert.equal(result.summary.intentionalDivergenceCount, 1);
-    assert.equal(result.intentionalDivergences[0].file, "src/BareProps.vue");
-    assert.equal(result.falsePositives[0].file, "src/WrappedProps.vue");
   }
 });
 

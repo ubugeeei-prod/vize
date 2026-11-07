@@ -1,3 +1,4 @@
+use crate::linter::Linter;
 use crate::rules::script::RequireDefaultProp;
 use crate::rules::script::ScriptLinter;
 
@@ -135,14 +136,34 @@ const props = defineProps({
 }
 
 #[test]
-fn test_define_props_type_based_is_ignored() {
-    // Upstream intentionally checks typed props only when defaults are made
-    // explicit through destructuring or `withDefaults`.
+fn test_define_props_type_based_requires_default() {
     let source = r#"
 const props = defineProps<{ name?: string }>()
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn generic_props_from_sibling_script_use_the_sibling_location() {
+    let source = r#"<script lang="ts">
+interface Props<T> {
+  label?: T
+  active?: boolean
+}
+</script>
+<script setup lang="ts" generic="T extends string">
+withDefaults(defineProps<Props<T>>(), { active: false })
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(source, "Probe.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: T"
+    );
 }
 
 #[test]

@@ -51,14 +51,17 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{
-    Argument, CallExpression, Expression, ObjectExpression, ObjectProperty, ObjectPropertyKind,
-    Program, PropertyKey, Statement, StaticMemberExpression,
+    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey, Statement, StaticMemberExpression,
 };
 use oxc_ast_visit::{Visit, walk};
+use oxc_semantic::SemanticBuilder;
 use vize_l0::{CompactString, cstr};
 use vize_relief::{
     BindingType, ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
+
+use crate::rules::script::vue_object::VueObjects;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-refs",
@@ -141,9 +144,14 @@ impl Rule for NoUnusedRefs {
                         && !binding_uses_template_ref(ctx, name)
                         && !scripts.is_some_and(|scripts| {
                             scripts.script().is_some_and(|parsed| {
-                                program_uses_template_ref(&parsed.program, name)
+                                program_uses_template_ref(&parsed.program, script, true, name)
                             }) || scripts.script_setup().is_some_and(|parsed| {
-                                program_uses_template_ref(&parsed.program, name)
+                                program_uses_template_ref(
+                                    &parsed.program,
+                                    script_setup,
+                                    false,
+                                    name,
+                                )
                             })
                         })
                 })
@@ -239,7 +247,7 @@ fn binding_uses_template_ref(ctx: &LintContext<'_>, name: &str) -> bool {
         return false;
     };
     analysis.bindings.is_script_setup
-        || matches!(
+        && matches!(
             kind,
             BindingType::SetupLet
                 | BindingType::SetupMaybeRef
@@ -253,8 +261,19 @@ fn binding_uses_template_ref(ctx: &LintContext<'_>, name: &str) -> bool {
         )
 }
 
-fn program_uses_template_ref(program: &Program<'_>, name: &str) -> bool {
-    let mut visitor = RefUseVisitor { name, used: false };
+fn program_uses_template_ref(
+    program: &Program<'_>,
+    source: &str,
+    export_default: bool,
+    name: &str,
+) -> bool {
+    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+    let objects = VueObjects::collect(program, source, &built.semantic, export_default);
+    let mut visitor = RefUseVisitor {
+        name,
+        used: false,
+        objects: &objects,
+    };
     visitor.visit_program(program);
     visitor.used
 }
@@ -262,6 +281,7 @@ fn program_uses_template_ref(program: &Program<'_>, name: &str) -> bool {
 struct RefUseVisitor<'n> {
     name: &'n str,
     used: bool,
+    objects: &'n VueObjects,
 }
 
 impl RefUseVisitor<'_> {
@@ -278,21 +298,29 @@ impl RefUseVisitor<'_> {
 }
 
 impl<'a> Visit<'a> for RefUseVisitor<'_> {
-    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
-        if !property.computed
-            && property_key_name(&property.key) == Some("setup")
-            && returned_object(&property.value).is_some_and(|object| {
-                object.properties.iter().any(|property| {
-                    let ObjectPropertyKind::ObjectProperty(property) = property else {
-                        return false;
-                    };
-                    !property.computed && property_key_name(&property.key) == Some(self.name)
-                })
-            })
-        {
-            self.used = true;
+    fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
+        if self.objects.contains(object) {
+            for property in &object.properties {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    continue;
+                };
+                if !property.computed
+                    && property_key_name(&property.key) == Some("setup")
+                    && returned_object(&property.value).is_some_and(|returned| {
+                        returned.properties.iter().any(|property| {
+                            let ObjectPropertyKind::ObjectProperty(property) = property else {
+                                return false;
+                            };
+                            !property.computed
+                                && property_key_name(&property.key) == Some(self.name)
+                        })
+                    })
+                {
+                    self.used = true;
+                }
+            }
         }
-        walk::walk_object_property(self, property);
+        walk::walk_object_expression(self, object);
     }
 
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {

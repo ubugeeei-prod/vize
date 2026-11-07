@@ -289,6 +289,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         // still contributes declarations a rule would need to see.
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
         sibling_program: None,
+        sibling_offset: None,
     };
 
     let setup_program = script_setup_parsed
@@ -311,6 +312,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                     typescript: is_typescript_block(descriptor.script.as_ref()),
                     typescript_jsx: is_typescript_jsx_block(descriptor.script.as_ref()),
                     sibling_program: setup_program,
+                    sibling_offset: script_setup.map(|(_, offset)| offset),
                     ..sfc_context
                 },
                 None,
@@ -334,6 +336,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                     typescript: is_typescript_block(descriptor.script_setup.as_ref()),
                     typescript_jsx: is_typescript_jsx_block(descriptor.script_setup.as_ref()),
                     sibling_program: normal_program,
+                    sibling_offset: script.map(|(_, offset)| offset),
                     ..sfc_context
                 },
                 emits_setup_rule.map(|_| emits_module),

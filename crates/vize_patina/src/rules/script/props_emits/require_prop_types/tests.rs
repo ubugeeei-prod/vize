@@ -218,3 +218,25 @@ fn plain_modules_need_define_component() {
             .any(|d| d.rule_name == "script/require-prop-types")
     );
 }
+
+#[test]
+fn define_model_without_runtime_or_type_argument_requires_a_type() {
+    let source = "const show = defineModel('show', { default: false })";
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "{ default: false }"
+    );
+}
+
+#[test]
+fn typed_define_model_and_runtime_type_are_valid() {
+    for source in [
+        "const show = defineModel<boolean>('show', { default: false })",
+        "const show = defineModel('show', { type: Boolean, default: false })",
+    ] {
+        assert_eq!(create_linter().lint(source, 0).error_count, 0, "{source}");
+    }
+}

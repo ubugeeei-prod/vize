@@ -30,8 +30,12 @@ fn program_registers(program: &Program<'_>, tag: &str) -> bool {
                     let ObjectPropertyKind::ObjectProperty(property) = property else {
                         return false;
                     };
-                    static_key_name(&property.key)
-                        .is_some_and(|name| to_pascal_case(tag) == to_pascal_case(name))
+                    // eslint-plugin-vue compares the PascalCase form of the
+                    // authored tag with the registration key itself. Preserve
+                    // that asymmetry: a lower-camel shorthand such as
+                    // `{ svgIcon }` does not make `<svg-icon>` a target of the
+                    // default registered-components-only policy.
+                    static_key_name(&property.key).is_some_and(|name| to_pascal_case(tag) == name)
                 })
             })
     })
@@ -100,5 +104,18 @@ mod tests {
             let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
             assert!(program_registers(&parsed.program, "popover"));
         }
+    }
+
+    #[test]
+    fn preserves_authored_registration_key_casing() {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(
+            &allocator,
+            "export default { components: { svgIcon, Popover } }",
+            SourceType::ts(),
+        )
+        .parse();
+        assert!(!program_registers(&parsed.program, "svg-icon"));
+        assert!(program_registers(&parsed.program, "popover"));
     }
 }

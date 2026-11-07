@@ -78,6 +78,16 @@ const CASES: &[(&str, usize)] = &[
         "export default { computed: { ...mapGetters(['c']) }, methods: { m() { return this.c() } } }",
         0,
     ),
+    // Valid: a computed value that returns a function is callable by design.
+    (
+        "export default { computed: { validate() { return value => Boolean(value) } }, methods: { m() { return this.validate('ok') } } }",
+        0,
+    ),
+    // Valid: getter descriptors can also return callable values.
+    (
+        "export default { computed: { validate: { get() { return function (value) { return Boolean(value) } } } }, methods: { m() { return this.validate('ok') } } }",
+        0,
+    ),
     // Invalid: computed called from a method.
     (
         "export default { computed: { c() { return 1 } }, methods: { m() { return this.c() } } }",

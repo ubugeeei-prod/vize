@@ -42,7 +42,7 @@
 //! }
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
@@ -51,7 +51,7 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 use vize_l0::FxHashMap;
 
-use super::props_emits::typed_prop_defaults::collect_setup_props;
+use super::props_emits::typed_prop_defaults::collect_setup_props_with_types;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-boolean-default",
@@ -80,12 +80,30 @@ impl ScriptRule for NoBooleanDefault {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
         if let Some(options) = find_component_options(program)
             && let Some(props) = find_props_object(options)
         {
             check_props_object(props, offset, result);
         }
-        for declaration in collect_setup_props(program) {
+        let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
+        for declaration in collect_setup_props_with_types(program, offset, sibling) {
             if let Some(props) = declaration.runtime {
                 check_setup_props_object(props, &declaration, offset, result);
             }

@@ -41,8 +41,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule,
-    MarkupText,
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupText,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
@@ -109,14 +108,6 @@ impl NoBareStringsInTemplate {
     }
 
     fn check_element_legacy(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        // The legacy Relief visitor has no text callback, so keep its direct
-        // child projection here. The unified markup lane uses `enter_text` and
-        // therefore also sees text at the document root.
-        element.walk_children(&mut |child| {
-            if let MarkupNode::Text(text) = child {
-                Self::check_text(ctx, &text);
-            }
-        });
         Self::check_bindings(ctx, element);
     }
 }
@@ -141,9 +132,7 @@ impl MarkupRule for NoBareStringsInTemplate {
     }
 
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
-        if ctx.is_jsx() {
-            Self::check_text(ctx.lint(), text);
-        }
+        Self::check_text(ctx.lint(), text);
     }
 }
 
@@ -226,6 +215,15 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div><span>Save</span></div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn reports_bare_text_at_the_template_root() {
+        let result = create_linter().lint_template(
+            "Base Empty <CompSwitch v-model:value=\"loadData\" />",
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

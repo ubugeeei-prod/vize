@@ -1,5 +1,6 @@
 use super::{MESSAGE, RequireExpose};
 use crate::diagnostic::Severity;
+use crate::linter::Linter;
 use crate::rules::script::{ScriptLintResult, ScriptLinter, ScriptRule};
 
 const RULE: &str = super::RULE;
@@ -145,4 +146,17 @@ fn stays_opt_in() {
     assert_eq!(meta.default_severity, Severity::Warning);
     assert!(meta.presets.is_empty());
     assert!(!RequireExpose.runs_on_script_setup());
+}
+
+#[test]
+fn plain_script_default_export_is_ignored_when_script_setup_is_present() {
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec![RULE.into()]))
+        .lint_sfc(
+            r#"<script lang="ts">export default {}</script>
+<script setup lang="ts">const value = 1</script>
+<template>{{ value }}</template>"#,
+            "Component.vue",
+        );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }

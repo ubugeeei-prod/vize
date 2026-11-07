@@ -104,6 +104,22 @@ export default {
 }
 
 #[test]
+fn custom_factory_setup_return_does_not_hide_an_unused_ref() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+import { ref } from 'vue'
+import { create } from './factory'
+export default create({
+  setup() {
+    const inputEl = ref(null)
+    return { inputEl }
+  }
+})
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
 fn test_valid_dynamic_ref_skipped() {
     // `:ref` is a directive (expression target), not a named template ref.
     let sfc = r#"<template><input :ref="setRef" /></template>

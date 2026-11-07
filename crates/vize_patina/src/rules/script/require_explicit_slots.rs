@@ -104,7 +104,10 @@ impl ScriptRule for RequireExplicitSlots {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
-        if !sfc.is_sfc || !sfc.typescript {
+        // eslint-plugin-vue activates this rule only for an exact `lang="ts"`
+        // script block. TSX is deliberately outside its document-fragment
+        // gate even though it is otherwise TypeScript.
+        if !sfc.is_sfc || !sfc.typescript || sfc.typescript_jsx {
             return;
         }
         // With both script kinds, run once from script setup. A normal-script
@@ -120,9 +123,7 @@ impl ScriptRule for RequireExplicitSlots {
             }
             // eslint-plugin-vue cannot resolve imported/referenced types here;
             // such a declaration contributes no statically known slot names.
-            DeclaredSlots::Unknown => {
-                check_template(&vize_l0::FxHashSet::default(), sfc, result);
-            }
+            DeclaredSlots::Unknown => {}
             DeclaredSlots::Known(names) => {
                 check_template(names, sfc, result);
             }

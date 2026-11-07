@@ -27,11 +27,66 @@ pub(super) fn collect_computed_names<'a>(
         if property.computed {
             continue;
         }
-        if let Some(name) = property_key_name(&property.key) {
+        if let Some(name) = property_key_name(&property.key)
+            && !computed_directly_returns_function(&property.value)
+        {
             names.insert(CompactString::from(name));
         }
     }
     names
+}
+
+fn computed_directly_returns_function(value: &Expression<'_>) -> bool {
+    let value = match value.get_inner_expression() {
+        Expression::ObjectExpression(descriptor) => descriptor
+            .properties
+            .iter()
+            .find_map(|property| {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    return None;
+                };
+                (!property.computed && property_key_name(&property.key) == Some("get"))
+                    .then_some(&property.value)
+            })
+            .unwrap_or(value),
+        value => value,
+    };
+    match value.get_inner_expression() {
+        Expression::ArrowFunctionExpression(arrow) if arrow.expression => arrow
+            .body
+            .statements
+            .first()
+            .and_then(|statement| match statement {
+                Statement::ExpressionStatement(statement) => Some(&statement.expression),
+                _ => None,
+            })
+            .is_some_and(expression_is_function),
+        Expression::ArrowFunctionExpression(arrow) => {
+            arrow.body.statements.iter().any(statement_returns_function)
+        }
+        Expression::FunctionExpression(function) => function
+            .body
+            .as_ref()
+            .is_some_and(|body| body.statements.iter().any(statement_returns_function)),
+        _ => false,
+    }
+}
+
+fn statement_returns_function(statement: &Statement<'_>) -> bool {
+    let Statement::ReturnStatement(statement) = statement else {
+        return false;
+    };
+    statement
+        .argument
+        .as_ref()
+        .is_some_and(expression_is_function)
+}
+
+fn expression_is_function(expression: &Expression<'_>) -> bool {
+    matches!(
+        expression.get_inner_expression(),
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+    )
 }
 
 fn find_computed_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {

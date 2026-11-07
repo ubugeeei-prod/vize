@@ -298,6 +298,21 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
       return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound default-prop coverage.";
     return null;
   }
+  if (
+    finding.ruleId === "script/custom-event-name-casing" &&
+    findingPrecedesDefineEmits(finding, source)
+  )
+    return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
+  if (
+    finding.ruleId === "script/no-deprecated-events-api" &&
+    !isDirectThisEventsApiCall(finding, source)
+  )
+    return "Patina follows proven Vue-instance aliases and wrapped or optional callees; eslint-plugin-vue only recognizes an unwrapped, non-optional call directly on this.";
+  if (
+    finding.ruleId === "vue/no-static-inline-styles" &&
+    findingInsideTypeCastStyleBinding(finding, source)
+  )
+    return "Patina unwraps TypeScript casts around style bindings and preserves the upstream rule's static-property checks; eslint-plugin-vue skips the entire binding when its root is a TS cast.";
   if (finding.ruleId !== "script/define-props-destructuring") return null;
   const lines = source.split("\n");
   if (finding.line > lines.length) return null;
@@ -307,8 +322,50 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   }
   offset += finding.column - 1;
   if (!source.startsWith("defineProps", offset)) return null;
-  if (/\bwithDefaults\s*\(\s*$/u.test(source.slice(0, offset))) return null;
   return "Patina's default deliberately requires a direct bare defineProps call to bind an explicit destructuring pattern; eslint-plugin-vue does not report that stronger policy.";
+}
+
+function findingOffset(finding: LintRecord, source: string): number | null {
+  const lines = source.split("\n");
+  if (finding.line > lines.length) return null;
+  let offset = 0;
+  for (let line = 1; line < finding.line; line += 1)
+    offset += (lines[line - 1]?.length ?? 0) + 1;
+  return offset + finding.column - 1;
+}
+
+function findingEndOffset(finding: LintRecord, source: string): number | null {
+  const lines = source.split("\n");
+  if (finding.endLine > lines.length) return null;
+  let offset = 0;
+  for (let line = 1; line < finding.endLine; line += 1)
+    offset += (lines[line - 1]?.length ?? 0) + 1;
+  return offset + finding.endColumn - 1;
+}
+
+function findingPrecedesDefineEmits(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  return offset !== null && source.indexOf("defineEmits", offset) > offset;
+}
+
+function isDirectThisEventsApiCall(finding: LintRecord, source: string): boolean {
+  const start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  if (start === null || end === null || end < start) return false;
+  const authored = source.slice(Math.max(0, start - 32), Math.min(source.length, end + 8));
+  return /this\s*(?:\.\s*\$(?:on|off|once)|\[\s*['"]\$(?:on|off|once)['"]\s*\])\s*\(/u.test(
+    authored,
+  );
+}
+
+function findingInsideTypeCastStyleBinding(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const start = Math.max(source.lastIndexOf(":style", offset), source.lastIndexOf("v-bind:style", offset));
+  if (start < 0 || offset - start > 20_000) return false;
+  const end = source.indexOf(">", offset);
+  if (end < 0) return false;
+  return /\}\s+as\s+[A-Za-z_$][\w$]*/u.test(source.slice(offset, end));
 }
 
 function baselineIntentionalReason(finding: LintRecord, cwd: string): string | null {

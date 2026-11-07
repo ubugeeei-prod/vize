@@ -87,7 +87,7 @@ mod valid_define_options;
 mod valid_define_props;
 mod valid_model_definition;
 mod valid_next_tick;
-mod vue_object;
+pub(crate) mod vue_object;
 mod vue_router_prefer_named_push;
 mod vue_test_utils_no_html_snapshot;
 

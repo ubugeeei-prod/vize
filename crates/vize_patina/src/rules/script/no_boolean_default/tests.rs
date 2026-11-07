@@ -1,4 +1,5 @@
 use super::NoBooleanDefault;
+use crate::linter::Linter;
 use crate::rules::script::ScriptLinter;
 
 fn create_linter() -> ScriptLinter {
@@ -202,6 +203,28 @@ const props = withDefaults(defineProps<{ active?: boolean; count?: number }>(), 
     assert_eq!(
         (result.diagnostics[0].start, result.diagnostics[0].end),
         (start, start + 4)
+    );
+}
+
+#[test]
+fn generic_boolean_prop_from_sibling_script_is_resolved() {
+    let source = r#"<script lang="ts">
+interface Props<T> {
+  value?: T
+  active?: boolean
+}
+</script>
+<script setup lang="ts" generic="T extends string">
+withDefaults(defineProps<Props<T>>(), { active: false })
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/no-boolean-default".into()]))
+        .lint_sfc(source, "Probe.vue");
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "false"
     );
 }
 

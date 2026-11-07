@@ -113,6 +113,22 @@ fn test_regular_sfc_script_does_not_require_script_setup_macro() {
 }
 
 #[test]
+fn tsx_sfc_is_outside_the_upstream_rule_surface() {
+    let result = lint_sfc(
+        "<template><slot name=\"menu\" /></template><script setup lang=\"tsx\">const value = 1</script>",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn unresolved_slot_type_does_not_turn_into_an_empty_contract() {
+    let result = lint_sfc(
+        "<template><slot name=\"menu\" /></template><script setup lang=\"ts\">defineSlots<ImportedSlots>()</script>",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_script_setup_without_rendered_slot_is_valid() {
     let result = lint_sfc(
         "<script setup lang=\"ts\">\nconst value: number = 1\nconst slots = useSlots()\n</script>",

@@ -26,6 +26,8 @@ pub(crate) struct TypedProp {
     pub(crate) span: Span,
     pub(crate) required: bool,
     pub(crate) boolean: bool,
+    /// Offset of the script block which owns this type member.
+    pub(crate) offset: usize,
 }
 
 pub(crate) struct SetupPropsDeclaration<'a> {
@@ -33,7 +35,6 @@ pub(crate) struct SetupPropsDeclaration<'a> {
     pub(crate) typed: Vec<TypedProp>,
     pub(crate) defaults: Vec<PropDefault>,
     pub(crate) uses_destructure: bool,
-    pub(crate) uses_with_defaults: bool,
 }
 
 impl SetupPropsDeclaration<'_> {
@@ -49,7 +50,11 @@ impl SetupPropsDeclaration<'_> {
     }
 }
 
-pub(crate) fn collect_setup_props<'a>(program: &'a Program<'a>) -> Vec<SetupPropsDeclaration<'a>> {
+pub(crate) fn collect_setup_props_with_types<'a>(
+    program: &'a Program<'a>,
+    offset: usize,
+    sibling: Option<(&'a Program<'a>, usize)>,
+) -> Vec<SetupPropsDeclaration<'a>> {
     if compiler_macro_is_shadowed(program, "defineProps") {
         return Vec::new();
     }
@@ -62,17 +67,25 @@ pub(crate) fn collect_setup_props<'a>(program: &'a Program<'a>) -> Vec<SetupProp
                     let Some(init) = declarator.init.as_ref() else {
                         continue;
                     };
-                    if let Some(declaration) =
-                        declaration_from_expression(program, init, Some(&declarator.id))
-                    {
+                    if let Some(declaration) = declaration_from_expression(
+                        program,
+                        offset,
+                        sibling,
+                        init,
+                        Some(&declarator.id),
+                    ) {
                         declarations.push(declaration);
                     }
                 }
             }
             Statement::ExpressionStatement(statement) => {
-                if let Some(declaration) =
-                    declaration_from_expression(program, &statement.expression, None)
-                {
+                if let Some(declaration) = declaration_from_expression(
+                    program,
+                    offset,
+                    sibling,
+                    &statement.expression,
+                    None,
+                ) {
                     declarations.push(declaration);
                 }
             }
@@ -84,6 +97,8 @@ pub(crate) fn collect_setup_props<'a>(program: &'a Program<'a>) -> Vec<SetupProp
 
 fn declaration_from_expression<'a>(
     program: &'a Program<'a>,
+    offset: usize,
+    sibling: Option<(&'a Program<'a>, usize)>,
     expression: &'a Expression<'a>,
     binding: Option<&'a BindingPattern<'a>>,
 ) -> Option<SetupPropsDeclaration<'a>> {
@@ -115,7 +130,18 @@ fn declaration_from_expression<'a>(
     if let Some(arguments) = &props.type_arguments
         && let Some(ty) = arguments.params.first()
     {
-        collect_type_props(ty, program, 0, &mut FxHashSet::default(), &mut typed);
+        let sources = sibling.map_or_else(
+            || vec![(program, offset)],
+            |(sibling, sibling_offset)| vec![(program, offset), (sibling, sibling_offset)],
+        );
+        collect_type_props(
+            ty,
+            &sources,
+            offset,
+            0,
+            &mut FxHashSet::default(),
+            &mut typed,
+        );
     }
 
     let mut defaults = Vec::new();
@@ -148,7 +174,6 @@ fn declaration_from_expression<'a>(
         typed,
         defaults,
         uses_destructure,
-        uses_with_defaults: with_defaults.is_some(),
     })
 }
 
@@ -189,7 +214,8 @@ fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
 
 fn collect_type_props(
     ty: &TSType<'_>,
-    program: &Program<'_>,
+    sources: &[(&Program<'_>, usize)],
+    origin_offset: usize,
     depth: usize,
     seen: &mut FxHashSet<CompactString>,
     props: &mut Vec<TypedProp>,
@@ -199,25 +225,26 @@ fn collect_type_props(
     }
     match ty {
         TSType::TSTypeLiteral(literal) => {
-            collect_signatures(&literal.members, program, depth, seen, props)
+            collect_signatures(&literal.members, sources, origin_offset, depth, seen, props)
         }
         TSType::TSIntersectionType(intersection) => {
             for ty in &intersection.types {
-                collect_type_props(ty, program, depth + 1, seen, props);
+                collect_type_props(ty, sources, origin_offset, depth + 1, seen, props);
             }
         }
         TSType::TSParenthesizedType(parenthesized) => collect_type_props(
             &parenthesized.type_annotation,
-            program,
+            sources,
+            origin_offset,
             depth + 1,
             seen,
             props,
         ),
-        TSType::TSTypeReference(reference) if reference.type_arguments.is_none() => {
+        TSType::TSTypeReference(reference) => {
             let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
                 return;
             };
-            collect_named_type(identifier.name.as_str(), program, depth + 1, seen, props);
+            collect_named_type(identifier.name.as_str(), sources, depth + 1, seen, props);
         }
         _ => {}
     }
@@ -225,7 +252,7 @@ fn collect_type_props(
 
 fn collect_named_type(
     name: &str,
-    program: &Program<'_>,
+    sources: &[(&Program<'_>, usize)],
     depth: usize,
     seen: &mut FxHashSet<CompactString>,
     props: &mut Vec<TypedProp>,
@@ -234,28 +261,42 @@ fn collect_named_type(
     if depth >= 16 || !seen.insert(owned.clone()) {
         return;
     }
-    for declaration in program.body.iter().filter_map(statement_declaration) {
-        match declaration {
-            Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
-                collect_type_props(&alias.type_annotation, program, depth + 1, seen, props);
-            }
-            Declaration::TSInterfaceDeclaration(interface) if interface.id.name == name => {
-                for heritage in &interface.extends {
-                    if heritage.type_arguments.is_none()
-                        && let Expression::Identifier(identifier) = &heritage.expression
-                    {
-                        collect_named_type(
-                            identifier.name.as_str(),
-                            program,
-                            depth + 1,
-                            seen,
-                            props,
-                        );
-                    }
+    for (program, origin_offset) in sources {
+        for declaration in program.body.iter().filter_map(statement_declaration) {
+            match declaration {
+                Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
+                    collect_type_props(
+                        &alias.type_annotation,
+                        sources,
+                        *origin_offset,
+                        depth + 1,
+                        seen,
+                        props,
+                    );
                 }
-                collect_signatures(&interface.body.body, program, depth, seen, props);
+                Declaration::TSInterfaceDeclaration(interface) if interface.id.name == name => {
+                    for heritage in &interface.extends {
+                        if let Expression::Identifier(identifier) = &heritage.expression {
+                            collect_named_type(
+                                identifier.name.as_str(),
+                                sources,
+                                depth + 1,
+                                seen,
+                                props,
+                            );
+                        }
+                    }
+                    collect_signatures(
+                        &interface.body.body,
+                        sources,
+                        *origin_offset,
+                        depth,
+                        seen,
+                        props,
+                    );
+                }
+                _ => {}
             }
-            _ => {}
         }
     }
     seen.remove(&owned);
@@ -263,7 +304,8 @@ fn collect_named_type(
 
 fn collect_signatures(
     members: &[TSSignature<'_>],
-    program: &Program<'_>,
+    sources: &[(&Program<'_>, usize)],
+    origin_offset: usize,
     depth: usize,
     seen: &mut FxHashSet<CompactString>,
     props: &mut Vec<TypedProp>,
@@ -281,25 +323,26 @@ fn collect_signatures(
         let boolean = property
             .type_annotation
             .as_ref()
-            .is_some_and(|annotation| is_boolean_type(&annotation.type_annotation, program, depth));
+            .is_some_and(|annotation| is_boolean_type(&annotation.type_annotation, sources, depth));
         props.push(TypedProp {
             name: CompactString::new(name),
             span: property.span(),
             required: !property.optional,
             boolean,
+            offset: origin_offset,
         });
     }
     let _ = seen;
 }
 
-fn is_boolean_type(ty: &TSType<'_>, program: &Program<'_>, depth: usize) -> bool {
+fn is_boolean_type(ty: &TSType<'_>, sources: &[(&Program<'_>, usize)], depth: usize) -> bool {
     if depth >= 16 {
         return false;
     }
     match ty {
         TSType::TSBooleanKeyword(_) => true,
         TSType::TSParenthesizedType(parenthesized) => {
-            is_boolean_type(&parenthesized.type_annotation, program, depth + 1)
+            is_boolean_type(&parenthesized.type_annotation, sources, depth + 1)
         }
         TSType::TSTypeReference(reference) if reference.type_arguments.is_none() => {
             let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
@@ -308,19 +351,20 @@ fn is_boolean_type(ty: &TSType<'_>, program: &Program<'_>, depth: usize) -> bool
             if identifier.name == "Boolean" {
                 return true;
             }
-            program
-                .body
-                .iter()
-                .filter_map(statement_declaration)
-                .find_map(|declaration| match declaration {
-                    Declaration::TSTypeAliasDeclaration(alias)
-                        if alias.id.name == identifier.name =>
-                    {
-                        Some(is_boolean_type(&alias.type_annotation, program, depth + 1))
-                    }
-                    _ => None,
-                })
-                .unwrap_or(false)
+            sources.iter().any(|(program, _)| {
+                program
+                    .body
+                    .iter()
+                    .filter_map(statement_declaration)
+                    .any(|declaration| match declaration {
+                        Declaration::TSTypeAliasDeclaration(alias)
+                            if alias.id.name == identifier.name =>
+                        {
+                            is_boolean_type(&alias.type_annotation, sources, depth + 1)
+                        }
+                        _ => false,
+                    })
+            })
         }
         _ => false,
     }

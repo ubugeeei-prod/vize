@@ -289,6 +289,14 @@ fn test_event_bus_emit_in_sfc_is_not_checked() {
 }
 
 #[test]
+fn test_empty_namespace_segments_follow_upstream_casing() {
+    let result = lint_sfc(
+        "<script>export default { mounted() { this.$root.$emit('bv::show::modal') } }</script>",
+    );
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_configured_kebab_case_allows_template_emit() {
     let sfc = r#"<script setup>
 const emit = defineEmits(['my-event'])

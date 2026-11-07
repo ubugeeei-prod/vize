@@ -350,6 +350,13 @@ fn is_camel_case_event(value: &str) -> bool {
 
 /// Whether a single segment matches `^[a-z][a-zA-Z0-9]*$`.
 fn is_camel_case_segment(segment: &str) -> bool {
+    // eslint-plugin-vue splits on `:` and its casing helper accepts empty
+    // segments. Event-bus namespaces such as `bv::show::modal` therefore stay
+    // outside this rule even though an empty whole event name is rejected by
+    // the guard in `is_camel_case_event`.
+    if segment.is_empty() {
+        return true;
+    }
     let mut chars = segment.chars();
     match chars.next() {
         Some(first) if first.is_ascii_lowercase() => {}

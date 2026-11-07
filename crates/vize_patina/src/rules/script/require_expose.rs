@@ -2,12 +2,12 @@
 //!
 //! An options-API component object must declare `expose`, call setup's `expose`
 //! (or `context.expose`), or return a render function from `setup`. Mixins are
-//! left alone. This script pass cannot see a sibling `<script setup>`, so a
-//! bare `export default {}` still warns. `defineExpose` is not this rule.
+//! left alone. An SFC that also has `<script setup>` is outside this rule, just
+//! as it is in eslint-plugin-vue. `defineExpose` is not this rule.
 
 mod setup;
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     CallExpression, ExportDefaultDeclaration, Expression, NewExpression, ObjectExpression,
@@ -64,6 +64,23 @@ impl ScriptRule for RequireExpose {
             pending: None,
         };
         visitor.visit_program(program);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        // eslint-plugin-vue's `isScriptSetup(context)` applies to the whole
+        // SFC. A documentation-only default export next to `<script setup>`
+        // therefore must not be treated as a separate Options API component.
+        if sfc.is_sfc && sfc.sibling_program.is_some() {
+            return;
+        }
+        self.check_program(program, source, offset, result);
     }
 }
 

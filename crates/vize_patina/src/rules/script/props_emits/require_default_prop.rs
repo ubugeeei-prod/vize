@@ -17,8 +17,8 @@
 //! options/props objects, and the `<script setup>` runtime form
 //! `defineProps({ ... })`. The array shorthand (`props: ['x']` /
 //! `defineProps(['x'])`) declares neither type nor default and is left to
-//! `require-prop-types`. Type-based props are checked when `withDefaults` or a
-//! destructuring pattern makes the component's default contract explicit.
+//! `require-prop-types`. Type-based props are checked directly, including a
+//! local generic interface declared in the SFC's sibling `<script>` block.
 //!
 //! Port of [`vue/require-default-prop`](https://eslint.vuejs.org/rules/require-default-prop.html).
 //!
@@ -51,9 +51,9 @@ use oxc_span::Span;
 
 use vize_l0::CompactString;
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::props_source::{PropDescriptor, PropsSource, collect_options_props};
-use super::typed_prop_defaults::collect_setup_props;
+use super::typed_prop_defaults::collect_setup_props_with_types;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -82,13 +82,31 @@ impl ScriptRule for RequireDefaultProp {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
         if let Some(source) = collect_options_props(program) {
             for prop in source.object_props() {
                 check_prop(prop, false, offset, result);
             }
         }
 
-        for declaration in collect_setup_props(program) {
+        let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
+        for declaration in collect_setup_props_with_types(program, offset, sibling) {
             if let Some(runtime) = declaration.runtime {
                 let source = PropsSource::Object(runtime);
                 for prop in source.object_props() {
@@ -100,14 +118,11 @@ impl ScriptRule for RequireDefaultProp {
                     );
                 }
             }
-            if !declaration.uses_with_defaults && !declaration.uses_destructure {
-                continue;
-            }
             for prop in &declaration.typed {
                 if prop.required || prop.boolean || declaration.has_default(&prop.name) {
                     continue;
                 }
-                report(&prop.name, prop.span, offset, result);
+                report(&prop.name, prop.span, prop.offset, result);
             }
         }
     }

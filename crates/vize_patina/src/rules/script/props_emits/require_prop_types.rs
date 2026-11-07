@@ -46,11 +46,16 @@
 //! }
 //! ```
 
-use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
+use oxc_ast::ast::{
+    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey,
+};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::compiler_macro_is_shadowed;
 use super::props_source::{PropDescriptor, collect_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -93,6 +98,51 @@ impl ScriptRule for RequirePropTypes {
                 }
             }
         }
+        if !compiler_macro_is_shadowed(program, "defineModel") {
+            let mut visitor = DefineModelVisitor { offset, result };
+            visitor.visit_program(program);
+        }
+    }
+}
+
+struct DefineModelVisitor<'out> {
+    offset: usize,
+    result: &'out mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for DefineModelVisitor<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineModel")
+            && call.type_arguments.is_none()
+        {
+            check_define_model(call, self.offset, self.result);
+        }
+        walk_call_expression(self, call);
+    }
+}
+
+fn check_define_model(call: &CallExpression<'_>, offset: usize, result: &mut ScriptLintResult) {
+    let mut name = "modelValue";
+    let mut options_index = 0;
+    if let Some(Argument::StringLiteral(literal)) = call.arguments.first() {
+        name = literal.value.as_str();
+        options_index = 1;
+    }
+    let Some(options) = call
+        .arguments
+        .get(options_index)
+        .and_then(Argument::as_expression)
+    else {
+        report(name, call.span, offset, result);
+        return;
+    };
+    let Expression::ObjectExpression(options) = options.get_inner_expression() else {
+        // An unresolved expression may provide a type. eslint-plugin-vue does
+        // not report when it cannot prove the options are typeless.
+        return;
+    };
+    if !descriptor_has_type(options) {
+        report(name, options.span, offset, result);
     }
 }
 
