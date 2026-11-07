@@ -41,12 +41,31 @@ impl ModuleSpecifierFacts {
     }
 }
 
+/// The exact bytes of one source without retaining them: a preparation reads
+/// thousands of projections, each tens of kilobytes, through this cache, and
+/// copying every one into a map key doubled the peak heap of an edit.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct SourceIdentity {
+    len: usize,
+    hash: u128,
+}
+
+impl SourceIdentity {
+    fn of(source: &str) -> Self {
+        Self {
+            len: source.len(),
+            hash: xxhash_rust::xxh3::xxh3_128(source.as_bytes()),
+        }
+    }
+}
+
 /// Callers own this cache for one preparation, never a session or native query.
 /// Complete SourceType and exact source bytes determine syntax; no paths,
-/// resolution decisions, callbacks, or rewritten output are retained.
+/// resolution decisions, callbacks, rewritten output, or source text are
+/// retained.
 #[cfg_attr(not(test), derive(Default))]
 pub(crate) struct ModuleSpecifierFactsCache {
-    sources: FxHashMap<SourceType, FxHashMap<String, ModuleSpecifierFacts>>,
+    sources: FxHashMap<SourceType, FxHashMap<SourceIdentity, ModuleSpecifierFacts>>,
     #[cfg(test)]
     uncached: bool,
     #[cfg(test)]
@@ -106,23 +125,20 @@ impl ModuleSpecifierFactsCache {
                 .scratch
                 .insert(ModuleSpecifierFacts::parse(source, source_type));
         }
+        let identity = SourceIdentity::of(source);
         let sources = self.sources.entry(source_type).or_default();
-        if !sources.contains_key(source) {
-            sources.insert(
-                source.into(),
-                ModuleSpecifierFacts::parse(source, source_type),
-            );
-            #[cfg(test)]
-            {
-                self.parses += 1;
-            }
+        #[cfg(test)]
+        let known = sources.contains_key(&identity);
+        let facts = sources
+            .entry(identity)
+            .or_insert_with(|| ModuleSpecifierFacts::parse(source, source_type));
+        #[cfg(test)]
+        if known {
+            self.hits += 1;
         } else {
-            #[cfg(test)]
-            {
-                self.hits += 1;
-            }
+            self.parses += 1;
         }
-        &sources[source]
+        facts
     }
 
     #[cfg(test)]
