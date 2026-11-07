@@ -38,7 +38,7 @@ use oxc_ast_visit::{
 };
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::{operator::AssignmentOperator, scope::ScopeFlags};
-use vize_l0::{CompactString, FxHashMap};
+use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-slots-as-functions",
@@ -80,6 +80,7 @@ impl ScriptRule for RequireSlotsAsFunctions {
             offset,
             result,
             scopes: vec![FxHashMap::default()],
+            reported: FxHashSet::default(),
             vue2_render_depth: 0,
         };
         visitor.visit_program(program);
@@ -90,6 +91,7 @@ struct SlotsVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
     scopes: Vec<FxHashMap<CompactString, Kind>>,
+    reported: FxHashSet<(u32, u32)>,
     vue2_render_depth: u32,
 }
 
@@ -256,6 +258,9 @@ impl SlotsVisitor<'_> {
     }
 
     fn report(&mut self, span: Span) {
+        if !self.reported.insert((span.start, span.end)) {
+            return;
+        }
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
         self.result
@@ -335,6 +340,19 @@ mod tests {
         let property = source.find("foo").unwrap() as u32;
         assert_eq!(result.diagnostics[0].start, property);
         assert_eq!(result.diagnostics[0].end, property + 3);
+    }
+
+    #[test]
+    fn reports_a_slot_alias_origin_only_once_for_multiple_reads() {
+        let source = "export default { created() { const highlight = this.$slots.highlight; if (highlight && highlight[0]) return highlight[0] } }";
+        let result = lint(source);
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+        let property = source.find("highlight; ").unwrap() as u32;
+        assert_eq!(result.diagnostics[0].start, property);
+        assert_eq!(
+            result.diagnostics[0].end,
+            property + "highlight".len() as u32
+        );
     }
 
     #[test]
