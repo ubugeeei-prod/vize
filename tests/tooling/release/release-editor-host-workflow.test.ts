@@ -53,6 +53,13 @@ test("release editor hosts consume the packed candidate before the tag exists", 
     assert.match(serialized, new RegExp(`tests/editor-conformance/run\\.ts ${client}`));
   }
   assert.match(serialized, /project-links\.txt/);
+  assert.match(serialized, /project-links-outside-node-modules\.txt/);
+  assert.match(serialized, /project-links-after-hosts-outside-node-modules\.txt/);
+  assert.equal(serialized.match(/-path \\"\$[A-Za-z0-9_]+\/node_modules\\" -prune/g)?.length, 2);
+  assert.match(serialized, /dependency-links\.txt/);
+  assert.match(serialized, /dependency-links-after-hosts\.txt/);
+  assert.equal(serialized.match(/target=\$\(readlink -f \\"\$link\\"\)/g)?.length, 2);
+  assert.equal(serialized.match(/node_modules\\"\/\*/g)?.length, 2);
   assert.match(serialized, /workspace-links\.txt/);
   assert.match(serialized, /vue\/require-v-for-key/);
   const host = job.steps?.find((step) => step.uses === "./.github/actions/vscode-host-smoke");
