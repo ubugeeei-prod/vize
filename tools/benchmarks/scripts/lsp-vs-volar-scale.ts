@@ -15,14 +15,12 @@ import {
   type FocusImports,
   CHAIN_LEVELS,
   CORE_SFCS,
-  FOCUS_SCRIPT_PROBE_AFTER,
   FOCUS_TEMPLATE_PROBE_AFTER,
   HOSTS,
   MAIN_SOURCE,
   MODEL_STEPS,
   UPPER_LEVELS,
   appSource,
-  focusRequests,
   focusSource,
   hostSource,
   levelSource,
@@ -32,7 +30,6 @@ import {
   stepSource,
   upperSource,
 } from "./lsp-vs-volar-scale-core.ts";
-import type { FixtureSpec } from "./lsp-vs-volar-fixtures.ts";
 import {
   COMPOSABLES_INDEX,
   KIT,
@@ -259,6 +256,25 @@ export function scaleProject(sfcs: number, vue: string): ProjectFiles {
   return files;
 }
 
+/** A normal connected project whose edited SFC alone is deliberately enormous. */
+export function giantSfcProject(vue: string, blocks = 10_000): ProjectFiles {
+  if (!Number.isSafeInteger(blocks) || blocks < 1)
+    throw new Error(`a giant SFC needs a positive block count, got ${blocks}`);
+  const files = scaleProject(KIT.length + CORE_SFCS, vue);
+  const path = "src/core/OrderBoard.vue";
+  const source = files.get(path)!;
+  const giant = Array.from(
+    { length: blocks },
+    (_, index) =>
+      `    <article data-giant-block="${index}">{{ boardSummary.total + ${index} }} / {{ visible.length }}</article>`,
+  ).join("\n");
+  files.set(
+    path,
+    source.replace(FOCUS_TEMPLATE_PROBE_AFTER, `${giant}\n${FOCUS_TEMPLATE_PROBE_AFTER}`),
+  );
+  return files;
+}
+
 export const MONOREPO_DOMAINS = 36;
 export const MONOREPO_APPS = 6;
 const APP_FEATURES = 2;
@@ -446,42 +462,3 @@ ${roots.map((path) => `    <${path.split("/").at(-1)!.replace(".vue", "")} :item
   );
   return files;
 }
-
-function scaleSpec(sfcs: number): FixtureSpec {
-  return {
-    id: `scale-${sfcs / 1000}k`,
-    file: "src/core/OrderBoard.vue",
-    tsconfigs: ["tsconfig.json"],
-    source: { kind: "generated", files: (vue) => scaleProject(sfcs, vue) },
-    curve: { name: "scale", sfcs },
-    scriptProbeAfter: FOCUS_SCRIPT_PROBE_AFTER,
-    templateProbeAfter: FOCUS_TEMPLATE_PROBE_AFTER,
-    templateIndent: "    ",
-    requests: focusRequests({ chain: "src/core/chain", model: "src/core/model" }),
-  };
-}
-
-/** Members holding `.vue`, the edited SFC's app first. */
-const MONOREPO_VUE_PROJECTS = [
-  ...Array.from({ length: MONOREPO_APPS }, (_, app) => `apps/app-${app}`),
-  "packages/ui-kit",
-  "packages/board",
-  ...Array.from({ length: MONOREPO_DOMAINS }, (_, index) => `packages/domain-${two(index)}`),
-];
-
-export const SCALE_FIXTURES: FixtureSpec[] = [
-  scaleSpec(1000),
-  scaleSpec(5000),
-  scaleSpec(20000),
-  {
-    id: "scale-monorepo",
-    file: "apps/app-0/src/core/OrderBoard.vue",
-    // Every project holding .vue declares the mapper, as the content-mapper guide does for references.
-    tsconfigs: MONOREPO_VUE_PROJECTS.map((dir) => `${dir}/tsconfig.json`),
-    source: { kind: "generated", files: monorepoProject },
-    scriptProbeAfter: FOCUS_SCRIPT_PROBE_AFTER,
-    templateProbeAfter: FOCUS_TEMPLATE_PROBE_AFTER,
-    templateIndent: "    ",
-    requests: focusRequests({ chain: "packages/board/src", model: "packages/model/src" }),
-  },
-];

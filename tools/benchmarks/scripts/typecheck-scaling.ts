@@ -5,6 +5,7 @@
  *
  *   node typecheck-scaling.ts --target <built checkout> --sha <sha> \
  *     --sizes 1000,5000,20000 --runs 3 --monorepo-sfcs 5000 \
+ *     --giant-blocks 10000 \
  *     --work <dir> --out <dir>
  *
  * Every run must report exactly the planted errors (typecheck-scaling-gate.ts)
@@ -269,6 +270,7 @@ function main(): void {
       runs: { type: "string", default: "3" },
       "monorepo-sfcs": { type: "string", default: "5000" },
       "monorepo-packages": { type: "string", default: "6" },
+      "giant-blocks": { type: "string", default: "10000" },
       "nuxt-sizes": { type: "string", default: "" },
       tools: { type: "string", default: TOOLS.map((tool) => tool.id).join(",") },
       "timeout-min": { type: "string", default: "45" },
@@ -292,6 +294,9 @@ function main(): void {
   const sizes = list(values.sizes);
   const nuxtSizes = list(values["nuxt-sizes"]);
   const monorepoSfcs = Number(values["monorepo-sfcs"]);
+  const giantBlocks = Number(values["giant-blocks"]);
+  if (!Number.isInteger(giantBlocks) || giantBlocks < 0)
+    throw new Error("--giant-blocks must be a natural number");
   const tools = values.tools.split(",").map((id) => {
     const tool = TOOLS.find((candidate) => candidate.id === id);
     if (!tool) throw new Error(`unknown tool ${id}; known: ${TOOLS.map((t) => t.id).join(", ")}`);
@@ -331,6 +336,9 @@ function main(): void {
   };
   const corpora: (() => ScaleProject)[] = [
     ...sizes.map((sfcs) => () => generateScaleProject({ sfcs, kind: "vue" })),
+    ...(giantBlocks > 0
+      ? [() => generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks })]
+      : []),
     ...(monorepoSfcs > 0
       ? [
           () =>
@@ -403,7 +411,11 @@ function main(): void {
       results.cells.push(cell);
       return { cell, tool, firstFingerprint: null };
     });
-    const label = `${corpus.kind} ${corpus.sfcs} SFCs (${corpus.features} features, ${corpus.plants.length} plants)`;
+    const shape =
+      corpus.kind === "giant"
+        ? `${corpus.features.toLocaleString("en-US")} template blocks`
+        : `${corpus.features} features`;
+    const label = `${corpus.kind} ${corpus.sfcs} SFCs (${shape}, ${corpus.plants.length} plants)`;
     console.log(`== ${label}`);
     for (const [index, phase] of [
       "cold",

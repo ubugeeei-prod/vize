@@ -28,6 +28,7 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, posix } from "node:path";
 
+import { createLargeSfcSource } from "./compare-tools-large-sfc.mjs";
 import { app, childPages, page, rowCount, widget } from "./scale-project-feature.ts";
 import {
   NUXT_CONFIG,
@@ -64,7 +65,7 @@ import {
 export { PLANT_CODES, PLANT_MULTIPLICITY, expectedPlants } from "./scale-project-plants.ts";
 export type { Plant, PlantExpectation } from "./scale-project-plants.ts";
 
-export type ScaleKind = "vue" | "nuxt" | "monorepo";
+export type ScaleKind = "vue" | "nuxt" | "monorepo" | "giant";
 export type ScaleProjectOptions = {
   sfcs: number;
   kind: ScaleKind;
@@ -74,9 +75,14 @@ export type ScaleProjectOptions = {
   plants?: boolean;
   /** Feature packages of a monorepo (default 6). */
   featurePackages?: number;
+  /** Repeated template blocks when kind is giant (default 10,000). */
+  giantBlocks?: number;
   /** Also write the files here, replacing the directory. */
   dir?: string;
 };
+type NormalizedScaleProjectOptions = Required<
+  Omit<ScaleProjectOptions, "dir" | "featurePackages" | "giantBlocks">
+>;
 export type ScaleProject = {
   kind: ScaleKind;
   sfcs: number;
@@ -99,6 +105,7 @@ const SHAPE: Record<ScaleKind, { fixed: number; feature: number }> = {
     fixed: KIT.length + GLOBALS.length + 1 + NUXT_LAYOUTS.length + 1,
     feature: LAYER_DEPTH + 2 + WIDGETS,
   },
+  giant: { fixed: 0, feature: 1 },
 };
 export const minSfcs = (kind: ScaleKind): number => SHAPE[kind].fixed + SHAPE[kind].feature;
 export const PLANT_STRIDE = 10;
@@ -144,7 +151,7 @@ function specifier(from: string, to: string): string {
 type Built = Omit<ScaleProject, "packages" | "tsconfig">;
 
 function generate(
-  options: Required<Omit<ScaleProjectOptions, "dir" | "featurePackages">>,
+  options: NormalizedScaleProjectOptions,
   place: (logical: string) => string,
 ): Built {
   const { sfcs, kind, seed } = options;
@@ -205,9 +212,7 @@ function generate(
   return { kind, sfcs, features, seed, files, plants };
 }
 
-function vueProject(
-  options: Required<Omit<ScaleProjectOptions, "dir" | "featurePackages">>,
-): ScaleProject {
+function vueProject(options: NormalizedScaleProjectOptions): ScaleProject {
   const corpus = generate(options, (logical) => `src/${logical}`);
   corpus.files.set(
     "src/components.d.ts",
@@ -224,14 +229,47 @@ function vueProject(
   return { ...corpus, packages: [], tsconfig: "tsconfig.json" };
 }
 
-function nuxtProject(
-  options: Required<Omit<ScaleProjectOptions, "dir" | "featurePackages">>,
-): ScaleProject {
+function nuxtProject(options: NormalizedScaleProjectOptions): ScaleProject {
   const corpus = generate(options, nuxtPlace);
   corpus.files.set("nuxt.config.ts", NUXT_CONFIG);
   corpus.files.set("tsconfig.json", json(NUXT_TSCONFIG));
   corpus.files.set("package.json", json({ name: "scale-nuxt-app", private: true, type: "module" }));
   return { ...corpus, packages: [], tsconfig: NUXT_APP_TSCONFIG };
+}
+
+/** One deliberately oversized SFC with a planted script diagnostic. */
+function giantProject(options: ScaleProjectOptions): ScaleProject {
+  const blocks = options.giantBlocks ?? 10_000;
+  if (options.sfcs !== 1) throw new Error(`a giant project has exactly 1 SFC, got ${options.sfcs}`);
+  if (!Number.isInteger(blocks) || blocks < 1)
+    throw new Error(`giantBlocks must be a positive integer, got ${blocks}`);
+  const marker = 'const planted0: number = "deep-0";';
+  const source = createLargeSfcSource(blocks).replace(
+    "const title = ref('Large synthetic dashboard')",
+    `${marker}\nconst title = ref('Large synthetic dashboard')`,
+  );
+  const line = source.slice(0, source.indexOf(marker)).split("\n").length;
+  const files = new Map<string, string>([
+    ["src/App.vue", source],
+    [
+      "tsconfig.json",
+      json({
+        compilerOptions: { ...COMPILER_OPTIONS, noEmit: true },
+        vueCompilerOptions: VUE_COMPILER_OPTIONS,
+        include: INCLUDE,
+      }),
+    ],
+  ]);
+  return {
+    kind: "giant",
+    sfcs: 1,
+    features: blocks,
+    seed: 0,
+    files,
+    plants: [{ kind: "script", file: "src/App.vue", line, codes: PLANT_CODES.script }],
+    packages: [],
+    tsconfig: "tsconfig.json",
+  };
 }
 
 /** Output directory of one checker variant: one segment, so emitted relative imports keep their depth. */
@@ -243,7 +281,7 @@ export const monorepoOutDir = (variant: string) => `.out-${variant}`;
  * relative path; each package references its transitive dependencies.
  */
 function monorepoProject(
-  options: Required<Omit<ScaleProjectOptions, "dir" | "featurePackages">>,
+  options: NormalizedScaleProjectOptions,
   featurePackages: number,
 ): ScaleProject {
   const { features } = projectShape(options.sfcs, "monorepo");
@@ -318,6 +356,7 @@ function monorepoProject(
 }
 
 export function generateScaleProject(options: ScaleProjectOptions): ScaleProject {
+  if (options.kind === "giant") return giantProject(options);
   const base = {
     sfcs: options.sfcs,
     kind: options.kind,

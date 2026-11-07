@@ -15,9 +15,9 @@ on:
   workflow_dispatch:
     inputs:
       fixtures:
-        description: Space-separated fixture ids (misskey, n8n, scale-1k, scale-5k, scale-20k, scale-monorepo)
+        description: Space-separated fixture ids (scale-1k, scale-5k, scale-20k, scale-giant-sfc, scale-monorepo)
         required: true
-        default: "misskey n8n"
+        default: "scale-1k scale-giant-sfc scale-monorepo"
       compare_ref:
         description: Optional branch or SHA built as a second vize row (the "before" of a perf change)
         required: false
@@ -97,7 +97,7 @@ jobs:
       # same machine with the same build, and rounds interleave the sizes.
       - id: plan
         env:
-          FIXTURES: ${{ inputs.fixtures || 'misskey n8n' }}
+          FIXTURES: ${{ inputs.fixtures || 'scale-1k scale-giant-sfc scale-monorepo' }}
         run: |
           args=()
           for id in $FIXTURES; do args+=(--fixture "$id"); done
