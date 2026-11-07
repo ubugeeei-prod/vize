@@ -46,10 +46,27 @@ function check(root: string): void {
     "davinci/vize_l1_to_l2/src/lower/caps.rs",
   ]) {
     const bridge = path.join(root, bridgePath);
-    if (!fs.existsSync(bridge) || !fs.readFileSync(bridge, "utf8").includes("pub use")) {
+    if (!fs.existsSync(bridge)) {
       throw new Error(`missing capability compatibility bridge: ${bridgePath}`);
     }
-    if (/pub (?:struct|enum) Legacy/u.test(fs.readFileSync(bridge, "utf8"))) {
+    const bridgeSource = fs.readFileSync(bridge, "utf8");
+    const includeTarget = bridgeSource.match(/include!\("([^"]+)"\);/u)?.[1];
+    const adapter =
+      includeTarget === undefined ? bridge : path.resolve(path.dirname(bridge), includeTarget);
+    if (
+      includeTarget !== undefined &&
+      (bridgePath !== "davinci/vize_l1_to_l2/src/lower/caps.rs" ||
+        path.relative(root, adapter).split(path.sep).join("/") !==
+          "davinci/vize_l1_to_l2/src/dialect/vue/lower/caps.rs")
+    ) {
+      throw new Error(`unreviewed capability compatibility bridge: ${bridgePath}`);
+    }
+    const adapterSource =
+      includeTarget === undefined ? bridgeSource : fs.readFileSync(adapter, "utf8");
+    if (!adapterSource.includes("pub use")) {
+      throw new Error(`missing capability compatibility bridge: ${bridgePath}`);
+    }
+    if (/pub (?:struct|enum) Legacy/u.test(`${bridgeSource}\n${adapterSource}`)) {
       throw new Error(`duplicate capability owner: ${bridgePath}`);
     }
   }

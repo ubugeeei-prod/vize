@@ -286,25 +286,54 @@ impl VirtualProject {
             .filter(|path| path.is_file())
             .map(PathBuf::as_path)
             .collect();
+        let canonical_paths: Vec<PathBuf> = valid_paths
+            .par_iter()
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect();
+        self.register_prevalidated_paths(valid_paths, &canonical_paths)
+    }
+
+    /// Register the output of the project walker without repeating filesystem
+    /// metadata and realpath probes for every source.
+    pub(crate) fn register_scanned_paths(
+        &mut self,
+        paths: &[PathBuf],
+        canonical_paths: &[PathBuf],
+    ) -> CorsaResult<()> {
+        debug_assert_eq!(paths.len(), canonical_paths.len());
+        self.register_prevalidated_paths(
+            paths.iter().map(PathBuf::as_path).collect(),
+            canonical_paths,
+        )
+    }
+
+    fn register_prevalidated_paths(
+        &mut self,
+        valid_paths: Vec<&Path>,
+        canonical_paths: &[PathBuf],
+    ) -> CorsaResult<()> {
         if valid_paths.is_empty() {
             return Ok(());
         }
 
         // Sequential is cheaper for tiny batches than firing up rayon workers.
         if valid_paths.len() <= 1 {
-            for path in valid_paths {
-                self.register_path(path)?;
+            if let Some((&path, canonical)) = valid_paths.first().zip(canonical_paths.first()) {
+                let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+                #[cfg(test)]
+                let content = source_content_tests::record_filesystem_read(path, content);
+                let registered = build_registered_file(
+                    path,
+                    Cow::Owned(content),
+                    self.path_build_context(path, None),
+                )?;
+                self.absorb_registered_file_with_canonical(registered, Some(canonical.clone()))?;
             }
             return Ok(());
         }
 
         let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
         let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
-        // Canonicalized once, in parallel; absorb reuses them for its indexes.
-        let canonical_paths: Vec<PathBuf> = valid_paths
-            .par_iter()
-            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
-            .collect();
         let mut mirrorable_project_files: FxHashSet<PathBuf> =
             canonical_paths.iter().cloned().collect();
         mirrorable_project_files.extend(self.original_index.keys().cloned());
@@ -359,7 +388,7 @@ impl VirtualProject {
         for ((registered, path), canonical) in registered?
             .into_iter()
             .zip(valid_paths.iter().copied())
-            .zip(canonical_paths)
+            .zip(canonical_paths.iter().cloned())
         {
             let canonical = (registered.file.original_path == path).then_some(canonical);
             self.absorb_registered_file_with_canonical(registered, canonical)?;

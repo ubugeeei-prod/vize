@@ -230,7 +230,7 @@ impl VirtualProject {
                     (
                         vize_carton::micro_span!(
                             "canon.dependency_scan.content.clone",
-                            content.clone()
+                            vize_carton::String::from(content)
                         ),
                         file.virtual_path.clone(),
                         self.walked_references(file, content),

@@ -52,7 +52,7 @@ jobs:
     uses: parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222 # v3.0.0-alpha.2
     with:
       paths: npm/builder/parcel-native
-      publish: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish }}
+      publish: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}
       version: ${{ inputs.version }}
       rust-toolchain: "1.99.1"
 

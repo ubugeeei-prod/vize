@@ -23,8 +23,16 @@ const actualWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
+function stripProviderClosure(value: string): string {
+  const invocation = "      - uses: ./.github/actions/qualify-content-mapper-provider-closure\n";
+  assert.equal(value.split(invocation).length, 2);
+  const nextJob = "\n  router-experimental:\n";
+  assert.equal(value.split(nextJob).length, 2);
+  return value.replace(invocation, "").replace(nextJob, "\n" + nextJob);
+}
 // Keep the historical whole-workflow inverses independent of this command-local
-// provider declaration and its child under the existing owner artifact path.
+// provider declaration, its child under the existing owner artifact path, and
+// the independently qualified provider closure.
 const standardCommand =
   "cargo test -p vize --test integration -- content_mapper_tsgo_cli:: --nocapture";
 const standardRoleCommand =
@@ -41,7 +49,7 @@ const staticRefCommand = modelEventsCommand.replace(
   " content_mapper_tsgo_cli::dynamic_template_refs::standard_tsgo_static_template_refs_read_runtime_bindings_and_keep_true_unused --nocapture",
 );
 const receiverFilter = " content_mapper_tsgo_cli::reported_expression_duplicates_11374::";
-const receiverAdjustedWorkflow = actualWorkflow.replace(receiverFilter, "");
+const receiverAdjustedWorkflow = stripProviderClosure(actualWorkflow).replace(receiverFilter, "");
 const workflow = receiverAdjustedWorkflow
   .replace(standardRoleCommand, standardCommand)
   .replace(staticRefCommand, modelEventsCommand)

@@ -67,10 +67,14 @@ extern crate std;
 
 pub mod dialect;
 pub mod emit;
+#[cfg(any())]
+mod lang;
 pub use emit::{exceptional_for_binding_names, rewrite_for_alias_expressions};
 pub mod exemptions;
 mod expression_coordinates;
 mod js_compat;
+mod policy;
+pub use policy::*;
 pub mod key;
 pub use js_compat::js_module_compatible;
 pub mod lower;
@@ -103,10 +107,9 @@ pub use emit::{
     emit_dom_source_patch_facts_observed_with_options,
 };
 pub use lower::{
-    ForeignDialect, LegacyCaps, Lowered, LoweringFeatures, OpFamily, lower,
-    lower_preserving_comments, lower_source_block, lower_source_block_with_caps,
-    lower_source_block_with_foreign_expressions, lower_style_block, lower_style_block_in,
-    lower_with_caps, lower_with_frozen_element_spans,
+    ForeignDialect, Lowered, LoweringFeatures, OpFamily, lower, lower_preserving_comments,
+    lower_source_block, lower_source_block_with_caps, lower_source_block_with_foreign_expressions,
+    lower_style_block, lower_style_block_in, lower_with_caps, lower_with_frozen_element_spans,
 };
 
 #[doc(hidden)]

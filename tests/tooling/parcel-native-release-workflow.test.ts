@@ -48,7 +48,7 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
   assert.equal(job.with.paths, "npm/builder/parcel-native");
   assert.equal(
     job.with.publish,
-    "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish }}",
+    "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}",
   );
   assert.equal(job.with.version, "${{ inputs.version }}");
 });

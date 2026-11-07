@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+type Detail = { remark: string }
+const detail = ref<Detail | null>(null)
+function onClose() {}
+</script>
+
+<template>
+    <div v-if="detail">
+        <Child :show="true" :loading="false" :remark="detail.remark" @close="onClose" />
+    </div>
+</template>

@@ -46,9 +46,21 @@ impl IncrementalPaths {
         self.replace_snapshot(project, paths);
     }
 
-    pub(super) fn after_project_scan(&mut self, project: &VirtualProject, roots: &[PathBuf]) {
+    pub(super) fn after_project_scan(
+        &mut self,
+        project: &VirtualProject,
+        mut canonical_roots: Vec<PathBuf>,
+    ) {
         self.allow_new_paths = true;
-        self.replace_snapshot(project, roots);
+        let state = self
+            .state
+            .get_mut()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        canonical_roots.sort();
+        canonical_roots.dedup();
+        state.roots = canonical_roots;
+        state.known_source_paths = project.registered_original_paths_sorted();
+        state.source_stamps = stamp_project_inputs(project, &state.known_source_paths);
     }
 
     fn replace_snapshot(&mut self, project: &VirtualProject, roots: &[PathBuf]) {
@@ -159,6 +171,23 @@ impl IncrementalPaths {
     }
 }
 
+/// Paths discovered by one project walk together with their physical identity.
+///
+/// The project root is canonical and `WalkDir` does not follow directory
+/// symlinks, so regular entries already carry their canonical spelling. File
+/// symlinks keep their logical path for source ownership and resolve once for
+/// indexes that require physical identity.
+pub(super) struct ProjectPathSnapshot {
+    logical: Vec<PathBuf>,
+    canonical: Vec<PathBuf>,
+}
+
+impl ProjectPathSnapshot {
+    pub(super) fn into_parts(self) -> (Vec<PathBuf>, Vec<PathBuf>) {
+        (self.logical, self.canonical)
+    }
+}
+
 fn stamp_project_inputs(
     project: &VirtualProject,
     paths: &[PathBuf],
@@ -187,9 +216,17 @@ pub(super) fn collect_project_paths(
     project: &VirtualProject,
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
+    Ok(collect_project_path_snapshot(project, source_policy)?.logical)
+}
+
+pub(super) fn collect_project_path_snapshot(
+    project: &VirtualProject,
+    source_policy: SourceFilePolicy,
+) -> CorsaResult<ProjectPathSnapshot> {
     let project_root = project.project_root();
     let explicit_hidden_dirs = hidden::explicit_hidden_source_dirs(project);
-    let mut paths = Vec::new();
+    let mut logical = Vec::new();
+    let mut canonical = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
         .filter_entry(|entry| {
@@ -203,11 +240,20 @@ pub(super) fn collect_project_paths(
     {
         let entry = entry?;
         let path = entry.path();
-        if path.is_file() && source_policy.accepts_project_source(path) {
-            paths.push(path.to_path_buf());
+        let file_type = entry.file_type();
+        if file_type.is_file() && source_policy.accepts_project_source(path) {
+            let path = path.to_path_buf();
+            canonical.push(path.clone());
+            logical.push(path);
+        } else if file_type.is_symlink()
+            && path.is_file()
+            && source_policy.accepts_project_source(path)
+        {
+            logical.push(path.to_path_buf());
+            canonical.push(vize_carton::path::canonicalize_non_verbatim(path));
         }
     }
-    Ok(paths)
+    Ok(ProjectPathSnapshot { logical, canonical })
 }
 
 pub(super) fn refresh_paths(
@@ -260,8 +306,48 @@ pub(super) fn refresh_paths(
 
 #[cfg(test)]
 mod tests {
-    use super::refresh_paths;
+    use super::{collect_project_path_snapshot, refresh_paths};
     use crate::batch::source_policy::SourceFilePolicy;
+    use crate::batch::virtual_project::VirtualProject;
+
+    #[test]
+    fn project_walk_reuses_regular_entry_identity() {
+        let root = tempfile::tempdir().expect("project tempdir should exist");
+        let root = vize_carton::path::canonicalize_non_verbatim(root.path());
+        let source = root.join("entry.ts");
+        std::fs::write(&source, "export {}\n").expect("source should write");
+        let project = VirtualProject::new(&root).expect("project should initialize");
+
+        let snapshot = collect_project_path_snapshot(&project, SourceFilePolicy::default())
+            .expect("project walk should succeed");
+
+        assert_eq!(snapshot.logical, std::slice::from_ref(&source));
+        assert_eq!(snapshot.canonical, std::slice::from_ref(&source));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn project_walk_resolves_file_symlinks_once_without_losing_logical_identity() {
+        use std::os::unix::fs::symlink;
+
+        let root = tempfile::tempdir().expect("project tempdir should exist");
+        let outside = tempfile::tempdir().expect("outside tempdir should exist");
+        let root = vize_carton::path::canonicalize_non_verbatim(root.path());
+        let target = outside.path().join("target.ts");
+        let link = root.join("linked.ts");
+        std::fs::write(&target, "export {}\n").expect("target should write");
+        symlink(&target, &link).expect("file symlink should be created");
+        let project = VirtualProject::new(&root).expect("project should initialize");
+
+        let snapshot = collect_project_path_snapshot(&project, SourceFilePolicy::default())
+            .expect("project walk should succeed");
+
+        assert_eq!(snapshot.logical, std::slice::from_ref(&link));
+        assert_eq!(
+            snapshot.canonical,
+            std::slice::from_ref(&vize_carton::path::canonicalize_non_verbatim(&target))
+        );
+    }
 
     #[test]
     fn validation_error_does_not_partially_grow_membership() {

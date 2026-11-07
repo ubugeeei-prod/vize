@@ -88,3 +88,64 @@ fn guarded_reference_listener_does_not_hide_later_arrow_context() {
         "a bare listener reference must not hide a sibling listener's declared context",
     );
 }
+
+#[test]
+fn guarded_spread_props_keep_narrowing_for_bare_listener_inference() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project = super::real_vue::create_project_case(
+        "component-listener-spread-guard-12074",
+        &[
+            (
+                "src/Child.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/Child.vue.txt"
+                ),
+            ),
+            (
+                "src/SpreadBareRef.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/SpreadBareRef.vue.txt"
+                ),
+            ),
+            (
+                "src/SpreadInline.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/SpreadInline.vue.txt"
+                ),
+            ),
+            (
+                "src/NoSpreadBareRef.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/NoSpreadBareRef.vue.txt"
+                ),
+            ),
+            (
+                "src/SpreadNoListener.vue",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/SpreadNoListener.vue.txt"
+                ),
+            ),
+            (
+                "package.json",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/package.json.txt"
+                ),
+            ),
+            (
+                "tsconfig.json",
+                include_str!(
+                    "../../../../../../../tests/_fixtures/differential/typechecker/component-listener-spread-guard-12074/tsconfig.json.txt"
+                ),
+            ),
+        ],
+    );
+    let actual = snapshot_project_diagnostics(&project);
+    let _ = std::fs::remove_dir_all(project);
+    assert_eq!(
+        actual,
+        Some(Vec::new()),
+        "component prop inference must retain the authored v-if guard",
+    );
+}

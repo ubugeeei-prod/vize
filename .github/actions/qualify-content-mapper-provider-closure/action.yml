@@ -1,0 +1,18 @@
+name: Qualify Content Mapper provider closure
+description: Preserve the complete six-check provider closure and fail only incomplete qualification
+
+runs:
+  using: composite
+  steps:
+    - name: Qualify the complete provider closure
+      if: ${{ github.event.inputs['targeted-test'] != 'generic-body-error' }}
+      shell: bash
+      env:
+        VIZE_CONTENT_MAPPER_PROVIDER_CLOSURE_DIR: ${{ runner.temp }}/content-mapper-editor-stress/provider-closure
+        VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/tsgo
+        VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC: ${{ github.workspace }}/npm/cli/node_modules/.bin/tsc
+        VIZE_TEST_CONTENT_MAPPER_VUE: ${{ github.workspace }}/npm/cli/node_modules/vue
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_PROVIDER_ROLE: standard-go-d6-vue35
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_REQUIRED: "1"
+        VIZE_TEST_REPORTED_DYNAMIC_TARGETS_CAPTURE_DIR: ${{ runner.temp }}/content-mapper-editor-stress/provider-closure/dynamic-targets
+      run: node tools/support/compat/content-mapper/provider-closure.ts

@@ -413,8 +413,8 @@ const onSubmit = (value: number) => value
     for index in 0..4 {
         let condition = format!("state.kind === 'k{index}'");
         assert!(
-            listeners.matches(condition.as_str()).count() <= 7,
-            "each branch condition is emitted once in the shared chain and at most once per listener callback: {condition}\n{listeners}"
+            listeners.matches(condition.as_str()).count() <= 8,
+            "each branch condition is emitted only for the guarded inference calls and listener callbacks: {condition}\n{listeners}"
         );
     }
     assert_eq!(

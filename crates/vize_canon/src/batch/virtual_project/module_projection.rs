@@ -12,14 +12,17 @@ use crate::{PackageResolutionContext, PackageResolutionMode};
 impl VirtualProject {
     /// Module graph edges are resolved from the pre-rewrite projection. A
     /// previous materialized path must never become the next source identity.
-    pub(super) fn module_source(&self, file: &VirtualFile) -> Option<&String> {
-        self.pre_rewrite_code.get(&file.virtual_path).or_else(|| {
-            file.source_map
-                .sfc_map
-                .is_none()
-                .then(|| self.original_contents.get(&file.virtual_path))
-                .flatten()
-        })
+    pub(super) fn module_source(&self, file: &VirtualFile) -> Option<&str> {
+        self.pre_rewrite_code
+            .get(&file.virtual_path)
+            .map(String::as_str)
+            .or_else(|| {
+                file.source_map
+                    .sfc_map
+                    .is_none()
+                    .then(|| self.original_content_for_virtual(&file.virtual_path))
+                    .flatten()
+            })
     }
 
     pub(super) fn finalize_module_imports(&mut self) {
@@ -132,13 +135,15 @@ impl VirtualProject {
             )
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites.into_iter().flatten() {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                if file.content != rewritten.code {
-                    self.incremental_materialized_candidates.insert(path);
-                }
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
+            if self
+                .virtual_files
+                .get(&path)
+                .is_some_and(|file| file.content != rewritten.code)
+            {
+                self.incremental_materialized_candidates
+                    .insert(path.clone());
             }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 
@@ -188,7 +193,7 @@ impl VirtualProject {
                     );
                     return Some((file.virtual_path.clone(), rewritten));
                 }
-                let source = self.original_contents.get(&file.virtual_path)?;
+                let source = self.original_content_for_virtual(&file.virtual_path)?;
                 if !crate::batch::import_rewriter::source_may_contain_relative_specifier(source) {
                     return None;
                 }
@@ -222,13 +227,15 @@ impl VirtualProject {
             })
             .collect::<Vec<_>>();
         for (path, rewritten) in rewrites {
-            if let Some(file) = self.virtual_files.get_mut(&path) {
-                if file.content != rewritten.code {
-                    self.incremental_materialized_candidates.insert(path);
-                }
-                file.content = rewritten.code;
-                file.source_map.import_map = rewritten.source_map;
+            if self
+                .virtual_files
+                .get(&path)
+                .is_some_and(|file| file.content != rewritten.code)
+            {
+                self.incremental_materialized_candidates
+                    .insert(path.clone());
             }
+            self.replace_virtual_content(&path, rewritten.code, rewritten.source_map);
         }
     }
 }

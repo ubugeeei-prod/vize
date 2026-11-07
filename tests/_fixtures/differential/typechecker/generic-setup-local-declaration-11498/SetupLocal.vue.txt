@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="TBaz">
+type Foo = { value: TBaz };
+
+interface Bar {
+  items: Foo[];
+}
+
+defineProps<Bar>();
+</script>
+
+<template>
+  <div />
+</template>
