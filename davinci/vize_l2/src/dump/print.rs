@@ -13,7 +13,8 @@ use vize_l0::{Span, ensure_sufficient_stack};
 
 use crate::dump::Page;
 use crate::dump::codec::Grammar;
-use crate::dump::owned::{Attribute, Binding, Expr, Name, Op};
+use crate::dump::owned::{Attribute, Binding, Name, Op};
+use crate::lang::dump::print::print_expr;
 use crate::op::Namespace;
 use vize_l0::dump::Mode as DumpMode;
 use vize_l0::key::rebase;
@@ -26,7 +27,7 @@ use binding::{print_attribute, print_binding};
 /// to. The public [`Dump`](vize_l0::dump::Dump) print always uses
 /// base `0` (spans verbatim); only the P5-1a key feed passes a block start.
 #[derive(Debug, Clone, Copy)]
-pub(super) struct Style {
+pub(crate) struct Style {
     mode: DumpMode,
     base: u32,
     grammar: Grammar,
@@ -94,7 +95,7 @@ pub(super) fn end_line<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
 /// rebased to the style's base; one reaching before the base (never in a
 /// well-formed page, and impossible at base `0`) prints absolute as
 /// ` @^start:end`, so the key feed stays injective instead of saturating.
-fn span_tail<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
+pub(crate) fn span_tail<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
     if mode.mode != DumpMode::Full {
         return Ok(());
     }
@@ -105,7 +106,7 @@ fn span_tail<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
 }
 
 /// Write one quoted string with the format's escapes.
-pub(super) fn quoted<W: Write>(w: &mut W, text: &str) -> Result {
+pub(crate) fn quoted<W: Write>(w: &mut W, text: &str) -> Result {
     w.write_char('"')?;
     for c in text.chars() {
         match c {
@@ -131,45 +132,6 @@ fn print_owner_name<W: Write>(w: &mut W, name: &str, mode: Style) -> Result {
     } else {
         w.write_str(name)
     }
-}
-
-/// Write one expression payload: `js("…" @s:e)` / `opaque(reason "…" @s:e)`
-/// / `foreign(dialect "…" @s:e)`; `Display` elides the inner span tail
-/// exactly as it elides line tails.
-pub(super) fn print_expr<W: Write>(w: &mut W, expr: &Expr, mode: Style) -> Result {
-    let (head, source, span) = match expr {
-        Expr::Js { source, span } => {
-            w.write_str("js(")?;
-            ("", source, span)
-        }
-        Expr::Opaque {
-            reason,
-            source,
-            span,
-        } => {
-            w.write_str("opaque(")?;
-            (reason.mnemonic(), source, span)
-        }
-        Expr::Foreign {
-            dialect,
-            source,
-            span,
-        } => {
-            w.write_str("foreign(")?;
-            (dialect.as_str(), source, span)
-        }
-        Expr::Filter { source, span } => {
-            w.write_str("vue.filter(")?;
-            ("", source, span)
-        }
-    };
-    if !head.is_empty() {
-        w.write_str(head)?;
-        w.write_char(' ')?;
-    }
-    quoted(w, source.as_str())?;
-    span_tail(w, *span, mode)?;
-    w.write_char(')')
 }
 
 pub(super) fn print_name<W: Write>(w: &mut W, name: &Name, mode: Style) -> Result {
