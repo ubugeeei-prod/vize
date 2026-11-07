@@ -23,6 +23,7 @@ const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+const releaseZed = readRepoFile("tests", "editor-conformance", "release-zed.ts");
 
 test("release editor hosts consume the packed candidate before the tag exists", () => {
   const job = workflow.jobs["smoke-editor-artifacts"]!;
@@ -102,4 +103,12 @@ test("release editor hosts install the supplied CLI and VSIX without rebuilding 
     (step) => step.name === "Run actual Zed with the packaged release extension",
   );
   assert.equal(zed?.if, "inputs.release-workspace != ''");
+});
+
+test("release Zed smoke explicitly opts Vize into Vue and retains failure evidence", () => {
+  assert.match(releaseZed, /"Vue\.js": \{/);
+  assert.match(releaseZed, /language_servers: \["vize", "\.\.\."\]/);
+  assert.match(releaseZed, /zed-settings\.json/);
+  assert.match(releaseZed, /if \(!passed\) retainFailureSession\(session, evidence\)/);
+  assert.match(releaseZed, /path\.join\(evidence, "failure-session"\)/);
 });
