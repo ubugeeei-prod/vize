@@ -218,6 +218,17 @@ void test("performance targets require exact diagnostics and every cold and warm
   assert.equal(failed?.met, false);
   assert.ok(failed?.missing.includes("diagnostic parity"));
 
+  const mismatchedTsrs = passing.map((entry) => ({
+    ...entry,
+    runs:
+      entry.tool === "tsrs-fast-parallel-vize-mapper"
+        ? entry.runs.map((sample) => ({ ...sample, fingerprint: "different" }))
+        : entry.runs,
+  }));
+  const [tsrsFailed] = performanceTargets(mismatchedTsrs);
+  assert.equal(tsrsFailed?.met, false);
+  assert.ok(tsrsFailed?.missing.includes("diagnostic parity"));
+
   const summary = renderSummary(results(passing));
   assert.match(summary, /## Performance targets/u);
   assert.match(summary, /\| vue 1,000 SFCs \| exact \| ×100\.00 \/ ×100\.00 \|/u);

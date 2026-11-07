@@ -143,7 +143,9 @@ export function performanceTargets(cells: Cell[]): PerformanceTarget[] {
     ) =>
       numerator != null && denominator != null && denominator > 0 ? numerator / denominator : null;
     const diagnosticParity =
-      sampleFingerprint(vize) != null && sampleFingerprint(vize) === sampleFingerprint(reference);
+      sampleFingerprint(vize) != null &&
+      sampleFingerprint(vize) === sampleFingerprint(reference) &&
+      sampleFingerprint(vize) === sampleFingerprint(tsrs);
     const mapperWarmSpeedup = divide(referenceRow?.wallMs, vizeRow?.wallMs);
     const mapperColdSpeedup = divide(reference?.cold?.wallMs, vize?.cold?.wallMs);
     const mapperWarmMemoryReduction = divide(referenceRow?.rssKb, vizeRow?.rssKb);

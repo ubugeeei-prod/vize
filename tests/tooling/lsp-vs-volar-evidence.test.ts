@@ -313,7 +313,9 @@ test("the workflow keeps evidence after failure and measures the checked-out sou
   assert.match(workflow, /--rounds "\$rounds" --cycles "\$cycles"/);
   assert.match(workflow, /--vize "head-tsrs-fast=\$RUNNER_TEMP\/vize-head"/);
   assert.match(workflow, /head-tsrs-fast:CORSA_PATH=\$tsrs_fast/);
-  assert.match(workflow, /exec "%s" --fast "\$@"/);
+  assert.match(workflow, /export TSRS_FAST=1/);
+  assert.match(workflow, /exec "%s" "\$@"/);
+  assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
   // Versions come from the workspace catalog, not from the workflow.
   assert.doesNotMatch(workflow, /@vue\/language-server@\d/);
 });

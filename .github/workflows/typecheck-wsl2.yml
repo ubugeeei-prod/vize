@@ -127,7 +127,7 @@ jobs:
               "tsrs@$tsrs_spec"
             tsgo="$tools/node_modules/@typescript/typescript-linux-x64/lib/tsc"
             tsrs_fast="$tools/tsrs-fast"
-            printf '#!/bin/sh\nexec "%s" --fast "$@"\n' "$tools/node_modules/.bin/tsrs" > "$tsrs_fast"
+            printf '#!/bin/sh\nexport TSRS_FAST=1\nexec "%s" "$@"\n' "$tools/node_modules/.bin/tsrs" > "$tsrs_fast"
             chmod +x "$tsrs_fast"
             args=()
             for fixture in $LSP_FIXTURES; do args+=(--fixture "$fixture"); done

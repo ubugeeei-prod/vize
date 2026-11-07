@@ -32,5 +32,7 @@ test("editor qualification keeps native TypeScript and tsrs fast as distinct lan
   assert.match(workflow, /published-tsgo:CORSA_PATH=\$tsgo/);
   assert.match(workflow, /--vize "published-tsrs-fast=\$tools\/node_modules\/\.bin\/vize"/);
   assert.match(workflow, /published-tsrs-fast:CORSA_PATH=\$tsrs_fast/);
-  assert.match(workflow, /exec "%s" --fast "\$@"/);
+  assert.match(workflow, /export TSRS_FAST=1/);
+  assert.match(workflow, /exec "%s" "\$@"/);
+  assert.doesNotMatch(workflow, /exec "%s" --fast "\$@"/);
 });
