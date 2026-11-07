@@ -102,7 +102,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
     action.match(/VIZE_SERVER_PATH: \$\{\{ github\.workspace \}\}\/target\/ci\/vize/g) ?? [];
   assert.equal(
     serverPathUses.length,
-    7,
+    8,
     "every real-server scenario and host health check must consume the one built binary",
   );
   const workflow = parse(readRepoFile(".github", "workflows", "editor-conformance.yml")) as any;
@@ -111,7 +111,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
   );
   assert.equal(
     serverPathUses.length + fullHosts.length,
-    8,
+    9,
     "the additional genuine host reuses the conformance server",
   );
   assert.equal(fullHosts[0].if, "matrix.client == 'vscode'");

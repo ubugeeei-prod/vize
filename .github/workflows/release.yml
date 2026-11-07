@@ -271,7 +271,7 @@ jobs:
 
   smoke-editor-artifacts:
     name: Smoke release editor hosts
-    needs: [version, build-cli, build-editor-extensions]
+    needs: [version, build-cli, build-packages, build-editor-extensions]
     if: needs.version.outputs.ref != ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -286,6 +286,10 @@ jobs:
         with:
           name: editor-extensions
           path: ${{ runner.temp }}/release-editors
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-packages
+          path: ${{ runner.temp }}/release-npm
       - name: Install the exact release artifacts and initialize a fresh project
         id: artifacts
         env:
@@ -295,7 +299,7 @@ jobs:
           evidence="$RUNNER_TEMP/release-editor-evidence"
           install_root="$RUNNER_TEMP/release-editor-install"
           fresh="$RUNNER_TEMP/release-editor-fresh-project"
-          mkdir -p "$evidence" "$install_root/cli" "$fresh/src" target/source-editors
+          mkdir -p "$evidence" "$install_root/cli" "$install_root/npm" "$fresh/src" target/source-editors
 
           tar -xzf "$RUNNER_TEMP/release-cli/vize-x86_64-unknown-linux-gnu.tar.gz" \
             -C "$install_root/cli"
@@ -307,14 +311,32 @@ jobs:
             mv "editors/$editor" "target/source-editors/$editor"
             tar -xzf "$RUNNER_TEMP/release-editors/${editor}-vize-extension.tar.gz" \
               -C editors
+            test -d "editors/$editor"
           done
           vsix="$RUNNER_TEMP/release-editors/editors/vscode/dist/vize.vsix"
           test -s "$vsix"
+
+          test -f "$RUNNER_TEMP/release-npm/cli/package.json"
+          test "$(node -p "require('$RUNNER_TEMP/release-npm/cli/package.json').version")" = \
+            "$RELEASE_VERSION"
+          npm pack "$RUNNER_TEMP/release-npm/cli" \
+            --pack-destination "$install_root/npm" --ignore-scripts >/dev/null
+          cli_archive=$(find "$install_root/npm" -maxdepth 1 -type f -name '*.tgz' -print)
+          test "$(printf '%s\n' "$cli_archive" | wc -l)" -eq 1
+          mkdir -p "$install_root/npm/package"
+          tar -xzf "$cli_archive" -C "$install_root/npm/package" --strip-components=1
+          packaged_cli="$install_root/npm/package/bin/vize"
+          test -f "$packaged_cli"
+          test "$(node -p "require('$install_root/npm/package/package.json').version")" = \
+            "$RELEASE_VERSION"
 
           node --input-type=module - "$fresh" <<'JS'
           import fs from "node:fs";
           import path from "node:path";
           const root = process.argv[2];
+          fs.cpSync("editors/vscode/test-fixtures/extension-host/real-vue", root, {
+            recursive: true,
+          });
           fs.writeFileSync(path.join(root, "package.json"), `${JSON.stringify({
             name: "vize-release-editor-smoke",
             version: "0.0.0",
@@ -322,20 +344,25 @@ jobs:
             type: "module",
             scripts: { dev: "vite", build: "vite build" },
             dependencies: { vue: "3.5.34" },
-            devDependencies: { typescript: "6.0.3", vite: "^8.0.0" },
+            devDependencies: { typescript: "6.0.3", vite: "8.0.0" },
           }, null, 2)}\n`);
-          fs.writeFileSync(path.join(root, "src/App.vue"), `<script setup lang="ts">
+          fs.writeFileSync(path.join(root, "src/Lint.vue"), `<script setup lang="ts">
           const items = [1, 2]
           </script>
           <template><ul><li v-for="item in items">{{ item }}</li></ul></template>
           `);
           JS
-          "$server" init "$fresh" --yes --no-lint --vite --fmt --typecheck --editor --no-install \
+          node "$packaged_cli" init "$fresh" --yes --no-lint --vite --fmt --typecheck --editor --no-install \
             | tee "$evidence/init.txt"
+          dependency_root="$RUNNER_TEMP/release-editor-dependencies"
+          mkdir -p "$dependency_root"
+          npm install --prefix "$dependency_root" --ignore-scripts --no-audit --no-fund \
+            --package-lock=false --save=false vue@3.5.34 typescript@6.0.3
+          mv "$dependency_root/node_modules" "$fresh/node_modules"
           test -f "$fresh/.vscode/extensions.json"
           grep -F 'ubugeeei.vize' "$fresh/.vscode/extensions.json"
           set +e
-          "$server" lint "$fresh/src/App.vue" --format json --no-config \
+          "$server" lint "$fresh/src/Lint.vue" --format json --no-config \
             > "$evidence/diagnostics.json"
           lint_status=$?
           set -e
@@ -352,12 +379,37 @@ jobs:
           find "$fresh" -type f -print | LC_ALL=C sort > "$evidence/project-files.txt"
           printf 'server=%s\n' "$server" >> "$GITHUB_OUTPUT"
           printf 'vsix=%s\n' "$vsix" >> "$GITHUB_OUTPUT"
+          printf 'fresh=%s\n' "$fresh" >> "$GITHUB_OUTPUT"
+          printf 'evidence=%s\n' "$evidence" >> "$GITHUB_OUTPUT"
       - name: Launch the packaged editor hosts with the release binary
         uses: ./.github/actions/vscode-host-smoke
         with:
           prebuilt-server: ${{ steps.artifacts.outputs.server }}
           prebuilt-vsix: ${{ steps.artifacts.outputs.vsix }}
           expected-version: ${{ needs.version.outputs.version }}
+          release-workspace: ${{ steps.artifacts.outputs.fresh }}
+          release-evidence: ${{ steps.artifacts.outputs.evidence }}
+      - name: Require packaged hosts on the initialized release project
+        env:
+          VIZE_SERVER_PATH: ${{ steps.artifacts.outputs.server }}
+          VIZE_TEST_HELIX_PATH: ${{ runner.temp }}/helix/hx
+          VIZE_TS45_EXISTING_WORKSPACE: ${{ steps.artifacts.outputs.fresh }}
+          VIZE_TS45_OUT: ${{ steps.artifacts.outputs.evidence }}/hosts
+        run: |
+          set -euo pipefail
+          mkdir -p "$VIZE_TS45_OUT"
+          node tests/editor-conformance/run.ts neovim --out "$VIZE_TS45_OUT"
+          node tests/editor-conformance/run.ts helix --out "$VIZE_TS45_OUT"
+          xvfb-run -a node tests/editor-conformance/run.ts vscode --out "$VIZE_TS45_OUT"
+          find "$VIZE_TS45_OUT" -type f -print | LC_ALL=C sort
+          find "$VIZE_TS45_EXISTING_WORKSPACE" -type l -print \
+            > "${{ steps.artifacts.outputs.evidence }}/project-links-after-hosts.txt"
+          test ! -s "${{ steps.artifacts.outputs.evidence }}/project-links-after-hosts.txt"
+          if grep -R -F -n "$GITHUB_WORKSPACE" "$VIZE_TS45_EXISTING_WORKSPACE" \
+            > "${{ steps.artifacts.outputs.evidence }}/workspace-links-after-hosts.txt"; then
+            echo "fresh release project refers to the source checkout after host execution" >&2
+            exit 1
+          fi
       - name: Retain release artifact and fresh-project evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

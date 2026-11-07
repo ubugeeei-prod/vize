@@ -144,6 +144,10 @@ async function main() {
   fs.mkdirSync(output, { recursive: true });
   const session = fs.mkdtempSync(path.join(os.tmpdir(), "vize-eglot-native-"));
   const workspace = path.join(session, "workspace");
+  const initializedWorkspace = process.env.VIZE_E2E_WORKSPACE;
+  if (initializedWorkspace && initializedWorkspace !== "") {
+    fs.cpSync(fs.realpathSync(initializedWorkspace), workspace, { recursive: true });
+  }
   prepareWorkspace(workspace);
   const bin = path.join(session, "bin");
   fs.mkdirSync(bin);
