@@ -202,8 +202,8 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
-        self.scope_initial_installed_sources(paths)?;
         let (valid_paths, canonical_paths) = collect_explicit_path_snapshot(paths).into_parts();
+        self.scope_initial_installed_sources(&valid_paths, &canonical_paths)?;
         let previous_sources = self.project.registered_original_paths_sorted();
         self.project
             .set_prevalidated_declaration_roots(&canonical_paths);
@@ -227,7 +227,7 @@ impl BatchTypeChecker {
         let (paths, canonical_paths) =
             collect_project_path_snapshot(&self.project, self.project.source_file_policy())?
                 .into_parts();
-        self.scope_initial_installed_sources(&paths)?;
+        self.scope_initial_installed_sources(&paths, &canonical_paths)?;
         self.project
             .set_prevalidated_declaration_roots(&canonical_paths);
         self.project
