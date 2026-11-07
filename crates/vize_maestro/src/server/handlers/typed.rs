@@ -56,9 +56,6 @@ impl MaestroServer {
             if ctx.is_in_style() {
                 return Ok(Some(CompletionService::complete(&ctx)));
             }
-            if let Some(response) = CompletionService::complete_resident_component_props(&ctx) {
-                return Ok(Some(Some(response)));
-            }
             #[cfg(feature = "native")]
             if let Some(response) = CompletionService::complete_static_object_member(&ctx) {
                 return Ok(Some(Some(response)));

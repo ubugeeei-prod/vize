@@ -247,6 +247,10 @@ import AfsTextField from "../text-field/afs-text-field.vue";
     let (line, character) = crate::ide::offset_to_position(source, offset);
     let mut params = completion_params(&uri);
     params.text_document_position.position = Position::new(line, character);
+    params.context = Some(tower_lsp::lsp_types::CompletionContext {
+        trigger_kind: tower_lsp::lsp_types::CompletionTriggerKind::TRIGGER_CHARACTER,
+        trigger_character: Some(":".into()),
+    });
     let response = futures::executor::block_on(server.completion(params))
         .unwrap()
         .expect("component prop completion after colon");
