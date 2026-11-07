@@ -32,6 +32,17 @@ function fixture() {
     mappings: rows(beforeText),
     diagnostics: [],
     extension: ".tsx",
+    diagnosticDirectives: {
+      directives: Array.from({ length: 3 }, () => [
+        20,
+        4,
+        beforeText.indexOf('"name"'),
+        beforeText.indexOf('"name"') + 6,
+        0,
+        0,
+      ]),
+      unusedExpectDirectiveDiagnostics: [],
+    },
   };
   const afterRows = rows(afterText),
     main = afterRows.pop()!;
@@ -44,6 +55,7 @@ function fixture() {
       directives: [
         [0, 0, 0, afterRows[0]![0], 0, 0],
         [0, 0, afterRows[2]![0]! + 1, main[0]! - 1, 0, 0],
+        [20, 4, afterText.indexOf('"name"'), afterText.indexOf('"name"') + 6, 0, 0],
       ],
       unusedExpectDirectiveDiagnostics: [],
     },
@@ -64,6 +76,19 @@ void test("the constructor audit refuses copied slot-host branches", () => {
   assert.throws(
     () => auditPackets(before, copied),
     /reused template host must retain each direct branch exactly once/u,
+  );
+});
+void test("the constructor audit refuses added or uniquely removed authored directives", () => {
+  const { before, after } = fixture();
+  const added = clone(after);
+  const authored = added.diagnosticDirectives.directives.at(-1)!;
+  added.diagnosticDirectives.directives.push(authored, authored, authored);
+  assert.throws(() => auditPackets(before, added), /may not add authored directive copies/u);
+  const removed = clone(after);
+  removed.diagnosticDirectives.directives.pop();
+  assert.throws(
+    () => auditPackets(before, removed),
+    /may not add or remove the only authored directive/u,
   );
 });
 void test("the constructor audit admits only the exact named component navigation successor", () => {

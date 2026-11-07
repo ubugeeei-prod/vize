@@ -141,6 +141,46 @@ function directiveContract(result: Record<string, unknown>) {
   };
 }
 
+function assertDirectiveDeduplication(
+  before: ReturnType<typeof directiveContract>,
+  after: ReturnType<typeof directiveContract>,
+) {
+  if (before === null || after === null) {
+    assert.deepEqual(
+      after,
+      before,
+      "the slot host transition may not add or remove the only authored directive",
+    );
+    return;
+  }
+  assert.deepEqual(
+    after.unused,
+    before.unused,
+    "unused authored directive diagnostics remain exact",
+  );
+  const counts = (directives: typeof before.directives) => {
+      const result = new Map<string, number>();
+      for (const directive of directives) {
+        const key = JSON.stringify(directive);
+        result.set(key, (result.get(key) ?? 0) + 1);
+      }
+      return result;
+    },
+    historical = counts(before.directives),
+    current = counts(after.directives);
+  assert.deepEqual(
+    [...current.keys()].sort(),
+    [...historical.keys()].sort(),
+    "the slot host transition may only collapse exact duplicate authored directives",
+  );
+  for (const [directive, count] of current) {
+    assert.ok(
+      count <= historical.get(directive)!,
+      "the slot host transition may not add authored directive copies",
+    );
+  }
+}
+
 function semanticLinkContract(result: Record<string, unknown>) {
   if (result.semanticLinks === undefined) return null;
   assert.ok(Array.isArray(result.semanticLinks));
@@ -231,10 +271,9 @@ export function auditPackets(
     canonicalMappedGenerated,
     producer,
   );
-  assert.deepEqual(
-    directiveContract(certifiedDirectives(after, true)),
+  assertDirectiveDeduplication(
     directiveContract(certifiedDirectives(before, false)),
-    "no code-agnostic diagnostic suppression may be added",
+    directiveContract(certifiedDirectives(after, true)),
   );
   assert.deepEqual(
     semanticLinkContract(after),
