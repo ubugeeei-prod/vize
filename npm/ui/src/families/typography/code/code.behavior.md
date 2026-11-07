@@ -14,7 +14,7 @@ passing test is a contract violation.
 | C6  | SSR custom    | render            | renders custom host markup with consumer-owned semantics and no default `aria-hidden` or style     | `renders consumer-owned server semantics without implicit accessibility attrs` |
 | C7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                          | `scripts/check-renderers.ts`                                                   |
 | C8  | SSR/hydration | hydrate           | server code markup hydrates without warnings, node replacement, or accessibility drift             | `src/conformance/runtime-conformance.test.ts`                                  |
-| C9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Code, emit no CSS, and stay within gzip budget              | `scripts/check-tree-shaking.mjs`                                               |
+| C9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Code, emit no CSS, and stay within gzip budget              | `scripts/check-tree-shaking.ts`                                                |
 
 ## Props
 

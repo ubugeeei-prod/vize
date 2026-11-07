@@ -13,7 +13,7 @@ passing test is a contract violation.
 | P5  | any           | slot/expose       | exposes `element`, `axis`, `reversed`, `direction`, `gap`, `align`, `justify`, and state | `passes slot state and exposes live resolved layout state`                        |
 | P6  | SSR           | isolated requests | renders byte-identical flex stack markup without request-global state                    | `renders byte-identical logical stack markup across isolated SSR requests`        |
 | P7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                | `scripts/check-renderers.ts`                                                      |
-| P8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Stack, emit no CSS, and stay within gzip budget   | `scripts/check-tree-shaking.mjs`                                                  |
+| P8  | root/subpath  | consumer bundle   | root and subpath consumers retain only Stack, emit no CSS, and stay within gzip budget   | `scripts/check-tree-shaking.ts`                                                   |
 
 ## Props
 

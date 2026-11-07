@@ -20,7 +20,7 @@ is a contract violation.
 | S11 | SSR default       | render                         | omits optional ARIA and focus attributes from default server markup                                                                                          | `omits optional ARIA and focus attributes from default SSR markup`                    |
 | S12 | SSR/hydration     | runtime fixture                | server markup hydrates without warnings or root node replacement                                                                                             | `runtime-conformance.test.ts`                                                         |
 | S13 | DOM/SSR/Vapor     | compile                        | authored SFC compiles in every renderer lane without warnings or fallback                                                                                    | `scripts/check-renderers.ts`                                                          |
-| S14 | root/subpath      | consumer bundle                | root and subpath consumers retain only ScrollArea and its native CSS hooks within gzip budgets                                                               | `scripts/check-tree-shaking.mjs`                                                      |
+| S14 | root/subpath      | consumer bundle                | root and subpath consumers retain only ScrollArea and its native CSS hooks within gzip budgets                                                               | `scripts/check-tree-shaking.ts`                                                       |
 
 ## Props
 

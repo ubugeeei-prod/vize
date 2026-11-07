@@ -13,7 +13,7 @@ SSR test. A row without a passing test is a contract violation.
 | E5  | SSR default   | isolated requests | renders byte-identical default empty-state markup without request-global state                            | `renders byte-identical default empty-state markup across isolated SSR requests` |
 | E6  | SSR custom    | render            | renders custom host markup with strict hooks and no default role, tabindex, `aria-hidden`, or live region | `renders custom server markup without implicit accessibility attributes`         |
 | E7  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                                 | `scripts/check-renderers.ts`                                                     |
-| E8  | root/subpath  | consumer bundle   | root and subpath consumers retain only EmptyState, emit no CSS, and stay within gzip budget               | `scripts/check-tree-shaking.mjs`                                                 |
+| E8  | root/subpath  | consumer bundle   | root and subpath consumers retain only EmptyState, emit no CSS, and stay within gzip budget               | `scripts/check-tree-shaking.ts`                                                  |
 
 ## Props
 

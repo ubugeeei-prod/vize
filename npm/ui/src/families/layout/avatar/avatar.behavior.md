@@ -16,7 +16,7 @@ passing test is a contract violation.
 | A8  | SSR image          | render            | renders stable image markup with native image attributes and no fallback part                            | `renders server image markup with native image attributes`                    |
 | A9  | DOM/SSR/Vapor      | compile           | authored SFC compiles in every renderer lane without warnings or fallback                                | `scripts/check-renderers.ts`                                                  |
 | A10 | SSR/hydration      | hydrate           | server avatar markup hydrates without warnings, node replacement, or accessibility drift                 | `src/conformance/runtime-conformance.test.ts`                                 |
-| A11 | root/subpath       | consumer bundle   | root and subpath consumers retain only Avatar, emit no CSS, and stay within gzip budget                  | `scripts/check-tree-shaking.mjs`                                              |
+| A11 | root/subpath       | consumer bundle   | root and subpath consumers retain only Avatar, emit no CSS, and stay within gzip budget                  | `scripts/check-tree-shaking.ts`                                               |
 
 ## Props
 

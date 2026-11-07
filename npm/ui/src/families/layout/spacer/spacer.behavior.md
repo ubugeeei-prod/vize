@@ -14,7 +14,7 @@ passing test is a contract violation.
 | P6  | SSR           | isolated requests | renders byte-identical decorative logical-size markup without request-global state                | `renders byte-identical logical spacer markup across isolated SSR requests` |
 | P7  | SSR svg       | render            | renders decorative SVG spacer markup with no role, label, or focus contract                       | `renders an SVG spacer without server accessibility semantics`              |
 | P8  | DOM/SSR/Vapor | compile           | authored SFC compiles in every renderer lane without warnings or fallback                         | `scripts/check-renderers.ts`                                                |
-| P9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Spacer, emit no CSS, and stay within gzip budget           | `scripts/check-tree-shaking.mjs`                                            |
+| P9  | root/subpath  | consumer bundle   | root and subpath consumers retain only Spacer, emit no CSS, and stay within gzip budget           | `scripts/check-tree-shaking.ts`                                             |
 
 ## Props
 

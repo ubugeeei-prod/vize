@@ -155,8 +155,6 @@
       "npm/native/scripts/native-build-receipt.mjs",
       "npm/native/scripts/sync-entrypoint.mjs",
       "npm/native/scripts/test-preparation.mjs",
-      "npm/ui/scripts/check-size.mjs",
-      "npm/ui/scripts/check-tree-shaking.mjs",
       "tests/_helpers/vuefes-failure-cssom.mjs",
       "tests/_helpers/vuefes-failure-json.mjs",
       "tests/_helpers/vuefes-failure-sidecar.mjs",
