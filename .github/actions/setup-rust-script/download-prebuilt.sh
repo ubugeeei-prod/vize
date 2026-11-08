@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Contain the staging-file trap: this helper is sourced by the install action,
-# whose existing trap still owns the complete runner temporary directory.
+# Contain the staging-file trap: the install action still owns the complete
+# runner temporary directory while this helper owns only its partial archive.
 download_rust_script() (
   download_archive="${1:?expected archive}"
   if [ "$#" -ne 1 ] || [ -d "$download_archive" ]; then
@@ -47,11 +47,11 @@ download_rust_script() (
           sleep 1
           continue
         fi
-        download_via_api || exit "$?"
+        download_via_api || exit 75
         break
         ;;
       22:500|22:502|22:503|22:504)
-        download_via_api || exit "$?"
+        download_via_api || exit 75
         break
         ;;
       *)

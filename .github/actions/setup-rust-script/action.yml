@@ -31,11 +31,19 @@ runs:
           rust_script_temp="$(mktemp -d "$RUNNER_TEMP/rust-script.XXXXXX")"
           trap 'rm -rf "$rust_script_temp"' EXIT
           archive="$rust_script_temp/rust-script.tar.gz"
-          . "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"
-          bash "$GITHUB_ACTION_PATH/extract-prebuilt.sh" "$archive" "$rust_script_temp/runner" \
-            0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13
-          mkdir -p "$cargo_bin"
-          install -m 0755 "$rust_script_temp/runner/rust-script" "$cargo_bin/rust-script"
+          if bash "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"; then
+            bash "$GITHUB_ACTION_PATH/extract-prebuilt.sh" "$archive" "$rust_script_temp/runner" \
+              0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13
+            mkdir -p "$cargo_bin"
+            install -m 0755 "$rust_script_temp/runner/rust-script" "$cargo_bin/rust-script"
+          else
+            download_status="$?"
+            if [ "$download_status" -ne 75 ]; then
+              exit "$download_status"
+            fi
+            echo "Pinned rust-script release transfers failed; building the locked crate" >&2
+            cargo install rust-script --version "$rust_script_version" --locked --force
+          fi
         else
           cargo install rust-script --version "$rust_script_version" --locked --force
         fi
