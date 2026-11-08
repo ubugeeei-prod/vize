@@ -7,7 +7,7 @@ mod sfc;
 pub use sfc::{SfcBlockRange, SfcSourceMap};
 
 /// Composite source map combining import rewrites and optional SFC mapping.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct CompositeSourceMap {
     /// Source map for SFC blocks (only for `.vue` files).
     pub sfc_map: Option<SfcSourceMap>,

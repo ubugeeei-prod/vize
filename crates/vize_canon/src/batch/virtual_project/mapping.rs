@@ -122,7 +122,7 @@ impl VirtualProject {
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
         let virtual_path = self.original_index.get(original_path)?;
-        self.virtual_files.get(virtual_path)
+        self.virtual_files.get(virtual_path).map(AsRef::as_ref)
     }
 
     /// Find a virtual file by its materialized path.
@@ -131,7 +131,7 @@ impl VirtualProject {
             .package_shadow_files
             .get(virtual_path)
             .map_or(virtual_path, PathBuf::as_path);
-        self.virtual_files.get(canonical)
+        self.virtual_files.get(canonical).map(AsRef::as_ref)
     }
 
     /// Find a materialized file only when its bytes use the canonical source
@@ -140,16 +140,16 @@ impl VirtualProject {
     /// diagnostic coordinates through the canonical generated SFC map.
     pub(crate) fn find_by_diagnostic_virtual(&self, virtual_path: &Path) -> Option<&VirtualFile> {
         let Some(canonical) = self.package_shadow_files.get(virtual_path) else {
-            return self.virtual_files.get(virtual_path);
+            return self.virtual_files.get(virtual_path).map(AsRef::as_ref);
         };
         let file = self.virtual_files.get(canonical)?;
         let shadow_content = self.package_shadow_content(virtual_path, canonical).ok()?;
-        (shadow_content == file.content).then_some(file)
+        (shadow_content == file.content).then_some(file.as_ref())
     }
 
     /// Return virtual files sorted by original path for deterministic output.
     pub fn virtual_files_sorted(&self) -> Vec<&VirtualFile> {
-        let mut files: Vec<_> = self.virtual_files.values().collect();
+        let mut files: Vec<_> = self.virtual_files.values().map(AsRef::as_ref).collect();
         files.sort_by(|left, right| left.original_path.cmp(&right.original_path));
         files
     }
@@ -233,6 +233,7 @@ impl VirtualProject {
         let Some(file) = self.virtual_files.get_mut(virtual_path) else {
             return;
         };
+        let file = std::sync::Arc::make_mut(file);
         if file.source_map.sfc_map.is_none()
             && import_map.is_empty()
             && self

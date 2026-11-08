@@ -53,7 +53,10 @@ impl VirtualProject {
             .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty());
         if !self.jsx_typecheck
             && !authored_vue_ts
-            && !self.virtual_files.values().any(is_denied_javascript_sfc)
+            && !self
+                .virtual_files
+                .values()
+                .any(|file| is_denied_javascript_sfc(file))
         {
             self.finalize_declaration_imports();
             return;

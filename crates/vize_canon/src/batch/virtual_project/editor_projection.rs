@@ -141,7 +141,7 @@ impl VirtualProject {
         let files = match only {
             Some(paths) => paths
                 .iter()
-                .filter_map(|path| self.virtual_files.get(path))
+                .filter_map(|path| self.virtual_files.get(path).map(AsRef::as_ref))
                 .collect(),
             None => self.virtual_files_sorted(),
         };

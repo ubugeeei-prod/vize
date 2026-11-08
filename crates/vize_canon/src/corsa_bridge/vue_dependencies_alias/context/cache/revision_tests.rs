@@ -49,9 +49,19 @@ impl Workspace {
         overlays: &FxHashMap<PathBuf, &str>,
         requested: &[(PathBuf, &str)],
     ) -> PreparedAliasContext {
+        self.open_host(&self.host, HOST, overlays, requested)
+    }
+
+    fn open_host(
+        &self,
+        source_path: &Path,
+        content: &str,
+        overlays: &FxHashMap<PathBuf, &str>,
+        requested: &[(PathBuf, &str)],
+    ) -> PreparedAliasContext {
         AliasContext::for_hosts_cached(
-            &self.host,
-            HOST,
+            source_path,
+            content,
             overlays,
             requested,
             Default::default(),
@@ -81,6 +91,14 @@ fn materialized(context: &AliasContext, original: &Path) -> String {
     std::fs::read_to_string(path).unwrap()
 }
 
+fn shared_projection_files(left: &PreparedAliasContext, right: &PreparedAliasContext) -> usize {
+    left.context
+        .mirror
+        .as_ref()
+        .unwrap()
+        .shared_projection_files_with(right.context.mirror.as_ref().unwrap())
+}
+
 #[test]
 fn host_and_workspace_revisions_of_one_host_are_both_reused() {
     let workspace = Workspace::new();
@@ -92,6 +110,7 @@ fn host_and_workspace_revisions_of_one_host_are_both_reused() {
     let references = workspace.open(&overlays, &requested);
     let hover = workspace.open(&overlays, &[]);
     assert!(!reused(&references, &hover));
+    assert_eq!(shared_projection_files(&references, &hover), 2);
 
     let references_again = workspace.open(&overlays, &requested);
     let hover_again = workspace.open(&overlays, &[]);
@@ -102,6 +121,34 @@ fn host_and_workspace_revisions_of_one_host_are_both_reused() {
         materialized(&references_again, &workspace.other),
         materialized(&references, &workspace.other)
     );
+}
+
+#[test]
+fn workspace_revisions_of_different_hosts_share_unchanged_projections() {
+    let workspace = Workspace::new();
+    let overlays = FxHashMap::from_iter([
+        (workspace.host.clone(), HOST),
+        (workspace.child.clone(), CHILD),
+    ]);
+    let host = workspace.open(
+        &overlays,
+        &[
+            (workspace.child.clone(), CHILD),
+            (workspace.other.clone(), OTHER),
+        ],
+    );
+    let child = workspace.open_host(
+        &workspace.child,
+        CHILD,
+        &overlays,
+        &[
+            (workspace.host.clone(), HOST),
+            (workspace.other.clone(), OTHER),
+        ],
+    );
+
+    assert!(!reused(&host, &child));
+    assert!(shared_projection_files(&host, &child) >= 2);
 }
 
 #[test]

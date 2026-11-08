@@ -79,6 +79,24 @@ struct CachedContext {
 }
 
 impl SessionCache {
+    /// Share immutable generated files with live revisions of the same project
+    /// before the new context enters the bounded cache. The cache holds at
+    /// most eight revisions, so candidate discovery remains bounded.
+    pub(super) fn share_projection_storage(&self, context: &mut AliasContext) {
+        let Some(mirror) = context.mirror.as_mut() else {
+            return;
+        };
+        let virtual_root = mirror.virtual_root().to_owned();
+        for retained in self
+            .slots
+            .values()
+            .filter_map(|cached| cached.context.mirror.as_ref())
+            .filter(|retained| retained.virtual_root() == virtual_root)
+        {
+            mirror.share_projection_storage_from(retained);
+        }
+    }
+
     pub(super) fn project_sources_to_refresh(
         &self,
         virtual_root: &Path,

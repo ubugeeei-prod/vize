@@ -14,8 +14,13 @@
 //! - [`build`] / [`passthrough`] — building self-contained registered files.
 //! - [`vue_codegen`] / [`diagnostics`] — `.vue` virtual TS and SFC diagnostics.
 //! - [`tsconfig_paths`] — tsconfig path resolution and JSONC parsing.
+#![expect(
+    clippy::disallowed_types,
+    reason = "immutable projections are shared between editor revisions"
+)]
 
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
@@ -122,6 +127,7 @@ mod passthrough;
 mod paths;
 pub(in crate::batch) use paths::script_virtual_path;
 mod project;
+mod projection_storage;
 mod setup_props;
 mod topology;
 mod typed_router;
@@ -187,7 +193,7 @@ type PackageShadowOwners =
     std::collections::BTreeMap<crate::package_route::PackageRouteKey, PathBuf>;
 
 /// A virtual file in the project.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct VirtualFile {
     /// Generated or rewritten source code used by Corsa.
     pub content: CompactString,
@@ -383,7 +389,7 @@ pub struct VirtualProject {
     experimental_strict_slot_children: bool,
 
     /// Virtual files keyed by materialized path.
-    virtual_files: FxHashMap<PathBuf, VirtualFile>,
+    virtual_files: FxHashMap<PathBuf, Arc<VirtualFile>>,
     shared_helper_source_count: usize,
     /// Exact materialized artifacts owned by each authored source. Persistent
     /// refreshes replace this set atomically so an SFC changing TS/TSX shape

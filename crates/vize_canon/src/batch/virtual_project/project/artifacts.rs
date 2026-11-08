@@ -137,7 +137,9 @@ impl VirtualProject {
 
     fn replace_virtual_file(&mut self, file: VirtualFile) {
         self.shared_helper_source_count += usize::from(file.source_map.sfc_map.is_some());
-        let previous = self.virtual_files.insert(file.virtual_path.clone(), file);
+        let previous = self
+            .virtual_files
+            .insert(file.virtual_path.clone(), std::sync::Arc::new(file));
         self.shared_helper_source_count -=
             usize::from(previous.is_some_and(|file| file.source_map.sfc_map.is_some()));
     }

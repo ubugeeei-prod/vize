@@ -233,6 +233,7 @@ impl AliasContext {
                 graph_hit,
             )?;
         materialize_phase.finish();
+        cache.share_projection_storage(&mut context);
         let context = std::sync::Arc::new(context);
         cache.insert(
             source_path.to_path_buf(),

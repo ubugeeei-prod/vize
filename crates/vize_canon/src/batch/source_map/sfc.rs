@@ -24,7 +24,7 @@ impl SfcBlockRange {
 /// Precise source map for SFC virtual TypeScript: the generator's
 /// [`ProjectionMapping`] plus the coarse SFC block ranges that recover a
 /// position's block type.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SfcSourceMap {
     /// Span links and semantic links emitted by `vize_canon::virtual_ts`.
     projection: ProjectionMapping,

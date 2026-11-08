@@ -34,6 +34,17 @@ mod storage_tests {
             );
         }
     }
+
+    #[test]
+    fn storage_identity_includes_authored_literals() {
+        let mut left = ImportSourceMap::for_rewrites(1);
+        left.record_replacement(1, 2, 1, "'a'");
+        let mut right = ImportSourceMap::for_rewrites(1);
+        right.record_replacement(1, 2, 1, "'b'");
+
+        assert_eq!(left, right, "authored spelling does not change coordinates");
+        assert!(!left.has_same_storage(&right));
+    }
 }
 
 #[derive(Debug)]
@@ -63,6 +74,12 @@ impl PartialEq for ImportSourceMap {
 impl Eq for ImportSourceMap {}
 
 impl ImportSourceMap {
+    /// Whether two maps can share one allocation without losing the authored
+    /// literals used to reconstruct their pre-rewrite text.
+    pub(crate) fn has_same_storage(&self, other: &Self) -> bool {
+        self == other && self.original_literals == other.original_literals
+    }
+
     /// Heap bytes the adjustment and replacement rows retain.
     pub fn retained_bytes(&self) -> usize {
         size_of_val(self.adjustments.as_slice())
