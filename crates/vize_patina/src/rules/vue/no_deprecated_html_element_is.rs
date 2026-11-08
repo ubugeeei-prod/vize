@@ -33,8 +33,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, ElementType, PropNode};
+use vize_l0::is_html_tag;
+use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-html-element-is",
@@ -59,14 +59,9 @@ impl Rule for NoDeprecatedHtmlElementIs {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only the default Vue 3 dialect removed native-element `is` substitution.
-        if ctx.dialect() != VueDialect::Vue {
-            return;
-        }
-
         // Skip components (PascalCase / built-ins): `is` on a real component is
         // not the removed native-element substitution.
-        if element.tag_type != ElementType::Element {
+        if element.tag_type != ElementType::Element || !is_html_tag(element.tag) {
             return;
         }
 
@@ -76,27 +71,68 @@ impl Rule for NoDeprecatedHtmlElementIs {
         }
 
         for prop in element.props.iter() {
-            if let PropNode::Attribute(attr) = prop
-                && attr.name == "is"
-            {
-                // `is="vue:Foo"` opts into the customized built-in lookup and is
-                // still supported in Vue 3, so it must not be flagged.
-                let is_vue_prefixed = attr
-                    .value
-                    .as_ref()
-                    .is_some_and(|v| v.content.starts_with("vue:"));
-                if is_vue_prefixed {
-                    continue;
+            match prop {
+                PropNode::Attribute(attr) if attr.name == "is" => {
+                    // `is="vue:Foo"` opts into the customized built-in lookup and is
+                    // still supported in Vue 3, so it must not be flagged.
+                    if attr
+                        .value
+                        .as_ref()
+                        .is_some_and(|value| is_vue_prefixed_value(value.content))
+                        || authored_is_vue_prefixed(ctx.source, attr.loc.span)
+                    {
+                        continue;
+                    }
+                    ctx.error_with_help(
+                        ctx.t("vue/no-deprecated-html-element-is.message"),
+                        &attr.loc,
+                        ctx.t("vue/no-deprecated-html-element-is.help"),
+                    );
                 }
-
-                ctx.error_with_help(
-                    ctx.t("vue/no-deprecated-html-element-is.message"),
-                    &attr.loc,
-                    ctx.t("vue/no-deprecated-html-element-is.help"),
-                );
+                PropNode::Directive(directive)
+                    if directive.name == "bind"
+                        && matches!(directive.arg.as_ref(), Some(ExpressionNode::Simple(argument))
+                            if argument.is_static && argument.content == "is") =>
+                {
+                    ctx.error_with_help(
+                        ctx.t("vue/no-deprecated-html-element-is.message"),
+                        &directive.loc,
+                        ctx.t("vue/no-deprecated-html-element-is.help"),
+                    );
+                }
+                _ => {}
             }
         }
     }
+}
+
+fn is_vue_prefixed_value(value: &str) -> bool {
+    value.starts_with("vue:")
+        || value.starts_with("v&#117;e:")
+        || value.starts_with("v&#x75;e:")
+        || value.starts_with("v&#X75;e:")
+}
+
+fn authored_is_vue_prefixed(source: &str, span: vize_l0::Span) -> bool {
+    // The HTML parser decodes character references before producing attribute
+    // locations, so the end offset can point into the authored value. Find the
+    // nearest `is` attribute before the reported location instead of slicing
+    // with the decoded end offset.
+    let search_end = (span.start as usize + 4).min(source.len());
+    let Some(attribute_start) = source
+        .get(..search_end)
+        .and_then(|prefix| prefix.rfind(" is="))
+    else {
+        return false;
+    };
+    let Some(attribute) = source.get(attribute_start + 1..) else {
+        return false;
+    };
+    let value = attribute
+        .split_once('=')
+        .map_or(attribute, |(_, value)| value);
+    let value = value.trim_start().trim_matches(['\'', '"']);
+    is_vue_prefixed_value(value)
 }
 
 #[cfg(test)]
@@ -148,17 +184,28 @@ mod tests {
     }
 
     #[test]
-    fn allows_dynamic_is_binding_on_native_element() {
-        // A bound `:is` is a directive, not the removed static substitution.
+    fn reports_dynamic_is_binding_on_native_element() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :is="something" />"#, "App.vue");
-        assert_eq!(result.error_count, 0);
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn reports_dynamic_is_binding_in_vue2_authored_projects() {
+        let result = create_linter().lint_sfc(
+            r#"<template><div :is="component" /></template><script>export default {}</script>"#,
+            "Legacy.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]
     fn ignores_components() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent is="Other" />"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<MyComponent is="Other" /><maybe-v-node :is="content" />"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 

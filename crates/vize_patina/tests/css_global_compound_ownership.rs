@@ -92,8 +92,14 @@ fn compound_global_ownership_preserves_complete_css_sfc_json_plain_and_off_resul
     let mut css_linter = CssLinter::new();
     css_linter.add_rule(Box::new(NoDisplayNone));
     for mut case in corpus.cases {
-        case.expected_cli = crate::current_css_documentation::packet(case.expected_cli);
-        case.expected_plain = crate::current_css_documentation::plain(&case.expected_plain);
+        case.expected_cli = crate::current_css_documentation::packet(
+            case.expected_cli,
+            crate::current_css_documentation::GeometryProjection::None,
+        );
+        case.expected_plain = crate::current_css_documentation::plain(
+            &case.expected_plain,
+            crate::current_css_documentation::GeometryProjection::None,
+        );
         let css = case.source.get(case.style_start..case.style_end).unwrap();
         // No acceptance from a CSS parse refusal returning an empty result.
         let stylesheet = lightningcss::stylesheet::StyleSheet::parse(

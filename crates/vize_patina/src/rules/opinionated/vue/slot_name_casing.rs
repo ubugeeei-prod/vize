@@ -1,52 +1,46 @@
 //! vue/slot-name-casing
 //!
-//! Enforce kebab-case for named slots used via `v-slot`.
+//! Enforce camelCase for names on rendered `<slot>` outlets.
 //!
-//! Slot names passed to `v-slot` (or the `#` shorthand) should be written in
-//! kebab-case, mirroring how slots are commonly named in Vue templates. A slot
-//! name is flagged when it contains an uppercase letter or an underscore.
-//!
-//! The default slot and dynamic slot names (e.g. `#[dynamicName]`) are ignored.
+//! This follows the default behavior of `vue/slot-name-casing`: it checks the
+//! static `name` attribute of `<slot>`, not the `v-slot`/`#` syntax used by a
+//! parent to provide slot content.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <MyComponent>
-//!   <template #mySlot>...</template>
-//!   <template #my_slot>...</template>
-//! </MyComponent>
+//! <slot name="my-slot" />
+//! <slot name="MySlot" />
 //! ```
 //!
 //! ### Valid
 //! ```vue
-//! <MyComponent>
-//!   <template #my-slot>...</template>
-//!   <template #default>...</template>
-//! </MyComponent>
+//! <slot name="mySlot" />
+//! <slot name="default" />
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{ElementNode, ElementType, PropNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/slot-name-casing",
-    description: "Enforce kebab-case for named slots used via v-slot",
+    description: "Enforce camelCase for rendered slot names",
     category: RuleCategory::Recommended,
     fixable: false,
     default_severity: Severity::Warning,
 };
 
-/// Enforce kebab-case for named slots.
+/// Enforce camelCase for rendered slot names.
 pub struct SlotNameCasing;
 
 impl SlotNameCasing {
-    /// A slot name is kebab-case friendly when it has no uppercase letters and
-    /// no underscores. Single lowercase words such as `header` are allowed.
-    fn is_kebab_case_name(name: &str) -> bool {
-        !name.chars().any(|c| c.is_uppercase() || c == '_')
+    fn is_camel_case_name(name: &str) -> bool {
+        let mut chars = name.chars();
+        matches!(chars.next(), Some(first) if first.is_ascii_lowercase())
+            && chars.all(|character| character.is_ascii_alphanumeric())
     }
 }
 
@@ -55,38 +49,27 @@ impl Rule for SlotNameCasing {
         &META
     }
 
-    fn check_directive<'a>(
-        &self,
-        ctx: &mut LintContext<'a>,
-        _element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
-    ) {
-        if directive.name != "slot" {
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if element.tag_type != ElementType::Slot {
             return;
         }
-
-        // No argument means the default slot, which has no user-chosen name.
-        let Some(arg) = &directive.arg else {
+        let Some(attribute) = element.props.iter().find_map(|prop| match prop {
+            PropNode::Attribute(attribute) if attribute.name == "name" => Some(attribute),
+            _ => None,
+        }) else {
             return;
         };
-
-        // Only static slot names can be checked; dynamic names like
-        // `#[dynamicName]` are computed at runtime and are skipped.
-        let ExpressionNode::Simple(arg) = arg else {
+        let Some(value) = &attribute.value else {
             return;
         };
-        if !arg.is_static {
-            return;
-        }
-
-        let name = arg.content;
-        if name.is_empty() || Self::is_kebab_case_name(name) {
+        let name = value.content;
+        if name.is_empty() || Self::is_camel_case_name(name) {
             return;
         }
 
         ctx.warn_with_help(
             ctx.t_fmt("vue/slot-name-casing.message", &[("name", name)]),
-            &directive.loc,
+            &attribute.loc,
             ctx.t("vue/slot-name-casing.help"),
         );
     }
@@ -145,32 +128,59 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_camel_case_shorthand() {
+    fn provider_slot_names_are_outside_this_rule() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<MyComponent><template #mySlot>Body</template></MyComponent>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn test_invalid_snake_case_shorthand() {
+    fn provider_snake_case_is_outside_this_rule() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<MyComponent><template #my_slot>Body</template></MyComponent>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
-    fn test_invalid_camel_case_longform() {
+    fn provider_longform_is_outside_this_rule() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<MyComponent><template v-slot:mySlot>Body</template></MyComponent>"#,
             "test.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_non_camel_case_slot_outlet_names_at_the_attribute() {
+        let source = r#"<div><slot name="my-slot" /><slot name="MySlot" /></div>"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 2);
+        let first = source.find("name=\"my-slot\"").unwrap() as u32;
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (first, first + "name=\"my-slot\"".len() as u32)
+        );
+    }
+
+    #[test]
+    fn accepts_camel_case_slot_outlet_names() {
+        let result = create_linter().lint_template(
+            r#"<div><slot name="mySlot" /><slot name="default" /></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn ignores_dynamic_slot_outlet_names() {
+        let result = create_linter().lint_template(r#"<slot :name="dynamicName" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 }

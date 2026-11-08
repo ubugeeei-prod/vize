@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Box } from "./Box.js";
 
-defineOptions({ name: "Spacer" });
+defineOptions({ name: "FrescoSpacer" });
 </script>
 
 <template>

@@ -10,7 +10,9 @@
 //! This walks the emit call sites and checks the string-literal event name (the
 //! first argument). Only string-literal event names are checked; a dynamic name
 //! (`emit(eventName)`) carries no literal to inspect and is skipped. The
-//! `update:` prefix used by `v-model` (`'update:modelValue'`) is permitted.
+//! The `update:` prefix used by `v-model` is checked segment-by-segment, so
+//! `'update:modelValue'` is valid for camelCase while `'update:model-value'` is
+//! valid for kebab-case.
 //! Explicit configuration can instead require unseparated lowercase names such
 //! as `transitionstart`, or kebab-case names such as `transition-start`.
 //!
@@ -55,10 +57,19 @@ use super::template_scan::{DOLLAR_EMIT, for_each_template_call};
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Expression, Program, Statement, StringLiteral,
+    Argument, BindingPattern, CallExpression, Expression, IdentifierReference, ObjectExpression,
+    Program, Statement, StringLiteral,
 };
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_object_expression},
+};
+use oxc_semantic::{Semantic, SemanticBuilder};
+use oxc_syntax::symbol::SymbolId;
 use vize_l0::CompactString;
+
+use super::props_emits::require_explicit_emits::setup_context;
+use super::vue_object::VueObjects;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/custom-event-name-casing",
@@ -134,18 +145,40 @@ impl ScriptRule for CustomEventNameCasing {
     ) {
         // The `<script setup>` emit function captured from `defineEmits(...)`, if
         // any. A bare `defineEmits([...])` without a binding cannot be tracked.
-        let emit_binding = find_emit_binding(program);
+        let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        let semantic = &built.semantic;
+        let emit_binding = (!sfc.is_sfc || sfc.is_script_setup)
+            .then(|| find_emit_binding(program))
+            .flatten();
+        let objects = VueObjects::collect(
+            program,
+            _source,
+            semantic,
+            sfc.is_sfc && !sfc.is_script_setup,
+        );
 
         let mut visitor = CustomEventNameCasingVisitor {
             offset,
             result,
-            emit_binding,
+            semantic,
+            objects: &objects,
+            emit_binding: emit_binding.map(|(_, symbol)| symbol),
+            setup_stack: Vec::new(),
             casing: self.casing,
             is_sfc: sfc.is_sfc,
         };
         visitor.visit_program(program);
 
-        check_template(emit_binding, self.casing, sfc, result);
+        check_template(emit_binding.map(|(name, _)| name), self.casing, sfc, result);
+    }
+
+    fn check_scriptless_sfc(&self, sfc: SfcScriptContext<'_>, result: &mut ScriptLintResult) {
+        check_template(None, self.casing, sfc, result);
+    }
+
+    #[inline]
+    fn runs_on_scriptless_sfc(&self) -> bool {
+        true
     }
 }
 
@@ -185,12 +218,25 @@ fn check_template(
 struct CustomEventNameCasingVisitor<'a, 'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
-    emit_binding: Option<&'a str>,
+    semantic: &'result Semantic<'a>,
+    objects: &'result VueObjects,
+    emit_binding: Option<SymbolId>,
+    setup_stack: Vec<(Option<SymbolId>, Option<SymbolId>)>,
     casing: EventNameCasing,
     is_sfc: bool,
 }
 
 impl<'a> Visit<'a> for CustomEventNameCasingVisitor<'a, '_> {
+    fn visit_object_expression(&mut self, it: &ObjectExpression<'a>) {
+        if self.objects.kind(it).is_none() {
+            walk_object_expression(self, it);
+            return;
+        }
+        self.setup_stack.push(setup_context(it));
+        walk_object_expression(self, it);
+        self.setup_stack.pop();
+    }
+
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if self.is_emit_call(it)
             && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
@@ -206,15 +252,48 @@ impl<'a> CustomEventNameCasingVisitor<'a, '_> {
     /// `defineEmits` binding (`emit(...)`) or a member call whose property is
     /// `emit`/`$emit` (`ctx.emit(...)`, `this.$emit(...)`).
     fn is_emit_call(&self, call: &CallExpression<'a>) -> bool {
-        match &call.callee {
+        match call.callee.without_parentheses() {
             Expression::Identifier(identifier) => {
-                self.emit_binding == Some(identifier.name.as_str())
+                let symbol = self.symbol(identifier);
+                symbol.is_some()
+                    && (self.emit_binding == symbol
+                        || self
+                            .setup_stack
+                            .last()
+                            .is_some_and(|(emit, _)| *emit == symbol))
             }
-            Expression::StaticMemberExpression(member) => {
-                self.is_sfc && matches!(member.property.name.as_str(), "emit" | "$emit")
+            expression => self.is_emit_member(expression),
+        }
+    }
+
+    fn is_emit_member(&self, expression: &Expression<'a>) -> bool {
+        let member = match expression {
+            Expression::ChainExpression(chain) => chain.expression.as_member_expression(),
+            expression => expression.as_member_expression(),
+        };
+        let Some(member) = member else {
+            return false;
+        };
+        match member.static_property_name() {
+            // Matches eslint-plugin-vue's script-wide `$emit` visitor.
+            Some("$emit") => self.is_sfc,
+            Some("emit") => {
+                let context = self.setup_stack.last().and_then(|(_, context)| *context);
+                context.is_some()
+                    && matches!(
+                        member.object().without_parentheses(),
+                        Expression::Identifier(identifier) if self.symbol(identifier) == context
+                    )
             }
             _ => false,
         }
+    }
+
+    fn symbol(&self, identifier: &IdentifierReference<'a>) -> Option<SymbolId> {
+        self.semantic
+            .scoping()
+            .get_reference(identifier.reference_id.get()?)
+            .symbol_id()
     }
 
     fn check_event_name(&mut self, literal: &StringLiteral<'_>) {
@@ -268,15 +347,6 @@ fn report(
 }
 
 fn is_valid_event_name(value: &str, casing: EventNameCasing) -> bool {
-    // Component v-model events mirror their prop names after `update:`. Their
-    // suffix therefore follows the prop's authored casing independently of the
-    // project's custom-event convention.
-    if value
-        .strip_prefix("update:")
-        .is_some_and(|suffix| !suffix.is_empty())
-    {
-        return true;
-    }
     match casing {
         EventNameCasing::CamelCase => is_camel_case_event(value),
         EventNameCasing::Lowercase => is_lowercase_event(value),
@@ -293,6 +363,13 @@ fn is_camel_case_event(value: &str) -> bool {
 
 /// Whether a single segment matches `^[a-z][a-zA-Z0-9]*$`.
 fn is_camel_case_segment(segment: &str) -> bool {
+    // eslint-plugin-vue splits on `:` and its casing helper accepts empty
+    // segments. Event-bus namespaces such as `bv::show::modal` therefore stay
+    // outside this rule even though an empty whole event name is rejected by
+    // the guard in `is_camel_case_event`.
+    if segment.is_empty() {
+        return true;
+    }
     let mut chars = segment.chars();
     match chars.next() {
         Some(first) if first.is_ascii_lowercase() => {}
@@ -339,7 +416,7 @@ fn is_kebab_case_segment(segment: &str) -> bool {
 
 /// The identifier a top-level `const <id> = defineEmits(...)` binds the emit
 /// function to, if present. An unassigned `defineEmits(...)` returns `None`.
-fn find_emit_binding<'a>(program: &'a Program<'a>) -> Option<&'a str> {
+fn find_emit_binding<'a>(program: &'a Program<'a>) -> Option<(&'a str, SymbolId)> {
     for statement in &program.body {
         let Statement::VariableDeclaration(declaration) = statement else {
             continue;
@@ -353,7 +430,7 @@ fn find_emit_binding<'a>(program: &'a Program<'a>) -> Option<&'a str> {
                 .as_ref()
                 .is_some_and(|init| is_define_emits_call(init))
             {
-                return Some(id.name.as_str());
+                return Some((id.name.as_str(), id.symbol_id.get()?));
             }
         }
     }

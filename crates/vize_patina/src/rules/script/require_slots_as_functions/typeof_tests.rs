@@ -8,45 +8,8 @@ use serde_json::Value;
 const CASES: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/linter/slot-typeof-presence-10822/cases.json"
 );
-const SUCCESSORS: &str = include_str!(
-    "../../../../../../tests/_fixtures/differential/linter/slot-typeof-presence-10822/semantic-successors.json"
-);
-
-/// The two immutable former outside-slice cases now exercise direct-Typeof v1.
-/// Their old rows and complete before packets stay in their original corpus and
-/// the named successor custody. Every other row keeps its original expectation.
-pub(super) fn current_native_spans(corpus: &str, historical: &Value) -> Vec<Value> {
-    if historical["id"] != "typeof-outside-slice" {
-        return historical["nativeSpans"].as_array().unwrap().clone();
-    }
-    let expected_sha = match corpus {
-        "slot-existence-negation-10822" => {
-            "683a9b923ca916109703e44c3f4c67b1a71ac27abcdfc2872add504334a2dd0d"
-        }
-        "slot-existence-conditions-10822" => {
-            "49fe9e0fe0544c6b41f047bb2c67eabcb067f7c5f8e62430085a65b038055da7"
-        }
-        _ => panic!("unregistered typeof predecessor corpus"),
-    };
-    let data: Value = serde_json::from_str(SUCCESSORS).unwrap();
-    assert_eq!(data["schema"], "vize.slot-typeof-semantic-successors.v1");
-    assert_eq!(data["version"], 1);
-    assert_eq!(data["feature"], "immediate-authenticated-typeof-operand-v1");
-    let row = data["successors"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|row| row["predecessorCorpus"] == corpus)
-        .unwrap();
-    assert_eq!(row["predecessorCorpusSha256"], expected_sha);
-    assert_eq!(&row["historicalCase"], historical);
-    assert_eq!(row["currentNativeSpans"], serde_json::json!([]));
-    println!("vize-slot-typeof-semantic-successor corpus={corpus} complete={row}");
-    Vec::new()
-}
-
 #[test]
-fn immediate_typeof_preserves_full_native_packets_and_value_boundaries() {
+fn unary_uses_match_the_pinned_upstream_rule() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let mut captured = Vec::new();
     for row in corpus["cases"].as_array().unwrap() {
@@ -63,7 +26,7 @@ fn immediate_typeof_preserves_full_native_packets_and_value_boundaries() {
         }
     }
     for (row, source, offset, actual) in captured {
-        let diagnostics = row["nativeSpans"]
+        let diagnostics = row["officialSpans"]
             .as_array()
             .unwrap()
             .iter()

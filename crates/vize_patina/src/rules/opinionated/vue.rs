@@ -1,5 +1,6 @@
-mod authored_element;
+pub(crate) mod authored_element;
 mod component_name_in_template_casing;
+mod component_registration;
 mod html_button_has_type;
 mod html_self_closing;
 mod multi_word_component_names;

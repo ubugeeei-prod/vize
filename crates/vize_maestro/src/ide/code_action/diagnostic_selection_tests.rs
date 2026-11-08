@@ -18,7 +18,7 @@ fn diagnostics() -> Vec<Diagnostic> {
 }
 
 fn actions(state: &ServerState, uri: &Url, requested: &[Diagnostic]) -> Vec<CodeActionOrCommand> {
-    let range = Range::new(Position::new(1, 2), Position::new(1, 23));
+    let range = Range::new(Position::new(1, 2), Position::new(1, 25));
     let ctx = IdeContext::new(state, uri, 13).unwrap();
     CodeActionService::code_actions_for_diagnostics(&ctx, range, requested)
 }
@@ -50,15 +50,15 @@ fn expected_actions(uri: &Url, diagnostic: &Diagnostic, attach: bool) -> Vec<Cod
     let mut actions = Vec::new();
     if diagnostic.code == Some(NumberOrString::String("vue/html-self-closing".into())) {
         actions.push(CodeActionOrCommand::CodeAction(CodeAction {
-            title: "Fix: Use self-closing syntax".into(),
+            title: "Fix: Use separate start and end tags".into(),
             kind: Some(CodeActionKind::QUICKFIX),
             diagnostics: attach.then(|| vec![diagnostic.clone()]),
             edit: Some(WorkspaceEdit {
                 changes: Some(std::collections::HashMap::from([(
                     uri.clone(),
                     vec![TextEdit {
-                        range: Range::new(Position::new(1, 2), Position::new(1, 23)),
-                        new_text: "<img src=\"/logo.png\" />".into(),
+                        range: Range::new(Position::new(1, 22), Position::new(1, 24)),
+                        new_text: String::new(),
                     }],
                 )])),
                 ..Default::default()

@@ -17,6 +17,7 @@ pub use world::{ResolvedTypeWorld, TypeDeclaration, TypeDeclarationId, TypeLooku
 use vize_carton::{CompactString, FxHashMap, cstr};
 
 const INTERFACE_EXTENDS_PREFIX: &str = "\0vize:interface_extends:";
+const INTERFACE_EXTENDS_SEPARATOR: &str = "\0";
 
 /// Resolved type information
 #[derive(Debug, Clone)]
@@ -79,8 +80,10 @@ impl TypeDefinitions {
         let name = name.into();
         if !extends.is_empty() {
             let key = interface_extends_key(&name);
-            self.type_aliases
-                .insert(key, CompactString::new(extends.join("\n")));
+            self.type_aliases.insert(
+                key,
+                CompactString::new(extends.join(INTERFACE_EXTENDS_SEPARATOR)),
+            );
         }
         self.interfaces.insert(name, body.into());
     }
@@ -152,9 +155,9 @@ impl TypeDefinitions {
             .get(key.as_str())
             .map(|value| {
                 value
-                    .lines()
-                    .filter(|line| !line.is_empty())
-                    .map(CompactString::new)
+                    .split(INTERFACE_EXTENDS_SEPARATOR)
+                    .filter(|heritage| !heritage.is_empty())
+                    .map(|heritage| CompactString::new(heritage.trim()))
                     .collect()
             })
             .unwrap_or_default()

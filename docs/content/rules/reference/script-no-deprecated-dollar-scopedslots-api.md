@@ -17,10 +17,9 @@ Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or
 
 `this.$scopedSlots`, `ctx.$scopedSlots`, and the bare `$scopedSlots` reference use the Vue 2 scoped-slot API removed in Vue 3.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 const header = this.$scopedSlots.header
-const footer = ctx.$scopedSlots.footer
 render($scopedSlots.default)
 </script>
 ```
@@ -29,10 +28,9 @@ render($scopedSlots.default)
 
 Replacing `$scopedSlots` with `$slots` uses the unified slot surface. The example removes the deprecated spelling rather than establishing a setup context for the receivers.
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const header = this.$slots.header
-const footer = ctx.$slots.footer
 render($slots.default)
 </script>
 ```
@@ -58,4 +56,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L36)

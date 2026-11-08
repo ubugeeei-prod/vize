@@ -1,11 +1,11 @@
 ---
 title: "vue/v-on-handler-style"
-description: "イベントハンドラーの書き方を参照または関数の形式に揃えます。"
+description: "イベントハンドラーをメソッド参照の形式に揃えます。"
 ---
 
 # `vue/v-on-handler-style`
 
-イベントハンドラーの書き方を参照または関数の形式に揃えます。
+イベントハンドラーをメソッド参照の形式に揃えます。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
@@ -15,7 +15,7 @@ description: "イベントハンドラーの書き方を参照または関数の
 
 ## 悪い例
 
-イベント属性の中に変更処理や複数の文を直接記述しています。
+再利用可能なメソッド参照ではなく、インライン関数・変更処理・複数の文をイベント属性に記述しています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -27,14 +27,12 @@ description: "イベントハンドラーの書き方を参照または関数の
 
 ## 良い例
 
-handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。
+handler などの関数への参照を使います。インライン処理は名前付きメソッドへ移し、テンプレートでは安定したハンドラーを参照します。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +57,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)

@@ -55,6 +55,7 @@ function snapshotBody(bytes: Buffer) {
 }
 
 const CURRENT_REPORT_SOURCES = new Set([
+  "5d3ea2929558085dffa8d1cec43d3ba8677cd72ab648fba13535214ade5c7493",
   "3669701b338f2143de056d6d456697e57b7fd6efc8e0a3b478af6811ef1dff58",
   "903c64528a6b6ac65e4a65c1cc8e17de3a997eda605255c6e0d0864bc715cfd1",
   "8546a802cdd63774341ff98257d6a249103634984e4af893bad657f782bcb249",
@@ -75,14 +76,14 @@ const CURRENT_REPORT_ORACLES: Record<
     legacySha256: "3c66954ca7ad3698fd357394ca099fd195f1d86463967689d41c6b9723544c2d",
     current: {
       path: "tests/_fixtures/differential/linter/diagnostic-documentation-11818/unicode-crlf-columns.report.txt",
-      sha256: "2d8fd0eb3211193aeea73bc80057a0c74ad4ed2ab56eb525dd814d685946e6f3",
+      sha256: "1143a16ceea5a00961894c8a962cf6a666b6c4be2f3347818410ea4e04bc238e",
     },
   },
   "linter/report/source-map-order-and-missing": {
     legacySha256: "7c57c37c78a6010db15fb882dbf0c5926e4ff74a845d39a76f58bc29f8fb967e",
     current: {
       path: "tests/_fixtures/differential/linter/diagnostic-documentation-11818/source-map-order-and-missing.report.txt",
-      sha256: "415145418a9c2231e826520c1f31090bfcd4f26cc6cbf6a0682e0aa13ca2ade6",
+      sha256: "63f54c437cfcacda70ada192c1d07a4c3e86325556c8f3434955bd502639291c",
     },
   },
 };

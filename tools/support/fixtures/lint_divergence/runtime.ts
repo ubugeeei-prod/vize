@@ -16,6 +16,7 @@ import {
   type Json,
 } from "./value.ts";
 import type { Args } from "./selection.ts";
+import type { BaselineRuleSetting } from "./compare.ts";
 
 export interface Launch {
   command: string;
@@ -67,22 +68,22 @@ export function collectRunEvidence(root: string): Json {
     },
   };
 }
-export function runPatina(
-  cwd: string,
-  project: Json,
-  args: Args,
-  launch: Launch,
-  expectedCount: number,
-) {
+export function runPatina(cwd: string, project: Json, args: Args, launch: Launch, files: string[]) {
+  const excluded =
+    get(project, "lintDivergenceExcludePaths") === null
+      ? []
+      : projectStrings(project, "lintDivergenceExcludePaths");
+  const inputs = excluded.length ? files : projectStrings(project, "vueGlobs");
   const argv = [
     ...launch.prefix,
     "lint",
-    ...projectStrings(project, "vueGlobs"),
+    ...inputs,
     "--format",
     "json",
     "--no-config",
+    "--preset",
+    args.preset ?? "all",
   ];
-  if (args.preset !== null) argv.push("--preset", args.preset);
   const output = spawnSync(launch.command, argv, {
     cwd,
     env: { ...process.env, LANG: "C", LC_ALL: "C" },
@@ -102,9 +103,9 @@ export function runPatina(
     throw new Error(`vize lint produced invalid JSON: ${errorMessage(error)}`);
   }
   if (!Array.isArray(envelope)) throw new Error("vize lint envelope must be an array");
-  if (envelope.length !== expectedCount)
+  if (envelope.length !== files.length)
     throw new Error(
-      `${projectString(project, "id")}: vize lint reported ${envelope.length} files, expected ${expectedCount}`,
+      `${projectString(project, "id")}: vize lint reported ${envelope.length} files, expected ${files.length}`,
     );
   const findings: Json[] = [];
   for (const entry of envelope) {
@@ -129,7 +130,7 @@ export function runEslintBaseline(
   root: string,
   cwd: string,
   files: string[],
-  rules: Record<string, string>,
+  rules: Record<string, BaselineRuleSetting>,
 ) {
   if (!Object.keys(rules).length) {
     const version = get(

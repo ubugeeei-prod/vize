@@ -30,6 +30,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_ast::ast::Expression;
+use oxc_span::GetSpan;
+use oxc_syntax::operator::{BinaryOperator, UnaryOperator};
+use vize_armature::patterns::attribute_source_span;
 use vize_relief::{
     ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
@@ -59,100 +63,88 @@ impl Rule for NoNegatedVIfCondition {
     }
 }
 
-/// What kind of conditional directive (if any) an element carries.
-enum BranchKind {
-    /// `v-if`, with the location of the directive and its negation status.
-    If {
-        negated: bool,
-        loc: SourceLocation,
-    },
-    ElseIf,
-    Else,
-    None,
-}
-
-/// Walk a sibling list. A negated `v-if` is reported only when the conditional
-/// chain it starts is later closed by a `v-else`.
+/// Match eslint-plugin-vue's adjacent-pair semantics: only a negated `v-if` or
+/// `v-else-if` immediately followed by the next element's `v-else` is reported.
 fn check_children(ctx: &mut LintContext, children: &[TemplateChildNode]) {
-    // Pending negated `v-if`: its directive location, awaiting a chain-closing
-    // `v-else` somewhere after it (possibly through `v-else-if` links).
-    let mut pending_negated: Option<SourceLocation> = None;
-    // Whether we are currently inside a conditional chain at all (so a stray
-    // `v-else` without a matching `v-if` does not affect detection).
-    let mut in_chain = false;
-
+    let mut previous_element: Option<&ElementNode> = None;
     for child in children.iter() {
         let TemplateChildNode::Element(el) = child else {
-            // Text / comment / interpolation siblings do not break a chain.
             continue;
         };
-
-        match branch_kind(el) {
-            BranchKind::If { negated, loc } => {
-                // A new chain starts here; any previous pending `v-if` had no
-                // `v-else` and is therefore fine.
-                in_chain = true;
-                pending_negated = if negated { Some(loc) } else { None };
-            }
-            BranchKind::ElseIf if in_chain => {
-                // The chain continues; keep waiting for a possible `v-else`.
-            }
-            BranchKind::Else if in_chain => {
-                if let Some(loc) = pending_negated.take() {
-                    ctx.warn_with_help(
-                        ctx.t("vue/no-negated-v-if-condition.message"),
-                        &loc,
-                        ctx.t("vue/no-negated-v-if-condition.help"),
-                    );
-                }
-                in_chain = false;
-            }
-            _ => {
-                // A non-conditional element (or a dangling else) ends the chain.
-                in_chain = false;
-                pending_negated = None;
-            }
+        if has_directive(el, "else")
+            && let Some(expression) =
+                previous_element.and_then(|element| negated_condition(element, ctx.source))
+        {
+            ctx.warn_with_help(
+                ctx.t("vue/no-negated-v-if-condition.message"),
+                &expression,
+                ctx.t("vue/no-negated-v-if-condition.help"),
+            );
         }
+        previous_element = Some(el);
     }
 }
 
-/// Classify an element by its conditional directive.
-fn branch_kind(el: &ElementNode) -> BranchKind {
-    for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            match dir.name {
-                "if" => {
-                    let negated = dir.exp.as_ref().map(expression_is_negated).unwrap_or(false);
-                    return BranchKind::If {
-                        negated,
-                        loc: dir.loc.clone(),
-                    };
-                }
-                "else-if" => return BranchKind::ElseIf,
-                "else" => return BranchKind::Else,
-                _ => {}
-            }
-        }
-    }
-    BranchKind::None
+fn has_directive(element: &ElementNode, name: &str) -> bool {
+    element
+        .props
+        .iter()
+        .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == name))
 }
 
-/// Whether the expression text begins with a logical NOT, distinguishing a
-/// leading `!` from the inequality operators `!=` and `!==`.
+fn negated_condition(element: &ElementNode<'_>, source: &str) -> Option<SourceLocation> {
+    element.props.iter().find_map(|prop| {
+        let PropNode::Directive(directive) = prop else {
+            return None;
+        };
+        if !matches!(directive.name, "if" | "else-if") {
+            return None;
+        }
+        let expression = directive.exp.as_ref()?;
+        expression_is_negated(expression).then(|| precise_expression_location(expression, source))
+    })
+}
+
+fn precise_expression_location(expression: &ExpressionNode<'_>, source: &str) -> SourceLocation {
+    let ExpressionNode::Simple(simple) = expression else {
+        let loc = expression.loc();
+        return SourceLocation::new(loc.span.start, loc.span.end);
+    };
+    let Some(parsed) = simple.js_ast.and_then(|parsed| parsed.as_expression()) else {
+        return SourceLocation::new(simple.loc.span.start, simple.loc.span.end);
+    };
+    let authored = source
+        .get(simple.loc.span.start as usize..simple.loc.span.end as usize)
+        .unwrap_or_default();
+    let span = parsed.ast.get_inner_expression().span();
+    let Some(span) = attribute_source_span(authored, simple.content, span) else {
+        return SourceLocation::new(simple.loc.span.start, simple.loc.span.end);
+    };
+    SourceLocation::new(
+        simple.loc.span.start + span.start,
+        simple.loc.span.start + span.end,
+    )
+}
+
 fn expression_is_negated(exp: &ExpressionNode) -> bool {
-    let content = match exp {
-        ExpressionNode::Simple(s) => s.content,
-        // Compound expressions (e.g. with interpolation) are not a simple
-        // negation we can reason about; leave them alone.
-        ExpressionNode::Compound(_) => return false,
+    let ExpressionNode::Simple(simple) = exp else {
+        return false;
     };
-    let trimmed = content.trim_start();
-    let rest = match trimmed.strip_prefix('!') {
-        Some(rest) => rest,
-        None => return false,
-    };
-    // `!=` / `!==` are comparisons, not a negated condition.
-    !rest.starts_with('=')
+    if let Some(parsed) = simple.js_ast.and_then(|parsed| parsed.as_expression()) {
+        return match parsed.ast.get_inner_expression() {
+            Expression::UnaryExpression(unary) => unary.operator == UnaryOperator::LogicalNot,
+            Expression::BinaryExpression(binary) => matches!(
+                binary.operator,
+                BinaryOperator::Inequality | BinaryOperator::StrictInequality
+            ),
+            _ => false,
+        };
+    }
+    let trimmed = simple.content.trim();
+    (trimmed.starts_with('!') && !trimmed.starts_with("!="))
+        || [" !== ", " != "]
+            .iter()
+            .any(|operator| trimmed.contains(operator))
 }
 
 #[cfg(test)]
@@ -176,13 +168,13 @@ mod tests {
     }
 
     #[test]
-    fn reports_negated_v_if_with_else_if_then_else() {
+    fn allows_negated_v_if_before_else_if_then_else() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div v-if="!ok">A</div><div v-else-if="other">B</div><div v-else>C</div>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]
@@ -211,23 +203,23 @@ mod tests {
     }
 
     #[test]
-    fn allows_strict_inequality_condition() {
+    fn reports_strict_inequality_condition() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div v-if="a !== b">A</div><div v-else>B</div>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
-    fn allows_loose_inequality_condition() {
+    fn reports_loose_inequality_condition() {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div v-if="a != b">A</div><div v-else>B</div>"#,
             "App.vue",
         );
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
@@ -238,12 +230,34 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.warning_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        let expected =
+            r#"<div v-if="  !ok ">A</div><div v-else>B</div>"#.find("!ok").unwrap() as u32;
+        assert_eq!((diagnostic.start, diagnostic.end), (expected, expected + 3));
     }
 
     #[test]
     fn dangling_v_else_does_not_panic() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-else>B</div>"#, "App.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn reports_negated_else_if_directly_followed_by_else() {
+        let result = create_linter().lint_template(
+            r#"<div v-if="first">A</div><div v-else-if="!second">B</div><div v-else>C</div>"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn does_not_report_negated_if_before_else_if() {
+        let result = create_linter().lint_template(
+            r#"<div v-if="!first">A</div><div v-else-if="second">B</div><div v-else>C</div>"#,
+            "App.vue",
+        );
         assert_eq!(result.warning_count, 0);
     }
 }

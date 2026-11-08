@@ -17,9 +17,12 @@ description: "优先使用 defineOptions()，而不是仅设置 name/inheritAttr
 
 普通脚本唯一有实质作用的语句导出只含 `name` 和 `inheritAttrs` 的对象；这些选项可通过 `defineOptions` 表达。
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,3,4,5"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
+</script>
+<script setup lang="ts">
+const ready = true
 </script>
 ```
 
@@ -58,4 +61,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L49)

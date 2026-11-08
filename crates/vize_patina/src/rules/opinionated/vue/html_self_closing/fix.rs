@@ -41,11 +41,20 @@ pub(super) fn element_fix(
             let prefix = before_end
                 .strip_suffix('/')?
                 .trim_end_matches([' ', '\t', '\r', '\n', '\u{c}']);
-            if is_void {
-                cstr!("{prefix}>")
+            let slash_end = start.checked_add(u32::try_from(before_end.len()).ok()?)?;
+            let slash_start = start.checked_add(u32::try_from(prefix.len()).ok()?)?;
+            let delete_slash = TextEdit::delete(slash_start, slash_end);
+            return Some(if is_void {
+                Fix::new(help, delete_slash)
             } else {
-                cstr!("{prefix}></{}>", element.tag)
-            }
+                Fix::with_edits(
+                    help,
+                    vec![
+                        delete_slash,
+                        TextEdit::insert(end, cstr!("</{}>", element.tag)),
+                    ],
+                )
+            });
         }
         HtmlSelfClosingStyle::Any => return None,
     };

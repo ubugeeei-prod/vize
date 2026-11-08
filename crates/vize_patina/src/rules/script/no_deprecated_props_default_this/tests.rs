@@ -186,9 +186,7 @@ export default {
 }
 
 #[test]
-fn test_invalid_this_in_default_arrow() {
-    // An arrow has no own `this`; `this` here captures the module scope and is
-    // not the component instance — still a migration bug.
+fn test_valid_default_arrow_is_outside_upstream_factory_scope() {
     let source = r#"
 export default {
   props: {
@@ -200,11 +198,11 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
-fn test_invalid_this_in_validator() {
+fn test_valid_this_in_validator() {
     let source = r#"
 export default {
   props: {
@@ -218,8 +216,25 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_valid_function_typed_prop_default_is_the_value() {
+    let source = r#"
+export default {
+  props: {
+    callback: {
+      type: [String, Function],
+      default() {
+        return this.callback
+      }
+    }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -298,7 +313,7 @@ export default component
 }
 
 #[test]
-fn test_invalid_multiple_this_in_both_default_and_validator() {
+fn test_only_default_factory_is_checked_when_validator_also_uses_this() {
     let source = r#"
 export default {
   props: {
@@ -314,7 +329,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 2);
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]

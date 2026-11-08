@@ -42,14 +42,17 @@
 //! }
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression,
     ObjectExpression, ObjectProperty, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use oxc_span::Span;
-use vize_l0::FxHashMap;
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_span::GetSpan;
+use vize_l0::{FxHashMap, FxHashSet};
+
+use super::props_emits::typed_prop_defaults::collect_setup_props_with_types;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-boolean-default",
@@ -78,13 +81,77 @@ impl ScriptRule for NoBooleanDefault {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let Some(options) = find_component_options(program) else {
-            return;
+        self.check_program_with_sfc(
+            program,
+            _source,
+            offset,
+            SfcScriptContext::default(),
+            result,
+        );
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        let mut seen = FxHashSet::default();
+        if let Some(options) = find_component_options(program) {
+            check_component_options(options, offset, result);
+            seen.insert(options.span().start);
+        }
+        let mut visitor = DefineComponentVisitor {
+            offset,
+            result,
+            seen: &mut seen,
         };
-        let Some(props) = find_props_object(options) else {
-            return;
-        };
+        visitor.visit_program(program);
+        let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
+        for declaration in collect_setup_props_with_types(program, offset, sibling) {
+            if let Some(props) = declaration.runtime {
+                check_setup_props_object(props, &declaration, offset, result);
+            }
+            for prop in &declaration.typed {
+                if !prop.boolean {
+                    continue;
+                }
+                for (default, default_offset) in declaration.default_spans(&prop.name) {
+                    report(default, default_offset, result);
+                }
+            }
+        }
+    }
+}
+
+fn check_component_options(
+    options: &ObjectExpression<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if let Some(props) = find_props_object(options) {
         check_props_object(props, offset, result);
+    }
+}
+
+struct DefineComponentVisitor<'rule, 'seen> {
+    offset: usize,
+    result: &'rule mut ScriptLintResult,
+    seen: &'seen mut FxHashSet<u32>,
+}
+
+impl<'a> Visit<'a> for DefineComponentVisitor<'_, '_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if let Expression::Identifier(callee) = &call.callee
+            && matches!(callee.name.as_str(), "defineComponent" | "_defineComponent")
+            && let Some(Argument::ObjectExpression(options)) = call.arguments.first()
+            && self.seen.insert(options.span().start)
+        {
+            check_component_options(options, self.offset, self.result);
+        }
+        walk_call_expression(self, call);
     }
 }
 
@@ -106,7 +173,40 @@ fn check_props_object(props: &ObjectExpression<'_>, offset: usize, result: &mut 
             continue;
         }
         if let Some(default) = find_property(declaration, "default") {
-            report(default, offset, result);
+            report(default.value.span(), offset, result);
+        }
+    }
+}
+
+fn check_setup_props_object(
+    props: &ObjectExpression<'_>,
+    declaration: &super::props_emits::typed_prop_defaults::SetupPropsDeclaration<'_>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    for property in &props.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+        let Some(name) = property_key_name(&property.key) else {
+            continue;
+        };
+        let value = property.value.get_inner_expression();
+        let boolean = matches!(value, Expression::Identifier(identifier) if identifier.name == "Boolean")
+            || matches!(value, Expression::ObjectExpression(object) if prop_type_is_boolean(object));
+        if !boolean {
+            continue;
+        }
+        if let Expression::ObjectExpression(object) = value
+            && let Some(default) = find_property(object, "default")
+        {
+            report(default.value.span(), offset, result);
+        }
+        for (default, default_offset) in declaration.default_spans(name) {
+            report(default, default_offset, result);
         }
     }
 }
@@ -140,8 +240,7 @@ fn find_property<'a>(
     None
 }
 
-fn report(default: &ObjectProperty<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let span: Span = default.span;
+fn report(span: oxc_span::Span, offset: usize, result: &mut ScriptLintResult) {
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
     let diagnostic = LintDiagnostic::warn(

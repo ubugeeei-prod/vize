@@ -4,6 +4,8 @@
 
 import { defineComponent, h, type PropType } from "vue";
 
+import { LineNumber } from "./LineNumber.js";
+
 export interface CodeProps {
   /** Code content */
   code: string;
@@ -76,14 +78,12 @@ export const Code = defineComponent({
 
         if (props.lineNumbers) {
           parts.push(
-            h(
-              "text",
-              {
-                key: `ln-${lineNum}`,
-                fg: props.lineNumberFg,
-              },
-              `${String(lineNum).padStart(lineNumWidth)} │ `,
-            ),
+            h(LineNumber, {
+              key: `ln-${lineNum}`,
+              value: lineNum,
+              width: lineNumWidth,
+              fg: props.lineNumberFg,
+            }),
           );
         }
 

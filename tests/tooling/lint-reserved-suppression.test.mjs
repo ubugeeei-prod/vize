@@ -141,9 +141,13 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
       findings: original.diagnostics,
     });
     for (const { entry, preset, config, findings: recordedFindings } of scenarios) {
-      // Script region pragmas are file-wide. Keep the immutable successor
-      // packets intact while qualifying the current cross-block behavior.
-      const findings = entry.id === "setup-block-cannot-leak" ? [] : recordedFindings;
+      // ESLint treats an open region pragma in a script block as file-wide.
+      // Keep the immutable packet while qualifying that current cross-block
+      // behavior explicitly.
+      const findings =
+        entry.id === "setup-block-cannot-leak"
+          ? recordedFindings.filter((finding) => finding.rule_name !== corpus.rule)
+          : recordedFindings;
       const bytes = fs.readFileSync(
         path.join(fixture, entry.sourceFile ?? entry.filename + ".fixture"),
       );

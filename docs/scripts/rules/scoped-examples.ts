@@ -12,7 +12,7 @@ export const scopedOverrides: Record<string, RuleExample> = {
   "vue/no-negated-v-if-condition": pair(
     vue('<template>\n<div v-if="!ok">A</div>\n<div v-else>B</div>\n</template>'),
     vue(
-      '<template>\n<div v-if="ok">B</div>\n<div v-else>A</div>\n\n<div v-if="!ok">A</div>\n\n<div v-if="a !== b">A</div>\n<div v-else>B</div>\n</template>',
+      '<template>\n<div v-if="ok">B</div>\n<div v-else>A</div>\n\n<div v-if="!ok">A</div>\n\n<div v-if="a === b">A</div>\n<div v-else>B</div>\n</template>',
     ),
     "crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs",
   ),

@@ -26,12 +26,11 @@ export const ruleIndentationExamples = [
     expected: {
       bad: {
         language: "vue",
-        source:
-          "<script lang=\"ts\">\nexport default {\n  name: 'my-component' // kebab-case\n}\n</script>",
+        source: '<script lang="ts">\nexport default {\n  components: { myComponent }\n}\n</script>',
       },
       good: {
         language: "vue",
-        source: "<script lang=\"ts\">\nexport default {\n  name: 'MyComponent'\n}\n</script>",
+        source: '<script lang="ts">\nexport default {\n  components: { MyComponent }\n}\n</script>',
       },
       evidence: "crates/vize_patina/src/rules/script/component_options_name_casing.rs",
     },

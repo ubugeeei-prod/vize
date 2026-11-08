@@ -1,4 +1,5 @@
 use super::NoRequiredPropWithDefault;
+use crate::linter::Linter;
 use crate::rules::script::ScriptLinter;
 
 fn errors(source: &str) -> usize {
@@ -123,5 +124,28 @@ fn typed_default_diagnostics_keep_utf8_offsets_across_crlf() {
     assert_eq!(
         (result.diagnostics[0].start, result.diagnostics[0].end),
         (start, start + declaration.len() as u32)
+    );
+}
+
+#[test]
+fn typed_defaults_resolve_props_declared_in_the_sibling_script() {
+    let source = r#"<script lang="ts">
+export interface Props { value: number }
+</script>
+<script setup lang="ts">
+const { value = 1 } = defineProps<Props>()
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/no-required-prop-with-default".into()]))
+        .lint_sfc(source, "Probe.vue");
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-required-prop-with-default")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert_eq!(
+        &source[diagnostics[0].start as usize..diagnostics[0].end as usize],
+        "value: number"
     );
 }

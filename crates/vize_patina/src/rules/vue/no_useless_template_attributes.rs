@@ -41,17 +41,32 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `vue/no-useless-template-attributes` lint rule.
 pub struct NoUselessTemplateAttributes;
 
-/// Structural directives that are valid on `<template>`
-const STRUCTURAL_DIRECTIVES: &[&str] = &["if", "else-if", "else", "for", "slot"];
+/// Structural directives that are valid on `<template>`. `scope` and
+/// `slot-scope` are retained for Vue 2 migration projects.
+const STRUCTURAL_DIRECTIVES: &[&str] = &[
+    "if",
+    "else-if",
+    "else",
+    "for",
+    "slot",
+    "scope",
+    "slot-scope",
+];
 
 impl NoUselessTemplateAttributes {
     /// Check if a template has a structural directive (which justifies its existence)
     fn has_structural_directive(element: &ElementNode) -> bool {
         for prop in &element.props {
-            if let PropNode::Directive(dir) = prop
-                && STRUCTURAL_DIRECTIVES.contains(&dir.name)
-            {
-                return true;
+            match prop {
+                PropNode::Directive(dir) if STRUCTURAL_DIRECTIVES.contains(&dir.name) => {
+                    return true;
+                }
+                PropNode::Attribute(attr)
+                    if matches!(attr.name, "slot" | "scope" | "slot-scope") =>
+                {
+                    return true;
+                }
+                _ => {}
             }
         }
         false
@@ -76,8 +91,9 @@ impl NoUselessTemplateAttributes {
                 false
             }
             PropNode::Attribute(attr) => {
-                // key attribute is allowed
-                attr.name == "key"
+                // Vue 2 slot syntax is represented as plain attributes by the
+                // template parser, not directives.
+                matches!(attr.name, "key" | "slot" | "scope" | "slot-scope")
             }
         }
     }
@@ -169,6 +185,33 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_vue_2_slot_syntax() {
+        let linter = create_linter();
+        for template in [
+            r#"<MyComponent><template slot="header"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template slot-scope="props"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template scope="props"><h1 /></template></MyComponent>"#,
+            r#"<MyComponent><template v-if="ok" slot-scope="props"><h1 /></template></MyComponent>"#,
+        ] {
+            let result = linter.lint_template(template, "test.vue");
+            assert_eq!(
+                result.error_count, 0,
+                "{template}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn reports_non_slot_attributes_on_a_vue_2_slot_template() {
+        let result = create_linter().lint_template(
+            r#"<MyComponent><template class="expand" slot="details"><div /></template></MyComponent>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

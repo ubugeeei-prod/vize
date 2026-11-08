@@ -196,6 +196,24 @@ export default {
 }
 
 #[test]
+fn ignores_setup_property_passed_to_a_custom_component_factory() {
+    let sfc = r#"<script>
+import { ref } from 'vue'
+import { create } from './factory'
+export default create({
+  setup() {
+    const root = ref(null)
+    return { root }
+  },
+})
+</script>
+
+<template><div ref="root" /></template>
+"#;
+    assert_eq!(rule_names(&lint_sfc(sfc)), Vec::<&str>::new());
+}
+
+#[test]
 fn ignores_declaration_nested_in_a_callback() {
     // Only the script-setup program body and a `setup` body are template-ref
     // candidates; a ref created inside a callback is local state.

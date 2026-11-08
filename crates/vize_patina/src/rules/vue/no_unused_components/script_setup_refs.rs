@@ -1,10 +1,7 @@
 use super::NoUnusedComponents;
 use crate::context::LintContext;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpecifier};
 use oxc_ast_visit::Visit;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn script_setup_component_import_references(
@@ -29,16 +26,9 @@ pub(super) fn script_setup_component_import_references(
     }) {
         return FxHashSet::default();
     }
-
-    let allocator = Allocator::default();
-    let filename = match script_setup.lang.as_deref() {
-        Some("jsx") => "component.jsx",
-        Some("tsx") => "component.tsx",
-        Some("ts") => "component.ts",
-        _ => "component.js",
+    let Some(parsed) = ctx.sfc_scripts().and_then(|scripts| scripts.script_setup()) else {
+        return FxHashSet::default();
     };
-    let source_type = SourceType::from_path(filename).unwrap_or_else(|_| SourceType::ts());
-    let parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return FxHashSet::default();
     }

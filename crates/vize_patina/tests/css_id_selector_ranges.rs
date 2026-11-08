@@ -29,9 +29,13 @@ fn complete_sfc_id_selector_ranges_and_public_reports() {
                 .expect("complete reviewed output vector"),
         )
         .expect("valid whole output vector");
-        expected["json"] = crate::current_css_documentation::packet(expected["json"].clone());
+        expected["json"] = crate::current_css_documentation::packet(
+            expected["json"].clone(),
+            crate::current_css_documentation::GeometryProjection::ReportUtf16,
+        );
         expected["plain"] = json!(crate::current_css_documentation::plain(
-            expected["plain"].as_str().unwrap()
+            expected["plain"].as_str().unwrap(),
+            crate::current_css_documentation::GeometryProjection::ReportUtf16,
         ));
         let result = linter.lint_sfc(&source, filename);
         let diagnostics: Vec<_> = result

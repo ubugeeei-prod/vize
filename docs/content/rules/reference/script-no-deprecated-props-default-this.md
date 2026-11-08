@@ -17,7 +17,7 @@ Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or
 
 The prop default and validator read `this`, but those functions cannot rely on the component instance in Vue 3.
 
-```vue annotate="remove:6,7,8,13,14"
+```vue annotate="remove:6,7,8"
 <script lang="ts">
 export default {
   props: {
@@ -28,12 +28,6 @@ export default {
         return this.defaultSize
       }
     },
-    value: {
-      type: Number,
-      validator() {
-        return this.value > 0
-      }
-    }
   }
 }
 </script>
@@ -43,7 +37,7 @@ export default {
 
 The default reads `props.baseSize` from its argument, and the validator tests its `value` argument. Both stop depending on an unavailable instance receiver.
 
-```vue annotate="add:6,7,8,13,14"
+```vue annotate="add:6,7,8,11,12,13,14,15,16"
 <script lang="ts">
 export default {
   props: {
@@ -86,4 +80,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L66)

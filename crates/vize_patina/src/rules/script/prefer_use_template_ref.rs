@@ -57,13 +57,15 @@
 //! ```
 
 use oxc_ast::ast::{
-    BindingPattern, Expression, ObjectProperty, Program, PropertyKey, Statement,
-    VariableDeclaration,
+    BindingPattern, Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey,
+    Statement, VariableDeclaration,
 };
-use oxc_ast_visit::{Visit, walk::walk_object_property};
+use oxc_ast_visit::{Visit, walk::walk_object_expression};
+use oxc_semantic::SemanticBuilder;
 use oxc_span::Span;
 use vize_l0::{CompactString, cstr};
 
+use super::vue_object::VueObjects;
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -110,7 +112,7 @@ impl ScriptRule for PreferUseTemplateRef {
     fn check_program_with_sfc<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
@@ -124,11 +126,22 @@ impl ScriptRule for PreferUseTemplateRef {
         }
 
         let mut declarations = Vec::new();
-        collect_ref_declarations(&program.body, &mut declarations);
-        let mut setup = SetupRefCollector {
-            declarations: &mut declarations,
-        };
-        setup.visit_program(program);
+        if sfc.is_script_setup {
+            collect_ref_declarations(&program.body, &mut declarations);
+        } else {
+            let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+            let objects = VueObjects::collect(
+                program,
+                source,
+                &built.semantic,
+                sfc.is_sfc && !sfc.is_script_setup,
+            );
+            let mut setup = SetupRefCollector {
+                declarations: &mut declarations,
+                objects: &objects,
+            };
+            setup.visit_program(program);
+        }
 
         for declaration in declarations {
             if template_ref_names.contains(&declaration.name) {
@@ -200,34 +213,40 @@ fn collect_from_variable_declaration(
 /// setup: () => { ... } })`) the way upstream's `onSetupFunctionEnter` hook
 /// does.
 ///
-/// Matching the property *key* rather than resolving the enclosing component
-/// object keeps this independent of how the component is declared
-/// (`export default {}`, `defineComponent({})`, a re-exported object). A stray
-/// object property named `setup` is the only over-match, and its declarations
-/// still have to pair with a template ref name to be reported.
+/// The containing object must be one of the Vue component objects recognized
+/// by the same analysis as eslint-plugin-vue. A custom factory whose argument
+/// happens to contain a `setup` property is not a Vue component by itself.
 ///
 /// An expression-bodied arrow (`setup: () => ({ ... })`) declares nothing, and
 /// upstream skips it as well.
 struct SetupRefCollector<'out> {
     declarations: &'out mut Vec<RefDeclaration>,
+    objects: &'out VueObjects,
 }
 
 impl<'a> Visit<'a> for SetupRefCollector<'_> {
-    fn visit_object_property(&mut self, it: &ObjectProperty<'a>) {
-        if !it.computed && property_key_is_setup(&it.key) {
-            match &it.value {
-                Expression::FunctionExpression(function) => {
-                    if let Some(body) = &function.body {
-                        collect_ref_declarations(&body.statements, self.declarations);
+    fn visit_object_expression(&mut self, it: &ObjectExpression<'a>) {
+        if self.objects.contains(it) {
+            for property in &it.properties {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    continue;
+                };
+                if !property.computed && property_key_is_setup(&property.key) {
+                    match &property.value {
+                        Expression::FunctionExpression(function) => {
+                            if let Some(body) = &function.body {
+                                collect_ref_declarations(&body.statements, self.declarations);
+                            }
+                        }
+                        Expression::ArrowFunctionExpression(arrow) if !arrow.expression => {
+                            collect_ref_declarations(&arrow.body.statements, self.declarations);
+                        }
+                        _ => {}
                     }
                 }
-                Expression::ArrowFunctionExpression(arrow) if !arrow.expression => {
-                    collect_ref_declarations(&arrow.body.statements, self.declarations);
-                }
-                _ => {}
             }
         }
-        walk_object_property(self, it);
+        walk_object_expression(self, it);
     }
 }
 

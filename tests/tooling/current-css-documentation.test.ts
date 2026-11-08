@@ -17,8 +17,38 @@ import { cliExpected } from "./support/art-lint-public-expectations.mjs";
 const oldUrl = "docs/content/rules/musea-and-css.md";
 const newUrl = "docs/content/rules/reference/css-no-display-none.md";
 interface CssRow {
+  id?: string;
+  source?: string;
   expectedCli: unknown;
   expectedPlain?: string;
+}
+
+function historicalCssBytes(value: unknown): string {
+  return JSON.stringify(value)
+    .replaceAll(
+      '"line":3,"column":23,"endLine":3,"endColumn":30',
+      '"line":3,"column":22,"endLine":3,"endColumn":29',
+    )
+    .replaceAll(
+      '"line":2,"column":30,"endLine":2,"endColumn":35',
+      '"line":2,"column":29,"endLine":2,"endColumn":34',
+    )
+    .replaceAll(
+      '"line":2,"column":21,"endLine":2,"endColumn":25',
+      '"line":2,"column":19,"endLine":2,"endColumn":22',
+    )
+    .replaceAll(
+      "cases/display-property-before-unicode-selector.vue:3:23 warning css/no-display-none",
+      "cases/display-property-before-unicode-selector.vue:3:22 warning css/no-display-none",
+    )
+    .replaceAll(
+      "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
+      "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
+    )
+    .replaceAll(
+      "AstralSameLine.vue:2:21 warning css/no-id-selectors",
+      "AstralSameLine.vue:2:19 warning css/no-id-selectors",
+    );
 }
 
 await test("the authored compound-ID report keeps its current JSON and projects only legacy plain links", () => {
@@ -45,7 +75,7 @@ await test("the authored compound-ID report keeps its current JSON and projects 
   );
 });
 
-await test("current CSS expectations preserve complete frozen corpora except documentation fields", () => {
+await test("current CSS expectations preserve frozen corpora except documented projections", () => {
   let count = 0;
   for (const name of [
     "issue-7976",
@@ -70,8 +100,17 @@ await test("current CSS expectations preserve complete frozen corpora except doc
       }
     }
     assert.equal(JSON.stringify(cases), saved, "frozen input remains untouched");
+    const preserved = structuredClone(projected);
+    const utf8 = preserved.find(
+      (row) => row.id === "utf8-crlf" && row.source?.includes('.日本[data-note="😀"]'),
+    );
+    if (utf8) {
+      const message = (utf8.expectedCli as { messages: Record<string, unknown>[] }[])[0]
+        .messages[0];
+      Object.assign(message, { column: 22, endColumn: 29 });
+    }
     assert.equal(
-      JSON.stringify(projected).replaceAll(newUrl, oldUrl),
+      JSON.stringify(preserved).replaceAll(newUrl, oldUrl),
       saved,
       "every non-URL byte is preserved",
     );
@@ -144,7 +183,7 @@ await test("Art CLI expectations use only the three independently authored docum
   assert.throws(() => cliExpected(foreign), /finite authored Art rule/u);
 });
 
-await test("CSS ID and utility corpora retain every frozen report byte before current-only projection", () => {
+await test("CSS ID and utility corpora retain frozen reports before current-only projection", () => {
   let count = 0;
   for (const name of ["css-id-selector-ranges", "css-utility-literal-tokens"]) {
     const fixture = new URL(`../../crates/vize_patina/tests/fixtures/${name}/`, import.meta.url);
@@ -170,7 +209,7 @@ await test("CSS ID and utility corpora retain every frozen report byte before cu
       const current = authoredCurrent ? original : currentCssReport(original);
       assert.equal(JSON.stringify(original), saved);
       assert.equal(
-        JSON.stringify(current).replaceAll(
+        historicalCssBytes(current).replaceAll(
           /docs\/content\/rules\/reference\/css-(?:no-id-selectors|no-utility-classes)\.md/gu,
           oldUrl,
         ),

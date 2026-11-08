@@ -27,11 +27,99 @@ pub(super) fn collect_computed_names<'a>(
         if property.computed {
             continue;
         }
-        if let Some(name) = property_key_name(&property.key) {
+        if let Some(name) = property_key_name(&property.key)
+            && !computed_directly_returns_function(&property.value)
+        {
             names.insert(CompactString::from(name));
         }
     }
     names
+}
+
+fn computed_directly_returns_function(value: &Expression<'_>) -> bool {
+    let value = match value.get_inner_expression() {
+        Expression::ObjectExpression(descriptor) => descriptor
+            .properties
+            .iter()
+            .find_map(|property| {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    return None;
+                };
+                (!property.computed && property_key_name(&property.key) == Some("get"))
+                    .then_some(&property.value)
+            })
+            .unwrap_or(value),
+        value => value,
+    };
+    match value.get_inner_expression() {
+        Expression::ArrowFunctionExpression(arrow) if arrow.expression => arrow
+            .body
+            .statements
+            .first()
+            .and_then(|statement| match statement {
+                Statement::ExpressionStatement(statement) => Some(&statement.expression),
+                _ => None,
+            })
+            .is_some_and(expression_may_be_function),
+        Expression::ArrowFunctionExpression(arrow) => arrow
+            .body
+            .statements
+            .iter()
+            .any(statement_may_return_function),
+        Expression::FunctionExpression(function) => function
+            .body
+            .as_ref()
+            .is_some_and(|body| body.statements.iter().any(statement_may_return_function)),
+        _ => false,
+    }
+}
+
+fn statement_may_return_function(statement: &Statement<'_>) -> bool {
+    let Statement::ReturnStatement(statement) = statement else {
+        return false;
+    };
+    statement
+        .argument
+        .as_ref()
+        .is_some_and(expression_may_be_function)
+}
+
+fn expression_may_be_function(expression: &Expression<'_>) -> bool {
+    match expression.get_inner_expression() {
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_) => true,
+        Expression::ObjectExpression(_)
+        | Expression::ArrayExpression(_)
+        | Expression::StringLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BigIntLiteral(_)
+        | Expression::BooleanLiteral(_)
+        | Expression::NullLiteral(_)
+        | Expression::RegExpLiteral(_)
+        | Expression::TemplateLiteral(_)
+        | Expression::BinaryExpression(_)
+        | Expression::UnaryExpression(_)
+        | Expression::UpdateExpression(_) => false,
+        Expression::ConditionalExpression(conditional) => {
+            expression_may_be_function(&conditional.consequent)
+                || expression_may_be_function(&conditional.alternate)
+        }
+        Expression::LogicalExpression(logical) => {
+            expression_may_be_function(&logical.left) || expression_may_be_function(&logical.right)
+        }
+        // Known callable namespaces can intentionally select a function
+        // (`Math[method] || Math.round`). Do not generalize this to arbitrary
+        // member reads: `return this.value` is the ordinary invalid case.
+        Expression::StaticMemberExpression(member) => callable_namespace(&member.object),
+        Expression::ComputedMemberExpression(member) => callable_namespace(&member.object),
+        _ => false,
+    }
+}
+
+fn callable_namespace(expression: &Expression<'_>) -> bool {
+    matches!(
+        expression.get_inner_expression(),
+        Expression::Identifier(identifier) if identifier.name == "Math"
+    )
 }
 
 fn find_computed_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {

@@ -22,7 +22,8 @@ await test("7905 slot contracts retain whole original carriers, edits and comple
       .replace("v-slot:header", "#header")
       .replace('disabled="disabled"', "disabled")
       .replace("<MyCard></MyCard>", "<MyCard />")
-      .replace("<my-card />", "<MyCard />"),
+      .replace("<my-card />", "<MyCard />")
+      .replace("<input disabled />", "<input disabled>"),
   );
   assert.deepEqual(
     wholeJson(original, false, true)[0].messages.map((finding) => finding.ruleId),
@@ -30,6 +31,7 @@ await test("7905 slot contracts retain whole original carriers, edits and comple
       "vue/html-self-closing",
       "vue/component-name-in-template-casing",
       "vue/v-slot-style",
+      "vue/html-self-closing",
       "vue/no-boolean-attr-value",
     ],
   );
@@ -41,7 +43,10 @@ await test("7905 slot contracts retain whole original carriers, edits and comple
     input.file.endsWith("/original-requested-all-four.vue.fixture"),
   ).text;
   const complete = fixedSource(original, true);
-  assert.equal(complete.slice(complete.indexOf("<template>")), requested);
+  assert.equal(
+    complete.slice(complete.indexOf("<template>")),
+    requested.replace("<input disabled />", "<input disabled>"),
+  );
   for (const entry of cases) {
     const bytes = Buffer.from(entry.source);
     let output = Buffer.from(bytes);

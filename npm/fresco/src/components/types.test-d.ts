@@ -46,6 +46,7 @@ import type {
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
+import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
@@ -150,6 +151,20 @@ export const textInputRejectsBadSubmitHandler: TextInputProps = {
   onSubmit: (value: number) => value,
 };
 
+export const lineNumberAcceptsDocumentedProps: LineNumberProps = {
+  value: 42,
+  width: 4,
+  separator: "│",
+  padding: 1,
+  fg: "gray",
+  active: true,
+  activeFg: "white",
+  activeBg: "blue",
+};
+
+// @ts-expect-error - line numbers are numeric.
+export const lineNumberRejectsStringValue: LineNumberProps = { value: "42" };
+
 export const staticAcceptsTypedItems: StaticProps<string> = { items: ["done"] };
 export const linkAcceptsDocumentedProps: LinkProps = {
   text: "Docs",
@@ -231,6 +246,7 @@ export function componentsRenderWithTypedProps() {
     h(Box, { flexDirection: "column", borderStyle: "round", ariaRole: "list" }),
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
+    h(LineNumber, { value: 42, width: 3 }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
     h(Spacer),
     h(Newline, { count: 2 }),

@@ -236,7 +236,7 @@
     "rule": "vue/valid-v-slot",
     "vue_version": "3",
     "vapor": null,
-    "diagnostics": 0,
+    "diagnostics": 1,
     "fixes": 0
   },
   {

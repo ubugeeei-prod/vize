@@ -73,7 +73,18 @@ test("package lint:sfc stays wired to the shared Vize SFC gate", async () => {
   assert.match(lintScript, /import \{ lintPatinaSfc \} from "@vizejs\/native";/);
   assert.match(lintScript, /const lintCoreSfc: SfcLintFunction = \(source, options\) =>/);
   assert.match(lintScript, /customEventNameCasing: "camelCase"/);
-  assert.match(lintScript, /legacyPropsStyleRule = "script\/define-props-destructuring"/);
+  assert.match(lintScript, /const packageCompatibilityRules = new Set\(\[/);
+  assert.match(lintScript, /"script\/define-props-destructuring"/);
+  assert.match(lintScript, /"vue\/multi-word-component-names"/);
+  assert.match(lintScript, /"script\/require-default-prop"/);
+  assert.match(lintScript, /"script\/no-boolean-default"/);
+  assert.match(lintScript, /"vue\/html-self-closing"/);
+  assert.match(lintScript, /"script\/require-explicit-slots"/);
+  assert.match(lintScript, /"vue\/v-on-handler-style"/);
+  assert.match(lintScript, /"vue\/no-root-v-if"/);
+  assert.match(lintScript, /"vue\/no-negated-v-if-condition"/);
+  assert.match(lintScript, /"vue\/require-component-is"/);
+  assert.match(lintScript, /packageCompatibilityRules\.has\(diagnostic\.rule\)/);
   assert.match(lintScript, /corsaPath: workspaceCorsaPath/);
   assert.match(lintScript, /lintFiles\(lintCoreSfc, sourceRoots\)/);
   assert.match(

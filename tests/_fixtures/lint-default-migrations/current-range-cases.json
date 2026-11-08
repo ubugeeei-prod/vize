@@ -336,6 +336,18 @@
         }
       ],
       "essentialBaselineDiagnostics": [],
+      "strictPresetDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"functional\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
       "lspDiagnostics": [
         {
           "range": {
@@ -428,6 +440,18 @@
         }
       ],
       "essentialBaselineDiagnostics": [],
+      "strictPresetDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"combined\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
       "lspDiagnostics": [
         {
           "range": {

@@ -30,6 +30,7 @@ use vize_relief::RootNode;
 mod bindings;
 mod frozen;
 mod scopes;
+mod script_bindings;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-shadow",
@@ -93,5 +94,60 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_slot_binding_shadows_options_api_prop() {
+        let result = create_linter().lint_sfc(
+            r#"<template><Widget #default="{ files }">{{ files }}</Widget></template>
+<script>export default { props: { files: Array } }</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_slot_binding_shadows_template_scope() {
+        let result = create_linter().lint_template(
+            r#"<div v-for="files in groups"><Widget #default="{ files }">{{ files }}</Widget></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_v_for_binding_shadows_nested_component_prop() {
+        let result = create_linter().lint_sfc(
+            r#"<template><Widget v-for="item in items" :key="item.id" /></template>
+<script setup lang="ts">
+import { defineComponent } from 'vue'
+const Widget = defineComponent({
+  props: { item: Object }
+})
+const items = []
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Variable 'item' shadows a variable in an outer scope"
+        );
+    }
+
+    #[test]
+    fn component_registration_name_is_not_a_template_value_binding() {
+        let result = create_linter().lint_sfc(
+            r#"<template><notification v-for="notification in notifications" /></template>
+<script>
+import notification from './notification'
+export default {
+  components: { notification },
+  data: () => ({ notifications: [] })
+}
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     }
 }

@@ -2,14 +2,14 @@
   "api": {
     "diagnostics": [
       {
-        "end": 87,
+        "end": 94,
         "fix": null,
         "help": null,
         "labels": [],
         "message": "Child content of element with v-text will be overwritten",
         "rule": "vue/no-child-content",
         "severity": "error",
-        "start": 65
+        "start": 87
       }
     ],
     "errorCount": 1,
@@ -23,8 +23,8 @@
       "file": "text-empty-comment-scripted.vue",
       "messages": [
         {
-          "column": 11,
-          "endColumn": 33,
+          "column": 33,
+          "endColumn": 40,
           "endLine": 4,
           "line": 4,
           "message": "[vize:vue/no-child-content] Child content of element with v-text will be overwritten",

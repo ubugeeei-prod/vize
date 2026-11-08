@@ -17,6 +17,26 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
     parse_script_with_options(source, ScriptParserOptions::default())
 }
 
+/// Analyze an already-parsed plain script program.
+///
+/// This is the parse-free core of [`parse_script`]: callers that already hold
+/// the matching parser return can reuse it instead of parsing the same block a
+/// second time. `source` must be the exact text represented by `parsed`.
+pub fn analyze_script_program(
+    parsed: &oxc_parser::ParserReturn<'_>,
+    source: &str,
+) -> ScriptParseResult {
+    analyze_repaired_script_plain(
+        parsed,
+        source,
+        ScriptParserOptions::default(),
+        false,
+        false,
+        false,
+        None,
+    )
+}
+
 /// Parse non-script-setup source code using OXC parser with explicit options.
 pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
     parse_script_with_options_source_type(

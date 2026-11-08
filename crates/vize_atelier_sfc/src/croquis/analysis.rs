@@ -12,6 +12,37 @@ use vize_atelier_core::RootNode;
 use vize_carton::profile;
 use vize_croquis::Drawer;
 use vize_croquis::binding_occurrences::BindingOccurrences;
+use vize_croquis::drawer::LintTemplate;
+
+pub(super) trait DescriptorTemplate: Copy {
+    fn source(&self) -> &str;
+
+    fn draw(self, drawer: &mut Drawer);
+}
+
+impl DescriptorTemplate for &RootNode<'_> {
+    #[inline]
+    fn source(&self) -> &str {
+        self.source
+    }
+
+    #[inline]
+    fn draw(self, drawer: &mut Drawer) {
+        drawer.draw_template(self);
+    }
+}
+
+impl DescriptorTemplate for LintTemplate<'_, '_> {
+    #[inline]
+    fn source(&self) -> &str {
+        (*self).source()
+    }
+
+    #[inline]
+    fn draw(self, drawer: &mut Drawer) {
+        drawer.draw_lint_template(self);
+    }
+}
 
 pub(super) struct DescriptorAnalysisMode {
     pub(super) options_api: bool,
@@ -29,7 +60,7 @@ pub(super) struct DescriptorObservation<'a> {
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     scripts: &super::SfcScriptParses<'_>,
-    template_ast: Option<&RootNode<'_>>,
+    template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
@@ -103,9 +134,15 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         drawer
     };
     let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
+    // Linting still needs declarations from explicitly authored deprecated
+    // slot-scope syntax. Apply this after scripts were analyzed so it cannot
+    // opt the component into Vue 2 Options API behavior.
+    if options.legacy_template_scopes && !mode.legacy_vue2 {
+        drawer = drawer.with_legacy_vue2();
+    }
 
-    if let Some(root) = template_ast {
-        profile!("atelier.sfc.croquis.template", drawer.draw_template(root));
+    if let Some(template) = template {
+        profile!("atelier.sfc.croquis.template", template.draw(&mut drawer));
     }
 
     let mut croquis = if CAPTURE {
@@ -116,7 +153,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         drawer.finish()
     };
     if options.unused_bindings || CAPTURE {
-        if descriptor.template.is_some() && template_ast.is_none() {
+        if descriptor.template.is_some() && template.is_none() {
             croquis.unused_bindings.clear();
             packet = None;
         } else {

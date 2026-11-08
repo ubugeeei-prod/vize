@@ -44,6 +44,7 @@ impl crate::script_parser::ScriptParseResult {
 }
 
 /// Observe writes at nodes the existing scope walker already visits.
+#[inline(always)]
 pub(crate) fn note_expression_mutation(
     result: &mut crate::script_parser::ScriptParseResult,
     expression: &Expression<'_>,

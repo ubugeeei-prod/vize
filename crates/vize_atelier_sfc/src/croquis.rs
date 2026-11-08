@@ -23,6 +23,7 @@ pub use module_exports::{
     descriptor_module_sources_are_known,
 };
 pub use occurrences::{
+    analyze_sfc_descriptor_with_lint_template_and_occurrences,
     analyze_sfc_descriptor_with_occurrences,
     analyze_sfc_descriptor_with_occurrences_and_template_reuse,
 };
@@ -32,7 +33,7 @@ pub use resolved::{
 pub use script_parses::SfcScriptParses;
 use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr};
-use vize_croquis::{Croquis, DrawerOptions};
+use vize_croquis::{Croquis, DrawerOptions, drawer::LintTemplate};
 
 /// Options for descriptor-level Croquis analysis.
 #[derive(Debug, Clone, Copy)]
@@ -46,6 +47,9 @@ pub struct SfcCroquisOptions {
     pub unused_bindings: bool,
     /// The supplied template AST is a proven dialect-derived HTML view.
     pub template_is_derived: bool,
+    /// Interpret authored Vue 2 slot-scope attributes during the template pass
+    /// without enabling legacy script analysis.
+    pub legacy_template_scopes: bool,
 }
 
 impl SfcCroquisOptions {
@@ -57,6 +61,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 
@@ -69,6 +74,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: true,
         }
     }
 
@@ -86,6 +92,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 
@@ -105,6 +112,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 
@@ -177,6 +185,29 @@ pub fn analyze_sfc_descriptor_with_template_reuse(
             template_semantic_reuse: reuse,
             ..Default::default()
         },
+    )
+    .croquis
+}
+
+/// Analyze a lint descriptor from its completed Davinci template artifact.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+) -> Croquis {
+    analyze_sfc_descriptor_resolved_impl::<false>(
+        scripts,
+        template,
+        options,
+        DescriptorAnalysisMode {
+            options_api: false,
+            legacy_vue2: false,
+            include_script_content: false,
+        },
+        None,
+        None,
+        DescriptorObservation::default(),
     )
     .croquis
 }

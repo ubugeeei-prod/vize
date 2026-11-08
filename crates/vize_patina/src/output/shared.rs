@@ -240,7 +240,7 @@ pub(super) struct SourceLineIndex {
     is_ascii: bool,
     source_len: usize,
     line_starts: SmallVec<[usize; 64]>,
-    multibyte_adjustments: SmallVec<[(usize, u32); 16]>,
+    utf16_adjustments: SmallVec<[(usize, u32); 16]>,
 }
 
 impl SourceLineIndex {
@@ -256,14 +256,14 @@ impl SourceLineIndex {
         }
 
         let is_ascii = source.is_ascii();
-        let mut multibyte_adjustments = SmallVec::new();
+        let mut utf16_adjustments = SmallVec::new();
         if !is_ascii {
-            let mut extra_bytes = 0u32;
+            let mut extra_bytes_over_utf16 = 0u32;
             for (index, ch) in source.char_indices() {
                 let width = ch.len_utf8();
                 if width > 1 {
-                    extra_bytes += (width - 1) as u32;
-                    multibyte_adjustments.push((index + width, extra_bytes));
+                    extra_bytes_over_utf16 += (width - ch.len_utf16()) as u32;
+                    utf16_adjustments.push((index + width, extra_bytes_over_utf16));
                 }
             }
         }
@@ -272,7 +272,7 @@ impl SourceLineIndex {
             is_ascii,
             source_len: bytes.len(),
             line_starts,
-            multibyte_adjustments,
+            utf16_adjustments,
         }
     }
 
@@ -289,20 +289,20 @@ impl SourceLineIndex {
         }
         let byte_column = offset.saturating_sub(line_start) as u32 + 1;
         let extra_bytes_before_column = self
-            .extra_bytes_before(offset)
-            .saturating_sub(self.extra_bytes_before(line_start));
+            .extra_bytes_over_utf16_before(offset)
+            .saturating_sub(self.extra_bytes_over_utf16_before(line_start));
         let column = byte_column.saturating_sub(extra_bytes_before_column);
 
         (line, column)
     }
 
-    fn extra_bytes_before(&self, offset: usize) -> u32 {
+    fn extra_bytes_over_utf16_before(&self, offset: usize) -> u32 {
         let adjustment_index = self
-            .multibyte_adjustments
+            .utf16_adjustments
             .partition_point(|&(byte_offset, _)| byte_offset <= offset);
         adjustment_index
             .checked_sub(1)
-            .and_then(|index| self.multibyte_adjustments.get(index))
+            .and_then(|index| self.utf16_adjustments.get(index))
             .map(|&(_, extra)| extra)
             .unwrap_or(0)
     }

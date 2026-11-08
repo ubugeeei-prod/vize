@@ -62,6 +62,7 @@ interface Divergence extends Fields {
   referenceCoverageExpectations: { observedCount: number }[];
   falsePositives: Finding[];
   falseNegatives: (Finding & { upstreamRuleId: string })[];
+  intentionalDivergences: (Finding & { reason: string })[];
 }
 interface Baseline {
   durationMs?: number;
@@ -88,6 +89,7 @@ interface ProjectReport extends BaseReport {
 }
 interface IndexReport extends BaseReport {
   schema: "vize.fixtureLintDivergenceIndex";
+  totals: Record<string, number>;
   projects: Record<string, number>[];
 }
 interface OriginalProjectReport extends Omit<ProjectReport, "raw" | "divergence"> {
@@ -273,6 +275,8 @@ export function assertParity(expected: Result, actual: Result, oracle: Oracle) {
   }
   hostSeams(expected, true);
   hostSeams(actual, false);
+  if (/^warning: stripping debug info with `rust-objcopy` failed:[\s\S]+$/u.test(expected.stderr))
+    expected.stderr = "";
   if (oracle === "original") {
     assert.deepEqual(expected.rawUnknownTokens, {});
     actual.rawUnknownTokens = {};
@@ -324,7 +328,11 @@ export function assertMembershipCorrection(
     project = String(entry.project),
     finding = object(entry.finding);
   assert.equal(expected.status, 0);
-  assert.equal(expected.stderr, "");
+  assert.match(
+    expected.stderr,
+    /^(?:|warning: stripping debug info with `rust-objcopy` failed:[\s\S]+)$/u,
+  );
+  expected.stderr = "";
   const report = reportFile(expected, `${project}-lint-divergence.json`),
     index = indexFile(expected);
   assertDigest(report.divergence);

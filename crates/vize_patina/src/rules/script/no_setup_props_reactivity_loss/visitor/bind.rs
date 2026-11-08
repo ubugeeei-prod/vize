@@ -37,7 +37,12 @@ impl Visitor<'_> {
             }
         }
         if let Some(rest) = &object.rest {
-            self.bind_other(&rest.argument);
+            match Self::skip_default(&rest.argument) {
+                BindingPattern::BindingIdentifier(id) => {
+                    self.insert(id.name.as_str(), Kind::Props(true));
+                }
+                other => self.bind_other(other),
+            }
         }
     }
 
