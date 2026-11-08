@@ -233,8 +233,15 @@ test("paired dispatch is isolated and the complete full-default job remains byte
   const after = fs.readFileSync(path.join(root, file), "utf8");
   const condition = "    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'full'\n";
   assert.equal(after.split(condition).length, 2);
+  const fullJob = after.slice(after.indexOf("  profile:\n"));
+  assert(fullJob.includes("    runs-on: blacksmith-32vcpu-ubuntu-2404\n"));
   assert.equal(
-    after.slice(after.indexOf("  profile:\n")).replace(condition, ""),
+    fullJob
+      .replace(condition, "")
+      .replace(
+        "    runs-on: blacksmith-32vcpu-ubuntu-2404\n",
+        "    runs-on: blacksmith-8vcpu-ubuntu-2404\n",
+      ),
     before.slice(before.indexOf("  profile:\n")),
   );
   assert(after.includes("options: [full, paired-comparison]\n        default: full"));
