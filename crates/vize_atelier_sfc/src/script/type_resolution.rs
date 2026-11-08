@@ -270,6 +270,9 @@ fn resolve_type_to_object_body_inner(
     }
 
     let base_name = strip_generic_params(trimmed);
+    if !is_type_reference_name(base_name) {
+        return None;
+    }
     if !stack.insert(base_name.to_compact_string()) {
         return None;
     }
@@ -445,6 +448,16 @@ fn parse_string_literal_union(arg: &str) -> Vec<String> {
 
 fn strip_generic_params(name: &str) -> &str {
     name.split_once('<').map_or(name, |(base, _)| base).trim()
+}
+
+fn is_type_reference_name(name: &str) -> bool {
+    name.split('.').all(|part| {
+        let mut characters = part.chars();
+        characters.next().is_some_and(|character| {
+            character == '_' || character == '$' || character.is_alphabetic()
+        }) && characters
+            .all(|character| character == '_' || character == '$' || character.is_alphanumeric())
+    })
 }
 
 fn split_top_level(input: &str, delimiter: char) -> Vec<String> {

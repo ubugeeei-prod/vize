@@ -101,6 +101,10 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         (cstr!("MissingAlias"), String::from("MissingKeys")),
         (cstr!("CycleA"), String::from("CycleB")),
         (cstr!("CycleB"), String::from("CycleA")),
+        (
+            cstr!("Conditional"),
+            String::from("T extends { __output: infer R } ? R : never"),
+        ),
     ]);
     for expression in [
         "{ value?: Missing }",
@@ -108,6 +112,7 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Record<'value', Missing>",
         "Record<Keys, Missing>",
         "Record<ChainedKeys, Missing>",
+        "Conditional",
     ] {
         assert_eq!(
             unresolved_property_shape_references(expression, &FxHashMap::default(), &aliases),
