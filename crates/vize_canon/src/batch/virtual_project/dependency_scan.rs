@@ -30,7 +30,7 @@ use vize_carton::cstr;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use crate::batch::error::CorsaResult;
-use crate::batch::import_rewriter::{ModuleSpecifierFactsCache, ModuleSpecifierSpan};
+use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 use super::VirtualProject;
 use super::setup_props::RuntimePropResolveCache;
@@ -43,6 +43,7 @@ mod references;
 pub(super) use references::path_references;
 mod resolution;
 mod source_resolution;
+mod specifier_iter;
 use package_roots::PackageRoots;
 use resolution::{
     alias_may_reach_first_party, canonical_key, inside_node_modules, is_declaration_file,
@@ -52,34 +53,9 @@ pub(crate) use resolution::{
     probe_candidates, resolve_dependency, resolve_dependency_with_inputs,
     resolve_generated_dependency, resolve_generated_dependency_with_inputs,
 };
+use specifier_iter::DependencySpecifierIter;
 
 type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
-
-enum DependencySpecifierIter<'a> {
-    Parsed(std::slice::Iter<'a, (CompactString, crate::PackageResolutionMode)>),
-    Reused {
-        source: &'a str,
-        spans: std::slice::Iter<'a, ModuleSpecifierSpan>,
-    },
-}
-
-impl<'a> Iterator for DependencySpecifierIter<'a> {
-    type Item = (&'a str, crate::PackageResolutionMode);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            Self::Parsed(occurrences) => occurrences
-                .next()
-                .map(|(specifier, mode)| (specifier.as_str(), *mode)),
-            Self::Reused { source, spans } => loop {
-                let (start, end, mode) = spans.next()?;
-                if let Some(specifier) = source.get(*start as usize..*end as usize) {
-                    return Some((specifier, *mode));
-                }
-            },
-        }
-    }
-}
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
