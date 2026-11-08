@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 1,
+      "character": 7
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst cacheWitness: string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1
+        },
+        "start": {
+          "character": 6,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 1,
+      "character": 7
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst cacheWitness: string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1
+        },
+        "start": {
+          "character": 6,
+          "line": 1
+        }
+      }
+    }
+  }
+]

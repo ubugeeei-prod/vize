@@ -5495,6 +5495,42 @@
       }
     },
     {
+      "id": "linter/v-pre-implied-end-11713",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "v-pre-implied-end-11713",
+        "files": [
+          {
+            "path": "Recovered.vue.txt",
+            "role": "implied-end-tag-regression-reproduction",
+            "sha256": "810d14d19dd3e979142f669d0be8ac2b98aa39444e4508928591c3bb06d14f93"
+          },
+          {
+            "path": "LiveBinding.vue.txt",
+            "role": "live-binding-negative-control",
+            "sha256": "e65b28b10a719a3635c6035fdc30698362fed7e93a9c85f08e109f0017dba43e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/vize-script-suppressions-11150",
       "state": "active",
       "targets": [

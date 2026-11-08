@@ -47,6 +47,7 @@ export async function prepareScopedSelection(
   vueFiles: readonly string[],
   run: Run,
   candidates: ReadonlySet<string>,
+  platform: NodeJS.Platform = process.platform,
 ): Promise<
   | { result: OxlintProcessResult }
   | { args: string[]; prepared: PreparedWorkaroundFiles; originalResult?: OxlintProcessResult }
@@ -158,9 +159,12 @@ export async function prepareScopedSelection(
   // The carrier intentionally contains no executable original script. Core,
   // custom and parser checks therefore always need the unchanged originals,
   // even when neither import nor type-aware rules are configured.
-  const bridgeOptions = bridgeProjectArgs(options);
+  // A directory target is already the exact selected set, so original-path
+  // ignore inputs must not filter its temporary path a second time.
+  const directoryTransport = platform === "win32";
+  const bridgeOptions = bridgeProjectArgs(options, directoryTransport);
   projectOutputFormat(options);
-  const phases = splitProjectConfig(config);
+  const phases = splitProjectConfig(config, directoryTransport);
   validateScopedConfig(phases.bridge, bridgeOptions);
   let originalResult: OxlintProcessResult | undefined;
   let mirror: ReturnType<typeof createScopedMirror> | undefined;
@@ -191,7 +195,10 @@ export async function prepareScopedSelection(
       else if (args[index].startsWith("--config=")) args[index] = `--config=${mirror.sibling}`;
     }
     const projected = selectedVue.map((file) => mirror.originalsToCopies.get(file) ?? file).sort();
-    args.push(...projected);
+    // CreateProcessW caps the full command line at 32,767 characters. The
+    // mirror contains only the already-selected Vue files, so traversing its
+    // root preserves the selected set without expanding every copy into argv.
+    args.push(...(directoryTransport ? [mirror.root] : projected));
     const transported = await run(["--debug", "files", ...args]);
     if (
       transported.status !== 0 ||
