@@ -6,6 +6,7 @@
 //! identity and retained JavaScript expressions come from L2.
 
 use oxc_allocator::CloneIn;
+use vize_carton::FxHashMap;
 use vize_l0::{Allocator, Box, Span, Vec};
 use vize_l1::markup::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::{
@@ -62,8 +63,8 @@ impl Drawer {
 struct CompatibilityRoot<'t, 'a> {
     allocator: &'a Allocator,
     surface: &'t SurfaceTree<'a>,
-    expressions: std::vec::Vec<ExprRef<'a>>,
-    elements: std::vec::Vec<ElementIdentity<'a>>,
+    expressions: FxHashMap<(u32, u32), ExprRef<'a>>,
+    elements: FxHashMap<u32, ElementIdentity<'a>>,
 }
 
 impl<'t, 'a> CompatibilityRoot<'t, 'a> {
@@ -71,11 +72,24 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let mut expressions = std::vec::Vec::new();
         let mut elements = std::vec::Vec::new();
         collect_region(&template.lowered.root, &mut expressions, &mut elements);
+        let mut expression_index = FxHashMap::default();
+        expression_index.reserve(expressions.len());
+        for expression in expressions {
+            let span = expression.span();
+            expression_index
+                .entry((span.start, span.end))
+                .or_insert(expression);
+        }
+        let mut element_index = FxHashMap::default();
+        element_index.reserve(elements.len());
+        for identity in elements {
+            element_index.entry(identity.start).or_insert(identity);
+        }
         Self {
             allocator: template.lowered.allocator,
             surface: template.surface,
-            expressions,
-            elements,
+            expressions: expression_index,
+            elements: element_index,
         }
     }
 
@@ -134,11 +148,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let start = self.offset(surface.open.lt_name.text);
         let end = self.offset(surface.open.gt.text) + surface.open.gt.text.len() as u32;
         let authored_tag = surface.tag();
-        let identity = self
-            .elements
-            .iter()
-            .find(|identity| identity.start == start)
-            .copied();
+        let identity = self.elements.get(&start).copied();
         let tag = identity.map_or(authored_tag, |identity| identity.name);
         let mut element = ElementNode::new(
             self.allocator,
@@ -286,11 +296,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     }
 
     fn expression(&self, fallback: &'a str, span: Span, is_static: bool) -> ExpressionNode<'a> {
-        let retained = self
-            .expressions
-            .iter()
-            .copied()
-            .find(|expression| expression.span() == span);
+        let retained = self.expressions.get(&(span.start, span.end)).copied();
         let content = retained.map_or(fallback, |expression| expression.source());
         let mut node = SimpleExpressionNode::new(content, is_static, SourceLocation { span });
         if let Some(ExprRef::Js(js)) = retained {

@@ -1,8 +1,9 @@
-use super::LintTemplate;
+use super::{CompatibilityRoot, LintTemplate};
 use crate::Drawer;
 use vize_armature::Parser;
 use vize_l0::Allocator;
 use vize_l1_to_l2::lower_preserving_comments;
+use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
 const CASES: &[&str] = &[
     "<div id=app :aria-controls=panel>{{ title }}<input ref=field></div>",
@@ -12,6 +13,11 @@ const CASES: &[&str] = &[
     "<RouterLink to=\"/home\"/><RouterLink/><div v-pin:top.lazy=offset></div>",
     "<section v-bind=attrs><button @click=\"count++; save(count)\">{{ $attrs.id }}</button></section>",
     "<div v-pre :raw=\"ignored\">{{ literal }}</div><span v-else-if=other>{{ other }}</span>",
+    "<p>café 日本語</p><button :title=\"状態\" @click=\"保存(状態)\">{{ 状態 }}</button>",
+    "<Child :a=\"x &amp;&amp; y\" v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }} {{ rest }}</Child>",
+    "<section v-pre><div :title=\"ignored\"><span v-if=\"never\">{{ raw }}</span></div></section><p :id=\"live\">{{ live }}</p>",
+    "<div v-if=\"first\"/><span v-else-if=\"second\"/><p v-else/>",
+    "<svg viewBox=\"0 0 10 10\"><g :[classKey]=\"group\"><circle :cx=\"x\"/></g></svg><Comp @[eventName].once=\"handle\"/>",
 ];
 
 #[test]
@@ -32,10 +38,71 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
         let mut actual = Drawer::for_lint();
         actual.draw_lint_template(LintTemplate::new(&surface, &lowered));
 
-        assert_eq!(
-            actual.finish().semantic_snapshot(),
-            expected.finish().semantic_snapshot(),
-            "semantic mismatch for {source}"
-        );
+        let actual = actual.finish().semantic_snapshot();
+        let expected = expected.finish().semantic_snapshot();
+        assert_eq!(actual, expected, "semantic mismatch for {source}");
+        for scope in &actual.scopes {
+            assert!(
+                source.is_char_boundary(scope.range.start as usize)
+                    && source.is_char_boundary(scope.range.end as usize),
+                "scope range is not on UTF-8 boundaries: {:?}: {source}",
+                scope.range
+            );
+        }
+        for expression in &actual.template_expressions {
+            assert!(
+                source.is_char_boundary(expression.range.start as usize)
+                    && source.is_char_boundary(expression.range.end as usize),
+                "expression range is not on UTF-8 boundaries: {:?}: {source}",
+                expression.range
+            );
+        }
     }
+}
+
+#[test]
+fn l1_l2_slot_props_fall_back_to_decoded_authored_text() {
+    let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let template = LintTemplate::new(&surface, &lowered);
+    let root = CompatibilityRoot::new(template).build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("component root")
+    };
+    let directive = element
+        .props
+        .iter()
+        .find_map(|property| match property {
+            PropNode::Directive(directive) if directive.name == "slot" => Some(directive),
+            _ => None,
+        })
+        .expect("slot directive");
+    let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+        panic!("slot expression")
+    };
+    assert!(
+        expression.js_ast.is_none(),
+        "fixture must exercise text fallback"
+    );
+    assert_eq!(expression.content, "{ value = \"fallback\", ...rest }");
+
+    let mut drawer = Drawer::for_lint();
+    drawer.draw_lint_template(template);
+    let snapshot = drawer.finish().semantic_snapshot();
+    let slot = snapshot
+        .component_usages
+        .iter()
+        .flat_map(|usage| &usage.slots)
+        .next()
+        .expect("scoped slot usage");
+    assert_eq!(
+        slot.scope_vars
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>(),
+        ["value", "rest"]
+    );
 }
