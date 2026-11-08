@@ -8,6 +8,7 @@ import {
   type FrescoDeclaredSize,
   type FrescoHostNode,
   type FrescoInputEvent,
+  type FrescoInputEventHandler,
   type FrescoNodeUpdateKind,
   type FrescoRenderNode,
   type FrescoRenderNodeKind,
@@ -159,6 +160,12 @@ export const keyEvent: FrescoInputEvent = {
   numLock: false,
   eventType: "press",
 };
+export const routedKeyHandler: FrescoInputEventHandler<typeof keyEvent> = (event) => {
+  void [event.input.key, event.target.id, event.currentTarget.id];
+  event.preventDefault();
+  event.stopPropagation();
+};
+export const routedKeyResult = hostRenderer.dispatchInput(1, keyEvent);
 export const pasteEvent: FrescoInputEvent = { type: "paste", text: "pasted" };
 export const resizeEvent: FrescoInputEvent = { type: "resize", width: 80, height: 24 };
 export const mouseEvent: FrescoInputEvent = {
