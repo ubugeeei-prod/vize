@@ -288,8 +288,8 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
         .documents
         .iter()
         .enumerate()
-        .filter(|(_, (uri, _))| uri != &host_uri)
-        .map(|(index, document)| (index, document as *const _))
+        .filter(|(_, document)| document.0 != host_uri)
+        .map(|(index, document)| (index, Arc::clone(document)))
         .collect::<Vec<_>>();
     assert!(
         !dependency_slots.is_empty(),
@@ -324,7 +324,7 @@ fn host_edit_reuses_dependency_documents_instead_of_copying_the_graph() {
     );
     for (index, previous) in dependency_slots {
         assert!(
-            std::ptr::eq(previous, &surface.documents[index]),
+            Arc::ptr_eq(&previous, &surface.documents[index]),
             "unchanged dependency documents stay in the prepared graph"
         );
     }

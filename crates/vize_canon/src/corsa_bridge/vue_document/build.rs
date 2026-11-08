@@ -23,7 +23,7 @@ pub(in crate::corsa_bridge) use host_edit::retarget_host;
 /// Native session synchronization is intentionally performed on every open.
 pub(in crate::corsa_bridge) struct QuerySurface {
     host: Arc<CorsaVueVirtualDocument>,
-    documents: std::sync::Arc<Vec<(String, String)>>,
+    documents: std::sync::Arc<Vec<std::sync::Arc<(String, String)>>>,
     session_config_path: Option<PathBuf>,
 }
 
@@ -171,7 +171,11 @@ fn build_surface(
             source_catalog: Default::default(),
             session_project_root: session_project_root.clone(),
         }),
-        documents: documents.into(),
+        documents: documents
+            .into_iter()
+            .map(Arc::new)
+            .collect::<Vec<_>>()
+            .into(),
         session_config_path: alias_context.mirror_project_config_path(),
     })
 }

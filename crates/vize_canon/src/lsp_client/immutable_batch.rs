@@ -19,7 +19,7 @@ use vize_l0::{String, cstr};
 )]
 #[derive(Clone, Default)]
 pub(crate) struct CorsaNativeDocumentBatch {
-    shared: std::sync::Arc<Vec<(String, String)>>,
+    shared: std::sync::Arc<Vec<std::sync::Arc<(String, String)>>>,
     additions: Vec<std::sync::Arc<(String, String)>>,
 }
 
@@ -28,7 +28,7 @@ pub(crate) struct CorsaNativeDocumentBatch {
     reason = "immutable payload bytes cross native workers"
 )]
 impl CorsaNativeDocumentBatch {
-    pub(crate) fn shared(shared: std::sync::Arc<Vec<(String, String)>>) -> Self {
+    pub(crate) fn shared(shared: std::sync::Arc<Vec<std::sync::Arc<(String, String)>>>) -> Self {
         Self {
             shared,
             additions: Vec::new(),
@@ -38,6 +38,7 @@ impl CorsaNativeDocumentBatch {
     pub(crate) fn iter(&self) -> impl Iterator<Item = &(String, String)> {
         self.shared
             .iter()
+            .map(std::sync::Arc::as_ref)
             .chain(self.additions.iter().map(std::sync::Arc::as_ref))
     }
 
@@ -65,7 +66,9 @@ impl CorsaNativeDocumentBatch {
     }
 
     #[cfg(test)]
-    pub(crate) fn payload_owner_for_test(&self) -> std::sync::Weak<Vec<(String, String)>> {
+    pub(crate) fn payload_owner_for_test(
+        &self,
+    ) -> std::sync::Weak<Vec<std::sync::Arc<(String, String)>>> {
         std::sync::Arc::downgrade(&self.shared)
     }
 
@@ -81,7 +84,9 @@ impl CorsaNativeDocumentBatch {
 )]
 impl From<Vec<(String, String)>> for CorsaNativeDocumentBatch {
     fn from(documents: Vec<(String, String)>) -> Self {
-        Self::shared(std::sync::Arc::new(documents))
+        Self::shared(std::sync::Arc::new(
+            documents.into_iter().map(std::sync::Arc::new).collect(),
+        ))
     }
 }
 
@@ -114,7 +119,7 @@ const BATCH_CAPACITY: usize = 4;
 type Document = (String, String);
 
 struct PayloadIdentity {
-    base: Weak<Vec<Document>>,
+    base: Weak<Vec<Arc<Document>>>,
     additions: Vec<Weak<Document>>,
 }
 

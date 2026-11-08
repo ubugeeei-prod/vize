@@ -51,16 +51,16 @@ pub(in crate::corsa_bridge) fn retarget_host(
     replace_document_texts(&mut surface.documents, &replacements);
 }
 
-/// Dissociate weak batch receipts without copying a uniquely owned dependency
-/// tail. A live strong payload still gets its own complete frozen allocation.
+/// Fork only changed document identities. Live batches keep their exact frozen
+/// rows while every unchanged dependency allocation stays shared.
 fn replace_document_texts(
-    documents: &mut Arc<Vec<(String, String)>>,
+    documents: &mut Arc<Vec<Arc<(String, String)>>>,
     replacements: &FxHashMap<String, String>,
 ) {
-    let apply = |entries: &mut Vec<(String, String)>| {
-        for (uri, text) in entries {
-            if let Some(replacement) = replacements.get(uri.as_str()) {
-                *text = replacement.clone();
+    let apply = |entries: &mut Vec<Arc<(String, String)>>| {
+        for document in entries {
+            if let Some(replacement) = replacements.get(document.0.as_str()) {
+                *document = Arc::new((document.0.clone(), replacement.clone()));
             }
         }
     };
@@ -76,8 +76,8 @@ mod tests {
         let dependency: String = "export const child = '雪😀';\r\n".repeat(4096).into();
         let expected = dependency.clone();
         let mut documents = Arc::new(vec![
-            ("host".into(), "before".into()),
-            ("child".into(), dependency),
+            Arc::new(("host".into(), "before".into())),
+            Arc::new(("child".into(), dependency)),
         ]);
         let original_tail = documents[1].1.as_bytes().as_ptr();
         let receipt = Arc::downgrade(&documents);
@@ -88,8 +88,35 @@ mod tests {
         assert!(receipt.upgrade().is_none());
         assert_eq!(documents[1].1.as_bytes().as_ptr(), original_tail);
         assert_eq!(
-            documents.as_ref(),
-            &vec![("host".into(), "after".into()), ("child".into(), expected)]
+            documents
+                .iter()
+                .map(|document| document.as_ref().clone())
+                .collect::<Vec<_>>(),
+            vec![("host".into(), "after".into()), ("child".into(), expected)]
         );
+    }
+
+    #[test]
+    fn live_batch_forks_only_the_replaced_document() {
+        let mut documents = Arc::new(vec![
+            Arc::new(("host".into(), "before".into())),
+            Arc::new((
+                "child".into(),
+                String::from("export const child = '雪😀';\r\n").repeat(4096),
+            )),
+        ]);
+        let batch = Arc::clone(&documents);
+        let host = Arc::clone(&documents[0]);
+        let dependency = Arc::clone(&documents[1]);
+        replace_document_texts(
+            &mut documents,
+            &FxHashMap::from_iter([("host".into(), "after".into())]),
+        );
+        assert_eq!(batch[0].1, "before");
+        assert_eq!(documents[0].1, "after");
+        assert!(!Arc::ptr_eq(&documents[0], &host));
+        assert!(Arc::ptr_eq(&batch[0], &host));
+        assert!(Arc::ptr_eq(&documents[1], &dependency));
+        assert!(Arc::ptr_eq(&batch[1], &dependency));
     }
 }
