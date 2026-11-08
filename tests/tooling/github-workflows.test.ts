@@ -267,12 +267,22 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
 
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
   const recovery = readRepoFile(".github", "actions", "setup-wild-http-recovery", "action.yml");
-  assert.match(
-    recovery,
-    /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
-    "the recovery adapter must delegate unsupported contexts to the pinned upstream action",
+  const recoveryAction = parse(recovery) as {
+    inputs: { "wild-version": { default: string } };
+    runs: { steps: Array<{ uses?: string; with?: Record<string, string> }> };
+  };
+  const upstream = recoveryAction.runs.steps.find((step) =>
+    step.uses?.startsWith("wild-linker/action@"),
   );
-  assert.match(recovery, /default:\s*"0\.9\.0"/);
+  assert.deepEqual(upstream, {
+    if: "${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5' }}",
+    uses: "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203",
+    with: {
+      "wild-version": "${{ inputs.wild-version }}",
+      "download-retries": "${{ inputs.download-retries }}",
+    },
+  });
+  assert.equal(recoveryAction.inputs["wild-version"].default, "0.9.0");
   for (const relativePath of [
     ".github/workflows/benchmark.yml",
     ".github/workflows/build-docs.yml",

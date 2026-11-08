@@ -12,7 +12,11 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
-import { readRepoFile, root as repoRoot } from "./support/github-workflows.ts";
+import {
+  readRepoFile,
+  restorePinnedWildAction,
+  root as repoRoot,
+} from "./support/github-workflows.ts";
 
 const tool = path.join(repoRoot, "tools/commands/davinci/resource-budgets.rs");
 const budgetsText = readRepoFile("docs/davinci", "plan", "budgets.toml");
@@ -139,6 +143,7 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
     assert.deepEqual(wildRecovery(workflow.jobs[job].steps), [], job);
   }
   const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
+  assert.equal(restorePinnedWildAction(cli.runs.steps), 1);
   assert.deepEqual(
     wildRecovery(cli.runs.steps).map((step) => step.if),
     [

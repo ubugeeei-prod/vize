@@ -4,7 +4,12 @@ import { test } from "node:test";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { parse } from "yaml";
-import { checkWorkflowJobSources, readRepoFile, root } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  restorePinnedWildAction,
+  root,
+} from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -317,6 +322,11 @@ void test("full-only extraction preserves all seventeen complete original job ob
     },
     run: 'node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"',
   });
+  const restoredWildSteps = Object.values(original).reduce(
+    (count: number, job: Job) => count + restorePinnedWildAction(job.steps ?? []),
+    0,
+  );
+  assert.equal(restoredWildSteps, 5);
   // #7083 extends the authored allocation gate with its helper-rich witness.
   // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);
