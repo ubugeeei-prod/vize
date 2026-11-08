@@ -14,13 +14,34 @@ runs:
       run: |
         set -euo pipefail
         directory="$(mktemp -d "${RUNNER_TEMP}/vize-actionlint-1.7.12.XXXXXX")"
-        curl --fail --silent --show-error --location --retry 2 --max-time 30 \
-          https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
-          --output "$directory/actionlint.tar.gz"
+        archive="$directory/actionlint.tar.gz"
+        primary_status=0
+        primary_http=$(
+          set +e
+          curl --fail --silent --show-error --location --retry 2 --max-time 30 \
+            --output "$archive" --write-out '%{http_code}' \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          curl_status=$?
+          printf '|'
+          exit "$curl_status"
+        ) || primary_status=$?
+        primary_http="${primary_http%|}"
+        case "$primary_status:$primary_http" in
+          0:200) ;;
+          22:500|22:502|22:503|22:504)
+            curl --fail --silent --show-error --location \
+              --header 'Accept: application/octet-stream' \
+              --header 'X-GitHub-Api-Version: 2022-11-28' \
+              --output "$archive" \
+              https://api.github.com/repos/rhysd/actionlint/releases/assets/384924896
+            ;;
+          0:*) echo 'Pinned actionlint download returned an unsupported HTTP status' >&2; exit 1 ;;
+          *) exit "$primary_status" ;;
+        esac
         printf '%s  %s\n' \
           8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 \
-          "$directory/actionlint.tar.gz" | sha256sum --check --strict
-        tar -xzf "$directory/actionlint.tar.gz" -C "$directory" actionlint
+          "$archive" | sha256sum --check --strict
+        tar -xzf "$archive" -C "$directory" actionlint
         "$directory/actionlint" --version
         printf 'binary=%s\n' "$directory/actionlint" >> "$GITHUB_OUTPUT"
 

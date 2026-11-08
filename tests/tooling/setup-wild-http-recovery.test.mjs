@@ -86,7 +86,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
           assert.equal(applies(steps[0].if, values), !owned);
         }
 });
-void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
+void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
@@ -94,15 +94,14 @@ void test("Only Playground and canonical SSR-Pug use the new adapter", () => {
     Object.entries(jobs).flatMap(([name, job]) =>
       (job.steps ?? []).filter((s) => s.uses === action).map(() => name),
     );
-  // Every other Wild user keeps the pinned upstream action, counted per file.
-  assert.deepEqual(uses(pr.jobs, local), ["pr-playground-test"]);
-  assert.deepEqual(uses(pr.jobs, upstream), ["pr-native-runtime"]);
+  assert.deepEqual(uses(pr.jobs, local), ["pr-playground-test", "pr-native-runtime"]);
+  assert.deepEqual(uses(pr.jobs, upstream), []);
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
-  assert.deepEqual(uses(js.jobs, local), []);
   assert.deepEqual(
-    uses(js.jobs, upstream),
+    uses(js.jobs, local),
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
+  assert.deepEqual(uses(js.jobs, upstream), []);
   const canonical = parse(
     fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );
