@@ -188,20 +188,23 @@ function retained(run, count) {
   assert.equal(run.calls.length, count);
   assert.equal(run.read("cargo.log"), "");
   assert.deepEqual(fs.readdirSync(run.temporary), []);
-  assert.equal(run.calls[0].at(-1), primary);
-  assert.deepEqual(run.calls[0].slice(0, 7), [
-    "--fail",
-    "--silent",
-    "--show-error",
-    "--location",
-    "--proto",
-    "=https",
-    "--tlsv1.2",
-  ]);
-  assert.deepEqual(run.calls[0].slice(-3), ["--write-out", "%{http_code}", primary]);
-  if (count === 2) {
+  const primaryCount = count === 3 ? 2 : 1;
+  for (const call of run.calls.slice(0, primaryCount)) {
+    assert.equal(call.at(-1), primary);
+    assert.deepEqual(call.slice(0, 7), [
+      "--fail",
+      "--silent",
+      "--show-error",
+      "--location",
+      "--proto",
+      "=https",
+      "--tlsv1.2",
+    ]);
+    assert.deepEqual(call.slice(-3), ["--write-out", "%{http_code}", primary]);
+  }
+  if (count > primaryCount) {
     const output = run.calls[0][run.calls[0].indexOf("--output") + 1];
-    assert.deepEqual(run.calls[1], [
+    assert.deepEqual(run.calls.at(-1), [
       "--fail",
       "--silent",
       "--show-error",
@@ -277,9 +280,28 @@ void test("HTTP authentication, missing asset and rate limiting keep original fa
     });
   }
 });
-void test("network, timeout and TLS failures never recover even with a 5xx status", () => {
-  for (const status of [7, 28, 35, 60, 77]) {
-    withRun({ primaryStatus: status }, (observed) => {
+void test("two recoverable transport stalls use one same-byte API route", () => {
+  for (const [primaryStatus, primaryHttp] of [
+    [7, "000"],
+    [18, "200"],
+    [28, "000"],
+    [28, "200"],
+    [52, "000"],
+    [55, "000"],
+    [55, "200"],
+    [56, "000"],
+    [56, "200"],
+  ]) {
+    withRun({ primaryStatus, primaryHttp }, (observed) => {
+      accepted(observed, 3);
+      assert.match(observed.result.stderr, /attempt=1/);
+      assert.match(observed.result.stderr, /attempt=2/);
+    });
+  }
+});
+void test("unsupported transport and TLS failures never recover", () => {
+  for (const status of [35, 60, 77]) {
+    withRun({ primaryStatus: status, primaryHttp: "000" }, (observed) => {
       retained(observed, 1);
       assert.equal(observed.result.status, status);
       assert.equal(observed.read("helper.log"), "");
