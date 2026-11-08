@@ -90,6 +90,28 @@ export const CORSA_TOPOLOGY_TOOLS: readonly ScalingTool[] = CORSA_SERVER_COUNTS.
 
 /** Every selectable lane; the default scaling surface remains [`TOOLS`]. */
 export const ALL_TOOLS: readonly ScalingTool[] = [...TOOLS, ...CORSA_TOPOLOGY_TOOLS];
+
+type TopologyDiagnostic = {
+  tool: string;
+  fingerprint: string | null;
+  refused: string | null;
+};
+
+/** Require every focused topology lane to preserve the same complete diagnostics. */
+export function topologyDiagnosticRefusal(
+  diagnostics: readonly TopologyDiagnostic[],
+): string | null {
+  const topology = diagnostics.filter((entry) => entry.tool.startsWith("vize-check-servers-"));
+  if (topology.length < 2) return null;
+  const failed = topology.filter((entry) => entry.refused != null || entry.fingerprint == null);
+  if (failed.length > 0) {
+    return `Corsa topology comparison refused: incomplete lanes (${failed.map((entry) => entry.tool).join(", ")})`;
+  }
+  const fingerprints = new Set(topology.map((entry) => entry.fingerprint));
+  return fingerprints.size === 1
+    ? null
+    : "Corsa topology comparison refused: complete diagnostic fingerprints differ";
+}
 /** Timed on Nuxt projects only; gated on a built client entry instead of diagnostics. */
 export const NUXT_BUILD_VIZE: ScalingTool = {
   id: "nuxt-build-vize",

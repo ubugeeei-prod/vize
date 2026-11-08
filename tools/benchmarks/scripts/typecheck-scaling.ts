@@ -53,6 +53,7 @@ import {
   renderSummary,
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
+import { writeRunReceipt } from "./typecheck-scaling-receipt.ts";
 import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
 import {
@@ -68,6 +69,7 @@ import {
   nuxtCli,
   prepareProjectPackages,
   resolveScalingEnv,
+  topologyDiagnosticRefusal,
 } from "./typecheck-scaling-tools.ts";
 import { CONTENT_MAPPERS, mapperTsconfigName } from "./typecheck-mapper-hosts.ts";
 
@@ -158,31 +160,6 @@ function measure(
 
 type Lane = { cell: Cell; tool: ScalingTool; firstFingerprint: string | null };
 
-type TopologyDiagnostic = {
-  tool: string;
-  fingerprint: string | null;
-  refused: string | null;
-};
-
-/**
- * Focused server-count comparisons are valid only when every selected lane
- * succeeds and emits the same complete diagnostic packet.
- */
-export function topologyDiagnosticRefusal(
-  diagnostics: readonly TopologyDiagnostic[],
-): string | null {
-  const topology = diagnostics.filter((entry) => entry.tool.startsWith("vize-check-servers-"));
-  if (topology.length < 2) return null;
-  const failed = topology.filter((entry) => entry.refused != null || entry.fingerprint == null);
-  if (failed.length > 0) {
-    return `Corsa topology comparison refused: incomplete lanes (${failed.map((entry) => entry.tool).join(", ")})`;
-  }
-  const fingerprints = new Set(topology.map((entry) => entry.fingerprint));
-  return fingerprints.size === 1
-    ? null
-    : "Corsa topology comparison refused: complete diagnostic fingerprints differ";
-}
-
 function runOnce(
   lane: Lane,
   corpus: ScaleProject,
@@ -224,37 +201,20 @@ function runOnce(
       options.timed,
       corpus.kind === "nuxt" ? NUXT_ENV : {},
     );
-    const rawDir = join(options.out, "raw", tag);
-    const phaseTag = phase.replaceAll(" ", "-");
-    mkdirSync(rawDir, { recursive: true });
-    writeFileSync(join(rawDir, `${phaseTag}.stdout`), run.output.stdout);
-    writeFileSync(join(rawDir, `${phaseTag}.stderr`), run.output.stderr);
-    writeFileSync(
-      join(rawDir, `${phaseTag}.json`),
-      `${JSON.stringify(
-        {
-          tool: lane.tool.id,
-          phase,
-          bin,
-          args,
-          cwd,
-          status: run.output.status,
-          wallMs: run.wallMs,
-          cpuMs: run.cpuMs,
-          maxRssKb: run.maxRssKb,
-          timed: options.timed,
-          env: {
-            FORCE_COLOR: "0",
-            NO_COLOR: "1",
-            NODE_OPTIONS,
-            XDG_CACHE_HOME: cacheDir,
-            ...(corpus.kind === "nuxt" ? NUXT_ENV : {}),
-          },
-        },
-        null,
-        1,
-      )}\n`,
-    );
+    writeRunReceipt({
+      out: options.out,
+      tool: lane.tool.id,
+      tag,
+      phase,
+      bin,
+      args,
+      cwd,
+      cacheDir,
+      timed: options.timed,
+      nodeOptions: NODE_OPTIONS,
+      extraEnv: corpus.kind === "nuxt" ? NUXT_ENV : {},
+      run,
+    });
     if (format === "build") {
       const assets = join(cwd, ".output", "public", "_nuxt");
       const scripts = existsSync(assets)

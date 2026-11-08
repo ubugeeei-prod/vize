@@ -4,11 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type TestContext, test } from "node:test";
 
-import {
-  parseGnuTime,
-  runOrder,
-  topologyDiagnosticRefusal,
-} from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
+import { parseGnuTime, runOrder } from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
 import type { Plant } from "../../tools/benchmarks/scripts/scale-project-generator.ts";
 import {
   type Diagnostic,
@@ -34,6 +30,7 @@ import {
 import {
   CORSA_TOPOLOGY_TOOLS,
   invocation,
+  topologyDiagnosticRefusal,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-tools.ts";
 
 void test("focused Corsa topology lanes pin one checker and the selected server count", () => {
