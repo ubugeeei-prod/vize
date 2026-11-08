@@ -30,7 +30,7 @@ permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
   iteration-plan:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 2
     outputs:
       apps: ${{ steps.plan.outputs.apps }}
@@ -82,7 +82,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/check-nix
   fmt-rust:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -91,7 +91,7 @@ jobs:
       - name: Format Rust
         run: cargo fmt --all -- --check
   check-js:
-    runs-on: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && 'ubuntu-24.04' || 'blacksmith-32vcpu-ubuntu-2404' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     permissions: { contents: read, actions: read }
     env:
@@ -183,7 +183,7 @@ jobs:
         run: node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -219,7 +219,7 @@ jobs:
         run: echo 'dependencies inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
   node-engine-compat:
     needs: iteration-plan
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -296,7 +296,7 @@ jobs:
       compare-rust-test-profile: ${{ inputs.compare-rust-test-profile == true }}
   full-js-report:
     name: full-js-report
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     # Whole callee success retains all four original full-product dependencies.
@@ -438,7 +438,7 @@ jobs:
           retention-days: 14
   test-report:
     name: test-report
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
     needs:

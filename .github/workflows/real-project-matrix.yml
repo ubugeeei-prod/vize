@@ -453,7 +453,7 @@ jobs:
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: davinci-dom-divergence-reduction
     permissions: { actions: read, contents: write, pull-requests: write }
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     env:
       PROMOTION_DIR: real-project-davinci-dom-promotion
@@ -487,7 +487,7 @@ jobs:
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
     needs: [davinci-dom-corpus, davinci-dom-divergence-reduction, davinci-dom-divergence-promotion]
     permissions: { contents: read, actions: read, issues: write }
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - name: Checkout matrix commit

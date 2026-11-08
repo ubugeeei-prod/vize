@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   functional:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
       CARGO_BUILD_JOBS: "4"
@@ -60,7 +60,7 @@ jobs:
           if-no-files-found: error
   allocation-law:
     needs: functional
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
       DECLARED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}

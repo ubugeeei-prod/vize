@@ -30,7 +30,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.full && !inputs.coverage_only && 'blacksmith-8vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     env:
       GOMAXPROCS: "8"
