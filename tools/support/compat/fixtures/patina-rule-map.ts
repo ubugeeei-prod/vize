@@ -296,7 +296,7 @@ async function main(): Promise<void> {
     return;
   }
   throw new Error(
-    "Usage: rust-script tools/commands/fixtures/patina-rule-map.rs [--check|--write]",
+    "Usage: node tools/support/compat/fixtures/patina-rule-map.ts [--check|--write]",
   );
 }
 
