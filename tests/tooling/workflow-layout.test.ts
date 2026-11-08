@@ -6,6 +6,7 @@ import { test } from "node:test";
 import {
   readWorkflowEntries,
   renderWorkflowCatalog,
+  workflowGroupId,
 } from "../../tools/commands/ci/workflow-catalog.ts";
 import { parseTapCounts } from "../../tools/support/github/docs-preview-readiness.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
@@ -17,6 +18,26 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   const directory = path.join(root, ".github/workflows");
   const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
   assert.equal(readRepoFile(".github/workflows/README.md"), expected);
+});
+
+test("non-release workflows use maximum Blacksmith runner classes", () => {
+  const workflows = path.join(root, ".github/workflows");
+  const lowerSpecRunner =
+    /(^|[\s'"])(?:ubuntu-(?:latest|24\.04)|blacksmith-8vcpu-ubuntu-2404|windows-(?:latest|2025)|macos-15)(?=$|[\s'"])/gmu;
+  const violations = fs
+    .readdirSync(workflows)
+    .filter((file) => /\.ya?ml$/.test(file) && workflowGroupId(file) !== "02")
+    .flatMap((file) => {
+      const source = readRepoFile(`.github/workflows/${file}`);
+      return source
+        .split("\n")
+        .map((line) => /(?:runs-on|runner):\s*(.*)/.exec(line)?.[1])
+        .filter((runner): runner is string => runner != null)
+        .flatMap((runner) =>
+          [...runner.matchAll(lowerSpecRunner)].map((match) => `${file}: ${match[0].trim()}`),
+        );
+    });
+  assert.deepEqual(violations, []);
 });
 
 test("the extracted docs readiness driver preserves TAP totals", () => {
