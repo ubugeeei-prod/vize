@@ -118,6 +118,7 @@ export const textRejectsNumberContent: TextProps = { content: 42 };
 
 export const textInputAcceptsDocumentedProps: TextInputProps = {
   modelValue: "value",
+  defaultValue: "fallback",
   placeholder: "type...",
   focus: true,
   focused: true,
@@ -126,9 +127,14 @@ export const textInputAcceptsDocumentedProps: TextInputProps = {
   width: 20,
   fg: "white",
   bg: "black",
+  validate: (value: string) => (value ? true : "required"),
   "onUpdate:modelValue": (value: string) => value,
   onSubmit: (value: string) => value,
   onCancel: () => {},
+  onSelectionChange: (start: number, end: number) => start + end,
+  onCopy: (value: string) => value,
+  onCut: (value: string) => value,
+  onValidationChange: (valid: boolean, message?: string) => `${valid}:${message ?? ""}`,
 };
 
 // @ts-expect-error - modelValue is a string, not a number

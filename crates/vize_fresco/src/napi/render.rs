@@ -181,6 +181,8 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     cursor: node.cursor.unwrap_or(0) as usize,
                     focused: node.focused.unwrap_or(false),
                     mask: node.mask.unwrap_or(false),
+                    selection_start: node.selection_start.unwrap_or(0).max(0) as usize,
+                    selection_end: node.selection_end.unwrap_or(0).max(0) as usize,
                     mask_char: node
                         .mask_char
                         .as_deref()

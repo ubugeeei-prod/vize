@@ -240,6 +240,10 @@ export interface RenderNodeNapi {
   focused?: boolean
   /** Cursor position in input */
   cursor?: number
+  /** Inclusive grapheme index at the start of the input selection. */
+  selectionStart?: number
+  /** Exclusive grapheme index at the end of the input selection. */
+  selectionEnd?: number
   /** Whether to mask input (password) */
   mask?: boolean
   /** Mask character */

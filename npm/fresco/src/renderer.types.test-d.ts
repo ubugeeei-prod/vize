@@ -107,6 +107,8 @@ export const inputNode: FrescoRenderNode = {
   placeholder: "type...",
   focused: true,
   cursor: 5,
+  selectionStart: 1,
+  selectionEnd: 5,
   mask: true,
   maskChar: "#",
 };

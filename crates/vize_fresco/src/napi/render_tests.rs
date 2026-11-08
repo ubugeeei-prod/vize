@@ -16,6 +16,8 @@ fn render_node(id: i64, node_type: &str) -> RenderNodeNapi {
         placeholder: None,
         focused: None,
         cursor: None,
+        selection_start: None,
+        selection_end: None,
         mask: None,
         mask_char: None,
         lines: None,
@@ -75,6 +77,8 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             placeholder: Some("type here".into()),
             focused: Some(true),
             cursor: Some(6),
+            selection_start: Some(1),
+            selection_end: Some(4),
             mask: Some(true),
             mask_char: Some("#".into()),
             ..render_node(4, "input")
@@ -126,6 +130,8 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
     assert_eq!(nodes[3].placeholder.as_deref(), Some("type here"));
     assert_eq!(nodes[3].focused, Some(true));
     assert_eq!(nodes[3].cursor, Some(6));
+    assert_eq!(nodes[3].selection_start, Some(1));
+    assert_eq!(nodes[3].selection_end, Some(4));
     assert_eq!(nodes[3].mask, Some(true));
     assert_eq!(nodes[3].mask_char.as_deref(), Some("#"));
     assert_eq!(nodes[4].node_type, "raw");
