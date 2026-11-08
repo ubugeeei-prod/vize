@@ -1,9 +1,8 @@
 //! Template rules for Musea `<variant>` markup inside `<art>`.
 
 use crate::markup::L2Template;
-use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::Croquis;
+use vize_croquis::{Croquis, drawer::LintTemplate};
 use vize_l0::{Allocator, SourceRoot};
 
 use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
@@ -87,40 +86,42 @@ impl Linter {
         };
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
         let l2 = L2Template::lower(&allocator, source);
-        let (root, _legacy_errors) = Parser::new(&allocator, source).parse();
         let errors = l2.surface_errors();
         let fatal = Self::has_fatal_l1_template_parse_errors(errors);
         let analysis = summary
             .as_deref()
             .filter(|_| !fatal)
-            .map(|script| analysis::variant(&root, &l2, script, self.has_unused_bindings_demand()));
+            .map(|script| analysis::variant(&l2, script, self.has_unused_bindings_demand()));
         let mut parsed = Self::l1_template_parse_lint_result(filename, source, errors);
         offset_result(&mut parsed, offset);
-        let linted = self.lint_template_root(
-            super::super::template::TemplateExecution {
-                allocator: &allocator,
-                source,
-                filename,
-                root: &root,
-                l2: &l2,
-                env: TemplateRuleEnv {
-                    sfc_descriptor: Some(descriptor),
-                    sfc_scripts: Some(scripts),
-                    art_script_analysis: summary.as_deref().filter(|_| !fatal),
-                    petite_document: None,
-                    defer_exact_suppressions: false,
-                    dialect: vize_l0::dialect::VueDialect::Vue,
-                    facade_rules: super::facade::RULES,
-                },
-            },
-            if fatal {
-                TemplateAnalysis::Disabled
-            } else if let Some(analysis) = analysis.as_ref() {
-                TemplateAnalysis::Precomputed(analysis)
-            } else {
-                TemplateAnalysis::Lazy
-            },
-        );
+        let linted =
+            LintTemplate::new(l2.surface(), l2.lowered()).with_compatibility_root(|root| {
+                self.lint_template_root(
+                    super::super::template::TemplateExecution {
+                        allocator: &allocator,
+                        source,
+                        filename,
+                        root,
+                        l2: &l2,
+                        env: TemplateRuleEnv {
+                            sfc_descriptor: Some(descriptor),
+                            sfc_scripts: Some(scripts),
+                            art_script_analysis: summary.as_deref().filter(|_| !fatal),
+                            petite_document: None,
+                            defer_exact_suppressions: false,
+                            dialect: vize_l0::dialect::VueDialect::Vue,
+                            facade_rules: super::facade::RULES,
+                        },
+                    },
+                    if fatal {
+                        TemplateAnalysis::Disabled
+                    } else if let Some(analysis) = analysis.as_ref() {
+                        TemplateAnalysis::Precomputed(analysis)
+                    } else {
+                        TemplateAnalysis::Lazy
+                    },
+                )
+            });
         if self.has_unused_bindings_demand()
             && let Some(summary) = summary
         {
