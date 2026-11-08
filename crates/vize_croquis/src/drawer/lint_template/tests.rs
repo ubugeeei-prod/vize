@@ -16,7 +16,7 @@ const CASES: &[&str] = &[
     "<p>café 日本語</p><button :title=\"状態\" @click=\"保存(状態)\">{{ 状態 }}</button>",
     "<Child :a=\"x &amp;&amp; y\" v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }} {{ rest }}</Child>",
     "<section v-pre><div :title=\"ignored\"><span v-if=\"never\">{{ raw }}</span></div></section><p :id=\"live\">{{ live }}</p>",
-    "<div v-if=\"first\"/><span v-else-if=\"second\"/><p v-else/>",
+    "<div v-if=\"first\"></div><span v-else-if=\"second\"></span><p v-else></p>",
     "<svg viewBox=\"0 0 10 10\"><g :[classKey]=\"group\"><circle :cx=\"x\"/></g></svg><Comp @[eventName].once=\"handle\"/>",
 ];
 
