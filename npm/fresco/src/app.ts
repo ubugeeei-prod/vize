@@ -15,7 +15,12 @@ import {
   type Ref,
   type VNode,
 } from "vue";
-import type { InputEventNapi, ModifiersNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
+import type {
+  InputEventNapi,
+  LayoutResultNapi,
+  ModifiersNapi,
+  TerminalInfoNapi,
+} from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,
   isScreenReaderEnabledByDefault,
@@ -29,6 +34,7 @@ import {
   type StreamsContext,
 } from "./composables/useStreams.js";
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
+import type { FrescoDevtools } from "./devtools.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import { normalizeKeyEventType, normalizeMouseEvent } from "./nativeInput.js";
@@ -111,6 +117,8 @@ export interface AppOptions {
   patchConsole?: boolean;
   /** Callback invoked after a frame is rendered. @default undefined */
   onRender?: (metrics: RenderMetrics) => void;
+  /** Opt-in tree inspector, render metrics, and bounded event trace. @default undefined */
+  devtools?: FrescoDevtools;
   /** Enable semantic screen-reader rendering. @default environment detection */
   isScreenReaderEnabled?: boolean;
   /** Maximum render frames per second. @default 30 */
@@ -139,6 +147,10 @@ export type AppRoot = Component | VNode;
 export interface RenderMetrics {
   /** Time spent rendering in milliseconds */
   renderTime: number;
+  /** Number of live host nodes inspected for this frame. */
+  nodeCount: number;
+  /** Number of layout rectangles returned by the native renderer. */
+  layoutCount: number;
 }
 
 /**
@@ -431,9 +443,27 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     rejectExit = reject;
   });
 
-  const { createApp: createVueApp } = createRenderer(() => {
-    needsRender = true;
+  const { createApp: createVueApp } = createRenderer({
+    lifecycle: options.devtools?.lifecycle,
+    onMutation() {
+      needsRender = true;
+    },
   });
+
+  function publishRenderMetrics(
+    root: FrescoElement,
+    layouts: readonly LayoutResultNapi[],
+    start: number,
+  ) {
+    if (!options.devtools && !options.onRender) return;
+    const metrics: RenderMetrics = {
+      renderTime: performance.now() - start,
+      nodeCount: treeToRenderNodes(root).length,
+      layoutCount: layouts.length,
+    };
+    options.devtools?.recordRender(root, layouts, metrics);
+    options.onRender?.(metrics);
+  }
 
   async function mount() {
     if (mounted || mounting) return;
@@ -655,7 +685,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
           captureStaticOutput(rootElement, renderedStaticItems),
         );
         nonInteractiveOutput = renderPlainOutput(rootElement, staticOutput);
-        options.onRender?.({ renderTime: performance.now() - start });
+        publishRenderMetrics(rootElement, [], start);
         return;
       }
 
@@ -680,15 +710,17 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
         // Use renderTree which handles layout and painting
         native.renderTree(renderNodes);
+        let layouts: LayoutResultNapi[] = [];
         if ("getLastRenderLayouts" in native) {
-          updateLastRenderLayouts(native.getLastRenderLayouts());
+          layouts = native.getLastRenderLayouts();
+          updateLastRenderLayouts(layouts);
         }
 
         applyCursorOverride();
 
         // Flush to display
         native.flushTerminal();
-        options.onRender?.({ renderTime: performance.now() - start });
+        publishRenderMetrics(rootElement, layouts, start);
       }
     } catch (error) {
       if (onError) {
@@ -712,28 +744,35 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         height: event.height ?? 0,
       };
       lastResizeEvent.value = resizeEvent;
+      options.devtools?.recordInput(resizeEvent);
       updateAppSize(appContext, resizeEvent.width, resizeEvent.height);
       return;
     }
 
     if (event.eventType === "paste") {
-      lastPasteEvent.value = {
+      const pasteEvent: PasteEvent = {
         type: "paste",
         text: event.text ?? "",
       };
+      lastPasteEvent.value = pasteEvent;
+      options.devtools?.recordInput(pasteEvent);
       return;
     }
 
     if (event.eventType === "mouse") {
-      lastMouseEvent.value = normalizeMouseEvent(event);
+      const mouseEvent = normalizeMouseEvent(event);
+      lastMouseEvent.value = mouseEvent;
+      options.devtools?.recordInput(mouseEvent);
       return;
     }
 
     if (event.eventType === "focus") {
-      lastFocusEvent.value = {
+      const focusEvent: FocusEvent = {
         type: "focus",
         focused: event.key === "gained",
       };
+      lastFocusEvent.value = focusEvent;
+      options.devtools?.recordInput(focusEvent);
       return;
     }
 
@@ -743,17 +782,19 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       event.eventType === "compositionend"
     ) {
       const type = event.eventType as CompositionEvent["type"];
-      lastCompositionEvent.value = {
+      const compositionEvent: CompositionEvent = {
         type,
         text: event.text ?? "",
         cursor: event.cursor ?? 0,
       };
+      lastCompositionEvent.value = compositionEvent;
+      options.devtools?.recordInput(compositionEvent);
       return;
     }
 
     if (event.eventType === "key") {
       const modifiers: Partial<ModifiersNapi> = event.modifiers ?? {};
-      lastKeyEvent.value = {
+      const keyEvent: KeyEvent = {
         type: "key",
         key: event.key ?? undefined,
         char: event.char ?? undefined,
@@ -767,6 +808,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         numLock: modifiers.numLock ?? false,
         eventType: normalizeKeyEventType(event.keyEventType),
       };
+      lastKeyEvent.value = keyEvent;
+      options.devtools?.recordInput(keyEvent);
     }
   }
 
