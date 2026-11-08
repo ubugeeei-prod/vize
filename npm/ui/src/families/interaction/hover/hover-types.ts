@@ -51,13 +51,13 @@ export interface HoverOptions {
    */
   readonly pointerType?: MaybeRefOrGetter<HoverPointerType | undefined>;
 
-  /** Called after hover state becomes active. */
+  /** Called after hover state becomes active. @default undefined */
   readonly onHoverStart?: (event: HoverEvent) => void;
 
-  /** Called after hover ends or is canceled. */
+  /** Called after hover ends or is canceled. @default undefined */
   readonly onHoverEnd?: (event: HoverEvent) => void;
 
-  /** Called for every distinct hover-state transition. */
+  /** Called for every distinct hover-state transition. @default undefined */
   readonly onHoverChange?: (isHovered: boolean) => void;
 }
 

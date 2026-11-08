@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { auditDocumentation, auditSourceDirectory } from "./test-support/api-documentation.ts";
+import {
+  auditDocumentation,
+  auditSourceDirectory,
+  auditSourceGraph,
+} from "./test-support/api-documentation.ts";
 
 const sourceDirectory = new URL(".", import.meta.url);
 
@@ -67,4 +71,25 @@ void test("re-exports are exempt and an overload group is documented once", () =
   assert.equal(audit.declarations, 3);
   assert.equal(audit.optionalMembers, 0);
   assert.deepEqual(audit.problems, []);
+});
+
+void test("public source graphs follow relative re-exports once", () => {
+  const fixtureRoot = new URL("test-support/fixtures/api-documentation/", import.meta.url);
+  const audit = auditSourceGraph(
+    [new URL("index.ts", fixtureRoot), new URL("dependency.ts", fixtureRoot)],
+    fixtureRoot,
+  );
+
+  assert.equal(audit.declarations, 3);
+  assert.equal(audit.optionalMembers, 1);
+  assert.deepEqual(audit.problems, []);
+});
+
+void test("public source graphs cannot escape their declared root", () => {
+  const fixtureRoot = new URL("test-support/fixtures/api-documentation/", import.meta.url);
+
+  assert.throws(
+    () => auditSourceGraph([new URL("../../api-documentation.ts", fixtureRoot)], fixtureRoot),
+    /public source graph escaped its source root/,
+  );
 });

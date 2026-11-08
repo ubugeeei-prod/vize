@@ -162,16 +162,16 @@ export interface SortableOptions {
    */
   readonly announcements?: SortableAnnouncements;
 
-  /** Called exactly once when an item is picked up. */
+  /** Called exactly once when an item is picked up. @default undefined */
   readonly onSortStart?: (event: SortStartEvent) => void;
 
-  /** Called when the projected destination changes before a drop. */
+  /** Called when the projected destination changes before a drop. @default undefined */
   readonly onSortPreview?: (event: SortPreviewEvent) => void;
 
-  /** Called exactly once when a completed drop commits the move. */
+  /** Called exactly once when a completed drop commits the move. @default undefined */
   readonly onSortCommit?: (event: SortCommitEvent) => void;
 
-  /** Called exactly once when a sort is canceled; the item must return. */
+  /** Called exactly once when a sort is canceled; the item must return. @default undefined */
   readonly onSortCancel?: (event: SortCancelEvent) => void;
 }
 

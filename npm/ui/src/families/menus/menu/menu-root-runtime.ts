@@ -29,7 +29,9 @@ export interface MenuLevelOptions {
   readonly requestedOpen: ComputedRef<boolean>;
   readonly commitOpen: (value: boolean) => boolean;
   readonly disabled: () => boolean;
+  /** Positioning reference override. @default the trigger element */
   readonly reference?: (() => PositionerElement | null) | undefined;
+  /** Focus restoration override. @default the trigger element */
   readonly restoreTarget?: (() => HTMLElement | null) | undefined;
   readonly onOpenChange: (value: boolean, previous: boolean, event: Event | null) => void;
 }
@@ -112,9 +114,13 @@ export interface MenuRootOptions {
   readonly modal: () => boolean;
   readonly dir: () => MenuDirection;
   readonly loop: () => boolean;
+  /** Whether this root refuses interaction and open requests. @default false */
   readonly disabled?: () => boolean;
+  /** Positioning reference override. @default the trigger element */
   readonly reference?: () => PositionerElement | null;
+  /** Focus restoration override. @default the trigger element */
   readonly restoreTarget?: () => HTMLElement | null;
+  /** Horizontal hand-off used by menubars. @default no hand-off */
   readonly edgeNavigate?: (direction: MenuEdgeDirection, event: KeyboardEvent) => boolean;
   readonly onOpenChange: (value: boolean, previous: boolean, event: Event | null) => void;
 }

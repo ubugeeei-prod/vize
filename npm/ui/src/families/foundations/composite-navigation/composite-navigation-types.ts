@@ -74,25 +74,27 @@ export interface CompositeNavigationBaseOptions<Key extends CollectionKey, Value
    */
   readonly direction?: MaybeRefOrGetter<CompositeDirection | undefined>;
 
-  /** Wrap arrow navigation at collection boundaries. */
+  /** Wrap arrow navigation at collection boundaries. @default false */
   readonly loop?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Suppress keyboard and pointer navigation while retaining active state. */
+  /** Suppress keyboard and pointer navigation while retaining active state. @default false */
   readonly isDisabled?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Number of logical items traversed by PageUp and PageDown. */
+  /** Number of logical items traversed by PageUp and PageDown. @default 10 */
   readonly pageSize?: MaybeRefOrGetter<number | undefined>;
 
-  /** Optional buffered typeahead integrated into the same active state. */
+  /** Optional buffered typeahead integrated into the same active state. @default false */
   readonly typeahead?: false | Omit<TypeaheadOptions<Key, Value>, "registry">;
 
-  /** Called after the active item and DOM focus representation are synchronized. */
+  /** Called after the active item and DOM focus representation are synchronized. @default undefined */
   readonly onNavigate?: (change: CompositeNavigationChange<Key>) => void;
 
   /**
    * Custom visibility policy for virtualized or scroll-managed collections.
    * The default calls `scrollIntoView({block: "nearest", inline: "nearest"})`
    * when the method exists and DOM focus did not already scroll the item.
+   *
+   * @default nearest-block and nearest-inline scrolling
    */
   readonly scrollIntoView?: (item: CollectionItem<Key, Value>, originalEvent: Event | null) => void;
 }
@@ -105,10 +107,10 @@ export interface RovingNavigationOptions<
   /** @default "roving" */
   readonly focusStrategy?: "roving";
 
-  /** Avoid browser scrolling when DOM focus moves; custom scrolling still runs. */
+  /** Avoid browser scrolling when DOM focus moves; custom scrolling still runs. @default false */
   readonly preventScroll?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Optional stable ID projection for item props. */
+  /** Optional stable ID projection for item props. @default undefined */
   readonly getItemId?: (item: CollectionItem<Key, Value>) => string | undefined;
 }
 

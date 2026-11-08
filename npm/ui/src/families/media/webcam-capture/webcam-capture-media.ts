@@ -81,13 +81,13 @@ export function stopWebcamStream(stream: WebcamMediaStreamLike): void {
 
 /** Options for {@link createWebcamConstraints}. */
 export interface CreateWebcamConstraintsOptions {
-  /** Extra video constraints, merged under the facing mode or device. */
+  /** Extra video constraints, merged under the facing mode or device. @default undefined */
   readonly video?: MediaTrackConstraints | undefined;
   /** Requested facing direction when no device is selected. */
   readonly facingMode: WebcamFacingMode;
-  /** Exact device to open; wins over `facingMode`. */
+  /** Exact device to open; wins over `facingMode`. @default undefined */
   readonly deviceId?: string | undefined;
-  /** Also request the microphone. */
+  /** Also request the microphone. @default false */
   readonly audio?: boolean | undefined;
 }
 
