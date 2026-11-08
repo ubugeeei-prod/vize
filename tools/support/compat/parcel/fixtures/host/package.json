@@ -6,7 +6,7 @@
     "@parcel/config-default": "2.16.4",
     "@parcel/core": "2.16.4",
     "@parcel/transformer-sass": "2.16.4",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.65.0",
     "@vue/server-renderer": "3.5.44",
     "sass": "1.93.2",
     "vue": "3.5.44",

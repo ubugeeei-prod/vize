@@ -1,7 +1,7 @@
 {
   "schema": "vize.native-vapor.scriptless-sfc",
   "version": "3.6.0-rc.9",
-  "pluginVersion": "6.0.7",
+  "pluginVersion": "6.0.10",
   "targetSelection": "explicit Vapor target; stock plugin parse result selects descriptor.vapor without changing original source",
   "fixtures": [
     {

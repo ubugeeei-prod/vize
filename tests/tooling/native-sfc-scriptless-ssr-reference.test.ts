@@ -80,7 +80,11 @@ test("fourteen official complete SFC transforms retain primary modules, maps and
   checkVersions();
   assert.equal(pack.schema, "vize.native-sfc.scriptless-ssr-reference");
   assert.equal(pack.version, 1);
-  assert.deepEqual(pack.compiler, { name: "@vitejs/plugin-vue", version: "6.0.7", vue: "3.5.35" });
+  assert.deepEqual(pack.compiler, {
+    name: "@vitejs/plugin-vue",
+    version: "6.0.10",
+    vue: "3.5.35",
+  });
   assert.equal(pack.fixtures.length, 14);
   assert.equal(new Set(pack.fixtures.map((row: any) => row.id)).size, 14);
   for (const row of pack.fixtures) {
