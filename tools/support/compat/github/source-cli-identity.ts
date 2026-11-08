@@ -169,16 +169,6 @@ export function expectedProducerIdentity(
   return { ...consumer, runAttempt: producerAttempt };
 }
 
-export function comparableSourceCliIdentity(identity: ReturnType<typeof runtimeIdentity>) {
-  // A locked `cargo install` binds the source version, compiler, driver and
-  // Cargo configuration above, but its ELF bytes vary across runner hosts.
-  // Retain each physical digest in the receipts without requiring byte-level
-  // reproducibility from this source-built tool.
-  if (!identity.linker.includes(" non-git-build ")) return identity;
-  const { linkerSha256: _nonReproducibleBuild, ...reproducible } = identity;
-  return reproducible;
-}
-
 // Restore validates all physical binary bodies. Later consumers authenticate
 // this immutable use record and retain their own original member/body gates.
 export function verifySourceCliConsumerUse(
@@ -217,15 +207,10 @@ export function verifySourceCliConsumerUse(
   assert.match(use.archiveSha256, /^[a-f0-9]{64}$/);
   assert.equal(use.producerReceiptSha256, producerReceiptSha256);
   assert.deepEqual(use.producerIdentity, producer.identity);
+  assert.deepEqual(use.consumerIdentity, { ...producer.identity, ...consumer });
   assert.deepEqual(
-    comparableSourceCliIdentity(use.consumerIdentity),
-    comparableSourceCliIdentity({ ...producer.identity, ...consumer }),
-  );
-  assert.deepEqual(
-    comparableSourceCliIdentity(producer.identity),
-    comparableSourceCliIdentity(
-      expectedProducerIdentity(use.consumerIdentity, producer.identity.runAttempt),
-    ),
+    producer.identity,
+    expectedProducerIdentity(use.consumerIdentity, producer.identity.runAttempt),
   );
   const checkout = sourceCliCheckout(root);
   assert.equal(consumer.sourceRevision, checkout.sourceRevision);

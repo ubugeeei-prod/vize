@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Contain the staging-file trap: the install action still owns the complete
-# runner temporary directory while this helper owns only its partial archive.
+# Contain the staging-file trap: this helper is sourced by the install action,
+# whose existing trap still owns the complete runner temporary directory.
 download_rust_script() (
+  readonly download_defer_status=75
   download_archive="${1:?expected archive}"
   if [ "$#" -ne 1 ] || [ -d "$download_archive" ]; then
     echo "::error::expected one rust-script archive file path" >&2
@@ -16,8 +17,8 @@ download_rust_script() (
   download_via_api() {
     : > "$download_partial"
     curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
-      --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
-      --retry 5 --retry-all-errors --retry-delay 1 \
+      --connect-timeout 10 --max-time 30 \
+      --retry 5 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
       --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
       --output "$download_partial" "$download_api"
   }
@@ -41,17 +42,27 @@ download_rust_script() (
     printf 'rust-script primary download failed: attempt=%s curl=%s HTTP=%s URL=%s\n' \
       "$download_attempt" "$download_status" "$download_http" "$download_primary" >&2
     case "$download_status:$download_http" in
-      7:000|18:200|28:000|28:200|28:302|52:000|55:000|55:200|56:000|56:200)
+      7:000|18:200|28:000|28:200|52:000|55:000|55:200|56:000|56:200)
         if [ "$download_attempt" -eq 1 ]; then
           download_attempt=2
           sleep 1
           continue
         fi
-        download_via_api || exit 75
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
         break
         ;;
       22:500|22:502|22:503|22:504)
-        download_via_api || exit 75
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
         break
         ;;
       *)

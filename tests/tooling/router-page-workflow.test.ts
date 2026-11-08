@@ -54,11 +54,10 @@ void test("page implementation, oracle and action dependencies trigger qualifica
 });
 
 void test("the page consumer installs the producer's pinned linker before source restoration", () => {
-  const linker = producer.jobs.cli.steps.find(
-    (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
-  );
+  const recovery = "./.github/actions/setup-wild-http-recovery";
+  const linker = producer.jobs.cli.steps.find((step) => step.uses === recovery);
   assert.ok(linker?.uses);
-  const expected = job.steps.find((step) => step.uses === linker.uses);
+  const expected = job.steps.find((step) => step.uses === recovery);
   assert.ok(expected, "runtime identity requires the source producer's linker installation");
   assert.deepEqual(expected.with, linker.with);
   assert.ok(

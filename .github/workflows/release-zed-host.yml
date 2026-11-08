@@ -49,6 +49,8 @@ jobs:
           chmod +x "${RUNNER_TEMP}/zed-extension"
       - name: Package the candidate Zed extension
         working-directory: editors/zed
+        env:
+          VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
         run: |
           set -euo pipefail
           mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"

@@ -5,6 +5,14 @@ import { fileURLToPath } from "node:url";
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
+export function normalizeRepoText(content: string): string {
+  return content.replace(/\r\n?/g, "\n");
+}
+
+export function readRepoFile(...segments: string[]): string {
+  return normalizeRepoText(fs.readFileSync(path.join(root, ...segments), "utf8"));
+}
+
 const wildRecoveryAction = "./.github/actions/setup-wild-http-recovery";
 const pinnedWildAction = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
 
@@ -20,14 +28,6 @@ export function restorePinnedWildAction(
     restored += 1;
   }
   return restored;
-}
-
-export function normalizeRepoText(content: string): string {
-  return content.replace(/\r\n?/g, "\n");
-}
-
-export function readRepoFile(...segments: string[]): string {
-  return normalizeRepoText(fs.readFileSync(path.join(root, ...segments), "utf8"));
 }
 
 /** Inspect the actual caller and its closed full-only callee without rewriting jobs. */

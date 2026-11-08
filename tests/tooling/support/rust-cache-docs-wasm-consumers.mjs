@@ -7,26 +7,21 @@ import { parse } from "yaml";
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
 const headScriptAction = "./head/.github/actions/setup-rust-script";
-const rootedActionContexts = new Map([
-  [
-    "./qualification/.github/actions/setup-rust-script",
-    new Set([
-      ".github/workflows/native-sfc-runtime-options.yml:native-runtime-options-baseline",
-      ".github/workflows/plain-script-import-ref.yml:source-before",
-    ]),
-  ],
+const qualificationWorkflows = new Set([
+  ".github/workflows/native-sfc-runtime-options.yml",
+  ".github/workflows/plain-script-import-ref.yml",
+]);
+const qualificationActions = new Map([
   [
     "./qualification/.github/actions/setup-wild-http-recovery",
-    new Set([
-      ".github/workflows/native-sfc-runtime-options.yml:native-runtime-options-baseline",
-      ".github/workflows/plain-script-import-ref.yml:source-before",
-    ]),
+    ".github/actions/setup-wild-http-recovery/action.yml",
   ],
   [
-    "./driver/.github/actions/setup-wild-http-recovery",
-    new Set([".github/workflows/pr-performance-observation.yml:observe"]),
+    "./qualification/.github/actions/setup-rust-script",
+    ".github/actions/setup-rust-script/action.yml",
   ],
 ]);
+const performanceRecoveryAction = "./driver/.github/actions/setup-wild-http-recovery";
 const appAction = "./.github/actions/app-e2e-row";
 const appFile = ".github/actions/app-e2e-row/action.yml";
 const docsFile = ".github/workflows/build-docs.yml";
@@ -247,21 +242,23 @@ export function verifyDocsWasmConsumers(root) {
       assert(!step.uses.includes("${{"), "unreviewed dynamic cache consumer action");
       if (step.uses.startsWith(".")) {
         const path = step.uses.slice(2);
-        const rootedAction = rootedActionContexts.get(step.uses);
         assert(
           step.uses === headCacheAction ||
             (step.uses === headScriptAction &&
               file === ".github/workflows/level-memory-bench.yml" &&
               job === "memory" &&
               source.has(".github/actions/setup-rust-script/action.yml")) ||
-            (rootedAction?.has(`${file}:${job}`) &&
-              source.has(
-                `.github/actions/${step.uses.slice(step.uses.lastIndexOf("/") + 1)}/action.yml`,
-              )) ||
+            (qualificationWorkflows.has(file) &&
+              qualificationActions.has(step.uses) &&
+              source.has(qualificationActions.get(step.uses))) ||
+            (step.uses === performanceRecoveryAction &&
+              file === ".github/workflows/pr-performance-observation.yml" &&
+              job === "observe" &&
+              source.has(".github/actions/setup-wild-http-recovery/action.yml")) ||
             (step.uses.startsWith("./.github/actions/") &&
               path.split("/").every((part) => part && part !== "." && part !== "..") &&
               (source.has(`${path}/action.yml`) || source.has(`${path}/action.yaml`))),
-          `unreviewed local cache consumer action: ${file}:${job}:${step.uses}`,
+          "unreviewed local cache consumer action",
         );
       }
       if (!/(?:setup-rust-sticky-cache|app-e2e-row)(?:\/|@|$)/.test(step.uses)) continue;

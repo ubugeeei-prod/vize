@@ -15,7 +15,6 @@ on:
       - "tests/differential/build-receipt.ts"
       - ".github/workflows/full-source-cli.yml"
       - ".github/actions/restore-source-cli/**"
-      - ".github/actions/setup-wild-http-recovery/**"
       - ".github/workflows/viteplus-lint-consumers.yml"
 
 permissions: { contents: read }

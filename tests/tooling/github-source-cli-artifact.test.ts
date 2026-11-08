@@ -135,26 +135,6 @@ law(
   },
 );
 
-law(
-  "locked source-built linker bytes may vary while their complete recipe stays bound",
-  (value) => {
-    const sourceLinker = {
-      ...value.identity,
-      linker: "Wild 0.9.0 non-git-build (compatible with GNU linkers)",
-    };
-    const hashes = packSourceCli(value.producer, value.archive, sourceLinker);
-    restoreSourceCli(value.consumer, value.archive, hashes.sha256, {
-      ...sourceLinker,
-      linkerSha256: "2".repeat(64),
-    });
-    const use = JSON.parse(
-      fs.readFileSync(path.join(value.consumer, "target/ci/vize.source-use.json"), "utf8"),
-    );
-    assert.equal(use.producerIdentity.linkerSha256, "1".repeat(64));
-    assert.equal(use.consumerIdentity.linkerSha256, "2".repeat(64));
-  },
-);
-
 law("every producer source/runtime tuple mismatch refuses before destination writes", (value) => {
   for (const field of [
     "sourceRevision",

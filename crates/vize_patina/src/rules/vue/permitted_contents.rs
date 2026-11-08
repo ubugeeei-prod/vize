@@ -48,7 +48,7 @@ use crate::html_content_model::{
     Context, Family, NodeKind, Skeleton, ViolationClass, authored_document_skeleton, check,
     template_skeleton,
 };
-use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::{CompactString, cstr};
 use vize_relief::RootNode;
@@ -130,6 +130,10 @@ impl MarkupRule for PermittedContents {
 
     /// SFC reads the authored L1 projection retained by its L2 document.
     /// JSX is lowered without HTML repair and already is authored.
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
+    }
+
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
         let skeleton = authored_document_skeleton(document);
         report_skeleton(ctx.lint(), &skeleton);

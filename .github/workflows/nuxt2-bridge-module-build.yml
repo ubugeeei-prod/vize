@@ -7,8 +7,8 @@ on:
       - .github/workflows/nuxt2-bridge-module-build.yml
       - .github/actions/setup-rust-sticky-cache/**
       - .github/actions/setup-rust-script/**
-      - .github/actions/setup-ubuntu-archive/**
       - .github/actions/setup-wild-http-recovery/**
+      - .github/actions/setup-ubuntu-archive/**
       - tools/support/json-value.ts
       - tools/support/compat/nuxt/host-types.ts
       - tests/tooling/nuxt2-bridge-*.test.ts
@@ -32,8 +32,8 @@ on:
       - .github/workflows/nuxt2-bridge-module-build.yml
       - .github/actions/setup-rust-sticky-cache/**
       - .github/actions/setup-rust-script/**
-      - .github/actions/setup-ubuntu-archive/**
       - .github/actions/setup-wild-http-recovery/**
+      - .github/actions/setup-ubuntu-archive/**
       - tools/support/json-value.ts
       - tools/support/compat/nuxt/host-types.ts
       - tests/tooling/nuxt2-bridge-*.test.ts

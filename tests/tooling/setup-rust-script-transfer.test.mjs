@@ -96,8 +96,14 @@ import { spawnSync } from "node:child_process";
 const args = process.argv.slice(2), url = args.at(-1);
 assert.ok([${JSON.stringify(primary)}, ${JSON.stringify(api)}].includes(url));
 assert.deepEqual(args.slice(0, 7), ["--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--tlsv1.2"]);
-const deadlines = ["--connect-timeout", "10", "--max-time", "30", "--speed-limit", "1", "--speed-time", "5"];
-if (!${original}) assert.deepEqual(args.slice(7, 15), deadlines);
+const deadlines = url === ${JSON.stringify(primary)}
+  ? ["--connect-timeout", "10", "--max-time", "30", "--speed-limit", "1", "--speed-time", "5"]
+  : ["--connect-timeout", "10", "--max-time", "30"];
+if (!${original}) assert.deepEqual(args.slice(7, 7 + deadlines.length), deadlines);
+if (!${original} && url === ${JSON.stringify(api)}) {
+  const retryStart = 7 + deadlines.length;
+  assert.deepEqual(args.slice(retryStart, retryStart + 7), ["--retry", "5", "--retry-all-errors", "--retry-delay", "1", "--retry-max-time", "30"]);
+}
 const forwarded = [...args.slice(0, -1), "--cacert", ${JSON.stringify(cert)}, ${JSON.stringify(local)} + (url === ${JSON.stringify(primary)} ? "/primary" : "/api")];
 const result = spawnSync("/usr/bin/curl", forwarded, { encoding: "utf8" });
 fs.appendFileSync(${JSON.stringify(path.join(directory, "curl.jsonl"))}, JSON.stringify({ args, forwarded, status: result.status, signal: result.signal, stdout: result.stdout, stderr: result.stderr }) + "\\n");
@@ -170,18 +176,15 @@ process.exit(result.status ?? 126);
 function cleanup(result) {
   fs.rmSync(result.directory, { recursive: true, force: true });
 }
-function retained(result) {
+function atomic(result) {
   assert.equal(result.signal, null);
   assert.equal(result.stdout, "");
+  assert.ok(result.requests.every((request) => request.path === "/primary"));
   assert.ok(result.requests.every((request) => request.published === result.sentinel));
   assert.deepEqual(
     fs.readdirSync(result.directory).filter((file) => file.includes(".partial.")),
     [],
   );
-}
-function atomic(result) {
-  retained(result);
-  assert.ok(result.requests.every((request) => request.path === "/primary"));
   assert.ok(result.calls.every((call) => call.args.at(-1) === primary));
 }
 
@@ -236,22 +239,33 @@ await test("real partial transfer is refused by the frozen downloader and recove
   }
 });
 
-await test("exhausted actual stalls try the API within the bound and never replace the owned archive", async () => {
+await test("two actual stalled transfers fail within the bound and never replace the owned archive", async () => {
   const result = await observed({ alwaysFail: true });
   try {
-    retained(result);
     assert.equal(result.status, 75);
+    assert.equal(result.signal, null);
+    assert.equal(result.stdout, "");
+    const requestPaths = result.requests.map((request) => request.path);
+    assert.deepEqual(requestPaths.slice(0, 2), ["/primary", "/primary"]);
+    assert.ok(requestPaths.length >= 3 && requestPaths.length <= 8, JSON.stringify(requestPaths));
+    assert.ok(requestPaths.slice(2).every((requestPath) => requestPath === "/api"));
+    assert.ok(result.requests.every((request) => request.published === result.sentinel));
     assert.deepEqual(
-      result.requests.map((request) => request.path),
-      ["/primary", "/primary", ...Array(6).fill("/api")],
+      fs.readdirSync(result.directory).filter((file) => file.includes(".partial.")),
+      [],
     );
     assert.deepEqual(
       result.calls.map((call) => call.args.at(-1)),
       [primary, primary, api],
     );
-    assert.ok(result.calls.every((call) => call.status === 28));
-    assert.ok(result.calls.slice(0, 2).every((call) => call.stdout === "200"));
-    assert.equal(result.calls[2].stdout, "");
+    assert.deepEqual(
+      result.calls.map((call) => call.status),
+      [28, 28, 28],
+    );
+    assert.deepEqual(
+      result.calls.map((call) => call.stdout),
+      ["200", "200", ""],
+    );
     assert.equal(fs.readFileSync(result.archive, "utf8"), result.sentinel);
     assert.match(result.stderr, /attempt=2 curl=28 HTTP=200/u);
     assert.ok(result.elapsedMs < 65_000, String(result.elapsedMs));

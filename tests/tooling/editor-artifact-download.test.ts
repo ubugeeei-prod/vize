@@ -9,6 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import type { TestContext } from "node:test";
+import { parse } from "yaml";
 
 const script = path.resolve(
   import.meta.dirname,
@@ -50,18 +51,34 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
 
 test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
   const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
-  const step = action.split("- name: Validate the Zed extension")[1].split(/\n {4}- name: /)[0];
-  assert.match(step, /VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"/);
-  assert.match(
-    step,
-    /download-artifact\.sh" \\\n+\s+"https:\/\/github\.com\/WebAssembly\/wasi-sdk\/releases\/download\/wasi-sdk-25\/wasi-sdk-25\.0-x86_64-linux\.tar\.gz" \\\n+\s+"\$wasi_archive" \\\n+\s+"52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \\\n+\s+"https:\/\/api\.github\.com\/repos\/WebAssembly\/wasi-sdk\/releases\/assets\/212790091"/,
+  const workflow = readFileSync(
+    path.resolve(path.dirname(script), "../../workflows/release-zed-host.yml"),
+    "utf8",
   );
-  assert.match(step, /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/);
-  assert.match(step, /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/);
-  assert.match(
-    step,
-    /"\$\{RUNNER_TEMP\}\/zed-extension" \\\n+\s+--source-dir \. \\\n+\s+--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/,
+  type Step = { name?: string; env?: Record<string, string>; run?: string };
+  const actionSteps = (parse(action) as { runs: { steps: Step[] } }).runs.steps;
+  const workflowSteps = (parse(workflow) as { jobs: { zed: { steps: Step[] } } }).jobs.zed.steps;
+  const actionStep = actionSteps.find((step) => step.name === "Validate the Zed extension");
+  const workflowStep = workflowSteps.find(
+    (step) => step.name === "Package the candidate Zed extension",
   );
+  for (const step of [actionStep, workflowStep]) {
+    assert.ok(step?.run);
+    assert.deepEqual(step.env, { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180" });
+    assert.match(
+      step.run,
+      /download-artifact\.sh" \\\n\s+"https:\/\/github\.com\/WebAssembly\/wasi-sdk\/releases\/download\/wasi-sdk-25\/wasi-sdk-25\.0-x86_64-linux\.tar\.gz" \\\n\s+"\$wasi_archive" \\\n\s+"52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \\\n\s+"https:\/\/api\.github\.com\/repos\/WebAssembly\/wasi-sdk\/releases\/assets\/212790091"/u,
+    );
+    assert.match(
+      step.run,
+      /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/u,
+    );
+    assert.match(
+      step.run,
+      /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/u,
+    );
+    assert.match(step.run, /--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/u);
+  }
 });
 
 test(

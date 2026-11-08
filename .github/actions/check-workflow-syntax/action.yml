@@ -15,10 +15,13 @@ runs:
         set -euo pipefail
         directory="$(mktemp -d "${RUNNER_TEMP}/vize-actionlint-1.7.12.XXXXXX")"
         archive="$directory/actionlint.tar.gz"
+        install_archive=true
         primary_status=0
         primary_http=$(
           set +e
-          curl --fail --silent --show-error --location --retry 2 --max-time 30 \
+          curl --fail --silent --show-error --location \
+            --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
+            --retry 2 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
             --output "$archive" --write-out '%{http_code}' \
             https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
           curl_status=$?
@@ -28,23 +31,35 @@ runs:
         primary_http="${primary_http%|}"
         case "$primary_status:$primary_http" in
           0:200) ;;
+          7:000|18:200|28:000|28:200|28:302|52:000|55:000|55:200|56:000|56:200|\
           22:500|22:502|22:503|22:504)
+            api_status=0
             curl --fail --silent --show-error --location \
-              --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
+              --connect-timeout 10 --max-time 30 \
+              --retry 5 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
               --header 'Accept: application/octet-stream' \
               --header 'X-GitHub-Api-Version: 2022-11-28' \
               --output "$archive" \
-              https://api.github.com/repos/rhysd/actionlint/releases/assets/384924896
+              https://api.github.com/repos/rhysd/actionlint/releases/assets/384924896 || api_status=$?
+            if [ "$api_status" -ne 0 ]; then
+              install_archive=false
+            fi
             ;;
           0:*) echo 'Pinned actionlint download returned an unsupported HTTP status' >&2; exit 1 ;;
           *) exit "$primary_status" ;;
         esac
-        printf '%s  %s\n' \
-          8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 \
-          "$archive" | sha256sum --check --strict
-        tar -xzf "$archive" -C "$directory" actionlint
-        "$directory/actionlint" --version
-        printf 'binary=%s\n' "$directory/actionlint" >> "$GITHUB_OUTPUT"
+        binary="$directory/actionlint"
+        if [ "$install_archive" = true ]; then
+          printf '%s  %s\n' \
+            8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 \
+            "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$directory" actionlint
+        else
+          echo 'Pinned actionlint release transfers failed; building the exact Go module' >&2
+          GOBIN="$directory" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+        fi
+        "$binary" --version
+        printf 'binary=%s\n' "$binary" >> "$GITHUB_OUTPUT"
 
     - name: Check complete workflow syntax
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8

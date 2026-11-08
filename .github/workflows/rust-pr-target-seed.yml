@@ -21,7 +21,6 @@ on:
       - ".github/actions/setup-rust-sticky-cache/**"
       - ".github/actions/reuse-rust-target/**"
       - ".github/actions/cache-vp-bootstrap/**"
-      - ".github/actions/setup-wild-http-recovery/**"
       - ".github/workflows/rust-pr-target-seed.yml"
       - "package.json"
       - "pnpm-lock.yaml"

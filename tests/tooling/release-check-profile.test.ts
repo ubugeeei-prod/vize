@@ -3,16 +3,13 @@ import { spawnSync } from "node:child_process";
 import { runInNewContext } from "node:vm";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  restorePinnedWildAction,
+} from "./support/github-workflows.ts";
 
-type Step = {
-  name?: string;
-  uses?: string;
-  run?: string;
-  if?: string;
-  env?: object;
-  with?: Record<string, string>;
-};
+type Step = { name?: string; uses?: string; run?: string; if?: string; env?: object };
 type Job = {
   if?: string;
   needs?: string[];
@@ -29,17 +26,6 @@ const producers = [
   "rust-davinci-allocations",
   "rust-native-differential",
 ];
-const wildRecovery = "./.github/actions/setup-wild-http-recovery";
-const wildUpstream = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
-
-function restoreWildSetup(steps: Step[], job: string): Step[] {
-  const restored = structuredClone(steps);
-  const matches = restored.filter((step) => step.uses === wildRecovery);
-  assert.equal(matches.length, 1, `${job} must use the reviewed Wild recovery exactly once`);
-  assert.deepEqual(matches[0].with, { "wild-version": "0.9.0" });
-  matches[0].uses = wildUpstream;
-  return restored;
-}
 
 function condition(expression: string | undefined, event: string, ref: string, profile: boolean) {
   if (!expression) return true;
@@ -135,11 +121,9 @@ test("parallel Rust jobs preserve every original step, command byte and runtime 
   const tasks: Step[] = [];
   for (const id of producers) {
     assert.deepEqual(jobs[id].env, original.env, `${id} changed runtime settings`);
-    assert.deepEqual(
-      restoreWildSetup(jobs[id].steps.slice(0, firstCommand), id),
-      setup,
-      `${id} changed setup`,
-    );
+    const currentSetup = structuredClone(jobs[id].steps.slice(0, firstCommand));
+    assert.equal(restorePinnedWildAction(currentSetup), 1, `${id} recovery adapter`);
+    assert.deepEqual(currentSetup, setup, `${id} changed setup`);
     tasks.push(...jobs[id].steps.slice(firstCommand));
   }
   assert.deepEqual(tasks, original.steps.slice(firstCommand));

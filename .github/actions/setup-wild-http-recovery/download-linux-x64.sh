@@ -14,8 +14,7 @@ wild_primary_status=0
 wild_http=$(
   set +e
   curl --fail-with-body --show-error --location \
-       --connect-timeout 10 --max-time 60 --speed-limit 1 --speed-time 10 \
-       --retry "$wild_retries" --retry-all-errors --retry-max-time 90 \
+       --retry "$wild_retries" --retry-all-errors \
        --output "$wild_archive" --write-out '%{http_code}' \
        "$wild_primary_url"
   wild_curl_status=$?
@@ -26,21 +25,14 @@ wild_http="${wild_http%|}"
 
 case "$wild_primary_status:$wild_http" in
   0:200) ;;
-  7:000|18:200|28:000|28:200|28:302|52:000|55:000|55:200|56:000|56:200|\
   22:500|22:502|22:503|22:504)
-    wild_api_status=0
     curl --fail-with-body --show-error --location \
          --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
-         --retry 5 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
+         --retry 5 --retry-all-errors --retry-delay 1 \
          --header 'Accept: application/octet-stream' \
          --header 'X-GitHub-Api-Version: 2022-11-28' \
          --output "$wild_archive" \
-         'https://api.github.com/repos/wild-linker/wild/releases/assets/428152085' || wild_api_status=$?
-    if [[ "$wild_api_status" -ne 0 ]]; then
-      printf 'Wild API fallback failed: curl=%s URL=%s\n' \
-        "$wild_api_status" 'https://api.github.com/repos/wild-linker/wild/releases/assets/428152085' >&2
-      exit 75
-    fi
+         'https://api.github.com/repos/wild-linker/wild/releases/assets/428152085' || exit "$?"
     ;;
   0:*) echo 'Pinned Wild primary download returned an unsupported HTTP status' >&2; exit 1 ;;
   *) exit "$wild_primary_status" ;;

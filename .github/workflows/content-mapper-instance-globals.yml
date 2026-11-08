@@ -6,7 +6,6 @@ on:
       - .github/workflows/content-mapper-instance-globals.yml
       - .github/workflows/full-source-cli.yml
       - .github/actions/restore-source-cli/**
-      - .github/actions/setup-wild-http-recovery/**
       - crates/vize_canon/src/virtual_ts/**
       - crates/vize/src/commands/content_mapper.rs
       - crates/vize/src/commands/content_mapper/**
