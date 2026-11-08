@@ -157,8 +157,8 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         LengthPercentageAuto, Overflow, Position,
     };
     use crate::render::{
-        Appearance, BorderStyle, InputContent, NodeKind, Painter, RenderNode, RenderTree,
-        TextContent,
+        Appearance, BorderStyle, InputContent, NodeKind, Painter, RawContent, RenderNode,
+        RenderTree, TextContent,
     };
 
     let node_kinds = validate_render_node_kinds(&nodes).map_err(unsupported_render_node_kind)?;
@@ -187,6 +187,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                         .and_then(|s| s.chars().next())
                         .unwrap_or('*'),
                 }),
+                RenderNodeKindNapi::Raw => {
+                    NodeKind::Raw(RawContent::new(node.lines.clone().unwrap_or_default()))
+                }
                 RenderNodeKindNapi::Root | RenderNodeKindNapi::Box => NodeKind::Box,
             };
 
@@ -205,6 +208,18 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 let (input_width, height) = input_intrinsic_size(node);
                 render_node.style.width = Dimension::Points(input_width);
                 render_node.style.height = Dimension::Points(height);
+            }
+
+            if *node_type == RenderNodeKindNapi::Raw {
+                use crate::text::TextWidth;
+                let lines = node.lines.as_deref().unwrap_or_default();
+                let width = lines
+                    .iter()
+                    .map(|line| TextWidth::width(line))
+                    .max()
+                    .unwrap_or_default() as f32;
+                render_node.style.width = Dimension::Points(width);
+                render_node.style.height = Dimension::Points(lines.len().max(1) as f32);
             }
 
             // Set flex style (start from existing style to preserve text/input sizes)

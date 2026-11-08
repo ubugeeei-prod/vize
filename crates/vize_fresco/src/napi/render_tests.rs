@@ -18,6 +18,7 @@ fn render_node(id: i64, node_type: &str) -> RenderNodeNapi {
         cursor: None,
         mask: None,
         mask_char: None,
+        lines: None,
         style: None,
         appearance: None,
         border: None,
@@ -78,6 +79,10 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             mask_char: Some("#".into()),
             ..render_node(4, "input")
         },
+        RenderNodeNapi {
+            lines: Some(vec!["ab".into(), "cd".into()]),
+            ..render_node(5, "raw")
+        },
     ];
 
     assert_eq!(
@@ -87,6 +92,7 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             RenderNodeKindNapi::Box,
             RenderNodeKindNapi::Text,
             RenderNodeKindNapi::Input,
+            RenderNodeKindNapi::Raw,
         ]
     );
 
@@ -122,6 +128,11 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
     assert_eq!(nodes[3].cursor, Some(6));
     assert_eq!(nodes[3].mask, Some(true));
     assert_eq!(nodes[3].mask_char.as_deref(), Some("#"));
+    assert_eq!(nodes[4].node_type, "raw");
+    assert_eq!(
+        nodes[4].lines.as_deref(),
+        Some(["ab".into(), "cd".into()].as_slice())
+    );
 }
 
 #[test]
@@ -219,7 +230,7 @@ fn render_node_kind_rejects_unknown_protocol_values() {
 
 #[test]
 fn render_node_kind_literals_are_exact_and_case_sensitive() {
-    for value in ["", "Box", " box", "box ", "raw"] {
+    for value in ["", "Box", " box", "box ", "Raw"] {
         assert_eq!(parse_render_node_kind(value), None);
     }
 }

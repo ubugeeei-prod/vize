@@ -225,7 +225,7 @@ export interface RenderNodeNapi {
   /** Node ID */
   id: number
   /** Node type accepted by the native renderer. */
-  nodeType: "root" | "box" | "text" | "input"
+  nodeType: "root" | "box" | "text" | "input" | "raw"
   /** Text content (for text nodes) */
   text?: string
   /** Whether text should wrap */
@@ -244,6 +244,8 @@ export interface RenderNodeNapi {
   mask?: boolean
   /** Mask character */
   maskChar?: string
+  /** Exact rows for raw frame-buffer nodes. */
+  lines?: Array<string>
   /** Flex style */
   style?: FlexStyleNapi
   /** Visual appearance */

@@ -7,7 +7,7 @@ export default defineConfig({
     // SFCs must be compiled to their client render functions because Fresco
     // mounts them through its custom renderer, not Vue's SSR renderer.
     environment: "happy-dom",
-    include: ["src/**/*.test.ts", "src/**/*.spec.ts"],
+    include: ["src/**/*.test.ts", "src/**/*.spec.ts", "examples/external-plugin/**/*.spec.ts"],
   },
   lint: {
     ignorePatterns: ["dist/**"],
