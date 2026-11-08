@@ -14,18 +14,33 @@ use vize_croquis::Drawer;
 use vize_croquis::binding_occurrences::BindingOccurrences;
 use vize_croquis::drawer::LintTemplate;
 
-#[derive(Clone, Copy)]
-pub(super) enum DescriptorTemplate<'t, 'a> {
-    Relief(&'t RootNode<'a>),
-    L1L2(LintTemplate<'t, 'a>),
+pub(super) trait DescriptorTemplate<'a>: Copy {
+    fn source(self) -> &'a str;
+
+    fn draw(self, drawer: &mut Drawer);
 }
 
-impl<'a> DescriptorTemplate<'_, 'a> {
-    pub(super) fn source(self) -> &'a str {
-        match self {
-            Self::Relief(root) => root.source,
-            Self::L1L2(template) => template.source(),
-        }
+impl<'a> DescriptorTemplate<'a> for &RootNode<'a> {
+    #[inline]
+    fn source(self) -> &'a str {
+        self.source
+    }
+
+    #[inline]
+    fn draw(self, drawer: &mut Drawer) {
+        drawer.draw_template(self);
+    }
+}
+
+impl<'t, 'a> DescriptorTemplate<'a> for LintTemplate<'t, 'a> {
+    #[inline]
+    fn source(self) -> &'a str {
+        self.source()
+    }
+
+    #[inline]
+    fn draw(self, drawer: &mut Drawer) {
+        drawer.draw_lint_template(self);
     }
 }
 
@@ -43,9 +58,9 @@ pub(super) struct DescriptorObservation<'a> {
     pub(super) template_semantic_reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 }
 
-pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
-    scripts: &super::SfcScriptParses<'_>,
-    template: Option<DescriptorTemplate<'_, '_>>,
+pub(super) fn analyze_sfc_descriptor_resolved_impl<'a, const CAPTURE: bool>(
+    scripts: &super::SfcScriptParses<'a>,
+    template: Option<impl DescriptorTemplate<'a>>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
@@ -121,13 +136,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
 
     if let Some(template) = template {
-        profile!(
-            "atelier.sfc.croquis.template",
-            match template {
-                DescriptorTemplate::Relief(root) => drawer.draw_template(root),
-                DescriptorTemplate::L1L2(template) => drawer.draw_lint_template(template),
-            }
-        );
+        profile!("atelier.sfc.croquis.template", template.draw(&mut drawer));
     }
 
     let mut croquis = if CAPTURE {

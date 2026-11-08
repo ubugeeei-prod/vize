@@ -26,38 +26,28 @@ pub fn analyze_sfc_descriptor_with_occurrences(
 /// Preserve the same occurrence relation while reusing demanded original
 /// grammar owners. The reuse packet cannot seed or replace editor witnesses.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
-    scripts: &SfcScriptParses<'_>,
-    root: Option<&RootNode<'_>>,
+pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse<'a>(
+    scripts: &SfcScriptParses<'a>,
+    root: Option<&RootNode<'a>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(
-        scripts,
-        root.map(DescriptorTemplate::Relief),
-        options,
-        reuse,
-    )
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse)
 }
 
 /// Capture authored reads while drawing the completed Davinci artifact.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
-    scripts: &SfcScriptParses<'_>,
-    template: Option<LintTemplate<'_, '_>>,
+pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences<'a>(
+    scripts: &SfcScriptParses<'a>,
+    template: Option<LintTemplate<'_, 'a>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(
-        scripts,
-        template.map(DescriptorTemplate::L1L2),
-        options,
-        None,
-    )
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None)
 }
 
-fn analyze_sfc_descriptor_with_occurrences_impl(
-    scripts: &SfcScriptParses<'_>,
-    template: Option<DescriptorTemplate<'_, '_>>,
+fn analyze_sfc_descriptor_with_occurrences_impl<'a>(
+    scripts: &SfcScriptParses<'a>,
+    template: Option<impl DescriptorTemplate<'a>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {

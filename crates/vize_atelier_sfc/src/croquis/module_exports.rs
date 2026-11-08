@@ -1,8 +1,7 @@
 //! Demand-only module export admission without another script parse.
 
 use super::analysis::{
-    DescriptorAnalysisMode, DescriptorObservation, DescriptorTemplate,
-    analyze_sfc_descriptor_resolved_impl,
+    DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
 };
 use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
@@ -46,7 +45,7 @@ pub fn analyze_sfc_descriptor_with_module_exports(
     let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     let analysis = analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
-        root.map(DescriptorTemplate::Relief),
+        root,
         options,
         DescriptorAnalysisMode {
             options_api,
