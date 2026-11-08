@@ -147,7 +147,7 @@ fn retained_mutation_close_reopen_and_a_new_payload_retire_the_previous_batch_ce
 }
 
 #[test]
-fn payload_certificates_are_bounded_and_do_not_keep_native_bytes_alive() {
+fn payload_certificates_follow_live_revisions_without_keeping_native_bytes_alive() {
     let (_root, _path, uri, mut client) = fixture();
     let inputs = (0..12).map(|_| input(&uri, ORIGINAL)).collect::<Vec<_>>();
     for batch in &inputs {
@@ -163,7 +163,7 @@ fn payload_certificates_are_bounded_and_do_not_keep_native_bytes_alive() {
         );
         assert_eq!(Arc::strong_count(&batch.shared), 1);
     }
-    assert_eq!(client.canon_batches.entries.len(), BATCH_CAPACITY);
+    assert_eq!(client.canon_batches.entries.len(), inputs.len());
     let weak = inputs.last().unwrap().payload_owner_for_test();
     drop(inputs);
     assert!(weak.upgrade().is_none());

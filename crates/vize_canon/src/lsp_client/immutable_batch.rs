@@ -109,8 +109,6 @@ impl PartialEq<CorsaNativeDocumentBatch> for Vec<(String, String)> {
     }
 }
 
-const BATCH_CAPACITY: usize = 4;
-
 type Document = (String, String);
 
 struct PayloadIdentity {
@@ -155,6 +153,9 @@ struct CanonBatch {
 
 #[derive(Default)]
 pub(super) struct CanonBatchCache {
+    /// Receipts retain only paths and digests. Their payload owners are weak,
+    /// so the cache follows the live query revisions instead of evicting an
+    /// otherwise reusable revision behind an unrelated fixed LRU bound.
     entries: Vec<CanonBatch>,
     synchronized: bool,
 }
@@ -226,9 +227,6 @@ impl CorsaProjectClient {
         self.canon_batches
             .entries
             .retain(|entry| entry.texts == texts && entry.identity.is_live());
-        if self.canon_batches.entries.len() == BATCH_CAPACITY {
-            self.canon_batches.entries.remove(0);
-        }
         self.canon_batches.entries.push(CanonBatch {
             identity: PayloadIdentity::capture(batch),
             texts,
