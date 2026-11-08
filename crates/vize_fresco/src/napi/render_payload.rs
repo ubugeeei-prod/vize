@@ -11,6 +11,7 @@ pub(super) enum RenderNodeKindNapi {
     Box,
     Text,
     Input,
+    Raw,
 }
 
 pub(super) fn parse_render_node_kind(value: &str) -> Option<RenderNodeKindNapi> {
@@ -19,6 +20,7 @@ pub(super) fn parse_render_node_kind(value: &str) -> Option<RenderNodeKindNapi> 
         "box" => Some(RenderNodeKindNapi::Box),
         "text" => Some(RenderNodeKindNapi::Text),
         "input" => Some(RenderNodeKindNapi::Input),
+        "raw" => Some(RenderNodeKindNapi::Raw),
         _ => None,
     }
 }
@@ -38,7 +40,7 @@ pub(super) fn unsupported_render_node_kind(node_type: &str) -> Error {
     Error::new(
         Status::InvalidArg,
         format!(
-            "Unsupported render node type `{node_type}`; expected one of: root, box, text, input"
+            "Unsupported render node type `{node_type}`; expected one of: root, box, text, input, raw"
         ),
     )
 }

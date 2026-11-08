@@ -6,12 +6,13 @@ use super::{
 };
 use vize_carton::cstr;
 
+/// Merge resolvable union branches without erasing an unresolved branch.
 pub(super) fn resolve_members(
     parts: &[String],
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
-    missing: &mut impl FnMut(&str),
+    missing: &mut dyn FnMut(&str),
     collect_missing: bool,
 ) -> Option<String> {
     let mut members: Vec<Member> = Vec::new();

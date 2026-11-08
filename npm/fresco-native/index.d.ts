@@ -234,7 +234,7 @@ export interface RenderNodeNapi {
   /** Node ID */
   id: number
   /** Node type accepted by the native renderer. */
-  nodeType: "root" | "box" | "text" | "input"
+  nodeType: "root" | "box" | "text" | "input" | "raw"
   /** Text content (for text nodes) */
   text?: string
   /** Whether text should wrap */
@@ -249,10 +249,16 @@ export interface RenderNodeNapi {
   focused?: boolean
   /** Cursor position in input */
   cursor?: number
+  /** Inclusive grapheme index at the start of the input selection. */
+  selectionStart?: number
+  /** Exclusive grapheme index at the end of the input selection. */
+  selectionEnd?: number
   /** Whether to mask input (password) */
   mask?: boolean
   /** Mask character */
   maskChar?: string
+  /** Exact rows for raw frame-buffer nodes. */
+  lines?: Array<string>
   /** Flex style */
   style?: FlexStyleNapi
   /** Visual appearance */

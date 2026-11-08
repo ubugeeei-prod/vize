@@ -22,11 +22,13 @@ mod layout;
     reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod render;
+mod render_node;
 #[expect(
     clippy::disallowed_macros,
     reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod render_payload;
+mod render_style;
 #[cfg(test)]
 mod render_tests;
 #[expect(
