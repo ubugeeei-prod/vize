@@ -55,6 +55,10 @@ const packages = [
     ],
   },
   {
+    name: "eslint-plugin-vize",
+    source: new URL("../../npm/linter/eslint/src/", import.meta.url),
+  },
+  {
     name: "oxlint-plugin-vize",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
