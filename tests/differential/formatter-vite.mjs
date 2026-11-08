@@ -61,11 +61,11 @@ export async function runPublicViteFormatter(root) {
   const { sourceConfigKey, taskConfigKey } =
     await import("../../npm/builder/vite/src/vite-plus/types.ts");
   assert.equal(fs.realpathSync(nativeBinary()), fs.realpathSync(launcher));
-  const testRequire = createRequire(path.join(root, "tests/package.json"));
+  const toolingRequire = createRequire(path.join(root, "tools/package.json"));
   const reference = require("oxfmt");
   const referencePackageBytes = fs.readFileSync(require.resolve("oxfmt/package.json"));
   const referencePackage = JSON.parse(referencePackageBytes);
-  const lock = qualifyReference(root, testRequire, referencePackage.version);
+  const lock = qualifyReference(root, toolingRequire, referencePackage.version);
   const preload = path.join(root, "tests/differential/formatter-vite-loader.cjs");
   const plans = viteConfigurationPlans(root);
   const env = { command: "fmt", mode: "production" };
@@ -109,7 +109,7 @@ export async function runPublicViteFormatter(root) {
     report.rows.push(row);
     try {
       process.chdir(workspace);
-      row.consumerPeer = qualifiedConsumerPeer(root, workspace, require, testRequire, lock);
+      row.consumerPeer = qualifiedConsumerPeer(root, workspace, require, toolingRequire, lock);
       report.publicCore ??= qualifyPublicCore(row.consumerPeer, lock);
       fs.writeFileSync("UserCard.vue", fixture.input);
       row.initialFiles = snapshot(workspace);

@@ -12,6 +12,7 @@ Experimental unplugin-based Vue SFC integration powered by [Vize](https://github
 - `rolldown`
 - `webpack`
 - `esbuild`
+- `bun`
 - `babel`
 
 Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path instead of an `unplugin` export because its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handling.
@@ -111,6 +112,24 @@ export default {
 
 The Babel adapter compiles `.vue` files before Babel parses them. Keep your usual Babel
 TypeScript/JSX transforms in the pipeline if your SFC scripts use those syntaxes.
+
+### Bun
+
+```typescript
+import vize from "@vizejs/unplugin/bun";
+
+const result = await Bun.build({
+  entrypoints: ["src/main.ts"],
+  outdir: "dist",
+  plugins: [vize()],
+});
+
+if (!result.success) throw new AggregateError(result.logs);
+```
+
+The Bun adapter compiles imported `.vue`, `.jsx`, and `.tsx` modules. Bun emits
+plain and scoped SFC styles through its CSS bundle; install the matching Sass,
+Less, or Stylus package when an SFC selects that preprocessor.
 
 ## Caveats
 

@@ -100,7 +100,7 @@ export function qualifyReference(root, require, version) {
   return lock;
 }
 
-export function qualifiedConsumerPeer(root, workspace, packageRequire, testRequire, lock) {
+export function qualifiedConsumerPeer(root, workspace, packageRequire, toolingRequire, lock) {
   const consumerRequire = createRequire(path.join(workspace, "package.json"));
   const peerPath = fs.realpathSync(consumerRequire.resolve("vite-plus/package.json"));
   assert.equal(peerPath, fs.realpathSync(packageRequire.resolve("vite-plus/package.json")));
@@ -114,7 +114,7 @@ export function qualifiedConsumerPeer(root, workspace, packageRequire, testRequi
     peer.version,
   );
   assert(
-    testRequire("semver").satisfies(peer.version, manifest.peerDependencies["vite-plus"]),
+    toolingRequire("semver").satisfies(peer.version, manifest.peerDependencies["vite-plus"]),
     "consumer Vite+ peer is outside published support",
   );
   return {

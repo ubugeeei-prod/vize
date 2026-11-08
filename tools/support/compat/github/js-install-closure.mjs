@@ -175,6 +175,7 @@ async function capture(role, directory, destination) {
     .map(({ name }) => name)
     .sort(compareNames);
   assert.equal(projects.includes("@vizejs/builder-shared"), role === "after");
+  assert.equal(projects.includes("@vize/tools"), role === "after");
   const started = performance.now();
   const install = run("install", process.execPath, [
     "tools/support/compat/github/install-js-checks.ts",
@@ -289,7 +290,7 @@ export function compareInstallClosure(directory, environment = process.env) {
   );
   assert.deepEqual(
     after.projects,
-    [...before.projects, "@vizejs/builder-shared"].sort(compareNames),
+    [...before.projects, "@vize/tools", "@vizejs/builder-shared"].sort(compareNames),
   );
   for (const key of ["event", "triggerHead", "node", "packageManager", "installedPackageManager"])
     assert.equal(after[key], before[key], key);
