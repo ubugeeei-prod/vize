@@ -29,7 +29,9 @@ use std::cell::Cell;
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDocument, MarkupElement, MarkupNode, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
@@ -59,6 +61,7 @@ const BULLET_CHARS: &[&str] = &[
 const LIST_CONTEXT_TAGS: &[&str] = &["ul", "ol", "li", "pre", "code", "script", "style"];
 
 #[derive(Default)]
+/// Implements the `opinionated/a11y/use-list` lint rule.
 pub struct UseList;
 
 impl UseList {
@@ -150,6 +153,10 @@ impl UseList {
 impl MarkupRule for UseList {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
     }
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {

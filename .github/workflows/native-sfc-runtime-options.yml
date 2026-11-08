@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/native-sfc-runtime-options.yml
+      - .github/actions/setup-rust-script/**
+      - .github/actions/setup-wild-http-recovery/**
       - crates/vize_vitrine/src/napi/sfc.rs
       - crates/vize_vitrine/src/napi/sfc/**
       - crates/vize_atelier_core/src/codegen/**
@@ -51,6 +53,8 @@ jobs:
           path: qualification
           persist-credentials: false
           sparse-checkout: |
+            .github/actions/setup-rust-script
+            .github/actions/setup-wild-http-recovery
             tests/tooling/native-sfc-runtime-options.test.mjs
             tests/tooling/support/script-setup-default-expose.ts
             tests/tooling/support/setup-component-bracket-reference.ts
@@ -66,11 +70,11 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./qualification/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: sfc-runtime-options, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: ./qualification/.github/actions/setup-rust-script
       - run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Build the actual source-native package
         run: vp run --filter './npm/native' build:ci
@@ -113,7 +117,7 @@ jobs:
         with: { node-version-file: package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: sfc-runtime-options, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }

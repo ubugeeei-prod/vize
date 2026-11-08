@@ -43,6 +43,7 @@ const OPTIONAL_END_TAGS: &[&str] = &[
 ];
 
 #[derive(Default)]
+/// Implements the `vue/html-end-tags` lint rule.
 pub struct HtmlEndTags;
 
 struct Extent {

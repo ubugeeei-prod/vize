@@ -27,6 +27,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str = "`Vue.config.keyCodes` are deprecated.";
 
+/// Implements the `script/no-deprecated-vue-config-keycodes` lint rule.
 pub struct NoDeprecatedVueConfigKeycodes;
 
 impl ScriptRule for NoDeprecatedVueConfigKeycodes {

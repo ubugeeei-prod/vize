@@ -116,18 +116,22 @@ impl<'a> NativeSfcLintOwner<'a> {
         Ok(owner)
     }
 
+    /// Returns the complete original SFC source.
     #[must_use]
     pub fn source(&self) -> &'a str {
         self.descriptor.source()
     }
+    /// Returns the original descriptor observation.
     #[must_use]
     pub fn descriptor(&self) -> &DescriptorObservation<'a> {
         &self.descriptor
     }
+    /// Returns the original selected template component.
     #[must_use]
     pub fn template(&self) -> &NativeTemplateComponent<'a> {
         &self.template
     }
+    /// Returns the single retained parse of the setup program.
     #[must_use]
     pub fn syntax(&self) -> &NativeSyntax<'a> {
         &self.syntax
@@ -197,10 +201,12 @@ pub struct NativeSfcSetup<'o, 'a> {
 }
 
 impl<'o, 'a> NativeSfcSetup<'o, 'a> {
+    /// Returns the complete owner that authenticated this setup view.
     #[must_use]
     pub fn owner(&self) -> &'o NativeSfcLintOwner<'a> {
         self.owner
     }
+    /// Returns the checked semantic setup view.
     #[must_use]
     pub fn semantic(&self) -> &VueSetup<'o, 'o, 'o, 'a> {
         &self.setup

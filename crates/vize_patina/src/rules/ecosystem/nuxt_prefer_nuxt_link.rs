@@ -19,6 +19,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ecosystem/nuxt-prefer-nuxt-link` lint rule.
 pub struct NuxtPreferNuxtLink;
 
 impl Rule for NuxtPreferNuxtLink {
