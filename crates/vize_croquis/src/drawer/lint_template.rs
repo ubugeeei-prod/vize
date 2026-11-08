@@ -7,13 +7,13 @@
 
 use oxc_allocator::CloneIn;
 use vize_carton::FxHashMap;
-use vize_l0::{Allocator, Box, Span, Vec};
+use vize_l0::{Allocator, Box, Span, String, Vec};
 use vize_l1::markup::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{
     AttrValue, Attribute, Element, ElementClose, SurfaceChild, SurfaceTree, Token,
 };
-use vize_l1_to_l2::Lowered;
-use vize_l2::expr::ExprRef;
+use vize_l2::{expr::ExprRef, op::Region};
 use vize_relief::{
     AttributeNode, CommentNode, ConstantType, DirectiveNode, ElementNode, ElementType,
     ExpressionNode, InterpolationNode, PropNode, RetainedJsAst, RetainedJsAstKind, RootNode,
@@ -32,14 +32,23 @@ mod tests;
 #[derive(Clone, Copy)]
 pub struct LintTemplate<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
-    lowered: &'t Lowered<'a>,
+    allocator: &'a Allocator,
+    root: &'t Region<'a>,
 }
 
 impl<'t, 'a> LintTemplate<'t, 'a> {
     /// Pair the lossless L1 surface with the L2 lowering produced from it.
     #[must_use]
-    pub const fn new(surface: &'t SurfaceTree<'a>, lowered: &'t Lowered<'a>) -> Self {
-        Self { surface, lowered }
+    pub const fn new(
+        surface: &'t SurfaceTree<'a>,
+        allocator: &'a Allocator,
+        root: &'t Region<'a>,
+    ) -> Self {
+        Self {
+            surface,
+            allocator,
+            root,
+        }
     }
 
     /// Original template source shared by both stages.
@@ -69,7 +78,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     fn new(template: LintTemplate<'t, 'a>) -> Self {
         let mut expressions = std::vec::Vec::new();
         let mut elements = std::vec::Vec::new();
-        collect_region(&template.lowered.root, &mut expressions, &mut elements);
+        collect_region(template.root, &mut expressions, &mut elements);
         let mut expression_index = FxHashMap::default();
         expression_index.reserve(expressions.len());
         for expression in expressions {
@@ -84,7 +93,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             element_index.entry(identity.start).or_insert(identity);
         }
         Self {
-            allocator: template.lowered.allocator,
+            allocator: template.allocator,
             surface: template.surface,
             expressions: expression_index,
             elements: element_index,
@@ -322,7 +331,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let raw = value.content.text;
         if raw.contains('&') {
             self.allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(raw).as_str())
+                .alloc_str(decode_html_attribute_entities(raw).as_str())
         } else {
             raw
         }
@@ -362,6 +371,22 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         );
         offset as u32
     }
+}
+
+fn decode_html_attribute_entities(source: &str) -> String {
+    let mut decoded = String::with_capacity(source.len());
+    let mut rest = source;
+    while !rest.is_empty() {
+        if let Some((entity, consumed)) = decode_one(rest.as_bytes(), EntityContext::Attribute) {
+            entity.for_each(|character| decoded.push(character));
+            rest = &rest[consumed..];
+            continue;
+        }
+        let mut characters = rest.chars();
+        decoded.push(characters.next().expect("non-empty attribute remainder"));
+        rest = characters.as_str();
+    }
+    decoded
 }
 
 fn comment_body(text: &str) -> &str {
