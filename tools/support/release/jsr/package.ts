@@ -52,6 +52,7 @@ export interface PreparedJsrPackage extends JsrPackageDescriptor {
   readonly version: string;
 }
 
+/** Overrides the npm metadata reader for deterministic release tests. */
 export interface NpmPublicationOptions {
   readonly readMetadata?: (packageName: string, version: string) => Promise<unknown>;
 }
@@ -187,10 +188,14 @@ export function assertPublishedNpmVersion(
   }
 }
 
+/** Reads one exact, immutable npm package version from the public registry. */
 async function readPublicNpmMetadata(packageName: string, version: string): Promise<unknown> {
   const response = await fetch(
     `https://registry.npmjs.org/${encodeURIComponent(packageName)}/${version}`,
-    { headers: { accept: "application/json", "user-agent": "vize-release-jsr/1.0" } },
+    {
+      headers: { accept: "application/json", "user-agent": "vize-release-jsr/1.0" },
+      signal: AbortSignal.timeout(30_000),
+    },
   );
   if (!response.ok) {
     throw new Error(`npm metadata for ${packageName}@${version} returned HTTP ${response.status}`);
@@ -198,6 +203,7 @@ async function readPublicNpmMetadata(packageName: string, version: string): Prom
   return response.json();
 }
 
+/** Verifies the registry response for one exact npm package version. */
 async function verifyPublishedNpmVersion(
   packageName: string,
   version: string,

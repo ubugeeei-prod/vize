@@ -114,7 +114,18 @@ await test("manual backfills are explicit and verify npm before either publicati
     );
     assert.equal(normal?.if, "inputs.backfill_existing_npm_release != true");
     assert.equal(backfill?.if, "inputs.backfill_existing_npm_release == true");
-    assert.match(backfill?.run ?? "", /package\.ts prepare-backfill/);
+    if (jobName === "publish") {
+      assert.match(
+        backfill?.run ?? "",
+        /package\.ts prepare-backfill "\$RUNNER_TEMP\/jsr-package" "\$JSR_VERSION"$/,
+      );
+    } else {
+      assert.match(
+        backfill?.run ?? "",
+        /package\.ts prepare-backfill-one "\$RUNNER_TEMP\/jsr-package" "\$JSR_PACKAGE" "\$JSR_VERSION"$/,
+      );
+      assert.equal(backfill?.env?.JSR_PACKAGE, "${{ matrix.jsrName }}");
+    }
     assert.equal(backfill?.env?.JSR_VERSION, "${{ inputs.version }}");
   }
 });
