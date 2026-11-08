@@ -46,6 +46,7 @@ import {
   type FrescoNode,
 } from "./renderer.js";
 import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
+import { isStaticItemNode, isStaticNode } from "./staticNodes.js";
 
 export type {
   CompositionEvent,
@@ -241,14 +242,6 @@ function nodeText(node: FrescoNode): string {
       return String(placeholder);
   }
   return "";
-}
-
-function isStaticNode(node: FrescoNode): boolean {
-  return node.props.internal_static === true || node.props.internalStatic === true;
-}
-
-function isStaticItemNode(node: FrescoNode): boolean {
-  return node.props.internal_static_item === true || node.props.internalStaticItem === true;
 }
 
 function joinOutput(parts: string[], separator = "\n"): string {

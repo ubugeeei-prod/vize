@@ -3,16 +3,13 @@ import { computed } from "vue";
 
 import { badgeVariantColors, type BadgeProps } from "./display-primitive-types.js";
 
-const props = withDefaults(defineProps<BadgeProps>(), {
-  variant: "default",
-  border: false,
-});
+const { label, variant = "default", border = false, fg, bg } = defineProps<BadgeProps>();
 
 defineOptions({ name: "Badge" });
 
-const colors = computed(() => badgeVariantColors[props.variant]);
-const foreground = computed(() => props.fg ?? colors.value.fg);
-const background = computed(() => props.bg ?? colors.value.bg);
+const colors = computed(() => badgeVariantColors[variant]);
+const foreground = computed(() => fg ?? colors.value.fg);
+const background = computed(() => bg ?? colors.value.bg);
 const borderStyle = { paddingLeft: 1, paddingRight: 1 } as const;
 </script>
 

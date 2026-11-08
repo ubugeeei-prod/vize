@@ -30,6 +30,7 @@ import {
   type MountFrescoOptions,
 } from "./mount.js";
 import { treeToRenderNodes } from "../renderer.js";
+import { isStaticItemNode, isStaticNode } from "../staticNodes.js";
 import type { FrescoRenderNode } from "../protocol.js";
 
 export {
@@ -123,14 +124,6 @@ function nodeText(node: FrescoNode): string {
   if (typeof placeholder === "string" || typeof placeholder === "number")
     return String(placeholder);
   return "";
-}
-
-function isStaticNode(node: FrescoNode): boolean {
-  return node.props.internal_static === true || node.props.internalStatic === true;
-}
-
-function isStaticItemNode(node: FrescoNode): boolean {
-  return node.props.internal_static_item === true || node.props.internalStaticItem === true;
 }
 
 function joinOutput(parts: readonly string[], separator = "\n"): string {

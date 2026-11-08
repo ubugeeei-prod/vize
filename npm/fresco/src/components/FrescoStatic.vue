@@ -21,17 +21,20 @@ const containerStyle = computed(() => ({
 }));
 
 const itemStyle = { flexDirection: "column" } as const;
+const renderedItems = computed(() =>
+  items.map((item, index) => ({ item, index, key: `static-${index}` })),
+);
 </script>
 
 <template>
   <div :internal_static="true" :style="containerStyle">
     <div
-      v-for="(item, index) in items"
-      :key="index"
+      v-for="entry in renderedItems"
+      :key="entry.key"
       :internal_static_item="true"
       :style="itemStyle"
     >
-      <slot :item="item" :index="index" />
+      <slot :item="entry.item" :index="entry.index" />
     </div>
   </div>
 </template>
