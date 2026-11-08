@@ -30,6 +30,7 @@ runs:
           0:200) ;;
           22:500|22:502|22:503|22:504)
             curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
               --header 'Accept: application/octet-stream' \
               --header 'X-GitHub-Api-Version: 2022-11-28' \
               --output "$archive" \

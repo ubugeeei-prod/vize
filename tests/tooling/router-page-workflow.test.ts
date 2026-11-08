@@ -54,8 +54,8 @@ void test("page implementation, oracle and action dependencies trigger qualifica
 });
 
 void test("the page consumer installs the producer's pinned linker before source restoration", () => {
-  const linker = producer.jobs.cli.steps.find((step) =>
-    step.uses?.startsWith("wild-linker/action@"),
+  const linker = producer.jobs.cli.steps.find(
+    (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
   );
   assert.ok(linker?.uses);
   const expected = job.steps.find((step) => step.uses === linker.uses);

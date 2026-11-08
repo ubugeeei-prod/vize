@@ -62,7 +62,7 @@ function restoreBeforeRuntimeProvisioning(job: Job) {
 
 void test("full workspace shares the seeded compiler, linker, target path and ci profile", () => {
   const producer = seed.jobs["rust-pr-target-seed"];
-  for (const action of ["dtolnay/rust-toolchain@", "wild-linker/action@"])
+  for (const action of ["dtolnay/rust-toolchain@", "./.github/actions/setup-wild-http-recovery"])
     assert.deepEqual(use(workspace, action), use(producer, action));
   assert.deepEqual(
     use(workspace, "./.github/actions/setup-rust-sticky-cache")?.with,

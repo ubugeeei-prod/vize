@@ -94,7 +94,7 @@ void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => 
     Object.entries(jobs).flatMap(([name, job]) =>
       (job.steps ?? []).filter((s) => s.uses === action).map(() => name),
     );
-  assert.deepEqual(uses(pr.jobs, local), ["pr-playground-test", "pr-native-runtime"]);
+  assert.deepEqual(uses(pr.jobs, local).sort(), ["pr-native-runtime", "pr-playground-test"]);
   assert.deepEqual(uses(pr.jobs, upstream), []);
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(
