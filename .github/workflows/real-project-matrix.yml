@@ -364,7 +364,7 @@ jobs:
       - name: Publish shard summary
         if: ${{ always() }}
         shell: bash
-        run: rust-script tools/commands/ci/github/publish-real-project-shard-summary.rs
+        run: node tools/commands/ci/github/publish-real-project-shard-summary.ts
 
       - name: Upload shard report
         if: ${{ always() }}
