@@ -65,6 +65,17 @@ pub(super) struct RegisteredFile {
     pub(super) empty_module_exports: bool,
     pub(super) module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     pub(super) star_projection: Option<super::star_exports::StarProjection>,
+    /// Exact module edges already collected by the initial identity-script
+    /// rewrite parse. Reachability consumes this once instead of cloning and
+    /// parsing the same source again.
+    pub(super) dependency_syntax_facts: Option<DependencySyntaxFacts>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct DependencySyntaxFacts {
+    pub(super) source_bytes: usize,
+    pub(super) occurrences: Box<[(CompactString, crate::PackageResolutionMode)]>,
+    pub(super) references: Box<[CompactString]>,
 }
 
 pub(super) fn build_registered_file(
@@ -310,6 +321,7 @@ pub(super) fn build_vue_registered_file(
         empty_module_exports: empty_module_exports && module_sources_known,
         module_exports: module_exports.filter(|_| module_sources_known),
         original_content: Some(retain_source_content(source)),
+        dependency_syntax_facts: None,
     })
 }
 

@@ -14,6 +14,53 @@ fn case_dir(name: &str) -> PathBuf {
 }
 
 #[test]
+fn identity_script_reuses_initial_dependency_syntax_once() {
+    let root = case_dir("identity-syntax-reuse");
+    let src = root.join("src");
+    fs::create_dir_all(&src).unwrap();
+    let entry = src.join("entry.ts");
+    let dependency = src.join("dependency.ts");
+    let reference = src.join("types.d.ts");
+    fs::write(
+        &entry,
+        "/// <reference path=\"./types.d.ts\" />\nimport { value } from './dependency';\nexport { value };\n",
+    )
+    .unwrap();
+    fs::write(&dependency, "export const value = 1;\n").unwrap();
+    fs::write(&reference, "declare const named: string;\n").unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path(&entry).unwrap();
+    let syntax = project.source_artifacts[&entry]
+        .dependency_syntax_facts
+        .as_ref()
+        .expect("identity script keeps the initial parse facts until reachability");
+    assert_eq!(
+        syntax.occurrences.as_ref(),
+        [(
+            CompactString::from("./dependency"),
+            crate::PackageResolutionMode::Contextual
+        )]
+    );
+    assert_eq!(
+        syntax.references.as_ref(),
+        [CompactString::from("./types.d.ts")]
+    );
+
+    project.register_reachable_dependencies().unwrap();
+    assert!(
+        project.source_artifacts[&entry]
+            .dependency_syntax_facts
+            .is_none(),
+        "the one-shot facts must not become retained project memory"
+    );
+    let registered = project.registered_original_paths_sorted();
+    assert!(registered.contains(&dependency), "{registered:?}");
+    assert!(registered.contains(&reference), "{registered:?}");
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn a_published_package_alias_does_not_force_a_parse() {
     // #3898: the `vue` alias every Vue tsconfig carries is wildcard-free and
     // points into `node_modules`, so the walk always rejects it. Matching it
