@@ -67,6 +67,19 @@ impl CorsaProjectClient {
         config_path: Option<&Path>,
         reload: bool,
     ) -> Result<ProjectActivation, String> {
+        // The active project root is already normalized when it is installed.
+        // Most editor requests carry that exact retained path, so comparing its
+        // identity first avoids a real filesystem canonicalization per request.
+        if !reload
+            && self.project_root == project_root
+            && !explicit_config_changed(
+                self.explicit_project_config.as_deref(),
+                config_path,
+                project_root,
+            )
+        {
+            return Ok(ProjectActivation::Retained);
+        }
         let project_root = project_root
             .canonicalize()
             .unwrap_or_else(|_| project_root.to_path_buf());
@@ -161,6 +174,33 @@ fn explicit_config_changed(current: Option<&Path>, requested: Option<&Path>, roo
 mod tests {
     use super::{CorsaProjectClient, ProjectActivation, explicit_config_changed};
     use std::path::Path;
+
+    #[cfg(unix)]
+    #[test]
+    fn exact_retained_root_does_not_resolve_the_filesystem_again() {
+        let physical = tempfile::tempdir().unwrap();
+        let aliases = tempfile::tempdir().unwrap();
+        let alias = aliases.path().join("project");
+        std::os::unix::fs::symlink(physical.path(), &alias).unwrap();
+        let mut client = CorsaProjectClient::empty_for_test(alias.clone());
+        client
+            .document_texts
+            .insert("file:///mirror/current.ts".into(), "retained".into());
+
+        assert_eq!(
+            client
+                .activate_workspace_project_with_reload(&alias, None, false)
+                .unwrap(),
+            ProjectActivation::Retained,
+        );
+        assert_eq!(
+            client
+                .document_texts
+                .get("file:///mirror/current.ts")
+                .unwrap(),
+            "retained"
+        );
+    }
 
     #[test]
     fn explicit_selection_changes_are_observed_before_same_root_reuse() {
