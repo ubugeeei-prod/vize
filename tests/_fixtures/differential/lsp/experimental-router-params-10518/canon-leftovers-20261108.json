@@ -5,7 +5,7 @@
   "qualificationCredit": false,
   "sourceReceipt": {
     "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
-    "sha256": "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306"
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
   },
   "observation": {
     "run": 42458808867,

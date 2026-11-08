@@ -404,6 +404,7 @@ export function currentCallbackSourceEdits(
   };
   assert.equal(transition.file.path, componentHelperSource);
   const currentHelper = readSource(componentHelperSource);
+  const canonLeftoversPredecessor = beforeCanonLeftovers(componentHelperSource, currentHelper);
   const strictExtraKeysPredecessor = beforeStrictExtraKeys(currentHelper);
   const integratedHelper = beforeDiscriminatedJsxUnion(strictExtraKeysPredecessor);
   assert.equal(Buffer.byteLength(integratedHelper), transition.file.after.bytes);
@@ -419,6 +420,7 @@ export function currentCallbackSourceEdits(
     previousHelper,
     integratedHelper,
     strictExtraKeysPredecessor,
+    canonLeftoversPredecessor,
     currentHelper,
   ];
   assert.equal(new Set(helperVariants).size, helperVariants.length);

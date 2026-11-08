@@ -3,6 +3,10 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import {
+  assertEmitGateRejectionPaths,
+  emitGateRejections,
+} from "./support/canon-emit-props-gate-rejections.ts";
 import { emitGateOracle } from "./support/emit-props-gate-oracle.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 
@@ -456,32 +460,8 @@ void test("the immutable pre-marker oracle retains its original routes and union
 });
 
 void test("a successor refuses unknown producer bytes and altered historical context", () => {
-  const rejections = [
-    ["tests/_fixtures/tooling/emit-props-gate-11697.json", /immutable emit gate oracle context/u],
-    [`${declarations}emit-inference.d.ts.txt`, /generic specialization image/u],
-    [`${declarations}shared-emit-inference.d.ts.txt`, /generic specialization image/u],
-    [`${scope}component_events/generic_inference.rs`, /integrated static listener source/u],
-    [`${scope}component_events/emit_props_gate.rs`, /generic specialization image/u],
-    [
-      `${declarations}core-types.d.ts.txt`,
-      /selected emit gate producer: crates\/vize_canon\/src\/virtual_ts\/helpers\/declarations\/core-types\.d\.ts\.txt/u,
-    ],
-    [`${declarations}emit-overloads.d.ts.txt`, /canon leftovers source identity/u],
-    [`${declarations}emit-props.d.ts.txt`, /canon leftovers source identity/u],
-    [
-      "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
-      /canon leftovers source identity/u,
-    ],
-    [`${scope}component_events.rs`, /listener relation source/u],
-  ] as const;
-  assert.deepEqual(
-    rejections.map(([path]) => path),
-    [
-      "tests/_fixtures/tooling/emit-props-gate-11697.json",
-      ...Object.keys(oracle.current.sourceHashes),
-    ],
-  );
-  for (const [path, reason] of rejections) {
+  assertEmitGateRejectionPaths(oracle.current.sourceHashes);
+  for (const [path, reason] of emitGateRejections) {
     assert.throws(
       () => emitGateOracle((selected) => read(selected) + (selected === path ? " " : "")),
       reason,

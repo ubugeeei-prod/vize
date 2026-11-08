@@ -14,6 +14,7 @@ import {
 } from "./support/router-experimental-transport.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
@@ -118,39 +119,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   );
   assert.ok(strictTransition);
   assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
-  if (entry.file.includes(".canon-leftovers")) {
-    const canonLeftoversReceipt = fs.readFileSync(
-      path.join(custody, "canon-leftovers-20261108.json"),
-    );
-    assert.equal(
-      createHash("sha256").update(canonLeftoversReceipt).digest("hex"),
-      "3c798c9d6cc2ef02d1a59658ab43fe90631fd7a06f057b5aaeac1552bcae5dfd",
-    );
-    const canonLeftovers = JSON.parse(canonLeftoversReceipt.toString("utf8"));
-    assert.equal(canonLeftovers.schema, "vize.experimental-router-canon-leftovers-transition.v1");
-    assert.equal(canonLeftovers.issue, 11499);
-    assert.equal(canonLeftovers.pullRequest, 12162);
-    assert.equal(canonLeftovers.qualificationCredit, false);
-    const sourceReceipt = fs.readFileSync(path.join(root, canonLeftovers.sourceReceipt.path));
-    assert.equal(
-      createHash("sha256").update(sourceReceipt).digest("hex"),
-      canonLeftovers.sourceReceipt.sha256,
-    );
-    const canonTransition = canonLeftovers.entries.find(
-      (row: { current: { file: string } }) => row.current.file === entry.file,
-    );
-    assert.ok(canonTransition);
-    assert.equal(canonTransition.previous.file, transitionFile);
-    assert.equal(canonTransition.previous.sha256, strictTransition.currentSha256);
-    assert.equal(canonTransition.current.sha256, entry.sha256);
-    const previousBytes = fs.readFileSync(path.join(custody, canonTransition.previous.file));
-    assert.equal(previousBytes.length, canonTransition.previous.bytes);
-    assert.equal(
-      createHash("sha256").update(previousBytes).digest("hex"),
-      canonTransition.previous.sha256,
-    );
-    assert.equal(bytes.length, canonTransition.current.bytes);
-  } else {
+  if (!assertCanonLeftoversGolden(custody, root, entry, transitionFile, strictTransition, bytes)) {
     assert.equal(strictTransition.currentSha256, entry.sha256);
   }
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));

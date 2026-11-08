@@ -83,7 +83,7 @@ type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>
   readonly __vizeRawProps?: Props;
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
-}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+}, Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

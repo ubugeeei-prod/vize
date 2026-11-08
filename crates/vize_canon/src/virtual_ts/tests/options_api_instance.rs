@@ -83,11 +83,15 @@ fn test_options_api_template_bindings_use_default_instance_type() {
         "the public instance must retain Options API members without broadening normalized Vue members:\n{}",
         output.code
     );
-    assert!(
-        output.code.contains(
-            "Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase"
-        ),
-        "bound constructor props must not discard authored data and methods:\n{}",
+    assert_eq!(
+        output
+            .code
+            .matches(
+                "Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'> & $ComponentPublicBase"
+            )
+            .count(),
+        1,
+        "the bound constructor base must retain authored data and methods exactly once:\n{}",
         output.code
     );
 }
