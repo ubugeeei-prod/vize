@@ -9,26 +9,26 @@
   "successor": {
     "path": "successor-canon-leftovers-11499/projection-record.txt",
     "bytes": 2234,
-    "sha256": "757b2b000280b11abba437a844436248cd6b8c5491c30e1b539fe5802a97c5d2"
+    "sha256": "9c9e8db26c67dd0620f64843e7e3557b7df16a5e2f00447c8f401701c06aac3b"
   },
   "delta": {
     "canonGeneratedTextBytes": 427,
-    "contentMapperGeneratedTextBytes": 427,
+    "contentMapperGeneratedTextBytes": 484,
     "maestroGeneratedTextBytes": 427,
     "contentMapperMappings": 0,
     "contentMapperAuthoredHits": 0
   },
   "qualification": {
-    "head": "5f7f645e5db6ea06066c2643d5588917841f8c83",
-    "pullRequestHead": "8f44626d6d0f52b757e08e64fb316bd7a0747002",
-    "run": 42457886173,
+    "head": "7b965fd59abe99b7cf3b97b10bd7020ab5093195",
+    "pullRequestHead": "5c5df0eba811f1e44dc41610b3d94006b474be3d",
+    "run": 42479872336,
     "artifact": {
-      "id": 13607774965,
-      "name": "projection-import-geometry-default-5f7f645e5db6ea06066c2643d5588917841f8c83-1",
-      "packet": "packets/options-api-slots/canon/text.ts",
-      "sha256": "f6e9a2c5416e8756e8466d033f29800d86341dbd489a15ea55a4f1979c7aee16"
+      "id": 13616218811,
+      "name": "projection-import-geometry-default-7b965fd59abe99b7cf3b97b10bd7020ab5093195-1",
+      "snapshot": "pending-snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "sha256": "8a090e4986acebf7fef75cb98f9f0c7cd3b01d3f8b7c832c97b619872c7e4d66"
     }
   },
   "nativeAcceptanceCredit": false,
-  "scope": "Authenticated exact GitHub Actions packet for #11499 public-instance helper stabilization. The checked-in default snapshot already matched, so the artifact retains the changed generated packet. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+  "scope": "Authenticated exact GitHub Actions snapshot for #11499 public-instance helper stabilization after preserving authored instance members. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
 }

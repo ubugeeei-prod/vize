@@ -228,7 +228,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-canon-leftovers-11499/receipt.json"
         ),
-        "4f9b388d98a310a8497f6344e52e509cdd3c73231c33aae8426cade47b5718e0",
+        "3cdf5d0871e663d701a1b7977cd42c000e31a935558b6f67af05417cca040873",
         12162,
         strict_extra_keys_successor,
         canon_leftovers_successor,
@@ -448,7 +448,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "fixtures/public-instance-mixed-vue2/successor-canon-leftovers-11499/receipt.json"
             ),
-            "69cfc398542690cf81a04eb49ebb08fcd3617ac2b1355fac3d07f98505f3fec1",
+            "f485163bf0dcc8bc395fa97edf179375369f1c9c44c6b5f0285709b5d05c6e94",
             12162,
             strict_extra_keys_successor,
             canon_leftovers_successor,
