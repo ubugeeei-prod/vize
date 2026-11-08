@@ -2,11 +2,12 @@
 //!
 //! High-performance visitor with minimal allocations.
 
-use crate::context::{CallbackSite, ElementContext, LintContext};
+use crate::context::{
+    CallbackSite, ElementContext, LintContext, TemplateCommentDirectives, process_vize_directive,
+};
 use crate::rule::Rule;
-use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
-use vize_l0::{CompactString, cstr, profile};
-use vize_relief::{CommentNode, ElementNode, PropNode, TemplateChildNode};
+use vize_l0::{CompactString, profile};
+use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
 pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
 
@@ -27,6 +28,7 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
     /// template path) runs every rule with no extra work.
     keep_mask: Option<&'rules [bool]>,
     track_aria_hidden_inert: bool,
+    template_directives: Option<&'ctx TemplateCommentDirectives<'ctx, 'a>>,
 }
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
@@ -45,6 +47,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             run_exit_element_rules,
             keep_mask: None,
             track_aria_hidden_inert: rule_names.contains(&"a11y/no-aria-hidden-on-focusable"),
+            template_directives: None,
         }
     }
 
@@ -72,7 +75,16 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 *name == "a11y/no-aria-hidden-on-focusable"
                     && Self::rule_active(Some(keep_mask), index)
             }),
+            template_directives: None,
         }
+    }
+
+    pub(crate) fn with_template_directives(
+        mut self,
+        directives: &'ctx TemplateCommentDirectives<'ctx, 'a>,
+    ) -> Self {
+        self.template_directives = Some(directives);
+        self
     }
 
     /// Whether the rule at `index` is active under the current [`Self::keep_mask`].
@@ -122,86 +134,22 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.visit_for(for_node);
             }
             TemplateChildNode::Comment(comment) => {
-                if let Some(kind) = comment.directive {
+                if let Some(directives) = self.template_directives {
+                    if directives.contains(comment.loc.span.start) {
+                        self.ctx
+                            .record_callback_site(CallbackSite::Comment(comment.loc.span.start));
+                        directives.process_at(self.ctx, comment.loc.span.start);
+                    }
+                } else if let Some(kind) = comment.directive {
                     self.ctx
                         .record_callback_site(CallbackSite::Comment(comment.loc.span.start));
-                    self.process_vize_directive(comment, kind);
+                    process_vize_directive(self.ctx, comment.content, comment.loc.span, kind);
                 }
             }
             TemplateChildNode::Text(text) => {
                 self.ctx
                     .record_callback_site(CallbackSite::Text(text.loc.span.start));
             }
-            _ => {}
-        }
-    }
-
-    /// Process `@vize:` directives on comment nodes.
-    fn process_vize_directive(&mut self, comment: &CommentNode, kind: DirectiveKind) {
-        let line = self.ctx.offset_to_line(comment.loc.span.start);
-        let loc = &comment.loc;
-
-        match kind {
-            DirectiveKind::Todo => {
-                // Parse the payload from the comment content
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
-                    let msg = if d.payload.is_empty() {
-                        CompactString::from("TODO")
-                    } else {
-                        cstr!("TODO: {}", d.payload)
-                    };
-                    self.ctx.current_rule = "vize/todo";
-                    self.ctx.warn(msg, loc);
-                }
-            }
-            DirectiveKind::Fixme => {
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
-                    let msg = if d.payload.is_empty() {
-                        CompactString::from("FIXME")
-                    } else {
-                        cstr!("FIXME: {}", d.payload)
-                    };
-                    self.ctx.current_rule = "vize/fixme";
-                    self.ctx.error(msg, loc);
-                }
-            }
-            DirectiveKind::Expected => {
-                self.ctx.expect_error_next_line(line);
-            }
-            DirectiveKind::IgnoreStart => {
-                self.ctx.push_ignore_region(line);
-            }
-            DirectiveKind::IgnoreEnd => {
-                self.ctx.pop_ignore_region(line);
-            }
-            DirectiveKind::Level => {
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start)
-                    && let Some(severity) = parse_level_severity(&d.payload)
-                {
-                    self.ctx.set_severity_override_next_line(line, severity);
-                }
-            }
-            DirectiveKind::Deprecated => {
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start) {
-                    let msg = if d.payload.is_empty() {
-                        CompactString::from("Deprecated")
-                    } else {
-                        cstr!("Deprecated: {}", d.payload)
-                    };
-                    self.ctx.current_rule = "vize/deprecated";
-                    self.ctx.warn(msg, loc);
-                }
-            }
-            DirectiveKind::Forget => {
-                if let Some(d) = parse_vize_directive(comment.content, line, loc.span.start)
-                    && d.payload.is_empty()
-                {
-                    self.ctx.current_rule = "vize/forget";
-                    self.ctx
-                        .warn(CompactString::from("@vize:forget requires a reason"), loc);
-                }
-            }
-            // Docs, DevOnly, Unknown: no lint action needed
             _ => {}
         }
     }
