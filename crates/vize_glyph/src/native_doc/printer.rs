@@ -20,7 +20,9 @@ pub struct PrintOptions {
     /// Preferred maximum line width in columns.
     ///
     /// Each non-tab Unicode scalar advances one column. Authored tabs advance
-    /// to the next eight-column stop when the printer decides where to break.
+    /// to the next eight-column stop in broken layout. A group containing a
+    /// tab cannot be flattened: [`Doc::text`] gives it no flat width, so the
+    /// fit check rejects the group without measuring the tab.
     pub width: usize,
     /// Number of spaces emitted for one indentation level.
     pub indent_width: usize,
