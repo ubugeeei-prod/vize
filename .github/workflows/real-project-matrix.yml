@@ -178,7 +178,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          rust-script tools/commands/fixtures/glyph-corpus-waiver-audit.rs \
+          node tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts \
             --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
 
       - name: Setup Wild linker
