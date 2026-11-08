@@ -126,12 +126,15 @@ impl core::fmt::Debug for NativeVue2SfcObservation<'_> {
 }
 
 impl<'a> NativeVue2SfcObservation<'a> {
+    /// Return the complete authored SFC source retained by the descriptor.
     pub fn source(&self) -> &'a str {
         self.descriptor.source()
     }
+    /// Borrow the original Vue 2 descriptor observation and its evidence.
     pub fn descriptor(&self) -> &Vue2DescriptorObservation<'a> {
         &self.descriptor
     }
+    /// Return the native descriptor and print policies used.
     pub fn options(&self) -> NativeVue2SfcOptions {
         self.options
     }
@@ -139,12 +142,14 @@ impl<'a> NativeVue2SfcObservation<'a> {
     pub fn selected(&self) -> Result<Vue2TemplateView<'_, 'a>, Vue2DescriptorRefusal<'_>> {
         self.descriptor.selected()
     }
+    /// Return the typed refusal retained for an incomplete observation.
     pub fn refusal(&self) -> Option<NativeVue2SfcRefusal> {
         match &self.outcome {
             Outcome::Document(_) => None,
             Outcome::Refused(refusal) => Some(*refusal),
         }
     }
+    /// Borrow the complete document or return the retained refusal.
     pub fn document(&self) -> Result<&Doc<'a>, NativeVue2SfcRefusal> {
         match &self.outcome {
             Outcome::Document(document) => Ok(document),

@@ -35,10 +35,12 @@ pub use define_emits::{
 pub(crate) use define_model_metadata::{
     add_model_to_croquis, define_model_metadata, define_model_name, define_model_prop_option_spans,
 };
-pub(crate) use define_props_destructure::transform_destructured_props_with_edits;
 pub use define_props_destructure::{
     PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,
     process_props_destructure, transform_destructured_props,
+};
+pub(crate) use define_props_destructure::{
+    transform_define_expose_destructured_props, transform_destructured_props_with_edits,
 };
 pub use import_usage_check::{
     TemplateUsedIdentifiers, is_used_in_template, resolve_template_read_identifiers,

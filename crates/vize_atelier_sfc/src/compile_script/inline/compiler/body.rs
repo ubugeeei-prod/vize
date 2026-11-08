@@ -5,7 +5,10 @@ use vize_carton::{String, profile};
 use crate::compile_script::erasure::{Erasure, elide_generated_imports};
 use crate::compile_script::runtime_imports::RuntimeModule;
 use crate::module_map::{Runs, edit_runs, replace_traced};
-use crate::script::{ScriptCompileContext, transform_destructured_props_with_edits};
+use crate::script::{
+    ScriptCompileContext, transform_define_expose_destructured_props,
+    transform_destructured_props_with_edits,
+};
 use crate::types::{CssModuleMapping, SfcError};
 
 use super::super::super::props::WithDefaultsValues;
@@ -78,6 +81,7 @@ pub(super) fn compile_script_setup_inline_body(
             erasure.optional_expression(&mut defaults.runtime_expression);
         }
     }
+    transform_define_expose_destructured_props(&mut ctx)?;
     let has_css_vars = !css_vars.is_empty();
     let has_css_modules = !setup_css_module_names.is_empty();
     let needs_prop_type = false;

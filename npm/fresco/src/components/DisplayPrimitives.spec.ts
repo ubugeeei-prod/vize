@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { h, nextTick } from "vue";
+import { h, nextTick, ref } from "vue";
 import { test, vi } from "vitest";
 
 import { firstChild, mountComponent, mountFresco } from "../testing/index.js";
@@ -72,28 +72,58 @@ test("Badge renders both compact and bordered variants", () => {
   bordered.unmount();
 });
 
-test("Spinner advances custom frames and clears its timer on unmount", async () => {
+test("Spinner advances, follows a shorter frame set, and clears its timer", async () => {
   vi.useFakeTimers();
   const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
   try {
-    const mounted = mountComponent(Spinner, {
-      frames: ["a", "b"],
-      interval: 20,
-      label: "Loading",
-      fg: "cyan",
-    });
+    const frames = ref(["a", "b", "c"]);
+    const mounted = mountFresco(() =>
+      h(Spinner, {
+        frames: frames.value,
+        interval: 20,
+        label: "Loading",
+        fg: "cyan",
+      }),
+    );
 
     assert.equal(firstChild(mounted).props.text, "a Loading");
     assert.equal(firstChild(mounted).props.fg, "cyan");
-    await vi.advanceTimersByTimeAsync(20);
+    await vi.advanceTimersByTimeAsync(40);
     await nextTick();
-    assert.equal(firstChild(mounted).props.text, "b Loading");
+    assert.equal(firstChild(mounted).props.text, "c Loading");
+    frames.value = ["x"];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "x Loading");
     assert.equal(firstChild(mounted).props.fg, "cyan");
     mounted.unmount();
     assert.equal(clearIntervalSpy.mock.calls.length, 1);
   } finally {
     vi.clearAllTimers();
     clearIntervalSpy.mockRestore();
+    vi.useRealTimers();
+  }
+});
+
+test("Spinner keeps a valid frame when its frame set shrinks", async () => {
+  vi.useFakeTimers();
+  try {
+    const frames = ref(["a", "b", "c"]);
+    const mounted = mountFresco(() => h(Spinner, { frames: frames.value, interval: 20 }));
+
+    await vi.advanceTimersByTimeAsync(40);
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "c");
+
+    frames.value = ["x"];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "x");
+
+    frames.value = [];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "⠹");
+    mounted.unmount();
+  } finally {
+    vi.clearAllTimers();
     vi.useRealTimers();
   }
 });

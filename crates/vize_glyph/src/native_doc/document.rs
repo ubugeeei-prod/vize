@@ -39,6 +39,8 @@ impl<'a> Doc<'a> {
         }
     }
 
+    /// Create a break opportunity whose flat and broken forms are selected by
+    /// the nearest enclosing group.
     pub fn line(line: Line) -> Self {
         Self {
             kind: Kind::Line(line),

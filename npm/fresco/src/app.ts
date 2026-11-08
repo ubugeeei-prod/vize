@@ -439,7 +439,9 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     rejectExit = reject;
   });
 
-  const { createApp: createVueApp } = createRenderer();
+  const { createApp: createVueApp } = createRenderer(() => {
+    needsRender = true;
+  });
 
   async function mount() {
     if (mounted) return;
@@ -820,9 +822,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
           render();
           needsRender = false;
         }
-
-        // Schedule re-render (Vue reactivity will trigger updates)
-        needsRender = true;
       } catch (error) {
         if (onError) {
           onError(error as Error);

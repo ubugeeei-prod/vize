@@ -28,7 +28,7 @@ export function needsOriginalProjectChecks(config: ScopedConfig, args: readonly 
 }
 
 /** Native/project checks retain original paths; only Vize executes on the bridge. */
-export function splitProjectConfig(config: ScopedConfig) {
+export function splitProjectConfig(config: ScopedConfig, directoryTransport = false) {
   const visit = (value: Config, bridge: boolean, override = false): Config => ({
     ...value,
     ...(Array.isArray(value.extends)
@@ -45,6 +45,7 @@ export function splitProjectConfig(config: ScopedConfig) {
     ...(bridge
       ? {
           plugins: [],
+          ...(directoryTransport && value.ignorePatterns != null ? { ignorePatterns: [] } : {}),
           ...(!override
             ? {
                 categories: Object.fromEntries(
@@ -83,7 +84,10 @@ export function replaceConfigArgs(options: readonly string[], file: string): str
   return args;
 }
 
-export function bridgeProjectArgs(options: readonly string[]): string[] {
+export function bridgeProjectArgs(
+  options: readonly string[],
+  directoryTransport = false,
+): string[] {
   if (
     options.some(
       (arg) =>
@@ -113,9 +117,15 @@ export function bridgeProjectArgs(options: readonly string[]): string[] {
   const args: string[] = [];
   for (let index = 0; index < options.length; index += 1) {
     const arg = options[index];
-    if (arg === "--tsconfig") index += 1;
+    if (
+      arg === "--tsconfig" ||
+      (directoryTransport && ["--ignore-path", "--ignore-pattern"].includes(arg))
+    )
+      index += 1;
     else if (
       !["--import-plugin", "--type-aware", "--type-check"].includes(arg) &&
+      (!directoryTransport ||
+        (!arg.startsWith("--ignore-path=") && !arg.startsWith("--ignore-pattern="))) &&
       !arg.startsWith("--tsconfig=")
     )
       args.push(arg);
