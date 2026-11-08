@@ -63,7 +63,7 @@ await test("affected differential lanes share the full recipe and remain require
     assert.equal(job.env[key], producer.env[key], key);
   assert.equal(job.env.VIZE_TEST_REQUIRE_TSGO, "1");
   assert.equal(job.env.VIZE_TEST_DISABLE_TSGO, undefined);
-  for (const prefix of ["dtolnay/rust-toolchain@", "wild-linker/action@"]) {
+  for (const prefix of ["dtolnay/rust-toolchain@", "./.github/actions/setup-wild-http-recovery"]) {
     const original = producer.steps.find((step) => step.uses?.startsWith(prefix));
     const actual = job.steps.find((step) => step.uses?.startsWith(prefix));
     assert.equal(actual.uses, original.uses);

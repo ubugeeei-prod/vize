@@ -266,6 +266,13 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
 });
 
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
+  const recovery = readRepoFile(".github", "actions", "setup-wild-http-recovery", "action.yml");
+  assert.match(
+    recovery,
+    /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
+    "the recovery adapter must delegate unsupported contexts to the pinned upstream action",
+  );
+  assert.match(recovery, /default:\s*"0\.9\.0"/);
   for (const relativePath of [
     ".github/workflows/benchmark.yml",
     ".github/workflows/build-docs.yml",
@@ -280,10 +287,10 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     ".github/workflows/full-source-cli.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
-    assert.match(
-      file,
-      /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
-      `${relativePath} should install the pinned Wild linker action`,
+    assert.ok(
+      /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/.test(file) ||
+        /uses:\s*\.\/\.github\/actions\/setup-wild-http-recovery/.test(file),
+      `${relativePath} should install the pinned Wild linker action directly or through recovery`,
     );
     assert.match(file, /wild-version:\s*"0\.9\.0"/);
   }
