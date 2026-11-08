@@ -88,13 +88,9 @@ const TEMPLATES: &[&str] = &[
     r#"<div aria-hidden="true"><button>Hidden</button></div><button aria-hidden="true">Hidden</button><button>Visible</button>"#,
     r#"<video controls></video><video controls><track kind="captions"></video><audio></audio>"#,
     r#"<div @mouseover="f"></div><div @mouseover="f" @focus="f"></div><div @mouseout="f" @blur="f"></div>"#,
-    // recovered trees whose implied end tags close v-pre on both routes
-    "<p v-pre><div><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></div></p>",
-    "<select><option v-pre><option><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></option></option></select>",
-    "<select><optgroup v-pre><optgroup><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></optgroup></optgroup></select>",
+    // Table recovery keeps this v-pre subtree on both routes. The implied-end
+    // shapes where Relief and Vue differ have their own Vue-oracle test below.
     "<table><td v-pre><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></td></table>",
-    "<li v-pre><li><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></li></li>",
-    "<dt v-pre><dd><img src=\"a\"><img :alt=\"x\"><div @click=\"f\"></div><span @click=\"f\" @keydown=\"g\"></span><a href=\"/\"></a><label>x</label><div role=\"checkbox\"></div><div :aria-labeledby=\"x\"></div><div :role=\"&apos;buton&apos;\"></div><meta :role=\"x\"><label for=\"nope\">y</label></dd></dt>",
     // Truncated and unbalanced input, as an editor sends while typing.
     r#"<div @click="f""#,
     r#"<label for="x"><div role="checkbox""#,
@@ -210,8 +206,8 @@ fn existing_vapor_traversals_preserve_complete_diagnostics() {
     super::assert_traversal_parity(vapor_family, TEMPLATES, JSX);
 }
 
-/// An ignored nested form and a self-closing nested a keep their v-pre
-/// subtree, as Vue's compiler does. Relief's tree construction dropped it.
+/// Recovered and implied-end-tag owners keep their v-pre subtree, as Vue's
+/// compiler does. Relief's tree construction drops it in these shapes.
 #[test]
 fn recovered_v_pre_openers_follow_vue() {
     let rules = [
@@ -231,6 +227,17 @@ fn recovered_v_pre_openers_follow_vue() {
             "<form><form>{}</form></form>",
         ),
         ("<a v-pre><a />{}</a>", "<a><a />{}</a>"),
+        ("<p v-pre><div>{}</div></p>", "<p><div>{}</div></p>"),
+        (
+            "<select><option v-pre><option>{}</option></option></select>",
+            "<select><option><option>{}</option></option></select>",
+        ),
+        (
+            "<select><optgroup v-pre><optgroup>{}</optgroup></optgroup></select>",
+            "<select><optgroup><optgroup>{}</optgroup></optgroup></select>",
+        ),
+        ("<li v-pre><li>{}</li></li>", "<li><li>{}</li></li>"),
+        ("<dt v-pre><dd>{}</dd></dt>", "<dt><dd>{}</dd></dt>"),
     ] {
         for (shape, reported) in [(pre, Vec::new()), (control, rules.to_vec())] {
             let source = shape.replace("{}", body);

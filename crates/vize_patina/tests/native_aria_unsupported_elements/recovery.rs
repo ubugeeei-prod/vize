@@ -64,9 +64,9 @@ fn refused(source: &str, path: &[usize]) {
 
 #[test]
 fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
-    // `aria`: the registered route reports `:role`. Where the facade keeps
-    // the authored v-pre opener (an ignored nested form, a self-closing nested
-    // a), `:role` is a literal attribute, as in Vue's compiler.
+    // `aria`: the registered route reports `:role` only when it stays a live
+    // binding. Every recovered v-pre owner keeps it as a literal attribute,
+    // including across implied p, option and optgroup end tags, as Vue does.
     for (source, path, ignored, invalid_end, aria) in [
         (
             "<template><form><form v-pre><meta :role='x' /></form></form></template>",
@@ -80,7 +80,7 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
             &[1][..],
             None,
             Some("</p>"),
-            true,
+            false,
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
@@ -94,14 +94,14 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
             &[0, 1][..],
             None,
             Some("</option></select>"),
-            true,
+            false,
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
             &[0, 1][..],
             None,
             Some("</optgroup></select>"),
-            true,
+            false,
         ),
     ] {
         refused(source, path);
