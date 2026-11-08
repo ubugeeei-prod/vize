@@ -19,6 +19,7 @@ use crate::rules::vapor::{NoVueLifecycleEvents, PreferStaticClass};
 use crate::rules::vue::{
     NoBareStringsInTemplate, NoInvalidHtmlAttribute, NoMultiSpaces, NoStaticInlineStyles,
     NoTemplateTargetBlank, NoTextareaMustache, NoUnsandboxedIframe, PermittedContents,
+    RequireVForKey,
 };
 
 fn family() -> Vec<Box<dyn Rule>> {
@@ -92,6 +93,7 @@ fn remaining_facade_family() -> Vec<Box<dyn Rule>> {
         Box::new(NoTextareaMustache),
         Box::new(NoUnsandboxedIframe),
         Box::new(PermittedContents),
+        Box::new(RequireVForKey),
     ]
 }
 
@@ -102,6 +104,7 @@ const REMAINING_FACADE_TEMPLATES: &[&str] = &[
     r#"<a href="https://example.com" target="_blank">External</a>"#,
     r#"<textarea>{{ message }}</textarea><iframe src="/embed"></iframe>"#,
     r#"<p><div>browser repair</div></p>"#,
+    r#"<template v-for="item in items"><span>{{ item }}</span></template><li v-for="item in items">{{ item }}</li>"#,
 ];
 
 const REMAINING_FACADE_JSX: &[&str] = &[
@@ -111,6 +114,7 @@ const REMAINING_FACADE_JSX: &[&str] = &[
     r#"const A = () => <a href="https://example.com" target="_blank">External</a>;"#,
     r#"const A = () => <><textarea>{message}</textarea><iframe src="/embed" /></>;"#,
     r#"const A = () => <p><div>nested block</div></p>;"#,
+    r#"const A = () => items.map((item) => <li>{item}</li>);"#,
 ];
 
 const TEMPLATES: &[&str] = &[

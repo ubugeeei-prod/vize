@@ -31,6 +31,8 @@ pub enum MarkupTraversal {
     Elements,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
+    /// Visit authored attributes and list scopes without unrelated callbacks.
+    AttributesAndLists,
     /// All work happens in `enter_document`; no tree walk is needed.
     Document,
 }

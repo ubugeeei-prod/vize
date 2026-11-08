@@ -27,6 +27,7 @@ use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{
     MarkupBindingKind, MarkupContext, MarkupElement, MarkupList, MarkupNode, MarkupRule,
+    MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_allocator::Allocator;
@@ -245,6 +246,10 @@ fn is_static_key(key: &PropertyKey<'_>) -> bool {
 impl MarkupRule for RequireVForKey {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::AttributesAndLists
     }
 
     fn enter_attributes<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

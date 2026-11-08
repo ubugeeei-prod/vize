@@ -86,7 +86,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn list(&mut self, list: MarkupList<'a>) {
-        if self.traversal == MarkupTraversal::Full {
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::AttributesAndLists
+        ) {
             self.set_rule();
             self.rule.enter_list(self.ctx, &list);
         }
@@ -196,11 +199,17 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_element_inner(&mut self, element: MarkupElement<'a>) {
         self.ctx.push_element(element);
 
-        if self.traversal != MarkupTraversal::Bindings {
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::Elements
+        ) {
             self.set_rule();
             self.rule.enter_element(self.ctx, &element);
         }
-        if self.traversal == MarkupTraversal::Full {
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::AttributesAndLists
+        ) {
             self.set_rule();
             self.rule.enter_attributes(self.ctx, &element);
         }
