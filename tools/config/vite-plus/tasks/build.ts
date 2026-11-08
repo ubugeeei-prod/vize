@@ -1,12 +1,12 @@
 import { cacheInputs, packedPackages } from "../task-inputs.ts";
 import {
   defineTasks,
+  nodeCommand,
   nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
-  rustTool,
   rustToolFromVscodeExtension,
   runTask,
   runTasks,
@@ -92,19 +92,19 @@ export const buildTasks = defineTasks({
     input: ["editors/zed/**"],
   }),
   "package:zed-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && ${rustTool("editors/zed/assert-zed-package", "zed-vize-extension.tar.gz")}`,
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && ${nodeCommand("editors/zed/assert-zed-package", "zed-vize-extension.tar.gz")}`,
   ),
   "package:nvim-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && ${rustTool("editors/neovim/assert-nvim-package", "nvim-vize-extension.tar.gz")}`,
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && ${nodeCommand("editors/neovim/assert-nvim-package", "nvim-vize-extension.tar.gz")}`,
   ),
   "package:vim-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && ${rustTool("editors/vim/assert-vim-package", "vim-vize-extension.tar.gz")}`,
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && ${nodeCommand("editors/vim/assert-vim-package", "vim-vize-extension.tar.gz")}`,
   ),
   "package:helix-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && ${rustTool("editors/helix/assert-helix-package", "helix-vize-extension.tar.gz")}`,
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && ${nodeCommand("editors/helix/assert-helix-package", "helix-vize-extension.tar.gz")}`,
   ),
   "package:emacs-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && ${rustTool("editors/emacs/assert-emacs-package", "emacs-vize-extension.tar.gz")}`,
+    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && ${nodeCommand("editors/emacs/assert-emacs-package", "emacs-vize-extension.tar.gz")}`,
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
