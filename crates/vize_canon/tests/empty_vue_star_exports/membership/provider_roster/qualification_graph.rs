@@ -6,6 +6,16 @@ use dependency_ownership::{
     OWNER_MANIFESTS, OwnershipQualificationGraph, update as dependency_ownership_update,
     verify as verify_dependency_ownership_update,
 };
+mod create_fresco;
+use create_fresco::{
+    CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
+    update as create_fresco_update, verify as verify_create_fresco_update,
+};
+mod docs_metadata;
+use docs_metadata::{
+    DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
+    update as docs_metadata_update, verify as verify_docs_metadata_update,
+};
 mod fresco;
 use fresco::{
     FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
@@ -465,7 +475,15 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         workspace: &workspace,
         owners: &owners,
     };
-    verify_dependency_ownership_update(&fresco_update(), &predecessor_bytes, &update, &graph)?;
+    if verify_dependency_ownership_update(&fresco_update(), &predecessor_bytes, &update, &graph)
+        .is_ok()
+    {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(dependency_ownership::UPDATE))
+        .map_err(|_| "complete create-fresco qualification predecessor")?;
+    let update = docs_metadata::authorize(&update, &predecessor_bytes, lock, package, &workspace)?;
     Ok(Some(update))
 }
 
