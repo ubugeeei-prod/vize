@@ -55,7 +55,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/helper-image/target/ci"
           cp target/ci/vize target/ci/vize.differential-build.json \
             "$RUNNER_TEMP/helper-image/target/ci/"
-          test "$(stat -c %s "$RUNNER_TEMP/helper-image/target/ci/vize")" = 55080984
+          test "$(stat -c %s "$RUNNER_TEMP/helper-image/target/ci/vize")" = 56609048
           python3 - <<'PY'
           import hashlib, json, os, pathlib, re, subprocess
           root=pathlib.Path(os.environ['RUNNER_TEMP'])
@@ -69,7 +69,7 @@ jobs:
           assert build['sourceTree']=='9bcbc782b84264d04190281f8acdf386c49baf64'
           assert build['schema']=='vize.cold-source-build' and build['version']==1
           assert build['targetStartedAbsent'] is True and build['profile']=='release'
-          assert build['binaryBytes']==55080984
+          assert build['binaryBytes']==56609048
           assert build['cargo']['args']==recipe
           assert '\nrelease: 1.99.1\n' in build['cargo']['version']
           assert '\nrelease: 1.99.1\n' in build['rustc']
