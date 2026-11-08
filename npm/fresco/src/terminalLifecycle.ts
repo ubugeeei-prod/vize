@@ -11,6 +11,7 @@ function isCiEnvironment(env: NodeJS.ProcessEnv = process.env): boolean {
   return CI_ENVIRONMENT_KEYS.some((key) => isTruthyEnvironmentValue(env[key]));
 }
 
+/** Resolve whether an application can own the interactive terminal lifecycle. */
 export function detectInteractiveMode(
   interactive: boolean | undefined,
   stdout: NodeJS.WriteStream,
@@ -18,6 +19,7 @@ export function detectInteractiveMode(
   return interactive ?? (stdout.isTTY === true && !isCiEnvironment());
 }
 
+/** Initialize the native terminal modes required by an interactive application. */
 export function initializeTerminal(
   native: FrescoNative,
   options: { alternateScreen: boolean; mouse: boolean },
