@@ -32,6 +32,26 @@ export type { StaticProps } from "./display-primitive-types.js";
 export { default as Transform } from "./FrescoTransform.vue";
 export type { TransformProps } from "./text-utility-types.js";
 export { Code, type CodeProps } from "./Code.js";
+export { default as Markdown } from "./FrescoMarkdown.vue";
+export { defaultMarkdownRenderer, parseMarkdown, renderMarkdown } from "./markdown.js";
+export type {
+  MarkdownBlock,
+  MarkdownBlockProvider,
+  MarkdownCodeBlock,
+  MarkdownHeadingBlock,
+  MarkdownListBlock,
+  MarkdownListItem,
+  MarkdownParagraphBlock,
+  MarkdownProps,
+  MarkdownQuoteBlock,
+  MarkdownRenderer,
+  MarkdownRenderLine,
+  MarkdownRenderOptions,
+  MarkdownSpan,
+  MarkdownThematicBreakBlock,
+} from "./markdown-types.js";
+export { default as FrameBuffer } from "./FrescoFrameBuffer.vue";
+export type { FrameBufferProps } from "./frame-buffer-types.js";
 export { default as Link } from "./FrescoLink.vue";
 export type { LinkProps } from "./display-primitive-types.js";
 

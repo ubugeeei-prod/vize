@@ -11,6 +11,7 @@ import {
   shallowRef,
   type App as VueApp,
   type Component,
+  type Plugin,
   type Ref,
   type VNode,
 } from "vue";
@@ -47,6 +48,7 @@ import {
 } from "./renderer.js";
 import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
 import { isStaticItemNode, isStaticNode } from "./staticNodes.js";
+import { detectInteractiveMode, initializeTerminal } from "./terminalLifecycle.js";
 
 export type {
   CompositionEvent,
@@ -143,6 +145,8 @@ export interface RenderMetrics {
  * Fresco App instance
  */
 export interface App {
+  /** Install a Vue plugin before the first successful mount. */
+  use<Options extends unknown[]>(plugin: Plugin<Options>, ...options: Options): App;
   /** Mount the app */
   mount(): Promise<void>;
   /** Unmount the app */
@@ -373,28 +377,12 @@ function updateAppSize(context: UseAppReturn | null, width: number, height: numb
   context.height.value = height;
 }
 
-const CI_ENVIRONMENT_KEYS = ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "RUN_ID"] as const;
-
-function isTruthyEnvironmentValue(value: string | undefined): boolean {
-  if (!value) return false;
-  return !["0", "false", "no"].includes(value.toLowerCase());
-}
-
-function isCiEnvironment(env: NodeJS.ProcessEnv = process.env): boolean {
-  return CI_ENVIRONMENT_KEYS.some((key) => isTruthyEnvironmentValue(env[key]));
-}
-
-function detectInteractiveMode(options: AppOptions): boolean {
-  const stdout = options.stdout ?? process.stdout;
-  return options.interactive ?? (stdout.isTTY === true && !isCiEnvironment());
-}
-
 /**
  * Create a Fresco TUI app
  */
 export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App {
   const { mouse = false, exitOnCtrlC = true, onError } = options;
-  const interactive = detectInteractiveMode(options);
+  const interactive = detectInteractiveMode(options.interactive, options.stdout ?? process.stdout);
   const screenReaderEnabled = ref(
     options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
   );
@@ -419,6 +407,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
   let mounted = false;
+  let mounting = false;
+  let hasMountedSuccessfully = false;
   let running = false;
   let needsRender = true;
   let appContext: UseAppReturn | null = null;
@@ -430,6 +420,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   const renderedStaticItems = new Map<number, number>();
   let cursorPosition: CursorPosition | undefined;
   let hasCursorOverride = false;
+  let instance: App;
+  const pluginInstallers: Array<(app: VueApp) => void> = [];
 
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
@@ -444,81 +436,80 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   });
 
   async function mount() {
-    if (mounted) return;
+    if (mounted || mounting) return;
+    mounting = true;
 
-    const n = interactive ? await loadNative() : null;
-
-    if (n) {
-      if (typeof n.initTerminalWithOptions === "function") {
-        n.initTerminalWithOptions({
-          alternateScreen: options.alternateScreen === true,
-          bracketedPaste: true,
-          hideCursor: true,
-          mouse,
-          rawMode: true,
-        });
-      } else if (mouse) {
-        n.initTerminalWithMouse();
-      } else {
-        n.initTerminal();
-      }
-
-      n.enableIme?.();
-
-      // Initialize layout engine
-      n.initLayout();
-    }
-
-    // Create Vue app with custom renderer
-    const app = createVueApp(componentFromRoot(rootComponent));
-
-    const info = n?.getTerminalInfo() ?? {
-      width: streamsContext.stdout.columns ?? 80,
-      height: streamsContext.stdout.rows ?? 24,
-    };
-    appContext = createAppContext({
-      width: info.width,
-      height: info.height,
-      exit: (value) => {
-        void unmount(value);
-      },
-      render,
-      clear,
-      waitUntilRenderFlush,
-      stdout: streamsContext.stdout,
-    });
-    focusManager = createFocusManager();
-    app.provide(APP_KEY, appContext);
-    app.provide(FOCUS_KEY, focusManager);
-    app.provide(SCREEN_READER_KEY, screenReaderEnabled);
-    app.provide(STREAMS_KEY, streamsContext);
-    app.provide(
-      CURSOR_KEY,
-      createCursorContext((position) => {
-        hasCursorOverride = true;
-        cursorPosition = position;
-        needsRender = true;
-      }),
-    );
-
-    // Create a root element for mounting
-    rootElement = createRootElement();
-
-    patchConsoleMethods();
     try {
-      app.mount(rootElement);
-    } catch (error) {
-      restoreConsoleMethods();
-      throw error;
+      // Plugins run before terminal initialization so installation failures
+      // cannot leave raw mode, IME, or cursor state enabled.
+      const app = createVueApp(componentFromRoot(rootComponent));
+      for (const install of pluginInstallers) install(app);
+
+      const n = interactive ? await loadNative() : null;
+
+      if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
+
+      const info = n?.getTerminalInfo() ?? {
+        width: streamsContext.stdout.columns ?? 80,
+        height: streamsContext.stdout.rows ?? 24,
+      };
+      appContext = createAppContext({
+        width: info.width,
+        height: info.height,
+        exit: (value) => {
+          void unmount(value);
+        },
+        render,
+        clear,
+        waitUntilRenderFlush,
+        stdout: streamsContext.stdout,
+      });
+      focusManager = createFocusManager();
+      app.provide(APP_KEY, appContext);
+      app.provide(FOCUS_KEY, focusManager);
+      app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+      app.provide(STREAMS_KEY, streamsContext);
+      app.provide(
+        CURSOR_KEY,
+        createCursorContext((position) => {
+          hasCursorOverride = true;
+          cursorPosition = position;
+          needsRender = true;
+        }),
+      );
+
+      // Create a root element for mounting
+      rootElement = createRootElement();
+
+      patchConsoleMethods();
+      try {
+        app.mount(rootElement);
+      } catch (error) {
+        restoreConsoleMethods();
+        throw error;
+      }
+      vueApp = app;
+
+      mounted = true;
+      hasMountedSuccessfully = true;
+      running = true;
+      needsRender = true;
+
+      // Start event loop
+      void eventLoop();
+    } finally {
+      mounting = false;
     }
-    vueApp = app;
+  }
 
-    mounted = true;
-    running = true;
-    needsRender = true;
-
-    // Start event loop
-    void eventLoop();
+  function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
+    if (mounting || hasMountedSuccessfully) {
+      throw new Error("Fresco plugins must be installed before the first successful mount");
+    }
+    pluginInstallers.push((app) => {
+      app.use(plugin, ...pluginOptions);
+    });
+    return instance;
   }
 
   async function unmount(errorOrResult?: unknown) {
@@ -833,7 +824,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     }
   }
 
-  return {
+  instance = {
+    use,
     mount,
     unmount,
     waitUntilExit,
@@ -842,6 +834,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     clear,
     getTerminalInfo,
   };
+  return instance;
 }
 
 /**

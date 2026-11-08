@@ -10,6 +10,8 @@ import { h } from "vue";
 
 import Badge from "./FrescoBadge.vue";
 import { Box, type BoxProps } from "./Box.js";
+import FrameBuffer from "./FrescoFrameBuffer.vue";
+import type { FrameBufferProps } from "./frame-buffer-types.js";
 import type {
   BadgeProps,
   LinkProps,
@@ -17,6 +19,7 @@ import type {
   StaticProps,
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
+import Markdown from "./FrescoMarkdown.vue";
 import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
@@ -45,6 +48,7 @@ import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
+import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -102,6 +106,15 @@ export const textAcceptsDocumentedProps: TextProps = {
 
 export const wrapAcceptsBooleans: TextWrap = true;
 
+export const frameBufferAcceptsExactRows: FrameBufferProps = {
+  lines: ["first", "second"],
+  style: { width: 20, overflow: "hidden" },
+  fg: "cyan",
+};
+
+// @ts-expect-error - frame-buffer rows are text, not arbitrary payloads.
+export const frameBufferRejectsNumericRows: FrameBufferProps = { lines: [1] };
+
 // @ts-expect-error - "ellipsis" is not a TextWrap mode
 export const textRejectsUnknownWrap: TextProps = { wrap: "ellipsis" };
 
@@ -110,6 +123,7 @@ export const textRejectsNumberContent: TextProps = { content: 42 };
 
 export const textInputAcceptsDocumentedProps: TextInputProps = {
   modelValue: "value",
+  defaultValue: "fallback",
   placeholder: "type...",
   focus: true,
   focused: true,
@@ -118,9 +132,14 @@ export const textInputAcceptsDocumentedProps: TextInputProps = {
   width: 20,
   fg: "white",
   bg: "black",
+  validate: (value: string) => (value ? true : "required"),
   "onUpdate:modelValue": (value: string) => value,
   onSubmit: (value: string) => value,
   onCancel: () => {},
+  onSelectionChange: (start: number, end: number) => start + end,
+  onCopy: (value: string) => value,
+  onCut: (value: string) => value,
+  onValidationChange: (valid: boolean, message?: string) => `${valid}:${message ?? ""}`,
 };
 
 // @ts-expect-error - modelValue is a string, not a number
@@ -137,6 +156,19 @@ export const linkAcceptsDocumentedProps: LinkProps = {
   url: "https://example.test",
   showUrl: true,
 };
+export const markdownProvider: MarkdownBlockProvider = {
+  render: (block) =>
+    block.type === "thematic-break"
+      ? [{ key: "rule", spans: [{ text: "***", dim: true }] }]
+      : undefined,
+};
+export const markdownAcceptsDocumentedProps: MarkdownProps = {
+  source: "# Hello",
+  headingFg: "cyan",
+  providers: [markdownProvider],
+};
+// @ts-expect-error - Markdown source is text, not an array of rows.
+export const markdownRejectsArraySource: MarkdownProps = { source: ["hello"] };
 export const badgeAcceptsDocumentedProps: BadgeProps = { label: "Ready", variant: "success" };
 export const spinnerAcceptsDocumentedProps: SpinnerProps = {
   type: "line",
@@ -205,7 +237,9 @@ export function componentsRenderWithTypedProps() {
     h(Transform, { transform: (line: string, index: number) => `${index}:${line}` }),
     h(Static, { items: ["done"] }),
     h(Link, { text: "Docs", showUrl: false }),
+    h(Markdown, { source: "# Docs", linkFg: "cyan" }),
     h(Badge, { label: "Ready", variant: "success" }),
+    h(FrameBuffer, { lines: ["first", "second"], fg: "cyan" }),
     h(Spinner, { type: "line", label: "Loading" }),
     h(Divider, { title: "Summary", direction: "horizontal" }),
     h(Stack, { direction: "horizontal", gap: 2, align: "center" }),

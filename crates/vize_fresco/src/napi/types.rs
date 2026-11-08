@@ -111,7 +111,7 @@ pub struct RenderNodeNapi {
     /// Node ID
     pub id: i64,
     /// Node type accepted by the native renderer.
-    #[napi(ts_type = "\"root\" | \"box\" | \"text\" | \"input\"")]
+    #[napi(ts_type = "\"root\" | \"box\" | \"text\" | \"input\" | \"raw\"")]
     pub node_type: String,
     /// Text content (for text nodes)
     pub text: Option<String>,
@@ -128,11 +128,19 @@ pub struct RenderNodeNapi {
     pub focused: Option<bool>,
     /// Cursor position in input
     pub cursor: Option<i64>,
+    /// Inclusive grapheme index at the start of the input selection.
+    #[napi(js_name = "selectionStart")]
+    pub selection_start: Option<i64>,
+    /// Exclusive grapheme index at the end of the input selection.
+    #[napi(js_name = "selectionEnd")]
+    pub selection_end: Option<i64>,
     /// Whether to mask input (password)
     pub mask: Option<bool>,
     /// Mask character
     #[napi(js_name = "maskChar")]
     pub mask_char: Option<String>,
+    /// Exact rows for raw frame-buffer nodes.
+    pub lines: Option<Vec<String>>,
     /// Flex style
     pub style: Option<FlexStyleNapi>,
     /// Visual appearance

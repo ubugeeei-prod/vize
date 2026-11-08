@@ -147,6 +147,10 @@ pub struct InputContent {
     pub placeholder: CompactString,
     /// Cursor position (grapheme index)
     pub cursor: usize,
+    /// Inclusive grapheme index at the start of the active selection.
+    pub selection_start: usize,
+    /// Exclusive grapheme index at the end of the active selection.
+    pub selection_end: usize,
     /// Whether input is focused
     pub focused: bool,
     /// Whether to mask input (password mode)
