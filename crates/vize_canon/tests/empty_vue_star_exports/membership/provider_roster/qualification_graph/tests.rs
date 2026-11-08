@@ -37,7 +37,7 @@ mod dependency_ownership_successor {
     fn historical_lock() -> Vec<u8> {
         let lock = fs::read_to_string(support::repository().join("pnpm-lock.yaml")).unwrap();
         let start = lock.find("  npm/create-fresco:\n").unwrap();
-        let end = start + lock[start..].find("\n  npm/devtools:\n").unwrap();
+        let end = start + lock[start..].find("\n  npm/devtools:\n").unwrap() + 1;
         let mut predecessor = lock;
         predecessor.replace_range(start..end, "");
         predecessor.into_bytes()
