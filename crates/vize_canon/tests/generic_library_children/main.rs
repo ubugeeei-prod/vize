@@ -184,3 +184,49 @@ const model = defineModel<TBaz>({ required: true });
         ]
     );
 }
+
+/// #11628: vize's checker declares vue-tsc's props fallback only where vue-tsc
+/// would, so `checkUnknownProps` rejects an unknown attribute on a vue-tsc
+/// generic library component exactly as vue-tsc does.
+#[test]
+fn checked_unknown_props_reach_generic_library_children() {
+    let pin = r#"<script setup lang="ts">
+import { PinRoot } from './library'
+</script>
+<template><PinRoot type="text" custom-attr="x" /></template>"#;
+    let config = |check: bool| {
+        format!(
+            r#"{{
+  "compilerOptions": {{ "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "noEmit": true }},
+  "vueCompilerOptions": {{ "checkUnknownProps": {check} }},
+  "include": ["src/**/*"]
+}}"#
+        )
+    };
+    let unknown = "src/Pin.vue(4,32): error TS2353: Object literal may only specify known properties, and '\"customAttr\"' does not exist in type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { type?: \"text\" | undefined; modelValue?: string[] | null | undefined; mask?: boolean | undefined; }'.";
+    let strict = config(true);
+    assert_eq!(
+        project::check(&[
+            ("tsconfig.json", &strict),
+            ("src/library.ts", LIBRARY),
+            ("src/Pin.vue", pin)
+        ]),
+        [unknown]
+    );
+    let opted = format!("<!-- @checkUnknownProps true -->\n{pin}");
+    let opted_unknown = unknown.replace("(4,32)", "(5,32)");
+    assert_eq!(
+        project::check(&[("src/library.ts", LIBRARY), ("src/Pin.vue", &opted)]),
+        [opted_unknown.as_str()]
+    );
+    // vue-tsc's default leaves the attribute to fall through.
+    let open = config(false);
+    assert_eq!(
+        project::check(&[
+            ("tsconfig.json", &open),
+            ("src/library.ts", LIBRARY),
+            ("src/Pin.vue", pin)
+        ]),
+        [] as [String; 0]
+    );
+}

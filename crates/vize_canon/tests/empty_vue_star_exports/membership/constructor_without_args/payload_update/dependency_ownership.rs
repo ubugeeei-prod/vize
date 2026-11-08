@@ -18,6 +18,7 @@ fn authenticate(text: &str, bytes: usize, sha: &str) {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::props_fallback_segment::source_before(path, current);
     if path != MANIFEST {
         return current;
     }
