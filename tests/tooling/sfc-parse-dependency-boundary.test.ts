@@ -1,23 +1,29 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("the parse-only SFC facade excludes compiler dependencies transitively", () => {
   const result = spawnSync(
     "cargo",
     [
       "tree",
+      "--locked",
       "--package",
       "vize_croquis",
       "--edges",
       "normal",
+      "--no-default-features",
       "--prefix",
       "none",
       "--format",
-      "{lib}",
-      "--locked",
+      "{p}",
     ],
     {
+      cwd: root,
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
     },
@@ -27,8 +33,13 @@ test("the parse-only SFC facade excludes compiler dependencies transitively", ()
   const dependencyNames = new Set(
     result.stdout
       .trim()
-      .split(/\r?\n/u)
-      .map((line) => line.replace(/ \(\*\)$/u, "")),
+      .split("\n")
+      .map((line) => line.split(" ", 1)[0]),
+  );
+  assert.equal(
+    dependencyNames.has("vize_l1_to_l2"),
+    true,
+    "the isolated graph must retain the production L1-to-L2 dependency",
   );
   for (const forbidden of [
     "lightningcss",
