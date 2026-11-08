@@ -69,6 +69,21 @@ function toggleCapability(capabilityId: string): void {
 </template>
 
 <style scoped>
+:global(:root) {
+  --builder-accent: #18794e;
+  --builder-accent-strong: #145c3c;
+  --builder-background: #eef8f2;
+  --builder-border: #c8ddd0;
+  --builder-border-hover: #78b990;
+  --builder-card: #fff;
+  --builder-card-border: #dce8e0;
+  --builder-muted: #65736b;
+  --builder-shadow: rgb(28 79 51 / 12%);
+  --builder-status: #e7f7ed;
+  --builder-summary: #52635a;
+  --builder-text: #17231d;
+}
+
 :global(*) {
   box-sizing: border-box;
 }
@@ -76,8 +91,8 @@ function toggleCapability(capabilityId: string): void {
 :global(body) {
   margin: 0;
   min-width: 20rem;
-  color: #17231d;
-  background: #eef8f2;
+  color: var(--builder-text);
+  background: var(--builder-background);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -85,15 +100,15 @@ function toggleCapability(capabilityId: string): void {
   width: min(44rem, calc(100% - 2rem));
   margin: 4rem auto;
   padding: clamp(1.5rem, 4vw, 3rem);
-  border: 1px solid #c8ddd0;
+  border: 1px solid var(--builder-border);
   border-radius: 1.5rem;
-  background: #fff;
-  box-shadow: 0 1.5rem 4rem rgb(28 79 51 / 12%);
+  background: var(--builder-card);
+  box-shadow: 0 1.5rem 4rem var(--builder-shadow);
 }
 
 .eyebrow {
   margin: 0;
-  color: #18794e;
+  color: var(--builder-accent);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -109,7 +124,7 @@ h1 {
 .summary {
   max-width: 38rem;
   margin: 1.25rem 0 2rem;
-  color: #52635a;
+  color: var(--builder-summary);
   line-height: 1.7;
 }
 
@@ -119,8 +134,8 @@ h1 {
   align-items: baseline;
   padding: 0.8rem 1rem;
   border-radius: 0.8rem;
-  color: #145c3c;
-  background: #e7f7ed;
+  color: var(--builder-accent-strong);
+  background: var(--builder-status);
 }
 
 .capabilities {
@@ -136,20 +151,20 @@ h1 {
   gap: 0.9rem;
   align-items: flex-start;
   padding: 1rem;
-  border: 1px solid #dce8e0;
+  border: 1px solid var(--builder-card-border);
   border-radius: 0.9rem;
   cursor: pointer;
 }
 
 .capabilities label:hover {
-  border-color: #78b990;
+  border-color: var(--builder-border-hover);
 }
 
 .capabilities input {
   width: 1.1rem;
   height: 1.1rem;
   margin-top: 0.15rem;
-  accent-color: #18794e;
+  accent-color: var(--builder-accent);
 }
 
 .capabilities span {
@@ -158,7 +173,7 @@ h1 {
 }
 
 .capabilities small {
-  color: #65736b;
+  color: var(--builder-muted);
   line-height: 1.5;
 }
 </style>
