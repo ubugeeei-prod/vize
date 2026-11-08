@@ -3,7 +3,7 @@
   "version": 1,
   "compiler": {
     "name": "@vitejs/plugin-vue",
-    "version": "6.0.7",
+    "version": "6.0.10",
     "vue": "3.5.35"
   },
   "fixtures": [

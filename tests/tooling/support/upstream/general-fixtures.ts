@@ -13,7 +13,7 @@ export function prepareGeneralFixtures(directory: string): void {
   const vue = path.dirname(require.resolve("vue-language-tools-fixture-vue/package.json"));
   const helpers = path.dirname(require.resolve("vue-component-type-helpers/package.json"));
   assertVersion(vue, "3.6.0-rc.6");
-  assertVersion(helpers, "3.3.11");
+  assertVersion(helpers, "3.3.14");
   for (const [name, target] of [
     ["vue", vue],
     ["@vue", path.join(path.dirname(vue), "@vue")],

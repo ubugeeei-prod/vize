@@ -84,10 +84,10 @@ try {
   // This filtered package job owns the Nuxt reference stack, not benchmark
   // dependencies. Authenticate the same independent official casing source.
   const pluginRoot = dirname(oracle.resolve("eslint-plugin-vue/package.json"));
-  assert.equal(asRecord(oracle("eslint-plugin-vue/package.json")).version, "10.9.2");
+  assert.equal(asRecord(oracle("eslint-plugin-vue/package.json")).version, "10.12.0");
   const casingPath = join(pluginRoot, "dist/utils/casing.js");
   const casingSha256 = hash(readFileSync(casingPath));
-  assert.equal(casingSha256, "911df4eed3c7d75afac7c6df4a13527d104afdbbd43821993c2b4ece6108f44c");
+  assert.equal(casingSha256, "08b8a9bb3b8204ece19572bd0a71dcfa0d439f523887a859ea218d32f72e1e5e");
   const converter = asRecord(oracle(casingPath)).kebabCase;
   assert.equal(typeof converter, "function");
   const kebab = converter as (name: string) => string;

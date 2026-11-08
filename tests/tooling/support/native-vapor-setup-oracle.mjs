@@ -16,7 +16,7 @@ const { renderToString } = fromVue("vue/server-renderer");
 
 export const pluginVersion = fromUi("@vitejs/plugin-vue/package.json").version;
 export const compilerVersion = compiler.version;
-assert.equal(pluginVersion, "6.0.7");
+assert.equal(pluginVersion, "6.0.10");
 assert.equal(compilerVersion, "3.6.0-rc.9");
 assert.equal(vue.version, compilerVersion);
 assert.equal(fromVue("@vue/server-renderer/package.json").version, compilerVersion);
