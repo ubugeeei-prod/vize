@@ -146,8 +146,8 @@ function scriptClosure(roots: string[]) {
     if (moduleRoots.has(script)) {
       const modules = JSON.parse(
         execFileSync(
-          "rust-script",
-          [join(root, "tools/commands/ci/verify-tool-layout.rs"), "--module-closure", script],
+          process.execPath,
+          [join(root, "tools/commands/ci/verify-tool-layout.ts"), "--module-closure", script],
           { cwd: root, encoding: "utf8" },
         ),
       ) as string[];

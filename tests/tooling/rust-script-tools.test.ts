@@ -8,22 +8,25 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-test("tool command surface is Rust Script first", () => {
-  const source = readRepoFile("tools/commands/ci/verify-tool-layout.rs");
-  assert.match(source, /rust-script tools: verified/);
-  assert.match(source, /legacy command runner source must not come back/);
-  assert.match(source, /tool host runner source must not come back/);
-  assert.match(source, /collect_javascript_tools/);
-  assert.match(source, /must be ported to Rust Script/);
+test("tool command surface prefers stable Node and bounds the Rust migration", () => {
+  const source = readRepoFile("tools/commands/ci/verify-tool-layout.ts");
+  assert.match(source, /stable Node commands/);
+  assert.match(source, /Rust Script command budget grew/);
+  assert.match(source, /legacy_command\.rs/);
+  assert.match(source, /tool_host\.rs/);
 
-  const commands = collectFiles(path.join(root, "tools", "commands")).filter(
+  const rustCommands = collectFiles(path.join(root, "tools", "commands")).filter(
     (file) =>
       file.endsWith(".rs") &&
       fs.readFileSync(file, "utf8").startsWith("#!/usr/bin/env rust-script\n"),
   );
-  assert.ok(commands.length >= 40, "expected Rust Script command surface");
+  const nodeCommands = collectFiles(path.join(root, "tools", "commands")).filter((file) =>
+    /\.(?:[cm]?js|ts)$/u.test(file),
+  );
+  assert.ok(nodeCommands.length >= 18, "expected a stable Node command surface");
+  assert.ok(rustCommands.length <= 59, "the Rust Script migration budget cannot grow");
 
-  for (const command of commands) {
+  for (const command of rustCommands) {
     const relative = normalize(path.relative(root, command));
     const text = fs.readFileSync(command, "utf8");
     assert.match(text, /^#!\/usr\/bin\/env rust-script\n/, relative);
@@ -36,7 +39,7 @@ test("tool command surface is Rust Script first", () => {
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   assert.equal(
     result.stdout.trim(),
-    `rust-script tools: verified ${commands.length} Rust Script commands`,
+    `tool commands: verified ${nodeCommands.length} stable Node commands; ${rustCommands.length} Rust Script commands remain`,
   );
 });
 
@@ -45,6 +48,7 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
   const commands = path.join(fixture, "tools/commands");
   try {
     fs.mkdirSync(commands, { recursive: true });
+    fs.writeFileSync(path.join(commands, "check.ts"), "export {};\n");
     fs.writeFileSync(path.join(fixture, "Cargo.toml"), "[workspace]\n");
     fs.writeFileSync(path.join(fixture, "pnpm-workspace.yaml"), "packages: []\n");
     fs.writeFileSync(
@@ -58,9 +62,9 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
     fs.writeFileSync(path.join(commands, "nested/type.rs"), "");
     assert.equal(verify(fixture).status, 0);
     const closure = spawnSync(
-      "rust-script",
+      process.execPath,
       [
-        path.join(root, "tools/commands/ci/verify-tool-layout.rs"),
+        path.join(root, "tools/commands/ci/verify-tool-layout.ts"),
         "--module-closure",
         "tools/commands/main.rs",
       ],
@@ -103,27 +107,13 @@ test("ordinary tool modules must be reachable and resolve without ambiguity", ()
 });
 
 function verify(cwd: string) {
-  return spawnSync("rust-script", [path.join(root, "tools/commands/ci/verify-tool-layout.rs")], {
+  return spawnSync(process.execPath, [path.join(root, "tools/commands/ci/verify-tool-layout.ts")], {
     cwd,
     encoding: "utf8",
   });
 }
 
-test("tool tree does not carry JavaScript command sources", () => {
-  const javascriptTools = collectFiles(path.join(root, "tools"))
-    .filter((file) => {
-      const relative = normalize(path.relative(root, file));
-      if (relative.startsWith("tools/commands/")) return false;
-      if (relative.startsWith("tools/benchmarks/scripts/")) return false;
-      if (relative.startsWith("tools/config/vite-plus/")) return false;
-      if (relative.startsWith("tools/support/")) return false;
-      if (relative.startsWith("tools/moon/.mooncakes/")) return false;
-      return /\.(?:mjs|js|ts)$/.test(relative);
-    })
-    .map((file) => normalize(path.relative(root, file)))
-    .sort();
-
-  assert.deepEqual(javascriptTools, []);
+test("tool tree keeps retired command runners absent", () => {
   assert.equal(fs.existsSync(path.join(root, "tools", "rust")), false);
   assert.equal(fs.existsSync(path.join(root, "tools", "support", "legacy_command.rs")), false);
   assert.equal(fs.existsSync(path.join(root, "tools", "support", "tool_host.rs")), false);
