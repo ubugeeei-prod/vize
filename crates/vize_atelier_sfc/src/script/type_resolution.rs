@@ -312,7 +312,11 @@ fn resolve_type_to_object_body_inner(
                 return resolved;
             }
         }
-        if collect_missing {
+        if collect_missing
+            && type_args
+                .first()
+                .is_some_and(|checked| is_type_reference_name(strip_generic_params(checked)))
+        {
             missing(trimmed);
         }
         return None;

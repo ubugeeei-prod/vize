@@ -120,6 +120,7 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Record<'value', Missing>",
         "Record<Keys, Missing>",
         "Record<ChainedKeys, Missing>",
+        "InferProps<typeof loader>",
         "ResolvedConditional",
         "Partial<{ title: string }> extends object ? { title: string } : never",
         "{ kind: 'a' } extends object ? { first: string } | { second: number } : never",
