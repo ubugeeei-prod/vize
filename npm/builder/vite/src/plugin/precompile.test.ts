@@ -8,6 +8,7 @@ import {
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   type VizePluginState,
 } from "./state.ts";
+import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { compileAll } from "./precompile-run.ts";
 import { loadSfcModule } from "../test/sfc-module.ts";
 import { toVirtualId } from "../virtual.ts";
@@ -42,8 +43,8 @@ export const Basic = () => <Button />;
 );
 
 const state: VizePluginState = {
-  cache: new Map(),
-  ssrCache: new Map(),
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
   collectedCss: new Map(),
   precompileMetadata: new Map(),
   pendingHmrUpdateTypes: new Map(),
@@ -95,8 +96,8 @@ fs.writeFileSync(environmentApp, environmentSource);
 const transformLogs: string[] = [];
 const environmentState: VizePluginState = {
   ...state,
-  cache: new Map(),
-  ssrCache: new Map(),
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
   collectedCss: new Map(),
   precompileMetadata: new Map(),
   ssrPrecompileMetadata: new Map(),
@@ -160,8 +161,8 @@ try {
 
 const workspaceState: VizePluginState = {
   ...state,
-  cache: new Map(),
-  ssrCache: new Map(),
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
   collectedCss: new Map(),
   precompileMetadata: new Map(),
   pendingHmrUpdateTypes: new Map(),
