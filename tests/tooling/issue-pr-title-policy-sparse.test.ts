@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { parse as parseYaml } from "yaml";
 import { patchTitleCall, repoRoot, runPolicy } from "./support/title-policy.ts";
 
-test("the real sparse checkout can compile and execute the title policy with its local Cargo library", () => {
+test("the real sparse checkout can execute the title policy with stable Node alone", () => {
   const workflow = parseYaml(
     readFileSync(join(repoRoot, ".github/workflows/title-policy.yml"), "utf8"),
   ) as {
@@ -20,7 +20,7 @@ test("the real sparse checkout can compile and execute the title policy with its
   const root = mkdtempSync(join(tmpdir(), "vize-title-policy-sparse-"));
   try {
     for (const path of paths) {
-      assert.match(path, /^(?:tools|tests|\.github)\//);
+      assert.match(path, /^tools\//);
       assert(!path.includes("..") && !path.includes("*"), path);
       mkdirSync(dirname(join(root, path)), { recursive: true });
       cpSync(join(repoRoot, path), join(root, path), { recursive: true });
@@ -33,16 +33,16 @@ test("the real sparse checkout can compile and execute the title policy with its
         assignees: [{ login: "ubugeeei" }],
       },
     };
-    const valid = runPolicy(payload, "pull_request_target", { cwd: root, force: true });
+    const valid = runPolicy(payload, "pull_request_target", { cwd: root });
     assert.equal(valid.result.status, 0, valid.result.stderr);
     assert.deepEqual(valid.ghCalls, [patchTitleCall(10418, "fix(canon): preserve source layout")]);
 
-    // A full-workspace test used to hide the missing sparse dependency.
-    rmSync(join(root, "tools/support/Cargo.toml"));
-    const incomplete = runPolicy(payload, "pull_request_target", { cwd: root, force: true });
+    // A full-workspace test must not hide a missing sparse-checkout entry.
+    rmSync(join(root, "tools/commands/ci/github/issue-pr-title-policy.ts"));
+    const incomplete = runPolicy(payload, "pull_request_target", { cwd: root });
     assert.notEqual(incomplete.result.status, 0);
     assert.deepEqual(incomplete.ghCalls, []);
-    assert.match(incomplete.result.stderr, /no matching package named `vize_tool_support`/);
+    assert.match(incomplete.result.stderr, /Cannot find module/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
