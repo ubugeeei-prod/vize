@@ -69,3 +69,32 @@ pub(crate) use vif_guard_chain::{
     append_chained_vif_condition_open, append_chained_vif_guard_close,
     append_chained_vif_guard_open, open_chained_vif_guard_block,
 };
+
+/// Indentation is presentation-only, but carrying the full lexical depth on
+/// every emitted line makes a deeply nested template quadratic in bytes.
+/// Preserve the first 32 two-space indentation steps exactly, then cap
+/// pathological nesting at 64 bytes per emitted line.
+const MAX_GENERATED_INDENT_BYTES: usize = 64;
+
+fn nested_indent(indent: &str) -> vize_carton::String {
+    if indent.len() >= MAX_GENERATED_INDENT_BYTES {
+        return vize_carton::String::from(
+            indent.get(..MAX_GENERATED_INDENT_BYTES).unwrap_or(indent),
+        );
+    }
+    vize_carton::cstr!("{indent}  ")
+}
+
+#[cfg(test)]
+mod indentation_tests {
+    use super::{MAX_GENERATED_INDENT_BYTES, nested_indent};
+
+    #[test]
+    fn nested_indentation_preserves_32_steps_then_stays_bounded() {
+        let mut indent = vize_carton::String::new("");
+        for depth in 1..=4_096 {
+            indent = nested_indent(&indent);
+            assert_eq!(indent.len(), (depth * 2).min(MAX_GENERATED_INDENT_BYTES));
+        }
+    }
+}
