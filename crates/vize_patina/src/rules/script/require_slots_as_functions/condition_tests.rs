@@ -29,7 +29,9 @@ fn direct_tests_preserve_complete_packets_and_value_boundaries() {
     }
     // Every complete result is retained before checking the independent authored contract.
     for (row, source, offset, actual) in captured {
-        let diagnostics = super::conditional_tests::current_native_spans(row)
+        let diagnostics = row["officialSpans"]
+            .as_array()
+            .unwrap()
             .iter()
             .map(|span| {
                 let needle = span["needle"].as_str().unwrap();

@@ -6,6 +6,7 @@ on:
       - "npm/**/package.json"
       - "tools/support/release/jsr/**"
       - "tests/tooling/jsr-package.test.ts"
+      - "tests/tooling/jsr-public-preview-consumers.test.ts"
       - "tests/tooling/release-jsr-workflow.test.ts"
       - "tests/tooling/jsr-fresh-provenance.test.ts"
       - ".github/workflows/jsr-package.yml"
@@ -38,7 +39,7 @@ jobs:
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with: { bun-version: "1.3.14" }
       - name: Test package generation
-        run: node --test tests/tooling/jsr-package.test.ts tests/tooling/release-jsr-workflow.test.ts tests/tooling/jsr-fresh-provenance.test.ts
+        run: node --test tests/tooling/jsr-package.test.ts tests/tooling/jsr-public-preview-consumers.test.ts tests/tooling/release-jsr-workflow.test.ts tests/tooling/jsr-fresh-provenance.test.ts
       - name: Verify scoped dependency age with the actual Deno runtime
         env:
           JSR_CONSUMER_PUBLISHED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.published-version || '' }}
@@ -53,20 +54,10 @@ jobs:
         run: node tools/support/release/jsr/verify-staged.ts dry-run "$RUNNER_TEMP/jsr-packages"
       - name: Import the staged entry points under Deno
         env: { DENO_DIR: "${{ runner.temp }}/staged-jsr-deno" }
-        run: |
-          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/consumer.ts"
-          cp tools/support/release/jsr/consumer-deno.json "$RUNNER_TEMP/consumer-deno.json"
-          deno run --config "$RUNNER_TEMP/consumer-deno.json" --lock "$RUNNER_TEMP/staged-jsr-deno.lock" --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-packages/vize/"
+        run: node tools/support/release/jsr/public-preview-consumers.ts staged-deno "$RUNNER_TEMP/jsr-deno-consumer" "$RUNNER_TEMP/jsr-packages/vize"
       - name: Install the public preview in a fresh Bun project and execute the tool APIs
         env: { JSR_PREVIEW_VERSION: "${{ steps.preview.outputs.version }}" }
-        run: |
-          mkdir "$RUNNER_TEMP/jsr-bun-consumer"
-          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/jsr-bun-consumer/consumer.ts"
-          echo '{ "name": "vize-jsr-bun-preview", "private": true, "type": "module" }' > "$RUNNER_TEMP/jsr-bun-consumer/package.json"
-          cd "$RUNNER_TEMP/jsr-bun-consumer"
-          bun add --ignore-scripts --exact "@vizejs/babel-plugin@$JSR_PREVIEW_VERSION" "oxlint-plugin-vize@$JSR_PREVIEW_VERSION" vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
-          bunx --bun jsr@0.14.3 add "@vizejs/vize@$JSR_PREVIEW_VERSION" 2>&1 | tee jsr-add.log
-          bun run consumer.ts @vizejs/vize --vite --babel-specifier @vizejs/babel-plugin --oxlint-specifier oxlint-plugin-vize 2>&1 | tee runtime.log
+        run: node tools/support/release/jsr/public-preview-consumers.ts bun "$RUNNER_TEMP/jsr-bun-consumer" "$JSR_PREVIEW_VERSION"
       - name: Preserve actual Deno consumer commands and outcomes
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

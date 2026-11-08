@@ -79,9 +79,15 @@ emit('change')
 
 #[test]
 fn test_valid_update_model_value() {
-    // The `update:` prefix used by `v-model` is permitted.
+    // Each colon-separated segment follows the configured casing.
     let result = create_linter().lint("this.$emit('update:modelValue', value)", 0);
     assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_invalid_kebab_case_update_suffix_for_camel_case() {
+    let result = lint_sfc("<script>this.$emit('update:model-value', value)</script>");
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]
@@ -139,13 +145,19 @@ emit('myEvent')
 }
 
 #[test]
-fn test_configured_kebab_case_allows_v_model_update_event() {
+fn test_configured_kebab_case_requires_kebab_v_model_suffix() {
     let source = r#"
-const emit = defineEmits(['update:modelValue'])
-emit('update:modelValue')
+const emit = defineEmits(['update:model-value'])
+emit('update:model-value')
 "#;
     let result = create_kebab_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
+
+    let invalid = create_kebab_linter().lint(
+        "const emit = defineEmits(['update:modelValue']); emit('update:modelValue')",
+        0,
+    );
+    assert_eq!(invalid.error_count, 1);
 }
 
 #[test]
@@ -163,8 +175,15 @@ fn test_invalid_kebab_case_dollar_emit() {
 
 #[test]
 fn test_invalid_context_emit_kebab() {
-    // A setup-context member call (`ctx.emit('...')`) is checked too.
-    let result = lint_sfc("<script>ctx.emit('my-event')</script>");
+    let result =
+        lint_sfc("<script>export default { setup(props, ctx) { ctx.emit('my-event') } }</script>");
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_invalid_destructured_setup_emit_kebab() {
+    let result =
+        lint_sfc("<script>export default { setup(props, { emit }) { emit('my-event') } }</script>");
     assert_eq!(result.error_count, 1);
 }
 
@@ -261,6 +280,20 @@ export function simulate(wrapper: Wrapper): void {
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_event_bus_emit_in_sfc_is_not_checked() {
+    let result = lint_sfc("<script>EventBus.emit('dark-mode-toggle')</script>");
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_empty_namespace_segments_follow_upstream_casing() {
+    let result = lint_sfc(
+        "<script>export default { mounted() { this.$root.$emit('bv::show::modal') } }</script>",
+    );
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
 }
 
 #[test]

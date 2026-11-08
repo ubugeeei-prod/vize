@@ -19,6 +19,9 @@ use std::path::Path;
 use vize_atelier_jsx::JsxLang;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
+mod census;
+pub use census::PINNED_BATTERY_CENSUS;
+
 /// Hand-written Vue templates, `(name, source)`.
 pub const TEMPLATES: &[(&str, &str)] = &[
     (
@@ -255,123 +258,6 @@ pub struct BatteryCensus {
     /// JSX modules, roots, refused roots, and trace lines.
     pub jsx: JsxComparison,
 }
-
-/// The committed census. Re-pinned deliberately, in both lanes at once.
-pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
-    templates: 37,
-    rule_fixtures: 869 + 38 + 1 + 1 + 5 + 1 - 5 + 2 + 1 + 1 + 2,
-    // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
-    // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
-    // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
-    // `.prop` template, one fix helper call). The kebab-case KeepAlive child
-    // control adds one literal template (#9076). The v-on modifier regressions
-    // add five literal templates: nativeish without a handler, custom.stop,
-    // Custom, custom without a handler, and custom with a handler (#9203).
-    // Their six additional dynamic-template calls retain the complete modifier
-    // matrices in rule tests; the scanner deliberately records those as skips.
-    // KeepAlive's complete source/repair packets add five nonliteral calls;
-    // their explicit loops remain in rule tests, and all literal samples remain.
-    // Empty binding values add one nonliteral call over seven real-parser
-    // inputs; that loop and the complete CLI reports run in ordinary tests.
-    // The `@vue:` vnode-hook exemption adds one literal template over two calls.
-    // placeholder-label-option's rewritten unit tests (#9749) loop over
-    // template lists: five fewer literal templates and one more nonliteral call.
-    // The combobox exemption tests (#9750) add three nonliteral calls.
-    // Dynamic slot v-for key ownership (#9924) adds two literal templates.
-    // Patina rule guards (#9870, #9871) add one nonliteral call and skip.
-    // Patina output policy coverage (#9869, #9874) adds one literal template.
-    // Patina fix regressions (#9872/#9873) add five helper-driven calls whose
-    // complete authored sources and edits are asserted by the focused tests.
-    // HTML quote escape coverage (#6097) adds two focused calls; the source
-    // variable remains an intentional scanner skip while the literal dedups.
-    // The attribute-hyphenation range regression adds one nonliteral call.
-    // Kebab-case and `is`-cast v-on listeners (#10822) add one literal template;
-    // both are counted in the final `+ 2`.
-    // Dynamic-role regression matrices (#10926) add two nonliteral calls;
-    // all eleven inputs execute in focused tests while literal coverage stays exact.
-    // The pinned 37-case / 148-whole-packet listbox controller (#10925) adds
-    // one dynamic legacy.lint_template(&source) call and one scanner skip.
-    // All 913 existing literal fixtures remain; native/legacy host tests and
-    // 298 source CLI processes independently retain the complete new packets.
-    // Native input-label history adds seven nonliteral legacy calls: three
-    // original/pair/requery calls and two each for duplicate/select controls.
-    // Their complete outputs run in the focused native tests; each remains
-    // honestly counted as a variable-input skip in this literal-only scan.
-    // Native placeholder-option history adds three nonliteral legacy calls:
-    // the original snapshot query, complete pair baseline and pair requery.
-    // All four whole originals and the policy matrix run in focused tests;
-    // their variables remain skips without changing the 913 literal fixtures.
-    // Native static-is pairs, disabled controls and refused owners add three
-    // nonliteral legacy calls. Their complete Case/Observation tests execute;
-    // this literal-only scanner records the three calls as skips, not fixtures.
-    // Literal attribute ignoreTags adds eight focused lint_template calls:
-    // seven retain source variables and remain counted scanner skips. The
-    // unselected-rule control adds one new literal, <MyWidget fooBar="x" />,
-    // whose complete Relief/L2 facade comparison contributes four trace lines.
-    // The nineteen original attribute tests only move to their owning leaf;
-    // their unchanged calls and literal sources remain in the same scan.
-    // Native numeric modifier pairs, applied fixes and refusal controls add
-    // five nonliteral legacy calls; full source-unit observations execute
-    // without adding a literal fixture or original history coordinate.
-    // Deprecated-native bare observations, numeric fix requery and disabled
-    // controls add three nonliteral legacy calls. All originals stay intact;
-    // the literal-only scan counts these calls as skips, not new fixtures.
-    // Valid-v-on's whole legacy/native observer adds one nonliteral call;
-    // absent-handler unit controls add no literal history fixture or trace.
-    // Current native callback controls add eight calls: two literal inputs and
-    // six variable-input observations. Every full facade comparison still runs;
-    // these add thirteen retained trace lines, not semantic qualification credit.
-    rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
-        + 3
-        + 2
-        + 1
-        + 1
-        + 5
-        + 2
-        + 2
-        + 2
-        + 1
-        + 7
-        + 3
-        + 3
-        + 8
-        + 5
-        + 3
-        + 1
-        + 8,
-    rule_fixture_skipped: 87
-        + 4
-        + 3
-        + 1
-        + 1
-        + 6
-        + 5
-        + 1
-        + 1
-        + 3
-        + 1
-        + 5
-        + 1
-        + 1
-        + 2
-        + 1
-        + 7
-        + 3
-        + 3
-        + 7
-        + 5
-        + 3
-        + 1
-        + 6,
-    matrix: 90,
-    template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49 + 31 + 42 + 4 + 13,
-    restructured: 0,
-    jsx: JsxComparison {
-        roots: 14,
-        refused: 1,
-        lines: 118,
-    },
-};
 
 fn matrix_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")

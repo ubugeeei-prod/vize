@@ -5,7 +5,7 @@ use crate::linter::config::{LintResult, Linter};
 use crate::rules::facts::{NoUnusedSetupBindings, v_for_source_reads};
 use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, Drawer, DrawerOptions};
+use vize_croquis::{Croquis, Drawer, DrawerOptions, drawer::LintTemplate};
 use vize_l0::Allocator;
 use vize_relief::RootNode;
 
@@ -22,20 +22,34 @@ pub(super) fn script_summary(
         .template
         .as_ref()
         .filter(|_| unused)
-        .map(|template| Parser::new(&allocator, &template.content).parse());
-    let root = parsed.as_ref().and_then(|(root, errors)| {
-        (!Linter::has_fatal_template_parse_errors(errors)).then_some(root)
+        .map(|template| {
+            let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+            let parsed = Parser::new(&allocator, &template.content).parse();
+            (l2, parsed)
+        });
+    let admitted = parsed.as_ref().filter(|(l2, (_, errors))| {
+        !Linter::has_fatal_l1_template_parse_errors(l2.surface_errors())
+            && !Linter::has_fatal_template_parse_errors(errors)
     });
-    let mut summary =
-        super::super::super::analyze_descriptor_for_lint(scripts, root, unused, false);
-    if let Some(root) = root {
+    let mut summary = super::super::super::analyze_descriptor_for_lint(
+        scripts,
+        admitted.map(|(l2, _)| l2),
+        unused,
+        false,
+    );
+    if let Some((_, (root, _))) = admitted {
         let reads = v_for_source_reads(root);
         summary.unused_bindings.retain(|name| !reads.contains(name));
     }
     summary
 }
 
-pub(super) fn variant(root: &RootNode<'_>, script: &Croquis, unused: bool) -> Croquis {
+pub(super) fn variant(
+    root: &RootNode<'_>,
+    l2: &crate::markup::L2Template<'_>,
+    script: &Croquis,
+    unused: bool,
+) -> Croquis {
     // Copy only the existing script value map and candidate provenance. Each
     // original variant still builds fresh template scopes and template facts;
     // no sibling template scope or mutable script-summary state is shared.
@@ -49,7 +63,7 @@ pub(super) fn variant(root: &RootNode<'_>, script: &Croquis, unused: bool) -> Cr
     if unused {
         drawer = drawer.with_unused_bindings();
     }
-    drawer.draw_template(root);
+    drawer.draw_lint_template(LintTemplate::new(l2.surface(), l2.lowered()));
     let mut analysis = drawer.finish();
     if unused {
         let reads = v_for_source_reads(root);

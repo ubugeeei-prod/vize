@@ -108,7 +108,7 @@ fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
     let project_root = temp_project_dir("nuxt-link-preset-boundary");
     write_project_file(
         &project_root,
-        "app/pages/index.vue",
+        "app/pages/settings-page.vue",
         r#"<template><a href="/settings">Settings</a></template>"#,
     );
     let ecosystem = Command::new(env!("CARGO_BIN_EXE_vize"))
@@ -120,7 +120,7 @@ fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
             "--no-config",
             "--format",
             "json",
-            "app/pages/index.vue",
+            "app/pages/settings-page.vue",
         ])
         .output()
         .unwrap();
@@ -145,7 +145,7 @@ fn lint_limits_nuxt_link_guidance_to_nuxt_preset() {
             "--no-config",
             "--format",
             "json",
-            "app/pages/index.vue",
+            "app/pages/settings-page.vue",
         ])
         .output()
         .unwrap();
@@ -205,6 +205,7 @@ fn six_default_presets_preserve_complete_cli_warning_off_repair_and_alias_packet
                     "rules": {
                         "vue/no-undefined-refs": "off",
                         "vue/no-unused-setup-bindings": "off",
+                        "vue/html-self-closing": "off",
                         "vue/no-ref-object-reactivity-loss": "off",
                         "vue/no-setup-props-reactivity-loss": "off",
                         "vue/no-this-in-before-route-enter": "off"

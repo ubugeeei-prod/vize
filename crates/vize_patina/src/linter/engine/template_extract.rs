@@ -150,6 +150,23 @@ mod tests {
     }
 
     #[test]
+    fn extract_template_fast_keeps_extra_roots_after_nested_template_tags() {
+        let source = r#"<template>
+  <first-root />
+  <second-root>
+    <template #icon><span>icon</span></template>
+  </second-root>
+</template>"#;
+
+        assert_eq!(
+            extract(source).as_deref(),
+            Some(
+                "\n  <first-root />\n  <second-root>\n    <template #icon><span>icon</span></template>\n  </second-root>\n"
+            )
+        );
+    }
+
+    #[test]
     fn extract_template_fast_ignores_closing_tag_inside_comment() {
         // A commented-out `</template>` must not close the block early.
         let source = "<template><div /><!-- </template> --><span /></template>";

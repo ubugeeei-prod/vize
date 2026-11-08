@@ -1,0 +1,68 @@
+[
+  {
+    "title": "Fix: Use separate start and end tags",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": { "line": 1, "character": 2 },
+          "end": { "line": 1, "character": 25 }
+        },
+        "severity": 2,
+        "code": "vue/html-self-closing",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+        },
+        "source": "vize/lint",
+        "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
+      }
+    ],
+    "edit": {
+      "changes": {
+        "${workspace}/App.vue": [
+          {
+            "range": {
+              "start": { "line": 1, "character": 22 },
+              "end": { "line": 1, "character": 24 }
+            },
+            "newText": ""
+          }
+        ]
+      }
+    },
+    "isPreferred": true
+  },
+  {
+    "title": "Suppress with @vize:forget (vue/html-self-closing)",
+    "kind": "quickfix",
+    "diagnostics": [
+      {
+        "range": {
+          "start": { "line": 1, "character": 2 },
+          "end": { "line": 1, "character": 25 }
+        },
+        "severity": 2,
+        "code": "vue/html-self-closing",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+        },
+        "source": "vize/lint",
+        "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
+      }
+    ],
+    "edit": {
+      "changes": {
+        "${workspace}/App.vue": [
+          {
+            "range": {
+              "start": { "line": 1, "character": 0 },
+              "end": { "line": 1, "character": 0 }
+            },
+            "newText": "  <!-- @vize:forget vue/html-self-closing -->\n"
+          }
+        ]
+      }
+    },
+    "isPreferred": false
+  }
+]

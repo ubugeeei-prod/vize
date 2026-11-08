@@ -2,7 +2,7 @@
 mod support;
 
 use crate::native::template::NativeTemplateLintRefusal as Refusal;
-use crate::{HelpLevel, Linter, Locale, Severity};
+use crate::{HelpLevel, Locale, Severity};
 use support::*;
 use vize_l0::{Span, config::VueVersion};
 
@@ -142,7 +142,12 @@ fn entity_dependent_prefixes_and_late_refusals_cannot_publish_partial_findings()
             },
             _ => Refusal::UnsupportedContext { span },
         };
-        assert_refused(&source, "Later.vue", &[[5, 21]], refusal);
+        let spans = if kind == "attribute" {
+            vec![[5, 21], [30, 40]]
+        } else {
+            vec![[5, 21]]
+        };
+        assert_refused(&source, "Later.vue", &spans, refusal);
     }
 }
 

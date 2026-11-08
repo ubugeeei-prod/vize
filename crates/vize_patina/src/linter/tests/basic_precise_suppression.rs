@@ -42,7 +42,10 @@ fn rule_selector_matches_the_lsp_generated_shape() {
             "test.vue",
         );
 
-    assert_eq!(sorted_rules(&result), vec!["vue/html-self-closing"]);
+    assert_eq!(
+        sorted_rules(&result),
+        vec!["vue/multi-word-component-names"]
+    );
 }
 
 #[test]

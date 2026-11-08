@@ -90,7 +90,7 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/prefer-define-options.description",
-        "Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs",
+        "Prefer defineOptions() over a default export paired with <script setup>",
         "name や inheritAttrs を設定するだけの通常の <script> より defineOptions() を推奨する",
         "优先使用 defineOptions()，而不是只设置 name/inheritAttrs 的普通 <script>",
     ),

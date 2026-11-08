@@ -784,7 +784,7 @@ fn tool_args(
                 "--format".to_string(),
                 "json".to_string(),
                 "--preset".to_string(),
-                "ecosystem".to_string(),
+                "all".to_string(),
                 "--no-config".to_string(),
             ],
         ]

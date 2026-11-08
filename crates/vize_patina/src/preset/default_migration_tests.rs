@@ -35,6 +35,24 @@ fn expected(case: &Value, findings: &Value) -> Value {
     })
 }
 
+fn findings_for_preset(case: &Value, findings: &Value, preset: LintPreset) -> Value {
+    let mut findings = findings.as_array().unwrap().clone();
+    if matches!(
+        preset,
+        LintPreset::Opinionated | LintPreset::Essential | LintPreset::Nuxt
+    ) {
+        findings.extend(
+            case["strictPresetDiagnostics"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .cloned(),
+        );
+        findings.sort_by_key(|finding| finding["start"].as_u64().unwrap_or_default());
+    }
+    Value::Array(findings)
+}
+
 #[test]
 fn presets_preserve_complete_before_and_after_default_findings() {
     let data = corpus();
@@ -57,6 +75,8 @@ fn presets_preserve_complete_before_and_after_default_findings() {
                 ),
             };
             let linter = Linter::with_preset(preset).with_help_level(HelpLevel::None);
+            let after = findings_for_preset(case, &after, preset);
+            let before = findings_for_preset(case, &before, preset);
             assert_eq!(
                 whole(&linter.lint_sfc(source, filename)),
                 expected(case, &after),

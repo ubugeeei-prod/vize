@@ -1,11 +1,11 @@
 ---
 title: "vue/v-on-handler-style"
-description: "Enforce writing v-on handlers as a method reference or an inline function."
+description: "Enforce writing v-on handlers as method references."
 ---
 
 # `vue/v-on-handler-style`
 
-Enforce writing v-on handlers as a method reference or an inline function.
+Enforce writing v-on handlers as method references.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -15,7 +15,7 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 
 ## Bad
 
-The handlers put mutations and multiple statements directly in the event attribute.
+The handlers use inline functions, mutations, or multiple statements instead of reusable method references.
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -27,14 +27,12 @@ The handlers put mutations and multiple statements directly in the event attribu
 
 ## Good
 
-Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.
+Use a handler reference. Move inline logic into a named method so the template keeps a stable, reusable handler.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
-<button @click="() => count++"></button>
-<button @click="function () { count++ }"></button>
 </template>
 ```
 
@@ -59,4 +57,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)

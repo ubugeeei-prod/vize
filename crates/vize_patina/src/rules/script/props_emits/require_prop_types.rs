@@ -9,8 +9,8 @@
 //! This flags a prop that carries no type:
 //! * an array-form entry (`props: ['foo']` / `defineProps(['foo'])`), which by
 //!   construction declares only a name, and
-//! * an object-form prop with no `type` member, or whose value is `null`
-//!   (`foo: null`) or an empty descriptor (`foo: {}`).
+//! * an object-form prop with an empty array, function value, or descriptor
+//!   carrying neither `type` nor `validator`.
 //!
 //! An object-form prop whose value is itself the type (`foo: String`,
 //! `foo: [String, Number]`) or whose descriptor has a `type` member is typed
@@ -46,13 +46,17 @@
 //! }
 //! ```
 
-use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
-use oxc_span::GetSpan;
+use oxc_ast::ast::{
+    Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, Program,
+    PropertyKey,
+};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 
 use vize_l0::CompactString;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::compiler_macro_is_shadowed;
+use super::props_source::{PropDescriptor, collect_all_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -81,7 +85,7 @@ impl ScriptRule for RequirePropTypes {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
+        for source in collect_all_runtime_props(program) {
             // Array-form entries declare only a name — always untyped.
             for literal in source.array_names() {
                 report(literal.value.as_str(), literal.span, offset, result);
@@ -90,10 +94,55 @@ impl ScriptRule for RequirePropTypes {
             // empty-or-typeless descriptor.
             for prop in source.object_props() {
                 if !prop_has_type(prop) {
-                    report(prop.name, prop.key.span(), offset, result);
+                    report(prop.name, prop.span, offset, result);
                 }
             }
         }
+        if !compiler_macro_is_shadowed(program, "defineModel") {
+            let mut visitor = DefineModelVisitor { offset, result };
+            visitor.visit_program(program);
+        }
+    }
+}
+
+struct DefineModelVisitor<'out> {
+    offset: usize,
+    result: &'out mut ScriptLintResult,
+}
+
+impl<'a> Visit<'a> for DefineModelVisitor<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineModel")
+            && call.type_arguments.is_none()
+        {
+            check_define_model(call, self.offset, self.result);
+        }
+        walk_call_expression(self, call);
+    }
+}
+
+fn check_define_model(call: &CallExpression<'_>, offset: usize, result: &mut ScriptLintResult) {
+    let mut name = "modelValue";
+    let mut options_index = 0;
+    if let Some(Argument::StringLiteral(literal)) = call.arguments.first() {
+        name = literal.value.as_str();
+        options_index = 1;
+    }
+    let Some(options) = call
+        .arguments
+        .get(options_index)
+        .and_then(Argument::as_expression)
+    else {
+        report(name, call.span, offset, result);
+        return;
+    };
+    let Expression::ObjectExpression(options) = options.get_inner_expression() else {
+        // An unresolved expression may provide a type. eslint-plugin-vue does
+        // not report when it cannot prove the options are typeless.
+        return;
+    };
+    if !descriptor_has_type(options) {
+        report(name, options.span, offset, result);
     }
 }
 
@@ -105,24 +154,37 @@ impl ScriptRule for RequirePropTypes {
 /// `null` or a descriptor with no `type` member (including `{}`).
 fn prop_has_type(prop: PropDescriptor<'_>) -> bool {
     match prop.value {
-        // `foo: null` declares no type.
-        Expression::NullLiteral(_) => false,
+        // eslint-plugin-vue treats null and unknown expressions as intentionally
+        // unconstrained rather than incomplete declarations.
+        Expression::NullLiteral(_) => true,
         // A descriptor object is typed only if it has a `type` member.
         Expression::ObjectExpression(descriptor) => descriptor_has_type(descriptor),
+        Expression::ArrayExpression(types) => !types.elements.is_empty(),
+        Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => false,
         // Any other value (constructor, array of constructors, validator,
         // imported type) is itself the type.
         _ => true,
     }
 }
 
-/// Whether a prop-descriptor object has a `type` member. A spread may carry
-/// one, so it counts as typed.
+/// Whether a prop-descriptor object has a non-empty `type` member or a
+/// `validator`, matching eslint-plugin-vue's default contract.
 fn descriptor_has_type(descriptor: &ObjectExpression<'_>) -> bool {
     descriptor.properties.iter().any(|property| {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
-            return true;
+            return false;
         };
-        !property.computed && property_key_name(&property.key) == Some("type")
+        if property.computed {
+            return false;
+        }
+        match property_key_name(&property.key) {
+            Some("validator") => true,
+            Some("type") => !matches!(
+                &property.value,
+                Expression::ArrayExpression(types) if types.elements.is_empty()
+            ),
+            _ => false,
+        }
     })
 }
 

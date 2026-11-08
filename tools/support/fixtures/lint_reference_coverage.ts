@@ -9,6 +9,7 @@ export interface ReferenceCoverageCase extends Json {
   project: string;
   revision: string;
   preset: string;
+  compatiblePresets: string[];
   source: string;
   sourceSha256: string;
   finding: Json;
@@ -45,7 +46,7 @@ function settingsMatch(entry: ReferenceCoverageCase, project: string, context: J
     severity !== null &&
     entry.project === project &&
     entry.revision === context.revision &&
-    entry.preset === context.preset &&
+    entry.compatiblePresets.includes(String(context.preset)) &&
     isDeepStrictEqual(entry.runtimeVersions, context.runtimeVersions) &&
     object(context.rules) &&
     context.rules[rule] === severity &&

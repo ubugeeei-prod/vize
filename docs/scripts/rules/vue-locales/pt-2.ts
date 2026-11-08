@@ -41,9 +41,9 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "Os dois seletores mantêm o escopo em um único bloco style, atendendo à convenção de bloco único sem remover nenhum estilo.",
     ],
     "vue/slot-name-casing": [
-      "Exigir kebab-case nos slots nomeados usados por v-slot",
-      "O slot nomeado `mySlot` usa camelCase onde a regra exige um nome separado por hífen.",
-      "`#my-slot` usa kebab-case. Renomeie o ponto de inserção do slot correspondente para o mesmo nome.",
+      "Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados",
+      "O ponto de inserção de slot renderizado usa o nome estático com hífen `my-slot`, enquanto a convenção padrão exige camelCase.",
+      "O nome estático do ponto de inserção usa camelCase. A sintaxe de provedor `#name` no componente pai fica fora desta regra.",
     ],
     "vue/this-in-template": [
       "Proibir `this.` nas expressões do template",
@@ -71,9 +71,9 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
       "`@my-event` usa a grafia exigida para eventos personalizados. Os listeners em elementos nativos e os argumentos de evento dinâmicos mostrados abaixo ficam fora desta verificação.",
     ],
     "vue/v-on-handler-style": [
-      "Exigir manipuladores de v-on escritos como referência a método ou função inline",
-      "Os manipuladores colocam mutações e várias instruções diretamente no atributo de evento.",
-      "Use uma referência a manipulador ou uma expressão de função, comum ou de seta, quando for necessária lógica inline. O limite da função torna explícita a forma do manipulador.",
+      "Exigir manipuladores de v-on escritos como referência a método",
+      "Os manipuladores usam funções inline, mutações ou várias instruções em vez de referências de método reutilizáveis.",
+      "Use uma referência a manipulador. Mova a lógica inline para um método nomeado, mantendo no template um manipulador estável e reutilizável.",
     ],
     "vue/v-on-style": [
       "Aplicar um padrão de sintaxe à diretiva `v-on`",
@@ -188,6 +188,8 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
   };
 
 export const portugueseVueNotes = {
+  "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
+    "Verifica o nome estático de um ponto de inserção de slot renderizado. A sintaxe de provedor v-slot e #name no componente pai fica fora desta regra.",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "O nome de arquivo do componente é verificado. PascalCase e kebab-case são aceitos; o uso misturado de maiúsculas e minúsculas é reportado.",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":

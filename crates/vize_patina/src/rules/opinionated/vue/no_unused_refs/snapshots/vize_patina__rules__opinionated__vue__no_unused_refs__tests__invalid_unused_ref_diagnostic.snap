@@ -7,7 +7,7 @@ expression: result.diagnostics
         rule_name: "vue/no-unused-refs",
         severity: Warning,
         message: "Template ref 'unused' is never referenced in <script>",
-        start: 17,
+        start: 21,
         end: 29,
         help: Some(
             "Remove the unused ref=\"unused\" attribute, or reference it in <script> (e.g. a ref named unused, useTemplateRef('unused'), or this.$refs.unused).",

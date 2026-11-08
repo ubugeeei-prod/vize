@@ -21,7 +21,7 @@ Vue 3 の $slots プロパティを関数として呼び出します。
 <script lang="ts">
 export default {
   render() {
-    return this.$slots.default
+    return [this.$slots.default]
   }
 }
 </script>
@@ -62,4 +62,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L44)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_slots_as_functions.rs#L43)

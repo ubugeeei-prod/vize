@@ -61,7 +61,13 @@ export function selectComparableRules(ruleMap, preset, { includeUnimplemented = 
       skippedByPreset.push({ upstreamRule, patinaRule: entry.patinaRule });
       continue;
     }
-    rules[upstreamRule] = entry.patinaSeverity === "error" ? "error" : "warn";
+    const severity = entry.patinaSeverity === "error" ? "error" : "warn";
+    rules[upstreamRule] =
+      upstreamRule === "vue/define-props-destructuring"
+        ? [severity, { destructure: "always" }]
+        : upstreamRule === "vue/match-component-file-name"
+          ? [severity, { extensions: ["jsx", "vue"] }]
+          : severity;
   }
   return { rules, skippedByPreset };
 }

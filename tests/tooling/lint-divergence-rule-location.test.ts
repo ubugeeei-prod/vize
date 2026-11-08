@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { compare, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import { compare, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
 
 test("known rule-owned location anchors are classified without hiding both ranges", () => {
   const result = compare(
@@ -105,4 +106,46 @@ test("unused component location anchors are paired by component identity", () =>
     ["component:UploaderFile", "component:UploaderFiles"],
   );
   assert.equal(result.summary.ruleLocationDivergenceCount, 2);
+});
+
+test("location pairs take precedence over one-sided intentional classification", () => {
+  const filename = "src/DefineProps.vue";
+  const path = `${cwd}/${filename}`;
+  mkdirSync(`${cwd}/src`, { recursive: true });
+  writeFileSync(
+    path,
+    '<script setup lang="ts">\nconst props = defineProps<{ title: string }>()\n</script>\n',
+  );
+  try {
+    const result = compare(
+      [
+        {
+          file: filename,
+          ruleId: "script/define-props-destructuring",
+          severity: 1,
+          ...span(2, 7, 2, 12),
+          message:
+            "[vize:script/define-props-destructuring] Prefer destructuring the return value of defineProps().",
+        },
+      ],
+      [
+        eslintResult(filename, [
+          {
+            ruleId: "vue/define-props-destructuring",
+            severity: 1,
+            ...span(2, 15, 2, 47),
+            message: "Prefer destructuring from `defineProps` directly.",
+          },
+        ]),
+      ],
+    );
+
+    assert.deepEqual(result.falsePositives, []);
+    assert.deepEqual(result.falseNegatives, []);
+    assert.deepEqual(result.intentionalDivergences, []);
+    assert.equal(result.ruleLocationDivergences.length, 1);
+    assert.equal(result.ruleLocationDivergences[0].subject, "define-props:2:2");
+  } finally {
+    rmSync(path);
+  }
 });

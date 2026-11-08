@@ -282,6 +282,32 @@ const props = defineProps({
 }
 
 #[test]
+fn test_define_props_unwraps_prop_type_assertion() {
+    let source = r#"
+const props = defineProps({
+  items: { type: Array as PropType<string[]>, default: [] }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_factory_return_must_match_object_type() {
+    let source = r#"
+const props = defineProps({
+  item: { type: Object as PropType<Item>, default() { return [] } }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Type of the default value for 'item' prop must be a object."
+    );
+}
+
+#[test]
 fn test_define_props_type_based_is_ignored() {
     let source = r#"
 const props = defineProps<{ count?: number }>()

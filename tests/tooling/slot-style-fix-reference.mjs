@@ -45,6 +45,7 @@ export function fixedSource(entry, originalRules = false) {
         .replace('disabled="disabled"', "disabled")
         .replace("<MyCard></MyCard>", "<MyCard />")
         .replace("<my-card />", "<MyCard />")
+        .replace("<input disabled />", "<input disabled>")
     : entry.fixed;
 }
 
@@ -61,9 +62,9 @@ function message(source, target, rule, text, authoredStart = null) {
     severity: 1,
     message: `[vize:${rule}] ${text}`,
     line: from.length,
-    column: [...from.at(-1)].length + 1,
+    column: from.at(-1).length + 1,
     endLine: to.length,
-    endColumn: [...to.at(-1)].length + 1,
+    endColumn: to.at(-1).length + 1,
   };
 }
 
@@ -81,7 +82,7 @@ export function wholeJson(entry, after = false, originalRules = false) {
       ),
       message(
         source,
-        "<my-card />",
+        "<my-card",
         "vue/component-name-in-template-casing",
         "Component should use PascalCase",
       ),
@@ -92,6 +93,12 @@ export function wholeJson(entry, after = false, originalRules = false) {
   }
   if (originalRules && !after)
     messages.push(
+      message(
+        source,
+        '<input disabled="disabled" />',
+        "vue/html-self-closing",
+        "Element must not use self-closing syntax",
+      ),
       message(
         source,
         'disabled="disabled"',

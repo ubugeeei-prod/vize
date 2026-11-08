@@ -156,3 +156,98 @@ type Label = 'Child';
         vec!["Component 'Child' is registered but never used in template"]
     );
 }
+
+#[test]
+fn component_name_prefixes_and_slot_names_do_not_mark_registrations_used() {
+    let sfc = r#"<template>
+  <MdTableRowGhost v-if="$scopedSlots['md-table-row']" />
+  <slot name="md-table-row" />
+</template>
+<script>
+import MdTableRow from './MdTableRow'
+import MdTableRowGhost from './MdTableRowGhost'
+import MdTableCellSelection from './MdTableCellSelection'
+export default {
+  components: { MdTableRow, MdTableRowGhost, MdTableCellSelection }
+}
+</script>"#;
+    assert_eq!(
+        lint_messages(sfc),
+        vec![
+            "Component 'MdTableCellSelection' is registered but never used in template",
+            "Component 'MdTableRow' is registered but never used in template",
+        ]
+    );
+}
+
+#[test]
+fn foster_parenting_does_not_hide_provably_unused_registrations() {
+    let sfc = r#"<template>
+  <table>
+    <tbody>
+      <MdTableRowGhost />
+    </tbody>
+  </table>
+</template>
+<script>
+import MdTableRow from './MdTableRow'
+import MdTableRowGhost from './MdTableRowGhost'
+import MdTableCellSelection from './MdTableCellSelection'
+export default {
+  components: { MdTableRow, MdTableRowGhost, MdTableCellSelection }
+}
+</script>"#;
+    assert_eq!(
+        lint_messages(sfc),
+        vec![
+            "Component 'MdTableCellSelection' is registered but never used in template",
+            "Component 'MdTableRow' is registered but never used in template",
+        ]
+    );
+}
+
+#[test]
+fn complex_fostered_table_keeps_unused_registration_evidence() {
+    let sfc = r#"<template>
+  <md-tag-switcher :md-tag="contentTag" class="md-table">
+    <slot name="md-table-toolbar" />
+    <keep-alive>
+      <md-table-alternate-header v-if="$scopedSlots['md-table-alternate-header'] && selectedCount">
+        <slot name="md-table-alternate-header" :count="selectedCount" />
+      </md-table-alternate-header>
+    </keep-alive>
+    <div v-if="mdFixedHeader"><table><md-table-thead /></table></div>
+    <md-content>
+      <table>
+        <md-table-thead v-if="$scopedSlots['md-table-row']" />
+        <tbody v-if="!$scopedSlots['md-table-row']"><slot /></tbody>
+        <tbody v-else-if="value.length">
+          <md-table-row-ghost v-for="item in value" :key="item.id">
+            <slot name="md-table-row" :item="item" />
+          </md-table-row-ghost>
+        </tbody>
+        <tbody v-else-if="$scopedSlots['md-table-empty-state']"><tr><td><slot /></td></tr></tbody>
+      </table>
+    </md-content>
+  </md-tag-switcher>
+</template>
+<script>
+import MdTagSwitcher from './MdTagSwitcher'
+import MdTableThead from './MdTableThead'
+import MdTableAlternateHeader from './MdTableAlternateHeader'
+import MdTableRow from './MdTableRow'
+import MdTableRowGhost from './MdTableRowGhost'
+import MdTableCellSelection from './MdTableCellSelection'
+export default {
+  components: { MdTagSwitcher, MdTableAlternateHeader, MdTableThead, MdTableRow, MdTableRowGhost, MdTableCellSelection }
+}
+</script>"#;
+    assert_eq!(
+        lint_messages(sfc),
+        vec![
+            "Foster parenting moved this element before the nearest open table.",
+            "Component 'MdTableRow' is registered but never used in template",
+            "Component 'MdTableCellSelection' is registered but never used in template",
+        ]
+    );
+}

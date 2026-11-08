@@ -3350,7 +3350,7 @@
         "files": [
           {
             "path": "App.vue.txt",
-            "sha256": "0ff6e146159dfb8877a12e42ad1cc63d7160221add033b76142e3969003faed2"
+            "sha256": "17ad62b1f961cfe700a7558b07e75cd095b9b6a348674c5dda138218559be070"
           },
           {
             "path": "vize.config.json",
@@ -3360,7 +3360,7 @@
       },
       "case": {
         "path": "precise-template-suppression-12022/case.json",
-        "sha256": "ed85244179077653f297deb0e55e21aeb035df5643ed1d828dfbed5f591039a5"
+        "sha256": "4dad8a6fc4ab783f3a55022b470c378c5cffe07d466414ae5fe8ce933a7aa8fa"
       },
       "requestCount": 1,
       "initializationOptions": {
@@ -3725,6 +3725,51 @@
               "vue3-sfc",
               "html-template",
               "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/real-project-rule-accuracy-12069",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "real-project-rule-accuracy-12069",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051"
+          },
+          {
+            "path": "vize.config.json",
+            "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a"
+          }
+        ]
+      },
+      "case": {
+        "path": "real-project-rule-accuracy-12069/case.json",
+        "sha256": "6fb006f62e4d163a82dea2f36acb26f1a14385657ac156d110a9554c3375ee19"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": true,
+        "codeActions": true,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
             ],
             "selector": "LSP manifest pinned authored sources"
           }
@@ -4408,7 +4453,7 @@
         "files": [
           {
             "path": "App.vue.txt",
-            "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19"
+            "sha256": "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051"
           },
           {
             "path": "vize.config.json",
@@ -4418,7 +4463,7 @@
       },
       "case": {
         "path": "versioned-template-suppression-6876/case.json",
-        "sha256": "a77c681637eb43ad084d2885c224ef4469850dd46675bd2b4ca39acb21f967f1"
+        "sha256": "a0cf65ac64e1f9c0c93b7c94721bdc68189a3fd234d74af9fd0367aece35dc6a"
       },
       "requestCount": 1,
       "initializationOptions": {

@@ -19,7 +19,7 @@ Un attribut booléen natif disabled est lié à la valeur constante true.
 
 ```vue annotate="remove:2"
 <template>
-<input :disabled="true" />
+<MyComponent :visible="true" />
 </template>
 ```
 
@@ -27,11 +27,10 @@ Un attribut booléen natif disabled est lié à la valeur constante true.
 
 L’attribut natif utilise sa syntaxe booléenne abrégée. Les liaisons à false et les props de composants conservent leurs valeurs explicites.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3,4"
 <template>
-<input disabled />
-<input :disabled="false" />
-<MyComponent :visible="true" />
+<MyComponent visible />
+<MyComponent :visible="false" />
 <MyComponent :visible="isVisible" />
 </template>
 ```
@@ -57,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L28)

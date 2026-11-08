@@ -91,15 +91,12 @@ function validateRuleMapIdentity(value: unknown): RuleMapCoverage {
   exactKeys(summary, ["intentionalDivergence", "mapped", "unimplemented"], "rule map summary");
   exactKeys(upstream, ["package", "ruleCount", "version"], "rule map upstream");
   const counts = { intentionalDivergence: 0, mapped: 0, unimplemented: 0 };
-  let skippedByPresetCount = 0;
   for (const [ruleId, value] of Object.entries(entries)) {
     const entry = asRecord(value, `linter rule map ${ruleId}`),
       status = entry.status;
     if (status === "mapped") {
       counts.mapped++;
       assert.equal(typeof entry.patinaRule, "string", `${ruleId}: mapped rule target is required`);
-      if (!Array.isArray(entry.patinaPresets) || !entry.patinaPresets.includes("ecosystem"))
-        skippedByPresetCount++;
     } else if (status === "unimplemented") counts.unimplemented++;
     else if (status === "intentional-divergence") counts.intentionalDivergence++;
     else assert.fail(`${ruleId}: unsupported rule-map status`);
@@ -115,8 +112,8 @@ function validateRuleMapIdentity(value: unknown): RuleMapCoverage {
     package: "eslint-plugin-vue",
     version,
     mappedRuleCount: counts.mapped,
-    skippedByPresetCount,
-    comparedRuleCount: counts.mapped - skippedByPresetCount + counts.unimplemented,
+    skippedByPresetCount: 0,
+    comparedRuleCount: counts.mapped + counts.unimplemented,
   };
 }
 
@@ -158,7 +155,7 @@ function validateIndex(
   assert.equal(typeof machine.platform, "string");
   assert.equal(typeof machine.arch, "string");
   assert(integer(machine.logicalCpuCount, "lint index logicalCpuCount") > 0);
-  assert.equal(index.preset, "ecosystem");
+  assert.equal(index.preset, "all-mapped");
   assert.equal(index.projectCount, projects.length);
   exactKeys(index.totals, [...totalFields], "lint divergence index totals");
   exactIds(
@@ -301,7 +298,7 @@ export function assessLinterDeletionShard(input: LinterDeletionInput): LinterDel
     buildReceiptSha256: build.sha256,
     binarySha256: build.receipt.binarySha256,
     requiredStages,
-    measurement: { preset: "ecosystem" as const, measureCoverageGap: true as const },
+    measurement: { preset: "all-mapped" as const, measureCoverageGap: true as const },
     inputs: {
       matrix: { path: "summary.json" as const, sha256: matrix.sha256 },
       divergenceIndex: {

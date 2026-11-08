@@ -1,12 +1,12 @@
 [
   {
-    "title": "Fix: Use self-closing syntax",
+    "title": "Fix: Use separate start and end tags",
     "kind": "quickfix",
     "diagnostics": [
       {
         "range": {
           "start": { "line": 2, "character": 2 },
-          "end": { "line": 2, "character": 23 }
+          "end": { "line": 2, "character": 25 }
         },
         "severity": 2,
         "code": "vue/html-self-closing",
@@ -14,7 +14,7 @@
           "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
         },
         "source": "vize/lint",
-        "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+        "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
       }
     ],
     "edit": {
@@ -27,10 +27,10 @@
           "edits": [
             {
               "range": {
-                "start": { "line": 2, "character": 2 },
-                "end": { "line": 2, "character": 23 }
+                "start": { "line": 2, "character": 22 },
+                "end": { "line": 2, "character": 24 }
               },
-              "newText": "<img src=\"/logo.png\" />"
+              "newText": ""
             }
           ]
         }
@@ -45,7 +45,7 @@
       {
         "range": {
           "start": { "line": 2, "character": 2 },
-          "end": { "line": 2, "character": 23 }
+          "end": { "line": 2, "character": 25 }
         },
         "severity": 2,
         "code": "vue/html-self-closing",
@@ -53,7 +53,7 @@
           "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
         },
         "source": "vize/lint",
-        "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+        "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
       }
     ],
     "edit": {

@@ -8,10 +8,10 @@ fn create_linter() -> ScriptLinter {
 }
 
 #[test]
-fn test_valid_pascal_case_name() {
+fn accepts_pascal_case_registered_components() {
     let source = r#"
 export default {
-  name: 'MyComponent'
+  components: { MyComponent, Heading2, Button }
 }
 "#;
     let result = create_linter().lint(source, 0);
@@ -19,10 +19,66 @@ export default {
 }
 
 #[test]
-fn test_valid_single_word_pascal_case() {
+fn reports_static_component_keys_with_upstream_ranges() {
+    let source = r#"export default {
+  components: { fooBar, "foo-baz": Foo, GoodOne }
+}"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2);
+
+    let first = source.find("fooBar").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (first, first + "fooBar".len() as u32)
+    );
+    let second = source.find("\"foo-baz\"").unwrap() as u32;
+    assert_eq!(
+        (result.diagnostics[1].start, result.diagnostics[1].end),
+        (second, second + "\"foo-baz\"".len() as u32)
+    );
+}
+
+#[test]
+fn applies_the_script_offset_to_component_key_ranges() {
+    let source = "export default { components: { fooBar } }";
+    let result = create_linter().lint(source, 41);
+    assert_eq!(result.error_count, 1);
+    let local = source.find("fooBar").unwrap() as u32;
+    assert_eq!(result.diagnostics[0].start, 41 + local);
+    assert_eq!(result.diagnostics[0].end, 41 + local + 6);
+}
+
+#[test]
+fn checks_define_component_and_identifier_bound_options() {
+    let direct = r#"
+import { defineComponent } from 'vue'
+export default defineComponent({ components: { fooBar } })
+"#;
+    assert_eq!(create_linter().lint(direct, 0).error_count, 1);
+
+    let bound = r#"
+const component = { components: { fooBar } }
+export default component
+"#;
+    assert_eq!(create_linter().lint(bound, 0).error_count, 1);
+}
+
+#[test]
+fn checks_wrapped_options_objects() {
     let source = r#"
 export default {
-  name: 'Button'
+  components: { fooBar }
+} satisfies { components: object }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn ignores_the_components_own_name_option() {
+    let source = r#"
+export default {
+  name: 'my-component'
 }
 "#;
     let result = create_linter().lint(source, 0);
@@ -30,22 +86,37 @@ export default {
 }
 
 #[test]
-fn test_valid_pascal_case_with_digits() {
+fn ignores_define_options_name_and_components() {
     let source = r#"
-export default {
-  name: 'Heading2'
-}
+defineOptions({
+  name: 'my-component',
+  components: { fooBar }
+})
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
 #[test]
-fn test_valid_no_name_option() {
+fn ignores_component_maps_held_in_separate_variables() {
     let source = r#"
+const components = { fooBar }
+export default { components }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn ignores_computed_and_spread_component_keys() {
+    let source = r#"
+const key = 'fooBar'
+const inherited = { fooBar }
 export default {
-  data() {
-    return { count: 0 }
+  components: {
+    [key]: Foo,
+    ...inherited,
+    GoodOne
   }
 }
 "#;
@@ -54,167 +125,10 @@ export default {
 }
 
 #[test]
-fn test_valid_no_options_object() {
+fn ignores_scripts_without_a_component_options_object() {
     let source = r#"
 import { ref } from 'vue'
-const count = ref(0)
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_non_string_literal_name_skipped() {
-    // A computed / identifier-valued `name` is not a string literal and is
-    // intentionally skipped.
-    let source = r#"
-const componentName = 'whatever'
-export default {
-  name: componentName
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_valid_computed_name_key_skipped() {
-    let source = r#"
-const key = 'name'
-export default {
-  [key]: 'my-component'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_invalid_kebab_case_name() {
-    let source = r#"
-export default {
-  name: 'my-component'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
-}
-
-#[test]
-fn test_invalid_camel_case_name() {
-    let source = r#"
-export default {
-  name: 'myComponent'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
-}
-
-#[test]
-fn test_invalid_snake_case_name() {
-    let source = r#"
-export default {
-  name: 'my_component'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_lowercase_single_word() {
-    let source = r#"
-export default {
-  name: 'button'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_define_component_kebab_case() {
-    let source = r#"
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'my-component'
-})
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_identifier_bound_options_kebab_case() {
-    let source = r#"
-const component = {
-  name: 'my-component'
-}
-
-export default component
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_string_key_name_camel_case() {
-    let source = r#"
-export default {
-  'name': 'myComponent'
-}
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_ts_satisfies_wrapper_kebab_case() {
-    let source = r#"
-import { defineComponent } from 'vue'
-
-export default {
-  name: 'my-component'
-} satisfies { name: string }
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-}
-
-#[test]
-fn test_invalid_define_options_kebab_case() {
-    let source = r#"
-defineOptions({
-  name: 'my-component'
-})
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
-}
-
-#[test]
-fn test_valid_define_options_pascal_case() {
-    let source = r#"
-defineOptions({
-  name: 'MyComponent'
-})
-"#;
-    let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
-}
-
-#[test]
-fn test_define_options_non_string_name_skipped() {
-    let source = r#"
-const componentName = 'whatever'
-defineOptions({
-  name: componentName
-})
+const fooBar = ref(0)
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);

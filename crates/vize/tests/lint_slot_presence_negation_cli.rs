@@ -32,7 +32,7 @@ fn original_and_boundaries_keep_complete_cli_json() {
         rows.push((
             id,
             format!("<script>\n{}\n</script>\n", row["script"].as_str().unwrap()),
-            row["nativeSpans"].as_array().unwrap().clone(),
+            row["officialSpans"].as_array().unwrap().clone(),
         ));
     }
     let mut captured = Vec::new();

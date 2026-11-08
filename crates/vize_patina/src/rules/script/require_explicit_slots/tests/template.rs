@@ -7,7 +7,6 @@
 //! the negative ones assert it is exactly empty.
 
 use super::{findings, lint_sfc, none, owned, undeclared};
-use crate::diagnostic::Severity;
 
 // --- The recovered case: a rendered slot the declaration omits --------------
 
@@ -42,6 +41,22 @@ defineSlots<{ footer(): unknown }>();
     assert_eq!(
         owned(&lint_sfc(sfc)),
         vec![undeclared(sfc, "<slot />", "default")]
+    );
+}
+
+#[test]
+fn reports_the_whole_non_self_closing_slot_element_like_upstream() {
+    let sfc = r#"<script setup lang="ts">
+const ready = true;
+</script>
+
+<template>
+  <slot></slot>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "<slot></slot>", "default")]
     );
 }
 
@@ -188,9 +203,7 @@ defineSlots<{ default(): unknown }>();
 }
 
 #[test]
-fn ignores_the_whole_component_when_one_slot_name_is_dynamic() {
-    // `:name` is resolved at runtime, so the rendered set is unknown and even
-    // the statically undeclared `footer` must not be reported.
+fn skips_only_the_dynamic_slot_name() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ default(): unknown }>();
 const which = 'footer';
@@ -200,42 +213,81 @@ const which = 'footer';
   <div><slot :name="which" /><slot name="footer" /></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
 }
 
 #[test]
-fn ignores_the_whole_component_when_a_slot_spreads_a_bound_object() {
-    // An argument-less `v-bind` can supply `name`.
+fn treats_an_argumentless_v_bind_slot_as_the_declared_default_outlet() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ default(): unknown }>();
 const attrs = { name: 'footer' };
 </script>
 
 <template>
-  <div><slot v-bind="attrs" /><slot name="footer" /></div>
+  <div><slot v-bind="attrs" /></div>
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
 #[test]
-fn ignores_a_declaration_that_cannot_be_enumerated() {
-    // `defineSlots<Slots>()` names a type this rule does not resolve, so the
-    // declared set is unknown and a missing name proves nothing.
+fn a_local_type_reports_only_an_undeclared_slot() {
     let sfc = r#"<script setup lang="ts">
 type Slots = { default(): unknown; footer(): unknown };
 defineSlots<Slots>();
 </script>
 
 <template>
-  <div><slot name="footer" /></div>
+  <div><slot name="other" /></div>
+</template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="other" />"#, "other")]
+    );
+}
+
+#[test]
+fn a_local_interface_contributes_its_declared_slot_names() {
+    let sfc = r#"<script setup lang="ts">
+export interface Slots {
+  default?: () => unknown;
+  title?: () => unknown;
+}
+defineSlots<Slots>();
+</script>
+
+<template>
+  <div><slot /><slot name="title" /></div>
 </template>
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
 #[test]
-fn ignores_a_declaration_with_an_index_signature() {
+fn an_interface_in_the_normal_script_contributes_slots_to_script_setup() {
+    let sfc = r#"<script lang="ts">
+export interface Slots<T = unknown> {
+  default?(props: { value: T }): unknown;
+  title?(): unknown;
+}
+</script>
+<script setup lang="ts" generic="T">
+defineSlots<Slots<T>>();
+</script>
+
+<template>
+  <div><slot /><slot name="title" /></div>
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn an_index_signature_contributes_no_known_slot_names() {
     let sfc = r#"<script setup lang="ts">
 defineSlots<{ [name: string]: () => unknown }>();
 </script>
@@ -244,14 +296,40 @@ defineSlots<{ [name: string]: () => unknown }>();
   <div><slot name="footer" /></div>
 </template>
 "#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
+}
+
+#[test]
+fn an_intersection_keeps_inline_slot_names() {
+    let sfc = r#"<script setup lang="ts">
+defineSlots<ImportedSlots & { default(): unknown }>();
+</script>
+
+<template>
+  <slot />
+</template>
+"#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
 
 #[test]
-fn ignores_a_template_slot_when_no_declaration_exists_at_all() {
-    // Without `defineSlots` every `<slot>` would be "undeclared"; that is the
-    // `useSlots`-without-`defineSlots` case the script half owns, and it needs
-    // a `useSlots()` call to fire.
+fn accepts_a_string_literal_bound_slot_name() {
+    let sfc = r#"<script setup lang="ts">
+defineSlots<{ footer(): unknown }>();
+</script>
+
+<template>
+  <slot :name="'footer'" />
+</template>
+"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn reports_a_template_slot_when_no_declaration_exists_at_all() {
     let sfc = r#"<script setup lang="ts">
 const id: number = 1;
 </script>
@@ -260,13 +338,16 @@ const id: number = 1;
   <div><slot name="footer" /></div>
 </template>
 "#;
-    assert_eq!(findings(&lint_sfc(sfc)), none());
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, r#"<slot name="footer" />"#, "footer")]
+    );
 }
 
 // --- The pre-existing script-only subset must keep working -----------------
 
 #[test]
-fn still_reports_use_slots_without_define_slots_through_the_sfc_path() {
+fn reports_the_slot_outlet_instead_of_the_use_slots_call() {
     let sfc = r#"<script setup lang="ts">
 const props = defineProps<{ id: number }>();
 const slots = useSlots();
@@ -276,16 +357,9 @@ const slots = useSlots();
   <div><slot /></div>
 </template>
 "#;
-    let call = sfc.find("useSlots()").expect("useSlots call");
     assert_eq!(
-        findings(&lint_sfc(sfc)),
-        vec![(
-            "script/require-explicit-slots",
-            Severity::Warning,
-            call as u32,
-            (call + "useSlots()".len()) as u32,
-            "Slots consumed via useSlots() must be explicitly typed with defineSlots<...>().",
-        )]
+        owned(&lint_sfc(sfc)),
+        vec![undeclared(sfc, "<slot />", "default")]
     );
 }
 

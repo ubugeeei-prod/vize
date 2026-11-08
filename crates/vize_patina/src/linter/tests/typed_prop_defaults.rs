@@ -51,6 +51,7 @@ fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
                 .with_disabled_rules(vec![
                     "script/define-props-destructuring".into(),
                     "vue/no-unused-setup-bindings".into(),
+                    "vue/multi-word-component-names".into(),
                 ])
                 .with_help_level(HelpLevel::None)
                 .lint_sfc(source, filename);
@@ -72,6 +73,7 @@ fn typed_prop_defaults_reach_default_sfc_dispatch_with_complete_controls() {
                 rule.into(),
                 "script/define-props-destructuring".into(),
                 "vue/no-unused-setup-bindings".into(),
+                "vue/multi-word-component-names".into(),
             ]),
             Linter::with_preset(LintPreset::Incremental),
         ] {

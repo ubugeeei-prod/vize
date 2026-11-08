@@ -8,6 +8,7 @@
 use super::binding::op_span;
 use super::surface::SurfaceDirective;
 use vize_l0::Span;
+use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{BindingOp, DynamicName};
 
 /// One attached binding op and its authored spelling.
@@ -139,5 +140,16 @@ impl<'a> L2Bound<'a> {
             }
         }?;
         Some(expression.source())
+    }
+
+    pub(in crate::markup) fn retained_expression(self) -> Option<&'a JsExpr<'a>> {
+        let expression = match self.op {
+            BindingOp::Bind(bind) => bind.value.as_ref(),
+            _ => None,
+        }?;
+        match expression {
+            ExprRef::Js(expression) => Some(expression),
+            ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => None,
+        }
     }
 }

@@ -27,7 +27,16 @@ void test("the casing source keeps the complete original and its exact finite su
       occurrences: 1,
     },
   ]);
-  assert.deepEqual(asArray(source.successor.latestChanges), []);
+  assert.deepEqual(asArray(source.successor.latestChanges), [
+    {
+      ruleId: "vue/component-name-in-template-casing",
+      before:
+        '"endColumn": 15,\n                        "help": "Use kebab-case for component names"',
+      after:
+        '"endColumn": 12,\n                        "help": "Use kebab-case for component names"',
+      occurrences: 1,
+    },
+  ]);
   const prefix = '"src/Casing.vue",\n        r#"';
   const extract = (bytes: Buffer) => {
     const rust = bytes.toString("utf8"),

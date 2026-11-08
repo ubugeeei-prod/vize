@@ -12,6 +12,7 @@
 // Essential rules
 mod attribute_hyphenation;
 mod attribute_order;
+mod authored_closing;
 mod comment_directive;
 mod if_chain;
 mod no_bare_strings_in_template;
@@ -323,6 +324,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     }
     if !registry.has_rule("vue/no-bare-strings-in-template") {
         registry.register(Box::new(NoBareStringsInTemplate));
+        registry.mark_has_exit_element_rules();
     }
     if !registry.has_rule("vue/no-static-inline-styles") {
         registry.register(Box::new(NoStaticInlineStyles));

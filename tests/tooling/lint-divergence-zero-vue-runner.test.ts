@@ -119,6 +119,25 @@ test("both real reporters enforce an explicitly expected zero-Vue corpus", async
   }
 });
 
+test("the TypeScript reporter runs Patina's all preset for all mapped rules", () => {
+  const input = fixture();
+  try {
+    const args = [...input.writeRegistry(0), "--all-mapped-rules"];
+    const measured = report(args);
+    assert.equal(measured.status, 0, `${measured.stdout}\n${measured.stderr}`);
+    const [invocation] = fs
+      .readFileSync(input.marker, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as string[]);
+    const preset = invocation.indexOf("--preset");
+    assert.notEqual(preset, -1, JSON.stringify(invocation));
+    assert.equal(invocation[preset + 1], "all");
+  } finally {
+    input.clean();
+  }
+});
+
 test("neither reporter grants empty-input authority without the explicit zero expectation", async () => {
   for (const expected of [undefined, 1, -1, "0", null]) {
     const input = fixture();

@@ -11,18 +11,21 @@ pub(super) fn has_unresolved_props(analysis: &Croquis) -> bool {
     else {
         return false;
     };
-    if let Some(complete) = analysis.types.resolved_props_complete() {
-        return !complete;
-    }
     let type_args = type_args
         .strip_prefix('<')
         .and_then(|inner| inner.strip_suffix('>'))
         .unwrap_or(type_args);
-    imported_shape(
+    if imported_shape(
         analysis.types.definitions(),
         type_args,
         &mut FxHashSet::default(),
-    )
+    ) {
+        return true;
+    }
+    analysis
+        .types
+        .resolved_props_complete()
+        .is_some_and(|complete| !complete)
 }
 
 fn imported_shape(
