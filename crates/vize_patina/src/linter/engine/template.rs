@@ -120,7 +120,12 @@ impl Linter {
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();
-                    analyzer.draw_lint_template(LintTemplate::new(input.l2));
+                    let lowered = input.l2.lowered();
+                    analyzer.draw_lint_template(LintTemplate::new(
+                        input.l2.surface(),
+                        lowered.allocator,
+                        &lowered.root,
+                    ));
                     analyzer.finish()
                 });
                 Some(&owned_analysis)
