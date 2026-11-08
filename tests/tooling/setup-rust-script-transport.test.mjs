@@ -45,7 +45,7 @@ function executable(file, lines) {
 function installScript(original) {
   let body = fs.readFileSync(path.join(actionPath, "action.yml"), "utf8");
   if (original) {
-    const replacement = '          . "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
+    const replacement = '          "$BASH" "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
     assert.equal(body.split(replacement).length, 2);
     body = body.replace(
       replacement,
@@ -55,7 +55,7 @@ function installScript(original) {
         '            "' + primary + '"',
       ].join("\n"),
     );
-    assert.equal(digest(body), "57c321c3ea4604a871184480fe1fd438cf297cd72f787a7563cd3a1a20772d33");
+    assert.equal(digest(body), "f07c60eb9030ac17e58f5a325935433cabdde0d949b3314a6ffd8b0c21d06ec1");
   }
   return parse(body).runs.steps.find((s) => s.name === "Install rust-script").run;
 }
@@ -78,6 +78,7 @@ function run(options = {}) {
     bad = Buffer.from(bytes);
   bad[bad.length - 1] ^= 1;
   fs.writeFileSync(path.join(root, "fixture.tar.gz"), bytes);
+  fs.writeFileSync(path.join(root, "fixture-runner"), runner, { mode: 0o755 });
   fs.writeFileSync(path.join(root, "changed.tar.gz"), bad);
   fs.writeFileSync(path.join(root, "partial.tar.gz"), bytes.subarray(0, 7));
   fs.writeFileSync(path.join(root, "json.tar.gz"), "{}");
@@ -124,7 +125,12 @@ function run(options = {}) {
   executable(path.join(bin, "cargo"), [
     "#!/bin/bash",
     'printf "%s\\n" "$*" >> "$CARGO_LOG"',
-    "exit 73",
+    'if [ "$CARGO_STATUS" -eq 0 ]; then',
+    '  mkdir -p "$CARGO_HOME/bin"',
+    '  cp "$FIXTURE_RUNNER" "$CARGO_HOME/bin/rust-script"',
+    '  chmod 0755 "$CARGO_HOME/bin/rust-script"',
+    "fi",
+    'exit "$CARGO_STATUS"',
   ]);
   executable(path.join(bin, "tar"), [
     "#!/bin/bash",
@@ -170,6 +176,8 @@ function run(options = {}) {
       HELPER_LOG: path.join(root, "helper.log"),
       RUNNER_LOG: path.join(root, "runner.log"),
       CARGO_LOG: path.join(root, "cargo.log"),
+      CARGO_STATUS: String(options.cargoStatus ?? 73),
+      FIXTURE_RUNNER: path.join(root, "fixture-runner"),
       TAR_LOG: path.join(root, "tar.log"),
     },
   });
@@ -236,6 +244,13 @@ function accepted(run, count) {
   assert.equal(fs.statSync(path.join(run.cargoHome, "bin/rust-script")).mode & 0o777, 0o755);
   assert.equal(run.read("github-path"), run.cargoHome + "/bin\n");
   assert.equal(run.read("helper.log").trimEnd().split("\n").at(-1), pin);
+}
+function sourceFallback(run, expectedStatus) {
+  assert.equal(run.result.error, undefined);
+  assert.equal(run.result.signal, null);
+  assert.equal(run.result.status, expectedStatus, run.result.stderr);
+  assert.equal(run.read("cargo.log"), "install rust-script --version 0.34.0 --locked --force\n");
+  assert.match(run.result.stderr, /deferring to source install/);
 }
 function withRun(options, verify) {
   const observed = run(options);
@@ -324,19 +339,30 @@ void test("missing and malformed HTTP status cannot enter recovery", () => {
     });
   }
 });
-void test("API failures never produce a third download or reach extraction", () => {
+void test("API failures defer to the pinned crates.io source install", () => {
   for (const [apiStatus, apiHttp] of [
     [22, "500"],
     [22, "403"],
     [28, "000"],
   ]) {
     withRun({ apiStatus, apiHttp }, (observed) => {
-      retained(observed, 2);
-      assert.equal(observed.result.status, apiStatus);
+      assert.equal(observed.calls.length, 2);
+      sourceFallback(observed, 73);
       assert.equal(observed.read("helper.log"), "");
       assert.equal(observed.read("runner.log"), "");
     });
   }
+});
+void test("a pinned source install completes when both release routes stall", () => {
+  withRun({ apiStatus: 28, apiHttp: "000", cargoStatus: 0 }, (observed) => {
+    assert.equal(observed.calls.length, 2);
+    sourceFallback(observed, 0);
+    assert.equal(
+      fs.readFileSync(path.join(observed.cargoHome, "bin/rust-script"), "utf8"),
+      observed.runner,
+    );
+    assert.equal(observed.read("github-path"), observed.cargoHome + "/bin\n");
+  });
 });
 void test("changed or partial API bodies refuse full SHA before tar or execution", () => {
   for (const options of [
