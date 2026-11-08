@@ -150,6 +150,75 @@ type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>
 type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
 `,
   },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase & $ShallowUnwrapRef<Exposed>, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+  },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+`,
+  },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+  },
 ] as const;
 
 export function certifyComponentConstructorTransition(before: Buffer, after: Buffer) {
@@ -184,8 +253,8 @@ export function certifyComponentConstructorTransition(before: Buffer, after: Buf
     assert.equal(occurrences(old, previous), 0, "only one previous constructor variant is present");
     assert.equal(
       occurrences(next, previous),
-      0,
-      "only one previous constructor variant is present",
+      previous === candidate.current ? 1 : 0,
+      "only the authenticated successor may also be a known predecessor",
     );
   }
   return certifiedTransition(
