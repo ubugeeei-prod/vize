@@ -29,13 +29,6 @@ const approvedRunnerLabels = new Set([
   "windows-2025-vs2026",
 ]);
 
-const approvedWorkflowRunnerExceptions = new Map([
-  // This frozen source-regeneration baseline has an independent public-provider
-  // drift. Keep it on its reviewed GitHub-hosted environment until that custody
-  // chain is advanced in its own change.
-  ["canon-helper-native-baseline.yml", new Set(["ubuntu-24.04"])],
-]);
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
@@ -93,11 +86,7 @@ test("non-release workflows use maximum Blacksmith runner classes", () => {
     .flatMap((file) => {
       const source = readRepoFile(`.github/workflows/${file}`);
       return workflowRunnerLabels(source)
-        .filter(
-          (runner) =>
-            !approvedRunnerLabels.has(runner) &&
-            !approvedWorkflowRunnerExceptions.get(file)?.has(runner),
-        )
+        .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });
   assert.deepEqual(violations, []);
