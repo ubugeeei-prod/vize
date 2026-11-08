@@ -39,6 +39,10 @@ const packages = [
     source: new URL("../../npm/devtools/src/", import.meta.url),
   },
   {
+    name: "@vizejs/volar-plugin",
+    source: new URL("../../npm/volar/src/", import.meta.url),
+  },
+  {
     name: "@vizejs/ui",
     sourceRoot: uiRoot,
     minimumDeclarations: 3_000,
