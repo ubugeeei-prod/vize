@@ -3,7 +3,7 @@ import { computed } from "vue";
 import type { TimelineStep } from "./ladder";
 import { describeWalk, type TimelineWalk } from "./fusion";
 import { formatNanos } from "./format";
-import StepPill from "./StepPill.vue";
+import StepPill from "./step-pill.vue";
 
 const { steps, walks, current } = defineProps<{
   steps: TimelineStep[];

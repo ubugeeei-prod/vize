@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Child from "#mock-child/Child.vue";
+import Child from "#mock-child/child.vue";
 </script>
 
 <template>

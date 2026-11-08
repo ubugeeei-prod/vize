@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
+import ExperimentalFeatures from "../../shared/experimental-features.vue";
 import { useCompilerInit } from "../../utils/useCompilerInit";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
-import CodeHighlight from "../../shared/CodeHighlight.vue";
+import MonacoEditor from "../../shared/monaco-editor.vue";
+import CodeHighlight from "../../shared/code-highlight.vue";
 import { useTheme } from "../../utils/useTheme";
 import { useClipboard } from "../../utils/useClipboard";
 import { useAtelierCompiler } from "./useAtelierCompiler";

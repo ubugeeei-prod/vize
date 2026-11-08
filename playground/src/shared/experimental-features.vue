@@ -13,7 +13,7 @@ const { scope, modelValue } = defineProps<{
 }>();
 const emit = defineEmits<{
   "update:modelValue": [options: ExperimentalOptions];
-  "example": [key: string];
+  example: [key: string];
 }>();
 const features = computed(() => featuresFor(scope));
 const enabledCount = computed(() => features.value.filter(({ key }) => modelValue[key]).length);

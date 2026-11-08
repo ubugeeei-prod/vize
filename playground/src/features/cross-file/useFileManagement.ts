@@ -2,7 +2,7 @@ import { ref, computed, watch, nextTick } from "vue";
 import type { CroquisResult } from "../../wasm/index";
 import { PRESETS } from "../../shared/presets/crossfile";
 import type { CrossFileIssue } from "./types";
-import MonacoEditor from "../../shared/MonacoEditor.vue";
+import MonacoEditor from "../../shared/monaco-editor.vue";
 
 export function useFileManagement() {
   const currentPreset = ref<string>("default");

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import CodeHighlight from "../../src/shared/CodeHighlight.vue";
+import CodeHighlight from "../../src/shared/code-highlight.vue";
 
 const { initial, replacement } = defineProps<{ initial: string; replacement: string }>();
 const code = ref(initial);

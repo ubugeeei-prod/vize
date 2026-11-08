@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useTemplateRef } from "vue";
 import { mdiCodeTags } from "@mdi/js";
-import MonacoEditor, { type ScopeDecoration, type Diagnostic } from "../../shared/MonacoEditor.vue";
-import ExperimentalFeatures from "../../shared/ExperimentalFeatures.vue";
+import MonacoEditor, {
+  type ScopeDecoration,
+  type Diagnostic,
+} from "../../shared/monaco-editor.vue";
+import ExperimentalFeatures from "../../shared/experimental-features.vue";
 import type { ExperimentalOptions } from "../../shared/experimentalFeatures";
 import { ANALYSIS_PRESET } from "../../shared/presets/croquis";
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import CodeHighlight from "../../shared/CodeHighlight.vue";
+import CodeHighlight from "../../shared/code-highlight.vue";
 import type { CodeOutputs } from "../atelier/codeOutputs";
 import type { OutputTarget } from "./useStageLadder";
 
