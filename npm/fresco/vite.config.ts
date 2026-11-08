@@ -32,8 +32,10 @@ export default defineConfig({
   pack: {
     entry: [
       "src/index.ts",
+      "src/ascii-font/index.ts",
       "src/components/index.ts",
       "src/composables/index.ts",
+      "src/qr-code/index.ts",
       "src/testing/index.ts",
     ],
     format: "esm",

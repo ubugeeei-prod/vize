@@ -107,9 +107,10 @@ await test("source-built cross-file lint preserves complete browser-origin outpu
           stdout: result.stdout ?? "",
           stderr: result.stderr ?? "",
         };
+        const currentEntry = current.byPath[entry.path];
         const expected = enabled
-          ? entry.path === current.row.path
-            ? current.row.currentExpected
+          ? currentEntry
+            ? currentEntry.currentExpected
             : entry.expected
           : [{ file: entry.path, messages: [], errorCount: 0, warningCount: 0 }];
         evidence.runs.push({
@@ -126,7 +127,7 @@ await test("source-built cross-file lint preserves complete browser-origin outpu
         assert.equal(run.status, 0, JSON.stringify(run));
         assert.equal(run.stderr, "", JSON.stringify(run));
         assert.deepEqual(JSON.parse(run.stdout), expected, JSON.stringify(run));
-        if (enabled && entry.path === current.row.path) {
+        if (enabled && currentEntry) {
           assert.notDeepEqual(JSON.parse(run.stdout), entry.expected);
         }
         assert.deepEqual(fs.readFileSync(target), input, "lint must not alter original source");
