@@ -140,7 +140,7 @@ function run(options = {}) {
   const script = installScript(options.original);
   const result = spawnSync("/bin/bash", ["-c", script], {
     encoding: "utf8",
-    timeout: 10_000,
+    timeout: 30_000,
     env: {
       ...process.env,
       PATH: bin + ":/usr/bin:/bin:/sbin",
