@@ -74,3 +74,26 @@ test("Menu skips separators and disabled commands during navigation and typeahea
   assert.deepEqual(selected, ["save", "open"]);
   mounted.unmount();
 });
+
+test("Tabs does not paint a pending highlight as active after focus leaves", async () => {
+  const focused = ref(true);
+  const mounted = mountFresco(() =>
+    h(Tabs, {
+      tabs: [
+        { key: "overview", label: "Overview" },
+        { key: "settings", label: "Settings" },
+      ],
+      modelValue: "overview",
+      focused: focused.value,
+    }),
+  );
+
+  await dispatchKey({ key: "right" });
+  focused.value = false;
+  await dispatchKey({ key: "noop" });
+
+  const labels = findNodes(mounted.root, (node) => node.type === "text");
+  assert.equal(labels.at(0)?.props.fg, "cyan", "the active tab retains active styling");
+  assert.equal(labels.at(2)?.props.fg, undefined, "the pending highlight loses active styling");
+  mounted.unmount();
+});

@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -72,8 +73,7 @@ export const RadioGroup = defineComponent({
   emits: ["update:modelValue", "change", "update:focusedIndex"],
   setup(props, { emit }) {
     const highlightedIndex = ref(-1);
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     const syncHighlight = () => {
       const requested = props.focusedIndex;
@@ -137,18 +137,11 @@ export const RadioGroup = defineComponent({
           activate();
           return;
         }
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         setHighlight(
           typeaheadIndex(
             props.options,
             highlightedIndex.value,
-            typeahead,
+            typeahead.push(character),
             (option) => option.label,
           ),
         );
