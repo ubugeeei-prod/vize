@@ -1,12 +1,20 @@
 /** Public JavaScript protocol shared by Fresco components and the renderer. */
 
+/** Discriminant shared by JavaScript and native render nodes. */
 export type FrescoRenderNodeKind = "root" | "box" | "text" | "input";
+/** Numeric or CSS-like dimension accepted by component style props. */
 export type FrescoDimension = number | string;
+/** Display modes supported by the native layout engine. */
 export type FrescoDisplay = "flex" | "none";
+/** Positioning modes supported by the native layout engine. */
 export type FrescoPosition = "absolute" | "relative" | "static";
+/** Overflow behavior accepted on either layout axis. */
 export type FrescoOverflow = "visible" | "hidden" | "scroll";
+/** Main-axis direction accepted by Fresco flex layouts. */
 export type FrescoFlexDirection = "row" | "column" | "row-reverse" | "column-reverse";
+/** Flex-line wrapping mode accepted by Fresco layouts. */
 export type FrescoFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
+/** Main-axis distribution accepted by Fresco flex layouts. */
 export type FrescoJustifyContent =
   | "flex-start"
   | "flex-end"
@@ -16,6 +24,7 @@ export type FrescoJustifyContent =
   | "space-between"
   | "space-around"
   | "space-evenly";
+/** Cross-axis item alignment accepted by Fresco layouts. */
 export type FrescoAlignItems =
   | "flex-start"
   | "flex-end"
@@ -24,7 +33,9 @@ export type FrescoAlignItems =
   | "center"
   | "stretch"
   | "baseline";
+/** Per-item cross-axis override accepted by Fresco layouts. */
 export type FrescoAlignSelf = "auto" | FrescoAlignItems;
+/** Multi-line cross-axis distribution accepted by Fresco layouts. */
 export type FrescoAlignContent =
   | "flex-start"
   | "flex-end"
@@ -108,12 +119,14 @@ export interface FrescoSnakeStyleAliases<Dimension extends FrescoDimension = Fre
   row_gap?: number;
 }
 
+/** Complete public style bag with canonical fields and compatibility aliases. */
 export type FrescoStyle<Dimension extends FrescoDimension = FrescoDimension> =
   FrescoCanonicalStyle<Dimension> & FrescoSnakeStyleAliases<Dimension>;
 
 /** Canonical style emitted to the native renderer. Dimensions are normalized to strings. */
 export type FrescoRenderStyle = FrescoCanonicalStyle<string>;
 
+/** Terminal color and text attributes emitted with a render node. */
 export interface FrescoAppearance {
   fg?: string;
   bg?: string;
@@ -127,7 +140,9 @@ export interface FrescoAppearance {
   strikethrough?: boolean;
 }
 
+/** Border glyph family rendered around a box. */
 export type FrescoBorderStyle = "none" | "single" | "double" | "rounded" | "heavy" | "dashed";
+/** Wrapping or truncation policy for native text nodes. */
 export type FrescoTextWrapMode =
   | "none"
   | "wrap"
@@ -145,14 +160,17 @@ interface FrescoRenderNodeBase {
   children?: number[];
 }
 
+/** Root node sent to the native renderer. */
 export interface FrescoRootRenderNode extends FrescoRenderNodeBase {
   nodeType: "root";
 }
 
+/** Layout and appearance-only box node sent to the native renderer. */
 export interface FrescoBoxRenderNode extends FrescoRenderNodeBase {
   nodeType: "box";
 }
 
+/** Text node sent to the native renderer. */
 export interface FrescoTextRenderNode extends FrescoRenderNodeBase {
   nodeType: "text";
   text?: string;
@@ -160,6 +178,7 @@ export interface FrescoTextRenderNode extends FrescoRenderNodeBase {
   wrapMode?: FrescoTextWrapMode;
 }
 
+/** Editable text input node sent to the native renderer. */
 export interface FrescoInputRenderNode extends FrescoRenderNodeBase {
   nodeType: "input";
   value?: string;
@@ -176,12 +195,15 @@ type StrictUnionHelper<Member, Union> = Member extends Member
   : never;
 type StrictUnion<Union> = StrictUnionHelper<Union, Union>;
 
+/** Strict discriminated union accepted by the native render bridge. */
 export type FrescoRenderNode = StrictUnion<
   FrescoRootRenderNode | FrescoBoxRenderNode | FrescoTextRenderNode | FrescoInputRenderNode
 >;
 
+/** Lifecycle phase attached to a normalized keyboard event. */
 export type KeyEventType = "press" | "repeat" | "release";
 
+/** Modifier state shared by keyboard and mouse events. */
 export interface FrescoModifiers {
   ctrl: boolean;
   alt: boolean;
@@ -193,6 +215,7 @@ export interface FrescoModifiers {
   numLock: boolean;
 }
 
+/** Normalized keyboard event exposed to components and composables. */
 export interface KeyEvent extends FrescoModifiers {
   type: "key";
   key?: string;
@@ -200,17 +223,20 @@ export interface KeyEvent extends FrescoModifiers {
   eventType?: KeyEventType;
 }
 
+/** Bracketed-paste input event. */
 export interface PasteEvent {
   type: "paste";
   text: string;
 }
 
+/** Terminal viewport resize event. */
 export interface ResizeEvent {
   type: "resize";
   width: number;
   height: number;
 }
 
+/** Mouse transition or scroll direction reported by the terminal. */
 export type FrescoMouseEventKind =
   | "down"
   | "up"
@@ -221,6 +247,7 @@ export type FrescoMouseEventKind =
   | "scroll-left"
   | "scroll-right";
 
+/** Normalized mouse event exposed to components and composables. */
 export interface MouseEvent {
   type: "mouse";
   kind?: FrescoMouseEventKind;
@@ -230,17 +257,20 @@ export interface MouseEvent {
   modifiers?: FrescoModifiers;
 }
 
+/** Terminal focus-in or focus-out event. */
 export interface FocusEvent {
   type: "focus";
   focused: boolean;
 }
 
+/** IME composition lifecycle event with text and cursor state. */
 export interface CompositionEvent {
   type: "compositionstart" | "compositionupdate" | "compositionend";
   text: string;
   cursor: number;
 }
 
+/** Strict union of every public terminal input event. */
 export type FrescoInputEvent = StrictUnion<
   KeyEvent | PasteEvent | ResizeEvent | MouseEvent | FocusEvent | CompositionEvent
 >;
