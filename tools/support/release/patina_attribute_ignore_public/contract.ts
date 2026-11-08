@@ -30,9 +30,22 @@ const consumerSuccessorSha256 = "1de5f35741488845e6eab11b38ae07ae3f823e979c0b219
 const attributeEslintOwner = "npm/linter/oxlint/src/attribute-eslint.test.ts";
 const attributeEslintCurrent = {
   bytes: 6_195,
-  sha256: "8925d8111eedb2030d6f1f8b505cac6a1bd2ec8c73f0d5b177c1b5b1812afc94",
+  sha256: "84be57404c41a72500084386f558dcb9843d6b28e271a3f0336679ed58233e5b",
   line: '  const workspace = createRequire(new URL("../package.json", import.meta.url));\n',
 };
+const attributeEslintBeforeDependencies = {
+  sha256: "8925d8111eedb2030d6f1f8b505cac6a1bd2ec8c73f0d5b177c1b5b1812afc94",
+  replacements: [
+    [
+      "  // The declared Nuxt consumer resolves ESLint 10.14.0 in the current lock.\n",
+      "  // The declared Nuxt consumer resolves ESLint 10.13.0 in the current lock.\n",
+    ],
+    [
+      '  const targetProviders = { eslint: "10.14.0", "vue-eslint-parser": "10.4.1" };\n',
+      '  const targetProviders = { eslint: "10.13.0", "vue-eslint-parser": "10.4.1" };\n',
+    ],
+  ],
+} as const;
 const attributeEslintHistorical = {
   bytes: 6_204,
   sha256: "023e04530bcf9ea95d52c1958fe7a0810d6fff568c1ba238b5599a3973f86ff3",
@@ -43,7 +56,12 @@ function beforeDependencyOwnership(path: string, observed: Buffer): Buffer {
   if (path !== attributeEslintOwner) return observed;
   assert.equal(observed.length, attributeEslintCurrent.bytes, path);
   assert.equal(digest(observed), attributeEslintCurrent.sha256, path);
-  const current = observed.toString("utf8");
+  let current = observed.toString("utf8");
+  for (const [after, before] of attributeEslintBeforeDependencies.replacements) {
+    assert.equal(current.split(after).length, 2, path);
+    current = current.replace(after, before);
+  }
+  assert.equal(digest(current), attributeEslintBeforeDependencies.sha256, path);
   assert.equal(current.split(attributeEslintCurrent.line).length, 2, path);
   const historical = Buffer.from(
     current.replace(attributeEslintCurrent.line, attributeEslintHistorical.line),
