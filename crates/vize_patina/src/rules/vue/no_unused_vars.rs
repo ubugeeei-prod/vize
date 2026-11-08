@@ -275,10 +275,10 @@ fn authored_element_end(source: &str, open: usize, after: usize) -> usize {
     let Some(tag) = tag_start.get(..tag_len) else {
         return after;
     };
-    let closing = format!("</{tag}");
+    let closing = cstr!("</{tag}");
     source
         .get(after..)
-        .and_then(|rest| rest.find(&closing))
+        .and_then(|rest| rest.find(closing.as_str()))
         .and_then(|relative| {
             let closing_start = after + relative;
             source
