@@ -15,6 +15,7 @@ on:
       - crates/vize/src/commands/content_mapper.rs
       - crates/vize/src/commands/content_mapper/dispatch.rs
       - crates/vize/src/commands/content_mapper/dispatch/**
+      - crates/vize_croquis/src/scope/**
 
 permissions:
   contents: read
