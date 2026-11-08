@@ -79,6 +79,10 @@ const packages = [
     source: new URL("../../npm/cli/src/", import.meta.url),
   },
   {
+    name: "@vizejs/babel-plugin",
+    source: new URL("../../npm/builder/babel/src/", import.meta.url),
+  },
+  {
     name: "oxlint-plugin-vize",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
