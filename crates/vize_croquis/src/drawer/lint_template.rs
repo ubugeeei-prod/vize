@@ -2,17 +2,16 @@
 //!
 //! The existing template drawer still owns the compatibility semantics. This
 //! module supplies its short-lived node view without running Armature again:
-//! structure and authored coordinates come from L1, while normalized element
-//! identity and retained JavaScript expressions come from L2.
+//! structure and authored coordinates come from L1, while namespace and
+//! retained JavaScript expressions come from L2.
 
 use oxc_allocator::CloneIn;
+use oxc_ast_visit::VisitMut;
 use vize_carton::FxHashMap;
 use vize_l0::{Allocator, Box, Span, String, Vec};
 use vize_l1::markup::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
-use vize_l1::markup::{
-    AttrValue, Attribute, Element, ElementClose, SurfaceChild, SurfaceTree, Token,
-};
+use vize_l1::markup::{AttrValue, Attribute, Element, SurfaceChild, SurfaceTree, Token};
 use vize_l2::{expr::ExprRef, op::Region};
 use vize_relief::{
     AttributeNode, CommentNode, ConstantType, DirectiveNode, ElementNode, ElementType,
@@ -20,7 +19,7 @@ use vize_relief::{
     SimpleExpressionNode, SourceLocation, TemplateChildNode, TextNode,
 };
 
-use super::{Drawer, helpers::is_component_tag};
+use super::Drawer;
 
 mod index;
 use index::{ElementIdentity, collect_region};
@@ -97,7 +96,7 @@ pub(super) struct CompatibilityRoot<'t, 'a> {
     allocator: &'a Allocator,
     surface: &'t SurfaceTree<'a>,
     expressions: FxHashMap<(u32, u32), ExprRef<'a>>,
-    elements: FxHashMap<u32, ElementIdentity<'a>>,
+    elements: FxHashMap<u32, ElementIdentity>,
     legacy_slot_bindings: bool,
 }
 
@@ -173,7 +172,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                     &self.allocator,
                 )),
                 SurfaceChild::Text(token) => TemplateChildNode::Text(Box::new_in(
-                    TextNode::new(token.text, self.token_loc(token)),
+                    TextNode::new(self.decoded_text(token.text), self.token_loc(token)),
                     &self.allocator,
                 )),
                 SurfaceChild::Comment(token) => TemplateChildNode::Comment(Box::new_in(
@@ -229,22 +228,16 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let end = self.offset(surface.open.gt.text) + surface.open.gt.text.len() as u32;
         let authored_tag = surface.tag();
         let identity = self.elements.get(&start).copied();
-        let tag = identity.map_or(authored_tag, |identity| identity.name);
         let mut element = ElementNode::new(
             self.allocator,
-            tag,
+            authored_tag,
             SourceLocation {
                 span: Span::new(start, end),
             },
         );
         if let Some(identity) = identity {
-            element.tag_type = identity.kind;
             element.ns = identity.namespace;
-        } else {
-            element.tag_type = element_type(authored_tag);
         }
-        element.is_self_closing =
-            surface.open.slash.is_some() || matches!(surface.close, ElementClose::NotExpected);
 
         let frozen = inherited_frozen
             || surface.open.is_verbatim()
@@ -253,6 +246,11 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .attrs
                 .iter()
                 .any(|attribute| attribute.name.text == "v-pre");
+        element.tag_type = element_type(surface, frozen);
+        element.is_self_closing = surface.open.slash.is_some()
+            && !(element.ns == vize_relief::Namespace::Html
+                && element.tag_type == ElementType::Element
+                && !vize_l0::is_void_tag(authored_tag));
         for attribute in &surface.open.attrs {
             if let Some(prop) = self.prop(attribute, frozen) {
                 element.props.push(prop);
@@ -325,7 +323,17 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 span: self.attribute_span(attribute),
             },
         );
-        node.raw_name = Some(attribute.name.text);
+        node.raw_name = Some(match decomposition.prefix {
+            DirectivePrefix::Full => attribute
+                .name
+                .text
+                .split_once([':', '.'])
+                .map_or(attribute.name.text, |(head, _)| head),
+            DirectivePrefix::Bind => ":",
+            DirectivePrefix::Prop => ".",
+            DirectivePrefix::On => "@",
+            DirectivePrefix::Slot => "#",
+        });
         node.arg = decomposition.arg.map(|argument| {
             let (span, is_static) = match argument {
                 ArgSyntax::Static(span) => (span, true),
@@ -391,19 +399,53 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     }
 
     fn expression(&self, fallback: &'a str, span: Span, is_static: bool) -> ExpressionNode<'a> {
-        let retained = self.expressions.get(&(span.start, span.end)).copied();
-        let content = retained.map_or(fallback, |expression| expression.source());
+        let retained = self.retained_expression(fallback, span);
+        let content = retained.map_or(fallback, |expression| {
+            if expression.span() == span {
+                expression.source()
+            } else {
+                fallback
+            }
+        });
         let mut node = SimpleExpressionNode::new(content, is_static, SourceLocation { span });
         if let Some(ExprRef::Js(js)) = retained {
+            let mut ast = js.ast.clone_in(self.allocator.as_oxc());
+            let offset = js.span.start.saturating_sub(span.start);
+            DecodedExpressionSpans {
+                expression: js,
+                offset,
+            }
+            .visit_expression(&mut ast);
             node.js_ast = Some(RetainedJsAst {
-                ast: self.allocator.as_oxc().alloc(RetainedJsAstKind::Expression(
-                    js.ast.clone_in(self.allocator.as_oxc()),
-                )),
-                raw: js.source,
+                ast: self
+                    .allocator
+                    .as_oxc()
+                    .alloc(RetainedJsAstKind::Expression(ast)),
+                raw: content,
             });
             node.const_type = ConstantType::NotConstant;
         }
         ExpressionNode::Simple(Box::new_in(node, &self.allocator))
+    }
+
+    fn retained_expression(&self, fallback: &str, span: Span) -> Option<ExprRef<'a>> {
+        if let Some(expression) = self.expressions.get(&(span.start, span.end)).copied() {
+            return Some(expression);
+        }
+        let trimmed = fallback.trim();
+        if trimmed.len() == fallback.len() {
+            return None;
+        }
+        let leading = fallback.len().saturating_sub(fallback.trim_start().len()) as u32;
+        let trailing = fallback.len().saturating_sub(fallback.trim_end().len()) as u32;
+        let trimmed_span = Span::new(
+            span.start.saturating_add(leading),
+            span.end.saturating_sub(trailing),
+        );
+        self.expressions
+            .get(&(trimmed_span.start, trimmed_span.end))
+            .copied()
+            .filter(|expression| expression.source() == trimmed)
     }
 
     fn decoded_value(&self, value: &AttrValue<'a>) -> &'a str {
@@ -411,6 +453,15 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         if raw.contains('&') {
             self.allocator
                 .alloc_str(decode_html_attribute_entities(raw).as_str())
+        } else {
+            raw
+        }
+    }
+
+    fn decoded_text(&self, raw: &'a str) -> &'a str {
+        if raw.contains('&') {
+            self.allocator
+                .alloc_str(vize_l1_to_l2::emit::decode_html_entities(raw).as_str())
         } else {
             raw
         }
@@ -473,19 +524,57 @@ fn decode_html_attribute_entities(source: &str) -> String {
     decoded
 }
 
+struct DecodedExpressionSpans<'a> {
+    expression: &'a vize_l2::expr::JsExpr<'a>,
+    offset: u32,
+}
+
+impl<'a> VisitMut<'a> for DecodedExpressionSpans<'a> {
+    fn visit_span(&mut self, span: &mut oxc_span::Span) {
+        if let Some(decoded) = self.expression.ast_span_to_source(*span) {
+            *span = oxc_span::Span::new(
+                decoded.start.saturating_add(self.offset),
+                decoded.end.saturating_add(self.offset),
+            );
+        }
+    }
+}
+
 fn comment_body(text: &str) -> &str {
     text.strip_prefix("<!--")
         .and_then(|text| text.strip_suffix("-->"))
         .unwrap_or(text)
 }
 
-fn element_type(tag: &str) -> ElementType {
-    match tag {
-        "slot" => ElementType::Slot,
-        "template" => ElementType::Template,
-        _ if is_component_tag(tag) || crate::builtins::is_runtime_builtin_component(tag) => {
-            ElementType::Component
-        }
-        _ => ElementType::Element,
+fn element_type(element: &Element<'_>, frozen: bool) -> ElementType {
+    let tag = element.tag();
+    if frozen {
+        return ElementType::Element;
+    }
+    if tag == "slot" {
+        return ElementType::Slot;
+    }
+    if tag == "template"
+        && element.open.attrs.iter().any(|attribute| {
+            VueDirectives
+                .decompose(attribute.name.text, 0)
+                .ok()
+                .flatten()
+                .is_some_and(|directive| {
+                    directive.prefix == DirectivePrefix::Slot
+                        || (directive.prefix == DirectivePrefix::Full
+                            && matches!(
+                                directive.name.slice(attribute.name.text),
+                                "if" | "else-if" | "else" | "for" | "slot"
+                            ))
+                })
+        })
+    {
+        return ElementType::Template;
+    }
+    if vize_l1::dialect::vue3::is_lint_component(tag, true) {
+        ElementType::Component
+    } else {
+        ElementType::Element
     }
 }

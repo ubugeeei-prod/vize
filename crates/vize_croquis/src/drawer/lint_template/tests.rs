@@ -1,5 +1,6 @@
 use super::{CompatibilityRoot, LintTemplate};
 use crate::Drawer;
+use oxc_span::GetSpan;
 use vize_armature::Parser;
 use vize_l0::Allocator;
 use vize_l1_to_l2::lower_preserving_comments;
@@ -137,4 +138,35 @@ fn l1_l2_slot_props_retain_decoded_authored_text() {
             .collect::<Vec<_>>(),
         ["value", "rest"]
     );
+}
+
+#[test]
+fn l1_l2_compatibility_retains_whitespace_wrapped_expression() {
+    let source = r#"<div v-if="  !ok "/>"#;
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let projection = CompatibilityRoot::new(LintTemplate::new(&surface, &lowered));
+    let indexed = projection
+        .expressions
+        .iter()
+        .map(|(span, expression)| (*span, expression.source()))
+        .collect::<Vec<_>>();
+    let root = projection.build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("element root")
+    };
+    let Some(PropNode::Directive(directive)) = element.props.first() else {
+        panic!("v-if directive")
+    };
+    let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+        panic!("v-if expression")
+    };
+    assert!(
+        expression.js_ast.is_some(),
+        "indexed expressions: {indexed:?}"
+    );
+    let retained = expression.js_ast.unwrap().as_expression().unwrap();
+    assert_eq!(expression.content, "  !ok ");
+    assert_eq!(retained.ast.span(), oxc_span::Span::new(2, 5));
 }
