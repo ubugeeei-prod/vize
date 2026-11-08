@@ -32,6 +32,7 @@ const input: FrescoInputDriver = rendered.input;
 const frame: string = rendered.lastFrame();
 const frames: readonly string[] = rendered.frames;
 const snapshot: FrescoFrameSnapshot = rendered.frameSnapshot();
+const screenReaderOutput: string = snapshot.screenReaderOutput;
 const snapshots: readonly FrescoFrameSnapshot[] = rendered.frameSnapshots;
 const protocolNodes: readonly FrescoRenderNode[] = snapshot.protocolNodes;
 const roleNode = getByRole(rendered.root, "textbox", roleQuery);
@@ -44,6 +45,7 @@ const testNodes = queryAllByTestId(rendered.root, "field");
 const textNodes = queryAllByText(rendered.root, /value/u);
 
 void frame;
+void screenReaderOutput;
 void frames;
 void snapshot.tree.children;
 void protocolNodes[0]?.nodeType;
@@ -89,6 +91,9 @@ void input.mouse({ button: "left" });
 
 // @ts-expect-error - frame outputs are strings.
 const _invalidOutput: number = snapshot.output;
+
+// @ts-expect-error - semantic frame outputs are strings.
+const _invalidScreenReaderOutput: number = snapshot.screenReaderOutput;
 
 // @ts-expect-error - protocol snapshots use closed render node kinds.
 const _invalidProtocolNode: FrescoRenderNode = { id: 1, nodeType: "grid" };
