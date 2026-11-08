@@ -86,6 +86,9 @@ runs:
     - name: Validate the Zed extension
       shell: bash
       working-directory: editors/zed
+      env:
+        # The pinned 114 MB SDK needs more than the downloader's 90s default on slower runners.
+        VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
       run: |
         set -euo pipefail
         mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"

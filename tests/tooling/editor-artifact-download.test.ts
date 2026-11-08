@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { once } from "node:events";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
-import type { ServerResponse } from "node:http";
+import type { IncomingHttpHeaders, ServerResponse } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -51,10 +51,17 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
 test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
   const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
   const step = action.split("- name: Validate the Zed extension")[1].split(/\n {4}- name: /)[0];
-  assert.match(step, /wasi-sdk-25\.0-x86_64-linux\.tar\.gz/);
-  assert.match(step, /52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c/);
-  assert.match(step, /releases\/assets\/212790091/);
-  assert.match(step, /wasi-sdk\/bin\/clang/);
+  assert.match(step, /VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"/);
+  assert.match(
+    step,
+    /download-artifact\.sh" \\\n+\s+"https:\/\/github\.com\/WebAssembly\/wasi-sdk\/releases\/download\/wasi-sdk-25\/wasi-sdk-25\.0-x86_64-linux\.tar\.gz" \\\n+\s+"\$wasi_archive" \\\n+\s+"52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \\\n+\s+"https:\/\/api\.github\.com\/repos\/WebAssembly\/wasi-sdk\/releases\/assets\/212790091"/,
+  );
+  assert.match(
+    step,
+    /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/,
+  );
+  assert.match(step, /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/);
+  assert.match(step, /"\$\{RUNNER_TEMP\}\/zed-extension" \\\n+\s+--source-dir \. \\\n+\s+--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/);
 });
 
 test(
@@ -96,9 +103,11 @@ test(
 test("editor download can recover through a pinned alternative", options, async (t) => {
   let primaryAttempts = 0,
     fallbackAttempts = 0;
-  const fixture = await serverFixture(t, (response, requestUrl) => {
+  const fixture = await serverFixture(t, (response, requestUrl, headers) => {
     if (requestUrl === "/fallback") {
       fallbackAttempts++;
+      assert.equal(headers.accept, "application/octet-stream");
+      assert.equal(headers["x-github-api-version"], "2022-11-28");
       response.end(content);
     } else {
       primaryAttempts++;
@@ -144,10 +153,16 @@ test("editor download terminates a stalled body and removes partial files", opti
 
 async function serverFixture(
   t: TestContext,
-  respond: (response: ServerResponse, requestUrl: string) => void,
+  respond: (
+    response: ServerResponse,
+    requestUrl: string,
+    headers: IncomingHttpHeaders,
+  ) => void,
 ) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-editor-download-"));
-  const server = createServer((request, response) => respond(response, request.url ?? ""));
+  const server = createServer((request, response) =>
+    respond(response, request.url ?? "", request.headers),
+  );
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => {
