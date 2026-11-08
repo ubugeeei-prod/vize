@@ -267,7 +267,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /node tools\/support\/compat\/fixtures\/glyph-corpus-waiver-audit\.ts/,
   );
   assert.match(waiverAudit.run ?? "", /glyph-waiver-issues\.json/);
-  assert.match(run.run ?? "", /tools\/commands\/fixtures\/tool-matrix-report\.rs/);
+  assert.match(run.run ?? "", /tools\/support\/compat\/fixtures\/tool-matrix-report\.ts/);
   assert.match(run.run ?? "", /--vize-bin target\/ci\/vize/);
   assert.match(run.run ?? "", /--timeout-ms "\$CORE_TOOLS_TIMEOUT_MS"/);
   assert.match(run.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);

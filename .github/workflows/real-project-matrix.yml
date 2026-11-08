@@ -147,7 +147,7 @@ jobs:
         shell: bash
         run: |
           mapfile -t fixture_paths < <(
-            rust-script tools/commands/fixtures/tool-matrix-report.rs \
+            node tools/support/compat/fixtures/tool-matrix-report.ts \
               --list-fixture-paths \
               --shard-index "$FIXTURE_SHARD_INDEX" \
               --shard-count "$FIXTURE_SHARD_COUNT"
@@ -224,7 +224,7 @@ jobs:
         env:
           CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
         run: |
-          rust-script tools/commands/fixtures/tool-matrix-report.rs \
+          node tools/support/compat/fixtures/tool-matrix-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --vize-bin target/ci/vize \
