@@ -15,7 +15,7 @@ import {
   type Ref,
   type VNode,
 } from "vue";
-import type { InputEventNapi, ModifiersNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
+import type { InputEventNapi, LayoutResultNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,
   isScreenReaderEnabledByDefault,
@@ -29,9 +29,10 @@ import {
   type StreamsContext,
 } from "./composables/useStreams.js";
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
+import type { FrescoDevtools } from "./devtools.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
-import { normalizeKeyEventType, normalizeMouseEvent } from "./nativeInput.js";
+import { normalizeInputEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
   FocusEvent,
@@ -111,6 +112,8 @@ export interface AppOptions {
   patchConsole?: boolean;
   /** Callback invoked after a frame is rendered. @default undefined */
   onRender?: (metrics: RenderMetrics) => void;
+  /** Opt-in tree inspector, render metrics, and bounded event trace. @default undefined */
+  devtools?: FrescoDevtools;
   /** Enable semantic screen-reader rendering. @default environment detection */
   isScreenReaderEnabled?: boolean;
   /** Maximum render frames per second. @default 30 */
@@ -139,6 +142,10 @@ export type AppRoot = Component | VNode;
 export interface RenderMetrics {
   /** Time spent rendering in milliseconds */
   renderTime: number;
+  /** Number of live host nodes inspected for this frame. */
+  nodeCount: number;
+  /** Number of layout rectangles returned by the native renderer. */
+  layoutCount: number;
 }
 
 /**
@@ -431,9 +438,27 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     rejectExit = reject;
   });
 
-  const { createApp: createVueApp } = createRenderer(() => {
-    needsRender = true;
+  const { createApp: createVueApp } = createRenderer({
+    lifecycle: options.devtools?.lifecycle,
+    onMutation() {
+      needsRender = true;
+    },
   });
+
+  function publishRenderMetrics(
+    root: FrescoElement,
+    layouts: readonly LayoutResultNapi[],
+    start: number,
+  ) {
+    if (!options.devtools && !options.onRender) return;
+    const metrics: RenderMetrics = {
+      renderTime: performance.now() - start,
+      nodeCount: treeToRenderNodes(root).length,
+      layoutCount: layouts.length,
+    };
+    options.devtools?.recordRender(root, layouts, metrics);
+    options.onRender?.(metrics);
+  }
 
   async function mount() {
     if (mounted || mounting) return;
@@ -655,7 +680,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
           captureStaticOutput(rootElement, renderedStaticItems),
         );
         nonInteractiveOutput = renderPlainOutput(rootElement, staticOutput);
-        options.onRender?.({ renderTime: performance.now() - start });
+        publishRenderMetrics(rootElement, [], start);
         return;
       }
 
@@ -680,15 +705,17 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
         // Use renderTree which handles layout and painting
         native.renderTree(renderNodes);
+        let layouts: LayoutResultNapi[] = [];
         if ("getLastRenderLayouts" in native) {
-          updateLastRenderLayouts(native.getLastRenderLayouts());
+          layouts = native.getLastRenderLayouts();
+          updateLastRenderLayouts(layouts);
         }
 
         applyCursorOverride();
 
         // Flush to display
         native.flushTerminal();
-        options.onRender?.({ renderTime: performance.now() - start });
+        publishRenderMetrics(rootElement, layouts, start);
       }
     } catch (error) {
       if (onError) {
@@ -705,68 +732,31 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   function dispatchEvent(event: InputEventNapi) {
-    if (event.eventType === "resize") {
-      const resizeEvent = {
-        type: "resize" as const,
-        width: event.width ?? 0,
-        height: event.height ?? 0,
-      };
-      lastResizeEvent.value = resizeEvent;
-      updateAppSize(appContext, resizeEvent.width, resizeEvent.height);
-      return;
-    }
-
-    if (event.eventType === "paste") {
-      lastPasteEvent.value = {
-        type: "paste",
-        text: event.text ?? "",
-      };
-      return;
-    }
-
-    if (event.eventType === "mouse") {
-      lastMouseEvent.value = normalizeMouseEvent(event);
-      return;
-    }
-
-    if (event.eventType === "focus") {
-      lastFocusEvent.value = {
-        type: "focus",
-        focused: event.key === "gained",
-      };
-      return;
-    }
-
-    if (
-      event.eventType === "compositionstart" ||
-      event.eventType === "compositionupdate" ||
-      event.eventType === "compositionend"
-    ) {
-      const type = event.eventType as CompositionEvent["type"];
-      lastCompositionEvent.value = {
-        type,
-        text: event.text ?? "",
-        cursor: event.cursor ?? 0,
-      };
-      return;
-    }
-
-    if (event.eventType === "key") {
-      const modifiers: Partial<ModifiersNapi> = event.modifiers ?? {};
-      lastKeyEvent.value = {
-        type: "key",
-        key: event.key ?? undefined,
-        char: event.char ?? undefined,
-        ctrl: modifiers.ctrl ?? false,
-        alt: modifiers.alt ?? false,
-        shift: modifiers.shift ?? false,
-        meta: modifiers.meta ?? false,
-        super: modifiers.super ?? false,
-        hyper: modifiers.hyper ?? false,
-        capsLock: modifiers.capsLock ?? false,
-        numLock: modifiers.numLock ?? false,
-        eventType: normalizeKeyEventType(event.keyEventType),
-      };
+    const normalized = normalizeInputEvent(event);
+    if (!normalized) return;
+    options.devtools?.recordInput(normalized);
+    switch (normalized.type) {
+      case "resize":
+        lastResizeEvent.value = normalized;
+        updateAppSize(appContext, normalized.width, normalized.height);
+        break;
+      case "paste":
+        lastPasteEvent.value = normalized;
+        break;
+      case "mouse":
+        lastMouseEvent.value = normalized;
+        break;
+      case "focus":
+        lastFocusEvent.value = normalized;
+        break;
+      case "compositionstart":
+      case "compositionupdate":
+      case "compositionend":
+        lastCompositionEvent.value = normalized;
+        break;
+      case "key":
+        lastKeyEvent.value = normalized;
+        break;
     }
   }
 

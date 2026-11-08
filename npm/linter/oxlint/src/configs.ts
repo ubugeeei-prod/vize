@@ -1,21 +1,31 @@
 import { getPatinaRules } from "./binding.js";
 import type { PatinaPreset, PatinaRuleMeta } from "./model.js";
 
+/** Severity spellings accepted by Oxlint rule entries. */
 export type OxlintRuleSeverity = "error" | "warn" | "off";
+/** One Oxlint rule severity, optionally followed by rule-specific options. */
 export type OxlintRuleEntry = OxlintRuleSeverity | [OxlintRuleSeverity, ...unknown[]];
+/** Oxlint rule map keyed by core or plugin-qualified rule id. */
 export type OxlintRuleConfig = Record<string, OxlintRuleEntry>;
+/** Named Patina rule bundle accepted by the Oxlint bridge. */
 export type VizeRuleConfigPreset = Exclude<PatinaPreset, "incremental"> | "happy-path" | "all";
+/** One rule bundle or an ordered set of bundles whose rules are unioned. */
 export type VizeRuleConfigPresetInput = VizeRuleConfigPreset | readonly VizeRuleConfigPreset[];
 type NormalizedVizeRuleConfigPreset = Exclude<PatinaPreset, "incremental"> | "all";
 
+/** Options for deriving an Oxlint rule map from Patina's native metadata. */
 export interface VizeRuleConfigOptions {
+  /** Include unstable rules that require type information. @default false */
   includeTypeAware?: boolean;
+  /** Primary rule bundle or bundles. @default "general-recommended" */
   preset?: VizeRuleConfigPresetInput;
+  /** Additional rule bundles unioned with `preset`. @default [] */
   presets?: readonly VizeRuleConfigPreset[];
 }
 
 const TYPE_AWARE_RULE_PREFIX = "type/";
 
+/** Build an Oxlint rule map from the selected Patina metadata bundles. */
 export function createVizeRuleConfig(options: VizeRuleConfigOptions = {}): OxlintRuleConfig {
   const presets = resolveRuleConfigPresets(options);
   const includeTypeAware = options.includeTypeAware ?? false;
@@ -35,6 +45,7 @@ export function createVizeRuleConfig(options: VizeRuleConfigOptions = {}): Oxlin
   return rules;
 }
 
+/** Ready-to-use rule maps for every supported bridge preset. */
 export const configs = {
   all: createVizeRuleConfig({ preset: "all" }),
   ecosystem: createVizeRuleConfig({ preset: "ecosystem" }),
