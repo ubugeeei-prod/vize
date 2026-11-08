@@ -408,6 +408,28 @@ const inputEl = ref(null)
 }
 
 #[test]
+fn recovered_table_foster_parenting_keeps_unused_ref_analysis() {
+    let sfc = r#"<template>
+  <div ref="article">
+    <table><thead><th>Heading</th></thead></table>
+  </div>
+</template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'article' is never referenced in <script>"
+    );
+}
+
+#[test]
 fn test_disable_directive_suppresses() {
     // Confirms the rule participates in the standard disable machinery.
     let sfc = r#"<template>
