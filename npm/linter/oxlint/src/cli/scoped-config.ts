@@ -261,7 +261,7 @@ function isRecord(value: unknown): value is Config {
 
 function hasPathSelection(value: Config): boolean {
   return (
-    value.ignorePatterns != null ||
+    (Array.isArray(value.ignorePatterns) && value.ignorePatterns.length > 0) ||
     value.overrides != null ||
     (Array.isArray(value.extends) &&
       value.extends.some((parent) => isRecord(parent) && hasPathSelection(parent)))
