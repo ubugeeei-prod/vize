@@ -12,6 +12,14 @@ download_rust_script() (
   download_primary="https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
   download_partial="$(mktemp "${download_archive}.partial.XXXXXX")"
   trap 'rm -f -- "$download_partial"' EXIT
+  download_api() {
+    : > "$download_partial"
+    curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+      --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
+      --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
+      --output "$download_partial" \
+      "https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817"
+  }
   download_attempt=1
   while :; do
     : > "$download_partial"
@@ -38,15 +46,14 @@ download_rust_script() (
           sleep 1
           continue
         fi
+        if [ "$download_status:$download_http" = 28:000 ]; then
+          download_api || exit "$?"
+          break
+        fi
         exit "$download_status"
         ;;
       22:500|22:502|22:503|22:504)
-        : > "$download_partial"
-        curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
-          --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
-          --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
-          --output "$download_partial" \
-          "https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817" || exit "$?"
+        download_api || exit "$?"
         break
         ;;
       *)

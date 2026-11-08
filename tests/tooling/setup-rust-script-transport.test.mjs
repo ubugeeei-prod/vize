@@ -199,9 +199,10 @@ function retained(run, count) {
     "--tlsv1.2",
   ]);
   assert.deepEqual(run.calls[0].slice(-3), ["--write-out", "%{http_code}", primary]);
-  if (count === 2) {
+  if (run.calls.at(-1).at(-1) === alternative) {
     const output = run.calls[0][run.calls[0].indexOf("--output") + 1];
-    assert.deepEqual(run.calls[1], [
+    assert.ok(run.calls.slice(0, -1).every((call) => call.at(-1) === primary));
+    assert.deepEqual(run.calls.at(-1), [
       "--fail",
       "--silent",
       "--show-error",
@@ -264,6 +265,12 @@ void test("primary HTTP200 never requests the alternative", () => {
   withRun({ primaryStatus: 0, primaryHttp: "200" }, (observed) => {
     accepted(observed, 1);
     assert.equal(observed.result.stderr, "");
+  });
+});
+void test("two HTTP-less timeouts use the same-byte API route", () => {
+  withRun({ primaryStatus: 28, primaryHttp: "000" }, (observed) => {
+    accepted(observed, 3);
+    assert.match(observed.result.stderr, /attempt=2 curl=28 HTTP=000/u);
   });
 });
 void test("HTTP authentication, missing asset and rate limiting keep original failure", () => {
