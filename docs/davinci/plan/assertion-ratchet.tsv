@@ -154,7 +154,6 @@ crates/vize_canon/src/batch/virtual_project/content_mapper/tests/models.rs	7
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/navigation.rs	6
 crates/vize_canon/src/batch/virtual_project/content_mapper/tests/slot_outlet_navigation.rs	4
 crates/vize_canon/src/batch/virtual_project/dependency_scan/shared_type_sources_tests.rs	5
-crates/vize_canon/src/batch/virtual_project/dependency_scan/tests.rs	1
 crates/vize_canon/src/batch/virtual_project/incomplete_expression_tests.rs	3
 crates/vize_canon/src/batch/virtual_project/jsx_codegen/tests.rs	3
 crates/vize_canon/src/batch/virtual_project/materialize/alias_transition_tests.rs	5
