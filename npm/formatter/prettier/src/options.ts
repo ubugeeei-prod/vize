@@ -1,12 +1,16 @@
 import type { FormatOptionsNapi } from "@vizejs/native";
 import type { ParserOptions } from "prettier";
 
+/** Options owned by the Vize Prettier plugin. */
 export interface VizePluginOptions {
+  /** Vue template grammar selected for SFC formatting. @default "3" */
   vizeVueVersion?: "2" | "3";
 }
 
+/** Prettier parser options accepted by the Vize formatter plugin. */
 export type VizeOptions = ParserOptions & VizePluginOptions;
 
+/** Validates host options and maps them to the native formatter contract. */
 export function nativeOptions(options: VizeOptions, length: number): FormatOptionsNapi {
   const unsupported: [string, unknown, unknown][] = [
     ["htmlWhitespaceSensitivity", options.htmlWhitespaceSensitivity, "css"],

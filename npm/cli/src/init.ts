@@ -27,13 +27,20 @@ import { defaultSelection, offerFeatures, type FeatureSelection } from "./init/s
 export type { InitCommand, InitPlan } from "./init/plan.js";
 export type { ProjectDetection } from "./init/detect.js";
 
+/** Injectable dependencies and host controls for project initialization. */
 export interface InitOptions {
   readonly root: string;
+  /** Command-line arguments to parse. @default [] */
   readonly args?: readonly string[];
+  /** Command executor used for planned dependency operations. @default built-in synchronous runner */
   readonly runCommand?: (command: InitCommand) => void;
+  /** File writer used for generated configuration. @default atomic project writer */
   readonly writeFile?: (filename: string, source: string) => void;
+  /** Output sink for detection, plan, and completion reports. @default process.stdout.write */
   readonly output?: (chunk: string) => void;
+  /** Prompt implementation supplied by an embedding host. @default interactive terminal prompts */
   readonly promptDeps?: PromptDeps;
+  /** Input stream used to determine interactivity and collect answers. @default process.stdin */
   readonly stdin?: NodeJS.ReadableStream;
 }
 
@@ -137,6 +144,7 @@ export async function initProject(options: InitOptions): Promise<InitPlan | null
   return plan;
 }
 
+/** Runs the `init` command and maps refusal or blocked features to a failing exit code. */
 export async function runInitCli(args: readonly string[]): Promise<void> {
   if (parseInitArgs(args).help) {
     process.stdout.write(initHelp());
