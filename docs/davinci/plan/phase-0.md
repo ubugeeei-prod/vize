@@ -115,14 +115,14 @@ detection.
 
 **Steps:**
 
-- [x] `tools/commands/davinci/corpus-baseline.rs`: runs `tools/support/compat/fixtures/tool-matrix-report.ts` across all shards, then reduces each project's per-surface outputs (compile dom/vapor/ssr, lint JSON, format output, check diagnostics) to `{surface, project, file_count, content_hash}` rows _(landed on the four lanes the harness actually emits — `compiler` (the single DOM-backend `build --format json` lane; no vapor/ssr lanes exist in the harness yet), `typechecker`, `linter`, `formatter` — with the scope proof embedded in the artifact; hash contract in `corpus-baseline-notes.md`)_
+- [x] `tools/commands/davinci/corpus-baseline.ts`: runs `tools/support/compat/fixtures/tool-matrix-report.ts` across all shards, then reduces each project's per-surface outputs (compile dom/vapor/ssr, lint JSON, format output, check diagnostics) to `{surface, project, file_count, content_hash}` rows _(landed on the four lanes the harness actually emits — `compiler` (the single DOM-backend `build --format json` lane; no vapor/ssr lanes exist in the harness yet), `typechecker`, `linter`, `formatter` — with the scope proof embedded in the artifact; hash contract in `corpus-baseline-notes.md`)_
 - [x] Baseline artifact `tests/_fixtures/davinci-baseline.json` (hashes only — small) committed _(covers the 134-project manifest as of the P0-5 sweep; landing required restoring the `vue-storefront` pin that bump #4236 had moved to an emptied upstream revision — see the notes. The 8 projects added by corpus expansion round 1 (#4324) need a reference-runner re-baseline before `corpus-diff` can pass its scope proof again; that re-baseline is P0-6 work)_
-- [x] `tools/commands/davinci/corpus-diff.rs`: compares a fresh run against the baseline; reports per-surface/per-project drift; `--surface` filter _(exit 0 only on zero drift plus TS-11 scope proof on both the committed baseline and the fresh run; missing baseline or scope shortfall fails with exact reasons)_
+- [x] `tools/commands/davinci/corpus-diff.ts`: compares a fresh run against the baseline; reports per-surface/per-project drift; `--surface` filter _(exit 0 only on zero drift plus TS-11 scope proof on both the committed baseline and the fresh run; missing baseline or scope shortfall fails with exact reasons)_
 - [x] Reproducibility check: two runs on the same tree produce byte-identical baseline files (this will surface any nondeterminism in current output — if found, file it, do not fix it in this task) _(ran twice: 535 of 536 rows byte-identical; the one divergent row — `typechecker/element-plus`, a racy corsa-shard TS6307 (3704 vs 3703 errors on the same tree) — is filed in `corpus-baseline-notes.md` and shard-scoped via `corpus-baseline-unstable.json`, exactly as this step prescribes; compiler/formatter stderr timing, temp paths, and print ordering are likewise filed and excluded from the hash contract)_
 
 **Acceptance:**
 
-- `rust-script tools/commands/davinci/corpus-diff.rs` exits 0 on the committed baseline
+- `node tools/commands/davinci/corpus-diff.ts` exits 0 on the committed baseline
 - Injected one-character change in a corpus `.vue` file is reported with the right project + surface
 - Two-run reproducibility holds (or the nondeterminism is filed as a tracked issue and shard-scoped)
 
@@ -183,7 +183,7 @@ detection.
 - [x] Inventory script `tools/support/compat/davinci/sourcelocation-inventory.ts`: every read of `SourceLocation::{source, start.line, start.column, end.line, end.column}` across the workspace, grouped by crate and function; committed as `docs/davinci/plan/sourcelocation-inventory.md` with counts
 - [x] Doc note in the inventory: which consumers move to `Span::slice` (diagnostic excerpts), which to offset-derived line/col (source-map `finish()`), which delete outright
 
-**Acceptance:** type + unit tests + size assert land; `tools/commands/davinci/corpus-diff.rs` empty (zero behavior change); inventory committed with per-crate counts. _Status: type, tests, size assert, and inventory landed unused by production code; the corpus-diff clause stays pending until the P0-5 tool exists (nothing to run it on yet — the type has zero production call sites)._
+**Acceptance:** type + unit tests + size assert land; `tools/commands/davinci/corpus-diff.ts` empty (zero behavior change); inventory committed with per-crate counts. _Status: type, tests, size assert, and inventory landed unused by production code; the corpus-diff clause stays pending until the P0-5 tool exists (nothing to run it on yet — the type has zero production call sites)._
 
 **Deps:** P0-5.
 
@@ -268,4 +268,4 @@ detection.
 - [x] Profiler export schema validating; zero overhead when off (P0-11) — schema-validated in CI by the carton export test; the bench-measured overhead comparison joins the P0-4 gate once reference baselines exist
 - [ ] Assertion lint + mutation baseline + taxonomy signed off (P0-12) — lint live in CI with the 236-file debt allowlist; mutation baseline recorded (`vize_carton` 0.4678, `vize_relief` 0.8372 — `mutation-baseline.md`; the nightly ratchet lane lands with the reference-runner re-record); **taxonomy dimensions still awaiting maintainer sign-off**
 - [x] FP/FN pilot oracles running with committed ledgers (P0-13) — CI covers the committed miniature set; corpus-shard lane joins CI with corpus hydration (P0-6)
-- [x] `tools/commands/davinci/corpus-diff.rs` across the whole phase: **empty** (zero behavior change) — verified at the phase-final davinci head: zero gating drift across all rows, scope proof matched (the filed unstable row surfaced non-gating, by design)
+- [x] `tools/commands/davinci/corpus-diff.ts` across the whole phase: **empty** (zero behavior change) — verified at the phase-final davinci head: zero gating drift across all rows, scope proof matched (the filed unstable row surfaced non-gating, by design)

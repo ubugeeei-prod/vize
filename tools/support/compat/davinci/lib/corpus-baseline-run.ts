@@ -21,6 +21,7 @@ import { typecheckerRunStatus } from "../../fixtures/typechecker-qualification.t
 import { HASHED_FIELDS } from "./corpus-baseline-contract.ts";
 import { assertHydratedGitlinkFixtures } from "./corpus-hydration.ts";
 import { byKey } from "./ordering.ts";
+import { normalizeMachinePaths } from "./corpus-paths.ts";
 import { repoRoot } from "./paths.ts";
 
 export const MATRIX_SCRIPT = path.join(
@@ -241,7 +242,7 @@ function reduceRun(shardDir: string, projectId: string, run: JsonRecord): Corpus
     if (!(field in payload)) {
       throw new Error(`${projectId}/${tool} payload has no ${field} field`);
     }
-    content[field] = payload[field];
+    content[field] = hashField(tool, field, payload[field]);
   }
   const fileCount = payloadFileCount(tool, payload);
   if (run.fileCount !== fileCount) {
@@ -255,6 +256,14 @@ function reduceRun(shardDir: string, projectId: string, run: JsonRecord): Corpus
     file_count: fileCount,
     content_hash: sha256(canonicalJson(content)),
   };
+}
+
+function hashField(tool: string, field: string, value: unknown): unknown {
+  return tool === "typechecker" &&
+    (field === "stderr" || field === "stdout") &&
+    typeof value === "string"
+    ? normalizeMachinePaths(value)
+    : value;
 }
 
 /** Mirrors tools/fixtures/tool-matrix-metrics.ts, from the payload side. */
