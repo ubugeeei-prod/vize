@@ -163,7 +163,10 @@ test("new helper and input paths select the existing jobs and cannot be removed 
       const expectedJobs =
         workflow === ".github/workflows/typescript-provider-vsix.yml"
           ? originalJobs
-              .replaceAll("      - uses: ./.github/actions/setup-rust-script\n", "")
+              .replace(
+                "      - uses: ./.github/actions/setup-rust-script\n      - run: vp install --frozen-lockfile --prefer-offline",
+                "      - run: vp install --frozen-lockfile --prefer-offline",
+              )
               .replaceAll(
                 "rust-script tools/commands/editors/vscode/package-typescript-provider.rs",
                 "node tools/support/editors/typescript-provider/package.ts",
