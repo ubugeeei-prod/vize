@@ -296,7 +296,11 @@ fn element_namespace(parent: Option<(Namespace, &str)>, tag: &str) -> Namespace 
 #[cfg(test)]
 mod tests {
     use super::TemplateTargets;
-    use vize_l0::Allocator;
+    use vize_l0::{Allocator, FxHashSet, String};
+
+    fn names(values: &[&str]) -> FxHashSet<String> {
+        values.iter().copied().map(String::from).collect()
+    }
 
     fn targets(source: &str) -> TemplateTargets {
         let allocator = Allocator::new();
@@ -312,10 +316,9 @@ mod tests {
         assert_eq!(targets.unknown_classes, false);
         assert_eq!(targets.unknown_ids, false);
         assert_eq!(targets.unknown_tags, false);
-        assert_eq!(targets.classes.contains("local"), true);
-        assert_eq!(targets.ids.contains("main"), true);
-        assert_eq!(targets.tags.contains("div"), true);
-        assert_eq!(targets.tags.contains("aside"), true);
+        assert_eq!(targets.classes, names(&["local"]));
+        assert_eq!(targets.ids, names(&["main"]));
+        assert_eq!(targets.tags, names(&["div", "aside"]));
     }
 
     #[test]
@@ -324,7 +327,9 @@ mod tests {
         assert_eq!(targets.unknown_classes, false);
         assert_eq!(targets.unknown_ids, false);
         assert_eq!(targets.unknown_tags, false);
-        assert_eq!(targets.classes.contains("foreign"), false);
+        assert_eq!(targets.classes, FxHashSet::default());
+        assert_eq!(targets.ids, FxHashSet::default());
+        assert_eq!(targets.tags, names(&["div", "aside"]));
     }
 
     #[test]
@@ -347,8 +352,8 @@ mod tests {
         assert_eq!(targets.unknown_classes, true);
         assert_eq!(targets.unknown_ids, true);
         assert_eq!(targets.unknown_tags, false);
-        assert_eq!(targets.classes.contains("local"), true);
-        assert_eq!(targets.tags.contains("div"), true);
-        assert_eq!(targets.tags.contains("aside"), true);
+        assert_eq!(targets.classes, names(&["local"]));
+        assert_eq!(targets.ids, FxHashSet::default());
+        assert_eq!(targets.tags, names(&["div", "aside"]));
     }
 }
