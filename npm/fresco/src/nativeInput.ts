@@ -1,6 +1,7 @@
 import type { InputEventNapi } from "@vizejs/fresco-native";
 import type { KeyEventType, MouseEvent } from "./protocol.js";
 
+/** Accept only key event phases supported by the public Fresco protocol. */
 export function normalizeKeyEventType(value: string | undefined): KeyEventType | undefined {
   switch (value) {
     case "press":

@@ -6,9 +6,11 @@ import type { InjectionKey, Ref } from "vue";
 import type { FrescoNode, NativeRenderNode } from "./renderer.js";
 import { normalizeFrescoStyle } from "./renderPayload.js";
 
+/** Injection key exposing whether screen-reader output is active. */
 export const SCREEN_READER_KEY: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol("fresco-screen-reader");
 
+/** Semantic roles supported by Fresco screen-reader serialization. */
 export type AriaRole =
   | "button"
   | "checkbox"
@@ -30,6 +32,7 @@ export type AriaRole =
   | "timer"
   | "toolbar";
 
+/** Accessible state rendered alongside the semantic node description. */
 export interface AriaState {
   busy?: boolean;
   checked?: boolean;
@@ -46,6 +49,7 @@ export interface AriaState {
   valueNow?: number;
 }
 
+/** Read the Ink- and Fresco-compatible screen-reader environment flags. */
 export function isScreenReaderEnabledByDefault(): boolean {
   return process.env.INK_SCREEN_READER === "true" || process.env.FRESCO_SCREEN_READER === "true";
 }
@@ -93,6 +97,7 @@ function isAriaHidden(node: FrescoNode): boolean {
   return node.props["aria-hidden"] === true;
 }
 
+/** Serialize a Fresco tree into deterministic semantic screen-reader text. */
 export function treeToScreenReaderString(
   node: FrescoNode,
   options: { parentRole?: AriaRole } = {},
@@ -141,6 +146,7 @@ export function treeToScreenReaderString(
   return output;
 }
 
+/** Convert a Fresco tree into the minimal native nodes used for screen-reader output. */
 export function treeToScreenReaderRenderNodes(root: FrescoNode): NativeRenderNode[] {
   const output = treeToScreenReaderString(root);
   const rootStyle = normalizeFrescoStyle(root.props.style) ?? {};
