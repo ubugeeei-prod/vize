@@ -115,6 +115,7 @@ Regenerate with `node tools/commands/ci/workflow-catalog.ts`.
 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
 | Shipped Linux LSP resource comparison     | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                   |
+| LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
