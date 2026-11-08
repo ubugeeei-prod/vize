@@ -36,7 +36,7 @@ const prettier = require("prettier") as {
 
 test("new JS and TS semicolon controls match complete pinned independent outputs and fixed points", async () => {
   assert.equal(corpus.schema, "vize.formatter-semicolon-cli-6098");
-  assert.deepEqual(corpus.reference, { package: "prettier", version: "3.8.3" });
+  assert.deepEqual(corpus.reference, { package: "prettier", version: "3.9.10" });
   assert.equal(prettier.version, corpus.reference.version);
   assert.deepEqual(
     corpus.cases.map((row) => row.parser),

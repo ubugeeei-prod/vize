@@ -20,6 +20,7 @@ mod jsx_exact_keys;
 mod listener_relations;
 mod loose_emit_sdk;
 mod private_emit_sdk;
+mod props_fallback_segment;
 mod public_base_keys;
 mod public_instance;
 mod required_keys_short_circuit;
@@ -185,6 +186,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     listener_relations::retain_provenance(manifest);
     dependency_ownership::retain_provenance(manifest);
     emit_member_infer::retain_provenance(manifest);
+    props_fallback_segment::retain_provenance(manifest);
 }
 
 #[cfg(test)]

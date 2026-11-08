@@ -1312,7 +1312,7 @@
         "fixturePaths": ["tests/_fixtures/_git/elk"]
       },
       "evidence": {
-        "file": "tools/commands/ci/github/app-e2e-plan.rs",
+        "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"elk\""
       }
     },
@@ -1323,7 +1323,7 @@
         "fixturePaths": ["tests/_fixtures/_git/frontend-phpcon-do-website"]
       },
       "evidence": {
-        "file": "tools/commands/ci/github/app-e2e-plan.rs",
+        "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "test:vrt:frontend-phpcon"
       }
     },
@@ -1334,7 +1334,7 @@
         "fixturePaths": ["tests/_fixtures/_git/misskey"]
       },
       "evidence": {
-        "file": "tools/commands/ci/github/app-e2e-plan.rs",
+        "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"misskey\""
       }
     },
@@ -1345,7 +1345,7 @@
         "fixturePaths": ["tests/_fixtures/_git/npmx.dev"]
       },
       "evidence": {
-        "file": "tools/commands/ci/github/app-e2e-plan.rs",
+        "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"npmx\""
       }
     },
@@ -1356,7 +1356,7 @@
         "fixturePaths": ["tests/_fixtures/_git/vuefes-2025"]
       },
       "evidence": {
-        "file": "tools/commands/ci/github/app-e2e-plan.rs",
+        "file": "tools/support/compat/github/app-e2e-plan.ts",
         "selector": "row(\"full\", \"vrt\", \"vuefes\""
       }
     },

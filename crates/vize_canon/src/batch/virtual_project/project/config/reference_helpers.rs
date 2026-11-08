@@ -29,7 +29,7 @@ fn plain_ts_to_vue_to_plain_ts_updates_shared_helpers() {
     );
     assert_eq!(
         std::fs::read_to_string(&helpers).unwrap(),
-        crate::virtual_ts::SHARED_PREAMBLE_DTS,
+        crate::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
     );
     project.register_path(&component).unwrap();
     let unchanged = project.materialize_incremental_delta().unwrap();
@@ -92,7 +92,7 @@ fn editor_projects_materialize_one_shared_helper_program() {
     let helpers = project.shared_helpers_path();
     assert_eq!(
         std::fs::read_to_string(&helpers).unwrap(),
-        crate::virtual_ts::SHARED_PREAMBLE_DTS,
+        project.shared_helpers_preamble(),
     );
     let config: serde_json::Value =
         serde_json::from_slice(&std::fs::read(project.generated_tsconfig_path()).unwrap()).unwrap();

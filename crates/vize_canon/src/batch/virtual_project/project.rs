@@ -111,6 +111,7 @@ impl VirtualProject {
             original_index: FxHashMap::default(),
             original_contents: FxHashMap::default(),
             unchecked_javascript_files: FxHashSet::default(),
+            props_fallback_files: FxHashSet::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
             #[cfg(test)]

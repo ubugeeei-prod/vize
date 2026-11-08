@@ -14,7 +14,7 @@ const { renderToString } = requireVue("vue/server-renderer");
 
 export const pluginVersion = requireUi("@vitejs/plugin-vue/package.json").version;
 export const compilerVersion = officialCompiler.version;
-assert.equal(pluginVersion, "6.0.7", "audited stock SFC plugin release");
+assert.equal(pluginVersion, "6.0.10", "audited stock SFC plugin release");
 assert.equal(compilerVersion, "3.6.0-rc.9", "audited Vapor compiler release");
 assert.equal(requireVue("./package.json").version, compilerVersion);
 assert.equal(requireVue("@vue/server-renderer/package.json").version, compilerVersion);

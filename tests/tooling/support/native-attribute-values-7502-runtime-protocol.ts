@@ -96,7 +96,7 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
     exactKeys7502(control.primary, ["versions", "dom", "ssr", "vapor"]);
     assert.deepEqual(control.primary.versions, {
       domCompiler: "3.5.35",
-      plugin: "6.0.7",
+      plugin: "6.0.10",
       vaporCompiler: "3.6.0-rc.9",
     });
     for (const target of ["dom", "ssr", "vapor"]) {
