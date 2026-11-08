@@ -81,6 +81,10 @@ export const rustTool = (command: string, ...args: string[]) =>
 export const rustToolFromVscodeExtension = (command: string, ...args: string[]) =>
   rustScript(`../../tools/commands/${command}.rs`, args);
 
+/** Runs a TypeScript command under `tools/commands` with Node's type stripping. */
+export const nodeCommand = (command: string, ...args: string[]) =>
+  ["node", `tools/commands/${command}.ts`, ...args].map(shellQuote).join(" ");
+
 /** Runs a TypeScript command under `tools/support` with Node's type stripping. */
 export const nodeTool = (command: string, ...args: string[]) =>
   ["node", `tools/support/${command}.ts`, ...args].map(shellQuote).join(" ");
