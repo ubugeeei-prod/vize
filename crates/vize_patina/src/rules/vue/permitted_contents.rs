@@ -62,6 +62,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/permitted-contents` lint rule.
 pub struct PermittedContents;
 
 /// `<tag>` for an element, `text` for text, with the span a diagnostic

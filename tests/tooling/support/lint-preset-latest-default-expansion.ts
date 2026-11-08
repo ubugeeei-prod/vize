@@ -2,6 +2,99 @@ import assert from "node:assert/strict";
 
 import { canonical, identity, jsonBytes, sha } from "./lint-preset-source-successors.ts";
 
+const publicApiDocSuccessors = [
+  {
+    path: "crates/vize_patina/src/linter/script_rules/registry.rs",
+    before: {
+      bytes: 5249,
+      sha256: "dc8023d6c67373216c4e4a4f714f9ee73156ede1053bdbd9b36e9e69fe914bae",
+    },
+    after: {
+      bytes: 5667,
+      sha256: "10b3ba58251ccedaa9d758002b4d6ab86e5d3468e2364fc7c690970f9393857d",
+    },
+    replacements: [
+      [
+        `/// Public registration metadata for a built-in script rule.
+pub struct BuiltinScriptRuleMeta {
+    /// Stable rule identifier, including its namespace.
+    pub name: &'static str,
+    /// User-facing summary of the condition the rule enforces.
+    pub description: &'static str,
+    /// Documentation category used to group the rule.
+    pub category: &'static str,
+    /// Whether the rule can provide an automatic source edit.
+    pub fixable: bool,
+    /// Severity used when a preset enables the rule without an override.
+    pub default_severity: crate::Severity,
+    /// Named presets that enable the rule.
+    pub presets: &'static [&'static str],
+}`,
+        `pub struct BuiltinScriptRuleMeta {
+    pub name: &'static str,
+    pub description: &'static str,
+    pub category: &'static str,
+    pub fixable: bool,
+    pub default_severity: crate::Severity,
+    pub presets: &'static [&'static str],
+}`,
+      ],
+    ],
+  },
+  {
+    path: "crates/vize_patina/src/preset.rs",
+    before: {
+      bytes: 5177,
+      sha256: "1f10391e1519348333337f3ff6a1e674163e1ef44ac26a0ee06183946414c2eb",
+    },
+    after: {
+      bytes: 5358,
+      sha256: "159064bd4f29da5abaa974c92fa81fc730e047bf789246f9bc82118853939537",
+    },
+    replacements: [
+      ["    /// Every named preset in stable display order.\n", ""],
+      ["    /// Return the canonical configuration spelling of the preset.\n", ""],
+      ["    /// Parse a supported preset name or compatibility alias.\n", ""],
+    ],
+  },
+  {
+    path: "crates/vize_patina/src/rules/script/define_macros_order.rs",
+    before: {
+      bytes: 10276,
+      sha256: "3b21b505315a3082da09cc5d76ec7f2845c8b8fa1265e97f705ff985ee38c959",
+    },
+    after: {
+      bytes: 10348,
+      sha256: "129c8b2f61d6adb3efb7ba7d76f812a5e7cdd5ab7af65b88d1ffd7535fa517be",
+    },
+    replacements: [
+      ["    /// Create a rule that uses the configured compiler-macro ordering.\n", ""],
+    ],
+  },
+] as const;
+
+export const publicApiDocSourcePaths = publicApiDocSuccessors.map(({ path }) => path);
+
+// Remove only the exact public-API documentation additions before the frozen
+// preset-history ledgers replay. Byte identities keep unrelated edits fatal.
+export function inversePatinaPublicApiDocs(name: string, body: Buffer): Buffer {
+  const successor = publicApiDocSuccessors.find(({ path }) => path === name);
+  if (!successor) return body;
+  identity(body, successor.after);
+  let text = body.toString("utf8");
+  for (const [after, before] of successor.replacements) {
+    assert.equal(text.split(after).length, 2, name);
+    text = text.replace(after, before);
+  }
+  const predecessor = Buffer.from(text);
+  identity(predecessor, successor.before);
+  return predecessor;
+}
+
+export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
+  return inverseLatestDefaultExpansion(name, inversePatinaPublicApiDocs(name, body));
+}
+
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {
     bytes: 12915,

@@ -62,7 +62,9 @@ static META: RuleMeta = RuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HtmlQuotesOption {
     #[default]
+    /// Require double-quoted attribute values.
     Double,
+    /// Require single-quoted attribute values.
     Single,
 }
 
@@ -77,7 +79,9 @@ impl HtmlQuotesOption {
 
 /// Enforce HTML attribute quote style
 pub struct HtmlQuotes {
+    /// Quote character required by the rule.
     pub style: HtmlQuotesOption,
+    /// Allow the other quote style when it avoids escaping the value.
     pub avoid_escape: bool,
 }
 

@@ -20,6 +20,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ecosystem/vue-router-prefer-named-link` lint rule.
 pub struct VueRouterPreferNamedLink;
 
 impl Rule for VueRouterPreferNamedLink {

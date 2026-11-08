@@ -59,7 +59,9 @@ static META: RuleMeta = RuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PropNameCasingOption {
     #[default]
+    /// Require `camelCase` prop declarations.
     CamelCase,
+    /// Require `snake_case` prop declarations.
     SnakeCase,
 }
 
@@ -82,6 +84,7 @@ impl PropNameCasingOption {
 /// Enforce a casing for declared prop names
 #[derive(Default)]
 pub struct PropNameCasing {
+    /// Required spelling for declared prop names.
     pub casing: PropNameCasingOption,
 }
 

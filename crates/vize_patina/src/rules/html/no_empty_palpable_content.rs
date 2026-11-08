@@ -38,6 +38,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/no-empty-palpable-content` lint rule.
 pub struct NoEmptyPalpableContent;
 
 impl NoEmptyPalpableContent {

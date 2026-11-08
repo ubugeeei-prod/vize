@@ -293,6 +293,7 @@ impl Default for MuseaLinter {
     }
 }
 
+/// Return metadata for all built-in Musea rules in evaluation order.
 pub fn builtin_musea_rules() -> Vec<&'static MuseaRuleMeta> {
     vec![
         RequireTitle.meta(),

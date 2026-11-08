@@ -154,6 +154,9 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
     join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs"),
     "utf8",
   );
+  const publicApiDoc = "/// Implements the `script/require-slots-as-functions` lint rule.\n";
+  assert.equal(current.split(publicApiDoc).length, 2);
+  const currentWithoutPublicApiDoc = current.replace(publicApiDoc, "");
   assert.equal(
     successors.beforeRuleSha256,
     "0673f14ce68018c1636dd398d0c36108af8f5a17a90140cb10ad3b6c503f2118",
@@ -162,16 +165,19 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
     conditionalSuccessors.beforeRuleSha256,
     "9804044031a7975b732af2e1853388313bad635b69b5fd8332d4e4c8f8e87819",
   );
-  assert.equal(hash(current), "5b88de54af46fbbba87e8e642772338ae9b687448e222a99df779762b16ed2b8");
+  assert.equal(
+    hash(currentWithoutPublicApiDoc),
+    "5b88de54af46fbbba87e8e642772338ae9b687448e222a99df779762b16ed2b8",
+  );
   for (const ownedBoundary of [
     "fn slot_function_origin(&self, expression: &Expression<'_>) -> Option<Span>",
     "if self.vue2_render_depth > 0",
     "member_of(expression).and_then(slot_property_span)",
     "fn visit_member_expression(&mut self, member: &MemberExpression<'a>)",
   ]) {
-    assert.equal(current.split(ownedBoundary).length, 2, ownedBoundary);
+    assert.equal(currentWithoutPublicApiDoc.split(ownedBoundary).length, 2, ownedBoundary);
   }
-  assert.ok(!current.includes("suppress_direct_slot_function"));
+  assert.ok(!currentWithoutPublicApiDoc.includes("suppress_direct_slot_function"));
 });
 
 test("named ConditionalArms-v1 retains the exact old alternate and original CLI packets", () => {

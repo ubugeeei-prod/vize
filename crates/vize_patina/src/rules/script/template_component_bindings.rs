@@ -46,6 +46,7 @@ impl TemplateComponentBindings {
         self.unknown = [true; 2];
     }
 
+    /// Return whether `name` is declared as an authored script value.
     pub fn has_authored_value(&self, name: &str) -> bool {
         self.values
             .iter()

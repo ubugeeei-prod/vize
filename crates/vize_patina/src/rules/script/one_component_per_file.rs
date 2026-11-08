@@ -31,6 +31,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str = "There is more than one component in this file.";
 
+/// Implements the `script/one-component-per-file` lint rule.
 pub struct OneComponentPerFile;
 
 impl ScriptRule for OneComponentPerFile {

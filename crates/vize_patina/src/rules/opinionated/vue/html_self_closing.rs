@@ -50,8 +50,11 @@ pub enum HtmlSelfClosingStyle {
 /// Self-closing policy for HTML element families.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HtmlSelfClosingHtmlOptions {
+    /// Policy for HTML void elements such as `img` and `input`.
     pub void: HtmlSelfClosingStyle,
+    /// Policy for ordinary native HTML elements.
     pub normal: HtmlSelfClosingStyle,
+    /// Policy for Vue component elements.
     pub component: HtmlSelfClosingStyle,
 }
 
@@ -68,8 +71,11 @@ impl Default for HtmlSelfClosingHtmlOptions {
 /// Config for `vue/html-self-closing`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HtmlSelfClosingOptions {
+    /// Policies for HTML void, normal, and component elements.
     pub html: HtmlSelfClosingHtmlOptions,
+    /// Policy for SVG elements.
     pub svg: HtmlSelfClosingStyle,
+    /// Policy for MathML elements.
     pub math: HtmlSelfClosingStyle,
 }
 
@@ -90,6 +96,7 @@ pub struct HtmlSelfClosing {
 }
 
 impl HtmlSelfClosing {
+    /// Create the rule with the supplied element-family policies.
     pub const fn new(options: HtmlSelfClosingOptions) -> Self {
         Self { options }
     }

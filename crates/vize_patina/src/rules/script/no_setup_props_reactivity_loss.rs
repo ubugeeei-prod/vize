@@ -47,6 +47,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/no-setup-props-reactivity-loss` lint rule.
 pub struct NoSetupPropsReactivityLoss;
 
 impl ScriptRule for NoSetupPropsReactivityLoss {

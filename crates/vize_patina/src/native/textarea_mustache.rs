@@ -10,13 +10,25 @@ use vize_l0::{
     fact::{Demand, FactConsumer, FactError, ids},
 };
 
+/// Typed failures produced while proving textarea interpolation diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeTextareaLintError {
+    /// A required SDK fact table or entry is unavailable.
     Fact(FactError),
+    /// The causal witness does not verify against the authentic fact view.
     Witness(WitnessError),
-    IncompleteEvidence { child: u32 },
+    /// A direct-child counterexample lacks its original marker or witness chain.
+    IncompleteEvidence {
+        /// Stable key of the child whose evidence is incomplete.
+        child: u32,
+    },
+    /// The child view does not retain a unique authentic textarea header.
     IncompleteHeaderContext,
-    InheritedLiteralContext { span: Span },
+    /// An inherited literal context cannot be authenticated from this child view.
+    InheritedLiteralContext {
+        /// Original textarea opening-tag range.
+        span: Span,
+    },
 }
 impl From<FactError> for NativeTextareaLintError {
     fn from(error: FactError) -> Self {

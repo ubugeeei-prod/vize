@@ -83,12 +83,19 @@ impl BuiltinScriptRuleEntry {
     }
 }
 
+/// Public registration metadata for a built-in script rule.
 pub struct BuiltinScriptRuleMeta {
+    /// Stable rule identifier, including its namespace.
     pub name: &'static str,
+    /// User-facing summary of the condition the rule enforces.
     pub description: &'static str,
+    /// Documentation category used to group the rule.
     pub category: &'static str,
+    /// Whether the rule can provide an automatic source edit.
     pub fixable: bool,
+    /// Severity used when a preset enables the rule without an override.
     pub default_severity: crate::Severity,
+    /// Named presets that enable the rule.
     pub presets: &'static [&'static str],
 }
 

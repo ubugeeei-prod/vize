@@ -42,6 +42,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/no-ref-object-reactivity-loss` lint rule.
 pub struct NoRefObjectReactivityLoss;
 
 impl ScriptRule for NoRefObjectReactivityLoss {

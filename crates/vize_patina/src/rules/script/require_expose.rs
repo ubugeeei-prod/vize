@@ -27,6 +27,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/require-expose` lint rule.
 pub struct RequireExpose;
 
 impl ScriptRule for RequireExpose {

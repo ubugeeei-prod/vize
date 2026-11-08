@@ -133,6 +133,7 @@ fn legacy_slot_attribute(prop: &PropNode<'_>, name: &str) -> bool {
     matches!(prop, PropNode::Attribute(attribute) if attribute.name == name)
 }
 
+/// Implements the `vue/attribute-order` lint rule.
 pub struct AttributeOrder;
 
 impl Rule for AttributeOrder {

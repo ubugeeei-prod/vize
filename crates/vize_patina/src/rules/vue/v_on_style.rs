@@ -37,12 +37,15 @@ static META: RuleMeta = RuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VOnStyleOption {
     #[default]
+    /// Require `@event` shorthand syntax.
     Shorthand,
+    /// Require explicit `v-on:event` syntax.
     Longform,
 }
 
 /// Enforce v-on directive style
 pub struct VOnStyle {
+    /// Directive spelling accepted by the rule.
     pub style: VOnStyleOption,
 }
 

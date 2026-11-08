@@ -36,6 +36,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/no-consecutive-br` lint rule.
 pub struct NoConsecutiveBr;
 
 impl NoConsecutiveBr {
