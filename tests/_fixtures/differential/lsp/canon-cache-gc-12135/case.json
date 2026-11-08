@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "lsp/regression/canon-cache-gc-12135",
+  "provenance": {
+    "fixCommit": "6f6deb28dd49e4f606c3cebc03ed23b48b5d4273",
+    "witnessPath": "crates/vize_canon/src/batch/virtual_project/cache_gc.rs",
+    "witnessTest": "maintenance_escapes_a_saturated_recent_window",
+    "inputOrigin": "Exact isolated Canon cache batch input shared with the #12135 typechecker registration",
+    "contractOrigin": "Pinned authored declaration hover proves the LSP path retains the isolated cache input; cache lifetime qualification belongs to the focused Rust tests"
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "5c507dc7fe54554495e8f507533abd6583268f2fb6c77c487458b61dc7aa36c2"
+  },
+  "expected": {
+    "source": "hover.expected.json",
+    "sha256": "5963f319029a1fb006378ede45e697c6e7f305f72836e147782b1981a72f0ec9"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "hover": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Unique #12135 LSP input custody and one declaration hover; no native or cache-lifetime acceptance credit"
+}

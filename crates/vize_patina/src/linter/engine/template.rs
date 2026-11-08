@@ -5,6 +5,7 @@ use super::{
     unused_directives,
 };
 use crate::context::LintContext;
+use crate::markup::L2Template;
 use vize_croquis::{Croquis, Drawer};
 use vize_l0::{ToCompactString, profile};
 
@@ -13,6 +14,7 @@ pub(super) struct TemplateExecution<'a> {
     pub source: &'a str,
     pub filename: &'a str,
     pub root: &'a RootNode<'a>,
+    pub l2: &'a L2Template<'a>,
     pub env: TemplateRuleEnv<'a>,
 }
 
@@ -28,6 +30,7 @@ impl Linter {
             source,
             filename,
             root,
+            l2,
             env,
         } = input;
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
@@ -69,9 +72,8 @@ impl Linter {
             self,
             &mut ctx,
             sfc::facade::Dispatch {
-                allocator,
-                source,
                 root,
+                l2,
                 analysis,
                 rules: env.facade_rules,
                 rule_count,
@@ -97,24 +99,10 @@ impl Linter {
 
     pub(super) fn lint_template_root<'a>(
         &self,
-        allocator: &'a Allocator,
-        source: &'a str,
-        filename: &'a str,
-        root: &RootNode<'a>,
+        input: TemplateExecution<'a>,
         analysis: TemplateAnalysis<'a>,
-        env: TemplateRuleEnv<'a>,
     ) -> LintResult {
-        self.lint_template_root_with_finish(
-            TemplateExecution {
-                allocator,
-                source,
-                filename,
-                root,
-                env,
-            },
-            analysis,
-            |_| {},
-        )
+        self.lint_template_root_with_finish(input, analysis, |_| {})
     }
 
     /// Late template producers report before the same pragma state is finalized.

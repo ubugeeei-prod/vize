@@ -1,3 +1,4 @@
+/** Host-owned UTF-8 replacement proposed by a plugin rule. */
 export interface PluginFix {
   ruleId?: string;
   plugin?: string;

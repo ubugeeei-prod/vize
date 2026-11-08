@@ -4,17 +4,20 @@ import type { NativeHook, JsonValue, HookIdentity } from "./stages.js";
  * Closures and host imports are unavailable; process access stays in the container.
  */
 export type CallbackSource = string;
+/** Stable hook identity and captured inputs accepted by the sandbox boundary. */
 export interface SandboxIdentity extends HookIdentity {
   visit?: readonly string[];
   demands?: readonly string[];
   configuration?: JsonValue;
 }
+/** Rule, provider, transform, formatter, or output hook executable in isolation. */
 export type SandboxDefinition = SandboxIdentity &
   (
     | { family?: "rule"; rules: Readonly<Record<string, CallbackSource>> }
     | { family: "provider"; provides: readonly string[]; callback: CallbackSource }
     | { family: "transform" | "formatter" | "output"; callback: CallbackSource }
   );
+/** Per-invocation time and serialized-byte limits for a sandbox process. */
 export interface SandboxLimits {
   /** 100..60000 ms; default 5000. Runtime check and cleanup each add at most 5000 ms. */
   timeoutMs?: number;
@@ -27,6 +30,7 @@ export interface SandboxLimits {
  * Runtime filesystem contents remain readable. Native callbacks are trusted.
  */
 export type SandboxHook = NativeHook & { readonly visit?: string[]; readonly demands?: string[] };
+/** Validate a sandbox definition and create its isolated native-hook adapter. */
 export declare function createSandboxRunner(
   definition: SandboxIdentity & {
     family: "provider";
@@ -43,6 +47,7 @@ export declare function createSandboxRunner(
   definition: SandboxDefinition,
   limits?: SandboxLimits,
 ): SandboxHook;
+/** Stable failure code reported by the sandbox runtime boundary. */
 export type SandboxErrorCode =
   | "runtime_unavailable"
   | "execution_stopped"
@@ -57,10 +62,12 @@ export interface SandboxExecutionObservation {
   readonly stdout: string | null;
   readonly stderr: string | null;
 }
+/** Runtime failure with a stable code and optional partial execution evidence. */
 export declare class SandboxRuntimeError extends Error {
   readonly code: SandboxErrorCode;
   /** Frozen and non-enumerable; the request and environment are not copied into it. */
   readonly execution?: SandboxExecutionObservation;
   constructor(code: SandboxErrorCode, message: string, options?: ErrorOptions);
 }
+/** Immutable container image reference required by sandbox runners. */
 export declare const SANDBOX_IMAGE: string;

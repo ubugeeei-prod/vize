@@ -9,7 +9,7 @@ use super::element::{MarkupElement, MarkupElementInner};
 use super::l2::L2Markup;
 use super::l2::binding::{is_consumed_spelling, is_v_pre};
 use super::l2::surface::{SurfaceDirective, offset_in, token_range};
-use super::{MarkupAttribute, MarkupElementKind, MarkupNode, MarkupText};
+use super::{MarkupAttribute, MarkupBinding, MarkupElementKind, MarkupNode, MarkupText};
 use crate::ir::ByteRange;
 use vize_l1::markup::{Attribute, Element, SurfaceChild};
 use vize_relief::Namespace;
@@ -139,6 +139,21 @@ pub(super) fn walk_attributes<'a>(
         {
             let name = frozen_name(attr, doc, opens_v_pre);
             visitor(MarkupAttribute::from_authored(attr, doc, name));
+        }
+    }
+}
+
+pub(super) fn walk_bindings<'a>(
+    element: &'a Element<'a>,
+    doc: &'a L2Markup<'a>,
+    frozen: bool,
+    opens_v_pre: bool,
+    visitor: &mut impl FnMut(MarkupBinding<'a>),
+) {
+    for attr in &element.open.attrs {
+        if !consumed(attr, frozen, opens_v_pre) {
+            let name = frozen.then(|| frozen_name(attr, doc, opens_v_pre));
+            visitor(MarkupBinding::from_surface(attr, doc, name));
         }
     }
 }
