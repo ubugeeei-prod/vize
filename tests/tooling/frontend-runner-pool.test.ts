@@ -142,7 +142,7 @@ function restoreCoverageSummaryPublisher(job: Job, original: Job) {
 
   const publisher = steps.find((step) => step.name === "Coverage report");
   const originalPublisher = originalSteps.find((step) => step.name === "Coverage report");
-  assert(publisher && originalPublisher);
+  assert(publisher && originalPublisher && typeof originalPublisher.run === "string");
   assert.deepEqual(publisher, {
     ...originalPublisher,
     run: "node tools/commands/ci/github/write-coverage-summary.ts",
