@@ -20,7 +20,7 @@ pub(super) struct SourceRevision<'a> {
 pub(super) fn build(
     source_path: &Path,
     content: &str,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     revision: SourceRevision<'_>,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
@@ -47,7 +47,7 @@ pub(super) fn build(
 pub(super) fn build_with_import_facts(
     source_path: &Path,
     content: &str,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     revision: SourceRevision<'_>,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
@@ -171,7 +171,7 @@ pub(super) fn build_with_import_facts(
         if path == source_path {
             continue;
         }
-        let source = overlays.get(&path).copied().unwrap_or(source);
+        let source = overlays.get(&path).unwrap_or(source);
         inputs.push((path, source));
     }
     // One revision shares its dependency type sources. A workspace-wide query

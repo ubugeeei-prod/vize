@@ -2,8 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
-
 use super::{AliasContext, ContextFingerprint};
 use crate::batch::ModuleSpecifierFactsCache;
 use crate::corsa_bridge::types::CorsaBridgeError;
@@ -17,7 +15,7 @@ impl AliasContext {
     pub(super) fn revise_cached(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         fingerprint: &mut ContextFingerprint,
         environment: CorsaProjectEnvironment<'_>,
     ) -> Result<Option<Self>, CorsaBridgeError> {

@@ -178,10 +178,6 @@ async fn open_canonical_virtual_project_document_with_scope(
     include_workspace: bool,
 ) -> Result<Option<CanonicalVirtualDocument>, CanonicalProjectOpenError> {
     let cached_overlays = ctx.state.corsa_overlays();
-    let overlays = cached_overlays
-        .iter()
-        .map(|(path, content)| (path.clone(), &**content))
-        .collect::<Vec<_>>();
     if include_workspace {
         let sources =
             same_typescript_project(ctx, ctx.state.discover_workspace_project_sources().await)
@@ -194,15 +190,22 @@ async fn open_canonical_virtual_project_document_with_scope(
             .map(|(path, content)| (path.clone(), content.as_str()))
             .collect::<Vec<_>>();
         return super::open::open_canonical_virtual_document_with_sources_strict(
-            ctx, bridge, &overlays, &requested,
+            ctx,
+            bridge,
+            &cached_overlays,
+            &requested,
         )
         .await
         .map_err(CanonicalProjectOpenError::Primary);
     }
-    let Some(mut document) =
-        super::open::open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays)
-            .await
-            .map_err(CanonicalProjectOpenError::Primary)?
+    let Some(mut document) = super::open::open_canonical_virtual_document_with_sources_strict(
+        ctx,
+        bridge,
+        &cached_overlays,
+        &[],
+    )
+    .await
+    .map_err(CanonicalProjectOpenError::Primary)?
     else {
         return Ok(None);
     };
@@ -218,10 +221,11 @@ async fn open_canonical_virtual_project_document_with_scope(
         let Some(importer_ctx) = IdeContext::new(ctx.state, &uri, 0) else {
             continue;
         };
-        if let Some(opened) = super::open::open_canonical_virtual_document_with_overlays_strict(
+        if let Some(opened) = super::open::open_canonical_virtual_document_with_sources_strict(
             &importer_ctx,
             bridge,
-            &overlays,
+            &cached_overlays,
+            &[],
         )
         .await
         .map_err(CanonicalProjectOpenError::Importer)?

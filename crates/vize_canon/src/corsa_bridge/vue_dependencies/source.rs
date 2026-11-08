@@ -2,16 +2,16 @@
 
 use oxc_span::SourceType;
 use std::path::{Path, PathBuf};
-use vize_carton::{FxHashMap, String};
+use vize_carton::String;
 
 pub(in crate::corsa_bridge) fn dependency_content(
     path: &Path,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
 ) -> Option<String> {
     let key = vize_carton::path::canonicalize_non_verbatim(path);
     overlays
         .get(&key)
-        .map(|content| String::from(*content))
+        .map(String::from)
         .or_else(|| std::fs::read_to_string(path).ok().map(Into::into))
 }
 

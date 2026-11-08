@@ -50,7 +50,10 @@ fn context(
     source: &str,
     overlays: &[(PathBuf, &str)],
 ) -> impl std::ops::Deref<Target = AliasContext> {
-    let overlays = overlays.iter().map(|(p, s)| (p.clone(), *s)).collect();
+    let overlays = overlays
+        .iter()
+        .map(|(p, s)| (p.clone(), *s))
+        .collect::<FxHashMap<_, _>>();
     AliasContext::for_hosts_cached(
         path,
         source,
@@ -135,7 +138,7 @@ fn warm_surface_matches_uncached_whole_projection_and_retains_catalog() {
         &host,
         HOST,
         Default::default(),
-        &Default::default(),
+        &FxHashMap::<PathBuf, &str>::default(),
         &[],
         environment(&session),
         &ImportRewriter::new(),

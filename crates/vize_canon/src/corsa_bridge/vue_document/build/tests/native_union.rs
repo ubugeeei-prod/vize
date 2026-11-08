@@ -53,7 +53,7 @@ fn implementation_reverse_importers_keep_the_tsx_root_after_two_unsaved_vue_edit
             &overlays
                 .iter()
                 .map(|(path, source)| (path.clone(), *source))
-                .collect(),
+                .collect::<FxHashMap<_, _>>(),
             options,
             environment(&session),
         )

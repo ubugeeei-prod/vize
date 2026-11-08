@@ -1,8 +1,6 @@
 //! Keep live native overlays on the same revision as their materialized files.
 
-use std::path::PathBuf;
-
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashSet, String};
 
 use super::{CorsaMaterializedMappingKind, CorsaMaterializedSource};
 use crate::file_uri::path_to_file_uri;
@@ -10,7 +8,7 @@ use crate::file_uri::path_to_file_uri;
 pub(in crate::corsa_bridge) fn append_materialized_documents(
     documents: &mut Vec<(String, String)>,
     sources: &[CorsaMaterializedSource],
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn super::OverlayAccess,
     full_workspace: bool,
 ) {
     let mut opened = documents

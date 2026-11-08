@@ -19,7 +19,7 @@ pub(super) fn alias_reaches_project_source(
     project: &VirtualProject,
     target: &str,
     aliases: &[(std::string::String, std::string::String)],
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::OverlayAccess,
     cache: &mut FxHashMap<PathBuf, bool>,
 ) -> bool {
     let Some(target) = super::resolution::probe_candidates(&project.project_root.join(target))
@@ -36,7 +36,7 @@ pub(super) fn source_backed(
     project: &VirtualProject,
     declaration: &Path,
     aliases: &[(std::string::String, std::string::String)],
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::OverlayAccess,
     cache: &mut FxHashMap<PathBuf, bool>,
 ) -> bool {
     if let Some(answer) = cache.get(declaration) {
@@ -58,7 +58,7 @@ pub(super) fn source_backed(
         }
         let content = overlays
             .get(&path)
-            .map(|content| (*content).into())
+            .map(Into::into)
             .or_else(|| std::fs::read_to_string(&path).ok());
         let Some(content) = content else { continue };
         let Some(directory) = path.parent() else {

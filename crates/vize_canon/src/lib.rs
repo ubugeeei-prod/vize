@@ -137,15 +137,15 @@ pub use vize_carton::i18n::Locale;
 pub use corsa_bridge::{
     CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaInitialVueDocument,
     CorsaInitialVueProject, CorsaMaterializedMappingKind, CorsaMaterializedSource,
-    CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest, CorsaScriptVirtualProject,
-    CorsaSourceCatalog, CorsaVueHoverDocument, CorsaVueVirtualDependency, CorsaVueVirtualDocument,
-    CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest, DiagnosingConfiguration,
-    DiagnosingSnapshot, LspCompletionItem, LspCompletionList, LspCompletionResponse,
-    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
-    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspParameterInformation,
-    LspParameterLabel, LspPosition, LspRange, LspSignatureHelp, LspSignatureInformation,
-    NativeVueCheck, NativeVueError, OriginalProgramCheck, OriginalProgramError, VIRTUAL_URI_SCHEME,
-    is_editor_mirror_path,
+    CorsaOverlaySnapshot, CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest,
+    CorsaScriptVirtualProject, CorsaSourceCatalog, CorsaVueHoverDocument,
+    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+    CorsaVueWorkspaceRequest, DiagnosingConfiguration, DiagnosingSnapshot, LspCompletionItem,
+    LspCompletionList, LspCompletionResponse, LspDefinitionResponse, LspDiagnostic,
+    LspDocumentation, LspHover, LspHoverContents, LspLocation, LspLocationLink, LspMarkedString,
+    LspMarkupContent, LspParameterInformation, LspParameterLabel, LspPosition, LspRange,
+    LspSignatureHelp, LspSignatureInformation, NativeVueCheck, NativeVueError,
+    OriginalProgramCheck, OriginalProgramError, VIRTUAL_URI_SCHEME, is_editor_mirror_path,
 };
 
 // Re-export batch type checker

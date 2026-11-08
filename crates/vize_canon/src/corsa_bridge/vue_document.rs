@@ -17,10 +17,13 @@ use crate::virtual_ts::VirtualTsOptions;
 
 pub(in crate::corsa_bridge) mod build;
 pub(super) mod materialized_documents;
-use build::build_vue_virtual_workspace_project;
+use build::{
+    build_vue_virtual_workspace_project, build_vue_virtual_workspace_project_with_overlays,
+};
 mod hover_document;
 mod initial_project;
 mod model;
+pub(crate) mod overlay_snapshot;
 pub use hover_document::CorsaVueHoverDocument;
 pub use initial_project::{CorsaInitialVueDocument, CorsaInitialVueProject};
 mod prepare;
@@ -30,6 +33,8 @@ pub use model::{
     CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
 pub(crate) use model::{CorsaNativeDocumentBatch, CorsaVueVirtualProject};
+pub use overlay_snapshot::CorsaOverlaySnapshot;
+pub(crate) use overlay_snapshot::OverlayAccess;
 pub use prepare::CorsaVueWorkspaceRequest;
 
 pub(crate) use model::CorsaProjectEnvironment;
@@ -145,6 +150,32 @@ impl CorsaBridge {
         virtual_ts_options: &VirtualTsOptions,
         requested_sources: &[(PathBuf, &str)],
     ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let overlays = build::canonical_overlays(overlays);
+        let (host, source_catalog) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                &overlays,
+                virtual_ts_options,
+                requested_sources,
+            )
+            .await?;
+        let mut host = (*host).clone();
+        host.source_catalog = source_catalog;
+        Ok(host)
+    }
+
+    /// Register a complete query surface from one revision-scoped overlay set.
+    pub async fn open_vue_virtual_workspace_document_with_overlay_snapshot(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &CorsaOverlaySnapshot,
+        virtual_ts_options: &VirtualTsOptions,
+        requested_sources: &[(PathBuf, &str)],
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
         let (host, source_catalog) = self
             .open_vue_virtual_workspace_project(
                 source_path,
@@ -170,6 +201,29 @@ impl CorsaBridge {
         overlays: &[(PathBuf, &str)],
         virtual_ts_options: &VirtualTsOptions,
     ) -> Result<CorsaVueHoverDocument, CorsaBridgeError> {
+        let overlays = build::canonical_overlays(overlays);
+        let (host, _) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                &overlays,
+                virtual_ts_options,
+                &[],
+            )
+            .await?;
+        Ok(CorsaVueHoverDocument::new(host))
+    }
+
+    /// Synchronize one local hover projection from a shared overlay revision.
+    pub async fn open_vue_hover_document_with_overlay_snapshot(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlays: &CorsaOverlaySnapshot,
+        virtual_ts_options: &VirtualTsOptions,
+    ) -> Result<CorsaVueHoverDocument, CorsaBridgeError> {
         let (host, _) = self
             .open_vue_virtual_workspace_project(
                 source_path,
@@ -188,7 +242,7 @@ impl CorsaBridge {
         source_path: &Path,
         content: &str,
         options: CorsaVueVirtualDocumentOptions,
-        overlays: &[(PathBuf, &str)],
+        overlays: &dyn OverlayAccess,
         virtual_ts_options: &VirtualTsOptions,
         requested_sources: &[(PathBuf, &str)],
     ) -> Result<
@@ -200,7 +254,7 @@ impl CorsaBridge {
     > {
         let project = vize_l0::profile!(
             "canon.editor.project_prepare",
-            build_vue_virtual_workspace_project(
+            build_vue_virtual_workspace_project_with_overlays(
                 source_path,
                 content,
                 options,

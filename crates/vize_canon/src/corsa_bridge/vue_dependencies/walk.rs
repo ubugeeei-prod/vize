@@ -3,7 +3,7 @@
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
-use vize_carton::{FxHashMap, FxHashSet, String};
+use vize_carton::{FxHashSet, String};
 
 use super::{DependencyScan, ImportQueue, parent_dir, queue_imports};
 use crate::batch::ImportRewriter;
@@ -18,7 +18,7 @@ pub(super) fn collect_queued_documents(
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
     alias_context: &crate::corsa_bridge::vue_dependencies_alias::AliasContext,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     visited_vue: &mut FxHashSet<PathBuf>,
     visited_ts: &mut FxHashSet<PathBuf>,
     mut queue: VecDeque<DependencyScan>,

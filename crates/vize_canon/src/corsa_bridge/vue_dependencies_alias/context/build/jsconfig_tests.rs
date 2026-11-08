@@ -36,7 +36,11 @@ fn nearest_jsconfig_and_same_directory_tsconfig_precedence_are_preserved() {
     for file in ["src/App.vue", "src/main.js"] {
         let host = package.join(file);
         let source = std::fs::read_to_string(&host).unwrap();
-        let context = AliasContext::for_host(&host, &source, &Default::default());
+        let context = AliasContext::for_host(
+            &host,
+            &source,
+            &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+        );
         assert_eq!(context.project_root, package);
         assert_eq!(
             context.mirror.as_ref().unwrap().effective_tsconfig_path(),
@@ -46,7 +50,11 @@ fn nearest_jsconfig_and_same_directory_tsconfig_precedence_are_preserved() {
     std::fs::copy(package.join("jsconfig.json"), package.join("tsconfig.json")).unwrap();
     let host = package.join("src/App.vue");
     let source = std::fs::read_to_string(&host).unwrap();
-    let context = AliasContext::for_host(&host, &source, &Default::default());
+    let context = AliasContext::for_host(
+        &host,
+        &source,
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+    );
     assert_eq!(
         context.mirror.as_ref().unwrap().effective_tsconfig_path(),
         Some(package.join("tsconfig.json"))
@@ -65,7 +73,7 @@ fn explicit_config_retains_authority_over_nearest_jsconfig() {
     let context = super::build(
         &host,
         &source,
-        &Default::default(),
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
         super::SourceRevision {
             requested_sources: &[],
             overlay_identity: 0,

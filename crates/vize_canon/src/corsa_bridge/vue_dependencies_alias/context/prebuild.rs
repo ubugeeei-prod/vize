@@ -2,8 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
-
 use super::{AliasContext, ContextFingerprint, build};
 use crate::batch::ModuleSpecifierFactsCache;
 use crate::corsa_bridge::types::CorsaBridgeError;
@@ -13,7 +11,7 @@ impl AliasContext {
     pub(super) fn request_fingerprint(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -35,7 +33,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn preparation_key(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -56,7 +54,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn hosts_are_prepared(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -80,7 +78,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn prebuild_for_hosts(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -118,7 +116,7 @@ impl AliasContext {
     fn prebuild_host(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,

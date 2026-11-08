@@ -3,8 +3,6 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use vize_carton::FxHashMap;
-
 use super::{ContextFingerprint, SessionCache};
 use crate::corsa_bridge::vue_dependencies_alias::context::AliasContext;
 
@@ -38,7 +36,7 @@ impl SessionCache {
         virtual_root: &Path,
         overlay_identity: u64,
         host: &Path,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> Vec<PathBuf> {
         let mut sources = self.project_sources_to_refresh(virtual_root, overlay_identity);
         let epoch = self.project_overlay_identities.get(virtual_root);
@@ -91,7 +89,7 @@ impl SessionCache {
         &self,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> Option<(
         PathBuf,
         PathBuf,
@@ -146,7 +144,7 @@ impl SessionCache {
         &mut self,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> bool {
         self.expire_prebuilt();
         self.prebuilt.as_ref().is_some_and(|prebuilt| {
@@ -160,7 +158,7 @@ impl SessionCache {
         &mut self,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> Option<(AliasContext, ContextFingerprint)> {
         // Another revision of the same host (a hover without the workspace)
         // must leave the prepared one for the request that asked for it.
@@ -191,7 +189,7 @@ impl SessionCache {
         prebuilt: &PrebuiltContext,
         source_path: &Path,
         fingerprint: &ContextFingerprint,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> bool {
         if prebuilt.source_path != source_path || prebuilt.fingerprint != *fingerprint {
             return false;

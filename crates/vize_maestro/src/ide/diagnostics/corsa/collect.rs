@@ -169,10 +169,6 @@ impl DiagnosticService {
         // one (#3442). The snapshot is owned and lock-free, so holding it
         // across the bridge `.await` below is safe (#3315).
         let cached_overlays = state.corsa_overlays();
-        let overlays = cached_overlays
-            .iter()
-            .map(|(path, text)| (path.clone(), &**text))
-            .collect::<Vec<(std::path::PathBuf, &str)>>();
         let document_options = CorsaVueVirtualDocumentOptions {
             options_api,
             legacy_vue2,
@@ -194,6 +190,10 @@ impl DiagnosticService {
         let mut documents = Vec::new();
         let mut finished = Vec::new();
         if is_art_file {
+            let overlays = cached_overlays
+                .iter()
+                .map(|(path, text)| (path.clone(), &**text))
+                .collect::<Vec<(std::path::PathBuf, &str)>>();
             let Ok(descriptor) = Self::descriptor_for_collect(state, uri, &content) else {
                 tracing::warn!("failed to parse art sfc {}", uri);
                 return Ok(vec![]);
@@ -236,12 +236,13 @@ impl DiagnosticService {
                 return Ok(vec![]);
             };
             let opened = bridge
-                .open_vue_virtual_document_with_borrowed_overlays_and_options(
+                .open_vue_virtual_workspace_document_with_overlay_snapshot(
                     &source_path,
                     &content,
                     document_options,
-                    &overlays,
+                    &cached_overlays,
                     &virtual_ts_options,
+                    &[],
                 )
                 .await
                 .map_err(|error| classify(&bridge, error))?;
@@ -272,6 +273,10 @@ impl DiagnosticService {
             && content.contains("<art")
             && let Ok(descriptor) = Self::descriptor_for_collect(state, uri, &content)
         {
+            let overlays = cached_overlays
+                .iter()
+                .map(|(path, text)| (path.clone(), &**text))
+                .collect::<Vec<(std::path::PathBuf, &str)>>();
             for (variant_index, inline_virtual) in Self::generate_virtual_ts_for_inline_art_variants(
                 uri,
                 &content,

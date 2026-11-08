@@ -31,7 +31,11 @@ fn original_private_ts_imports_materialize_manifest_and_target_for_both_hosts() 
     for file in ["src/App.vue", "src/main.ts"] {
         let host = root.join(file);
         let source = std::fs::read_to_string(&host).unwrap();
-        let context = AliasContext::for_host(&host, &source, &Default::default());
+        let context = AliasContext::for_host(
+            &host,
+            &source,
+            &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+        );
         let mirror = context.mirror.as_ref().unwrap();
         assert!(context.aliases.is_empty());
         assert_eq!(context.package_routes.len(), 1);
@@ -72,7 +76,11 @@ fn ordinary_native_ts_packages_and_missing_private_targets_do_not_gain_shadows()
     let original = std::fs::read_to_string(&host).unwrap();
     for specifier in ["ordinary", "#lib/missing.ts"] {
         let source = original.replace("#lib/util.ts", specifier);
-        let context = AliasContext::for_host(&host, &source, &Default::default());
+        let context = AliasContext::for_host(
+            &host,
+            &source,
+            &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+        );
         assert!(context.aliases.is_empty());
         assert!(context.package_routes.is_empty());
         assert_eq!(

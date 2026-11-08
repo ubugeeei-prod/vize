@@ -158,7 +158,7 @@ impl CorsaSourceCatalog {
     pub(in crate::corsa_bridge) fn extend_open_project_document_batch(
         &self,
         root: &Path,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn super::vue_document::OverlayAccess,
         documents: &mut super::vue_document::CorsaNativeDocumentBatch,
     ) {
         let mut opened = documents
@@ -240,7 +240,7 @@ impl CorsaSourceCatalog {
 
     pub(in crate::corsa_bridge) fn current_overlay_sources(
         &self,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn super::vue_document::OverlayAccess,
     ) -> FxHashSet<PathBuf> {
         recover_lock(&self.sources)
             .values()
@@ -248,7 +248,7 @@ impl CorsaSourceCatalog {
             .filter(|source| {
                 overlays
                     .get(&source.source_path)
-                    .is_some_and(|text| *text == source.source.as_str())
+                    .is_some_and(|text| text == source.source.as_str())
             })
             .map(|source| source.source_path.clone())
             .collect()

@@ -2,8 +2,6 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
-
 use super::{AliasContext, ContextFingerprint, PreparedAliasContext, build};
 use crate::batch::ModuleSpecifierFactsCache;
 
@@ -17,7 +15,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host_cached(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
@@ -28,7 +26,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn for_hosts_cached(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
@@ -105,7 +103,7 @@ impl AliasContext {
     #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     fn prepare_hosts_cached(
         host: HostRevision<'_>,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
         requested_sources: &[(PathBuf, &str)],
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,

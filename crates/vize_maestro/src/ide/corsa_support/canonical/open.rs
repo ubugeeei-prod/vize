@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
-use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueWorkspaceRequest};
+use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaOverlaySnapshot, CorsaVueWorkspaceRequest};
 
 use super::super::AuthoredUriResolver;
 use super::{CanonicalDependencyDocument, CanonicalMaterializedSource, CanonicalVirtualDocument};
@@ -26,11 +26,7 @@ pub(crate) async fn open_canonical_virtual_document_strict(
     bridge: &CorsaBridge,
 ) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     let cached_overlays = ctx.state.corsa_overlays();
-    let overlays = cached_overlays
-        .iter()
-        .map(|(path, content)| (path.clone(), &**content))
-        .collect::<Vec<_>>();
-    open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays).await
+    open_canonical_virtual_document_with_sources_strict(ctx, bridge, &cached_overlays, &[]).await
 }
 
 /// Synchronize and borrow the immutable local projection needed by hover.
@@ -48,17 +44,13 @@ pub(crate) async fn open_canonical_hover_document_strict(
         return Ok(None);
     };
     let cached_overlays = ctx.state.corsa_overlays();
-    let overlays = cached_overlays
-        .iter()
-        .map(|(path, content)| (path.clone(), &**content))
-        .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
     let opened = bridge
-        .open_vue_hover_document_with_borrowed_overlays_and_options(
+        .open_vue_hover_document_with_overlay_snapshot(
             &source_path,
             &ctx.content,
             ctx.state.canonical_vue_document_options(),
-            &overlays,
+            &cached_overlays,
             &virtual_ts_options,
         )
         .await?;
@@ -66,18 +58,10 @@ pub(crate) async fn open_canonical_hover_document_strict(
     Ok(Some(opened))
 }
 
-pub(super) async fn open_canonical_virtual_document_with_overlays_strict(
-    ctx: &IdeContext<'_>,
-    bridge: &CorsaBridge,
-    overlays: &[(PathBuf, &str)],
-) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
-    open_canonical_virtual_document_with_sources_strict(ctx, bridge, overlays, &[]).await
-}
-
 pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
-    overlays: &[(PathBuf, &str)],
+    overlays: &CorsaOverlaySnapshot,
     requested_sources: &[(PathBuf, &str)],
 ) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
@@ -92,35 +76,38 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     let options = ctx.state.canonical_vue_document_options();
     // Projecting a whole workspace takes long enough to starve every other
     // native request, so the transaction owner builds it between attempts.
-    if !requested_sources.is_empty()
-        && ctx.state.workspace_preparation.is_armed()
-        && !bridge.vue_virtual_workspace_is_prepared(
+    if !requested_sources.is_empty() && ctx.state.workspace_preparation.is_armed() {
+        let shared = overlays
+            .iter()
+            .map(|(path, content)| (path.clone(), &**content))
+            .collect::<Vec<_>>();
+        if !bridge.vue_virtual_workspace_is_prepared(
             &source_path,
             &ctx.content,
             options,
-            overlays,
+            &shared,
             &virtual_ts_options,
             requested_sources,
-        )
-    {
-        let preparation = bridge.prepare_vue_virtual_workspace(CorsaVueWorkspaceRequest {
-            source_path: source_path.clone(),
-            content: ctx.content.as_str().into(),
-            options,
-            overlays: overlays
-                .iter()
-                .map(|(path, content)| (path.clone(), (*content).into()))
-                .collect(),
-            virtual_ts_options: virtual_ts_options.clone(),
-            requested_sources: requested_sources
-                .iter()
-                .map(|(path, content)| (path.clone(), (*content).into()))
-                .collect(),
-        });
-        ctx.state
-            .workspace_preparation
-            .defer(Box::pin(preparation))
-            .await;
+        ) {
+            let preparation = bridge.prepare_vue_virtual_workspace(CorsaVueWorkspaceRequest {
+                source_path: source_path.clone(),
+                content: ctx.content.as_str().into(),
+                options,
+                overlays: shared
+                    .iter()
+                    .map(|(path, content)| (path.clone(), (*content).into()))
+                    .collect(),
+                virtual_ts_options: virtual_ts_options.clone(),
+                requested_sources: requested_sources
+                    .iter()
+                    .map(|(path, content)| (path.clone(), (*content).into()))
+                    .collect(),
+            });
+            ctx.state
+                .workspace_preparation
+                .defer(Box::pin(preparation))
+                .await;
+        }
     }
     let initial = requested_sources
         .is_empty()
@@ -128,20 +115,24 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         .flatten();
     let opened = if let Some(initial) = initial {
         // Canon still builds and validates the ordinary complete current graph.
+        let materialized = overlays
+            .iter()
+            .map(|(path, content)| (path.clone(), &**content))
+            .collect::<Vec<_>>();
         bridge
             .open_initial_vue_project(
                 initial,
                 &source_path,
                 &ctx.content,
                 options,
-                overlays,
+                &materialized,
                 &virtual_ts_options,
                 requested_sources,
             )
             .await?
     } else {
         bridge
-            .open_vue_virtual_workspace_document(
+            .open_vue_virtual_workspace_document_with_overlay_snapshot(
                 &source_path,
                 &ctx.content,
                 options,

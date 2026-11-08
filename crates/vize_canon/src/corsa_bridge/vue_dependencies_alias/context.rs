@@ -77,7 +77,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn for_host(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::vue_document::OverlayAccess,
     ) -> Self {
         build::build(
             source_path,

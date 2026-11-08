@@ -99,7 +99,11 @@ fn editor_package_fixpoint_generates_each_target_once_and_keeps_fresh_revisions(
         );
     }
 
-    let mut context = AliasContext::for_host(&host, HOST, &Default::default());
+    let mut context = AliasContext::for_host(
+        &host,
+        HOST,
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+    );
     let mirror = context.mirror.as_mut().unwrap();
     assert_eq!(mirror.registered_original_paths_sorted().len(), 3);
     let (_, generated) = mirror.editor_vue_document(&leaf).unwrap();
@@ -119,7 +123,11 @@ fn editor_package_fixpoint_generates_each_target_once_and_keeps_fresh_revisions(
         .replace("leafLabel: string", "leafTotal: number")
         .replace("leafLabel", "leafTotal");
     write(&leaf, &edited);
-    let context = AliasContext::for_host(&host, HOST, &Default::default());
+    let context = AliasContext::for_host(
+        &host,
+        HOST,
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+    );
     let (_, generated) = context
         .mirror
         .as_ref()
@@ -148,7 +156,11 @@ fn editor_package_fixpoint_generates_each_target_once_and_keeps_fresh_revisions(
         &root.join("tsconfig.json"),
         r#"{"compilerOptions":{"strict":true,"moduleResolution":"Bundler"}}"#,
     );
-    let context = AliasContext::for_host(&host, HOST, &Default::default());
+    let context = AliasContext::for_host(
+        &host,
+        HOST,
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
+    );
     let mirror = context.mirror.as_ref().unwrap();
     assert!(mirror.find_by_original(&leaf).is_none());
     let (_, generated) = mirror.editor_vue_document(&replacement).unwrap();
