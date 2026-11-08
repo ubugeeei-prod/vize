@@ -309,22 +309,22 @@ mod tests {
     #[test]
     fn l1_surface_decodes_static_targets_for_a_fragment() {
         let targets = targets(r#"<div class="lo&#99;al" id="main"/><aside/>"#);
-        assert!(!targets.unknown_classes);
-        assert!(!targets.unknown_ids);
-        assert!(!targets.unknown_tags);
-        assert!(targets.classes.contains("local"));
-        assert!(targets.ids.contains("main"));
-        assert!(targets.tags.contains("div"));
-        assert!(targets.tags.contains("aside"));
+        assert_eq!(targets.unknown_classes, false);
+        assert_eq!(targets.unknown_ids, false);
+        assert_eq!(targets.unknown_tags, false);
+        assert_eq!(targets.classes.contains("local"), true);
+        assert_eq!(targets.ids.contains("main"), true);
+        assert_eq!(targets.tags.contains("div"), true);
+        assert_eq!(targets.tags.contains("aside"), true);
     }
 
     #[test]
     fn l1_surface_keeps_verbatim_attributes_static() {
         let targets = targets(r#"<div v-pre :class="foreign" @click="handler"/><aside/>"#);
-        assert!(!targets.unknown_classes);
-        assert!(!targets.unknown_ids);
-        assert!(!targets.unknown_tags);
-        assert!(!targets.classes.contains("foreign"));
+        assert_eq!(targets.unknown_classes, false);
+        assert_eq!(targets.unknown_ids, false);
+        assert_eq!(targets.unknown_tags, false);
+        assert_eq!(targets.classes.contains("foreign"), false);
     }
 
     #[test]
@@ -335,20 +335,20 @@ mod tests {
             r#"<div is="vue:Foreign"/><aside/>"#,
         ] {
             let targets = targets(source);
-            assert!(targets.unknown_classes, "{source}");
-            assert!(targets.unknown_ids, "{source}");
-            assert!(targets.unknown_tags, "{source}");
+            assert_eq!(targets.unknown_classes, true, "{source}");
+            assert_eq!(targets.unknown_ids, true, "{source}");
+            assert_eq!(targets.unknown_tags, true, "{source}");
         }
     }
 
     #[test]
     fn l1_surface_walks_through_structural_template_carriers() {
         let targets = targets(r#"<template v-if="ready"><div class="local"/></template><aside/>"#);
-        assert!(targets.unknown_classes);
-        assert!(targets.unknown_ids);
-        assert!(!targets.unknown_tags);
-        assert!(targets.classes.contains("local"));
-        assert!(targets.tags.contains("div"));
-        assert!(targets.tags.contains("aside"));
+        assert_eq!(targets.unknown_classes, true);
+        assert_eq!(targets.unknown_ids, true);
+        assert_eq!(targets.unknown_tags, false);
+        assert_eq!(targets.classes.contains("local"), true);
+        assert_eq!(targets.tags.contains("div"), true);
+        assert_eq!(targets.tags.contains("aside"), true);
     }
 }
