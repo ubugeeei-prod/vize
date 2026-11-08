@@ -254,14 +254,15 @@ function printModuleClosure(paths: readonly string[]): void {
   console.log(JSON.stringify([...modules].map((file) => relative(root, file)).sort()));
 }
 
-runEntrypoint(() => {
+runEntrypoint((): number => {
   const args = process.argv.slice(2);
   if (args[0] === "--module-closure") {
     printModuleClosure(args.slice(1));
-    return;
+    return 0;
   }
   const { nodeCommands, rustScripts } = verifyLayout();
   console.log(
     `tool commands: verified ${nodeCommands} stable Node commands; ${rustScripts} Rust Script commands remain`,
   );
+  return 0;
 });
