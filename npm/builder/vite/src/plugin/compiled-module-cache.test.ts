@@ -14,8 +14,10 @@ function scanOwners(
   resolvedDependency: string,
 ): readonly string[] {
   const owners: string[] = [];
+  const requested = path.resolve(resolvedDependency);
   for (const [file, module] of cache) {
-    if (module.dependencies?.some((d) => path.resolve(d) === resolvedDependency)) owners.push(file);
+    if (module.dependencies?.some((dependency) => path.resolve(dependency) === requested))
+      owners.push(file);
   }
   return owners;
 }

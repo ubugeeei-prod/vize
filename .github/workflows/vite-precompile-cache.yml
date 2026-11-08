@@ -48,7 +48,10 @@ jobs:
           cache-save: false
           run-install: false
       - name: Install the locked Vite adapter graph
-        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...'
+        run: >-
+          vp install --frozen-lockfile --prefer-offline
+          --filter './npm/builder/vite...'
+          --filter './npm/native...'
       - name: Verify in-memory, persistent and SSR precompile identities
         run: >-
           node --test --test-concurrency=1
