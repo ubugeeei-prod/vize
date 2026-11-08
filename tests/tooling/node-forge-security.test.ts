@@ -16,9 +16,6 @@ import {
   assertForgePackage,
   assertListhenPackage,
   assertNoDirectForge,
-  patchHash,
-  patchPath,
-  verifyPatchFile,
 } from "../../tools/support/security/node-forge-proof.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -29,8 +26,7 @@ const lock = YAML.parseAllDocuments(
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vize-node-forge-laws-"));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
-test("the retired backport stays immutable while the lock binds upstream registry identity", () => {
-  verifyPatchFile(root);
+test("the lock binds the upstream registry identity without a local patch", () => {
   assertForgeLock(workspace, lock);
 });
 
@@ -81,7 +77,7 @@ test("changed registry, version, graph, aliases or direct importer reject recogn
       next.packages["node-forge@1.4.0"] = next.packages["node-forge@1.4.1"];
     },
     (next: typeof lock) => {
-      next.snapshots["node-forge@1.4.1(patch_hash=" + patchHash + ")"] = {};
+      next.snapshots["node-forge@1.4.1(patch_hash=unexpected)"] = {};
     },
   ]) {
     const next = structuredClone(lock);
@@ -95,26 +91,20 @@ test("changed registry, version, graph, aliases or direct importer reject recogn
 });
 
 test("no old or new Forge patch registration can inherit the upstream proof", () => {
+  const forgePatchPrefix = "patches/" + "node-" + "forge@";
   for (const version of ["1.4.0", "1.4.1", "1.4.2"]) {
-    for (const patch of [patchHash, { hash: patchHash, path: patchPath }]) {
+    for (const patch of [
+      "unexpected-patch-hash",
+      { hash: "unexpected-patch-hash", path: forgePatchPrefix + version + ".patch" },
+    ]) {
       const next = structuredClone(lock);
       next.patchedDependencies["node-forge@" + version] = patch;
       assert.throws(() => assertForgeLock(workspace, next));
     }
     const next = structuredClone(workspace);
-    next.patchedDependencies["node-forge@" + version] = patchPath;
+    next.patchedDependencies["node-forge@" + version] = forgePatchPrefix + version + ".patch";
     assert.throws(() => assertForgeLock(next, lock));
   }
-});
-
-test("missing or changed historical patch cannot attest its preserved bytes", () => {
-  assert.throws(() => verifyPatchFile(scratch), /ENOENT/);
-  fs.mkdirSync(path.join(scratch, "patches"));
-  fs.writeFileSync(
-    path.join(scratch, patchPath),
-    fs.readFileSync(path.join(root, patchPath)) + "\n",
-  );
-  assert.throws(() => verifyPatchFile(scratch));
 });
 
 function report() {

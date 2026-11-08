@@ -1,5 +1,5 @@
 import ParcelSourceMap from "@parcel/source-map";
-import MagicString from "magic-string";
+import { MagicString } from "magic-string";
 import { diffChars } from "diff";
 
 // Parcel's CJS package exposes a transpiled default. Handle both Node's CJS

@@ -135,7 +135,7 @@ await test(
       ),
     );
     assert.equal(vaporOracle.compiler, "3.6.0-rc.9");
-    assert.equal(vaporOracle.plugin, "6.0.7");
+    assert.equal(vaporOracle.plugin, "6.0.10");
     const originalVaporObservations = asArray(vaporOracle.observations).map((value) => {
       const record = asRecord(value);
       assert.ok(typeof record.inline === "boolean");
@@ -153,7 +153,7 @@ await test(
       ),
     );
     assert.equal(importOracle.compiler, "3.6.0-rc.9");
-    assert.equal(importOracle.plugin, "6.0.7");
+    assert.equal(importOracle.plugin, "6.0.10");
     const importObservations = asArray(importOracle.observations).map((value) => {
       const record = asRecord(value);
       assert.ok(typeof record.inline === "boolean");

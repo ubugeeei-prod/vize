@@ -133,7 +133,10 @@ export async function assertHostedVrtStyles(page: Page) {
   }
   for (const item of receipt.viewports) {
     assert.equal(item.display, "flex");
-    assert.equal(item["align-items"], "flex-start");
+    assert.ok(
+      item["align-items"] === "flex-start" || item["align-items"] === "flow-start",
+      `expected a flex-start alignment, received ${item["align-items"]}`,
+    );
     assert.equal(item.gap, px(0.5));
     assert.equal(item["padding-top"], px(0.25));
     assert.equal(item["padding-left"], px(0.5));

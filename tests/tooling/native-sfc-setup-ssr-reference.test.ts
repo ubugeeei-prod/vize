@@ -87,7 +87,7 @@ function primary() {
     return {
       schema: "vize.native-sfc.setup-ssr-reference",
       version: 1,
-      compiler: { name: "@vitejs/plugin-vue", version: "6.0.7", vue: "3.5.35" },
+      compiler: { name: "@vitejs/plugin-vue", version: "6.0.10", vue: "3.5.35" },
       fixtures,
     };
   })();
