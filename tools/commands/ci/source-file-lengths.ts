@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import fs from "node:fs";
 
 interface SourceFile {
@@ -92,7 +92,7 @@ function isExcluded(file: string): boolean {
   );
 }
 
-function git(args: readonly string[]): ReturnType<typeof spawnSync> {
+function git(args: readonly string[]): SpawnSyncReturns<string> {
   return spawnSync("git", [...args], { encoding: "utf8", maxBuffer: Number.POSITIVE_INFINITY });
 }
 
