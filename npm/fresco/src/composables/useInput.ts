@@ -58,6 +58,8 @@ export interface UseInputOptions {
   onCompositionUpdate?: (text: string, cursor: number) => void;
   /** Called when IME commits text */
   onCompositionEnd?: (text: string) => void;
+  /** Deliver Ctrl+C to this handler instead of reserving it for app exit. */
+  captureCtrlC?: boolean;
 }
 
 export interface UseInputReturn {
@@ -156,7 +158,9 @@ function handleStructuredOptions(
 
   if (event.char) {
     lastKey.value = event.char;
-    options.onChar?.(event.char);
+    // Modified character chords represent commands, not text insertion. AltGr
+    // terminals report their committed text without these command modifiers.
+    if (!event.ctrl && !event.alt && !event.meta) options.onChar?.(event.char);
     options.onKey?.(event.char, modifiers);
     return;
   }
@@ -204,7 +208,8 @@ export function useInput(
     const input = inputValue(event, inkKey);
     const pressedKey = keyName(event);
 
-    if (input === "c" && inkKey.ctrl && streams.internal_exitOnCtrlC) return;
+    if (input === "c" && inkKey.ctrl && streams.internal_exitOnCtrlC && !options.captureCtrlC)
+      return;
 
     lastKey.value = pressedKey || null;
     options.handler?.(input, inkKey);

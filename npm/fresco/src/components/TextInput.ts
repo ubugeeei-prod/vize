@@ -3,20 +3,37 @@
  * TextInput Component - Text input with builtin cursor management and IME support
  */
 
-import { computed, defineComponent, h, ref, watch, type PropType } from "vue";
+import { computed, defineComponent, h, ref, shallowRef, watch, type PropType } from "vue";
 import { useInput } from "../composables/useInput.js";
 import type { FrescoDimension, FrescoRenderStyle } from "../protocol.js";
 import {
   deleteGraphemeAt,
   deleteGraphemeBefore,
   graphemeLength,
-  insertAtGrapheme,
   sliceGraphemes,
 } from "../utils/text.js";
+import {
+  createTextEditingState,
+  deleteTextBackward,
+  deleteTextForward,
+  hasSelection,
+  nextWordBoundary,
+  previousWordBoundary,
+  redoTextEdit,
+  replaceExternalText,
+  replaceTextSelection,
+  selectAllText,
+  selectionBounds,
+  setTextSelection,
+  undoTextEdit,
+  type TextEditingState,
+} from "./text-editing.js";
 
 export interface TextInputProps {
   /** Input value (v-model) */
   modelValue?: string;
+  /** Initial value when the input is uncontrolled. */
+  defaultValue?: string;
   /** Placeholder text */
   placeholder?: string;
   /** Whether input is focused */
@@ -32,12 +49,22 @@ export interface TextInputProps {
   fg?: string;
   /** Background color */
   bg?: string;
+  /** Validate a candidate value; a string is exposed as its error message. */
+  validate?: (value: string) => boolean | string | null | undefined;
   /** Called when value changes */
   "onUpdate:modelValue"?: (value: string) => void;
   /** Called when submitted (Enter) */
   onSubmit?: (value: string) => void;
   /** Called when escape is pressed */
   onCancel?: () => void;
+  /** Called whenever the selected grapheme range changes. */
+  onSelectionChange?: (start: number, end: number) => void;
+  /** Called when the active selection is copied. */
+  onCopy?: (value: string) => void;
+  /** Called when the active selection is cut. */
+  onCut?: (value: string) => void;
+  /** Called when the current validation state changes. */
+  onValidationChange?: (valid: boolean, message?: string) => void;
   /** Called when IME composition starts */
   onCompositionStart?: () => void;
   /** Called when IME composition updates */
@@ -50,6 +77,10 @@ export const TextInput = defineComponent({
   name: "TextInput",
   props: {
     modelValue: {
+      type: String,
+      default: undefined,
+    },
+    defaultValue: {
       type: String,
       default: "",
     },
@@ -76,6 +107,7 @@ export const TextInput = defineComponent({
     width: [Number, String] as PropType<FrescoDimension>,
     fg: String,
     bg: String,
+    validate: Function as PropType<TextInputProps["validate"]>,
   },
   emits: [
     "update:modelValue",
@@ -84,79 +116,101 @@ export const TextInput = defineComponent({
     "compositionstart",
     "compositionupdate",
     "compositionend",
+    "selectionChange",
+    "copy",
+    "cut",
+    "validationChange",
   ],
   setup(props, { emit }) {
-    const internalValue = ref(props.modelValue);
-    const cursorPos = ref(graphemeLength(props.modelValue));
+    const initialValue = props.modelValue ?? props.defaultValue;
+    const editing = shallowRef(createTextEditingState(initialValue));
+    const internalValue = computed(() => editing.value.value);
+    const cursorPos = computed(() => editing.value.selection.focus);
     const isComposing = ref(false);
     const compositionAnchor = ref(cursorPos.value);
     const preedit = ref("");
     const preeditCursor = ref(0);
 
     const focused = computed(() => props.focused ?? props.focus);
+    const validation = computed(() => {
+      const result = props.validate?.(internalValue.value);
+      return {
+        valid: result !== false && typeof result !== "string",
+        message: typeof result === "string" ? result : undefined,
+      };
+    });
+
+    watch(validation, ({ valid, message }) => emit("validationChange", valid, message), {
+      immediate: true,
+    });
 
     // Sync with v-model
     watch(
       () => props.modelValue,
       (newValue) => {
-        internalValue.value = newValue;
-        // Keep cursor at end if value changes externally
-        const length = graphemeLength(newValue);
-        if (cursorPos.value > length) {
-          cursorPos.value = length;
-        }
+        if (newValue === undefined) return;
+        editing.value = replaceExternalText(editing.value, newValue);
       },
     );
 
-    // Update value and emit
-    const updateValue = (value: string) => {
-      internalValue.value = value;
-      emit("update:modelValue", value);
+    const applyEditing = (next: TextEditingState) => {
+      const previous = editing.value;
+      if (next === previous) return;
+      editing.value = next;
+      if (next.value !== previous.value) emit("update:modelValue", next.value);
+      if (
+        next.selection.anchor !== previous.selection.anchor ||
+        next.selection.focus !== previous.selection.focus
+      ) {
+        emit("selectionChange", ...selectionBounds(next.selection));
+      }
     };
 
     // Insert text at cursor position
     const insertText = (text: string) => {
-      updateValue(insertAtGrapheme(internalValue.value, cursorPos.value, text));
-      cursorPos.value += graphemeLength(text);
+      applyEditing(replaceTextSelection(editing.value, text));
     };
 
     // Delete character before cursor (Backspace)
-    const deleteBack = () => {
-      if (cursorPos.value > 0) {
-        updateValue(deleteGraphemeBefore(internalValue.value, cursorPos.value));
-        cursorPos.value--;
-      }
+    const deleteBack = (byWord = false) => {
+      applyEditing(deleteTextBackward(editing.value, byWord));
     };
 
     // Delete character at cursor (Delete)
-    const deleteForward = () => {
-      if (cursorPos.value < graphemeLength(internalValue.value)) {
-        updateValue(deleteGraphemeAt(internalValue.value, cursorPos.value));
-      }
+    const deleteForward = (byWord = false) => {
+      applyEditing(deleteTextForward(editing.value, byWord));
     };
 
-    // Move cursor left
-    const moveLeft = () => {
-      if (cursorPos.value > 0) {
-        cursorPos.value--;
-      }
+    const moveLeft = (extend = false, byWord = false) => {
+      const [start] = selectionBounds(editing.value.selection);
+      const target =
+        hasSelection(editing.value) && !extend
+          ? start
+          : byWord
+            ? previousWordBoundary(internalValue.value, cursorPos.value)
+            : cursorPos.value - 1;
+      applyEditing(setTextSelection(editing.value, target, extend));
     };
 
-    // Move cursor right
-    const moveRight = () => {
-      if (cursorPos.value < graphemeLength(internalValue.value)) {
-        cursorPos.value++;
-      }
+    const moveRight = (extend = false, byWord = false) => {
+      const [, end] = selectionBounds(editing.value.selection);
+      const target =
+        hasSelection(editing.value) && !extend
+          ? end
+          : byWord
+            ? nextWordBoundary(internalValue.value, cursorPos.value)
+            : cursorPos.value + 1;
+      applyEditing(setTextSelection(editing.value, target, extend));
     };
 
     // Move cursor to start
-    const moveToStart = () => {
-      cursorPos.value = 0;
+    const moveToStart = (extend = false) => {
+      applyEditing(setTextSelection(editing.value, 0, extend));
     };
 
     // Move cursor to end
-    const moveToEnd = () => {
-      cursorPos.value = graphemeLength(internalValue.value);
+    const moveToEnd = (extend = false) => {
+      applyEditing(setTextSelection(editing.value, graphemeLength(internalValue.value), extend));
     };
 
     const updatePreedit = (text: string, cursor = graphemeLength(text)) => {
@@ -174,7 +228,7 @@ export const TextInput = defineComponent({
     const finishComposition = (text = preedit.value) => {
       if (!isComposing.value) return;
 
-      cursorPos.value = compositionAnchor.value;
+      editing.value = setTextSelection(editing.value, compositionAnchor.value);
       isComposing.value = false;
       preedit.value = "";
       preeditCursor.value = 0;
@@ -190,7 +244,7 @@ export const TextInput = defineComponent({
       isComposing.value = false;
       preedit.value = "";
       preeditCursor.value = 0;
-      cursorPos.value = compositionAnchor.value;
+      editing.value = setTextSelection(editing.value, compositionAnchor.value);
       emit("compositionend", "");
       return true;
     };
@@ -268,30 +322,37 @@ export const TextInput = defineComponent({
     // Handle keyboard input when focused
     useInput({
       isActive,
+      captureCtrlC: true,
       onChar: (char) => {
         if (isComposing.value) return;
         insertText(char);
       },
-      onArrow: (direction) => {
-        if (direction === "left") {
-          if (!movePreeditLeft()) moveLeft();
-        }
-        if (direction === "right") {
-          if (!movePreeditRight()) moveRight();
-        }
-      },
       onKey: (key, modifiers) => {
-        if (key === "backspace") {
-          if (!deletePreeditBack()) deleteBack();
+        const modifiedWord = modifiers.ctrl || modifiers.alt;
+        if (key === "left") {
+          if (!movePreeditLeft()) moveLeft(modifiers.shift, modifiedWord);
+        } else if (key === "right") {
+          if (!movePreeditRight()) moveRight(modifiers.shift, modifiedWord);
+        } else if (key === "backspace") {
+          if (!deletePreeditBack()) deleteBack(modifiedWord);
         } else if (key === "delete") {
-          if (!deletePreeditForward()) deleteForward();
+          if (!deletePreeditForward()) deleteForward(modifiedWord);
         } else if (key === "home") {
-          if (!movePreeditToStart()) moveToStart();
+          if (!movePreeditToStart()) moveToStart(modifiers.shift);
         } else if (key === "end") {
-          if (!movePreeditToEnd()) moveToEnd();
+          if (!movePreeditToEnd()) moveToEnd(modifiers.shift);
         } else if (key === "a" && modifiers.ctrl) {
-          // Ctrl+A - select all (move to end for now)
-          if (!movePreeditToEnd()) moveToEnd();
+          if (!movePreeditToEnd()) applyEditing(selectAllText(editing.value));
+        } else if (key === "z" && modifiers.ctrl) {
+          applyEditing(modifiers.shift ? redoTextEdit(editing.value) : undoTextEdit(editing.value));
+        } else if (key === "y" && modifiers.ctrl) {
+          applyEditing(redoTextEdit(editing.value));
+        } else if ((key === "c" || key === "x") && (modifiers.ctrl || modifiers.meta)) {
+          if (!hasSelection(editing.value)) return;
+          const [start, end] = selectionBounds(editing.value.selection);
+          const selected = sliceGraphemes(internalValue.value, start, end);
+          emit(key === "c" ? "copy" : "cut", selected);
+          if (key === "x") applyEditing(replaceTextSelection(editing.value, ""));
         }
       },
       onSubmit: () => {
@@ -318,6 +379,7 @@ export const TextInput = defineComponent({
 
     return () => {
       const style: FrescoRenderStyle = {};
+      const [selectionStart, selectionEnd] = selectionBounds(editing.value.selection);
       if (props.width !== undefined) {
         style.width = String(props.width);
       }
@@ -327,6 +389,10 @@ export const TextInput = defineComponent({
         placeholder: props.placeholder,
         focused: focused.value,
         cursor: displayCursor.value,
+        selectionStart: isComposing.value ? displayCursor.value : selectionStart,
+        selectionEnd: isComposing.value ? displayCursor.value : selectionEnd,
+        invalid: !validation.value.valid,
+        validationMessage: validation.value.message,
         mask: props.mask,
         maskChar: props.maskChar,
         style,
