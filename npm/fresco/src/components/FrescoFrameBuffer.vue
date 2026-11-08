@@ -7,16 +7,5 @@ defineOptions({ name: "FrameBuffer" });
 </script>
 
 <template>
-  <raw
-    :lines="lines"
-    :style="style"
-    :fg="fg"
-    :bg="bg"
-    :bold="bold"
-    :dim="dim"
-    :italic="italic"
-    :underline="underline"
-    :inverse="inverse"
-    :border="border"
-  />
+  <raw :lines :style :fg :bg :bold :dim :italic :underline :inverse :border />
 </template>
