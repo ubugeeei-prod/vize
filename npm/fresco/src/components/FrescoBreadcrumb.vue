@@ -13,7 +13,7 @@ defineEmits<{ select: [key: string] }>();
 defineOptions({ name: "FrescoBreadcrumb" });
 
 const rowStyle = { flexDirection: "row" } as const;
-const iconLabel = (item: BreadcrumbItem) => `${item.icon} `;
+const iconLabel = (item: BreadcrumbItem) => (item.icon ? `${item.icon} ` : "");
 </script>
 
 <template>

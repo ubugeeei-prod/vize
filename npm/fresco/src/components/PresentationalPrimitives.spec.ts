@@ -52,6 +52,16 @@ test("Avatar derives initials and renders an optional status", () => {
   mounted.unmount();
 });
 
+test("Avatar derives initials by Unicode code point", () => {
+  const twoNames = mountComponent(Avatar, { name: "🦀 Ferris" });
+  assert.deepEqual(visibleText(firstChild(twoNames)), ["🦀F"]);
+  twoNames.unmount();
+
+  const oneName = mountComponent(Avatar, { name: "🦀a" });
+  assert.deepEqual(visibleText(firstChild(oneName)), ["🦀A"]);
+  oneName.unmount();
+});
+
 test("Breadcrumb preserves icon, active, and separator styling", () => {
   const mounted = mountComponent(Breadcrumb, {
     items: [

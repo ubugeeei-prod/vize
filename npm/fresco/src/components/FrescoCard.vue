@@ -26,7 +26,7 @@ const containerStyle = computed(() => ({ flexDirection: "column" as const, paddi
 const headerStyle = { flexDirection: "row", marginBottom: 1 } as const;
 const contentStyle = { flexGrow: 1 } as const;
 const footerStyle = { marginTop: 1 } as const;
-const subtitleLabel = computed(() => (title ? ` - ${subtitle}` : subtitle));
+const subtitleLabel = computed(() => (subtitle ? (title ? ` - ${subtitle}` : subtitle) : ""));
 </script>
 
 <template>

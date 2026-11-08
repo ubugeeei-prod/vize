@@ -19,11 +19,14 @@ const {
 
 defineOptions({ name: "FrescoAvatar" });
 
+const takeCodePoints = (value: string, count: number) => Array.from(value).slice(0, count).join("");
 const displayInitials = computed(() => {
   if (initials) return initials;
   const parts = name?.split(" ").filter(Boolean) ?? [];
-  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  if (parts.length >= 2) {
+    return `${takeCodePoints(parts[0], 1)}${takeCodePoints(parts[1], 1)}`.toUpperCase();
+  }
+  if (parts.length === 1) return takeCodePoints(parts[0], 2).toUpperCase();
   return "??";
 });
 const padding = computed(() => (size === "lg" ? 1 : 0));
