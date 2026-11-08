@@ -52,6 +52,10 @@ const previousConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;\n";
 const currentConstructor =
   "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n    $props: Props;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;\n";
+const previousBuildConstructor =
+  'type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps, $JsxProps>;\n';
+const currentBuildConstructor =
+  'type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {\n    $props: Props & import("./__vize_helpers.js").__EmitProps<Emits>;\n    readonly __vizeRawProps?: Props;\n    $emit: $PublicEmit<Emits>;\n    $slots: $PublicSlots<$Slots>;\n}, $ComponentPublicBase, Props, import("./__vize_helpers.js").__EmitProps<Emits>, $AuthoredProps, $JsxProps>;\n';
 const exportEdits = [
   ["$LiteralKeys, $Replace", "$LiteralKeys, $PatternSafeOmit, $Replace"],
   [
@@ -66,14 +70,16 @@ const exportEdits = [
 ] as const;
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
 
-export function canonLeftoversOutputTransition(
+function outputTransition(
   current: Buffer,
   direction: "forward" | "inverse",
+  constructorBefore: string,
+  constructorAfter: string,
 ): Buffer {
   let text = current.toString("utf8");
   if (direction === "inverse") {
-    const from = encoded(currentConstructor),
-      to = encoded(previousConstructor);
+    const from = encoded(constructorAfter),
+      to = encoded(constructorBefore);
     assert.equal(text.split(from).length - 1, 1);
     text = text.replace(from, to);
   }
@@ -96,10 +102,25 @@ export function canonLeftoversOutputTransition(
     text = text.replace(from, () => to);
   }
   if (direction === "forward") {
-    const from = encoded(previousConstructor),
-      to = encoded(currentConstructor);
+    const from = encoded(constructorBefore),
+      to = encoded(constructorAfter);
     assert.ok(text.split(from).length - 1 >= 1);
     text = text.replaceAll(from, () => to);
   }
   return Buffer.from(text);
+}
+
+export function canonLeftoversOutputTransition(
+  current: Buffer,
+  direction: "forward" | "inverse",
+): Buffer {
+  return outputTransition(current, direction, previousConstructor, currentConstructor);
+}
+
+/** Replay the same helper successor around the declaration-build constructor shape. */
+export function canonLeftoversBuildOutputTransition(
+  current: Buffer,
+  direction: "forward" | "inverse",
+): Buffer {
+  return outputTransition(current, direction, previousBuildConstructor, currentBuildConstructor);
 }
