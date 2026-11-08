@@ -76,13 +76,17 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
 
+const CORSA_SERVER_COUNTS = [1, 2, 4, 8] as const;
+
 /** Focused native topology lanes selected explicitly by benchmark dispatches. */
-export const CORSA_TOPOLOGY_TOOLS: readonly ScalingTool[] = [1, 2, 4, 8].map((servers) => ({
-  id: `vize-check-servers-${servers}` as const,
-  label: `vize check (--servers ${servers}, --checkers 1)`,
-  vize: true,
-  format: "json",
-}));
+export const CORSA_TOPOLOGY_TOOLS: readonly ScalingTool[] = CORSA_SERVER_COUNTS.map(
+  (servers): ScalingTool => ({
+    id: `vize-check-servers-${servers}`,
+    label: `vize check (--servers ${servers}, --checkers 1)`,
+    vize: true,
+    format: "json",
+  }),
+);
 
 /** Every selectable lane; the default scaling surface remains [`TOOLS`]. */
 export const ALL_TOOLS: readonly ScalingTool[] = [...TOOLS, ...CORSA_TOPOLOGY_TOOLS];
@@ -298,6 +302,7 @@ export function invocation(
       if (kind !== "nuxt") throw new Error("nuxt build runs on Nuxt projects only");
       return { bin: env.node, args: [nuxtCli(env), "build", cwd], stats: false };
   }
+  throw new Error(`unsupported scaling tool: ${tool.id}`);
 }
 
 /** Environment of every Nuxt command: no telemetry, a client build. */
