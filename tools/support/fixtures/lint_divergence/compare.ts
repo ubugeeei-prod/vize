@@ -261,7 +261,8 @@ export function compareLintFindings(
     ).length,
     patinaFindingCount:
       comparablePatina.length + patinaOnlyRuleFindings.length + patinaOutsideBaselineSurface.length,
-    baselineFindingCount: baseline.findings.length,
+    baselineFindingCount:
+      baseline.findings.length - (comparableBaseline.length - uniqueComparableBaseline.length),
     comparableBaselineCount: uniqueComparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,

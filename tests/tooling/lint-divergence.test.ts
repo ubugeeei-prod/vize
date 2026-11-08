@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { compare, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import { compare, cwd, eslintResult, ruleMap, span } from "./_helpers/lint-divergence-fixture.ts";
 
 test("the divergence ledger keys on the full location tuple, not on counts", () => {
   // Both linters report exactly two findings for the same rule in the same
@@ -144,8 +145,7 @@ test("identical duplicate baseline findings do not become false negatives", () =
     ...span(3, 8, 3, 20),
     message: "`v-html` directive can lead to XSS attack.",
   };
-  const result = compare(
-    [
+  const patina = [
       {
         file: "src/App.vue",
         ruleId: "vue/no-v-html",
@@ -154,10 +154,20 @@ test("identical duplicate baseline findings do not become false negatives", () =
         message: "v-html",
       },
     ],
-    [eslintResult("src/App.vue", [baseline, { ...baseline }])],
-  );
+    eslint = [eslintResult("src/App.vue", [baseline, { ...baseline }])],
+    result = compare(patina, eslint),
+    successor = compareSuccessor(
+      "fixture",
+      cwd,
+      ruleMap,
+      patina,
+      eslint as Parameters<typeof compareSuccessor>[4],
+      { files: ["src/App.vue"] },
+    ),
+    successorSummary = successor.summary as Record<string, unknown>;
 
-  assert.equal(result.summary.baselineFindingCount, 2);
+  assert.equal(result.summary.baselineFindingCount, 1);
+  assert.equal(successorSummary.baselineFindingCount, 1);
   assert.equal(result.summary.comparableBaselineCount, 1);
   assert.equal(result.summary.sharedCount, 1);
   assert.equal(result.summary.falseNegativeCount, 0);

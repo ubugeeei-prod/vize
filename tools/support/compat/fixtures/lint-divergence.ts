@@ -253,7 +253,8 @@ export function compareLintFindings({
   };
   const summary = {
     patinaFindingCount: patina.length,
-    baselineFindingCount: baselineInput.findings.length,
+    baselineFindingCount:
+      baselineInput.findings.length - (comparableBaseline.length - uniqueComparableBaseline.length),
     comparableBaselineCount: uniqueComparableBaseline.length,
     sharedCount: shared.length,
     messageDifferenceCount: messageDifferences.length,
