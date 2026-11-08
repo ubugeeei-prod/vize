@@ -78,7 +78,12 @@ type $ComponentInstance = Omit<$AuthoredInstance, '$props' | '$emit' | '$slots'>
   $emit: $PublicEmit<Emits>;
   $slots: $PublicSlots<$Slots>;
 } & $ComponentPublicBase;
-type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
 type $VueComponentOptions = {
   [key: string]: any;
   name?: string;

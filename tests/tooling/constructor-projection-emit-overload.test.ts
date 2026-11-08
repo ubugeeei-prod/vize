@@ -26,7 +26,7 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
   const packet = virtualPair(pair);
   assert.equal(
     pair.after.length + pair.afterOwner.length - pair.before.length - pair.beforeOwner.length,
-    1274,
+    1408,
   );
   const proof = relocateVirtualPacket(
     packet.base,
@@ -37,7 +37,7 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
   );
   assert.equal(proof.edits.length, 1);
   assert.equal(proof.edits[0].end - proof.edits[0].start, 2125);
-  assert.equal(proof.edits[0].replacementBytes, 3399);
+  assert.equal(proof.edits[0].replacementBytes, 3533);
 });
 
 test("owned emit inventory rejects every unauthenticated helper state", async (context) => {

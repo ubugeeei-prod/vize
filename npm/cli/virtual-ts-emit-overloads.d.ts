@@ -115,8 +115,14 @@ declare global {
         | `on${Capitalize<K>}`
     ]?: T[K];
   };
-  type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> &
-    (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});
+  type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> =
+    $IsAny<T> extends true
+      ? $EmitPropsFromOptions<O>
+      : string extends keyof O
+        ? [keyof L] extends [never]
+          ? $EmitPropsFromOptions<O>
+          : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L>
+        : $EmitPropsFromOptions<O>;
 }
 
 export {};

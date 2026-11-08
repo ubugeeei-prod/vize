@@ -12,4 +12,4 @@ type $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => 
 type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;
 type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
 type $EmitPropsFromOptions<T> = { [K in keyof T & string as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: T[K] };
-type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});
+type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> = $IsAny<T> extends true ? $EmitPropsFromOptions<O> : string extends keyof O ? [keyof L] extends [never] ? $EmitPropsFromOptions<O> : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L> : $EmitPropsFromOptions<O>;

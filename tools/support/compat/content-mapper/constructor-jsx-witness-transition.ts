@@ -48,8 +48,8 @@ export function certifyJsxWitnessChange(
 ): JsxWitnessChangeProof {
   if (
     file === strictExtraKeysPath &&
-    after.length === 5996 &&
-    digest(after) === "5925942220f43800ee52f81973df33a429af4b77060990f7b03b435e617a40b8"
+    after.length === 6026 &&
+    digest(after) === "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a"
   ) {
     const predecessor = Buffer.from(beforeCanonLeftovers(file, after.toString("utf8")));
     if (!predecessor.equals(after)) {

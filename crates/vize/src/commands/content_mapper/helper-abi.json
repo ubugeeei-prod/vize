@@ -65,7 +65,7 @@
         },
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "585f3df6a729399ddc7b6bbd997abfb5b56392da856cf80e5e71fc691d6934c7"
+          "sha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe"
         }
       ]
     },
@@ -83,11 +83,11 @@
       "files": [
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "585f3df6a729399ddc7b6bbd997abfb5b56392da856cf80e5e71fc691d6934c7"
+          "sha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe"
         },
         {
           "path": "virtual-ts-emit-overloads.d.ts",
-          "sha256": "b4c620326325325daea456e86390366cd16145bf1454f9da4c5936bb5f3cbd92"
+          "sha256": "0b669c394a0d5c58d90090749321cf650594d6a5be74e72ed7a2797840e49268"
         },
         {
           "path": "virtual-ts-emits.d.ts",
@@ -95,7 +95,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "3d60a659057c8c1c44d12c4136af25aebbe29ebba5ba80dd3510a0548034d462"
+          "sha256": "f478b29b50fa585df10ae616e6f1f996434c570f332feabbc47200e87fa70d1a"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -131,7 +131,7 @@
       "files": [
         {
           "path": "generated/content-mapper-types.d.ts",
-          "sha256": "585f3df6a729399ddc7b6bbd997abfb5b56392da856cf80e5e71fc691d6934c7"
+          "sha256": "46249a8d8376f1cce15ceca1f226cc6fbb577bfe6cc078cf7182e552931b7dbe"
         },
         {
           "path": "virtual-ts-checker.d.ts",
@@ -139,7 +139,7 @@
         },
         {
           "path": "virtual-ts-emit-overloads.d.ts",
-          "sha256": "b4c620326325325daea456e86390366cd16145bf1454f9da4c5936bb5f3cbd92"
+          "sha256": "0b669c394a0d5c58d90090749321cf650594d6a5be74e72ed7a2797840e49268"
         },
         {
           "path": "virtual-ts-emits.d.ts",
@@ -147,7 +147,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "3d60a659057c8c1c44d12c4136af25aebbe29ebba5ba80dd3510a0548034d462"
+          "sha256": "f478b29b50fa585df10ae616e6f1f996434c570f332feabbc47200e87fa70d1a"
         },
         {
           "path": "virtual-ts-listeners.d.ts",

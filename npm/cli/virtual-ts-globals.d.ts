@@ -308,7 +308,7 @@ declare global {
   > = $PatternSafeOmit<
     I,
     "$props" | "$emit" | "$slots",
-    C,
+    symbol extends keyof C ? {} : C,
     | "$"
     | "$data"
     | "$attrs"

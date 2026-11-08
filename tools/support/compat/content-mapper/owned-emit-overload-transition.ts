@@ -27,7 +27,7 @@ const stableSourceHashes = [
 ] as const;
 const previousHash = "ef2a99a2e675a810472b7a3cc6c9a4c9a905f12369aa1366dc9605af94b9c6f5";
 const historicalCurrentHash = "924bb683376f6c2ab3b9225cd6eff73328f8dfe4e87529a1c1a8068c03923e74";
-const currentHash = "3325a0120f682f9d93fb58c09d0effff1935ce6cf0118f34c0c5428197d3cc6a";
+const currentHash = "e49c7a2b6603230adcfa42ae7a27cd81265c25b5b62b678f374e5c3642e0bbc4";
 const marker = Buffer.from("type $OverloadUnionRecursive<");
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 export type SourcePair = { repository: string; base: string; head: string };
@@ -61,7 +61,7 @@ export function certifyEmitOverloadAssets(
     composedHistory || (before.length === 2535 && baseHash === historicalCurrentHash),
     "unknown previous emit helper",
   );
-  assert.equal(after.length, 3354, "unknown current emit helper");
+  assert.equal(after.length, 3488, "unknown current emit helper");
   assert.equal(digest(after), currentHash, "unknown current emit helper");
   const historicalAfter = Buffer.from(beforeCanonLeftovers(emitOverloadsPath, after.toString()));
   assert.equal(historicalAfter.length, 2535, "unknown historical emit helper");

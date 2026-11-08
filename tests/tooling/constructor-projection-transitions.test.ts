@@ -172,7 +172,7 @@ test("only the complete reviewed JSX witness source transition can change canoni
   assert.equal(proof.beforeSha256, record.before.sha256);
   assert.equal(
     proof.afterSha256,
-    "5925942220f43800ee52f81973df33a429af4b77060990f7b03b435e617a40b8",
+    "78d6af92022c9779819704cfb63b91955101396c4929bde5e6dddc308e546b2a",
   );
   assert.equal(proof.successorRecordSha256s?.length, 3);
   assert.equal(proof.successorRecordSha256, canonLeftoversSha256);
