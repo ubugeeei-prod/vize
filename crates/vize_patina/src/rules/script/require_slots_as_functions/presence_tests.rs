@@ -29,28 +29,29 @@ fn direct_negation_preserves_complete_packets_and_value_boundaries() {
     }
     // Every complete result is retained before checking the independent authored contract.
     for (row, source, offset, actual) in captured {
-        let diagnostics =
-            super::typeof_tests::current_native_spans("slot-existence-negation-10822", row)
-                .iter()
-                .map(|span| {
-                    let needle = span["needle"].as_str().unwrap();
-                    assert_eq!(source.matches(needle).count(), 1, "{}", row["id"]);
-                    let start = offset
-                        + source.find(needle).unwrap()
-                        + span["shift"].as_u64().unwrap() as usize;
-                    LintDiagnostic {
-                        rule_name: "script/require-slots-as-functions",
-                        severity: Severity::Error,
-                        message: "`$slots` properties are functions in Vue 3 and must be called."
-                            .into(),
-                        start: start as u32,
-                        end: (start + span["length"].as_u64().unwrap() as usize) as u32,
-                        help: None,
-                        labels: Vec::new(),
-                        fix: None,
-                    }
-                })
-                .collect::<Vec<_>>();
+        let diagnostics = row["officialSpans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|span| {
+                let needle = span["needle"].as_str().unwrap();
+                assert_eq!(source.matches(needle).count(), 1, "{}", row["id"]);
+                let start = offset
+                    + source.find(needle).unwrap()
+                    + span["shift"].as_u64().unwrap() as usize;
+                LintDiagnostic {
+                    rule_name: "script/require-slots-as-functions",
+                    severity: Severity::Error,
+                    message: "`$slots` properties are functions in Vue 3 and must be called."
+                        .into(),
+                    start: start as u32,
+                    end: (start + span["length"].as_u64().unwrap() as usize) as u32,
+                    help: None,
+                    labels: Vec::new(),
+                    fix: None,
+                }
+            })
+            .collect::<Vec<_>>();
         let expected = ScriptLintResult {
             error_count: diagnostics.len(),
             warning_count: 0,

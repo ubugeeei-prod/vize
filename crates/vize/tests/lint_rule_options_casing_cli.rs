@@ -111,7 +111,7 @@ emit('keepOriginal');
                         "line": 3,
                         "column": 3,
                         "endLine": 3,
-                        "endColumn": 15,
+                        "endColumn": 12,
                         "help": "Use kebab-case for component names"
                     },
                     {

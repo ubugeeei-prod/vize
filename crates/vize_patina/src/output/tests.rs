@@ -64,6 +64,31 @@ fn json_output_uses_character_columns_after_multibyte_text() {
 }
 
 #[test]
+fn json_output_uses_utf16_columns_after_astral_text() {
+    let source = "<template><div>👇</div></template>";
+    let filename = vize_l0::String::from("Component.vue");
+    let start = source.find("</div>").unwrap() as u32;
+    let result = LintResult {
+        filename: filename.clone(),
+        diagnostics: vec![LintDiagnostic::warn(
+            "vue/no-bare-strings-in-template",
+            "Bare text",
+            start,
+            start,
+        )],
+        error_count: 0,
+        warning_count: 1,
+    };
+    let output = format_results(
+        &[result],
+        &[(filename, vize_l0::String::from(source))],
+        OutputFormat::Json,
+    );
+    let json: serde_json::Value = serde_json::from_str(&output).unwrap();
+    assert_eq!(json[0]["messages"][0]["column"], 18);
+}
+
+#[test]
 fn json_output_includes_template_parser_diagnostic_locations() {
     let source = r#"<script setup lang="ts">
 const msg = "hello";

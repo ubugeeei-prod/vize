@@ -2,8 +2,10 @@
 //!
 //! A definition is an exported options object, a `defineComponent` /
 //! `defineOptions` argument, the options object passed to `*.component()`, or
-//! an object value written inside a `components` map. Objects that appear only
-//! in a `mixins` array are not definitions.
+//! a component registration call. Inline objects written inside a component's
+//! `components` map are local registrations, not additional file-level
+//! definitions. Objects that appear only in a `mixins` array are not
+//! definitions.
 
 use oxc_ast::ast::{
     BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, ObjectExpression,
@@ -23,7 +25,6 @@ pub(super) fn component_definitions<'a>(program: &'a Program<'a>) -> Vec<&'a Obj
         objects,
     };
     collector.visit_program(program);
-    expand_components(&mut collector.objects, &bindings);
     collector.objects
 }
 
@@ -134,54 +135,6 @@ fn registered_component<'a>(
     let argument = call.arguments.get(1)?;
     let expression = argument.as_expression()?;
     object_from_expression(expression, bindings)
-}
-
-fn expand_components<'a>(
-    objects: &mut Vec<&'a ObjectExpression<'a>>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) {
-    let mut index = 0;
-    while let Some(options) = objects.get(index).copied() {
-        for extra in component_map_values(options, bindings) {
-            push_unique(objects, extra);
-        }
-        index += 1;
-    }
-}
-
-fn component_map_values<'a>(
-    options: &'a ObjectExpression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Vec<&'a ObjectExpression<'a>> {
-    let mut found = Vec::new();
-    let Some(value) = static_property(options, "components") else {
-        return found;
-    };
-    let Some(map) = as_object_expression(value, bindings) else {
-        return found;
-    };
-    for property in &map.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if let Some(object) = object_from_expression(&property.value, bindings)
-            && object.span.start != map.span.start
-        {
-            found.push(object);
-        }
-    }
-    found
-}
-
-fn as_object_expression<'a>(
-    expression: &'a Expression<'a>,
-    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) -> Option<&'a ObjectExpression<'a>> {
-    match expression.get_inner_expression() {
-        Expression::ObjectExpression(object) => Some(object),
-        Expression::Identifier(identifier) => bindings.get(identifier.name.as_str()).copied(),
-        _ => None,
-    }
 }
 
 pub(super) fn static_property<'a>(

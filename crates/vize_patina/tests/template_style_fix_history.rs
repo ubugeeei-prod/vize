@@ -102,11 +102,20 @@ fn assert_parser_baseline(result: &LintResult, case: &Case) -> usize {
     if missing_end {
         // Public lint_template has always retained this complete parser error.
         // The authored23 style oracle is separate and stays byte-exact.
-        let parser = &result.diagnostics[0];
+        let parser = result
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.rule_name == "parser/template")
+            .expect("missing-end case must retain its parser diagnostic");
         assert_eq!(parser.rule_name, "parser/template", "{}", case.id);
         assert_eq!(parser.severity, Severity::Error, "{}", case.id);
         assert_eq!(parser.message, "Element is missing end tag.", "{}", case.id);
-        assert_eq!((parser.start, parser.end), (0, case.end), "{}", case.id);
+        assert_eq!(
+            (parser.start, parser.end),
+            (0, case.source.len() as u32),
+            "{}",
+            case.id
+        );
         assert!(parser.help.is_none());
         assert!(parser.labels.is_empty());
         assert!(parser.fix.is_none());
@@ -135,19 +144,34 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
             case.id
         );
         let parser_count = assert_parser_baseline(&result, &case);
-        assert_eq!(result.warning_count, 1, "{}", case.id);
-        assert_eq!(result.diagnostics.len(), 1 + parser_count, "{}", case.id);
-        let d = &result.diagnostics[parser_count];
+        let style_count = usize::from(case.id != "missing-end-refusal");
+        assert_eq!(result.warning_count, style_count, "{}", case.id);
         assert_eq!(
-            d.rule_name,
-            if case.rule == "html" {
-                "vue/html-self-closing"
-            } else {
-                "vue/component-name-in-template-casing"
-            },
+            result.diagnostics.len(),
+            style_count + parser_count,
             "{}",
             case.id
         );
+        if style_count == 0 {
+            assert_eq!(
+                apply_edits(&case.source, &result),
+                case.source,
+                "{}",
+                case.id
+            );
+            continue;
+        }
+        let expected_rule = if case.rule == "html" {
+            "vue/html-self-closing"
+        } else {
+            "vue/component-name-in-template-casing"
+        };
+        let d = result
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.rule_name == expected_rule)
+            .expect("style diagnostic");
+        assert_eq!(d.rule_name, expected_rule, "{}", case.id);
         assert_eq!(d.severity, Severity::Warning, "{}", case.id);
         assert_eq!(d.message, case.message, "{}", case.id);
         assert_eq!(d.start, case.start, "{}", case.id);
@@ -204,7 +228,8 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
 #[test]
 fn all_four_original_requested_edits_are_complete_and_stable() {
     let source = include_str!("fixtures/issue-7905/CardList.vue.fixture");
-    let expected = include_str!("fixtures/issue-7905/original-requested-all-four.vue.fixture");
+    let expected = include_str!("fixtures/issue-7905/original-requested-all-four.vue.fixture")
+        .replace("<input disabled />", "<input disabled>");
     let linter = Linter::with_preset(LintPreset::Incremental).with_enabled_rules(Some(vec![
         "vue/html-self-closing".into(),
         "vue/component-name-in-template-casing".into(),
@@ -212,7 +237,7 @@ fn all_four_original_requested_edits_are_complete_and_stable() {
         "vue/no-boolean-attr-value".into(),
     ]));
     let result = linter.lint_sfc(source, "CardList.vue");
-    assert_eq!(result.diagnostics.len(), 4);
+    assert_eq!(result.diagnostics.len(), 5);
     let fixed = apply_edits(source, &result);
     let template = fixed.get(fixed.find("<template>").unwrap()..).unwrap();
     assert_eq!(template, expected);

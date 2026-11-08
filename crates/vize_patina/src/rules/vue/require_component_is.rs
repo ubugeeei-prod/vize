@@ -16,7 +16,7 @@
 //! ### Valid
 //! ```vue
 //! <component :is="currentComponent" />
-//! <component is="MyComponent" />
+//! <component :is="'MyComponent'" />
 //! ```
 
 use crate::context::LintContext;
@@ -40,11 +40,7 @@ impl RequireComponentIs {
     fn has_is_attribute(element: &ElementNode) -> bool {
         for prop in &element.props {
             match prop {
-                PropNode::Attribute(attr) => {
-                    if attr.name == "is" {
-                        return true;
-                    }
-                }
+                PropNode::Attribute(_) => {}
                 PropNode::Directive(dir) => {
                     // Check for :is or v-bind:is
                     if dir.name == "bind"
@@ -101,10 +97,10 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_with_static_is() {
+    fn test_invalid_with_static_is() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<component is="MyComponent" />"#, "test.vue");
-        assert_eq!(result.error_count, 0);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]

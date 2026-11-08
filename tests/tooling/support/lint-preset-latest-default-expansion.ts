@@ -6,12 +6,12 @@ const publicApiDocSuccessors = [
   {
     path: "crates/vize_patina/src/linter/script_rules/registry.rs",
     before: {
-      bytes: 5249,
-      sha256: "dc8023d6c67373216c4e4a4f714f9ee73156ede1053bdbd9b36e9e69fe914bae",
+      bytes: 5285,
+      sha256: "0e41487dca6e08c8a804a2ba371fd25aa7debd6884f628e8fe07765d5c3c0d44",
     },
     after: {
-      bytes: 5667,
-      sha256: "10b3ba58251ccedaa9d758002b4d6ab86e5d3468e2364fc7c690970f9393857d",
+      bytes: 5703,
+      sha256: "c28114f6926486fd6beb846592bc48f1fb448423a61157803e91fc3f0a49be4f",
     },
     replacements: [
       [
@@ -60,12 +60,12 @@ pub struct BuiltinScriptRuleMeta {
   {
     path: "crates/vize_patina/src/rules/script/define_macros_order.rs",
     before: {
-      bytes: 10276,
-      sha256: "3b21b505315a3082da09cc5d76ec7f2845c8b8fa1265e97f705ff985ee38c959",
+      bytes: 10320,
+      sha256: "7e19410c1a45b832d6b2c2a87428186ec92d21f704b732a4108e7600a0d30ae3",
     },
     after: {
-      bytes: 10348,
-      sha256: "129c8b2f61d6adb3efb7ba7d76f812a5e7cdd5ab7af65b88d1ffd7535fa517be",
+      bytes: 10392,
+      sha256: "0c3cf2751e785c214728f2652da7e006badd3eb73715633daa9d6110fa319cea",
     },
     replacements: [
       ["    /// Create a rule that uses the configured compiler-macro ordering.\n", ""],
@@ -120,8 +120,58 @@ export function currentPresetCases(body: Buffer, essentialCases: string[], manif
 // Remove only the exact 2026-11-06 general-default additions before older
 // byte-identity audits replay their frozen source ledgers.
 export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffer {
-  if (name === "crates/vize_patina/src/rule/happy_path.rs") {
+  if (name === "crates/vize_patina/src/rules/script/define_macros_order.rs") {
     const text = body.toString();
+    const after = `        Statement::ImportDeclaration(_)
+        | Statement::TSEnumDeclaration(_)
+        | Statement::TSGlobalDeclaration(_)
+        | Statement::TSModuleDeclaration(_)`;
+    const before = `        Statement::ImportDeclaration(_)
+        | Statement::TSEnumDeclaration(_)
+        | Statement::TSModuleDeclaration(_)`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/linter/script_rules/registry.rs") {
+    const text = body.toString();
+    const after = `    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,
+    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
+    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,`;
+    const before = `    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,
+    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,
+    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,
+    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/rules/opinionated/vue.rs") {
+    const text = body.toString();
+    const after = `pub(crate) mod authored_element;
+mod component_name_in_template_casing;
+mod component_registration;`;
+    const before = `mod authored_element;
+mod component_name_in_template_casing;`;
+    assert.equal(text.split(after).length, 2);
+    return Buffer.from(text.replace(after, before));
+  }
+  if (name === "crates/vize_patina/src/rule/happy_path.rs") {
+    let text = body.toString();
+    const strictSlotDefault = `        // Match eslint-plugin-vue's strict default. Component libraries which
+        // intentionally encode dots in slot names can opt into
+        // \`allowModifiers: true\`.
+        registry.register(Box::new(crate::rules::vue::ValidVSlot));`;
+    const legacySlotDefault = `        // Vue's parser records dots in static slot names as directive
+        // modifiers. Component libraries intentionally use names such as
+        // \`item.name\`, so the default preset keeps the historical behavior
+        // of accepting them. Projects that need the stricter eslint-plugin-vue
+        // policy can still set \`allowModifiers: false\` explicitly.
+        registry.register(Box::new(
+            crate::rules::vue::ValidVSlot::allowing_static_name_dots(),
+        ));`;
+    assert.equal(text.split(strictSlotDefault).length, 2);
+    text = text.replace(strictSlotDefault, legacySlotDefault);
     const after = `        registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
         registry.register(Box::new(crate::rules::vue::NoUndefinedRefs));
         registry.register(Box::new(crate::rules::facts::NoUnusedSetupBindings));
@@ -272,6 +322,21 @@ export function inverseLatestDefaultExpansion(name: string, body: Buffer): Buffe
       ]);
       value.entries[rule].patinaPresets = [];
     }
+    assert.deepEqual(value.entries["vue/v-on-handler-style"], {
+      reason:
+        "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
+      status: "intentional-divergence",
+    });
+    value.entries["vue/v-on-handler-style"] = {
+      patinaPresets: ["nuxt", "opinionated"],
+      patinaRule: "vue/v-on-handler-style",
+      patinaSeverity: "warning",
+      status: "mapped",
+    };
+    assert.equal(value.summary.intentionalDivergence, 3);
+    assert.equal(value.summary.mapped, 150);
+    value.summary.intentionalDivergence = 2;
+    value.summary.mapped = 151;
     return jsonBytes(value);
   }
   if (

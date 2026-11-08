@@ -88,11 +88,6 @@ impl Rule for NoLoneTemplate {
             return;
         }
 
-        // Root template element is allowed
-        if ctx.parent_element().is_none() {
-            return;
-        }
-
         if !Self::has_valid_directive(element) {
             ctx.warn_with_help(
                 ctx.t("vue/no-lone-template.message"),
@@ -178,5 +173,14 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_lone_template_at_fragment_root() {
+        let result = create_linter().lint_template(
+            r#"<template><svg aria-hidden="true" /></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 }

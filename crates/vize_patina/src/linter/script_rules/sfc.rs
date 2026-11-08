@@ -101,6 +101,22 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             result.filename.as_str(),
         ) && let Some((root, offset)) = template_ast
         {
+            let context = SfcScriptContext {
+                is_sfc: true,
+                template_source: descriptor
+                    .template
+                    .as_ref()
+                    .map(|block| block.content.as_ref()),
+                template_root: Some(root),
+                template_offset: Some(offset),
+                sole_script_block: true,
+                ..Default::default()
+            };
+            for entry in active_builtin_script_rule_entries(linter, true) {
+                let mut lint = ScriptLintResult::default();
+                resolved_rule(linter, entry).check_scriptless_sfc(context, &mut lint);
+                merge_script_result(linter, result, lint);
+            }
             let mut lint = ScriptLintResult::default();
             profile!(
                 "patina.script_rule.no_duplicate_attr_inheritance",
@@ -276,18 +292,27 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         is_sfc: true,
         is_script_setup: false,
         typescript: false,
+        typescript_jsx: false,
         template_source: descriptor
             .template
             .as_ref()
             .map(|block| block.content.as_ref()),
         template_root: template_ast.map(|(root, _)| root),
-        template_offset: template_ast.map(|(_, offset)| offset),
+        // Raw-template fallbacks still need authored SFC coordinates when the
+        // compiler refuses to produce a trustworthy AST (for example after
+        // HTML table foster parenting). The descriptor location is available
+        // independently of that AST.
+        template_offset: descriptor
+            .template
+            .as_ref()
+            .map(|block| block.loc.start as u32),
         // Both blocks are linted separately below, so a whole-file conclusion
         // is only available to a rule when there is a single block to draw it
         // from. Computed from the descriptor rather than filtered bindings: a skipped block
         // still contributes declarations a rule would need to see.
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
         sibling_program: None,
+        sibling_offset: None,
     };
 
     let setup_program = script_setup_parsed
@@ -308,7 +333,9 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 script_parsed,
                 SfcScriptContext {
                     typescript: is_typescript_block(descriptor.script.as_ref()),
+                    typescript_jsx: is_typescript_jsx_block(descriptor.script.as_ref()),
                     sibling_program: setup_program,
+                    sibling_offset: script_setup.map(|(_, offset)| offset),
                     ..sfc_context
                 },
                 None,
@@ -330,7 +357,9 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 SfcScriptContext {
                     is_script_setup: true,
                     typescript: is_typescript_block(descriptor.script_setup.as_ref()),
+                    typescript_jsx: is_typescript_jsx_block(descriptor.script_setup.as_ref()),
                     sibling_program: normal_program,
+                    sibling_offset: script.map(|(_, offset)| offset),
                     ..sfc_context
                 },
                 emits_setup_rule.map(|_| emits_module),
@@ -355,6 +384,10 @@ fn is_typescript_block(block: Option<&vize_atelier_sfc::SfcScriptBlock<'_>>) -> 
         block.and_then(|block| block.lang.as_deref()),
         Some("ts" | "tsx" | "typescript")
     )
+}
+
+fn is_typescript_jsx_block(block: Option<&vize_atelier_sfc::SfcScriptBlock<'_>>) -> bool {
+    matches!(block.and_then(|block| block.lang.as_deref()), Some("tsx"))
 }
 
 #[cfg(test)]

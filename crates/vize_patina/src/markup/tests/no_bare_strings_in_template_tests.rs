@@ -70,8 +70,8 @@ fn no_bare_strings_template_markup_boundaries() {
         (r#"<div aria-label="Menu"></div>"#, 1, "aria attr warns"),
         (
             r#"<button TITLE="Close"></button>"#,
-            1,
-            "target attrs keep case-insensitive matching",
+            0,
+            "target attrs keep upstream case-sensitive matching",
         ),
         (
             r#"<div>{{ $t('hello') }}</div>"#,
@@ -85,7 +85,7 @@ fn no_bare_strings_template_markup_boundaries() {
         ),
         ("<div>   </div>", 0, "whitespace-only text is clean"),
         (r#"<div>-</div>"#, 0, "punctuation-only text is clean"),
-        (r#"<div>123</div>"#, 0, "number-only text is clean"),
+        (r#"<div>123</div>"#, 1, "number-only text warns"),
         (
             r#"<div class="container"></div>"#,
             0,
@@ -93,13 +93,13 @@ fn no_bare_strings_template_markup_boundaries() {
         ),
         (
             r#"<script>const label = "Hello";</script>"#,
-            0,
-            "script text is clean",
+            1,
+            "script text follows the upstream VText visitor",
         ),
         (
             r#"<style>.button::before { content: "Hello"; }</style>"#,
-            0,
-            "style text is clean",
+            1,
+            "style text follows the upstream VText visitor",
         ),
     ] {
         assert_eq!(
@@ -146,8 +146,8 @@ fn no_bare_strings_jsx_direct_matches_lowered_for_static_boundaries() {
         ),
         (
             r#"const A = () => <button TITLE="Close" />;"#,
-            1,
-            "case-insensitive target attr warns",
+            0,
+            "target attrs keep upstream case-sensitive matching",
         ),
         (
             r#"const A = () => <div>{label}</div>;"#,
@@ -156,8 +156,8 @@ fn no_bare_strings_jsx_direct_matches_lowered_for_static_boundaries() {
         ),
         (
             r#"const A = () => <script>const label = "Hello";</script>;"#,
-            0,
-            "script text is clean",
+            1,
+            "script text follows the upstream VText visitor",
         ),
         (
             r#"const A = () => <style>{`.x { color: red; }`}</style>;"#,

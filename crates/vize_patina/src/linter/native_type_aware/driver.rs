@@ -108,20 +108,13 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         )
     };
     let analysis = profile!("patina.type_aware.croquis", {
-        super::super::engine::analyze_descriptor_for_lint_with_reuse(
+        super::super::engine::analyze_descriptor_for_lint_with_template(
             &scripts,
             template_ast
                 .as_ref()
-                .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
+                .and_then(|(_, l2, _, has_fatal)| (!*has_fatal).then_some(l2)),
             linter.has_unused_bindings_demand(),
             derived,
-            template_ast.as_ref().and_then(|(root, _, _, fatal)| {
-                (!*fatal).then_some(root).and_then(|root| {
-                    template_syntax.as_ref().and_then(|syntax| {
-                        vize_croquis::drawer::collect_template_semantic_reuse(root, syntax)
-                    })
-                })
-            }),
         )
     });
     let mut result = if let (Some((root, l2, _, has_fatal)), Some(template)) =

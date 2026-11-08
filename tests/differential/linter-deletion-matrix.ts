@@ -63,7 +63,7 @@ export interface EvidenceFile<T> {
 }
 
 const matrixTools = ["compiler", "typechecker", "linter", "formatter"];
-const matrixStatuses = ["planned", "ok", "findings", "failed", "missing-fixture"];
+const matrixStatuses = ["planned", "ok", "findings", "configuration", "failed", "missing-fixture"];
 const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx",
   noFilesPrefix = `No ${lintExtensions} files found matching patterns: `,
   unmatchedPatternsPrefix = `Warning: no ${lintExtensions} files found matching patterns: `,
@@ -140,6 +140,7 @@ function expectedMatrixSummary(matrix: FixtureToolMatrix): JsonRecord {
     runCount: runs.length,
     okRuns: count("ok"),
     findingsRuns: count("findings"),
+    configurationRuns: count("configuration"),
     failedRuns: count("failed"),
     missingFixtureRuns: count("missing-fixture"),
     plannedRuns: count("planned"),
@@ -249,6 +250,7 @@ export function validateFixtureToolMatrix(
       "runCount",
       "okRuns",
       "findingsRuns",
+      "configurationRuns",
       "failedRuns",
       "missingFixtureRuns",
       "plannedRuns",
@@ -318,6 +320,7 @@ export function validateRawLinterRun(
   matrixRun: MatrixRun,
   report: LintProjectReport,
   vueGlobs: string[],
+  divergenceExcludePaths: string[] = [],
 ): string[] {
   const projectId = report.project;
   record(raw, `${projectId} raw matrix linter run`);
@@ -338,21 +341,39 @@ export function validateRawLinterRun(
     raw.parsed,
     `${projectId}: stdout and parsed output drifted`,
   );
+  const allFlattened = validateParsedResults(raw.parsed, projectId),
+    parsedFiles = raw.parsed.map((result) => result.file as string),
+    excluded = new Set<string>();
+  for (const [index, value] of divergenceExcludePaths.entries()) {
+    const label = `${projectId}.lintDivergenceExcludePaths[${index}]`,
+      file = nonempty(value, label),
+      segments = file.split("/");
+    assert(
+      file.endsWith(".vue") &&
+        !file.startsWith("/") &&
+        !file.includes("\\") &&
+        segments.every((segment) => segment !== "" && segment !== "." && segment !== ".."),
+      `${label} must be a normalized relative Vue path`,
+    );
+    assert(!excluded.has(file), `${projectId}: duplicate lint divergence exclusion ${file}`);
+    assert(parsedFiles.includes(file), `${projectId}: excluded lint path did not appear: ${file}`);
+    excluded.add(file);
+  }
+  const comparedResults = raw.parsed.filter((result) => !excluded.has(result.file as string));
   assert.deepEqual(
-    raw.parsed,
+    comparedResults,
     report.raw.patinaResults,
     `${projectId}: Matrix and divergence runs drifted`,
   );
   assert.equal(raw.parsed.length, matrixRun.fileCount);
-  assert.equal(raw.parsed.length, report.files.comparedCount);
-  const flattened = validateParsedResults(raw.parsed, projectId);
+  assert.equal(comparedResults.length, report.files.comparedCount);
+  const flattened = allFlattened.filter((finding) => !excluded.has(finding.file as string));
   assert.deepEqual(
     flattened,
     report.raw.patinaFindings,
     `${projectId}: flattened findings drifted`,
   );
   assert.equal(flattened.length, report.divergence.summary.patinaFindingCount);
-  const parsedFiles = raw.parsed.map((result) => result.file as string);
   for (const file of parsedFiles)
     assert(
       vueGlobs.some((pattern) => vueGlobMatchesFile(pattern, file)),

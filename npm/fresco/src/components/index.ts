@@ -52,6 +52,7 @@ export type {
 } from "./markdown-types.js";
 export { default as FrameBuffer } from "./FrescoFrameBuffer.vue";
 export type { FrameBufferProps } from "./frame-buffer-types.js";
+export { LineNumber, type LineNumberProps } from "./LineNumber.js";
 export { default as Link } from "./FrescoLink.vue";
 export type { LinkProps } from "./display-primitive-types.js";
 

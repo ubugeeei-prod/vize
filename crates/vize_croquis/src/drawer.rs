@@ -7,6 +7,7 @@ mod core;
 #[cfg(any(test, feature = "legacy-differential"))]
 pub mod differential;
 mod helpers;
+mod lint_template;
 mod module_exports;
 mod occurrences;
 mod options;
@@ -40,5 +41,6 @@ pub use helpers::{
     retain_v_for_binding_parameters, retain_v_for_binding_parameters_with_source,
     retained_binding_declarations, strip_js_comments, strip_js_comments_with_offsets,
 };
+pub use lint_template::LintTemplate;
 pub use options::DrawerOptions;
 pub use source_offsets::{AuthoredSourceOffsets, attribute_source_offset, text_source_offset};

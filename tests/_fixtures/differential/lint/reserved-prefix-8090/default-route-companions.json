@@ -7574,6 +7574,26 @@
             }
           ],
           "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_private\" is not in camelCase",
+          "start": 139,
+          "end": 155,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_$data\" is not in camelCase",
+          "start": 157,
+          "end": 171,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
         }
       ],
       "combinedApiDiagnostics": [
@@ -8120,6 +8140,16 @@
               "end": 102
             }
           ],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_hidden\" is not in camelCase",
+          "start": 112,
+          "end": 129,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
           "fix": null
         }
       ],

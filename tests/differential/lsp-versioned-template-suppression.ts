@@ -15,7 +15,7 @@ export function loadVersionedTemplateSuppression(
 ): LspFixture["requests"] {
   const originalDiagnostic = {
     path: "code-action-diagnostics/references.json",
-    sha256: "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2",
+    sha256: "28013efd08e0386a6a34ac94f718e29ec1d7d4196f0d8b63a7dd93bc703d13d0",
   };
   const reference = asRecord(
     parseJson(readPinnedArtifact(packRoot, originalDiagnostic).toString("utf8")),
@@ -26,7 +26,7 @@ export function loadVersionedTemplateSuppression(
     {
       source: "App.vue.txt",
       runtimePath: "App.vue",
-      sha256: "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19",
+      sha256: "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051",
     },
     {
       source: "vize.config.json",
@@ -54,7 +54,7 @@ export function loadVersionedTemplateSuppression(
     request,
     expected: {
       source: "response.expected.json",
-      sha256: "9336ed7587e516187fc0b381af2c7f9a2380b221041b13ccb74ff6becd351231",
+      sha256: "bce2dcaa05c3dd4ccafb070c5e78c470da9b46b8904e6b94e4f195411aba4ee1",
     },
   });
   assert.deepEqual(

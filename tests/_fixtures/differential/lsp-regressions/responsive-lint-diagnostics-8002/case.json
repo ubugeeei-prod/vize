@@ -56,7 +56,7 @@
   "authoredFiles": [
     {
       "path": "AuthoredTypeError.vue.txt",
-      "sha256": "adffa54d2192a601367f7c8dfcdebccfcd61faba4a8dec9119c13ab3b3aeb8e1"
+      "sha256": "d56559bf0f1d2021e0574e655fd18cf62ed8e60866119e27dbff284c82d31e05"
     },
     {
       "path": "authored-type-error.expected.json",

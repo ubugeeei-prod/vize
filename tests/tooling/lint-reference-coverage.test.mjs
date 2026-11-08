@@ -11,6 +11,7 @@ import {
   baselineConfig,
   resolveBaselineRuntime,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { eligibleReferenceCoverage } from "../../tools/support/fixtures/lint_reference_coverage.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const fixtures = path.join(root, "tests/_fixtures/differential/linter/reference-coverage-8849");
@@ -29,6 +30,7 @@ await test("reviewed coverage preserves complete frozen packets and exact source
     assert.equal(packet.project, entry.project);
     assert.equal(packet.revision, entry.revision);
     assert.equal(packet.preset, entry.preset);
+    assert.deepEqual(entry.compatiblePresets, ["ecosystem", "all-mapped"]);
     assert.deepEqual(packet.divergence.falsePositives, [entry.finding]);
     assert.equal(packet.budget.maxFalsePositiveCount, 0);
     assert.equal(packet.budget.maxFalseNegativeCount, 0);
@@ -43,6 +45,25 @@ await test("reviewed coverage preserves complete frozen packets and exact source
     assert.equal(finding[0].severity, entry.finding.severity === "warning" ? 1 : 2);
     assert.deepEqual(entry.options, []);
     assert.deepEqual(entry.upstreamOptions, []);
+  }
+});
+
+await test("reviewed coverage follows the exact finding into the all-mapped rule run", () => {
+  for (const entry of contract.cases) {
+    const source = fs.readFileSync(path.join(fixtures, entry.source), "utf8");
+    const context = {
+      revision: entry.revision,
+      preset: "all-mapped",
+      runtimeVersions: entry.runtimeVersions,
+      rules: { [entry.finding.ruleId]: entry.finding.severity === "error" ? "error" : "warn" },
+      files: [entry.finding.file],
+    };
+    assert.deepEqual(
+      eligibleReferenceCoverage(entry.project, context, (file) =>
+        file === entry.finding.file ? source : null,
+      ).map((candidate) => candidate.id),
+      [entry.id],
+    );
   }
 });
 
@@ -154,11 +175,17 @@ await test("actual report retains complete raw packets and scores a neighboring 
           ],
         }),
       );
-      const run = (messages = [entry.finding], budgetMode = "record-only", expectedStatus = 0) => {
+      const run = (
+        messages = [entry.finding],
+        budgetMode = "record-only",
+        expectedStatus = 0,
+        preset = "ecosystem",
+      ) => {
         fs.writeFileSync(
           fake,
           `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }]))});\n`,
         );
+        const presetArgs = preset === "all-mapped" ? ["--all-mapped-rules"] : ["--preset", preset];
         const result = spawnSync(
           process.execPath,
           [
@@ -169,8 +196,7 @@ await test("actual report retains complete raw packets and scores a neighboring 
             path.join(projectDir, "report"),
             "--vize-bin",
             fake,
-            "--preset",
-            "ecosystem",
+            ...presetArgs,
             "--budget-mode",
             budgetMode,
           ],
@@ -200,6 +226,11 @@ await test("actual report retains complete raw packets and scores a neighboring 
       assert.equal(packet.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
       assert.equal(packet.divergence.referenceCoverageExpectations.length, 1);
       assert.equal(packet.divergence.referenceCoverageExpectations[0].observedCount, 1);
+      const allMapped = run([entry.finding], "record-only", 0, "all-mapped");
+      assert.equal(allMapped.preset, "all-mapped");
+      assert.deepEqual(allMapped.divergence.falsePositives, []);
+      assert.equal(allMapped.divergence.referenceCoverageExpectations.length, 1);
+      assert.equal(allMapped.divergence.referenceCoverageExpectations[0].observedCount, 1);
       const missing = run([], "enforce", 1);
       assert.deepEqual(missing.raw.patinaFindings, []);
       assert.equal(missing.divergence.referenceCoverageExpectations[0].observedCount, 0);

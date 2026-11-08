@@ -203,6 +203,9 @@ function validatedExamples() {
 
 await test("migration retains all mapped, divergent and unsupported ESLint identities", () => {
   const inventory = JSON.parse(read("tests/_fixtures/patina-eslint-vue-rule-map.json"));
+  const entries = Object.entries(inventory.entries);
+  const count = (status: string) =>
+    entries.filter(([, entry]) => (entry as { status: string }).status === status).length;
   for (const locale of ["", "ja/"]) {
     const page = read(`docs/content/${locale}rules/migration.md`);
     const rows = [...page.matchAll(/^\| `([^`]+)` \|/gm)]
@@ -212,9 +215,14 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
       rows,
       Object.keys(inventory.entries).sort((a, b) => a.localeCompare(b)),
     );
-    assert.match(page, /252/);
-    assert.match(page, /99/);
-    assert.match(page, /151/);
+    for (const value of [
+      entries.length,
+      count("mapped"),
+      count("intentional-divergence"),
+      count("unimplemented"),
+    ]) {
+      assert.match(page, new RegExp(String(value)));
+    }
     assert.match(page, /component-definition-name-casing/);
     assert.match(page, /```ts annotate="remove:1,2;add:3,4,5,6"/);
     assert.match(page, /^ import vue/m);

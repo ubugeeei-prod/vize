@@ -24,6 +24,10 @@ export const ruleMap = {
   upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
   entries: {
     "vue/no-v-html": { status: "mapped", patinaRule: "vue/no-v-html" },
+    "vue/define-props-destructuring": {
+      status: "mapped",
+      patinaRule: "script/define-props-destructuring",
+    },
     "vue/require-v-for-key": { status: "mapped", patinaRule: "vue/require-v-for-key" },
     "vue/no-unused-components": { status: "mapped", patinaRule: "vue/no-unused-components" },
     "vue/attributes-order": { status: "mapped", patinaRule: "vue/attribute-order" },

@@ -18,7 +18,7 @@
 
 ```vue
 <template>
-  <img src="/logo.png">
+  <img src="/logo.png" />
 </template>
 ```
 
@@ -29,8 +29,8 @@
 Drive `vize lsp --stdio` (`initialize` with the project as `rootUri`, `initialized`, `textDocument/didOpen` for `src/App.vue`). The server publishes:
 
 ```json
-{"code":"a11y/alt-text","range":{"start":{"line":1,"character":2},"end":{"line":1,"character":23}},"message":"<img> elements must have an alt attribute ..."}
-{"code":"vue/html-self-closing","range":{"start":{"line":1,"character":2},"end":{"line":1,"character":23}},"message":"Void element should be self-closing ..."}
+{"code":"a11y/alt-text","range":{"start":{"line":1,"character":2},"end":{"line":1,"character":25}},"message":"<img> elements must have an alt attribute ..."}
+{"code":"vue/html-self-closing","range":{"start":{"line":1,"character":2},"end":{"line":1,"character":25}},"message":"Element must not use self-closing syntax ..."}
 ```
 
 Then, for each of them, `textDocument/codeAction` with that diagnostic's `range` and `context.diagnostics: [<that diagnostic>]`.

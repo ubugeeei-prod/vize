@@ -151,9 +151,9 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
   [
     "vue/no-unused-vars",
     "The loop declares an unused index and the slot declares foo without referencing it.",
-    "The examples consume index or mark it intentionally unused as _index, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.",
+    "The examples either consume index or omit the unused alias, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.",
     "ループで使わない index と、スロットで使わない foo を宣言しています。",
-    "index を参照するか、未使用を意図する _index という名前にし、スロットでは data を表示します。index の key は使用例であり、項目の安定した識別子として推奨するものではありません。",
+    "index を参照するか、不要な別名自体を省略し、スロットでは data を表示します。index の key は使用例であり、項目の安定した識別子として推奨するものではありません。",
   ],
   [
     "vue/no-use-v-else-with-v-for",

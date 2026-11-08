@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const liveInput = useTemplateRef("live-input");
+const documentation = "const deadInput = useTemplateRef('dead-input')";
+
+void liveInput;
+void documentation;
+</script>
+
+<template>
+  <input ref="live-input" />
+  <input ref="dead-input" />
+</template>

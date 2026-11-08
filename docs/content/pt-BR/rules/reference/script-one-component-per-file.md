@@ -17,14 +17,10 @@ Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante d
 
 O arquivo exporta `Parent` e também define um componente `Child` em `components`.
 
-```vue annotate="remove:3,4,5,6"
-<script lang="ts">
-export default {
-  name: 'Parent',
-  components: {
-    Child: { name: 'Child' }
-  }
-}
+```vue annotate="remove:1,2,3"
+<script setup lang="ts">
+const First = defineComponent({ name: 'First' })
+const Second = defineComponent({ name: 'Second' })
 </script>
 ```
 
@@ -32,7 +28,7 @@ export default {
 
 O arquivo define apenas `Parent`.
 
-```vue annotate="add:3"
+```vue annotate="add:1,2,3,4"
 <script lang="ts">
 export default {
   name: 'Parent'
@@ -61,4 +57,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de tipo e script](../type-and-script.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L26)

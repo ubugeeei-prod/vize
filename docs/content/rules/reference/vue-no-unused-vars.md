@@ -28,12 +28,12 @@ The loop declares an unused index and the slot declares foo without referencing 
 
 ## Good
 
-The examples consume index or mark it intentionally unused as _index, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.
+The examples either consume index or omit the unused alias, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.
 
 ```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
-  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
+  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ data }">
     <span>{{ data }}</span>
   </template>
@@ -61,4 +61,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L49)

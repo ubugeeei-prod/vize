@@ -1,23 +1,22 @@
 //! What a single script block declares about its slots.
 
-use oxc_ast::ast::{CallExpression, Expression, Program, PropertyKey, TSSignature, TSType};
+use oxc_ast::ast::{
+    CallExpression, Declaration, Expression, Program, PropertyKey, Statement, TSAsExpression,
+    TSSignature, TSType, TSTypeName,
+};
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_call_expression, walk_ts_type},
+    walk::{walk_call_expression, walk_ts_as_expression},
 };
-use oxc_span::Span;
 use vize_l0::{CompactString, FxHashSet};
 
 /// The slot contract the script states.
 pub(super) enum DeclaredSlots {
-    /// No `defineSlots` in this block. The template half stays silent: without
-    /// a declaration every `<slot>` would be "undeclared", which is the
-    /// `useSlots`-without-`defineSlots` case the script half already owns.
+    /// No `defineSlots` in this block.
     Absent,
-    /// A `defineSlots` whose slot set cannot be enumerated — a bare type
-    /// reference (`defineSlots<Slots>()`), an index signature, a computed key,
-    /// or a second `defineSlots` call. The set is not fully known, so checking
-    /// a `<slot>` against it could report a slot that *is* declared.
+    /// A `defineSlots` whose slot set cannot be enumerated — an imported type
+    /// reference, an index signature, a computed key, or a second
+    /// `defineSlots` call.
     Unknown,
     /// Every declared slot name, exhaustively.
     Known(FxHashSet<CompactString>),
@@ -25,93 +24,186 @@ pub(super) enum DeclaredSlots {
 
 /// Everything the script half of the rule needs from one block.
 pub(super) struct ScriptSlots {
-    /// Whether the block contains any TypeScript-specific syntax. Used as a
-    /// sound proxy for `lang="ts"` since a script rule cannot read the SFC
-    /// `lang` attribute.
-    pub(super) has_ts_syntax: bool,
-    /// Span of the first `useSlots()` call, if any.
-    pub(super) first_use_slots: Option<Span>,
     /// The declared slot contract.
     pub(super) declared: DeclaredSlots,
 }
 
-pub(super) fn collect(program: &Program<'_>) -> ScriptSlots {
+pub(super) fn collect<'a>(
+    program: &'a Program<'a>,
+    sibling: Option<&'a Program<'a>>,
+) -> ScriptSlots {
+    let mut programs = vec![program];
+    programs.extend(sibling);
     let mut visitor = SlotsVisitor {
-        has_ts_syntax: false,
-        first_use_slots: None,
         declared: DeclaredSlots::Absent,
+        programs,
     };
     visitor.visit_program(program);
     ScriptSlots {
-        has_ts_syntax: visitor.has_ts_syntax,
-        first_use_slots: visitor.first_use_slots,
         declared: visitor.declared,
     }
 }
 
-struct SlotsVisitor {
-    has_ts_syntax: bool,
-    first_use_slots: Option<Span>,
+struct SlotsVisitor<'a> {
     declared: DeclaredSlots,
+    programs: Vec<&'a Program<'a>>,
 }
 
-impl<'a> Visit<'a> for SlotsVisitor {
-    fn visit_ts_type(&mut self, it: &TSType<'a>) {
-        // Any TypeScript type position is a definitive TS-syntax signal.
-        self.has_ts_syntax = true;
-        walk_ts_type(self, it);
-    }
-
+impl<'a> Visit<'a> for SlotsVisitor<'a> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if let Expression::Identifier(callee) = &it.callee {
-            match callee.name.as_str() {
-                "defineSlots" => {
-                    // A second `defineSlots` is invalid Vue; which one wins is
-                    // not ours to guess, so the set stops being known.
-                    self.declared = match self.declared {
-                        DeclaredSlots::Absent => declared_from_call(it),
-                        _ => DeclaredSlots::Unknown,
-                    };
-                    // A `defineSlots<T>()` call carries a type argument, which is
-                    // itself TS syntax; mark it so a block whose only TS token is
-                    // the slots declaration is still recognised as TypeScript.
-                    if it.type_arguments.is_some() {
-                        self.has_ts_syntax = true;
-                    }
-                }
-                "useSlots" if self.first_use_slots.is_none() => {
-                    self.first_use_slots = Some(it.span);
-                }
-                _ => {}
-            }
+        if let Expression::Identifier(callee) = &it.callee
+            && callee.name == "defineSlots"
+        {
+            let declared = declared_from_call(it, &self.programs);
+            self.merge(declared);
         }
         walk_call_expression(self, it);
+    }
+
+    fn visit_ts_as_expression(&mut self, it: &TSAsExpression<'a>) {
+        if let Some(declared) = slots_type_declaration(&it.type_annotation, &self.programs) {
+            self.merge(declared);
+        }
+        walk_ts_as_expression(self, it);
+    }
+}
+
+impl SlotsVisitor<'_> {
+    fn merge(&mut self, next: DeclaredSlots) {
+        let current = std::mem::replace(&mut self.declared, DeclaredSlots::Absent);
+        self.declared = match (current, next) {
+            (DeclaredSlots::Absent | DeclaredSlots::Unknown, next) => next,
+            (current, DeclaredSlots::Absent | DeclaredSlots::Unknown) => current,
+            (DeclaredSlots::Known(mut current), DeclaredSlots::Known(next)) => {
+                current.extend(next);
+                DeclaredSlots::Known(current)
+            }
+        };
     }
 }
 
 /// Enumerate the slot names of a `defineSlots<{ ... }>()` type argument.
 ///
-/// Only the single-type-literal form is enumerable. Anything else — no type
-/// argument at all (`defineSlots()`), several, a type reference, or a member
-/// this cannot name (an index signature, a computed key) — yields
-/// [`DeclaredSlots::Unknown`] so the template half reports nothing rather than
-/// flagging a slot the type does declare.
-fn declared_from_call(call: &CallExpression<'_>) -> DeclaredSlots {
+/// Inline literals and same-block interfaces/type aliases are enumerable.
+/// Imported references and other unsupported forms yield
+/// [`DeclaredSlots::Unknown`].
+fn declared_from_call(call: &CallExpression<'_>, programs: &[&Program<'_>]) -> DeclaredSlots {
     let Some(type_arguments) = call.type_arguments.as_ref() else {
         return DeclaredSlots::Unknown;
     };
-    let [TSType::TSTypeLiteral(literal)] = type_arguments.params.as_slice() else {
+    let [ty] = type_arguments.params.as_slice() else {
         return DeclaredSlots::Unknown;
     };
+    declared_from_type(ty, programs, 0, &mut FxHashSet::default())
+}
+
+fn slots_type_declaration(ty: &TSType<'_>, programs: &[&Program<'_>]) -> Option<DeclaredSlots> {
+    let TSType::TSTypeReference(reference) = ty else {
+        return None;
+    };
+    let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
+        return None;
+    };
+    if identifier.name != "SlotsType" {
+        return None;
+    }
+    let Some(arguments) = &reference.type_arguments else {
+        return Some(DeclaredSlots::Unknown);
+    };
+    let [ty] = arguments.params.as_slice() else {
+        return Some(DeclaredSlots::Unknown);
+    };
+    Some(declared_from_type(
+        ty,
+        programs,
+        0,
+        &mut FxHashSet::default(),
+    ))
+}
+
+fn declared_from_type(
+    ty: &TSType<'_>,
+    programs: &[&Program<'_>],
+    depth: usize,
+    seen: &mut FxHashSet<CompactString>,
+) -> DeclaredSlots {
+    if depth >= 16 {
+        return DeclaredSlots::Unknown;
+    }
+    match ty {
+        TSType::TSTypeLiteral(literal) => declared_from_members(&literal.members),
+        TSType::TSIntersectionType(intersection) => {
+            let mut names = FxHashSet::default();
+            for ty in &intersection.types {
+                if let DeclaredSlots::Known(part) =
+                    declared_from_type(ty, programs, depth + 1, seen)
+                {
+                    names.extend(part);
+                }
+            }
+            DeclaredSlots::Known(names)
+        }
+        TSType::TSTypeReference(reference) => {
+            let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
+                return DeclaredSlots::Unknown;
+            };
+            declared_from_named_type(identifier.name.as_str(), programs, depth + 1, seen)
+        }
+        _ => DeclaredSlots::Unknown,
+    }
+}
+
+fn declared_from_named_type(
+    name: &str,
+    programs: &[&Program<'_>],
+    depth: usize,
+    seen: &mut FxHashSet<CompactString>,
+) -> DeclaredSlots {
+    let owned = CompactString::new(name);
+    if depth >= 16 || !seen.insert(owned.clone()) {
+        return DeclaredSlots::Unknown;
+    }
+    let declared = programs
+        .iter()
+        .find_map(|program| {
+            program
+                .body
+                .iter()
+                .filter_map(statement_declaration)
+                .find_map(|declaration| match declaration {
+                    Declaration::TSInterfaceDeclaration(interface) if interface.id.name == name => {
+                        Some(declared_from_members(&interface.body.body))
+                    }
+                    Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => Some(
+                        declared_from_type(&alias.type_annotation, programs, depth + 1, seen),
+                    ),
+                    _ => None,
+                })
+        })
+        .unwrap_or(DeclaredSlots::Unknown);
+    seen.remove(&owned);
+    declared
+}
+
+fn statement_declaration<'a>(statement: &'a Statement<'a>) -> Option<&'a Declaration<'a>> {
+    match statement {
+        Statement::ExportNamedDeclaration(export) => export.declaration.as_ref(),
+        _ => statement.as_declaration(),
+    }
+}
+
+fn declared_from_members(members: &[TSSignature<'_>]) -> DeclaredSlots {
     let mut names = FxHashSet::default();
-    for member in &literal.members {
+    for member in members {
         let key = match member {
             TSSignature::TSPropertySignature(property) if !property.computed => &property.key,
             TSSignature::TSMethodSignature(method) if !method.computed => &method.key,
-            _ => return DeclaredSlots::Unknown,
+            // Index signatures and unresolved/computed members contribute no
+            // enumerable name, but do not erase explicit siblings.
+            _ => continue,
         };
         let Some(name) = property_key_name(key) else {
-            return DeclaredSlots::Unknown;
+            continue;
         };
         names.insert(CompactString::new(name));
     }

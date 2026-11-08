@@ -312,6 +312,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /^node tools\/commands\/fixtures\/lint-divergence-report\.ts \\\n/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
+    /--all-mapped-rules/,
     /--measure-coverage-gap/,
     /--budget-mode "\$LINT_DIVERGENCE_MODE"/,
     /--vize-bin target\/ci\/vize/,

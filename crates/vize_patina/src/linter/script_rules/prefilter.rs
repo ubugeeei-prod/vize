@@ -30,10 +30,11 @@ use super::registry::{
     RULE_ONE_COMPONENT_PER_FILE, RULE_ORDER_IN_COMPONENTS, RULE_PINIA_PREFER_STORE_TO_REFS,
     RULE_PREFER_COMPUTED, RULE_PREFER_DEFINE_EMITS_BINDING, RULE_PREFER_IMPORT_FROM_VUE,
     RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR, RULE_REQUIRE_PROP_TYPES, RULE_REQUIRE_RENDER_RETURN,
-    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_REF, RULE_REQUIRE_VALID_DEFAULT_PROP,
-    RULE_RETURN_IN_COMPUTED_PROPERTY, RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS,
-    RULE_VALID_DEFINE_OPTIONS, RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK,
-    RULE_VUE_ROUTER_PREFER_NAMED_PUSH, RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+    RULE_REQUIRE_SLOTS_AS_FUNCTIONS, RULE_REQUIRE_TYPED_OBJECT_PROP, RULE_REQUIRE_TYPED_REF,
+    RULE_REQUIRE_VALID_DEFAULT_PROP, RULE_RETURN_IN_COMPUTED_PROPERTY,
+    RULE_RETURN_IN_EMITS_VALIDATOR, RULE_VALID_DEFINE_EMITS, RULE_VALID_DEFINE_OPTIONS,
+    RULE_VALID_DEFINE_PROPS, RULE_VALID_NEXT_TICK, RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+    RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{Linter, active_builtin_script_rule_entries};
 use js_source::{imports_from_vue, source_may_define_component_options};
@@ -42,7 +43,25 @@ use ref_operand::source_may_contain_ref_operand;
 pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
     let bytes = source.as_bytes();
     match rule_name {
-        RULE_NO_ASYNC_IN_COMPUTED => contains(bytes, b"computed") && contains(bytes, b"async"),
+        RULE_NO_ASYNC_IN_COMPUTED => {
+            contains(bytes, b"computed")
+                && contains_any(
+                    bytes,
+                    &[
+                        b"async",
+                        b"await",
+                        b"$nextTick",
+                        b"fetch",
+                        b"setTimeout",
+                        b"setInterval",
+                        b"queueMicrotask",
+                        b"Promise",
+                        b".then",
+                        b".catch",
+                        b".finally",
+                    ],
+                )
+        }
         RULE_NO_IMPORT_COMPILER_MACROS => {
             imports_from_vue(bytes) && contains_any(bytes, COMPILER_MACRO_NEEDLES)
         }
@@ -72,15 +91,18 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
         }
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT => {
             // Typed defaults express requiredness in the type and may use an
-            // assignment pattern rather than a literal `default` member.
+            // assignment pattern rather than a literal `default` member. A
+            // normal sibling script can own that local type while the setup
+            // block owns the default, so retain type-declaration blocks for
+            // cross-block resolution too.
             contains(bytes, b"defineProps")
+                || contains(bytes, b"interface")
+                || contains(bytes, b"type ")
                 || (source_may_declare_props(bytes)
                     && contains(bytes, b"required")
                     && contains(bytes, b"default"))
         }
-        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => {
-            source_may_declare_props(bytes) && contains(bytes, b"type")
-        }
+        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => source_may_declare_props(bytes),
         RULE_NO_RESERVED_PROPS => {
             source_may_declare_props(bytes) && contains_any(bytes, RESERVED_PROP_NEEDLES)
         }
@@ -223,7 +245,10 @@ pub(super) fn script_rule_applies_to_language(rule_name: &str, typescript: bool)
     typescript
         || !matches!(
             rule_name,
-            RULE_DEFINE_PROPS_DECLARATION | RULE_DEFINE_EMITS_DECLARATION | RULE_REQUIRE_TYPED_REF
+            RULE_DEFINE_PROPS_DECLARATION
+                | RULE_DEFINE_EMITS_DECLARATION
+                | RULE_REQUIRE_TYPED_OBJECT_PROP
+                | RULE_REQUIRE_TYPED_REF
         )
 }
 
