@@ -140,6 +140,7 @@ pub struct TextEmitter {
 }
 
 impl TextEmitter {
+    /// Create a terminal emitter with color output enabled or disabled.
     pub fn new(colors: bool) -> Self {
         Self { colors }
     }
@@ -235,10 +236,12 @@ pub struct FormatEmitter {
 }
 
 impl FormatEmitter {
+    /// Create an emitter for the selected machine-readable format.
     pub const fn new(format: OutputFormat) -> Self {
         Self { format }
     }
 
+    /// Return the output format selected for this emitter.
     pub const fn format(&self) -> OutputFormat {
         self.format
     }
@@ -309,14 +312,18 @@ pub struct LspDiagnostic {
 /// LSP-compatible range
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct LspRange {
+    /// Inclusive start position of the diagnostic range.
     pub start: LspPosition,
+    /// Exclusive end position of the diagnostic range.
     pub end: LspPosition,
 }
 
 /// LSP-compatible position
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct LspPosition {
+    /// Zero-based source line.
     pub line: u32,
+    /// Zero-based UTF-16 code-unit offset within the line.
     pub character: u32,
 }
 

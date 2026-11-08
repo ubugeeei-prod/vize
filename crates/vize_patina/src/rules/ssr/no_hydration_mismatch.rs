@@ -127,6 +127,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ssr/no-hydration-mismatch` lint rule.
 pub struct NoHydrationMismatch;
 
 impl NoHydrationMismatch {

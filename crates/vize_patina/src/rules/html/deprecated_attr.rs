@@ -38,6 +38,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/deprecated-attr` lint rule.
 pub struct DeprecatedAttr;
 
 impl DeprecatedAttr {

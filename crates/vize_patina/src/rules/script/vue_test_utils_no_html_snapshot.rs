@@ -18,6 +18,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/vue-test-utils-no-html-snapshot` lint rule.
 pub struct VueTestUtilsNoHtmlSnapshot;
 
 impl ScriptRule for VueTestUtilsNoHtmlSnapshot {

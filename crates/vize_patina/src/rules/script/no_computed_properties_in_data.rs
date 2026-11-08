@@ -50,6 +50,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 const MESSAGE: &str =
     "Computed properties cannot be used in data() because data runs before they are initialized.";
 
+/// Implements the `script/no-computed-properties-in-data` lint rule.
 pub struct NoComputedPropertiesInData;
 
 impl ScriptRule for NoComputedPropertiesInData {

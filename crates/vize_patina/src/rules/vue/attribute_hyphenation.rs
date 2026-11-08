@@ -115,6 +115,7 @@ pub enum HyphenationStyle {
 
 /// Attribute hyphenation rule
 pub struct AttributeHyphenation {
+    /// Required casing for authored custom-component attributes.
     pub style: HyphenationStyle,
     /// Attributes to ignore
     pub ignore: Vec<String>,
@@ -140,6 +141,7 @@ impl Default for AttributeHyphenation {
 }
 
 impl AttributeHyphenation {
+    /// Create the rule with the required attribute-name style.
     pub fn new(style: HyphenationStyle) -> Self {
         Self {
             style,

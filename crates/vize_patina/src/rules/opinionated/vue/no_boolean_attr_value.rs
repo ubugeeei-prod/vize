@@ -42,6 +42,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `opinionated/vue/no-boolean-attr-value` lint rule.
 pub struct NoBooleanAttrValue;
 
 impl NoBooleanAttrValue {
