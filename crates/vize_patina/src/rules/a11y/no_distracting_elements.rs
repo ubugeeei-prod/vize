@@ -1,6 +1,6 @@
 //! a11y/no-distracting-elements
 //!
-//! Disallow distracting elements like <marquee> and <blink>.
+//! Disallow distracting elements like `<marquee>` and `<blink>`.
 //!
 //! These elements can cause accessibility issues, particularly for users
 //! with attention disorders or vestibular motion disorders.

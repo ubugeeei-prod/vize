@@ -38,6 +38,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+/// Implements the `vue/comment-directive` lint rule.
 pub struct CommentDirective;
 
 impl Rule for CommentDirective {

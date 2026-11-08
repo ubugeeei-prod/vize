@@ -20,7 +20,11 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     ["npm/linter/oxlint", "npm/oxlint"],
     ["npm/builder/babel", "npm/babel"],
   ] as const;
-  let sealed = current;
+  const recovery = "      - uses: ./.github/actions/setup-wild-http-recovery\n";
+  const upstream =
+    "      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0\n";
+  assert.equal(current.split(recovery).length, 3, "two reviewed Wild recovery adapters");
+  let sealed = current.replaceAll(recovery, upstream);
   for (const [relocated, historicalPath] of relocations) {
     assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
     sealed = sealed.replace(relocated, historicalPath);

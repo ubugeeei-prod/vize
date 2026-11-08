@@ -55,6 +55,7 @@ static META: RuleMeta = RuleMeta {
 mod native;
 
 #[derive(Default)]
+/// Implements the `opinionated/a11y/placeholder-label-option` lint rule.
 pub struct PlaceholderLabelOption;
 
 /// The first entry of a select's list of options, as far as it is known.

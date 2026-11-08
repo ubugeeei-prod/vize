@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 //! # vize_patina
 //!
 //! Patina - The quality checker for Vize.
