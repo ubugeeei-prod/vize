@@ -45,6 +45,7 @@ import type {
 } from "./presentational-primitive-types.js";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
+import { TextArea, type TextAreaProps } from "./TextArea.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
@@ -212,6 +213,14 @@ export const breadcrumbAcceptsDocumentedProps: BreadcrumbProps = {
 export const cardAcceptsDocumentedProps: CardProps = { title: "Summary", border: "rounded" };
 export const headerAcceptsDocumentedProps: HeaderProps = { title: "Dashboard", borderBottom: true };
 export const tooltipAcceptsDocumentedProps: TooltipProps = { text: "Help", position: "right" };
+export const textAreaAcceptsEditingProps: TextAreaProps = {
+  defaultValue: "first\nsecond",
+  rows: 2,
+  focused: true,
+  cursorLine: 1,
+  cursorColumn: 3,
+  validate: (value) => value.length > 0 || "required",
+};
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
@@ -246,6 +255,7 @@ export function componentsRenderWithTypedProps() {
     h(Box, { flexDirection: "column", borderStyle: "round", ariaRole: "list" }),
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
+    h(TextArea, { modelValue: "first\nsecond", focused: true, rows: 2 }),
     h(LineNumber, { value: 42, width: 3 }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
     h(Spacer),
