@@ -7,7 +7,7 @@
     reason = "source/AST regression goldens intentionally fail immediately on a violated law"
 )]
 
-use vize_l0::{Allocator, SourceRoot, cstr};
+use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
 use vize_l1::dialect::vue2::text::TextBoundaryKind;
 use vize_l1::dialect::{LegacyVueVersion, vue2::surface};
 use vize_l1::markup::render::check_fidelity;
@@ -157,6 +157,30 @@ fn authentic_nonzero_unicode_block_keeps_maps_and_actual_parser_owned_syntax() {
         assert!(block.contains_block_span(argument.source().span()));
         assert!(argument.expression().is_some());
     }
+}
+
+#[test]
+fn nonzero_block_diagnostics_rebase_the_complete_span_and_message_owner() {
+    let source = "前<script>const 雪=1</script><template><div answer=></div></template>後";
+    let input = "<div answer=></div>";
+    let start = source.find(input).unwrap();
+    let block = SourceRoot::new(source)
+        .unwrap()
+        .block(&source[start..start + input.len()], start as u32)
+        .unwrap();
+    let arena = Allocator::default();
+    let parsed = surface::parse_component_block(&arena, block);
+    let error = parsed.errors().first().unwrap();
+
+    assert_eq!(error.code, ErrorCode::MissingAttributeValue);
+    assert_eq!(
+        error.span(source.len() as u32),
+        Span::new((start + 12) as u32, (start + 13) as u32)
+    );
+    assert_eq!(
+        error.message(source),
+        "Attribute `answer` is missing a value after `=`; continuing without the value."
+    );
 }
 
 #[test]

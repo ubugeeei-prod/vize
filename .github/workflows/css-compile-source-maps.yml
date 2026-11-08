@@ -54,7 +54,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: css-source-maps, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - run: vp install --filter './npm/native...' --filter './npm/cli...' --frozen-lockfile --prefer-offline
+      - run: vp install --filter './npm/native...' --filter './npm/cli...' --filter './tests' --frozen-lockfile --prefer-offline
       - name: Bind actual checkout to its PR merge or exact dispatch role
         run: |
           node --test tests/tooling/css-source-map-event.test.ts

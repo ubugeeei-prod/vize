@@ -8,11 +8,16 @@ use super::{Doc, ExpressionRefusal, expression::borrowed_document};
 /// A refusal of the whole document; the original component still owns all facts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vue2TextDocumentRefusal {
+    /// An interpolation or operand span does not belong to the retained source.
     SourceMismatch {
+        /// Offending authored-file span.
         span: Span,
     },
+    /// An admitted base or filter argument could not produce a document.
     Operand {
+        /// Authored-file span of the failed operand.
         span: Span,
+        /// Typed expression refusal returned by the shared provider.
         error: ExpressionRefusal,
     },
 }
@@ -117,9 +122,11 @@ pub struct Vue2TextDocument<'o, 'a> {
 }
 
 impl<'o, 'a> Vue2TextDocument<'o, 'a> {
+    /// Borrow the original Vue 2 text view and filter-chain observation.
     pub fn original(&self) -> &TextView<'o, 'a> {
         &self.original
     }
+    /// Borrow the complete interpolation document tree.
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }
@@ -210,7 +217,7 @@ mod tests {
     //! Independent complete Doc trees and genuine private borrowed-origin controls.
 
     use super::*;
-    use crate::native_doc::{Line, PrintOptions, document::Kind, print};
+    use crate::native_doc::{Line, document::Kind};
     use vize_l1::dialect::vue2::surface;
 
     #[derive(Debug, PartialEq, Eq)]

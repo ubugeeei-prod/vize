@@ -2,7 +2,6 @@
 import type { LinkProps } from "./display-primitive-types.js";
 
 const { text, url, fg = "blue", underline = true, showUrl = false } = defineProps<LinkProps>();
-defineEmits<{ click: [] }>();
 
 defineOptions({ name: "FrescoLink" });
 

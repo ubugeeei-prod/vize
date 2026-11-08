@@ -248,7 +248,7 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
     }
     if (fs.readFileSync(config.file, "utf8") !== config.bytes)
       throw new Error("Oxlint config changed while preparing its scoped Vue transport.");
-    return { sibling, originalsToCopies, pathReplacements, locations, cleanup };
+    return { root, sibling, originalsToCopies, pathReplacements, locations, cleanup };
   } catch (error) {
     cleanup();
     throw error;

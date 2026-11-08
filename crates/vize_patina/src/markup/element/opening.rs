@@ -35,6 +35,16 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::L2 {
+                op,
+                doc,
+                surface: Some(element),
+                frozen: true,
+            } => {
+                let opens_v_pre =
+                    super::super::l2::binding::opens_v_pre(doc, element, op.attributes());
+                super::super::authored::walk_attributes(element, doc, true, opens_v_pre, visitor);
+            }
             MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
                 .walk_l2_items(&mut |item| match item {
                     L2Item::Attribute { attribute, doc } => {
@@ -92,6 +102,7 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::L2 { frozen: true, .. } => {}
             MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
                 .walk_l2_items(&mut |item| match item {
                     L2Item::Binding(binding) => visitor(MarkupDirective::from_l2(binding)),
@@ -118,15 +129,7 @@ impl<'a> MarkupElement<'a> {
                 frozen,
                 opens_v_pre,
                 ..
-            } => {
-                for attr in &element.open.attrs {
-                    if !super::super::authored::consumed(attr, frozen, opens_v_pre) {
-                        let name = frozen
-                            .then(|| super::super::authored::frozen_name(attr, doc, opens_v_pre));
-                        visitor(MarkupBinding::from_surface(attr, doc, name));
-                    }
-                }
-            }
+            } => super::super::authored::walk_bindings(element, doc, frozen, opens_v_pre, visitor),
             MarkupElementInner::Relief(node) => {
                 for prop in &node.props {
                     match prop {
@@ -150,6 +153,16 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
+            MarkupElementInner::L2 {
+                op,
+                doc,
+                surface: Some(element),
+                frozen: true,
+            } => {
+                let opens_v_pre =
+                    super::super::l2::binding::opens_v_pre(doc, element, op.attributes());
+                super::super::authored::walk_bindings(element, doc, true, opens_v_pre, visitor);
+            }
             MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => {
                 self.walk_l2_items(&mut |item| visitor(MarkupBinding::from_l2_item(item)));
             }

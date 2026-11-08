@@ -59,7 +59,8 @@ pub use native::{
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
     parse, parse_component, parse_component_with_authored, parse_component_with_options,
-    parse_with_authored, parse_with_options, parse_with_options_and_caps,
+    parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
+    parse_with_options_and_caps,
 };
 pub use profile::{Component, Document, Profile, ProfileKind, VueComponent};
 pub use render::{HoleCounts, check_fidelity, hole_counts, render};

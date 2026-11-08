@@ -170,6 +170,33 @@ fn original_markup_diagnostics_stop_at_the_selected_block_in_both_projections() 
 }
 
 #[test]
+fn nonzero_block_diagnostics_rebase_the_complete_span_and_message_owner() {
+    let arena = Allocator::default();
+    let input = "<div answer=></div>";
+    let source = cstr!("前🍣<template>{input}</template>後");
+    let start = source.find(input).unwrap();
+    let block = SourceRoot::new(&source)
+        .unwrap()
+        .block(
+            source.get(start..start + input.len()).unwrap(),
+            start as u32,
+        )
+        .unwrap();
+    let parsed = surface::parse_component_block(&arena, block);
+    let error = parsed.errors().first().unwrap();
+
+    assert_eq!(error.code, ErrorCode::MissingAttributeValue);
+    assert_eq!(
+        error.span(source.len() as u32),
+        Span::new((start + 12) as u32, (start + 13) as u32)
+    );
+    assert_eq!(
+        error.message(&source),
+        "Attribute `answer` is missing a value after `=`; continuing without the value."
+    );
+}
+
+#[test]
 fn normal_and_authored_recovery_keep_the_same_original_block_and_text_pointers() {
     let arena = Allocator::default();
     let input = "<a v-pre><span>{{{before}}}<a>{{{after}}}</a>{{{tail}}}</span></a>";
