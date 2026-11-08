@@ -45,6 +45,7 @@ import {
   type FrescoElement,
   type FrescoNode,
 } from "./renderer.js";
+import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
 
 export type {
   CompositionEvent,
@@ -179,42 +180,6 @@ export interface RenderToStringOptions {
 /** Minimal writable stream contract accepted by the render compatibility overload. */
 export interface WritableStreamLike {
   write(...args: unknown[]): unknown;
-}
-
-type Listener = (...args: unknown[]) => void;
-
-function createNoopWriteStream(columns: number, rows: number): NodeJS.WriteStream {
-  const stream = {
-    isTTY: false,
-    columns,
-    rows,
-    write: () => true,
-    on: (_event: string, _listener: Listener) => stream,
-    off: (_event: string, _listener: Listener) => stream,
-    once: (_event: string, _listener: Listener) => stream,
-    removeListener: (_event: string, _listener: Listener) => stream,
-  };
-
-  return stream as unknown as NodeJS.WriteStream;
-}
-
-function createNoopReadStream(): NodeJS.ReadStream {
-  const stream = {
-    isTTY: false,
-    isPaused: () => true,
-    pause: () => stream,
-    resume: () => stream,
-    ref: () => stream,
-    unref: () => stream,
-    setEncoding: () => stream,
-    setRawMode: () => stream,
-    on: (_event: string, _listener: Listener) => stream,
-    off: (_event: string, _listener: Listener) => stream,
-    once: (_event: string, _listener: Listener) => stream,
-    removeListener: (_event: string, _listener: Listener) => stream,
-  };
-
-  return stream as unknown as NodeJS.ReadStream;
 }
 
 function isWritableStream(value: unknown): value is WritableStreamLike {
