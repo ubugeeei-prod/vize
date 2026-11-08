@@ -149,13 +149,8 @@ export function workflowGroupId(file: string): WorkflowGroupId {
     return "09";
   }
   if (/^(musea-|fresco|playground-|app-|ui-|mounted-runtime)/.test(file)) return "10";
-  if (
-    /^(zizmor|miri|fuzz|security-|cleanup-|build-docs|deploy-docs|dependency-|scheduled-|repository-|source-coverage|language-project|production-reach|qs-runtime-security|sticky-disk|vts-source)/.test(
-      file,
-    )
-  ) {
-    return "11";
-  }
+  // Group 11 is the explicit default for security, maintenance, documentation,
+  // and workflows that do not belong to a more specific product area.
   return "11";
 }
 
@@ -184,11 +179,15 @@ function workflowRows(entries: readonly WorkflowEntry[], groupId: WorkflowGroupI
     );
 }
 
-function groupAnchor(group: WorkflowGroup): string {
-  return `${group.id}-${group.title
+export function githubHeadingAnchor(heading: string): string {
+  return heading
     .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, "-")
-    .replace(/-$/u, "")}`;
+    .replaceAll(/[^\p{L}\p{N}\s-]/gu, "")
+    .replaceAll(" ", "-");
+}
+
+function groupAnchor(group: WorkflowGroup): string {
+  return githubHeadingAnchor(`${group.id} ${group.title}`);
 }
 
 function markdownTable(headers: readonly string[], rows: readonly (readonly string[])[]): string[] {

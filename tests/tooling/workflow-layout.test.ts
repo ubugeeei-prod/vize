@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
+  githubHeadingAnchor,
   readWorkflowEntries,
   renderWorkflowCatalog,
   workflowGroupId,
@@ -14,30 +16,113 @@ import { readRepoFile, root } from "./support/github-workflows.ts";
 const embeddedProgram =
   /(?:node|python\d*)\s+(?:--input-type=module\s+)?-\s+<<|(?:node|python\d*)\s+--input-type=module\s+<</g;
 
+const approvedRunnerLabels = new Set([
+  "blacksmith-12vcpu-macos-15",
+  "blacksmith-32vcpu-ubuntu-2204",
+  "blacksmith-32vcpu-ubuntu-2404",
+  "blacksmith-32vcpu-windows-2025",
+  // Compatibility jobs need runner architectures or images unavailable from Blacksmith.
+  "macos-15-intel",
+  "ubuntu-22.04",
+  "ubuntu-22.04-arm",
+  "windows-11-arm",
+  "windows-2025-vs2026",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function valuesForMatrixKey(value: unknown, key: string): string[] {
+  if (Array.isArray(value)) return value.flatMap((entry) => valuesForMatrixKey(entry, key));
+  if (!isRecord(value)) return [];
+  return Object.entries(value).flatMap(([candidate, entry]) =>
+    candidate === key && typeof entry === "string" ? [entry] : valuesForMatrixKey(entry, key),
+  );
+}
+
+function workflowRunnerLabels(source: string): string[] {
+  const workflow = parse(source) as unknown;
+  assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
+  return Object.values(workflow.jobs).flatMap((value) => {
+    assert.ok(isRecord(value), "workflow job must be a mapping");
+    const declared = Array.isArray(value["runs-on"]) ? value["runs-on"] : [value["runs-on"]];
+    const strategy = isRecord(value.strategy) ? value.strategy : {};
+    return declared.flatMap((runner) => {
+      if (typeof runner !== "string") return [];
+      const matrixKeys = [...runner.matchAll(/matrix\.(?:[A-Za-z0-9_-]+\.)*([A-Za-z0-9_-]+)/g)].map(
+        (match) => match[1]!,
+      );
+      if (matrixKeys.length === 0) return [runner];
+      const resolved = matrixKeys.flatMap((key) => valuesForMatrixKey(strategy.matrix, key));
+      if (resolved.length === 0 && typeof strategy.matrix === "string") {
+        // Generated matrices are validated by their typed planner contract.
+        assert.match(strategy.matrix, /^\$\{\{\s*fromJSON\(.+\)\s*\}\}$/u);
+        return [];
+      }
+      assert.ok(resolved.length > 0, `cannot resolve runner matrix expression: ${runner}`);
+      return resolved;
+    });
+  });
+}
+
 test("the flat GitHub workflow directory has a generated navigation catalog", () => {
   const directory = path.join(root, ".github/workflows");
   const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
   assert.equal(readRepoFile(".github/workflows/README.md"), expected);
+  const headingAnchors = new Set(
+    [...expected.matchAll(/^## (.+)$/gmu)].map((match) => githubHeadingAnchor(match[1]!)),
+  );
+  for (const match of expected.matchAll(/\]\(#([^)]+)\)/gmu)) {
+    assert.ok(headingAnchors.has(match[1]!), `catalog link has no heading: #${match[1]}`);
+  }
 });
 
 test("non-release workflows use maximum Blacksmith runner classes", () => {
   const workflows = path.join(root, ".github/workflows");
-  const lowerSpecRunner =
-    /(^|[\s'"])(?:ubuntu-(?:latest|24\.04)|blacksmith-8vcpu-ubuntu-2404|windows-(?:latest|2025)|macos-15)(?=$|[\s'"])/gmu;
   const violations = fs
     .readdirSync(workflows)
     .filter((file) => /\.ya?ml$/.test(file) && workflowGroupId(file) !== "02")
     .flatMap((file) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return source
-        .split("\n")
-        .map((line) => /(?:runs-on|runner):\s*(.*)/.exec(line)?.[1])
-        .filter((runner): runner is string => runner != null)
-        .flatMap((runner) =>
-          [...runner.matchAll(lowerSpecRunner)].map((match) => `${file}: ${match[0].trim()}`),
-        );
+      return workflowRunnerLabels(source)
+        .filter((runner) => !approvedRunnerLabels.has(runner))
+        .map((runner) => `${file}: ${runner}`);
     });
   assert.deepEqual(violations, []);
+});
+
+test("runner policy parses multiline and matrix declarations", () => {
+  const source = `
+jobs:
+  direct:
+    runs-on:
+      - blacksmith-32vcpu-ubuntu-2404
+  matrix:
+    strategy:
+      matrix:
+        include:
+          - runner: blacksmith-32vcpu-ubuntu-2404
+          - runner: blacksmith-8vcpu-ubuntu-2404
+    runs-on: \${{ matrix.runner }}
+`;
+  assert.deepEqual(workflowRunnerLabels(source), [
+    "blacksmith-32vcpu-ubuntu-2404",
+    "blacksmith-32vcpu-ubuntu-2404",
+    "blacksmith-8vcpu-ubuntu-2404",
+  ]);
+  assert.deepEqual(
+    workflowRunnerLabels(source).filter((runner) => !approvedRunnerLabels.has(runner)),
+    ["blacksmith-8vcpu-ubuntu-2404"],
+  );
+});
+
+test("GitHub heading anchors preserve adjacent separators after punctuation removal", () => {
+  assert.equal(
+    githubHeadingAnchor("06 SFC, JSX, and compiler correctness"),
+    "06-sfc-jsx-and-compiler-correctness",
+  );
+  assert.equal(githubHeadingAnchor("A & B"), "a--b");
 });
 
 test("the extracted docs readiness driver preserves TAP totals", () => {
