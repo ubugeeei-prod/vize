@@ -41,7 +41,7 @@ use vize_croquis::ScopeId;
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_l0::cstr;
-use vize_l0::{CompactString, String, ToCompactString};
+use vize_l0::{CompactString, FxHashSet, String, ToCompactString};
 use vize_relief::BindingType;
 use vize_relief::RootNode;
 
@@ -157,6 +157,81 @@ impl NoUnusedComponents {
             || vize_croquis::naming::names_match(used, registered)
             || to_pascal_case(used).as_str() == registered
     }
+
+    /// Preserve a negative conclusion when HTML recovery withholds Croquis.
+    ///
+    /// This fallback accepts only clean Options API script parses and compares
+    /// registrations with authored opening-tag names. Raw markup can make a
+    /// component look used (comments and strings are deliberately tolerated),
+    /// but it cannot make an authored tag disappear and cause a false report.
+    fn report_recovered_options_registrations(&self, ctx: &mut LintContext<'_>) {
+        let reports = {
+            let Some(descriptor) = ctx.sfc_descriptor() else {
+                return;
+            };
+            let Some(script) = descriptor.script.as_ref() else {
+                return;
+            };
+            let Some(template) = descriptor.template.as_ref() else {
+                return;
+            };
+            let Some(parsed) = ctx.sfc_scripts().and_then(|scripts| scripts.script()) else {
+                return;
+            };
+            if parsed.panicked
+                || !parsed.diagnostics.is_empty()
+                || raw_template_may_resolve_dynamic_component(template.content.as_ref())
+            {
+                return;
+            }
+
+            let used = authored_opening_tag_names(template.content.as_ref());
+            let jsx = ctx
+                .is_rule_enabled("vue/jsx-uses-vars")
+                .then(|| jsx_referenced_names(parsed));
+            vize_croquis::script_parser::parse_script(script.content.as_ref())
+                .component_registrations
+                .into_iter()
+                .filter_map(|registration| {
+                    let name = registration.name.as_str();
+                    if self.should_ignore(name)
+                        || used
+                            .iter()
+                            .any(|used| Self::component_name_matches(used.as_str(), name))
+                        || jsx.as_ref().is_some_and(|names| {
+                            names.contains(registration.local_name.as_str()) || names.contains(name)
+                        })
+                    {
+                        return None;
+                    }
+                    let (start, end) = registration_key_span(script.content.as_ref(), name)?;
+                    Some((registration.name, start, end))
+                })
+                .collect::<Vec<_>>()
+        };
+
+        let Some(script) = ctx
+            .sfc_descriptor()
+            .and_then(|descriptor| descriptor.script.as_ref())
+        else {
+            return;
+        };
+        let offset = script.loc.start as u32;
+        for (name, start, end) in reports {
+            ctx.report_in_sfc(
+                crate::diagnostic::LintDiagnostic::warn(
+                    ctx.current_rule,
+                    cstr!(
+                        "Component '{}' is registered but never used in template",
+                        name
+                    ),
+                    offset + start,
+                    offset + end,
+                )
+                .with_help("Remove the unused import or use the component in your template"),
+            );
+        }
+    }
 }
 
 impl Rule for NoUnusedComponents {
@@ -167,6 +242,7 @@ impl Rule for NoUnusedComponents {
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         // Skip if no analysis available
         if !ctx.has_analysis() {
+            self.report_recovered_options_registrations(ctx);
             return;
         }
         if has_dynamic_is_binding(&root.children) {
@@ -316,6 +392,40 @@ impl Rule for NoUnusedComponents {
             }
         }
     }
+}
+
+fn raw_template_may_resolve_dynamic_component(template: &str) -> bool {
+    // Stay deliberately conservative: whitespace around `=` and malformed
+    // dynamic arguments are common precisely in the recovery lane. A false
+    // match only withholds an unused conclusion; a missed match could create a
+    // false positive for a component selected at runtime.
+    template.contains(":is") || template.contains("v-bind") || template.contains(":[")
+}
+
+fn authored_opening_tag_names(template: &str) -> FxHashSet<CompactString> {
+    let bytes = template.as_bytes();
+    let mut names = FxHashSet::default();
+    let mut cursor = 0;
+    while let Some(relative) = template.get(cursor..).and_then(|rest| rest.find('<')) {
+        let start = cursor + relative + 1;
+        cursor = start;
+        if matches!(bytes.get(start), Some(b'/' | b'!' | b'?')) {
+            continue;
+        }
+        let mut end = start;
+        while bytes.get(end).is_some_and(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-' | b':' | b'.')
+        }) {
+            end += 1;
+        }
+        if end > start
+            && let Some(name) = template.get(start..end)
+        {
+            names.insert(name.to_compact_string());
+        }
+        cursor = end.max(cursor + 1);
+    }
+    names
 }
 
 fn registration_key_span(source: &str, name: &str) -> Option<(u32, u32)> {

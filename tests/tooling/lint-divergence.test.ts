@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 
+import { compareLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { compare, cwd, eslintResult, ruleMap, span } from "./_helpers/lint-divergence-fixture.ts";
 
@@ -172,6 +175,102 @@ test("identical duplicate baseline findings do not become false negatives", () =
   assert.equal(result.summary.sharedCount, 1);
   assert.equal(result.summary.falseNegativeCount, 0);
   assert.deepEqual(result.falseNegatives, []);
+});
+
+test("intentional findings do not dilute the false-positive ratio", () => {
+  const file = "src/Intentional.vue",
+    filename = path.join(cwd, file),
+    map = {
+      upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+      entries: {
+        "vue/no-setup-props-reactivity-loss": {
+          status: "mapped",
+          patinaRule: "vue/no-setup-props-reactivity-loss",
+        },
+        "vue/no-v-html": { status: "mapped", patinaRule: "vue/no-v-html" },
+      },
+    },
+    findings = [
+      {
+        file,
+        ruleId: "vue/no-setup-props-reactivity-loss",
+        severity: 1,
+        ...span(2, 1, 2, 6),
+        message: "reactivity loss",
+      },
+      {
+        file,
+        ruleId: "vue/no-v-html",
+        severity: 1,
+        ...span(3, 1, 3, 6),
+        message: "v-html",
+      },
+    ];
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  fs.writeFileSync(filename, "<script setup>\nconst props = defineProps()\n</script>\n");
+  try {
+    const compatible = compareLintFindings({
+        projectId: "fixture",
+        cwd,
+        ruleMap: map,
+        patinaFindings: findings,
+        eslintResults: [],
+      }),
+      successor = compareSuccessor("fixture", cwd, map, findings, [], { files: [file] });
+    for (const result of [compatible, successor]) {
+      const summary = JSON.parse(JSON.stringify(result.summary)) as Record<string, unknown>;
+      assert.equal(summary.falsePositiveCount, 1);
+      assert.equal(summary.intentionalDivergenceCount, 1);
+      assert.equal(summary.falsePositiveRatio, 1);
+    }
+  } finally {
+    fs.rmSync(filename, { force: true });
+  }
+});
+
+test("opaque component factories retain template binding uncertainty", () => {
+  const file = "src/Factory.vue",
+    filename = path.join(cwd, file),
+    map = {
+      upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+      entries: {
+        "vue/no-deprecated-dollar-listeners-api": {
+          status: "mapped",
+          patinaRule: "script/no-deprecated-dollar-listeners-api",
+        },
+      },
+    },
+    baseline = [
+      eslintResult(file, [
+        {
+          ruleId: "vue/no-deprecated-dollar-listeners-api",
+          severity: 2,
+          ...span(1, 70, 1, 80),
+          message: "The `$listeners` is deprecated.",
+        },
+      ]),
+    ],
+    source =
+      '<script>export default new ComponentFactory({})</script><template><Child v-on="$listeners" /></template>';
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  fs.writeFileSync(filename, source);
+  try {
+    const compatible = compareLintFindings({
+        projectId: "fixture",
+        cwd,
+        ruleMap: map,
+        patinaFindings: [],
+        eslintResults: baseline,
+      }),
+      successor = compareSuccessor("fixture", cwd, map, [], baseline, { files: [file] });
+    for (const result of [compatible, successor]) {
+      assert.equal(result.falseNegatives.length, 0, JSON.stringify(result, null, 2));
+      assert.equal(result.intentionalDivergences.length, 1);
+      assert.match(String(result.intentionalDivergences[0]?.reason), /opaque user factory/u);
+    }
+  } finally {
+    fs.rmSync(filename, { force: true });
+  }
 });
 
 test("unimplemented and intentionally divergent rules never count as parity failures", () => {

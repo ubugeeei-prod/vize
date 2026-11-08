@@ -62,7 +62,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_call_expression, walk_object_expression},
+    walk::{walk_call_expression, walk_object_expression, walk_variable_declarator},
 };
 use oxc_semantic::{Semantic, SemanticBuilder, SymbolId};
 use oxc_span::{GetSpan, Span};
@@ -183,7 +183,7 @@ fn collect_define_model_events(program: &Program<'_>, used: &mut FxHashSet<Compa
             }
             let model = match call.arguments.first() {
                 Some(Argument::StringLiteral(literal)) => literal.value.as_str(),
-                None => "modelValue",
+                Some(Argument::ObjectExpression(_)) | None => "modelValue",
                 _ => continue,
             };
             let mut event = CompactString::new("update:");

@@ -142,7 +142,11 @@ fn entity_dependent_prefixes_and_late_refusals_cannot_publish_partial_findings()
             },
             _ => Refusal::UnsupportedContext { span },
         };
-        let spans = vec![[5, 21]];
+        let spans = if kind == "attribute" {
+            vec![[5, 21], [30, 40]]
+        } else {
+            vec![[5, 21]]
+        };
         assert_refused(&source, "Later.vue", &spans, refusal);
     }
 }

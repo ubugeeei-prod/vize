@@ -101,6 +101,31 @@ fn vue2_slot_scope_and_unparenthesized_v_for_report_unused_aliases() {
 }
 
 #[test]
+fn unparenthesized_v_for_survives_complex_same_element_expressions() {
+    let source = r#"<template>
+  <li
+    :class="{'patreonx': patreon.name}"
+    :title="patreon.name ? `Proudly patronized by ${patreon.name}` : 'Become a Patron'"
+    v-for="patreon,index in patreons"
+  >{{ patreon.name }}</li>
+  </div>
+</template>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["vue/no-unused-vars".into()]))
+        .lint_sfc(source, "Probe.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-vars")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        &source[findings[0].start as usize..findings[0].end as usize],
+        "index"
+    );
+}
+
+#[test]
 fn generated_parenthesized_v_for_reports_the_unused_index() {
     let source = r#"<template>
   <view v-for="(item,index) in ('item in 12')" :key="item.index" v-if="type === 'spinner'" />

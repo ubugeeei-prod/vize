@@ -90,6 +90,27 @@ impl Visitor<'_, '_> {
         }
     }
 
+    /// A ref factory only defines a tracked binding when the call is the
+    /// declarator's direct initializer. Type assertions sit between the call
+    /// and the declarator in ESTree, so eslint-plugin-vue deliberately does
+    /// not propagate ref identity through them.
+    fn binding_ref_depth(&self, expr: &Expression<'_>) -> Option<u32> {
+        match expr {
+            Expression::ParenthesizedExpression(parenthesized) => {
+                self.binding_ref_depth(&parenthesized.expression)
+            }
+            Expression::Identifier(_) | Expression::StaticMemberExpression(_) => {
+                self.ref_depth(expr)
+            }
+            Expression::CallExpression(call)
+                if self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee) =>
+            {
+                Some(self.fn_depth)
+            }
+            _ => None,
+        }
+    }
+
     fn bag_member(&self, object: &Expression<'_>, property: &str) -> Option<u32> {
         if property == "value" {
             return None;
@@ -279,7 +300,7 @@ impl Visitor<'_, '_> {
                 Some(expr) => self
                     .bag_depth(expr)
                     .map(Kind::Bag)
-                    .or_else(|| self.ref_depth(expr).map(Kind::Ref))
+                    .or_else(|| self.binding_ref_depth(expr).map(Kind::Ref))
                     .unwrap_or(Kind::Other),
                 None => Kind::Other,
             };

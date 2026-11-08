@@ -254,7 +254,8 @@ export function compareLintFindings(
   }
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
-  const ratio = (count: number, total: number) => (total === 0 ? 0 : count / total);
+  const ratio = (count: number, total: number) => (total === 0 ? 0 : count / total),
+    scoredPatinaCount = shared.length + falsePositives.length + ruleLocationDivergences.length;
   const summary: JsonObject = {
     referenceCoverageIntegrityErrorCount: expectations.filter(
       (entry) => get(entry, "passed") !== true,
@@ -277,7 +278,7 @@ export function compareLintFindings(
     baselineParseErrorCount: baseline.parseErrorCount,
     baselineExcludedNonVueCount: baseline.excludedNonVueCount,
     baselineInvalidRangeCount: baseline.invalidRangeCount,
-    falsePositiveRatio: new JsonFloat(ratio(falsePositives.length, comparablePatina.length)),
+    falsePositiveRatio: new JsonFloat(ratio(falsePositives.length, scoredPatinaCount)),
     falseNegativeRatio: new JsonFloat(
       ratio(falseNegatives.length, uniqueComparableBaseline.length),
     ),

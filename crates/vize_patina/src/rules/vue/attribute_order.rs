@@ -104,6 +104,10 @@ fn is_object_binding(prop: &PropNode<'_>) -> bool {
     matches!(prop, PropNode::Directive(dir) if dir.name == "bind" && dir.arg.is_none())
 }
 
+fn is_object_listener(prop: &PropNode<'_>) -> bool {
+    matches!(prop, PropNode::Directive(dir) if dir.name == "on" && dir.arg.is_none())
+}
+
 fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
     matches!(prop, PropNode::Attribute(_))
         || matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "bind" | "model")
@@ -113,6 +117,11 @@ fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
 fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
     props.get(index).is_some_and(is_object_binding)
         && (index + 1 == props.len()
+            || index
+                .checked_sub(1)
+                .and_then(|previous| props.get(previous))
+                .is_some_and(is_object_listener)
+            || props.get(index + 1).is_some_and(is_object_listener)
             || index
                 .checked_sub(1)
                 .and_then(|previous| props.get(previous))
@@ -283,6 +292,37 @@ mod tests {
             let result = linter.lint_template(source, "test.vue");
             assert_eq!(
                 result.warning_count, 0,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
+    fn paired_object_listeners_and_bindings_preserve_merge_precedence() {
+        let linter = create_linter();
+        for (source, expected) in [
+            (
+                r#"<component v-if="component" v-bind="props" v-on="events" :is="component" :can-cancel="canCancel" @close="close" />"#,
+                2,
+            ),
+            (
+                r#"<md-button class="target" v-on="$listeners" v-bind="$attrs" @click="handleClick" />"#,
+                0,
+            ),
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, expected,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+            let binding_start = source.find("v-bind").unwrap() as u32;
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| diagnostic.start != binding_start),
                 "{source}: {:?}",
                 result.diagnostics
             );

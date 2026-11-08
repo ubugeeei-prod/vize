@@ -123,7 +123,7 @@ fn object_value_keys_complete(value: &Expression<'_>) -> bool {
 }
 
 fn static_return_keys(value: &Expression<'_>) -> bool {
-    let Expression::ObjectExpression(object) = value else {
+    let Expression::ObjectExpression(object) = value.get_inner_expression() else {
         return false;
     };
     object_keys_complete(object)

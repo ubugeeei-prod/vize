@@ -126,6 +126,19 @@ const month = ref(createMonth({ locale: locale.value })) as Ref<Month>
 }
 
 #[test]
+fn type_asserted_ref_factories_do_not_define_tracked_bindings() {
+    let source = r#"
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+const value = ref({ start: 1, end: 2 }) as Ref<{ start: number, end: number }>
+const first = ref(value.value.start) as Ref<number>
+const second = ref(value.value.end) as Ref<number>
+consume(first.value, second.value)
+"#;
+    assert!(messages(source).is_empty(), "{:?}", messages(source));
+}
+
+#[test]
 fn tracks_a_ref_factory_assigned_after_declaration() {
     assert_copies(
         r#"

@@ -125,7 +125,12 @@ impl<'a> Visit<'a> for SlotsVisitor<'_> {
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
         self.bind_pattern(&declarator.id, Kind::NotSlot);
         if let Some(init) = &declarator.init
-            && let Some(origin) = self.slot_function_origin(init)
+            && let Some(origin) = if matches!(&declarator.id, BindingPattern::BindingIdentifier(_))
+            {
+                self.slot_function_origin(init)
+            } else {
+                self.slot_function_origin_unchecked(init)
+            }
         {
             if let BindingPattern::BindingIdentifier(identifier) = &declarator.id {
                 self.bind(identifier.name.as_str(), Kind::SlotFn(origin));
@@ -194,6 +199,10 @@ impl SlotsVisitor<'_> {
         if self.vue2_render_depth > 0 {
             return None;
         }
+        self.slot_function_origin_unchecked(expression)
+    }
+
+    fn slot_function_origin_unchecked(&self, expression: &Expression<'_>) -> Option<Span> {
         let expression = expression.get_inner_expression();
         if let Expression::Identifier(identifier) = expression {
             return match self.lookup(identifier.name.as_str()) {
@@ -360,6 +369,13 @@ mod tests {
         let source = "export default { render(createElement) { const slot = this.$slots.default; return slot.length > 1 ? createElement('div', slot) : slot[0] } }";
         let result = lint(source);
         assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn vue2_render_slot_destructuring_still_requires_a_function_call() {
+        let source = "export default { render(createElement) { const [trigger] = this.$slots.default; return trigger || createElement('div') } }";
+        let result = lint(source);
+        assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

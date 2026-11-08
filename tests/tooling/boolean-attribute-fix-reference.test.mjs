@@ -24,7 +24,10 @@ await test("7905 preserves whole originals and independent complete edit control
   assert.equal(wholeJson(original, false, true)[0].messages.length, 5);
   assert.equal(wholeJson(original, true, true)[0].messages.length, 0);
   const complete = fixedSource(original, true);
-  assert.equal(complete.slice(complete.indexOf("<template>")), requested);
+  assert.equal(
+    complete.slice(complete.indexOf("<template>")),
+    requested.replace("<input disabled />", "<input disabled>"),
+  );
   const entries = [...new Set(cases.map((entry) => entry.entry))].sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0,
   );

@@ -438,6 +438,60 @@ emit('cancel')
 }
 
 #[test]
+fn define_model_options_object_uses_the_default_update_event() {
+    let source = r#"
+const emit = defineEmits(['update:modelValue', 'cancel'])
+const model = defineModel({ default: null })
+emit('cancel')
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_inline_template_emit_counts_as_usage() {
+    let source = r#"
+const ModalForm = defineComponent({
+  emits: ['close'],
+  template: '<button @click="$emit(\'close\')">Close</button>'
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_inline_template_literal_emit_counts_as_usage() {
+    let source = r#"
+const ModalForm = defineComponent({
+  emits: ['close'],
+  template: `<button @click="$emit('close')">Close</button>`
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_this_alias_emit_counts_as_usage() {
+    let source = r#"
+export default {
+  emits: ['show', 'hide'],
+  methods: {
+    toggle(open) {
+      const that = this
+      that.$emit(open ? 'show' : 'hide')
+      that.$emit('show')
+      that.$emit('hide')
+    }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_options_api_unrelated_emit_calls_do_not_hide_unused_declarations() {
     let sfc = r#"<script>
 export default {

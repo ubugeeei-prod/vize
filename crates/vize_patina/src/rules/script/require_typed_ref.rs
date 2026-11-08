@@ -146,7 +146,8 @@ struct RequireTypedRefVisitor<'result> {
     result: &'result mut ScriptLintResult,
     /// Local names bound to `ref` / `shallowRef` imports from `vue`.
     ref_aliases: FxHashSet<CompactString>,
-    /// Only the annotated binding's direct call, never an arbitrary nested ref.
+    /// A binding annotation only types a syntactically direct ref call.
+    /// An intervening assertion (`ref() as Ref<T>`) is not the same contract.
     annotated_initializer: Option<Span>,
 }
 
@@ -173,13 +174,7 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
         self.annotated_initializer = if it.type_annotation.is_some()
             && matches!(&it.id, BindingPattern::BindingIdentifier(_))
         {
-            it.init.as_ref().and_then(|init| {
-                if let Expression::CallExpression(call) = init.get_inner_expression() {
-                    Some(call.span)
-                } else {
-                    None
-                }
-            })
+            it.init.as_ref().and_then(direct_call_span)
         } else {
             None
         };
@@ -202,6 +197,16 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
             );
         }
         walk_call_expression(self, it);
+    }
+}
+
+fn direct_call_span(expression: &Expression<'_>) -> Option<Span> {
+    match expression {
+        Expression::CallExpression(call) => Some(call.span),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            direct_call_span(&parenthesized.expression)
+        }
+        _ => None,
     }
 }
 

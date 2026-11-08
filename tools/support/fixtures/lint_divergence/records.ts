@@ -233,6 +233,18 @@ export function baselineIntentionalReason(
   )
     return "Patina treats noscript contents as raw fallback markup and does not report its embedded template-like text as a user-facing bare string.";
   if (
+    [
+      "script/no-deprecated-dollar-listeners-api",
+      "script/no-deprecated-dollar-scopedslots-api",
+      "vue/no-deprecated-dollar-listeners-api",
+      "vue/no-deprecated-dollar-scopedslots-api",
+    ].includes(finding.ruleId) &&
+    source !== undefined &&
+    source !== null &&
+    /\bexport\s+default\s+new\s+(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*\s*\(/u.test(source)
+  )
+    return "Patina refuses a removed-instance-property conclusion when an opaque user factory creates the component; that factory can expose a same-named template binding outside file-local analysis.";
+  if (
     finding.ruleId === "vue/no-unused-components" &&
     source !== undefined &&
     source !== null &&

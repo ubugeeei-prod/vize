@@ -268,7 +268,10 @@ export function compareLintFindings({
     baselineParseErrorCount: baselineInput.parseErrorCount,
     baselineExcludedNonVueCount: baselineInput.excludedNonVueCount,
     baselineInvalidRangeCount: baselineInput.invalidRangeCount,
-    falsePositiveRatio: ratio(falsePositives.length, comparablePatina.length),
+    falsePositiveRatio: ratio(
+      falsePositives.length,
+      shared.length + falsePositives.length + ruleLocationDivergences.length,
+    ),
     falseNegativeRatio: ratio(falseNegatives.length, uniqueComparableBaseline.length),
   };
   return {
@@ -907,6 +910,16 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     findingInsideElement(finding, source, "noscript")
   )
     return "Patina treats noscript contents as raw fallback markup and does not report its embedded template-like text as a user-facing bare string.";
+  if (
+    [
+      "script/no-deprecated-dollar-listeners-api",
+      "script/no-deprecated-dollar-scopedslots-api",
+      "vue/no-deprecated-dollar-listeners-api",
+      "vue/no-deprecated-dollar-scopedslots-api",
+    ].includes(finding.ruleId) &&
+    /\bexport\s+default\s+new\s+(?:[A-Za-z_$][\w$]*\.)*[A-Za-z_$][\w$]*\s*\(/u.test(source)
+  )
+    return "Patina refuses a removed-instance-property conclusion when an opaque user factory creates the component; that factory can expose a same-named template binding outside file-local analysis.";
   if (
     finding.ruleId === "vue/no-unused-components" &&
     /<p\b[^>]*>[\s\S]{0,4000}<div\b/iu.test(source)

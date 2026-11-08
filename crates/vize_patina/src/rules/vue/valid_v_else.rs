@@ -45,11 +45,17 @@ impl Rule for ValidVElse {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        check_adjacent_if_chain(ctx, &root.children);
+        check_adjacent_if_chain(ctx, &root.children, None);
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        check_adjacent_if_chain(ctx, &element.children);
+        let fostered_after = (element.tag == "template"
+            && element.props.iter().any(
+                |prop| matches!(prop, PropNode::Directive(directive) if directive.name == "if"),
+            ))
+        .then(|| element.inner_loc.as_ref().map(|loc| loc.span.end))
+        .flatten();
+        check_adjacent_if_chain(ctx, &element.children, fostered_after);
     }
 
     fn check_directive<'a>(
@@ -123,9 +129,16 @@ fn unexpected_expression_fix(source: &str, directive: &DirectiveNode) -> Option<
 ///
 /// An orphaned `v-else-if` belongs to `vue/valid-v-else-if`, as in
 /// eslint-plugin-vue.
-fn check_adjacent_if_chain(ctx: &mut LintContext, children: &[TemplateChildNode]) {
+fn check_adjacent_if_chain(
+    ctx: &mut LintContext,
+    children: &[TemplateChildNode],
+    fostered_after: Option<u32>,
+) {
     for_each_orphan_branch(children, |branch, loc| {
-        if matches!(branch, OrphanBranch::Else) {
+        if matches!(branch, OrphanBranch::Else)
+            && !fostered_after.is_some_and(|boundary| loc.span.start >= boundary)
+            && !authored_conditional_template_precedes(ctx.source, loc.span.start)
+        {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-else.missing_v_if"),
                 loc,
@@ -133,6 +146,33 @@ fn check_adjacent_if_chain(ctx: &mut LintContext, children: &[TemplateChildNode]
             );
         }
     });
+}
+
+fn authored_conditional_template_precedes(source: &str, branch_start: u32) -> bool {
+    let Some(before_directive) = source.get(..branch_start as usize) else {
+        return false;
+    };
+    let Some(element_start) = before_directive.rfind('<') else {
+        return false;
+    };
+    let Some(prefix) = source.get(..element_start) else {
+        return false;
+    };
+    let prefix = prefix.trim_end();
+    let Some(before_close) = prefix.strip_suffix("</template>") else {
+        return false;
+    };
+    let Some(open) = before_close.rfind("<template") else {
+        return false;
+    };
+    before_close
+        .get(open..)
+        .and_then(|opening| opening.split_once('>'))
+        .is_some_and(|(opening, _)| {
+            opening
+                .split_ascii_whitespace()
+                .any(|token| token.starts_with("v-if=") || token == "v-if")
+        })
 }
 
 #[cfg(test)]
@@ -240,5 +280,14 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn table_foster_parenting_keeps_template_if_else_adjacency() {
+        let result = create_linter().lint_template(
+            r#"<table><template v-if="rows"><tr v-for="row in rows" /></template><tr v-else /></table>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
     }
 }

@@ -35,6 +35,27 @@ void test("linter preflight binds Matrix diagnostics but remains deletion-blocke
   assert.doesNotThrow(() => validateLinterDeletionArtifact(artifact));
 });
 
+void test("linter preflight retains explicitly excluded Matrix-only Vue files", () => {
+  const input = control(),
+    project = input.registryProjects.find((entry) => entry.id === "with-vue")!,
+    raw = input.rawLinterRuns.get("with-vue")!.value,
+    matrixProject = input.matrix.value.projects.find((entry) => entry.id === "with-vue")!,
+    matrixRun = matrixProject.runs.find((entry) => entry.tool === "linter")!;
+  project.lintDivergenceExcludePaths = ["src/Excluded.vue"];
+  raw.parsed.push({
+    file: "src/Excluded.vue",
+    messages: [],
+    errorCount: 0,
+    warningCount: 0,
+  });
+  raw.stdout = JSON.stringify(raw.parsed);
+  matrixRun.fileCount++;
+
+  const artifact = assessLinterDeletionShard(input);
+  assert.equal(artifact.projects[0].comparedFileCount, 2);
+  assert.doesNotThrow(() => validateLinterDeletionArtifact(artifact));
+});
+
 void test("linter preflight records every diagnostic and corpus gap", () => {
   for (const summaryChanges of [
     { falsePositiveCount: 1 },

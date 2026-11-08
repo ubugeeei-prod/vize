@@ -65,6 +65,7 @@ export interface RegistryProject extends JsonRecord {
   coverage: string[];
   vueGlobs: string[];
   expectedVueFileCount?: number | null;
+  lintDivergenceExcludePaths?: string[];
 }
 
 export interface RunEvidence extends JsonRecord {

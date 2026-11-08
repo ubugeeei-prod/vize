@@ -2739,6 +2739,11 @@
       "revision": "b6cc3df9c10fb058510cc13d7648d4abb50a4fbb",
       "license": { "spdx": "Apache-2.0", "files": ["LICENSE","license.md"] },
       "vueGlobs": ["**/*.vue"],
+      "lintDivergenceExcludePaths": [
+        "examples/hello-uts/uni_modules/uts-hello-component/utssdk/app-ios/index.vue",
+        "examples/hello-uvue/uni_modules/test-props/utssdk/app-ios/index.vue",
+        "src/uni_modules/uts-button/utssdk/app-ios/index.vue"
+      ],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "curator-compare"
     },
@@ -3283,6 +3288,7 @@
       "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
       "license": { "spdx": "MIT", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
+      "lintDivergenceExcludePaths": ["template/.vitepress/theme/Layout.vue"],
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "curator-compare",
       "lspAuthoredOracle": {

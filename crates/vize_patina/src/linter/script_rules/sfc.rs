@@ -298,7 +298,14 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
             .as_ref()
             .map(|block| block.content.as_ref()),
         template_root: template_ast.map(|(root, _)| root),
-        template_offset: template_ast.map(|(_, offset)| offset),
+        // Raw-template fallbacks still need authored SFC coordinates when the
+        // compiler refuses to produce a trustworthy AST (for example after
+        // HTML table foster parenting). The descriptor location is available
+        // independently of that AST.
+        template_offset: descriptor
+            .template
+            .as_ref()
+            .map(|block| block.loc.start as u32),
         // Both blocks are linted separately below, so a whole-file conclusion
         // is only available to a rule when there is a single block to draw it
         // from. Computed from the descriptor rather than filtered bindings: a skipped block

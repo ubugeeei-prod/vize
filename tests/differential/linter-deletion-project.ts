@@ -197,6 +197,7 @@ export function validateLinterProjectEvidence(
     matrixRun,
     raw,
     registryProject.vueGlobs,
+    registryProject.lintDivergenceExcludePaths,
   );
   return {
     id: projectId,

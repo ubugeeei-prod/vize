@@ -26,6 +26,7 @@ struct OptionsFrame {
     used: FxHashSet<CompactString>,
     emit: Option<SymbolId>,
     context: Option<SymbolId>,
+    this_aliases: FxHashSet<SymbolId>,
     escaped: bool,
 }
 
@@ -47,11 +48,14 @@ impl<'a> Visit<'a> for OptionsUnusedCollector<'_, '_, 'a> {
         let pushed = events.is_some();
         if let Some(events) = events {
             let (emit, context) = setup_context(object);
+            let mut used = self.template_used.clone();
+            collect_inline_template_emits(object, &mut used);
             self.frames.push(OptionsFrame {
                 events,
-                used: self.template_used.clone(),
+                used,
                 emit,
                 context,
+                this_aliases: FxHashSet::default(),
                 escaped: false,
             });
         }
@@ -87,6 +91,17 @@ impl<'a> Visit<'a> for OptionsUnusedCollector<'_, '_, 'a> {
         }
         walk_call_expression(self, call);
     }
+
+    fn visit_variable_declarator(&mut self, declarator: &oxc_ast::ast::VariableDeclarator<'a>) {
+        if matches!(declarator.init.as_ref().map(Expression::without_parentheses), Some(Expression::ThisExpression(_)))
+            && let BindingPattern::BindingIdentifier(identifier) = &declarator.id
+            && let Some(symbol) = identifier.symbol_id.get()
+            && let Some(frame) = self.frames.last_mut()
+        {
+            frame.this_aliases.insert(symbol);
+        }
+        walk_variable_declarator(self, declarator);
+    }
 }
 
 impl<'a> OptionsUnusedCollector<'_, '_, 'a> {
@@ -114,6 +129,10 @@ impl<'a> OptionsUnusedCollector<'_, '_, 'a> {
                     Some("$emit") => matches!(
                         member.object().without_parentheses(),
                         Expression::ThisExpression(_)
+                    ) || matches!(
+                        member.object().without_parentheses(),
+                        Expression::Identifier(identifier)
+                            if self.symbol(identifier).is_some_and(|symbol| frame.this_aliases.contains(&symbol))
                     ),
                     _ => false,
                 }
@@ -152,6 +171,31 @@ impl<'a> OptionsUnusedCollector<'_, '_, 'a> {
                 matches!(member.object().without_parentheses(), Expression::Identifier(identifier)
                     if self.symbol(identifier) == Some(symbol))
             }),
+        }
+    }
+}
+
+fn collect_inline_template_emits(
+    object: &ObjectExpression<'_>,
+    used: &mut FxHashSet<CompactString>,
+) {
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed || property_key_name(&property.key) != Some("template") {
+            continue;
+        }
+        match property.value.without_parentheses() {
+            Expression::StringLiteral(template) => {
+                collect_template_emitted_events(template.value.as_str(), "", used);
+            }
+            Expression::TemplateLiteral(template) if template.expressions.is_empty() => {
+                if let Some(template) = template.single_quasi() {
+                    collect_template_emitted_events(template.as_str(), "", used);
+                }
+            }
+            _ => {}
         }
     }
 }
