@@ -97,30 +97,41 @@ await test("release verification dispatches the JSR workflow once the npm packag
   assert.ok([release?.needs ?? []].flat().includes("verify-npm"));
 });
 
-for (const [file, job, condition] of [
-  ["release-jsr.yml", "consumer", "matrix.runtime == 'deno'"],
-  ["jsr-package.yml", "package", undefined],
-] as const) {
-  await test(`${file} applies the shared scoped age policy only to Deno`, () => {
-    const steps = workflow(file).jobs[job]?.steps ?? [];
-    const deno = steps.filter((step) => runs(step, /\bdeno run\b/));
-    assert.equal(deno.length, 1);
-    assert.equal(deno[0]?.if, condition);
-    const script = deno[0]?.run ?? "";
-    const copied = script.match(
-      /\bcp\s+"?(?:\$GITHUB_WORKSPACE\/)?tools\/support\/release\/jsr\/consumer-deno\.json"?\s+"?([^"\s]+)/,
-    );
-    assert.ok(copied, "copy the canonical policy into the fresh consumer");
-    const config = script.match(/\bdeno run\b[^\n]*--config(?:=|\s+)"?([^"\s]+)/);
-    assert.equal(config?.[1], copied[1], "explicitly load the copied policy");
-    assert.deepEqual(
-      steps.filter((step) => runs(step, /consumer-deno\.json/)),
-      deno,
-      "Node/Bun and shared setup never load the Deno policy",
-    );
-    assert.ok(steps.every((step) => !runs(step, /--minimum-dependency-age/)));
-  });
-}
+await test("the release consumer applies the shared scoped age policy only to Deno", () => {
+  const steps = workflow("release-jsr.yml").jobs.consumer?.steps ?? [];
+  const deno = steps.filter((step) => runs(step, /\bdeno run\b/));
+  assert.equal(deno.length, 1);
+  assert.equal(deno[0]?.if, "matrix.runtime == 'deno'");
+  const script = deno[0]?.run ?? "";
+  const copied = script.match(
+    /\bcp\s+"?(?:\$GITHUB_WORKSPACE\/)?tools\/support\/release\/jsr\/consumer-deno\.json"?\s+"?([^"\s]+)/,
+  );
+  assert.ok(copied, "copy the canonical policy into the fresh consumer");
+  const config = script.match(/\bdeno run\b[^\n]*--config(?:=|\s+)"?([^"\s]+)/);
+  assert.equal(config?.[1], copied[1], "explicitly load the copied policy");
+  assert.deepEqual(
+    steps.filter((step) => runs(step, /consumer-deno\.json/)),
+    deno,
+    "Node/Bun and shared setup never load the Deno policy",
+  );
+  assert.ok(steps.every((step) => !runs(step, /--minimum-dependency-age/)));
+});
+
+await test("the hosted package check delegates staged Deno setup to typed Node", () => {
+  const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
+  const staged = steps.find((step) => step.name === "Import the staged entry points under Deno");
+  assert.equal(
+    staged?.run,
+    'node tools/support/release/jsr/public-preview-consumers.ts staged-deno "$RUNNER_TEMP/jsr-deno-consumer" "$RUNNER_TEMP/jsr-packages/vize"',
+  );
+  assert.equal(staged?.env?.DENO_DIR, "${{ runner.temp }}/staged-jsr-deno");
+  assert.ok(steps.every((step) => !runs(step, /--minimum-dependency-age/)));
+});
+
+await test("the hosted package workflow keeps orchestration out of YAML", () => {
+  const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
+  assert.ok(steps.every((step) => !step.run?.includes("\n")));
+});
 
 await test("the hosted package check installs frozen tooling before importing yaml", () => {
   const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
@@ -151,13 +162,10 @@ await test("the hosted package check runs a fresh Bun preview over the public to
     (step) =>
       step.name === "Install the public preview in a fresh Bun project and execute the tool APIs",
   );
-  const script = consumer?.run ?? "";
-  assert.match(script, /bun add --ignore-scripts --exact/);
-  assert.match(script, /@vizejs\/babel-plugin@\$JSR_PREVIEW_VERSION/);
-  assert.match(script, /oxlint-plugin-vize@\$JSR_PREVIEW_VERSION/);
-  assert.match(script, /bunx --bun jsr@0\.14\.3 add/);
-  assert.match(script, /--babel-specifier @vizejs\/babel-plugin/);
-  assert.match(script, /--oxlint-specifier oxlint-plugin-vize/);
+  assert.equal(
+    consumer?.run,
+    'node tools/support/release/jsr/public-preview-consumers.ts bun "$RUNNER_TEMP/jsr-bun-consumer" "$JSR_PREVIEW_VERSION"',
+  );
   const upload = steps.find(
     (step) => step.name === "Preserve the fresh Bun preview install and runtime outcome",
   );
