@@ -77,6 +77,8 @@ pub(super) fn collect_and_emit_scope_preamble(
     generation_options: VirtualTsGenerationOptions<'_>,
     has_generic_param: bool,
     capture_template: bool,
+    template_source: &str,
+    script_source_offset: &dyn Fn(usize) -> usize,
     (semantic_links, mappings, template_offset): (
         &mut Vec<VizeSemanticLink>,
         &mut Vec<VizeMapping>,
@@ -101,8 +103,26 @@ pub(super) fn collect_and_emit_scope_preamble(
         None
     };
     if generation_options.template_use_navigation {
-        let shadowed = unwraps.template_shadowed_bindings();
-        template_uses::emit_navigation(ts, mappings, summary, &shadowed, template_offset);
+        let lexical = unwraps.lexical_template_shadowed_bindings();
+        template_uses::emit_navigation(
+            ts,
+            mappings,
+            summary,
+            &lexical,
+            template_source,
+            template_offset,
+        );
+        template_uses::emit_options_api_navigation(
+            ts,
+            mappings,
+            semantic_links,
+            summary,
+            &unwraps.options_api_setup_bindings,
+            template_source,
+            template_offset,
+            script_content,
+            script_source_offset,
+        );
     }
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
@@ -114,14 +134,29 @@ pub(super) fn collect_and_emit_scope_preamble(
     unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
     if generation_options.template_use_navigation {
         let shadowed = unwraps.template_shadowed_bindings();
-        template_uses::emit_hover(ts, mappings, summary, &shadowed, template_offset, |name| {
-            unwraps.template_hover_type(name)
-        });
+        template_uses::emit_hover(
+            ts,
+            mappings,
+            summary,
+            &shadowed,
+            template_source,
+            template_offset,
+            |name| unwraps.template_hover_type(name),
+        );
     }
     unwraps
 }
 
 impl TemplateRefUnwraps {
+    fn lexical_template_shadowed_bindings(&self) -> Vec<&str> {
+        self.setup_bindings
+            .iter()
+            .chain(&self.auto_import_bindings)
+            .chain(&self.deferred_bindings)
+            .map(String::as_str)
+            .collect()
+    }
+
     fn template_shadowed_bindings(&self) -> Vec<&str> {
         self.setup_bindings
             .iter()

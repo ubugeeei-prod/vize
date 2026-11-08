@@ -398,3 +398,97 @@ function toggle() {}
         );
     }
 }
+
+#[test]
+fn template_use_offsets_project_decoded_entities_back_to_authored_bytes() {
+    let source = r#"<script setup lang="ts">
+import { ref } from "vue";
+const open = ref(false);
+const rows = ref([1]);
+</script>
+<template>
+  {{ /* 🌸 */ 0 &lt; open }}
+  <p :title="'é' + (0 &lt; open ? 'yes' : 'no')" />
+  <i v-for="item in (0 &lt; rows.length ? rows : [])">{{ item }}</i>
+</template>
+"#;
+    let result = generate_vue_content_mapper_transform(Path::new("Entities.vue"), source)
+        .expect("transform");
+    let template = source.find("<template>").unwrap();
+
+    for name in ["open", "rows"] {
+        let uses = source
+            .match_indices(name)
+            .map(|(offset, _)| offset)
+            .filter(|offset| *offset > template);
+        for offset in uses {
+            for (features, prefix) in [
+                (
+                    CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE,
+                    crate::virtual_ts::generated_names::TEMPLATE_USE_PREFIX,
+                ),
+                (
+                    CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER,
+                    crate::virtual_ts::generated_names::TEMPLATE_HOVER_PREFIX,
+                ),
+            ] {
+                assert!(
+                    result.mappings.iter().any(|mapping| {
+                        let generated = mapping.0[0];
+                        let line = result.text[..generated]
+                            .rsplit_once('\n')
+                            .map_or("", |(_, line)| line);
+                        mapping.0[1] == name.len()
+                            && mapping.0[2] == offset
+                            && mapping.0[3] == name.len()
+                            && mapping.0[4] == ContentMapperSpanKind::Verbatim as usize
+                            && mapping.0[5] == features
+                            && line.trim_start() == prefix
+                    }),
+                    "{name} at {offset}:\n{}",
+                    result.text
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn options_api_setup_properties_anchor_template_navigation_without_a_lexical_local() {
+    let source = r#"<script lang="ts">
+import { ref } from "vue";
+export default {
+  setup() {
+    return { ready: ref(true) };
+  },
+};
+</script>
+<template>{{ ready }}</template>
+"#;
+    let result =
+        generate_vue_content_mapper_transform(Path::new("Options.vue"), source).expect("transform");
+    let property = source.find("ready: ref").unwrap();
+    let template_use = source.rfind("ready").unwrap();
+    let anchor = result
+        .text
+        .find("const ready: __R_ready = (void 0) as any;")
+        .expect("Options API navigation anchor")
+        + "const ".len();
+
+    assert!(result.mappings.iter().any(|mapping| {
+        mapping.0[0] == anchor
+            && mapping.0[1] == "ready".len()
+            && mapping.0[2] == property
+            && mapping.0[3] == "ready".len()
+    }));
+    assert!(result.mappings.iter().any(|mapping| {
+        let generated = mapping.0[0];
+        let line = result.text[..generated]
+            .rsplit_once('\n')
+            .map_or("", |(_, line)| line);
+        mapping.0[2] == template_use
+            && mapping.0[3] == "ready".len()
+            && mapping.0[5] == CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE
+            && line.trim_start() == crate::virtual_ts::generated_names::TEMPLATE_USE_PREFIX
+    }));
+}

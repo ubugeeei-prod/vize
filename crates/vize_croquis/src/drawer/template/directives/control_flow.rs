@@ -122,9 +122,10 @@ impl Drawer {
                 for_node.loc.span.start,
                 for_node.loc.span.end,
             );
+            let source_span = for_node.source.loc().span;
             self.croquis
                 .scopes
-                .set_v_for_source_offset(scope_id, for_node.source.loc().span.start);
+                .set_v_for_source_span(scope_id, source_span.start..source_span.end);
             // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
             self.vfor_depth += 1;
             for var in &vars_added {

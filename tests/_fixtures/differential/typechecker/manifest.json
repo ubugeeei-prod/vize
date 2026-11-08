@@ -15332,6 +15332,40 @@
       }
     },
     {
+      "id": "typechecker/regression/template-binding-navigation-followup",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-binding-navigation-followup/src/App.vue.txt",
+          "sha256": "7260675f953618e44c8fe042d0162c022ca463ac21daed9d4deb4d88d6e44f57",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-binding-navigation-followup/tsconfig.json.txt",
+          "sha256": "a128eab9a15a4db14fb9600d13c21c44cfb92da119aded4e9c4c56b5920d2f10",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper::tests::navigation exercises Options API setup-return anchors and decoded entity offsets in interpolation, directive, and v-for expressions. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/template-binding-uses-11636",
       "state": "active",
       "targets": [

@@ -1,6 +1,7 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{ConditionalKind, VForScopeAliases, extract_identifiers_oxc};
 use crate::scope::{ParamNames, ScopeKind, VForScopeData, VSlotScopeData};
+use std::ops::Range;
 use vize_carton::{CompactString, SmallVec};
 use vize_relief::ElementNode;
 
@@ -20,7 +21,7 @@ pub(super) struct SlotScopeInfo {
 pub(super) struct ForScopeInfo {
     pub(super) aliases: VForScopeAliases,
     pub(super) alias_offsets: SmallVec<[(CompactString, u32); 4]>,
-    pub(super) source_offset: Option<u32>,
+    pub(super) source_span: Option<Range<u32>>,
     pub(super) start: u32,
     pub(super) end: u32,
     // Original collection names, separate from the global text-keyed cache and
@@ -114,7 +115,7 @@ impl Drawer {
         let Some(ForScopeInfo {
             aliases,
             alias_offsets,
-            source_offset,
+            source_span,
             start,
             end,
             source_identifiers,
@@ -134,12 +135,12 @@ impl Drawer {
         // binds is an unresolved read of the template (`UndefinedRefs`) and
         // reaches the same instance resolution as a binding expression.
         if self.checks_binding_reads()
-            && let Some(source_offset) = source_offset
+            && let Some(source_span) = source_span.as_ref()
         {
             self.check_expression_text_refs(
                 aliases.source.as_str(),
                 None,
-                source_offset,
+                source_span.start,
                 scope_vars,
                 false,
             );
@@ -188,10 +189,10 @@ impl Drawer {
             start,
             end,
         );
-        if !source_has_slot_bound_callback && let Some(source_offset) = source_offset {
+        if !source_has_slot_bound_callback && let Some(source_span) = source_span {
             self.croquis
                 .scopes
-                .set_v_for_source_offset(scope_id, source_offset);
+                .set_v_for_source_span(scope_id, source_span);
         }
         // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
         self.vfor_depth += 1;
