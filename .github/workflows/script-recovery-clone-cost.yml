@@ -235,12 +235,8 @@ jobs:
               receipt['roles'][role] = {'sourceRoot': str(source), 'recoverySha256': sha(source/'crates/vize_croquis/src/script_parser/recovery.rs'), 'lockSha256': sha(source/'Cargo.lock'), 'carrierSha256': sha(source/'davinci/vize_l0/examples/source_recovery_clone_benchmark.rs'), 'binarySha256': sha(executable), 'artifacts': [{k:x[k] for k in ('package_id', 'manifest_path', 'target', 'profile', 'features', 'fresh', 'executable')} for x in (croquis[0], carrier[0])]}
           assert receipt['roles']['base']['carrierSha256'] == receipt['roles']['head']['carrierSha256']
           assert receipt['roles']['base']['lockSha256'] == receipt['roles']['head']['lockSha256']
-          same_inputs = all(receipt['roles']['base'][key] == receipt['roles']['head'][key] for key in ('recoverySha256', 'lockSha256', 'carrierSha256'))
-          same_binaries = receipt['roles']['base']['binarySha256'] == receipt['roles']['head']['binarySha256']
-          if same_inputs:
-              assert same_binaries
-          receipt['sameInputs'] = same_inputs
-          receipt['sameBinaries'] = same_binaries
+          receipt['trackedInputsMatch'] = all(receipt['roles']['base'][key] == receipt['roles']['head'][key] for key in ('recoverySha256', 'lockSha256', 'carrierSha256'))
+          receipt['binariesMatch'] = receipt['roles']['base']['binarySha256'] == receipt['roles']['head']['binarySha256']
           (evidence/'identity.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PYIDENTITY
       - name: Admit the small carrier before the huge-file matrix
