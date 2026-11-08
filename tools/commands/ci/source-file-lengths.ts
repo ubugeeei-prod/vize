@@ -106,7 +106,7 @@ function trackedPaths(): string[] {
 
 /** Replace comments and literals with spaces while retaining line offsets. */
 function rustCode(source: string): string {
-  const output = [...source];
+  const output = source.split("");
   const blank = (start: number, end: number): void => {
     for (let index = start; index < end; index += 1) {
       if (output[index] !== "\n") output[index] = " ";

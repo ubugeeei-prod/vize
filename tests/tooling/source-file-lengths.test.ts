@@ -153,6 +153,11 @@ test("Rust path overrides fail even behind inactive cfgs while examples remain d
     const toolOverride = runSourceLengthScript(["--check"], cwd);
     assert.equal(toolOverride.status, 1, `${toolOverride.stderr}\n${toolOverride.stdout}`);
     assert.match(toolOverride.stdout, /tools\/commands\/fixtures\/observer\.rs:1: path attribute/);
+
+    fs.writeFileSync(source, 'const ICON: &str = "😀";\n#[path = "parser.rs"]\nmod parser;\n');
+    const unicodePrefix = runSourceLengthScript(["--check"], cwd);
+    assert.equal(unicodePrefix.status, 1, `${unicodePrefix.stderr}\n${unicodePrefix.stdout}`);
+    assert.match(unicodePrefix.stdout, /lib\.rs:2: path attribute/);
   } finally {
     fs.rmSync(cwd, { recursive: true, force: true });
   }
