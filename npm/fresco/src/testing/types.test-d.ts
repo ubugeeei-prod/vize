@@ -94,7 +94,7 @@ const _invalidOutput: number = snapshot.output;
 const _invalidProtocolNode: FrescoRenderNode = { id: 1, nodeType: "grid" };
 
 // @ts-expect-error - role names are closed to the Fresco accessibility contract.
-void getByRole(rendered.root, "dialog");
+void getByRole(rendered.root, "treegrid");
 
 // @ts-expect-error - text matchers are exact strings or regular expressions.
 void getByText(rendered.root, 123);

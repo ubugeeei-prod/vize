@@ -14,6 +14,8 @@ export interface BoxMetrics {
 
 export interface UseBoxMetricsResult extends BoxMetrics {
   hasMeasured: boolean;
+  /** Refresh from the latest completed native layout snapshot. */
+  refresh(): void;
 }
 
 export type MetricTarget = DOMElement;
@@ -27,15 +29,23 @@ function targetId(target: MetricTarget | null | undefined): number | undefined {
 }
 
 export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResult {
-  const metrics = reactive<UseBoxMetricsResult>({
+  const metrics = reactive({
     width: 0,
     height: 0,
     left: 0,
     top: 0,
     hasMeasured: false,
-  });
+  }) as UseBoxMetricsResult;
 
   let timer: ReturnType<typeof setInterval> | null = null;
+
+  const applyLayout = (layout: { width: number; height: number; x: number; y: number }) => {
+    metrics.width = layout.width;
+    metrics.height = layout.height;
+    metrics.left = layout.x;
+    metrics.top = layout.y;
+    metrics.hasMeasured = true;
+  };
 
   const refresh = () => {
     const id = targetId(ref.value);
@@ -48,6 +58,12 @@ export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResul
       return;
     }
 
+    const cachedLayout = getLastRenderLayout(ref.value);
+    if (cachedLayout) {
+      applyLayout(cachedLayout);
+      return;
+    }
+
     void loadNative()
       .then((native) => {
         const layouts = "getLastRenderLayouts" in native ? native.getLastRenderLayouts() : [];
@@ -55,25 +71,14 @@ export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResul
         const layout = layouts.find((item: { id: number }) => item.id === id);
         if (!layout) return;
 
-        metrics.width = layout.width;
-        metrics.height = layout.height;
-        metrics.left = layout.x;
-        metrics.top = layout.y;
-        metrics.hasMeasured = true;
+        applyLayout(layout);
       })
       .catch(() => {});
   };
 
-  onMounted(() => {
-    const layout = getLastRenderLayout(ref.value);
-    if (layout) {
-      metrics.width = layout.width;
-      metrics.height = layout.height;
-      metrics.left = layout.x;
-      metrics.top = layout.y;
-      metrics.hasMeasured = true;
-    }
+  metrics.refresh = refresh;
 
+  onMounted(() => {
     refresh();
     timer = setInterval(refresh, 100);
   });
