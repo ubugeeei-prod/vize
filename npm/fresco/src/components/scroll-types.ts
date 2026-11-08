@@ -46,4 +46,6 @@ export interface ScrollBarProps {
   thumb?: string;
   fg?: string;
   thumbFg?: string;
+  /** Prevent pointer interaction while retaining the visual indicator. */
+  disabled?: boolean;
 }
