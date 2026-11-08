@@ -7,7 +7,7 @@ export const CLASSIFICATION_RUNTIME_ROOT =
   "tests/_fixtures/tooling/typescript-classification-runtime-11664/";
 export const CLASSIFICATION_RUNTIME_ID =
   "typechecker/language-project/classification-runtime-11664";
-const custodyHash = "0032136c61a94f26c192d61799a0f4ae8137d405e0071a39847b05ff71c7d7ab";
+const custodyHash = "2f655a950da7464fc99bc8e2c751f936ba193aeb41325e049eef3112a0f4bf31";
 const predecessorPath =
   "tests/_fixtures/tooling/typescript-classification-successor-11664/custody.json";
 const predecessorHash = "04628e3b129e38c7ee0cc721848a428fa34518993a4646ea7bef806827c68005";
