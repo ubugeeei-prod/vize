@@ -157,9 +157,9 @@ pub fn analyze_sfc_descriptor(
 /// Reuse separately authenticated original template roles for a demanded lint
 /// consumer. Ordinary descriptor callers retain their existing allocation path.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_template_reuse<'a>(
-    scripts: &SfcScriptParses<'a>,
-    template_ast: Option<&RootNode<'a>>,
+pub fn analyze_sfc_descriptor_with_template_reuse(
+    scripts: &SfcScriptParses<'_>,
+    template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
@@ -184,9 +184,9 @@ pub fn analyze_sfc_descriptor_with_template_reuse<'a>(
 
 /// Analyze a lint descriptor from its completed Davinci template artifact.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_lint_template<'a>(
-    scripts: &SfcScriptParses<'a>,
-    template: Option<LintTemplate<'_, 'a>>,
+pub fn analyze_sfc_descriptor_with_lint_template(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> Croquis {
     analyze_sfc_descriptor_resolved_impl::<false>(

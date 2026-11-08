@@ -26,9 +26,9 @@ pub fn analyze_sfc_descriptor_with_occurrences(
 /// Preserve the same occurrence relation while reusing demanded original
 /// grammar owners. The reuse packet cannot seed or replace editor witnesses.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse<'a>(
-    scripts: &SfcScriptParses<'a>,
-    root: Option<&RootNode<'a>>,
+pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
+    scripts: &SfcScriptParses<'_>,
+    root: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
@@ -37,17 +37,17 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse<'a>(
 
 /// Capture authored reads while drawing the completed Davinci artifact.
 #[doc(hidden)]
-pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences<'a>(
-    scripts: &SfcScriptParses<'a>,
-    template: Option<LintTemplate<'_, 'a>>,
+pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None)
 }
 
-fn analyze_sfc_descriptor_with_occurrences_impl<'a>(
-    scripts: &SfcScriptParses<'a>,
-    template: Option<impl DescriptorTemplate<'a>>,
+fn analyze_sfc_descriptor_with_occurrences_impl(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {

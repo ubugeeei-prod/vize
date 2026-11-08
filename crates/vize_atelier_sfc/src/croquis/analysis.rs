@@ -14,15 +14,15 @@ use vize_croquis::Drawer;
 use vize_croquis::binding_occurrences::BindingOccurrences;
 use vize_croquis::drawer::LintTemplate;
 
-pub(super) trait DescriptorTemplate<'a>: Copy {
-    fn source(self) -> &'a str;
+pub(super) trait DescriptorTemplate: Copy {
+    fn source(&self) -> &str;
 
     fn draw(self, drawer: &mut Drawer);
 }
 
-impl<'a> DescriptorTemplate<'a> for &RootNode<'a> {
+impl DescriptorTemplate for &RootNode<'_> {
     #[inline]
-    fn source(self) -> &'a str {
+    fn source(&self) -> &str {
         self.source
     }
 
@@ -32,10 +32,10 @@ impl<'a> DescriptorTemplate<'a> for &RootNode<'a> {
     }
 }
 
-impl<'t, 'a> DescriptorTemplate<'a> for LintTemplate<'t, 'a> {
+impl DescriptorTemplate for LintTemplate<'_, '_> {
     #[inline]
-    fn source(self) -> &'a str {
-        self.source()
+    fn source(&self) -> &str {
+        (*self).source()
     }
 
     #[inline]
@@ -58,9 +58,9 @@ pub(super) struct DescriptorObservation<'a> {
     pub(super) template_semantic_reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 }
 
-pub(super) fn analyze_sfc_descriptor_resolved_impl<'a, const CAPTURE: bool>(
-    scripts: &super::SfcScriptParses<'a>,
-    template: Option<impl DescriptorTemplate<'a>>,
+pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
+    scripts: &super::SfcScriptParses<'_>,
+    template: Option<impl DescriptorTemplate>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
