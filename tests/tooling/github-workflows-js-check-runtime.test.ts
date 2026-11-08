@@ -18,7 +18,11 @@ test("JS check runtime reserves native prerequisites for full qualification", ()
   );
   assert.doesNotMatch(action, /setup-moonbit/);
   assert.match(action, /dtolnay\/rust-toolchain/);
-  assert.match(action, /wild-linker\/action/);
+  assert.ok(actionUses.includes("./.github/actions/setup-wild-http-recovery"));
+  assert.equal(
+    actionUses.filter((uses) => uses === "./.github/actions/setup-wild-http-recovery").length,
+    1,
+  );
   assert.ok(actionUses.includes("./.github/actions/setup-rust-script"));
   assert.match(action, /key:\s*check-js/);
   assert.equal(runtime.inputs.full.default, "false");

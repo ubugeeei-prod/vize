@@ -119,7 +119,9 @@ exit 65
 set -euo pipefail
 printf '%s\\n' "$@" > "$HELPER_LOG"
 if [ "$FIXTURE_DIGEST" = true ]; then
-  exec /bin/bash "$1" "$2" "$3" "$ARCHIVE_DIGEST"
+  if [ "$#" -eq 4 ] && [ "\${1##*/}" = extract-prebuilt.sh ]; then
+    exec /bin/bash "$1" "$2" "$3" "$ARCHIVE_DIGEST"
+  fi
 fi
 exec /bin/bash "$@"
 `,

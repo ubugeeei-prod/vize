@@ -44,6 +44,21 @@ const runtimeStep = {
   name: "Provision the locked Full Rust native runtime",
   run: "node tools/support/compat/github/full-rust-runtime.ts",
 };
+const wildRecovery = "./.github/actions/setup-wild-http-recovery";
+const wildUpstream = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
+
+function restoreBeforeWildRecovery(jobs: Record<string, { steps?: Step[] }>) {
+  let restored = 0;
+  for (const job of Object.values(jobs)) {
+    for (const step of job.steps ?? []) {
+      if (step.uses !== wildRecovery) continue;
+      assert.deepEqual(step.with, { "wild-version": "0.9.0" });
+      step.uses = wildUpstream;
+      restored += 1;
+    }
+  }
+  assert.equal(restored, 5, "the five reviewed Full Rust Wild recovery steps are required");
+}
 
 function restoreBeforeRuntimeProvisioning(job: Job) {
   const matches = job.steps.flatMap((step, index) =>
@@ -254,6 +269,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
     uses: "./.github/workflows/nuxt3-module-build.yml",
   });
   delete original["nuxt-module-qualification"];
+  restoreBeforeWildRecovery(original);
   const workspace = original["full-rust-workspace"];
   // The explicit checkout provider extends both full profiles; verify its
   // complete object and exact position before checking the immutable baseline.
