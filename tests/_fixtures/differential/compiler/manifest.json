@@ -1101,6 +1101,61 @@
       }
     },
     {
+      "id": "compiler/sfc/conditional-macro-props",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "conditional-macro-props",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "6dfe6dffdb3a8b78dd9abd68967f255d2487f9b86a937dfa258b07beda2c9d75",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "conditional-macro-props/module.expected.txt",
+        "sha256": "5b3d60f4ef5ff957a70b2c1fcc8539bcf442cfd667ece75ab0aa9526b8cb22cc",
+        "source": "crates/vize_atelier_sfc/src/compile/tests/define_props_regressions/resolved_macro_prop_shapes.rs:imported_conditional_props_remain_owned_by_typescript"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row pins the conditional defineProps shape accepted by the source compiler regression."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/default-export-statement-boundary-11617",
       "state": "active",
       "targets": [
