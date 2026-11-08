@@ -17,9 +17,7 @@ import {
 } from "./support/lint-preset-source-successors.ts";
 import {
   currentPresetCases,
-  inversePatinaPublicApiDocs,
-  inverseLatestDefaultExpansion,
-  publicApiDocSourcePaths,
+  inversePatinaCurrentSource,
 } from "./support/lint-preset-latest-default-expansion.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -45,8 +43,7 @@ const read = createSourceReader({
   reviewedNextest,
   currentSources,
   presetSuccessors,
-  latestSourceInverse: (name, body) =>
-    inverseLatestDefaultExpansion(name, inversePatinaPublicApiDocs(name, body)),
+  latestSourceInverse: inversePatinaCurrentSource,
 });
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
@@ -136,9 +133,9 @@ function inverseCurrent(row, body) {
 
 void test("current source successors preserve whole histories and reject missing, partial, duplicate and unrelated bytes", () => {
   for (const row of currentSources.sources) {
-    const current = inverseLatestDefaultExpansion(
+    const current = inversePatinaCurrentSource(
       row.path,
-      inversePatinaPublicApiDocs(row.path, fs.readFileSync(path.join(root, row.path))),
+      fs.readFileSync(path.join(root, row.path)),
     );
     identity(inverseCurrentSource(row, current), row.before);
     const hunk = row.hunks.find((hunk) => hunk.after.length > 0);
@@ -177,10 +174,7 @@ void test("current source successors preserve whole histories and reject missing
 void test("the latest general-default expansion has one exact finite inverse", () => {
   for (const row of currentSources.sources) {
     const live = fs.readFileSync(path.join(root, row.path));
-    const predecessor = inverseLatestDefaultExpansion(
-      row.path,
-      inversePatinaPublicApiDocs(row.path, live),
-    );
+    const predecessor = inversePatinaCurrentSource(row.path, live);
     identity(predecessor, row.after);
     if (predecessor.equals(live)) continue;
     for (const changed of [
@@ -189,19 +183,6 @@ void test("the latest general-default expansion has one exact finite inverse", (
       Buffer.concat([Buffer.from("// unrelated\n"), live]),
     ])
       assert.throws(() => identity(inverseLatestDefaultExpansion(row.path, changed), row.after));
-  }
-});
-
-void test("public API docs have one exact finite inverse", () => {
-  for (const name of publicApiDocSourcePaths) {
-    const live = fs.readFileSync(path.join(root, name));
-    inversePatinaPublicApiDocs(name, live);
-    for (const changed of [
-      live.subarray(0, live.length - 1),
-      Buffer.concat([live, Buffer.from("\n")]),
-      Buffer.concat([Buffer.from("// unrelated\n"), live]),
-    ])
-      assert.throws(() => inversePatinaPublicApiDocs(name, changed));
   }
 });
 

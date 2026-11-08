@@ -380,7 +380,6 @@ impl Rule for NoHydrationMismatch {
             return;
         }
 
-        // Check directive expressions
         if let Some(exp) = &directive.exp {
             let content = match exp {
                 ExpressionNode::Simple(s) => s.content,

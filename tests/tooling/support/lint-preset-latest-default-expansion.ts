@@ -91,6 +91,10 @@ export function inversePatinaPublicApiDocs(name: string, body: Buffer): Buffer {
   return predecessor;
 }
 
+export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
+  return inverseLatestDefaultExpansion(name, inversePatinaPublicApiDocs(name, body));
+}
+
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {
     bytes: 12915,
