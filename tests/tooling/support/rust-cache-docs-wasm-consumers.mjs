@@ -7,6 +7,21 @@ import { parse } from "yaml";
 const cacheAction = "./.github/actions/setup-rust-sticky-cache";
 const headCacheAction = "./head/.github/actions/setup-rust-sticky-cache";
 const headScriptAction = "./head/.github/actions/setup-rust-script";
+const qualificationWorkflows = new Set([
+  ".github/workflows/native-sfc-runtime-options.yml",
+  ".github/workflows/plain-script-import-ref.yml",
+]);
+const qualificationActions = new Map([
+  [
+    "./qualification/.github/actions/setup-wild-http-recovery",
+    ".github/actions/setup-wild-http-recovery/action.yml",
+  ],
+  [
+    "./qualification/.github/actions/setup-rust-script",
+    ".github/actions/setup-rust-script/action.yml",
+  ],
+]);
+const performanceRecoveryAction = "./driver/.github/actions/setup-wild-http-recovery";
 const appAction = "./.github/actions/app-e2e-row";
 const appFile = ".github/actions/app-e2e-row/action.yml";
 const docsFile = ".github/workflows/build-docs.yml";
@@ -233,6 +248,13 @@ export function verifyDocsWasmConsumers(root) {
               file === ".github/workflows/level-memory-bench.yml" &&
               job === "memory" &&
               source.has(".github/actions/setup-rust-script/action.yml")) ||
+            (qualificationWorkflows.has(file) &&
+              qualificationActions.has(step.uses) &&
+              source.has(qualificationActions.get(step.uses))) ||
+            (step.uses === performanceRecoveryAction &&
+              file === ".github/workflows/pr-performance-observation.yml" &&
+              job === "observe" &&
+              source.has(".github/actions/setup-wild-http-recovery/action.yml")) ||
             (step.uses.startsWith("./.github/actions/") &&
               path.split("/").every((part) => part && part !== "." && part !== "..") &&
               (source.has(`${path}/action.yml`) || source.has(`${path}/action.yaml`))),

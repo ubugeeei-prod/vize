@@ -266,6 +266,23 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
 });
 
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
+  const recovery = readRepoFile(".github", "actions", "setup-wild-http-recovery", "action.yml");
+  const recoveryAction = parse(recovery) as {
+    inputs: { "wild-version": { default: string } };
+    runs: { steps: Array<{ uses?: string; with?: Record<string, string> }> };
+  };
+  const upstream = recoveryAction.runs.steps.find((step) =>
+    step.uses?.startsWith("wild-linker/action@"),
+  );
+  assert.deepEqual(upstream, {
+    if: "${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5' }}",
+    uses: "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203",
+    with: {
+      "wild-version": "${{ inputs.wild-version }}",
+      "download-retries": "${{ inputs.download-retries }}",
+    },
+  });
+  assert.equal(recoveryAction.inputs["wild-version"].default, "0.9.0");
   for (const relativePath of [
     ".github/workflows/benchmark.yml",
     ".github/workflows/build-docs.yml",
@@ -280,10 +297,10 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     ".github/workflows/full-source-cli.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
-    assert.match(
-      file,
-      /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
-      `${relativePath} should install the pinned Wild linker action`,
+    assert.ok(
+      /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/.test(file) ||
+        /uses:\s*\.\/\.github\/actions\/setup-wild-http-recovery/.test(file),
+      `${relativePath} should install the pinned Wild linker action directly or through recovery`,
     );
     assert.match(file, /wild-version:\s*"0\.9\.0"/);
   }
