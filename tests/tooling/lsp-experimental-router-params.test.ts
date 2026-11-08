@@ -152,8 +152,8 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     : current;
   assert.equal(strictExtraSource.includes(strictExtra.edit.before), false);
   assert.equal(strictExtraSource.split(strictExtra.edit.after).length, 2);
-  assert.equal(current.includes(successor.currentEdit.before), false);
-  assert.equal(current.split(successor.currentEdit.after).length, 2);
+  assert.equal(strictExtraSource.includes(successor.currentEdit.before), false);
+  assert.equal(strictExtraSource.split(successor.currentEdit.after).length, 2);
   return current;
 }
 
