@@ -178,6 +178,7 @@ pub(crate) fn unresolved_property_shape_references(
     missing
 }
 
+/// Resolve an object body while tracking cycles and optionally reporting missing shapes.
 fn resolve_type_to_object_body_inner(
     type_expr: &str,
     interfaces: &FxHashMap<String, String>,
@@ -344,16 +345,19 @@ fn resolve_type_to_object_body_inner(
     resolved
 }
 
+/// Return whether `type_expr` has a top-level conditional-type branch.
 fn is_conditional_type(type_expr: &str) -> bool {
     split_top_level(type_expr, '?').len() == 2
 }
 
+/// Extract the checked type from a top-level `T extends U ? X : Y` expression.
 fn conditional_checked_type(type_expr: &str) -> Option<String> {
     let condition = split_top_level(type_expr, '?');
     let condition = condition.first()?;
     split_top_level_extends(condition).map(|(checked, _)| checked.to_compact_string())
 }
 
+/// Resolve the selected object branch of a supported conditional type.
 fn resolve_conditional_type(
     type_expr: &str,
     checked_override: Option<&str>,
@@ -425,6 +429,7 @@ fn resolve_conditional_type(
     )
 }
 
+/// Split a top-level `extends` condition into its checked and constraint types.
 fn split_top_level_extends(type_expr: &str) -> Option<(&str, &str)> {
     let constraint = heritage_extends_clause(type_expr)?;
     let right_offset = constraint.as_ptr() as usize - type_expr.as_ptr() as usize;
@@ -586,6 +591,7 @@ fn strip_generic_params(name: &str) -> &str {
     name.split_once('<').map_or(name, |(base, _)| base).trim()
 }
 
+/// Return whether `name` is a dotted TypeScript identifier path.
 fn is_type_reference_name(name: &str) -> bool {
     name.split('.').all(|part| {
         let mut characters = part.chars();
