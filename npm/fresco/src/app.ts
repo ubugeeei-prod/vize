@@ -144,7 +144,7 @@ export interface RenderMetrics {
  * Fresco App instance
  */
 export interface App {
-  /** Install a Vue plugin before the first mount. */
+  /** Install a Vue plugin before the first successful mount. */
   use<Options extends unknown[]>(plugin: Plugin<Options>, ...options: Options): App;
   /** Mount the app */
   mount(): Promise<void>;
@@ -423,7 +423,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let rootElement: FrescoElement | null = null;
   let mounted = false;
   let mounting = false;
-  let hasMountedOnce = false;
+  let hasMountedSuccessfully = false;
   let running = false;
   let needsRender = true;
   let appContext: UseAppReturn | null = null;
@@ -455,6 +455,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     mounting = true;
 
     try {
+      // Plugins run before terminal initialization so installation failures
+      // cannot leave raw mode, IME, or cursor state enabled.
+      const app = createVueApp(componentFromRoot(rootComponent));
+      for (const install of pluginInstallers) install(app);
+
       const n = interactive ? await loadNative() : null;
 
       if (n) {
@@ -477,10 +482,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         // Initialize layout engine
         n.initLayout();
       }
-
-      // Create Vue app with custom renderer
-      const app = createVueApp(componentFromRoot(rootComponent));
-      for (const install of pluginInstallers) install(app);
 
       const info = n?.getTerminalInfo() ?? {
         width: streamsContext.stdout.columns ?? 80,
@@ -524,7 +525,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       vueApp = app;
 
       mounted = true;
-      hasMountedOnce = true;
+      hasMountedSuccessfully = true;
       running = true;
       needsRender = true;
 
@@ -536,8 +537,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
-    if (mounting || hasMountedOnce) {
-      throw new Error("Fresco plugins must be installed before the first mount");
+    if (mounting || hasMountedSuccessfully) {
+      throw new Error("Fresco plugins must be installed before the first successful mount");
     }
     pluginInstallers.push((app) => {
       app.use(plugin, ...pluginOptions);

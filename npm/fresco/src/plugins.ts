@@ -18,7 +18,12 @@ export interface FrescoPluginDefinition {
   readonly setup?: (app: VueApp) => void;
 }
 
-/** Define a typed extension provider with an optional fallback value. */
+/**
+ * Define a typed extension provider with an optional fallback value.
+ *
+ * Fallback presence follows argument presence: explicitly passing `undefined`
+ * is a valid fallback for value types that include it.
+ */
 export function defineFrescoProvider<Value>(
   description: string,
   fallback?: Value,

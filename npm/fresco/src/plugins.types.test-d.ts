@@ -1,12 +1,10 @@
 /** Compile-only assertions for the Fresco plugin and provider API. */
 
-import { defineComponent } from "vue";
-
 import { createApp } from "./app.js";
 import { defineFrescoPlugin, defineFrescoProvider } from "./plugins.js";
 
 const density = defineFrescoProvider<"compact" | "comfortable">("density", "comfortable");
-const component = defineComponent({ name: "ExternalComponent", template: "" });
+const component = () => null;
 const plugin = defineFrescoPlugin({
   components: { ExternalComponent: component },
   setup(app) {
