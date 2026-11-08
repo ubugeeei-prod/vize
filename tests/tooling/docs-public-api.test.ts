@@ -75,6 +75,10 @@ const packages = [
     source: new URL("../../npm/builder/turbopack/src/", import.meta.url),
   },
   {
+    name: "vize",
+    source: new URL("../../npm/cli/src/", import.meta.url),
+  },
+  {
     name: "oxlint-plugin-vize",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
