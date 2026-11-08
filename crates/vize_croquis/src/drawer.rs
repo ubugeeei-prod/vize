@@ -23,7 +23,7 @@ mod unused;
 pub use template::{dynamic_component_alias, is_dynamic_component_alias};
 pub use template_references::{
     TemplateReference, TemplateReferenceGap, TemplateReferenceGapKind, TemplateReferenceOwner,
-    TemplateReferences, collect_template_references,
+    TemplateReferences, collect_lint_template_references, collect_template_references,
 };
 
 #[cfg(test)]

@@ -61,7 +61,6 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub l2: &'a crate::markup::L2Template<'a>,
     pub descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
     pub analysis: TemplateAnalysis<'a>,
-    pub template_syntax: Option<&'a vize_armature::parser::TemplateSyntaxFacts<'a>>,
 }
 
 impl<'a> TemplateRuleEnv<'a> {

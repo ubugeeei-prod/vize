@@ -68,6 +68,20 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
         let root = CompatibilityRoot::new(self).build();
         use_root(&root)
     }
+
+    pub(super) fn with_compatibility_syntax<R>(
+        self,
+        use_syntax: impl FnOnce(
+            &RootNode<'a>,
+            &super::template_references::lint_syntax::LintSyntaxFacts<'a>,
+        ) -> R,
+    ) -> R {
+        let projection = CompatibilityRoot::new(self);
+        let root = projection.build();
+        let syntax =
+            super::template_references::lint_syntax::LintSyntaxFacts::collect(&root, &projection);
+        use_syntax(&root, &syntax)
+    }
 }
 
 impl Drawer {
@@ -79,11 +93,12 @@ impl Drawer {
     }
 }
 
-struct CompatibilityRoot<'t, 'a> {
+pub(super) struct CompatibilityRoot<'t, 'a> {
     allocator: &'a Allocator,
     surface: &'t SurfaceTree<'a>,
     expressions: FxHashMap<(u32, u32), ExprRef<'a>>,
     elements: FxHashMap<u32, ElementIdentity<'a>>,
+    legacy_slot_bindings: bool,
 }
 
 impl<'t, 'a> CompatibilityRoot<'t, 'a> {
@@ -99,6 +114,13 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .entry((span.start, span.end))
                 .or_insert(expression);
         }
+        for expression in &template.lowered.consumed_expressions {
+            let expression = *expression;
+            let span = expression.span();
+            expression_index
+                .entry((span.start, span.end))
+                .or_insert(expression);
+        }
         let mut element_index = FxHashMap::default();
         element_index.reserve(elements.len());
         for identity in elements {
@@ -109,12 +131,32 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             surface: template.surface,
             expressions: expression_index,
             elements: element_index,
+            legacy_slot_bindings: template.lowered.caps.scoped_slot_attrs,
+        }
+    }
+
+    pub(super) const fn allocator(&self) -> &'a Allocator {
+        self.allocator
+    }
+
+    pub(super) const fn legacy_slot_bindings(&self) -> bool {
+        self.legacy_slot_bindings
+    }
+
+    pub(super) fn js_expression(
+        &self,
+        span: Span,
+        cooked: &str,
+    ) -> Option<&'a vize_l2::expr::JsExpr<'a>> {
+        match self.expressions.get(&(span.start, span.end)).copied() {
+            Some(ExprRef::Js(expression)) if expression.source == cooked => Some(expression),
+            _ => None,
         }
     }
 
     fn build(&self) -> RootNode<'a> {
         let mut root = RootNode::new(self.allocator, self.surface.source);
-        self.push_children(&mut root.children, &self.surface.children);
+        self.push_children(&mut root.children, &self.surface.children, false);
         root
     }
 
@@ -122,12 +164,14 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         &self,
         output: &mut Vec<'a, TemplateChildNode<'a>>,
         children: &[SurfaceChild<'a>],
+        inherited_frozen: bool,
     ) {
         for child in children {
             let node = match child {
-                SurfaceChild::Element(element) => {
-                    TemplateChildNode::Element(Box::new_in(self.element(element), &self.allocator))
-                }
+                SurfaceChild::Element(element) => TemplateChildNode::Element(Box::new_in(
+                    self.element(element, inherited_frozen),
+                    &self.allocator,
+                )),
                 SurfaceChild::Text(token) => TemplateChildNode::Text(Box::new_in(
                     TextNode::new(token.text, self.token_loc(token)),
                     &self.allocator,
@@ -137,6 +181,23 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                     &self.allocator,
                 )),
                 SurfaceChild::Interpolation(interpolation) => {
+                    if inherited_frozen {
+                        let span = Span::new(
+                            self.offset(interpolation.open.text),
+                            self.offset(interpolation.close.text)
+                                + interpolation.close.text.len() as u32,
+                        );
+                        let content = self
+                            .surface
+                            .source
+                            .get(span.start as usize..span.end as usize)
+                            .unwrap_or_default();
+                        output.push(TemplateChildNode::Text(Box::new_in(
+                            TextNode::new(content, SourceLocation { span }),
+                            &self.allocator,
+                        )));
+                        continue;
+                    }
                     let raw = interpolation.content.text;
                     let trimmed = raw.trim();
                     let leading = raw.len().saturating_sub(raw.trim_start().len()) as u32;
@@ -163,7 +224,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         }
     }
 
-    fn element(&self, surface: &Element<'a>) -> ElementNode<'a> {
+    fn element(&self, surface: &Element<'a>, inherited_frozen: bool) -> ElementNode<'a> {
         let start = self.offset(surface.open.lt_name.text);
         let end = self.offset(surface.open.gt.text) + surface.open.gt.text.len() as u32;
         let authored_tag = surface.tag();
@@ -185,13 +246,19 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         element.is_self_closing =
             surface.open.slash.is_some() || matches!(surface.close, ElementClose::NotExpected);
 
-        let frozen = surface.open.is_verbatim();
+        let frozen = inherited_frozen
+            || surface.open.is_verbatim()
+            || surface
+                .open
+                .attrs
+                .iter()
+                .any(|attribute| attribute.name.text == "v-pre");
         for attribute in &surface.open.attrs {
             if let Some(prop) = self.prop(attribute, frozen) {
                 element.props.push(prop);
             }
         }
-        self.push_children(&mut element.children, &surface.children);
+        self.push_children(&mut element.children, &surface.children, frozen);
         element
     }
 
