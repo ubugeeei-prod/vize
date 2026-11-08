@@ -54,6 +54,7 @@ const DEFAULT_MACRO_ORDER: [&str; 2] = ["defineProps", "defineEmits"];
 pub struct DefineMacrosOrder;
 
 impl DefineMacrosOrder {
+    /// Create a rule that uses the configured compiler-macro ordering.
     pub fn configured(options: vize_l0::config::DefineMacrosOrderOptions) -> impl ScriptRule {
         ConfiguredDefineMacrosOrder(options)
     }

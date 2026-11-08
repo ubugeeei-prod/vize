@@ -55,7 +55,7 @@ jobs:
         with:
           components: clippy
           toolchain: "1.99.1"
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -153,6 +153,12 @@ jobs:
           node tools/support/compat/github/rust-test-cases.ts record
           --label "Affected native Program and Vue navigation"
           --path crates/vize_maestro --outcome "$NAVIGATION_OUTCOME"
+      - name: Document Patina public APIs
+        if: ${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
+        run: >-
+          node tools/support/compat/github/rust-test-cases.ts capture
+          --label "Patina public API documentation" --package vize_patina --
+          cargo rustdoc --locked -p vize_patina --lib -- -D warnings
       - name: Run affected Rust doctests
         if: ${{ matrix.lane == 'clippy' }}
         env: { VIZE_RUST_CASE_LABEL: "Affected Rust doctests" }

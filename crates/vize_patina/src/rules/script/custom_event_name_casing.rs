@@ -70,8 +70,11 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum EventNameCasing {
     #[default]
+    /// Require `camelCase` event names.
     CamelCase,
+    /// Require entirely lowercase event names.
     Lowercase,
+    /// Require `kebab-case` event names.
     KebabCase,
 }
 
@@ -81,6 +84,7 @@ pub struct CustomEventNameCasing {
 }
 
 impl CustomEventNameCasing {
+    /// Create the rule with the required event-name casing.
     pub const fn new(casing: EventNameCasing) -> Self {
         Self { casing }
     }

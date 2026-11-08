@@ -68,18 +68,18 @@ export interface DataGridOptions<Row, Column extends DataGridColumn<Row>> {
   readonly pageSize?: MaybeRefOrGetter<number | undefined>;
   /** Reading direction for horizontal arrow keys. @default "ltr" */
   readonly dir?: MaybeRefOrGetter<"ltr" | "rtl" | undefined>;
-  /** Controlled state slices; `undefined` leaves a slice uncontrolled. */
+  /** Controlled state slices; `undefined` leaves every slice uncontrolled. @default undefined */
   readonly state?: {
     readonly [Key in DataGridStateKey]?: MaybeRefOrGetter<DataGridState[Key] | undefined>;
   };
-  /** Initial uncontrolled state slices. */
+  /** Initial uncontrolled state slices; omitted slices use their built-in empty state. @default undefined */
   readonly defaultState?: MaybeRefOrGetter<Partial<DataGridState> | undefined>;
-  /** Called after any slice changes (controlled or not). */
+  /** Called after any slice changes (controlled or not). @default undefined */
   readonly onStateChange?: <Key extends DataGridStateKey>(
     key: Key,
     value: DataGridState[Key],
   ) => void;
-  /** Called when an edit commits. The grid never mutates rows. */
+  /** Called when an edit commits. The grid never mutates rows. @default undefined */
   readonly onCellEdit?: (event: DataGridCellEditEvent<Row>) => void;
 }
 

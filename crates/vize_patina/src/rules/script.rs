@@ -119,12 +119,16 @@ pub struct ScriptRuleMeta {
 /// Result of linting a script block
 #[derive(Debug, Default)]
 pub struct ScriptLintResult {
+    /// Diagnostics emitted while checking the script block.
     pub diagnostics: Vec<LintDiagnostic>,
+    /// Number of error-severity diagnostics.
     pub error_count: usize,
+    /// Number of warning-severity diagnostics.
     pub warning_count: usize,
 }
 
 impl ScriptLintResult {
+    /// Append a diagnostic and update the severity totals.
     pub fn add_diagnostic(&mut self, diagnostic: LintDiagnostic) {
         match diagnostic.severity {
             Severity::Error => self.error_count += 1,
@@ -133,10 +137,12 @@ impl ScriptLintResult {
         self.diagnostics.push(diagnostic);
     }
 
+    /// Return whether at least one error diagnostic was emitted.
     pub fn has_errors(&self) -> bool {
         self.error_count > 0
     }
 
+    /// Return whether at least one warning diagnostic was emitted.
     pub fn has_warnings(&self) -> bool {
         self.warning_count > 0
     }
@@ -266,6 +272,7 @@ pub trait ScriptRule: Send + Sync {
 /// A configured script rule's independent template capability.
 /// Implementations consume only the parser-owned, bounded lexical packet.
 pub trait ScriptTemplateRule {
+    /// Check template references against bindings from the associated script blocks.
     fn check_template(
         &self,
         references: &vize_croquis::drawer::TemplateReferences,

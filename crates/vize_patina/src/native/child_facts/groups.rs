@@ -24,6 +24,7 @@ impl FactConsumer for HeaderDemand {
     const DEMAND: Demand = Demand::NONE.with(ids::NATIVE_LINT_HEADERS);
 }
 
+/// Fact group containing closed interpolation markers from one direct child.
 pub struct NativeDirectInterpolations;
 impl FactGroup for NativeDirectInterpolations {
     const ID: AnalysisId = ids::NATIVE_DIRECT_INTERPOLATIONS;
@@ -44,6 +45,7 @@ impl WitnessGroup for NativeDirectInterpolations {
     }
 }
 
+/// Fact group containing textarea interpolation counterexamples.
 pub struct NativeTextareaMustache;
 impl FactGroup for NativeTextareaMustache {
     const ID: AnalysisId = ids::NATIVE_TEXTAREA_MUSTACHE;
@@ -90,6 +92,7 @@ impl WitnessGroup for NativeTextareaMustache {
     }
 }
 
+/// Declared fact demand for the `vue/no-textarea-mustache` native query.
 pub struct TextareaMustacheDemand;
 impl FactConsumer for TextareaMustacheDemand {
     const NAME: &'static str = "vue/no-textarea-mustache";

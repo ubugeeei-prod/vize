@@ -72,13 +72,13 @@ export interface FocusOptions {
    */
   readonly autoFocus?: boolean;
 
-  /** Called after focus ownership is acquired. */
+  /** Called after focus ownership is acquired. @default undefined */
   readonly onFocus?: (event: FocusEvent) => void;
 
-  /** Called after focus ownership is released. */
+  /** Called after focus ownership is released. @default undefined */
   readonly onBlur?: (event: FocusEvent) => void;
 
-  /** Called after each distinct focus-state transition. */
+  /** Called after each distinct focus-state transition. @default undefined */
   readonly onFocusChange?: (isFocused: boolean, event: FocusEvent) => void;
 }
 

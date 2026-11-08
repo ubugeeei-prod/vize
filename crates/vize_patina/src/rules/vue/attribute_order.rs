@@ -120,6 +120,7 @@ fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
             || props.get(index + 1).is_some_and(is_attribute_or_binding))
 }
 
+/// Implements the `vue/attribute-order` lint rule.
 pub struct AttributeOrder;
 
 impl Rule for AttributeOrder {

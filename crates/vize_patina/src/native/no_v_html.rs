@@ -11,8 +11,13 @@ use super::{NO_V_HTML_RULE, NativeLintFinding, NativeLintRefusal, header, header
 /// Header syntax and unproven inherited verbatim context remain distinct.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeVHtmlLintError {
+    /// The original element header could not enter the native lint contract.
     Header(NativeLintRefusal),
-    InheritedLiteralContext { span: Span },
+    /// An inherited literal context cannot be authenticated from this element alone.
+    InheritedLiteralContext {
+        /// Opening-tag range whose inherited context is indeterminate.
+        span: Span,
+    },
 }
 
 impl From<NativeLintRefusal> for NativeVHtmlLintError {

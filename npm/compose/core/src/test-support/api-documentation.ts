@@ -1,4 +1,6 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { isAbsolute, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import ts from "typescript";
 
@@ -140,5 +142,67 @@ export function auditSourceDirectory(sourceDirectory: URL): DocumentationAudit {
     totals.optionalMembers += audit.optionalMembers;
     totals.problems.push(...audit.problems);
   }
+  return totals;
+}
+
+function relativeReexports(file: URL, sourceText: string): readonly URL[] {
+  const source = ts.createSourceFile(
+    fileURLToPath(file),
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const reexports: URL[] = [];
+
+  for (const statement of source.statements) {
+    if (!ts.isExportDeclaration(statement) || !statement.moduleSpecifier) continue;
+    if (!ts.isStringLiteral(statement.moduleSpecifier)) continue;
+    const specifier = statement.moduleSpecifier.text;
+    if (!specifier.startsWith(".")) continue;
+
+    const target = new URL(specifier, file);
+    const candidates = specifier.endsWith(".ts")
+      ? [target]
+      : specifier.endsWith(".js")
+        ? [new URL(`${specifier.slice(0, -3)}.ts`, file)]
+        : [new URL(`${specifier}.ts`, file), new URL(`${specifier}/index.ts`, file)];
+    const resolved = candidates.find((candidate) => existsSync(candidate));
+    if (resolved) reexports.push(resolved);
+  }
+
+  return reexports;
+}
+
+/** Audits every TypeScript module reachable through relative public re-exports. */
+export function auditSourceGraph(entrypoints: readonly URL[], sourceRoot: URL): DocumentationAudit {
+  const totals = { declarations: 0, optionalMembers: 0, problems: [] as string[] };
+  const pending = [...entrypoints];
+  const visited = new Set<string>();
+
+  while (pending.length > 0) {
+    const file = pending.pop();
+    if (!file) break;
+    const absolutePath = fileURLToPath(file);
+    if (visited.has(absolutePath)) continue;
+    visited.add(absolutePath);
+
+    const relativePath = relative(fileURLToPath(sourceRoot), absolutePath);
+    if (relativePath === "" || relativePath === ".." || relativePath.startsWith(`..${sep}`)) {
+      throw new Error(`public source graph escaped its source root: ${absolutePath}`);
+    }
+    if (isAbsolute(relativePath)) {
+      throw new Error(`public source graph resolved an absolute relative path: ${absolutePath}`);
+    }
+    const fileName = relativePath.replaceAll(sep, "/");
+    const sourceText = readFileSync(file, "utf8");
+    const audit = auditDocumentation(fileName, sourceText);
+    totals.declarations += audit.declarations;
+    totals.optionalMembers += audit.optionalMembers;
+    totals.problems.push(...audit.problems);
+    pending.push(...relativeReexports(file, sourceText));
+  }
+
+  totals.problems.sort();
   return totals;
 }

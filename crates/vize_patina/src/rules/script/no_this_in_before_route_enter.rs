@@ -27,6 +27,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/no-this-in-before-route-enter` lint rule.
 pub struct NoThisInBeforeRouteEnter;
 
 impl ScriptRule for NoThisInBeforeRouteEnter {
