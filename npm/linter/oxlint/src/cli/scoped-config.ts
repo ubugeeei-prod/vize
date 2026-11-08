@@ -84,8 +84,7 @@ export function validateScopedConfig(
   platform: NodeJS.Platform = process.platform,
 ): void {
   const value = config.value;
-  const hasPortableWindowsRoot =
-    platform === "win32" && path.win32.isAbsolute(config.file) && !hasPathSelection(value);
+  const hasPortableWindowsRoot = platform === "win32" && path.win32.isAbsolute(config.file);
   if (path.parse(config.file).root !== "/" && !hasPortableWindowsRoot)
     throw new Error("Scoped Vue transport cannot preserve non-POSIX filesystem roots.");
   if (
@@ -186,13 +185,15 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
     const outside = [...originalsToCopies].filter(([file]) => !contains(configDir, file));
     const insidePrefix = toCliPath(path.join(root, "inside"));
     const outsidePrefix = toCliPath(path.join(root, "outside"));
+    const configRoot = path.parse(configDir).root;
     const mapPatterns = (value: unknown): string[] => {
       if (!Array.isArray(value) || value.some((item) => typeof item !== "string"))
         throw new Error("Scoped Vue transport requires string-array override patterns.");
       return value.flatMap((pattern: string) => {
         if (pattern.startsWith("!"))
           throw new Error("Scoped Vue transport cannot preserve negated override patterns.");
-        if (path.isAbsolute(pattern)) return [`${literalGlob(outsidePrefix)}${toCliPath(pattern)}`];
+        const absolute = projectAbsoluteOverridePattern(outsidePrefix, pattern, configRoot);
+        if (absolute != null) return absolute;
         const mapped = [`${literalGlob(insidePrefix)}/${pattern}`];
         if (outside.length === 0) return mapped;
         if (pattern === "**/*.vue")
@@ -259,15 +260,6 @@ function isRecord(value: unknown): value is Config {
   return typeof value === "object" && value != null && !Array.isArray(value);
 }
 
-function hasPathSelection(value: Config): boolean {
-  return (
-    (Array.isArray(value.ignorePatterns) && value.ignorePatterns.length > 0) ||
-    value.overrides != null ||
-    (Array.isArray(value.extends) &&
-      value.extends.some((parent) => isRecord(parent) && hasPathSelection(parent)))
-  );
-}
-
 function strings(value: unknown): string[] {
   if (value == null) return [];
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string"))
@@ -286,4 +278,20 @@ export function toCliPath(file: string): string {
 
 export function literalGlob(file: string): string {
   return toCliPath(file).replaceAll(/[\\*?[\]{}]/gu, String.raw`\$&`);
+}
+
+export function projectAbsoluteOverridePattern(
+  outsidePrefix: string,
+  pattern: string,
+  configRoot: string,
+  platform: NodeJS.Platform = process.platform,
+): string[] | undefined {
+  const pathApi = platform === "win32" ? path.win32 : path.posix;
+  if (!pathApi.isAbsolute(pattern)) return undefined;
+  const toPlatformCliPath = (value: string) =>
+    platform === "win32" ? value.replaceAll("\\", "/") : value;
+  const patternRoot = pathApi.parse(pattern).root;
+  if (toPlatformCliPath(patternRoot) !== toPlatformCliPath(configRoot)) return [];
+  const relative = toPlatformCliPath(pattern.slice(patternRoot.length)).replace(/^\/+/, "");
+  return [`${literalGlob(toPlatformCliPath(outsidePrefix))}/${relative}`];
 }
