@@ -341,15 +341,8 @@ fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
 }
 
 fn is_invalid_gap(gap: &str) -> bool {
-    gap.len() > 1
-        && gap
-            .as_bytes()
-            .iter()
-            .all(|byte| matches!(byte, b' ' | b'\t'))
-        && !gap
-            .as_bytes()
-            .iter()
-            .any(|byte| matches!(byte, b'\n' | b'\r'))
+    let bytes = gap.as_bytes();
+    bytes.len() > 1 && bytes.iter().all(|byte| matches!(byte, b' ' | b'\t'))
 }
 
 fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
