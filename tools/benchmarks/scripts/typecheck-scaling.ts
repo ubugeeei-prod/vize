@@ -56,6 +56,7 @@ import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
 import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
 import {
+  ALL_TOOLS,
   NUXT_BUILD,
   NUXT_BUILD_VIZE,
   NUXT_ENV,
@@ -157,6 +158,31 @@ function measure(
 
 type Lane = { cell: Cell; tool: ScalingTool; firstFingerprint: string | null };
 
+type TopologyDiagnostic = {
+  tool: string;
+  fingerprint: string | null;
+  refused: string | null;
+};
+
+/**
+ * Focused server-count comparisons are valid only when every selected lane
+ * succeeds and emits the same complete diagnostic packet.
+ */
+export function topologyDiagnosticRefusal(
+  diagnostics: readonly TopologyDiagnostic[],
+): string | null {
+  const topology = diagnostics.filter((entry) => entry.tool.startsWith("vize-check-servers-"));
+  if (topology.length < 2) return null;
+  const failed = topology.filter((entry) => entry.refused != null || entry.fingerprint == null);
+  if (failed.length > 0) {
+    return `Corsa topology comparison refused: incomplete lanes (${failed.map((entry) => entry.tool).join(", ")})`;
+  }
+  const fingerprints = new Set(topology.map((entry) => entry.fingerprint));
+  return fingerprints.size === 1
+    ? null
+    : "Corsa topology comparison refused: complete diagnostic fingerprints differ";
+}
+
 function runOnce(
   lane: Lane,
   corpus: ScaleProject,
@@ -197,6 +223,37 @@ function runOnce(
       options.timeoutMs,
       options.timed,
       corpus.kind === "nuxt" ? NUXT_ENV : {},
+    );
+    const rawDir = join(options.out, "raw", tag);
+    const phaseTag = phase.replaceAll(" ", "-");
+    mkdirSync(rawDir, { recursive: true });
+    writeFileSync(join(rawDir, `${phaseTag}.stdout`), run.output.stdout);
+    writeFileSync(join(rawDir, `${phaseTag}.stderr`), run.output.stderr);
+    writeFileSync(
+      join(rawDir, `${phaseTag}.json`),
+      `${JSON.stringify(
+        {
+          tool: lane.tool.id,
+          phase,
+          bin,
+          args,
+          cwd,
+          status: run.output.status,
+          wallMs: run.wallMs,
+          cpuMs: run.cpuMs,
+          maxRssKb: run.maxRssKb,
+          timed: options.timed,
+          env: {
+            FORCE_COLOR: "0",
+            NO_COLOR: "1",
+            NODE_OPTIONS,
+            XDG_CACHE_HOME: cacheDir,
+            ...(corpus.kind === "nuxt" ? NUXT_ENV : {}),
+          },
+        },
+        null,
+        1,
+      )}\n`,
     );
     if (format === "build") {
       const assets = join(cwd, ".output", "public", "_nuxt");
@@ -298,8 +355,9 @@ function main(): void {
   if (!Number.isInteger(giantBlocks) || giantBlocks < 0)
     throw new Error("--giant-blocks must be a natural number");
   const tools = values.tools.split(",").map((id) => {
-    const tool = TOOLS.find((candidate) => candidate.id === id);
-    if (!tool) throw new Error(`unknown tool ${id}; known: ${TOOLS.map((t) => t.id).join(", ")}`);
+    const tool = ALL_TOOLS.find((candidate) => candidate.id === id);
+    if (!tool)
+      throw new Error(`unknown tool ${id}; known: ${ALL_TOOLS.map((t) => t.id).join(", ")}`);
     return tool;
   });
   const timed = process.platform === "linux";
@@ -442,6 +500,22 @@ function main(): void {
         save();
       }
       if (!timed) break;
+    }
+    const topologyRefusal = topologyDiagnosticRefusal(
+      lanes.map((lane) => ({
+        tool: lane.tool.id,
+        fingerprint: lane.firstFingerprint,
+        refused: lane.cell.refused,
+      })),
+    );
+    if (topologyRefusal) {
+      for (const lane of lanes.filter((entry) => entry.tool.id.startsWith("vize-check-servers-"))) {
+        lane.cell.refused = lane.cell.refused
+          ? `${lane.cell.refused}\n${topologyRefusal}`
+          : topologyRefusal;
+      }
+      console.error(`::error::${topologyRefusal} on ${label}`);
+      save();
     }
     if (!values.keep) {
       for (const path of [dir, `${dir}-vize`]) rmSync(path, { recursive: true, force: true });

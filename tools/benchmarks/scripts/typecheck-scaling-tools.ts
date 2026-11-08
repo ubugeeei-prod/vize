@@ -47,6 +47,7 @@ import {
 
 export type ToolId =
   | "vize-check"
+  | `vize-check-servers-${1 | 2 | 4 | 8}`
   | "tsc-vize-mapper"
   | "tsrs-fast-vize-mapper"
   | "tsrs-fast-parallel-vize-mapper"
@@ -74,6 +75,17 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "vue-tsc", label: "vue-tsc", vize: false, format: "text" },
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
+
+/** Focused native topology lanes selected explicitly by benchmark dispatches. */
+export const CORSA_TOPOLOGY_TOOLS: readonly ScalingTool[] = [1, 2, 4, 8].map((servers) => ({
+  id: `vize-check-servers-${servers}` as const,
+  label: `vize check (--servers ${servers}, --checkers 1)`,
+  vize: true,
+  format: "json",
+}));
+
+/** Every selectable lane; the default scaling surface remains [`TOOLS`]. */
+export const ALL_TOOLS: readonly ScalingTool[] = [...TOOLS, ...CORSA_TOPOLOGY_TOOLS];
 /** Timed on Nuxt projects only; gated on a built client entry instead of diagnostics. */
 export const NUXT_BUILD_VIZE: ScalingTool = {
   id: "nuxt-build-vize",
@@ -214,6 +226,28 @@ export function invocation(
     stats: !build,
   });
   if (!vueMapper || !vizeMapper) throw new Error("content mapper table changed");
+  if (tool.id.startsWith("vize-check-servers-")) {
+    const servers = tool.id.slice("vize-check-servers-".length);
+    return {
+      bin: env.node,
+      args: [
+        env.vizeCli,
+        "check",
+        "--format",
+        "json",
+        "--quiet",
+        "--tsconfig",
+        join(cwd, "tsconfig.json"),
+        "--corsa-path",
+        env.corsa,
+        "--servers",
+        servers,
+        "--checkers",
+        "1",
+      ],
+      stats: false,
+    };
+  }
   switch (tool.id) {
     case "vize-check":
       return {

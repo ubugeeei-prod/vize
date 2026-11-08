@@ -4,7 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type TestContext, test } from "node:test";
 
-import { parseGnuTime, runOrder } from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
+import {
+  parseGnuTime,
+  runOrder,
+  topologyDiagnosticRefusal,
+} from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
 import type { Plant } from "../../tools/benchmarks/scripts/scale-project-generator.ts";
 import {
   type Diagnostic,
@@ -21,11 +25,73 @@ import {
   performanceTargets,
   renderSummary,
   rowOf,
+  sampleDeviation,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-report.ts";
 import {
   niceCeiling,
   renderScalingSvg,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-svg.ts";
+import {
+  CORSA_TOPOLOGY_TOOLS,
+  invocation,
+} from "../../tools/benchmarks/scripts/typecheck-scaling-tools.ts";
+
+void test("focused Corsa topology lanes pin one checker and the selected server count", () => {
+  assert.deepEqual(
+    CORSA_TOPOLOGY_TOOLS.map((tool) => tool.id),
+    [
+      "vize-check-servers-1",
+      "vize-check-servers-2",
+      "vize-check-servers-4",
+      "vize-check-servers-8",
+    ],
+  );
+  for (const tool of CORSA_TOPOLOGY_TOOLS) {
+    const selected = invocation(
+      tool,
+      {
+        target: "/target",
+        node: "/node",
+        vizeCli: "/vize",
+        corsa: "/corsa",
+        vueTsc: "/vue-tsc",
+        vueDir: "/vue",
+        hosts: {} as never,
+        nuxtModules: null,
+        vizeNuxtDir: null,
+      },
+      "/project",
+      "vue",
+    );
+    assert.deepEqual(selected.args.slice(-4), [
+      "--servers",
+      tool.id.slice("vize-check-servers-".length),
+      "--checkers",
+      "1",
+    ]);
+  }
+});
+
+void test("focused Corsa topology comparisons require every exact diagnostic fingerprint", () => {
+  const exact = CORSA_TOPOLOGY_TOOLS.map((tool) => ({
+    tool: tool.id,
+    fingerprint: "same",
+    refused: null,
+  }));
+  assert.equal(topologyDiagnosticRefusal(exact), null);
+  assert.match(
+    topologyDiagnosticRefusal(
+      exact.map((entry, index) => (index === 2 ? { ...entry, fingerprint: "different" } : entry)),
+    ) ?? "",
+    /fingerprints differ/u,
+  );
+  assert.match(
+    topologyDiagnosticRefusal(
+      exact.map((entry, index) => (index === 1 ? { ...entry, refused: "failed" } : entry)),
+    ) ?? "",
+    /incomplete lanes \(vize-check-servers-2\)/u,
+  );
+});
 
 const diagnostic = (file: string, line: number, code: string, kind = "error"): Diagnostic => [
   file,
@@ -155,6 +221,14 @@ const results = (cells: Cell[]): ScalingResults => ({
   cells,
 });
 
+void test("rows report sample standard deviation beside their medians", () => {
+  assert.equal(sampleDeviation([1, 2, 3]), 1);
+  assert.equal(sampleDeviation([4]), 0);
+  const row = rowOf(cell("vize-check", 1000, 1000, 100_000));
+  assert.equal(row.cpuMs, 1000);
+  assert.equal(row.cpuDeviationMs, 100);
+});
+
 void test("growth flags per-SFC growth and steps, and refused cells never contribute", () => {
   const cells = [
     cell("vue-tsc", 1000, 1000, 100_000),
@@ -180,7 +254,7 @@ void test("growth flags per-SFC growth and steps, and refused cells never contri
   );
   const summary = renderSummary(results(cells));
   assert.match(summary, /## Refused \(1\)/u);
-  assert.match(summary, /\| vize-check \| 20000 \| 15\.00 \| 60\.00 \|/u);
+  assert.match(summary, /\| vize-check \| 20000 \| 15\.00 \| 1\.50 \| 60\.00 \| 6\.00 \|/u);
   assert.match(summary, /\*\*superlinear\*\*: per-SFC CPU ×3\.00 from 1000 to 20000/u);
 });
 
