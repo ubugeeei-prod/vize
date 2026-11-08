@@ -236,6 +236,12 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.deepEqual(selectOwnedWorkloads("giant-2500"), [
     { id: "giant-2500", sfcs: 1, kind: "giant", giantBlocks: 2500 },
   ]);
+  assert.deepEqual(
+    selectOwnedWorkloads(
+      "flat-interpolations-2500,flat-interpolations-10000,flat-interpolations-50000",
+    ).map((row) => row.id),
+    ["flat-interpolations-2500", "flat-interpolations-10000", "flat-interpolations-50000"],
+  );
   assert.throws(() => selectOwnedWorkloads("giant-2500,giant-2500"));
   assert.throws(() => selectOwnedWorkloads("missing"));
   assert.deepEqual(sampleOrder(0), ["base", "head"]);
@@ -256,6 +262,22 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.throws(() => selectPairLanes("missing"));
   assert.equal(requiredSamples(false).filter((phase) => phase.startsWith("warm-")).length, 3);
   assert.equal(requiredSamples(true).filter((phase) => phase.startsWith("warm-")).length, 5);
+});
+
+test("flat interpolation workloads retain every expression and one planted diagnostic", async () => {
+  const { generateFlatInterpolationProject } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
+  const project = generateFlatInterpolationProject(2500);
+  const source = project.files.get("src/App.vue") ?? "";
+  assert.equal(source.match(/\{\{ value \+ \d+ \}\}/gu)?.length, 2500);
+  assert.deepEqual(project.plants, [
+    {
+      kind: "script",
+      file: "src/App.vue",
+      line: 2507,
+      codes: ["TS2322"],
+    },
+  ]);
 });
 
 test("declared project cache cleanup refuses linked dependency stores", async () => {
