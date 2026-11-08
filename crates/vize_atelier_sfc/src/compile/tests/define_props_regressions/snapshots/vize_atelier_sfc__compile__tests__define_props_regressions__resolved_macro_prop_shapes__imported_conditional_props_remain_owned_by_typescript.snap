@@ -10,6 +10,10 @@ import type { Props } from "./handler"
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'Page',
+  props: {
+    title: { type: String, required: true },
+    count: { type: Number, required: true }
+  },
   setup(__props: any) {
 
 const props = __props

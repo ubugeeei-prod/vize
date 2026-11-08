@@ -183,7 +183,7 @@ fn resolve_type_to_object_body_inner(
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
-    missing: &mut impl FnMut(&str),
+    missing: &mut dyn FnMut(&str),
     collect_missing: bool,
 ) -> Option<String> {
     let trimmed = type_expr.trim();
@@ -255,6 +255,22 @@ fn resolve_type_to_object_body_inner(
         return Some(inner.trim().to_compact_string());
     }
 
+    if is_conditional_type(trimmed) {
+        let resolved = resolve_conditional_type(
+            trimmed,
+            None,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        );
+        if resolved.is_none() && collect_missing {
+            missing(trimmed);
+        }
+        return resolved;
+    }
+
     // Resolve supported utility types structurally. When their inner shape is
     // missing, the recursive call already records that authored reference;
     // do not report the built-in wrapper itself as unresolved.
@@ -267,6 +283,38 @@ fn resolve_type_to_object_body_inner(
             missing,
             collect_missing,
         );
+    }
+
+    if let Some((name, args)) = split_generic_call(trimmed)
+        && let Some(alias) = type_aliases.get(name)
+        && is_conditional_type(alias)
+    {
+        let type_args = split_top_level(args, ',');
+        let checked_parameter = conditional_checked_type(alias);
+        if type_args.len() == 1
+            && checked_parameter
+                .as_deref()
+                .is_some_and(is_type_reference_name)
+            && stack.insert(trimmed.to_compact_string())
+        {
+            let resolved = resolve_conditional_type(
+                alias,
+                type_args.first().map(String::as_str),
+                interfaces,
+                type_aliases,
+                stack,
+                missing,
+                collect_missing,
+            );
+            stack.remove(trimmed);
+            if resolved.is_some() {
+                return resolved;
+            }
+        }
+        if collect_missing {
+            missing(trimmed);
+        }
+        return None;
     }
 
     let base_name = strip_generic_params(trimmed);
@@ -296,6 +344,94 @@ fn resolve_type_to_object_body_inner(
     resolved
 }
 
+fn is_conditional_type(type_expr: &str) -> bool {
+    split_top_level(type_expr, '?').len() == 2
+}
+
+fn conditional_checked_type(type_expr: &str) -> Option<String> {
+    let condition = split_top_level(type_expr, '?');
+    let condition = condition.first()?;
+    split_top_level_extends(condition).map(|(checked, _)| checked.to_compact_string())
+}
+
+fn resolve_conditional_type(
+    type_expr: &str,
+    checked_override: Option<&str>,
+    interfaces: &FxHashMap<String, String>,
+    type_aliases: &FxHashMap<String, String>,
+    stack: &mut FxHashSet<String>,
+    missing: &mut dyn FnMut(&str),
+    collect_missing: bool,
+) -> Option<String> {
+    let condition = split_top_level(type_expr, '?');
+    let (checked, constraint) = split_top_level_extends(condition.first()?)?;
+    let branches = split_top_level(condition.get(1)?, ':');
+    if branches.len() != 2 {
+        return None;
+    }
+
+    let checked = checked_override.unwrap_or(checked);
+    let mut ignored_missing = |_: &str| {};
+    let checked_body = resolve_type_to_object_body_inner(
+        checked,
+        interfaces,
+        type_aliases,
+        stack,
+        &mut ignored_missing,
+        false,
+    )?;
+    let mut inferred = FxHashMap::default();
+    let condition_matches = if constraint.trim() == "object" {
+        true
+    } else {
+        let pattern = constraint.trim().strip_prefix('{')?.strip_suffix('}')?;
+        let actual_members = parse_members(&checked_body);
+        let mut matches = true;
+        for expected in parse_members(pattern) {
+            let Some(actual) = actual_members
+                .iter()
+                .find(|member| member.key == expected.key)
+            else {
+                matches = false;
+                break;
+            };
+            if let Some(name) = expected.ty.trim().strip_prefix("infer ") {
+                if !is_type_reference_name(name) {
+                    return None;
+                }
+                inferred.insert(name.to_compact_string(), actual.ty.clone());
+            } else if expected.ty != actual.ty {
+                return None;
+            }
+        }
+        matches
+    };
+
+    let selected = if condition_matches {
+        branches.first()?
+    } else {
+        branches.get(1)?
+    };
+    let selected = inferred
+        .get(selected.trim())
+        .map_or(selected.as_str(), String::as_str);
+    resolve_type_to_object_body_inner(
+        selected,
+        interfaces,
+        type_aliases,
+        stack,
+        missing,
+        collect_missing,
+    )
+}
+
+fn split_top_level_extends(type_expr: &str) -> Option<(&str, &str)> {
+    let constraint = heritage_extends_clause(type_expr)?;
+    let right_offset = constraint.as_ptr() as usize - type_expr.as_ptr() as usize;
+    let left_end = right_offset.checked_sub("extends".len())?;
+    Some((type_expr.get(..left_end)?.trim(), constraint.trim()))
+}
+
 /// Resolve a TS built-in utility type (`Partial`/`Required`/`Readonly`/`Pick`/
 /// `Omit`/`Record`) to an object-literal member body, or `None` when `type_expr`
 /// is not one of those (or its argument can't be resolved structurally).
@@ -304,7 +440,7 @@ fn resolve_utility_type(
     interfaces: &FxHashMap<String, String>,
     type_aliases: &FxHashMap<String, String>,
     stack: &mut FxHashSet<String>,
-    missing: &mut impl FnMut(&str),
+    missing: &mut dyn FnMut(&str),
     collect_missing: bool,
 ) -> Option<String> {
     let (name, args) = split_generic_call(type_expr)?;

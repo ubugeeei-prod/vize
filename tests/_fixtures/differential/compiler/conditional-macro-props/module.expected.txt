@@ -7,6 +7,10 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
 
 export default {
   __name: 'Layout',
+  props: {
+    title: { type: String, required: true },
+    count: { type: Number, required: true }
+  },
   ssrRender: ssrRender,
   setup(__props, { expose: __expose }) {
   __expose();
