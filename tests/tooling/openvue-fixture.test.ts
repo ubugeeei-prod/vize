@@ -62,14 +62,14 @@ test("OpenVue source, license, globs, and App E2E selectors stay pinned together
       `${suite} must hydrate OpenVue`,
     );
   }
-  const rustPlan = fs.readFileSync(
-    path.join(root, "tools/commands/ci/github/app-e2e-plan.rs"),
+  const plannerSource = fs.readFileSync(
+    path.join(root, "tools/support/compat/github/app-e2e-plan.ts"),
     "utf8",
   );
   assert.match(
-    rustPlan,
-    /const CHECK_FIXTURES:[\s\S]*?"nuxt-ui",\s*"openvue",\s*"primevue",/,
-    "the Rust planner used by Actions must hydrate OpenVue",
+    plannerSource,
+    /const checkFixtures = \[[\s\S]*?"nuxt-ui",\s*"openvue",\s*"primevue",/,
+    "the Node planner used by Actions must hydrate OpenVue",
   );
   const scripts = JSON.parse(fs.readFileSync(path.join(root, "tests/package.json"), "utf8"))
     .scripts as Record<string, string>;
