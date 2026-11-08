@@ -48,6 +48,7 @@ import {
 } from "./renderer.js";
 import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
 import { isStaticItemNode, isStaticNode } from "./staticNodes.js";
+import { detectInteractiveMode, initializeTerminal } from "./terminalLifecycle.js";
 
 export type {
   CompositionEvent,
@@ -376,28 +377,12 @@ function updateAppSize(context: UseAppReturn | null, width: number, height: numb
   context.height.value = height;
 }
 
-const CI_ENVIRONMENT_KEYS = ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "RUN_ID"] as const;
-
-function isTruthyEnvironmentValue(value: string | undefined): boolean {
-  if (!value) return false;
-  return !["0", "false", "no"].includes(value.toLowerCase());
-}
-
-function isCiEnvironment(env: NodeJS.ProcessEnv = process.env): boolean {
-  return CI_ENVIRONMENT_KEYS.some((key) => isTruthyEnvironmentValue(env[key]));
-}
-
-function detectInteractiveMode(options: AppOptions): boolean {
-  const stdout = options.stdout ?? process.stdout;
-  return options.interactive ?? (stdout.isTTY === true && !isCiEnvironment());
-}
-
 /**
  * Create a Fresco TUI app
  */
 export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App {
   const { mouse = false, exitOnCtrlC = true, onError } = options;
-  const interactive = detectInteractiveMode(options);
+  const interactive = detectInteractiveMode(options.interactive, options.stdout ?? process.stdout);
   const screenReaderEnabled = ref(
     options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
   );
@@ -462,26 +447,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
       const n = interactive ? await loadNative() : null;
 
-      if (n) {
-        if (typeof n.initTerminalWithOptions === "function") {
-          n.initTerminalWithOptions({
-            alternateScreen: options.alternateScreen === true,
-            bracketedPaste: true,
-            hideCursor: true,
-            mouse,
-            rawMode: true,
-          });
-        } else if (mouse) {
-          n.initTerminalWithMouse();
-        } else {
-          n.initTerminal();
-        }
-
-        n.enableIme?.();
-
-        // Initialize layout engine
-        n.initLayout();
-      }
+      if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
 
       const info = n?.getTerminalInfo() ?? {
         width: streamsContext.stdout.columns ?? 80,
