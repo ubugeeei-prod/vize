@@ -143,13 +143,13 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
     assert.deepEqual(wildRecovery(workflow.jobs[job].steps), [], job);
   }
   const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
-  assert.equal(restorePinnedWildAction(cli.runs.steps), 1);
   assert.deepEqual(
     wildRecovery(cli.runs.steps).map((step) => step.if),
     [
       "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
     ],
   );
+  assert.equal(restorePinnedWildAction(cli.runs.steps), 1);
 });
 
 test("the CLI build script asks only rust-lld release links to fold and pack", () => {

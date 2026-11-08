@@ -15,7 +15,13 @@ import { restorePlaygroundCaseReporting } from "./support/frontend-playground-re
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 import { restorePinnedWildAction } from "./support/github-workflows.ts";
 
-type Step = { name?: string; if?: string; [key: string]: unknown };
+type Step = {
+  name?: string;
+  uses?: string;
+  if?: string;
+  with?: Record<string, unknown>;
+  [key: string]: unknown;
+};
 type Job = { "runs-on"?: string; if?: string; steps?: Step[]; [key: string]: unknown };
 type Workflow = { jobs: Record<string, Job>; [key: string]: unknown };
 const oldRunner = "blacksmith-32vcpu-ubuntu-2404";

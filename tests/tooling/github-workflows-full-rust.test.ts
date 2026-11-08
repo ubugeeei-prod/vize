@@ -322,7 +322,8 @@ void test("full-only extraction preserves all seventeen complete original job ob
     },
     run: 'node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"',
   });
-  const restoredWildSteps = Object.values(original).reduce(
+  const originalJobs = Object.values(original) as Job[];
+  const restoredWildSteps = originalJobs.reduce(
     (count: number, job: Job) => count + restorePinnedWildAction(job.steps ?? []),
     0,
   );
@@ -330,7 +331,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   // #7083 extends the authored allocation gate with its helper-rich witness.
   // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);
-  for (const job of Object.values(original) as Job[]) {
+  for (const job of originalJobs) {
     for (const step of job.steps ?? []) {
       if (step.uses === "./.github/actions/setup-wild-http-recovery")
         step.uses = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
