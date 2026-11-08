@@ -6,7 +6,7 @@
 pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     (
         "script/component-options-name-casing.description",
-        "Enforce PascalCase for the component `name` option",
+        "Enforce PascalCase for registered component names",
         "コンポーネントの `name` オプションに PascalCase を強制する",
         "强制组件的 `name` 选项使用 PascalCase",
     ),

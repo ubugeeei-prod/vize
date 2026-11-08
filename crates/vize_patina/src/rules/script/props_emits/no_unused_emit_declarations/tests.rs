@@ -3,6 +3,7 @@ use crate::rules::script::NoUnusedEmitDeclarations;
 use crate::rules::script::ScriptLinter;
 
 // Template-usage tests (#3209) live in the `template` submodule.
+mod options_api;
 mod template;
 
 fn create_linter() -> ScriptLinter {
@@ -63,14 +64,53 @@ function onClick() {
 }
 
 #[test]
-fn test_unassigned_define_emits_not_tracked() {
-    // Without a binding we cannot track usage, so nothing is reported even
-    // though no emit call exists.
+fn test_unassigned_define_emits_reports_unused_declarations() {
     let source = r#"
 defineEmits(['change', 'update'])
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 2);
+}
+
+#[test]
+fn test_unassigned_define_emits_counts_template_dollar_emit() {
+    let sfc = r#"<script setup lang="ts">
+defineEmits<{ save: []; cancel: [] }>();
+</script>
+<template><button @click="$emit('save')" /></template>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'cancel' event is declared but never emitted."
+    );
+}
+
+#[test]
+fn unassigned_union_call_signature_reports_only_the_unused_event() {
+    let sfc = r#"<script setup lang="ts">
+defineEmits<{ (e: "save" | "cancel" | "delete"): void }>();
+</script>
+<template>
+  <button @click="$emit('save')" />
+  <button @click="$emit('cancel')" />
+</template>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'delete' event is declared but never emitted."
+    );
 }
 
 #[test]
@@ -107,7 +147,7 @@ emit('change')
 }
 
 #[test]
-fn test_emit_passed_to_a_call_uses_every_declared_event() {
+fn test_emit_passed_to_a_call_escapes_analysis() {
     let source = r#"
 import { useClose } from "./use-close";
 const emit = defineEmits<{ close: [] }>();
@@ -118,17 +158,37 @@ const { close } = useClose(emit);
 }
 
 #[test]
-fn test_emit_stored_uses_every_declared_event() {
+fn test_type_cast_emit_argument_does_not_escape_upstream_analysis() {
+    let source = r#"
+const emit = defineEmits<{ close: [] }>()
+useVModel(props, 'modelValue', emit as any)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_emit_stored_does_not_count_as_direct_usage() {
     let source = r#"
 const emit = defineEmits(['close', 'save'])
 const handlers = { emit }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 2);
 }
 
 #[test]
-fn test_emit_returned_uses_every_declared_event() {
+fn test_emit_bind_does_not_count_as_emitting_or_escaping() {
+    let source = r#"
+const emit = defineEmits<{ save: [value: boolean] }>()
+const handlers = { save: emit.bind(null, 'save') }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_emit_returned_does_not_count_as_direct_usage() {
     let source = r#"
 const emit = defineEmits(['close'])
 function use() {
@@ -136,11 +196,11 @@ function use() {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
 }
 
 #[test]
-fn test_sfc_emit_passed_to_a_composable_is_used() {
+fn test_sfc_emit_passed_to_a_composable_escapes_analysis() {
     let sfc = r#"<script setup lang="ts">
 import { useClose } from "./use-close";
 
@@ -153,14 +213,53 @@ const { close } = useClose(emit);
 </template>
 "#;
     let result = lint_sfc(sfc);
-    assert!(
+    assert_eq!(
         result
             .diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule_name != "script/no-unused-emit-declarations"),
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+            .count(),
+        0,
         "{:?}",
         result.diagnostics
     );
+}
+
+#[test]
+fn test_calls_before_define_emits_do_not_count_as_usage() {
+    let source = r#"
+function save() { emit('save') }
+const emit = defineEmits(['save'])
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_type_reference_in_sibling_script_keeps_declaration_span() {
+    let sfc = r#"<script lang="ts">
+export type Events<T> = {
+  'update:modelValue': [value: T]
+  unused: []
+}
+</script>
+<script setup lang="ts" generic="T">
+const emit = defineEmits<Events<T>>()
+emit('update:modelValue', value)
+</script>"#;
+    let result = lint_sfc(sfc);
+    let diagnostics: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "script/no-unused-emit-declarations")
+        .collect();
+    assert_eq!(diagnostics.len(), 1, "{diagnostics:?}");
+    assert_eq!(
+        diagnostics[0].message,
+        "The 'unused' event is declared but never emitted."
+    );
+    let expected = sfc.find("  unused: []").unwrap() as u32 + 2;
+    assert_eq!(diagnostics[0].start, expected);
 }
 
 #[test]

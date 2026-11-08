@@ -44,7 +44,13 @@ fn both_originals_and_subject_controls_preserve_complete_api_and_cli_reports() {
     let mut css_linter = CssLinter::new();
     css_linter.add_rule(Box::new(NoDisplayNone));
     for mut case in corpus.cases {
-        case.expected_cli = crate::current_css_documentation::packet(case.expected_cli);
+        let geometry = if case.id == "utf8-crlf" && case.source.contains(".日本[data-note=\"😀\"]")
+        {
+            crate::current_css_documentation::GeometryProjection::DisplayUtf16
+        } else {
+            crate::current_css_documentation::GeometryProjection::None
+        };
+        case.expected_cli = crate::current_css_documentation::packet(case.expected_cli, geometry);
         let css = case.source.get(case.style_start..case.style_end).unwrap();
         // Empty results must not be an accidental stylesheet-parse fallback.
         let stylesheet = lightningcss::stylesheet::StyleSheet::parse(

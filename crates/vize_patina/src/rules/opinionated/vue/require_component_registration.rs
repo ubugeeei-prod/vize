@@ -54,6 +54,8 @@ use vize_l0::ToCompactString;
 use vize_relief::BindingType;
 use vize_relief::{ElementNode, RootNode};
 
+use super::component_registration::options_api_registers;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/require-component-registration",
     description: "Require explicit import or registration for components",
@@ -246,9 +248,10 @@ impl Rule for RequireComponentRegistration {
                 if art::analysis(ctx).is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
-                }) || async_components
-                    .iter()
-                    .any(|name| component_name_matches(&tag, name))
+                }) || options_api_registers(ctx, &tag)
+                    || async_components
+                        .iter()
+                        .any(|name| component_name_matches(&tag, name))
                     || setup_bindings
                         .iter()
                         .any(|name| component_name_matches(&tag, name))

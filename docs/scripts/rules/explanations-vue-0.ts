@@ -52,10 +52,10 @@ export const vue0Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/html-self-closing",
-    "The empty component uses a closing pair, while void img and br elements omit the configured self-closing spelling.",
-    "The component and void elements use self-closing syntax; a div with content retains its closing tag.",
-    "空のコンポーネントを開始タグと終了タグの組で書き、img と br に設定された自己終了タグの表記を使っていません。",
-    "コンポーネントと void 要素を自己終了タグで書きます。内容がある div は終了タグを残します。",
+    "The empty component and normal div use closing pairs instead of the configured self-closing spelling.",
+    "Empty components and normal elements use self-closing syntax, while void elements omit the slash and an element with content retains its closing tag.",
+    "空のコンポーネントと通常の div を開始タグと終了タグの組で書いており、設定された自己終了タグの表記に合いません。",
+    "空のコンポーネントと通常要素は自己終了タグにし、void 要素はスラッシュを付けません。内容がある要素は終了タグを残します。",
   ],
   [
     "vue/max-template-complexity",

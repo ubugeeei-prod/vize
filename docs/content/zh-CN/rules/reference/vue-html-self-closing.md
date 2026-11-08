@@ -17,11 +17,12 @@ description: "规范自闭合标签风格。"
 
 空组件使用成对的起止标签，而空元素 img 和 br 没有采用配置要求的自闭合写法。
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:3,4"
 <template>
-  <MyComponent></MyComponent>
-  <img>
-  <br>
+  <section>
+    <MyComponent></MyComponent>
+    <div></div>
+  </section>
 </template>
 ```
 
@@ -29,14 +30,15 @@ description: "规范自闭合标签风格。"
 
 组件和空元素使用自闭合语法；包含内容的 div 保留结束标签。
 
-```vue annotate="add:2,3,4,5,6,7"
+```vue annotate="add:3,4,5,6,7"
 <template>
-  <MyComponent />
-  <div></div>
-  <div />
-  <img />
-  <br />
-  <div>content</div>
+  <section>
+    <MyComponent />
+    <div />
+    <img>
+    <br>
+    <div>content</div>
+  </section>
 </template>
 ```
 
@@ -62,4 +64,4 @@ export default defineConfig({}).withVue({
 - [Vue 规则](../vue.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L31)

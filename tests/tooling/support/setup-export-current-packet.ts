@@ -21,8 +21,9 @@ const digest = (value: unknown): string =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 // #19f7ff0de8 added vue/require-expose for an Options API object without
-// expose. Only this all-rules route contains an export-default object.
-// The original 70 packets remain immutable; actual diagnostics are untouched.
+// expose. An invalid export default inside script setup is not a component
+// declaration, so the current packet omits that follow-on warning. The
+// original 70 packets remain immutable; actual diagnostics are untouched.
 export function setupExportCurrentPacket<Route extends { readonly id: string }>(
   entry: { readonly id: string; readonly sourceSha256: string },
   route: Route,

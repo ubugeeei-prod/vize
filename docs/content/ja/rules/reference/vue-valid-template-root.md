@@ -17,17 +17,15 @@ Vue 3 のフラグメントに対応する有効なテンプレートルート�
 
 描画上の役割を与えるディレクティブがない通常の `<template>` を、テンプレートのルートに置いています。
 
-```vue annotate="remove:2"
-<template>
-  <template>content</template>
-</template>
+```vue annotate="remove:1"
+<template></template>
 ```
 
 ## 良い例
 
 描画される `<div>` をルートにします。Vue 3 のフラグメント全般を一つのルートに制限する例ではありません。
 
-```vue annotate="add:2"
+```vue annotate="add:1,2,3"
 <template>
   <div>content</div>
 </template>
@@ -54,4 +52,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L54)

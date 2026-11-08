@@ -1,11 +1,11 @@
 ---
 title: "script/component-options-name-casing"
-description: "Enforce PascalCase for the component `name` option."
+description: "Enforce PascalCase for registered component names."
 ---
 
 # `script/component-options-name-casing`
 
-Enforce PascalCase for the component `name` option.
+Enforce PascalCase for registered component names.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ The component option `name: 'my-component'` is kebab-case, whereas this rule req
 ```vue annotate="remove:3"
 <script lang="ts">
 export default {
-  name: 'my-component' // kebab-case
+  components: { myComponent }
 }
 </script>
 ```
@@ -32,7 +32,7 @@ export default {
 ```vue annotate="add:3"
 <script lang="ts">
 export default {
-  name: 'MyComponent'
+  components: { MyComponent }
 }
 </script>
 ```
@@ -58,4 +58,4 @@ Then run `vp run lint`.
 
 - [Type and script rules](../type-and-script.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L40)

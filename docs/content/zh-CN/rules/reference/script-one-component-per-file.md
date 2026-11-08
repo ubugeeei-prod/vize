@@ -17,14 +17,10 @@ description: "禁止在一个文件中定义多个组件。"
 
 文件导出 `Parent`，又在 `components` 里定义了内联的 `Child`。
 
-```vue annotate="remove:3,4,5,6"
-<script lang="ts">
-export default {
-  name: 'Parent',
-  components: {
-    Child: { name: 'Child' }
-  }
-}
+```vue annotate="remove:1,2,3"
+<script setup lang="ts">
+const First = defineComponent({ name: 'First' })
+const Second = defineComponent({ name: 'Second' })
 </script>
 ```
 
@@ -32,7 +28,7 @@ export default {
 
 文件只定义 `Parent`。
 
-```vue annotate="add:3"
+```vue annotate="add:1,2,3,4"
 <script lang="ts">
 export default {
   name: 'Parent'
@@ -61,4 +57,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L30)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/one_component_per_file.rs#L26)

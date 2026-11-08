@@ -56,7 +56,9 @@
 //! }
 //! ```
 
-use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey};
+use oxc_ast::ast::{
+    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+};
 use oxc_span::GetSpan;
 
 use vize_l0::CompactString;
@@ -118,14 +120,14 @@ enum DefaultKind {
     /// `{}`, `1n`).
     Value(&'static str),
     /// A function (`function () {}` / `() => …`): the factory Vue calls.
-    Function,
+    Function(Option<&'static str>),
 }
 
 /// Validate the `default` of a single object-descriptor prop against its `type`.
 fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintResult) {
     // Only an object descriptor can carry both `type` and `default`. A shorthand
     // value (`name: String`) declares no default, so there is nothing to check.
-    let Expression::ObjectExpression(descriptor) = prop.value else {
+    let Expression::ObjectExpression(descriptor) = prop.value.get_inner_expression() else {
         return;
     };
     let Some(default_value) = descriptor_member(descriptor, "default") else {
@@ -150,7 +152,18 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
     match default_kind {
         // A function default is the factory Vue invokes per instance; accept it
         // for every declared type (its return value is not checked statically).
-        DefaultKind::Function => {}
+        DefaultKind::Function(return_type) => {
+            if type_names.contains(&"Function") || return_type.is_none() {
+                return;
+            }
+            let Some(return_type) = return_type else {
+                return;
+            };
+            if type_names.contains(&return_type) {
+                return;
+            }
+            report(prop.name, default_value, &type_names, true, offset, result);
+        }
         DefaultKind::Value(value_type) => {
             if type_names.contains(&value_type) && !FUNCTION_VALUE_TYPES.contains(&value_type) {
                 // A scalar literal matching a declared scalar type is valid.
@@ -159,14 +172,14 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             // Either a type mismatch, or an `Object`/`Array` literal that must be
             // a factory function. The expected-type wording maps the
             // factory-only types to "function".
-            report(prop.name, default_value, &type_names, offset, result);
+            report(prop.name, default_value, &type_names, false, offset, result);
         }
     }
 }
 
 /// The default value's [`DefaultKind`], or `None` if it cannot be determined.
 fn default_kind(expression: &Expression<'_>) -> Option<DefaultKind> {
-    match expression {
+    match expression.get_inner_expression() {
         Expression::StringLiteral(_) | Expression::TemplateLiteral(_) => {
             Some(DefaultKind::Value("String"))
         }
@@ -175,8 +188,14 @@ fn default_kind(expression: &Expression<'_>) -> Option<DefaultKind> {
         Expression::BigIntLiteral(_) => Some(DefaultKind::Value("BigInt")),
         Expression::ArrayExpression(_) => Some(DefaultKind::Value("Array")),
         Expression::ObjectExpression(_) => Some(DefaultKind::Value("Object")),
-        Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => {
-            Some(DefaultKind::Function)
+        Expression::FunctionExpression(function) => Some(DefaultKind::Function(
+            function
+                .body
+                .as_ref()
+                .and_then(|body| returned_kind(&body.statements)),
+        )),
+        Expression::ArrowFunctionExpression(arrow) => {
+            Some(DefaultKind::Function(returned_kind(&arrow.body.statements)))
         }
         _ => None,
     }
@@ -186,7 +205,7 @@ fn default_kind(expression: &Expression<'_>) -> Option<DefaultKind> {
 /// constructor (`Number`) or the native entries of a `[...]` union
 /// (`[String, Number]`). Non-native and non-identifier entries are dropped.
 fn native_type_names(type_value: &Expression<'_>) -> Vec<&'static str> {
-    match type_value {
+    match type_value.get_inner_expression() {
         Expression::Identifier(identifier) => {
             native_type(identifier.name.as_str()).into_iter().collect()
         }
@@ -194,12 +213,34 @@ fn native_type_names(type_value: &Expression<'_>) -> Vec<&'static str> {
             .elements
             .iter()
             .filter_map(|element| match element.as_expression() {
-                Some(Expression::Identifier(identifier)) => native_type(identifier.name.as_str()),
+                Some(expression) => match expression.get_inner_expression() {
+                    Expression::Identifier(identifier) => native_type(identifier.name.as_str()),
+                    _ => None,
+                },
                 _ => None,
             })
             .collect(),
         _ => Vec::new(),
     }
+}
+
+fn returned_kind(statements: &[Statement<'_>]) -> Option<&'static str> {
+    statements.iter().find_map(|statement| match statement {
+        Statement::ReturnStatement(statement) => {
+            statement
+                .argument
+                .as_ref()
+                .and_then(|value| match default_kind(value) {
+                    Some(DefaultKind::Value(kind)) => Some(kind),
+                    _ => None,
+                })
+        }
+        Statement::ExpressionStatement(statement) => match default_kind(&statement.expression) {
+            Some(DefaultKind::Value(kind)) => Some(kind),
+            _ => None,
+        },
+        _ => None,
+    })
 }
 
 /// The canonical `'static` spelling of a native constructor name, or `None` if
@@ -233,6 +274,7 @@ fn report(
     name: &str,
     default_value: &Expression<'_>,
     type_names: &[&'static str],
+    factory_return: bool,
     offset: usize,
     result: &mut ScriptLintResult,
 ) {
@@ -240,7 +282,7 @@ fn report(
     let start = offset as u32 + span.start;
     let end = offset as u32 + span.end;
 
-    let expected = expected_types(type_names);
+    let expected = expected_types(type_names, factory_return);
 
     let mut message = CompactString::with_capacity(name.len() + expected.len() + 48);
     message.push_str("Type of the default value for '");
@@ -263,10 +305,10 @@ fn report(
 /// The expected-type wording: declared types with the factory-only ones mapped
 /// to `function`, joined with " or " and lowercased (`"string or number"`,
 /// `"function"`).
-fn expected_types(type_names: &[&'static str]) -> CompactString {
+fn expected_types(type_names: &[&'static str], factory_return: bool) -> CompactString {
     let mut seen: Vec<&str> = Vec::with_capacity(type_names.len());
     for name in type_names {
-        let mapped = if FUNCTION_VALUE_TYPES.contains(name) {
+        let mapped = if !factory_return && FUNCTION_VALUE_TYPES.contains(name) {
             "function"
         } else {
             *name

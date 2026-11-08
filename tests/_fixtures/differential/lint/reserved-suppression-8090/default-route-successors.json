@@ -113,6 +113,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control1\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_private'",
@@ -175,7 +185,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control2\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -205,7 +226,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control3\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": []
     },
     {
@@ -218,7 +250,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control4\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": []
     },
     {
@@ -248,7 +291,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control5\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -313,6 +367,16 @@
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control6\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
@@ -395,6 +459,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control7\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_private'",
@@ -475,6 +549,16 @@
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control8\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
@@ -557,6 +641,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control9\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_private'",
@@ -638,6 +732,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control10\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_private'",
@@ -700,7 +804,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control11\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -747,7 +862,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control12\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -812,6 +938,16 @@
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control13\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
@@ -910,6 +1046,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control14\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_shown'",
@@ -988,7 +1134,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control15\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -1018,7 +1175,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control16\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": []
     },
     {
@@ -1048,7 +1216,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control17\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -1114,19 +1293,13 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
-          "rule_name": "script/no-reserved-keys",
+          "rule_name": "vue/multi-word-component-names",
           "severity": "error",
-          "message": "Reserved key '_private'",
-          "start": 124,
-          "end": 132,
-          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
-          "labels": [
-            {
-              "message": "data key starts with reserved '_'",
-              "start": 124,
-              "end": 132
-            }
-          ],
+          "message": "Component name \"Control18\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
           "fix": null
         }
       ],
@@ -1176,7 +1349,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control19\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -1335,6 +1519,16 @@
       ],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control20\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_private'",
@@ -1397,7 +1591,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control21\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -1444,7 +1649,18 @@
       "offDiagnostics": [],
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
-      "essentialDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control22\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        }
+      ],
       "beforeEssentialDiagnostics": [
         {
           "rule_name": "script/no-reserved-keys",
@@ -1526,6 +1742,16 @@
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
         {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control23\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
+        {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",
           "message": "Reserved key '_shown'",
@@ -1605,6 +1831,16 @@
       "incrementalDiagnostics": [],
       "projectionDiagnostics": [],
       "essentialDiagnostics": [
+        {
+          "rule_name": "vue/multi-word-component-names",
+          "severity": "error",
+          "message": "Component name \"Control24\" should be multi-word to avoid conflicts with HTML elements",
+          "start": 0,
+          "end": 0,
+          "help": "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+          "labels": [],
+          "fix": null
+        },
         {
           "rule_name": "script/no-reserved-keys",
           "severity": "error",

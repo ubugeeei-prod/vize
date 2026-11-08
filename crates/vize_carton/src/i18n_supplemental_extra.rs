@@ -26,21 +26,21 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     // vue/v-on-handler-style
     (
         "vue/v-on-handler-style.description",
-        "Enforce writing v-on handlers as a method reference or an inline function",
-        "v-onハンドラをメソッド参照またはインライン関数として記述することを強制する",
-        "强制将v-on处理函数写成方法引用或内联函数",
+        "Enforce writing v-on handlers as method references",
+        "v-onハンドラをメソッド参照として記述することを強制する",
+        "强制将v-on处理函数写成方法引用",
     ),
     (
         "vue/v-on-handler-style.message",
-        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
-        "このv-onハンドラにはインライン文ではなく、メソッド参照またはインライン関数を使用してください",
-        "此v-on处理函数应优先使用方法引用或内联函数，而非内联语句",
+        "Prefer a method reference over an inline function or statement for this v-on handler",
+        "このv-onハンドラにはインライン関数やインライン文ではなく、メソッド参照を使用してください",
+        "此v-on处理函数应优先使用方法引用，而非内联函数或内联语句",
     ),
     (
         "vue/v-on-handler-style.help",
-        "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
-        "ハンドラをインライン文ではなく、メソッド参照（例: @click=\"handler\"）またはインライン関数（例: @click=\"() => count++\"）として記述してください。",
-        "请将处理函数写成方法引用（例如 @click=\"handler\"）或内联函数（例如 @click=\"() => count++\"），而不是内联语句。",
+        "Write the handler as a method reference (e.g. @click=\"handler\") instead of an inline function or statement.",
+        "ハンドラをインライン関数やインライン文ではなく、メソッド参照（例: @click=\"handler\"）として記述してください。",
+        "请将处理函数写成方法引用（例如 @click=\"handler\"），而不是内联函数或内联语句。",
     ),
     // vue/this-in-template
     (
@@ -202,16 +202,22 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "强制 `<template>` 根符合 Vue 3 的片段语义",
     ),
     (
-        "vue/valid-template-root.disallowed_root",
-        "`<{tag}>` cannot be used as a root node of the template",
-        "`<{tag}>` はテンプレートのルートノードとして使用できません",
-        "`<{tag}>` 不能用作模板的根节点",
+        "vue/valid-template-root.no_child",
+        "The template requires child content",
+        "テンプレートには子コンテンツが必要です",
+        "模板需要子内容",
+    ),
+    (
+        "vue/valid-template-root.non_empty_src",
+        "A template with a src attribute must not contain inline content",
+        "src 属性を持つテンプレートにインラインコンテンツを含めることはできません",
+        "带有 src 属性的模板不能包含内联内容",
     ),
     (
         "vue/valid-template-root.help",
-        "Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.",
-        "<template> や <slot> をルートノードとして使わず、内容を実要素（例: <div>）で囲んでください。",
-        "请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。",
+        "Add rendered template content, or keep a template with src empty.",
+        "描画されるテンプレートコンテンツを追加するか、src を持つテンプレートを空にしてください。",
+        "请添加可渲染的模板内容，或保持带有 src 的模板为空。",
     ),
     // vue/no-v-for-template-key-on-child
     (

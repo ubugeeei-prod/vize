@@ -238,6 +238,17 @@ pub struct InterpolationNode<'a> {
 }
 
 impl<'a> InterpolationNode<'a> {
+    /// Construct an interpolation across both ordinary and legacy AST shapes.
+    pub fn new(content: ExpressionNode<'a>, loc: SourceLocation, raw: bool) -> Self {
+        let _ = raw;
+        Self {
+            content,
+            loc,
+            #[cfg(feature = "_legacy")]
+            raw,
+        }
+    }
+
     pub fn node_type(&self) -> NodeType {
         NodeType::Interpolation
     }

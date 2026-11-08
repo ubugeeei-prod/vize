@@ -19,8 +19,8 @@ const help = "Import the component in <script setup> or register it in component
 
 function position(source, offset) {
   const lines = source.slice(0, offset).split("\n");
-  // The published lint JSON uses one-based Unicode scalar columns.
-  return { line: lines.length, column: [...lines.at(-1)].length + 1 };
+  // The published lint JSON uses one-based UTF-16 columns, matching ESLint.
+  return { line: lines.length, column: lines.at(-1).length + 1 };
 }
 
 function expected(source, filename, tags) {

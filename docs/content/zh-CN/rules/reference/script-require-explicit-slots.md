@@ -17,18 +17,20 @@ description: "要求通过 useSlots() 使用的插槽由 defineSlots&lt;...&gt;(
 
 带类型的 `defineProps<{ id: number }>()` 确立了 TypeScript 语法，但 setup 使用 `useSlots()` 而没有 `defineSlots` 声明，因此规则发现缺少显式插槽约定。
 
-```vue annotate="remove:2"
+```vue annotate="remove:2,4,5,6"
 <script setup lang="ts">
-const props = defineProps<{ id: number }>()
-const slots = useSlots()
+defineSlots<{ default(): unknown }>()
 </script>
+<template>
+  <div><slot /><slot name="footer" /></div>
+</template>
 ```
 
 ## 正确示例
 
 `defineSlots` 声明 props 含 `msg: string` 的 `default` 插槽；`useSlots()` 现在配有显式的类型化插槽约定。
 
-```vue annotate="add:2"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -56,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L57)

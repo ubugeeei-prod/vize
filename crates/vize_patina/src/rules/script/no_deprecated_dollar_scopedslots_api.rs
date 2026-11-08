@@ -15,28 +15,19 @@
 //! ### Invalid
 //! ```ts
 //! const header = this.$scopedSlots.header
-//! const footer = ctx.$scopedSlots.footer
 //! render($scopedSlots.default)
 //! ```
 //!
 //! ### Valid
 //! ```ts
 //! const header = this.$slots.header
-//! const footer = ctx.$slots.footer
 //! render($slots.default)
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, ScriptTemplateRule, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{
-    ComputedMemberExpression, Expression, IdentifierReference, Program, StaticMemberExpression,
-};
-use oxc_ast_visit::{
-    Visit,
-    walk::{
-        walk_computed_member_expression, walk_identifier_reference, walk_static_member_expression,
-    },
-};
+use oxc_ast::ast::{Expression, Program, StaticMemberExpression};
+use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
 use oxc_span::Span;
 
 /// The removed Vue 2 instance property this rule reports.
@@ -61,6 +52,11 @@ impl ScriptRule for NoDeprecatedDollarScopedSlotsApi {
         true
     }
 
+    #[inline]
+    fn uses_template_ast(&self) -> bool {
+        true
+    }
+
     fn template_check(&self) -> Option<&dyn ScriptTemplateRule> {
         Some(self)
     }
@@ -73,9 +69,42 @@ impl ScriptRule for NoDeprecatedDollarScopedSlotsApi {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = NoDeprecatedDollarScopedSlotsApiVisitor { offset, result };
-        visitor.visit_program(program);
+        check_script(program, offset, result);
     }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        check_script(program, offset, result);
+        if (sfc.sole_script_block || !sfc.is_script_setup)
+            && sfc.template_root.is_none()
+            && let Some(template) = sfc.template_source
+            && let Some(template_offset) = sfc.template_offset
+        {
+            for span in authored_directive_references(template, SCOPED_SLOTS) {
+                let start = template_offset + span.start;
+                let end = template_offset + span.end;
+                if result.diagnostics.iter().any(|diagnostic| {
+                    diagnostic.rule_name == META.name
+                        && diagnostic.start == start
+                        && diagnostic.end == end
+                }) {
+                    continue;
+                }
+                result.add_diagnostic(scoped_slots_diagnostic(start, end));
+            }
+        }
+    }
+}
+
+fn check_script(program: &Program<'_>, offset: usize, result: &mut ScriptLintResult) {
+    let mut visitor = NoDeprecatedDollarScopedSlotsApiVisitor { offset, result };
+    visitor.visit_program(program);
 }
 
 impl ScriptTemplateRule for NoDeprecatedDollarScopedSlotsApi {
@@ -94,17 +123,16 @@ impl ScriptTemplateRule for NoDeprecatedDollarScopedSlotsApi {
                 continue;
             }
             let span = reference.span;
-            result.add_diagnostic(
-                LintDiagnostic::error(
-                    META.name,
-                    "`$scopedSlots` was removed in Vue 3",
-                    offset + span.start,
-                    offset + span.end,
-                )
-                .with_help(
-                    "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
-                ),
-            );
+            let start = offset + span.start;
+            let end = offset + span.end;
+            if result.diagnostics.iter().any(|diagnostic| {
+                diagnostic.rule_name == META.name
+                    && diagnostic.start == start
+                    && diagnostic.end == end
+            }) {
+                continue;
+            }
+            result.add_diagnostic(scoped_slots_diagnostic(start, end));
         }
     }
 }
@@ -116,36 +144,16 @@ struct NoDeprecatedDollarScopedSlotsApiVisitor<'result> {
 
 impl<'a> Visit<'a> for NoDeprecatedDollarScopedSlotsApiVisitor<'_> {
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
-        // `this.$scopedSlots`, `ctx.$scopedSlots`, etc. Report the whole
-        // member-access span so the fix target covers `<object>.$scopedSlots`.
-        if it.property.name.as_str() == SCOPED_SLOTS {
-            self.push_diagnostic(it.span);
+        if it.property.name.as_str() == SCOPED_SLOTS
+            && matches!(
+                it.object.get_inner_expression(),
+                Expression::ThisExpression(_)
+            )
+        {
+            self.push_diagnostic(it.property.span);
         }
 
         walk_static_member_expression(self, it);
-    }
-
-    fn visit_computed_member_expression(&mut self, it: &ComputedMemberExpression<'a>) {
-        // `this["$scopedSlots"]` and friends: only a string-literal key can name
-        // the removed property statically.
-        if let Expression::StringLiteral(key) = &it.expression
-            && key.value.as_str() == SCOPED_SLOTS
-        {
-            self.push_diagnostic(it.span);
-        }
-
-        walk_computed_member_expression(self, it);
-    }
-
-    fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
-        // A bare `$scopedSlots` reference (e.g. destructured off the instance).
-        // The property of a static member access is an `IdentifierName`, not an
-        // `IdentifierReference`, so this never double-counts `obj.$scopedSlots`.
-        if it.name.as_str() == SCOPED_SLOTS {
-            self.push_diagnostic(it.span);
-        }
-
-        walk_identifier_reference(self, it);
     }
 }
 
@@ -153,23 +161,89 @@ impl NoDeprecatedDollarScopedSlotsApiVisitor<'_> {
     fn push_diagnostic(&mut self, span: Span) {
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
-        self.result.add_diagnostic(
-            LintDiagnostic::error(
-                META.name,
-                "`$scopedSlots` was removed in Vue 3",
-                start,
-                end,
-            )
-            .with_help(
-                "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
-            ),
-        );
+        self.result
+            .add_diagnostic(scoped_slots_diagnostic(start, end));
     }
+}
+
+fn scoped_slots_diagnostic(start: u32, end: u32) -> LintDiagnostic {
+    LintDiagnostic::error(
+        META.name,
+        "`$scopedSlots` was removed in Vue 3",
+        start,
+        end,
+    )
+    .with_help(
+        "Replace `$scopedSlots` with `$slots`. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists.",
+    )
+}
+
+fn authored_directive_references(source: &str, name: &str) -> Vec<Span> {
+    let mut spans = Vec::new();
+    for (start, _) in source.match_indices(name) {
+        let end = start + name.len();
+        let boundary = |byte: u8| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$');
+        if source
+            .as_bytes()
+            .get(start.wrapping_sub(1))
+            .is_some_and(|byte| boundary(*byte))
+            || source
+                .as_bytes()
+                .get(end)
+                .is_some_and(|byte| boundary(*byte))
+        {
+            continue;
+        }
+        let Some(open) = source.get(..start).and_then(|prefix| prefix.rfind('<')) else {
+            continue;
+        };
+        if source
+            .get(open..start)
+            .is_some_and(|prefix| prefix.contains('>'))
+        {
+            continue;
+        }
+        let Some(equals) = source
+            .get(open..start)
+            .and_then(|prefix| prefix.rfind('='))
+            .map(|relative| open + relative)
+        else {
+            continue;
+        };
+        let attribute_start = source
+            .get(open..equals)
+            .and_then(|prefix| prefix.rfind(char::is_whitespace))
+            .map_or(open + 1, |relative| open + relative + 1);
+        let attribute = source.get(attribute_start..equals).unwrap_or_default();
+        if !attribute.starts_with(':')
+            && !attribute.starts_with('@')
+            && !attribute.starts_with('#')
+            && !attribute.starts_with("v-")
+        {
+            continue;
+        }
+        let value_prefix = source
+            .get(equals + 1..start)
+            .unwrap_or_default()
+            .trim_start();
+        let Some(quote @ ('\'' | '"')) = value_prefix.chars().next() else {
+            continue;
+        };
+        if !source
+            .get(start..)
+            .is_some_and(|suffix| suffix.find(quote).is_some())
+        {
+            continue;
+        }
+        spans.push(Span::new(start as u32, end as u32));
+    }
+    spans
 }
 
 #[cfg(test)]
 mod tests {
-    use super::NoDeprecatedDollarScopedSlotsApi;
+    use super::{META, NoDeprecatedDollarScopedSlotsApi};
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -215,13 +289,75 @@ const slots = useSlots()
     }
 
     #[test]
-    fn test_invalid_ctx_scoped_slots() {
-        let result = lint("const footer = ctx.$scopedSlots.footer");
-        assert_eq!(result.error_count, 1);
+    fn test_invalid_template_dollar_scoped_slots() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><slot v-if=\"$scopedSlots.default\" /></template><script>export default {}</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
     }
 
     #[test]
-    fn test_invalid_bare_identifier_reference() {
+    fn test_invalid_template_only_dollar_scoped_slots() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><slot v-if=\"$scopedSlots.default\" /></template>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_template_computed_dollar_scoped_slots() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><slot v-if=\"$scopedSlots['default']\" /></template><script>export default {}</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_scoped_slots_beside_component_registrations_and_slot_names() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                r#"<template>
+  <md-table-thead v-if="$scopedSlots['md-table-row']" />
+  <slot name="md-table-row" />
+</template>
+<script>
+import MdTableThead from './MdTableThead'
+export default { components: { MdTableThead } }
+</script>"#,
+                "MdTable.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_template_dollar_scoped_slots_with_options_mixins() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><Child :render=\"$scopedSlots.default\" /></template><script>export default { mixins: [Locale] }</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_valid_non_instance_scoped_slots_member() {
+        let result = lint("const footer = ctx.$scopedSlots.footer");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bare_identifier_reference() {
         let source = r#"
 const { $scopedSlots } = this
 render($scopedSlots.default)
@@ -230,37 +366,33 @@ render($scopedSlots.default)
         // usage; the destructuring target is a binding identifier, so only the
         // `render(...)` argument is an `IdentifierReference`.
         let result = lint(source);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_computed_string_key() {
+    fn test_valid_computed_string_key() {
         let result = lint(r#"const header = this["$scopedSlots"].header"#);
-        assert_eq!(result.error_count, 1);
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]
-    fn test_invalid_multiple_occurrences() {
+    fn test_only_reports_direct_instance_occurrences() {
         let source = r#"
 const a = this.$scopedSlots.header
 const b = ctx.$scopedSlots.footer
 "#;
         let result = lint(source);
-        assert_eq!(result.error_count, 2);
+        assert_eq!(result.error_count, 1);
     }
 
     #[test]
-    fn test_reports_member_span() {
+    fn test_reports_property_span() {
         let result = lint("const header = this.$scopedSlots.header");
         assert_eq!(result.diagnostics.len(), 1);
         let diag = &result.diagnostics[0];
-        // Span covers `this.$scopedSlots`, not the trailing `.header` access.
-        let start = source_index(
-            "const header = this.$scopedSlots.header",
-            "this.$scopedSlots",
-        );
+        let start = source_index("const header = this.$scopedSlots.header", "$scopedSlots");
         assert_eq!(diag.start, start as u32);
-        assert_eq!(diag.end, (start + "this.$scopedSlots".len()) as u32);
+        assert_eq!(diag.end, (start + "$scopedSlots".len()) as u32);
     }
 
     fn source_index(haystack: &str, needle: &str) -> usize {

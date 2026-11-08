@@ -226,7 +226,15 @@ impl SurfaceError {
     /// Whether semantic analysis can safely continue over the recovered tree.
     #[must_use]
     pub fn has_documented_recovery(self) -> bool {
-        self.code.has_documented_parse_recovery() || self.is_recoverable()
+        self.code.has_documented_parse_recovery()
+            || matches!(
+                self.detail,
+                SurfaceErrorDetail::DuplicateAttribute
+                    | SurfaceErrorDetail::MissingDirectiveName
+                    | SurfaceErrorDetail::AdoptionAgency
+                    | SurfaceErrorDetail::IgnoredRepeatedForm
+                    | SurfaceErrorDetail::FosterParenting
+            )
     }
 }
 
@@ -280,4 +288,32 @@ fn recovery_message(code: ErrorCode) -> Option<CompactString> {
         _ => return None,
     }
     .to_compact_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Span, SurfaceError};
+
+    #[test]
+    fn structural_recoveries_keep_semantic_analysis_available() {
+        let span = Span::new(4, 8);
+        let recoveries = [
+            SurfaceError::duplicate_attribute(span),
+            SurfaceError::missing_directive_name(span),
+            SurfaceError::adoption_agency(span),
+            SurfaceError::ignored_repeated_form(span),
+            SurfaceError::foster_parenting(span),
+        ];
+
+        assert!(
+            recoveries
+                .into_iter()
+                .all(SurfaceError::has_documented_recovery)
+        );
+    }
+
+    #[test]
+    fn exhausted_nesting_remains_fatal_for_semantic_analysis() {
+        assert!(!SurfaceError::nesting_too_deep(Span::new(4, 8)).has_documented_recovery());
+    }
 }

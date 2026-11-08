@@ -93,12 +93,6 @@
       "source": "<script lang=\"ts\">export default defineComponent({ props: { \"onUpdate:modelValue\": defineListenerProp<(value: string) => void>() } })</script>\n<template><div/></template>",
       "diagnostics": [
         {
-          "rule": "script/require-default-prop",
-          "severity": "error",
-          "start": 60,
-          "end": 128
-        },
-        {
           "rule": "vue/prop-name-casing",
           "severity": "warning",
           "start": 60,

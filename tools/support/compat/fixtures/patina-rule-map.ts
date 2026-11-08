@@ -69,6 +69,10 @@ const intentionalDivergenceOverrides = new Map([
     "vue/no-unused-properties",
     "Patina intentionally checks defineProps declarations only; eslint-plugin-vue also checks Options API props, so the surfaces are not comparable.",
   ],
+  [
+    "vue/v-on-handler-style",
+    "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
+  ],
 ]);
 
 function loadUpstream(): { ruleIds: string[]; version: string } {

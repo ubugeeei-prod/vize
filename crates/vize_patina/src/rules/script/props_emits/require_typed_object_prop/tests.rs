@@ -1,3 +1,4 @@
+use crate::linter::Linter;
 use crate::rules::script::RequireTypedObjectProp;
 use crate::rules::script::ScriptLinter;
 
@@ -63,13 +64,24 @@ const props = defineProps({
 }
 
 #[test]
-fn test_valid_array_of_constructors() {
-    // `[Object, Array]` is a union of accepted constructors, not a bare typeless
-    // `Object`/`Array`; left alone (matches vue/require-typed-object-prop).
+fn test_invalid_array_of_constructors() {
+    // Each Object/Array branch still needs a PropType cast.
     let source = r#"
 const props = defineProps({
   foo: [Object, Array],
   bar: { type: [String, Object] }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 3);
+}
+
+#[test]
+fn test_valid_array_of_typed_constructors() {
+    let source = r#"
+const props = defineProps({
+  foo: [Object as PropType<Foo>, Array as PropType<Bar[]>],
+  bar: { type: [String, Object as PropType<Baz>] }
 })
 "#;
     let result = create_linter().lint(source, 0);
@@ -212,6 +224,21 @@ export default defineComponent({
 }
 
 #[test]
+fn test_invalid_local_define_component() {
+    let source = r#"
+const Item = defineComponent({
+  props: {
+    value: { type: Object },
+    rows: Array,
+  },
+})
+export default Item
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn test_invalid_mixed_counts() {
     let source = r#"
 const props = defineProps({
@@ -232,4 +259,23 @@ fn test_offset_applied() {
     assert_eq!(result.warning_count, 1);
     let object_start = source.find("Object").unwrap() as u32 + 100;
     assert_eq!(result.diagnostics[0].start, object_start);
+}
+
+#[test]
+fn test_sfc_rule_runs_only_for_plain_typescript() {
+    let lint = |lang: &str| {
+        Linter::new()
+            .with_enabled_rules(Some(vec!["script/require-typed-object-prop".into()]))
+            .lint_sfc(
+                &format!(
+                    "<script setup{lang}>defineProps({{ value: {{ type: Object }} }})</script>"
+                ),
+                "Probe.vue",
+            )
+    };
+
+    assert_eq!(lint(" lang=\"ts\"").warning_count, 1);
+    assert_eq!(lint("").warning_count, 0);
+    assert_eq!(lint(" lang=\"js\"").warning_count, 0);
+    assert_eq!(lint(" lang=\"tsx\"").warning_count, 0);
 }

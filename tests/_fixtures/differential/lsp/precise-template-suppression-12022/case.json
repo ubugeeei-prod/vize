@@ -18,7 +18,7 @@
     {
       "source": "App.vue.txt",
       "runtimePath": "App.vue",
-      "sha256": "0ff6e146159dfb8877a12e42ad1cc63d7160221add033b76142e3969003faed2"
+      "sha256": "17ad62b1f961cfe700a7558b07e75cd095b9b6a348674c5dda138218559be070"
     },
     {
       "source": "vize.config.json",
@@ -32,14 +32,14 @@
     "params": {
       "range": {
         "start": { "line": 2, "character": 2 },
-        "end": { "line": 2, "character": 23 }
+        "end": { "line": 2, "character": 25 }
       },
       "context": {
         "diagnostics": [
           {
             "range": {
               "start": { "line": 2, "character": 2 },
-              "end": { "line": 2, "character": 23 }
+              "end": { "line": 2, "character": 25 }
             },
             "severity": 2,
             "code": "vue/html-self-closing",
@@ -47,7 +47,7 @@
               "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
             },
             "source": "vize/lint",
-            "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+            "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
           }
         ]
       }
@@ -55,6 +55,6 @@
   },
   "expected": {
     "source": "response.expected.json",
-    "sha256": "6f5424a6e5a217bab1ac68c2ffeed73c9a4c22dd51e9b68d42658896a9d3dba1"
+    "sha256": "f9a139699961e83ecb2d864266bec7632649cfd81cbaab13b573805cc78f332a"
   }
 }

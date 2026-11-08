@@ -7,6 +7,6 @@ console.log(text);
 </script>
 
 <template>
-  <img src="/logo.png" alt="" />
+  <img src="/logo.png" alt="">
   <span>{{ count }}</span>
 </template>

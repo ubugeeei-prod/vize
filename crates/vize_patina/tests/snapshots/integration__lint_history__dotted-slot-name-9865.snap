@@ -13,22 +13,48 @@ Case {
         "3",
     ),
     vapor: None,
-    diagnostics: 0,
+    diagnostics: 1,
     fixes: 0,
 }
 Observation {
     initial: LintResult {
         filename: "App.vue",
-        diagnostics: [],
-        error_count: 0,
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-slot",
+                severity: Error,
+                message: "v-slot with a slot argument does not support modifiers by default",
+                start: 166,
+                end: 170,
+                help: Some(
+                    "Remove the modifiers or enable allowModifiers",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
         warning_count: 0,
     },
     applications: [],
     unchanged_requery: Some(
         LintResult {
             filename: "App.vue",
-            diagnostics: [],
-            error_count: 0,
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-slot",
+                    severity: Error,
+                    message: "v-slot with a slot argument does not support modifiers by default",
+                    start: 166,
+                    end: 170,
+                    help: Some(
+                        "Remove the modifiers or enable allowModifiers",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
             warning_count: 0,
         },
     ),

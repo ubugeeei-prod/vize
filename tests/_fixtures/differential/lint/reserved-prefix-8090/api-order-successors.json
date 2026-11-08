@@ -74,8 +74,8 @@
     "productionChanged": false
   },
   "summary": {
-    "coreDiagnosticCount": 211,
-    "bareDiagnosticCount": 11,
+    "coreDiagnosticCount": 214,
+    "bareDiagnosticCount": 12,
     "diagnosticMetadataChanges": 0
   },
   "coreCases": [
@@ -3293,6 +3293,26 @@
             }
           ],
           "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_private\" is not in camelCase",
+          "start": 139,
+          "end": 155,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_$data\" is not in camelCase",
+          "start": 157,
+          "end": 171,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
+          "fix": null
         }
       ]
     },
@@ -3465,22 +3485,6 @@
           "fix": null
         },
         {
-          "rule_name": "script/no-reserved-keys",
-          "severity": "error",
-          "message": "Reserved key '$props'",
-          "start": 67,
-          "end": 75,
-          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
-          "labels": [
-            {
-              "message": "props key starts with reserved '$'",
-              "start": 67,
-              "end": 75
-            }
-          ],
-          "fix": null
-        },
-        {
           "rule_name": "script/no-reserved-props",
           "severity": "error",
           "message": "Prop name '$data' is reserved.",
@@ -3492,6 +3496,22 @@
               "message": "reserved prop name",
               "start": 45,
               "end": 57
+            }
+          ],
+          "fix": null
+        },
+        {
+          "rule_name": "script/no-reserved-keys",
+          "severity": "error",
+          "message": "Reserved key '$props'",
+          "start": 67,
+          "end": 75,
+          "help": "Vue exposes built-in instance properties (`$el`, `$data`, `$emit`, ...) and reserves names starting with `$` or `_`; rename this member so it is not shadowed by a framework internal.",
+          "labels": [
+            {
+              "message": "props key starts with reserved '$'",
+              "start": 67,
+              "end": 75
             }
           ],
           "fix": null
@@ -3526,6 +3546,16 @@
               "end": 102
             }
           ],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_hidden\" is not in camelCase",
+          "start": 112,
+          "end": 129,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
           "fix": null
         }
       ]
@@ -3727,6 +3757,16 @@
               "end": 51
             }
           ],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/prop-name-casing",
+          "severity": "warning",
+          "message": "Prop \"_custom\" is not in camelCase",
+          "start": 61,
+          "end": 76,
+          "help": "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+          "labels": [],
           "fix": null
         },
         {

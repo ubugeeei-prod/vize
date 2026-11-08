@@ -56,8 +56,8 @@ use oxc_span::GetSpan;
 
 use vize_l0::CompactString;
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
+use super::props_source::{PropDescriptor, collect_all_runtime_props};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -89,11 +89,28 @@ impl ScriptRule for RequireTypedObjectProp {
         // Array-form props (`['foo']` / `defineProps(['foo'])`) declare only a
         // name and carry no runtime type, so there is nothing to inspect here;
         // a missing type is `script/require-prop-types`' concern.
-        for source in collect_runtime_props(program) {
+        for source in collect_all_runtime_props(program) {
             for prop in source.object_props() {
                 check_prop(prop, offset, result);
             }
         }
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        // vue/require-typed-object-prop is a TypeScript-only rule. Keep the
+        // direct ScriptLinter entry point useful for focused unit tests, but
+        // do not report JavaScript or TSX SFCs in project linting.
+        if sfc.is_sfc && (!sfc.typescript || sfc.typescript_jsx) {
+            return;
+        }
+        self.check_program(program, source, offset, result);
     }
 }
 
@@ -115,8 +132,9 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
 ///
 /// An `as PropType<...>` cast (a [`TSAsExpression`]) is the fix, so a cast value
 /// is intentionally *not* flagged regardless of what it wraps. Every other
-/// expression — a different constructor, an array of constructors, an imported
-/// type, a validator — carries (or is) a type and is left alone.
+/// expression — a different constructor, an imported type, a validator —
+/// carries (or is) a type and is left alone. Arrays are inspected element by
+/// element because `[String, Object]` still leaves the object branch untyped.
 ///
 /// [`TSAsExpression`]: oxc_ast::ast::Expression::TSAsExpression
 fn check_type_expression(
@@ -125,10 +143,20 @@ fn check_type_expression(
     offset: usize,
     result: &mut ScriptLintResult,
 ) {
-    if let Expression::Identifier(identifier) = type_value
-        && let Some(constructor) = bare_object_or_array(identifier.name.as_str())
-    {
-        report(name, constructor, type_value.span(), offset, result);
+    match type_value {
+        Expression::Identifier(identifier) => {
+            if let Some(constructor) = bare_object_or_array(identifier.name.as_str()) {
+                report(name, constructor, type_value.span(), offset, result);
+            }
+        }
+        Expression::ArrayExpression(array) => {
+            for element in &array.elements {
+                if let Some(element) = element.as_expression() {
+                    check_type_expression(name, element, offset, result);
+                }
+            }
+        }
+        _ => {}
     }
 }
 

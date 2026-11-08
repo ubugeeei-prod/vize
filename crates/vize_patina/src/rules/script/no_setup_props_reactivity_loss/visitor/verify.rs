@@ -72,6 +72,8 @@ impl Visitor<'_> {
                 .or_else(|| self.access_scope(&member.expression)),
             Expression::ChainExpression(chain) => self.access_chain(&chain.expression),
             Expression::CallExpression(call) => self.call_access(call),
+            Expression::AwaitExpression(await_) => self.access_scope(&await_.argument),
+            Expression::ImportExpression(import) => self.access_scope(&import.source),
             Expression::ArrayExpression(array) => array
                 .elements
                 .iter()
@@ -144,9 +146,12 @@ impl Visitor<'_> {
     }
 
     fn access_element(&self, element: &ArrayExpressionElement<'_>) -> Option<bool> {
-        element
-            .as_expression()
-            .and_then(|expr| self.access_scope(expr))
+        match element {
+            ArrayExpressionElement::SpreadElement(spread) => self.access_scope(&spread.argument),
+            _ => element
+                .as_expression()
+                .and_then(|expr| self.access_scope(expr)),
+        }
     }
 
     fn access_property(&self, property: &ObjectPropertyKind<'_>) -> Option<bool> {

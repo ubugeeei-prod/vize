@@ -30,12 +30,11 @@ description: "テンプレートに直接書かれた、国際化の対象とな
 
 翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
 
-```vue annotate="add:2,3,4,5,6"
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
 <div>-</div>
-<div>123</div>
 <button :title="$t('close')">{{ $t('x') }}</button>
 </template>
 ```
@@ -61,4 +60,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L49)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)

@@ -18,17 +18,41 @@ fn create_configured_linter(options: HtmlSelfClosingOptions) -> Linter {
 }
 
 #[test]
-fn test_valid_self_closing_void() {
+fn test_invalid_self_closing_void() {
     let linter = create_linter();
-    let result = linter.lint_template(r#"<img />"#, "test.vue");
-    assert_eq!(result.warning_count, 0);
+    let result = linter.lint_template(r#"<main><img /></main>"#, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 6);
+    assert_eq!(result.diagnostics[0].end, 13);
 }
 
 #[test]
-fn test_invalid_void_not_self_closing() {
+fn test_invalid_self_closing_void_in_sfc() {
+    let source = r#"<template>
+  <view class="card">
+    <div><img :src="imgUrl" alt="" /></div>
+  </view>
+</template>
+<script lang="ts">export default {}</script>
+"#;
+    let result = create_linter().lint_sfc(source, "card.vue");
+    assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+}
+
+#[test]
+fn test_ignores_markup_inside_noscript() {
+    let result = create_linter().lint_sfc(
+        "<template><main><noscript><br /></noscript></main></template>",
+        "home.vue",
+    );
+    assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
+}
+
+#[test]
+fn test_valid_void_not_self_closing() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<img>"#, "test.vue");
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -51,8 +75,52 @@ fn test_valid_kebab_case_vue_builtins_self_closing() {
 #[test]
 fn test_invalid_empty_component() {
     let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<section><MyComponent></MyComponent></section>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 9);
+    assert_eq!(result.diagnostics[0].end, 22);
+}
+
+#[test]
+fn test_invalid_empty_lowercase_single_word_component() {
+    let linter = create_linter();
+    let result = linter.lint_template(r#"<main><cell></cell></main>"#, "test.vue");
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_flags_empty_direct_template_root() {
+    let linter = create_linter();
     let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (0, 13)
+    );
+}
+
+#[test]
+fn test_empty_html_and_whitespace_only_content_use_the_start_tag_range() {
+    let linter = create_linter();
+    let source = "<main><div> \n </div></main>";
+    let result = linter.lint_template(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    let start = source.find("<div>").unwrap() as u32;
+    assert_eq!(result.diagnostics[0].start, start);
+    assert_eq!(result.diagnostics[0].end, start + 5);
+}
+
+#[test]
+fn test_empty_slot_is_an_html_element() {
+    let linter = create_linter();
+    let source = "<main><slot></slot></main>";
+    let result = linter.lint_template(source, "test.vue");
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].start, 6);
+    assert_eq!(result.diagnostics[0].end, 12);
 }
 
 #[test]
@@ -63,10 +131,14 @@ fn test_valid_component_with_content() {
 }
 
 #[test]
-fn test_valid_nuxt_child_builtin() {
+fn test_empty_nuxt_child_builtin_uses_the_component_policy() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<nuxt-child id="index"></nuxt-child>"#, "test.vue");
-    assert_eq!(result.warning_count, 0);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(
+        (result.diagnostics[0].start, result.diagnostics[0].end),
+        (0, 23)
+    );
 }
 
 fn create_nuxt_linter() -> Linter {
@@ -88,14 +160,14 @@ fn test_nuxt_preset_allows_vuetify_tags() {
 #[test]
 fn test_default_still_flags_empty_vuetify_tags() {
     let linter = create_linter();
-    let result = linter.lint_template(r#"<v-btn></v-btn>"#, "test.vue");
+    let result = linter.lint_template(r#"<main><v-btn></v-btn></main>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
 }
 
 #[test]
 fn test_nuxt_preset_still_flags_other_components() {
     let linter = create_nuxt_linter();
-    let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");
+    let result = linter.lint_template(r#"<main><MyComponent></MyComponent></main>"#, "test.vue");
     assert_eq!(result.warning_count, 1);
 }
 
@@ -111,13 +183,33 @@ fn test_configured_option_matches_requested_eslint_vue_shape() {
         math: HtmlSelfClosingStyle::Any,
     });
     let result = linter.lint_template(
-        r#"<img><div /><MyComponent></MyComponent><svg><path></path></svg><math><mi></mi></math>"#,
+        r#"<main><img><div /><MyComponent></MyComponent><svg><path></path></svg><math><mi></mi></math></main>"#,
         "test.vue",
     );
     assert_eq!(result.warning_count, 1);
     assert_eq!(
         result.diagnostics[0].message,
         "Element must not use self-closing syntax"
+    );
+}
+
+#[test]
+fn configured_always_recognizes_authored_void_elements_as_empty() {
+    let linter = create_configured_linter(HtmlSelfClosingOptions {
+        html: HtmlSelfClosingHtmlOptions {
+            void: HtmlSelfClosingStyle::Always,
+            ..HtmlSelfClosingHtmlOptions::default()
+        },
+        ..HtmlSelfClosingOptions::default()
+    });
+    let result = linter.lint_sfc(
+        "<template><img src=\"/logo.png\"></template>",
+        "LogoView.vue",
+    );
+    assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+    assert_eq!(
+        result.diagnostics[0].message,
+        "Void element should be self-closing"
     );
 }
 
@@ -132,7 +224,7 @@ fn test_configured_never_flags_self_closing_components_svg_and_math() {
         math: HtmlSelfClosingStyle::Never,
     });
     let result = linter.lint_template(
-        r#"<MyComponent /><svg><path /></svg><math><mi /></math>"#,
+        r#"<main><MyComponent /><svg><path /></svg><math><mi /></math></main>"#,
         "test.vue",
     );
     assert_eq!(result.warning_count, 3);

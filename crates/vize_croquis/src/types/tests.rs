@@ -31,6 +31,19 @@ fn test_extract_inline_props() {
 }
 
 #[test]
+fn extract_properties_keeps_unannotated_signatures() {
+    let resolver = TypeResolver::new();
+    let props = resolver.extract_properties("{ modelValue; optional? }");
+
+    assert_eq!(props.len(), 2);
+    assert_eq!(props[0].name.as_str(), "modelValue");
+    assert_eq!(props[0].prop_type, None);
+    assert!(!props[0].optional);
+    assert_eq!(props[1].name.as_str(), "optional");
+    assert!(props[1].optional);
+}
+
+#[test]
 fn extract_properties_ignores_leading_comments() {
     let resolver = TypeResolver::new();
     let props = resolver.extract_properties(

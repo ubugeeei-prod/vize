@@ -129,6 +129,122 @@ defineProps<{ msg: string }>();
 }
 
 #[test]
+fn reports_deep_v_model_on_runtime_and_untyped_props() {
+    for sfc in [
+        r#"<script setup>const props = defineProps({ store: Object, storeProp: String })</script>
+<template><draggable v-model="store[storeProp].items" /></template>"#,
+        r#"<script setup lang="ts">defineProps<{ modelValue }>()</script>
+<template><Checkbox v-model="modelValue.repeat" /></template>"#,
+    ] {
+        let result = lint_sfc(sfc);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props")
+                .count(),
+            1,
+            "{sfc}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn reports_deep_v_model_on_multiline_runtime_props() {
+    let sfc = r#"<template>
+  <draggable v-model="store[storeProp].items" />
+</template>
+<script setup>
+const props = defineProps({
+  store: {
+    type: Object,
+    default: null,
+  },
+  storeProp: {
+    type: String,
+    default: '',
+  },
+})
+</script>"#;
+    let result = lint_sfc(sfc);
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props")
+            .count(),
+        1,
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn reports_runtime_prop_v_model_across_table_foster_parenting() {
+    let sfc = r#"<template>
+  <table>
+    <draggable v-model="store[storeProp].items" />
+  </table>
+</template>
+<script setup>
+const props = defineProps({
+  store: Object,
+  storeProp: String,
+})
+</script>"#;
+    let (start, end) = span_for(sfc, "store[storeProp].items");
+    assert_eq!(
+        findings(&lint_sfc(sfc)),
+        vec![(
+            "vue/no-mutating-props",
+            Severity::Error,
+            start,
+            end,
+            "Unexpected mutation of prop 'store[storeProp].items' via v-model",
+        )]
+    );
+}
+
+#[test]
+fn local_v_model_refs_shadow_same_named_runtime_props() {
+    let sfc = r#"<template><ShareModal v-model:embed-options="embedOptions" /></template>
+<script setup>
+const props = defineProps({ embedOptions: Object })
+const embedOptions = useVModel(props, "embedOptions")
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn local_reactive_and_ref_bindings_shadow_runtime_props() {
+    let sfc = r#"<template>
+  <FormControl v-model="condition[1]" />
+  <FormControl v-model="filter.value" />
+  <input v-model="subject" />
+</template>
+<script setup>
+const props = defineProps({ condition: Array, filter: Object, subject: String })
+const condition = reactive(props.condition)
+const filter = reactive(props.filter)
+const subject = ref(props.subject)
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn template_region_disable_suppresses_authored_fallback_reports() {
+    let sfc = r#"<template>
+<!-- eslint-disable vue/no-mutating-props -->
+<MkSwitch v-model="props.modelValue.detailed" />
+</template>
+<script setup>
+const props = defineProps<{ modelValue: { detailed: boolean } }>()
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
 fn shallow_only_reports_direct_template_mutations_but_allows_nested_values() {
     let sfc = r#"<script setup lang="ts">
 const props = defineProps<{ user: { name: string }; count: number }>();

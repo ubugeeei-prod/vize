@@ -17,10 +17,9 @@ Champ d’application : Scripts JS/TS des SFC Vue ; les exemples montrent la for
 
 `this.$scopedSlots`, `ctx.$scopedSlots` et la référence directe `$scopedSlots` utilisent l’API des slots à portée de Vue 2, supprimée dans Vue 3.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 const header = this.$scopedSlots.header
-const footer = ctx.$scopedSlots.footer
 render($scopedSlots.default)
 </script>
 ```
@@ -29,10 +28,9 @@ render($scopedSlots.default)
 
 Remplacer `$scopedSlots` par `$slots` utilise l’API unifiée des slots. L’exemple supprime l’écriture dépréciée sans établir un contexte setup pour les objets récepteurs.
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const header = this.$slots.header
-const footer = ctx.$slots.footer
 render($slots.default)
 </script>
 ```
@@ -58,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de type et de script](../type-and-script.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L45)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L36)
