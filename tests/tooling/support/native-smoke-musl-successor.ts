@@ -25,6 +25,12 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     "      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0\n";
   assert.equal(current.split(recovery).length, 3, "two reviewed Wild recovery adapters");
   let sealed = current.replaceAll(recovery, upstream);
+  const nodeGlibc =
+    "node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node";
+  const rustGlibc =
+    "rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node";
+  assert.equal(sealed.split(nodeGlibc).length, 2, "one stable Node glibc verifier");
+  sealed = sealed.replace(nodeGlibc, rustGlibc);
   for (const [relocated, historicalPath] of relocations) {
     assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
     sealed = sealed.replace(relocated, historicalPath);
