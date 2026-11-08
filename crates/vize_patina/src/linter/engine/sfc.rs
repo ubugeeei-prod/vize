@@ -7,6 +7,7 @@ use super::{
 };
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
+use crate::markup::L2Template;
 use vize_armature::Parser;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
@@ -25,6 +26,7 @@ impl Linter {
                 source: &input.template.content,
                 filename: input.filename,
                 root: input.root,
+                l2: input.l2,
                 env: TemplateRuleEnv {
                     sfc_descriptor: Some(input.descriptor),
                     sfc_scripts: Some(scripts),
@@ -85,12 +87,17 @@ impl Linter {
             .then(|| profiler.global_span("patina.sfc.descriptor.template_lint"));
         let allocator =
             Allocator::with_capacity((template.content.len() * 4).max(self.initial_capacity));
+        let l2 = profile!(
+            "patina.sfc.descriptor.template_l1_parse_lower",
+            L2Template::lower(&allocator, &template.content)
+        );
         let parser = Parser::new(&allocator, &template.content);
-        let (root, parse_errors, template_syntax) = profile!(
+        let (root, _legacy_parse_errors, template_syntax) = profile!(
             "patina.sfc.descriptor.template_parse",
             super::super::script_rules::parse_template_for_script_rules(self, parser)
         );
-        let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
+        let parse_errors = l2.surface_errors();
+        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
         let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
             let reuse = template_syntax.as_ref().and_then(|syntax| {
                 vize_croquis::drawer::collect_template_semantic_reuse(&root, syntax)
@@ -131,7 +138,7 @@ impl Linter {
         };
 
         let mut parse_result =
-            Self::template_parse_lint_result(filename, template.content.len(), &parse_errors);
+            Self::l1_template_parse_lint_result(filename, &template.content, parse_errors);
         offset_result(&mut parse_result, template.loc.start as u32);
         let (lint_result, scripts) = self.lint_sfc_template_root(
             SfcTemplateLintInput {
@@ -139,6 +146,7 @@ impl Linter {
                 template,
                 allocator: &allocator,
                 root: &root,
+                l2: &l2,
                 descriptor,
                 analysis: if has_fatal_parse_errors {
                     TemplateAnalysis::Disabled
