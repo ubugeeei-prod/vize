@@ -25,7 +25,7 @@ const receiptBytes = fs.readFileSync(
 );
 assert.equal(
   createHash("sha256").update(receiptBytes).digest("hex"),
-  "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306",
+  "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e",
 );
 const receipt = JSON.parse(receiptBytes.toString("utf8")) as CanonLeftoversReceipt;
 export const canonLeftovers = receipt.compiledPreamble.edits;
