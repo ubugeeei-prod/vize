@@ -66,8 +66,8 @@
         "sha256": "3a6630dfa7e31f10320eca59637d1deb37ff411bc5a0ad65f2aa853863bebd22"
       },
       "after": {
-        "bytes": 15282,
-        "sha256": "04e7e3cc7c7643f91e525a89f1a63361e9549215cbeb5e86242496a6179af5f5"
+        "bytes": 15444,
+        "sha256": "ffb5a27d12ec122c717677eea313849ca2e09cb1c263954a8557e2eeb85a21c2"
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/language-project-current-20261105/classification-runtime-test.before.ts.gz",
@@ -84,7 +84,7 @@
         },
         {
           "before": "      assert.equal(\n        current.slice(current.indexOf(\"\\njobs:\")),\n        before.slice(before.indexOf(\"\\njobs:\")),\n        \"packed and installed job bodies remain unchanged\",\n      );",
-          "after": "      const originalJobs = before.slice(before.indexOf(\"\\njobs:\"));\n      const expectedJobs =\n        workflow === \".github/workflows/typescript-provider-vsix.yml\"\n          ? originalJobs\n              .replaceAll(\"      - uses: ./.github/actions/setup-rust-script\\n\", \"\")\n              .replaceAll(\n                \"rust-script tools/commands/editors/vscode/package-typescript-provider.rs\",\n                \"node tools/support/editors/typescript-provider/package.ts\",\n              )\n          : originalJobs;\n      assert.equal(\n        current.slice(current.indexOf(\"\\njobs:\")),\n        expectedJobs,\n        \"job bodies only replace the retired provider packager\",\n      );"
+          "after": "      const originalJobs = before.slice(before.indexOf(\"\\njobs:\"));\n      const expectedJobs =\n        workflow === \".github/workflows/typescript-provider-vsix.yml\"\n          ? originalJobs\n              .replace(\n                \"      - uses: ./.github/actions/setup-rust-script\\n      - run: vp install --frozen-lockfile --prefer-offline\",\n                \"      - run: vp install --frozen-lockfile --prefer-offline\",\n              )\n              .replaceAll(\n                \"rust-script tools/commands/editors/vscode/package-typescript-provider.rs\",\n                \"node tools/support/editors/typescript-provider/package.ts\",\n              )\n          : originalJobs;\n      assert.equal(\n        current.slice(current.indexOf(\"\\njobs:\")),\n        expectedJobs,\n        \"job bodies only replace the retired provider packager\",\n      );"
         }
       ]
     }

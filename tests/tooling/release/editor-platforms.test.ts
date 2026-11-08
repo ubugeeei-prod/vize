@@ -142,6 +142,24 @@ test("platform providers install the extension's packager like the universal VSI
   );
 });
 
+test("provider packaging keeps Rust setup for only the universal VSIX", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "typescript-provider-vsix.yml"));
+  type Step = { name?: string; uses?: string; run?: string };
+  const packageSteps = workflow.jobs.package.steps as Step[];
+  const rustScript = (step: Step) => step.uses === "./.github/actions/setup-rust-script";
+  const universal = packageSteps.findIndex(
+    (step) => step.name === "Preserve and qualify the universal metadata-only artifact",
+  );
+  const platform = packageSteps.findIndex(
+    (step) => step.name === "Package each corresponding same-source image",
+  );
+
+  assert.ok(packageSteps.findIndex(rustScript) < universal);
+  assert.ok(universal < platform);
+  assert.match(packageSteps[platform]?.run ?? "", /typescript-provider\/package\.ts/);
+  assert.ok(!workflow.jobs["installed-extension"].steps.some(rustScript));
+});
+
 test("editor publishers outwait registry validation and Open VSX maintenance", () => {
   const release = parse(readRepoFile(".github", "workflows", "release.yml"));
   const waitSeconds = (job: { env: Record<string, string> }) =>
