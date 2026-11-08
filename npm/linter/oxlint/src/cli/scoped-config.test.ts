@@ -97,12 +97,9 @@ void test("path-sensitive import/project and non-POSIX envelopes refuse before t
       message: "Scoped Vue transport cannot preserve non-POSIX filesystem roots.",
     },
   );
-  validateScopedConfig(
-    { file: "C:\\project\\config.json", bytes: "", value: { rules: {} } },
-    [],
-    "win32",
-  );
-  for (const value of [{ ignorePatterns: [] }, { overrides: [] }]) {
+  for (const value of [{ rules: {} }, { ignorePatterns: [] }])
+    validateScopedConfig({ file: "C:\\project\\config.json", bytes: "", value }, [], "win32");
+  for (const value of [{ ignorePatterns: ["dist/**"] }, { overrides: [] }]) {
     assert.throws(
       () =>
         validateScopedConfig({ file: "C:\\project\\config.json", bytes: "", value }, [], "win32"),
