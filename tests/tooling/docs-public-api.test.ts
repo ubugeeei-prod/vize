@@ -59,6 +59,10 @@ const packages = [
     source: new URL("../../npm/linter/eslint/src/", import.meta.url),
   },
   {
+    name: "@vizejs/nuxt-lint-config",
+    source: new URL("../../npm/framework/nuxt-lint-config/src/", import.meta.url),
+  },
+  {
     name: "oxlint-plugin-vize",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
