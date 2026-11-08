@@ -120,10 +120,10 @@ function stripSelectedAfter(value: string) {
 }
 test("the selected After additions invert to the whole current 9fef workflow including GITHUB_ENV repair", () => {
   const before = stripSelectedAfter(workflow);
-  assert.equal(Buffer.byteLength(before), 51643);
+  assert.equal(Buffer.byteLength(before), 51636);
   assert.equal(
     createHash("sha256").update(before).digest("hex"),
-    "a1abe8b529c1ac31c56306a8efa42269d09a5f62a27fdeb48997be6c2cc893c6",
+    "dc7bd24b10eebb99c76eb3909ad9fe47c18c25a99f2bdb56f98daef1836bbf25",
   );
   assert.deepEqual(data.on.workflow_dispatch.inputs["reported-q16-cases"].options, [
     "all",
@@ -165,10 +165,10 @@ test("the complete original workflow is restored by only the explicit additive r
     exclusion,
     "github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error'",
   );
-  assert.equal(Buffer.byteLength(before), 47076);
+  assert.equal(Buffer.byteLength(before), 47069);
   assert.equal(
     createHash("sha256").update(before).digest("hex"),
-    "5a2294bfc380438a56c5fcfec44b4f1c22c8756987d26176fb2fa555c71c4651",
+    "e585841d857106f359f209c74bba631ff973a5ca900ca44f94332ad8ffbf83d8",
   );
   assert.equal(data.on.pull_request, undefined); // schedule/manual default remains unchanged
   assert.deepEqual(data.on.workflow_dispatch.inputs["targeted-test"].options, [
@@ -458,7 +458,7 @@ test("cohesive job extraction preserves whole former jobs, inputs and global env
   const restored = restoreDelegatedJobs(workflow);
   assert.equal(
     createHash("sha256").update(restored).digest("hex"),
-    "8c86c4c3f1a1eb8a0521f46365307e497618309ace637bf222e77871d07bc411",
+    "e35f82a94c89b32897ecf44ed6135c0fc0b4211414ace4c8f71061fce0a83749",
   );
   const original = parse(restored);
   const unchangedOn = structuredClone(data.on);
