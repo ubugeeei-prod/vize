@@ -137,14 +137,18 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
   const workflow = parse(
     readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
   ) as any;
-  const wildRecovery = (steps: Array<{ uses?: string; if?: string }>) =>
-    steps.filter((step) => step.uses === "./.github/actions/setup-wild-http-recovery");
+  const wildSetup = (steps: Array<{ uses?: string; if?: string }>) =>
+    steps.filter(
+      (step) =>
+        step.uses === "./.github/actions/setup-wild-http-recovery" ||
+        step.uses?.startsWith("wild-linker/action@"),
+    );
   for (const job of ["resource", "production-lsp-resource"]) {
-    assert.deepEqual(wildRecovery(workflow.jobs[job].steps), [], job);
+    assert.deepEqual(wildSetup(workflow.jobs[job].steps), [], job);
   }
   const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
   assert.deepEqual(
-    wildRecovery(cli.runs.steps).map((step) => step.if),
+    wildSetup(cli.runs.steps).map((step) => step.if),
     [
       "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
     ],
