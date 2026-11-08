@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, useTemplateRef } from "vue";
 
 import { useBoxMetrics, type MetricTarget } from "../composables/useBoxMetrics.js";
 import { useInput } from "../composables/useInput.js";
@@ -36,10 +36,12 @@ const {
 
 const emit = defineEmits<{
   "update:modelValue": [value: number];
-  change: [value: number];
+  "change": [value: number];
 }>();
 
-const trackRef = ref<MetricTarget | null>(null);
+defineOptions({ name: "FrescoSlider" });
+
+const trackRef = useTemplateRef<MetricTarget>("trackRef");
 const metrics = useBoxMetrics(trackRef);
 const range = computed(() => normalizeSliderRange(min, max, step));
 const value = computed(() => normalizeSliderValue(modelValue, range.value));
@@ -71,6 +73,11 @@ const ariaState = computed(() => ({
   valueNow: value.value,
 }));
 const accessibleLabel = computed(() => `${label}: ${formatValue(value.value)}`);
+const accessibilityProps = computed(() => ({
+  ariaRole: "slider" as const,
+  ariaLabel: accessibleLabel.value,
+  ariaState: ariaState.value,
+}));
 
 function commit(candidate: number): void {
   if (disabled) return;
@@ -137,9 +144,7 @@ useMouse(handleMouse, { isActive });
     :flex-direction="orientation === 'horizontal' ? 'row' : 'column'"
     :width="orientation === 'horizontal' ? cellCount : 1"
     :height="orientation === 'vertical' ? cellCount : 1"
-    aria-role="slider"
-    :aria-label="accessibleLabel"
-    :aria-state="ariaState"
+    v-bind="accessibilityProps"
   >
     <Text
       v-for="cell in cells"
