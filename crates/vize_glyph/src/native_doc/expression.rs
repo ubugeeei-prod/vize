@@ -38,7 +38,7 @@ pub enum ExpressionRefusal {
     },
     /// A decoded span could not be projected back into the authored source.
     Projection {
-        /// Byte offset at which projection failed.
+        /// Authored-file byte offset where the retained expression begins.
         offset: u32,
         /// Original projection error.
         error: SourceError,

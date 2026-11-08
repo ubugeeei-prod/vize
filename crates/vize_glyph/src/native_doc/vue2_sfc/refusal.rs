@@ -21,7 +21,11 @@ pub enum NativeVue2SfcRefusal {
     Descriptor,
     /// The historical component parser recovered input.
     ComponentRecovery {
-        /// Template-relative byte offset of the recovery.
+        /// Byte offset reported by the historical parser.
+        ///
+        /// Recovery errors use template-relative offsets. When an authored
+        /// component is refused without a recovery error, this is the
+        /// component block's authored-file start instead.
         offset: u32,
     },
     /// A text boundary cannot be represented without changing authored bytes.
