@@ -70,6 +70,8 @@ jobs:
           path: qualification
           persist-credentials: false
           sparse-checkout: |
+            .github/actions/setup-rust-script
+            .github/actions/setup-wild-http-recovery
             tools/support/compat/plain-script-import-ref.ts
             tests/_fixtures/differential/compiler/plain-script-import-10903
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
@@ -83,12 +85,12 @@ jobs:
           }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./qualification/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           { key: plain-script-import-ref, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: ./qualification/.github/actions/setup-rust-script
       - name: Build the unchanged baseline native image and real Vite adapter
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
@@ -135,7 +137,7 @@ jobs:
           }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
