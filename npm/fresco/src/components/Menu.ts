@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, type VNode, watch } f
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -78,8 +79,7 @@ export const Menu = defineComponent({
   emits: ["select", "update:focusedIndex"],
   setup(props, { emit }) {
     const highlightedIndex = ref(-1);
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     const syncHighlight = () => {
       const requested = props.focusedIndex;
@@ -129,13 +129,6 @@ export const Menu = defineComponent({
         if (key === "end") setHighlight(lastEnabledIndex(navigableItems));
       },
       onChar: (character) => {
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         setHighlight(
           typeaheadIndex(
             props.items.map((item) => ({
@@ -143,7 +136,7 @@ export const Menu = defineComponent({
               disabled: item.disabled || item.separator,
             })),
             highlightedIndex.value,
-            typeahead,
+            typeahead.push(character),
             (item) => item.label,
           ),
         );

@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -136,8 +137,7 @@ export const Tree = defineComponent({
     });
 
     const highlightedKey = ref<string>();
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     const navigableNodes = computed(() =>
       visibleNodes.value.map(({ node }) => ({ disabled: node.disabled })),
@@ -244,18 +244,11 @@ export const Tree = defineComponent({
           activate();
           return;
         }
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         setHighlight(
           typeaheadIndex(
             visibleNodes.value.map(({ node }) => node),
             highlightedIndex.value,
-            typeahead,
+            typeahead.push(character),
             (node) => node.label,
           ),
         );

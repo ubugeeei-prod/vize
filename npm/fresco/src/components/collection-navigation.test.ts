@@ -3,6 +3,7 @@ import { test } from "vitest";
 
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -31,6 +32,10 @@ test("typeahead starts after the current item and wraps", () => {
     2,
   );
   assert.equal(
+    typeaheadIndex(items, 2, "br", (item) => item.label),
+    2,
+  );
+  assert.equal(
     typeaheadIndex(items, 2, "a", (item) => item.label),
     0,
   );
@@ -38,6 +43,22 @@ test("typeahead starts after the current item and wraps", () => {
     typeaheadIndex(items, 0, "beta", (item) => item.label),
     0,
   );
+});
+
+test("typeahead buffers refinements, cycles repeats, and expires after the timeout", () => {
+  let now = 0;
+  const buffer = createTypeaheadBuffer(700, () => now);
+
+  assert.equal(buffer.push("B"), "b");
+  now = 100;
+  assert.equal(buffer.push("r"), "br");
+  now = 200;
+  buffer.reset();
+  assert.equal(buffer.push("b"), "b");
+  now = 300;
+  assert.equal(buffer.push("b"), "b", "repeated characters cycle rather than refine");
+  now = 1_100;
+  assert.equal(buffer.push("c"), "c");
 });
 
 test("bounded collection windows follow the highlighted item", () => {

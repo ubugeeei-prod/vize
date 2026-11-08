@@ -3,6 +3,38 @@ export interface NavigableCollectionItem {
   readonly disabled?: boolean;
 }
 
+/** Stateful incremental query used by keyboard typeahead interactions. */
+export interface TypeaheadBuffer {
+  /** Add a character and return the normalized query. */
+  push(character: string): string;
+  /** Clear the buffered query before the next character. */
+  reset(): void;
+}
+
+/** Create a typeahead buffer with repeated-character cycling and an idle timeout. */
+export function createTypeaheadBuffer(
+  timeoutMs = 700,
+  now: () => number = Date.now,
+): TypeaheadBuffer {
+  let query = "";
+  let lastInputAt = 0;
+
+  return {
+    push(character) {
+      const inputAt = now();
+      const normalized = character.toLocaleLowerCase();
+      query =
+        inputAt - lastInputAt > timeoutMs || query === normalized ? normalized : query + normalized;
+      lastInputAt = inputAt;
+      return query;
+    },
+    reset() {
+      query = "";
+      lastInputAt = 0;
+    },
+  };
+}
+
 /** Return the first enabled item, or -1 when the collection cannot be focused. */
 export function firstEnabledIndex(items: readonly NavigableCollectionItem[]): number {
   return items.findIndex((item) => !item.disabled);
@@ -47,7 +79,8 @@ export function typeaheadIndex<T extends NavigableCollectionItem>(
   const normalizedQuery = query.trim().toLocaleLowerCase();
   if (!normalizedQuery || items.length === 0) return current;
 
-  for (let distance = 1; distance <= items.length; distance++) {
+  const firstDistance = normalizedQuery.length > 1 && current >= 0 ? 0 : 1;
+  for (let distance = firstDistance; distance < firstDistance + items.length; distance++) {
     const index = (Math.max(current, -1) + distance) % items.length;
     const item = items[index];
     if (!item || item.disabled) continue;
