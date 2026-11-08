@@ -82,7 +82,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
     "tests/_fixtures/_git/{elk,misskey,npmx.dev,nuxt-ui,reka-ui,vuefes-2025}",
     "tests/app/dev/{misskey,nuxt-ui}.spec.ts",
     "tests/app/dev/{misskey-hmr,nuxt-ui-dev-server,nuxt-ui-hmr,source-restore}.ts",
-    "tools/commands/ci/github/app-e2e-*.rs",
+    "tools/support/compat/github/app-e2e-*.ts",
     "tools/support/**",
   ]) {
     assert.match(filters, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
@@ -243,7 +243,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
     { steps: action.runs?.steps },
     "Validate and hydrate planned fixtures",
   );
-  assert.match(hydration.run ?? "", /app-e2e-plan\.rs/);
+  assert.match(hydration.run ?? "", /app-e2e-plan\.ts/);
   assert.match(hydration.run ?? "", /mapfile -t fixture_paths/);
   assert.match(
     hydration.run ?? "",

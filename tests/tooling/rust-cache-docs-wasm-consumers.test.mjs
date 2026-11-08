@@ -226,10 +226,13 @@ void test("actual matrix planner and workflow producers cannot introduce new dyn
     assert.throws(() => verifyDocsWasmConsumers(directory), /matrix producer changed/);
   }
   const directory = fixture(t);
-  const file = join(directory, "tools/commands/ci/github/app-e2e-plan.rs");
+  const file = join(directory, "tools/support/compat/github/app-e2e-plan.ts");
   writeFileSync(
     file,
-    readFileSync(file, "utf8").replace('format!("app-e2e-{prefix}")', 'format!("docs-wasm")'),
+    readFileSync(file, "utf8").replace(
+      "artifactStem: `${profile}-${suite}-${shard}`",
+      'artifactStem: "docs-wasm"',
+    ),
   );
   assert.throws(() => verifyDocsWasmConsumers(directory), /command producer changed/);
 });
@@ -299,7 +302,7 @@ void test("inherited producer environment and defaults cannot redirect the origi
 });
 
 void test("reviewed command source and its ancestors must remain physical", (t) => {
-  for (const file of ["npm/native/scripts/build-ci.mjs", "tools/commands"]) {
+  for (const file of ["npm/native/scripts/build-ci.mjs", "tools/support"]) {
     const directory = fixture(t);
     const path = join(directory, file);
     renameSync(path, path + ".original");

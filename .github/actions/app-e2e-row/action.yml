@@ -38,8 +38,6 @@ runs:
       uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
       with: { toolchain: stable }
 
-    - uses: ./.github/actions/setup-rust-script
-
     - name: Validate and hydrate planned fixtures
       shell: bash
       env:
@@ -54,7 +52,7 @@ runs:
         PLANNED_ARTIFACT_STEM: ${{ inputs.artifact-stem }}
       run: |
         set -euo pipefail
-        planner=(rust-script tools/commands/ci/github/app-e2e-plan.rs --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
+        planner=(node tools/support/compat/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
         test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
         test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
         test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"

@@ -43,8 +43,8 @@ const dynamicPrefixes = new Set([
 // The WASM command was re-reviewed as its TypeScript port and imports (#8840).
 // A changed producer requires review, rather than accepting a new dynamic role.
 const producerHashes = {
-  "tools/commands/ci/github/app-e2e-plan.rs":
-    "6c9bc1bf91bba11efbcede503acf15f8a56082d7f7aea4b970394975c0a0198a",
+  "tools/support/compat/github/app-e2e-plan.ts":
+    "8a31063713e2638d62663dc2f928dc0c478539a8dac46af0716638f26313edc6",
   "tools/support/github/build-vitrine-wasm.ts":
     "1cdcb19eb0e60ad688a965fbdaa2dc7de90f306c910461c25a11f2ad651c61f7",
   "tools/support/tasks/build-vitrine-wasm.ts":
@@ -183,8 +183,8 @@ function verifyRecipes(root, docs, e2e) {
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
   for (const [job, expected] of [
-    ["app-readiness-plan", "444555ebcc09f2eb712adb777a7ce5f81a2638eba470cced5e77fa4945cf3306"],
-    ["app-e2e-plan", "554e3df0e2b4638c138ac1c0f40ede1cade07152872b1705e3269b5ef2826595"],
+    ["app-readiness-plan", "059618ae68bfa26d5796f9ba24980404839e66e6ee863349364fa4a0468c2a4c"],
+    ["app-e2e-plan", "5b6a6f48d4556a291aa3312281d33a883b220332cdbc4fbed5898abd91956e3a"],
   ])
     assert.equal(
       hash(JSON.stringify(job === "app-readiness-plan" ? readiness : e2e.jobs[job])),
