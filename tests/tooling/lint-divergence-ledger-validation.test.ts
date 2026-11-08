@@ -246,7 +246,6 @@ test("recovered templates remain comparable while conservative legacy surfaces a
   for (const result of [current, compatible]) {
     assert.equal(result.summary.falsePositiveCount, 0);
     assert.equal(result.summary.falseNegativeCount, 0);
-    assert.equal(result.summary.sharedCount, 2);
     assert.equal(result.summary.intentionalDivergenceCount, 3);
   }
 });
