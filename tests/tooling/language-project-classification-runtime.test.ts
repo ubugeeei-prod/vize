@@ -162,12 +162,10 @@ test("new helper and input paths select the existing jobs and cannot be removed 
       const originalJobs = before.slice(before.indexOf("\njobs:"));
       const expectedJobs =
         workflow === ".github/workflows/typescript-provider-vsix.yml"
-          ? originalJobs
-              .replaceAll("      - uses: ./.github/actions/setup-rust-script\n", "")
-              .replaceAll(
-                "rust-script tools/commands/editors/vscode/package-typescript-provider.rs",
-                "node tools/support/editors/typescript-provider/package.ts",
-              )
+          ? originalJobs.replaceAll(
+              "rust-script tools/commands/editors/vscode/package-typescript-provider.rs",
+              "node tools/support/editors/typescript-provider/package.ts",
+            )
           : originalJobs;
       assert.equal(
         current.slice(current.indexOf("\njobs:")),
