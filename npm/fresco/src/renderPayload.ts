@@ -11,6 +11,7 @@ import type {
   FrescoJustifyContent,
   FrescoOverflow,
   FrescoPosition,
+  FrescoRawRenderNode,
   FrescoRenderNode,
   FrescoRenderStyle,
   FrescoRootRenderNode,
@@ -108,6 +109,12 @@ function numberValue(value: unknown): number | undefined {
 
 function booleanValue(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
+}
+
+function stringLines(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const lines = value.filter((line): line is string => typeof line === "string");
+  return lines.length > 0 ? lines : undefined;
 }
 
 function enabledValue(value: unknown): true | undefined {
@@ -238,6 +245,13 @@ export function frescoNodeToRenderNode(node: FrescoNode): FrescoRenderNode {
       renderNode.wrap = wrappingEnabled(node.props.wrap, mode);
       if (mode) renderNode.wrapMode = mode;
     }
+    return renderNode;
+  }
+
+  if (node.type === "raw") {
+    const renderNode: FrescoRawRenderNode = { ...common, nodeType: "raw" };
+    const lines = stringLines(node.props.lines);
+    if (lines) renderNode.lines = lines;
     return renderNode;
   }
 

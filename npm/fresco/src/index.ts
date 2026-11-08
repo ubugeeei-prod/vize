@@ -56,6 +56,7 @@ export type {
   FrescoMouseEventKind,
   FrescoOverflow,
   FrescoPosition,
+  FrescoRawRenderNode,
   FrescoRenderNode,
   FrescoRenderNodeKind,
   FrescoRenderStyle,

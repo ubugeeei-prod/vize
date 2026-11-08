@@ -10,6 +10,8 @@ import { h } from "vue";
 
 import Badge from "./FrescoBadge.vue";
 import { Box, type BoxProps } from "./Box.js";
+import FrameBuffer from "./FrescoFrameBuffer.vue";
+import type { FrameBufferProps } from "./frame-buffer-types.js";
 import type {
   BadgeProps,
   LinkProps,
@@ -82,6 +84,15 @@ export const textAcceptsDocumentedProps: TextProps = {
 };
 
 export const wrapAcceptsBooleans: TextWrap = true;
+
+export const frameBufferAcceptsExactRows: FrameBufferProps = {
+  lines: ["first", "second"],
+  style: { width: 20, overflow: "hidden" },
+  fg: "cyan",
+};
+
+// @ts-expect-error - frame-buffer rows are text, not arbitrary payloads.
+export const frameBufferRejectsNumericRows: FrameBufferProps = { lines: [1] };
 
 // @ts-expect-error - "ellipsis" is not a TextWrap mode
 export const textRejectsUnknownWrap: TextProps = { wrap: "ellipsis" };
@@ -165,6 +176,7 @@ export function componentsRenderWithTypedProps() {
     h(Static, { items: ["done"] }),
     h(Link, { text: "Docs", showUrl: false }),
     h(Badge, { label: "Ready", variant: "success" }),
+    h(FrameBuffer, { lines: ["first", "second"], fg: "cyan" }),
     h(Spinner, { type: "line", label: "Loading" }),
   ];
 }

@@ -28,6 +28,8 @@ export type { StaticProps } from "./display-primitive-types.js";
 export { default as Transform } from "./FrescoTransform.vue";
 export type { TransformProps } from "./text-utility-types.js";
 export { Code, type CodeProps } from "./Code.js";
+export { default as FrameBuffer } from "./FrescoFrameBuffer.vue";
+export type { FrameBufferProps } from "./frame-buffer-types.js";
 export { default as Link } from "./FrescoLink.vue";
 export type { LinkProps } from "./display-primitive-types.js";
 

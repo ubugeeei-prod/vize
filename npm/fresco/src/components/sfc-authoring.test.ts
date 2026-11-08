@@ -5,6 +5,7 @@ import { test } from "vitest";
 
 const canonicalSfcComponents = [
   { name: "Badge", file: "FrescoBadge" },
+  { name: "FrameBuffer", file: "FrescoFrameBuffer" },
   { name: "Link", file: "FrescoLink" },
   { name: "Newline", file: "FrescoNewline" },
   { name: "ScrollBar", file: "ScrollBar" },
