@@ -18,6 +18,7 @@ import {
   regularMember,
   runtimeIdentity,
   CONSUMER_USE_MEMBER,
+  comparableSourceCliIdentity,
   expectedProducerIdentity,
   sourceCliProducerOutputs,
   sourceCliCheckout,
@@ -137,8 +138,8 @@ export function restoreSourceCli(
       fs.readFileSync(path.join(stage, TRANSPORT_MEMBER), "utf8"),
     ) as Envelope;
     assert.deepEqual(
-      envelope.identity,
-      expectedProducerIdentity(identity, producerAttempt),
+      comparableSourceCliIdentity(envelope.identity),
+      comparableSourceCliIdentity(expectedProducerIdentity(identity, producerAttempt)),
       "source CLI producer identity changed",
     );
     assert.equal(envelope.recipe, BUILD_RECIPE);
