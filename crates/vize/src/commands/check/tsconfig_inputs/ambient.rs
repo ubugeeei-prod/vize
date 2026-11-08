@@ -47,7 +47,7 @@ pub(crate) fn collect_ambient_declaration_files(
     let explicit_type_declarations =
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
     files.extend(explicit_type_declarations.iter().cloned());
-    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(
@@ -60,73 +60,95 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
         collect_default_check_files_inner(&project_root, tsconfig_path, false, false, cache)
             .into_iter()
             .collect::<FxHashSet<_>>();
-    // Included declarations can themselves reference declarations outside the
-    // tsconfig include. Keep them as graph roots even though they are already
-    // visible inputs: their referenced files still need to enter the mirror.
     let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
-    let reference_roots = files
-        .iter()
-        .filter(|path| {
-            !visible.contains(*path)
-                && is_declaration_file(path)
-                && fs::read_to_string(path).is_ok_and(|content| {
-                    is_reference_manifest_declaration(&content)
-                        && content
-                            .lines()
-                            .any(|line| reference_path_attribute(line).is_some())
-                })
-        })
-        .cloned()
-        .collect::<Vec<_>>();
     let explicit_type_declarations =
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
-    let mut declarations =
-        collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations);
-    // A hidden configured path-reference manifest owns its declaration graph
-    // even though it has no ambient declarations of its own. Canon follows
-    // its module imports; keep missing references too so TS6053 stays visible.
-    for path in reference_roots {
-        if !declarations.contains(&path) {
-            declarations.push(path);
-        }
-    }
-    declarations
-        .into_iter()
-        .filter(|path| !visible.contains(path))
-        .collect()
+    collect_ambient_declaration_files_from(
+        project_root,
+        files,
+        explicit_type_declarations,
+        Some(&visible),
+    )
+    .into_iter()
+    .filter(|path| !visible.contains(path))
+    .collect()
 }
 
 fn collect_ambient_declaration_files_from(
     project_root: PathBuf,
     mut files: Vec<PathBuf>,
     explicit_type_declarations: Vec<PathBuf>,
+    visible_files: Option<&FxHashSet<PathBuf>>,
 ) -> Vec<PathBuf> {
+    let configured_file_count = files.len();
     let explicit_type_declarations = explicit_type_declarations
         .into_iter()
         .collect::<FxHashSet<_>>();
+    let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     for path in &explicit_type_declarations {
-        if !files.contains(path) {
+        if seen.insert(path.clone()) {
             files.push(path.clone());
         }
     }
-    follow_declaration_references(Some(&project_root), &mut files);
 
-    files
-        .into_iter()
-        .filter(|path| match fs::read_to_string(path) {
-            Ok(content) if !is_declaration_file(path) => augments_modules(path, &content),
-            Ok(content) => {
-                if is_nuxt_import_manifest_path(path) || declares_shadowing_ambient_module(&content)
-                {
-                    return false;
-                }
-                explicit_type_declarations.contains(path)
-                    || (!is_reference_manifest_declaration(&content)
-                        && contributes_ambient_declarations(&content))
+    let mut declarations = Vec::new();
+    let mut hidden_reference_roots = Vec::new();
+    let mut index = 0;
+    while let Some(path) = files.get(index).cloned() {
+        let is_configured_file = index < configured_file_count;
+        index += 1;
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !is_declaration_file(&path) {
+            if augments_modules(&path, &content) {
+                declarations.push(path);
             }
-            Err(_) => false,
-        })
-        .collect()
+            continue;
+        }
+
+        let is_reference_manifest = is_reference_manifest_declaration(&content);
+        // Included declarations can themselves reference declarations outside
+        // the tsconfig include. A hidden configured path-reference manifest
+        // owns that graph even though it has no ambient declarations itself.
+        // Preserve the root at the end, matching the historical output order,
+        // so Canon follows missing references and keeps TS6053 visible.
+        if is_configured_file
+            && visible_files.is_some_and(|visible| !visible.contains(&path))
+            && is_reference_manifest
+            && content
+                .lines()
+                .any(|line| reference_path_attribute(line).is_some())
+        {
+            hidden_reference_roots.push(path.clone());
+        }
+
+        for referenced in reference_path_declaration_files(&path, &content, Some(&project_root)) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+        for referenced in reference_type_declaration_files(&path, &content) {
+            if seen.insert(referenced.clone()) {
+                files.push(referenced);
+            }
+        }
+
+        if !is_nuxt_import_manifest_path(&path)
+            && !declares_shadowing_ambient_module(&content)
+            && (explicit_type_declarations.contains(&path)
+                || (!is_reference_manifest && contributes_ambient_declarations(&content)))
+        {
+            declarations.push(path);
+        }
+    }
+
+    for path in hidden_reference_roots {
+        if !declarations.contains(&path) {
+            declarations.push(path);
+        }
+    }
+    declarations
 }
 
 /// Configured declaration membership before ambient-only filtering. Nuxt's
