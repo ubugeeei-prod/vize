@@ -322,6 +322,53 @@ test("stops after the current node and reports prevented routed input", () => {
   );
   mounted.unmount();
 });
+
+test("hit testing selects the topmost node within ancestor overflow clips", () => {
+  const mounted = mountFresco(() =>
+    h("box", { style: { overflow: "hidden" } }, [
+      h("text", { text: "under" }),
+      h("box", [h("text", { text: "outside" })]),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const under = root.children[0];
+  const overlay = root.children[1];
+  const outside = overlay?.children[0];
+  assert.ok(under && overlay && outside);
+
+  const layouts = [
+    { id: root.id, x: 0, y: 0, width: 4, height: 3 },
+    { id: under.id, x: 1, y: 1, width: 3, height: 1 },
+    { id: overlay.id, x: 2, y: 1, width: 4, height: 2 },
+    { id: outside.id, x: 4, y: 1, width: 2, height: 1 },
+  ];
+
+  assert.equal(mounted.renderer.hitTest(root, 2, 1, layouts), overlay);
+  assert.equal(mounted.renderer.hitTest(root, 1, 1, layouts), under);
+  assert.equal(
+    mounted.renderer.hitTest(root, 4, 1, layouts),
+    undefined,
+    "a descendant outside hidden overflow cannot receive pointer input",
+  );
+  assert.equal(mounted.renderer.hitTest(root, Number.NaN, 1, layouts), undefined);
+  mounted.unmount();
+
+  const visible = mountFresco(() =>
+    h("box", { style: { overflow: "visible" } }, [h("text", { text: "outside" })]),
+  );
+  const visibleRoot = firstChild(visible);
+  const visibleChild = visibleRoot.children[0];
+  assert.ok(visibleChild);
+  assert.equal(
+    visible.renderer.hitTest(visibleRoot, 4, 0, [
+      { id: visibleRoot.id, x: 0, y: 0, width: 4, height: 1 },
+      { id: visibleChild.id, x: 4, y: 0, width: 2, height: 1 },
+    ]),
+    visibleChild,
+    "visible overflow keeps out-of-bounds descendants targetable",
+  );
+  visible.unmount();
+});
 test("emits every discriminated render variant with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [

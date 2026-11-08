@@ -425,6 +425,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let nonInteractiveOutput = "";
   let staticOutput = "";
   const renderedStaticItems = new Map<number, number>();
+  let lastRenderLayouts: LayoutResultNapi[] = [];
   let cursorPosition: CursorPosition | undefined;
   let hasCursorOverride = false;
   let instance: App;
@@ -438,12 +439,13 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     rejectExit = reject;
   });
 
-  const { createApp: createVueApp } = createRenderer({
+  const renderer = createRenderer({
     lifecycle: options.devtools?.lifecycle,
     onMutation() {
       needsRender = true;
     },
   });
+  const { createApp: createVueApp } = renderer;
 
   function publishRenderMetrics(
     root: FrescoElement,
@@ -573,6 +575,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     mounted = false;
     appContext = null;
     focusManager = null;
+    lastRenderLayouts = [];
+    updateLastRenderLayouts([]);
     cursorPosition = undefined;
     hasCursorOverride = false;
 
@@ -708,8 +712,9 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         let layouts: LayoutResultNapi[] = [];
         if ("getLastRenderLayouts" in native) {
           layouts = native.getLastRenderLayouts();
-          updateLastRenderLayouts(layouts);
         }
+        lastRenderLayouts = layouts;
+        updateLastRenderLayouts(layouts);
 
         applyCursorOverride();
 
@@ -744,6 +749,15 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         lastPasteEvent.value = normalized;
         break;
       case "mouse":
+        if (rootElement) {
+          const target = renderer.hitTest(
+            rootElement,
+            normalized.x,
+            normalized.y,
+            lastRenderLayouts,
+          );
+          if (target) renderer.dispatchInput(target.id, normalized);
+        }
         lastMouseEvent.value = normalized;
         break;
       case "focus":

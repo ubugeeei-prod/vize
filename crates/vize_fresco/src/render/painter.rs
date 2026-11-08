@@ -3,7 +3,7 @@
 use compact_str::{CompactString, ToCompactString};
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::layout::Rect;
+use crate::layout::{Overflow, Rect};
 use crate::terminal::{Buffer, Style};
 use crate::text::{TextWidth, TextWrap, WrapMode};
 
@@ -12,6 +12,8 @@ use super::{BorderStyle, NodeKind, RenderNode, RenderTree};
 /// Painter renders nodes to a terminal buffer.
 pub struct Painter<'a> {
     buffer: &'a mut Buffer,
+    /// Active ancestor clip in absolute terminal coordinates.
+    clip: Rect,
     /// Reusable scratch buffer for wrapped lines (cleared per use).
     wrap_scratch: Vec<CompactString>,
 }
@@ -26,8 +28,10 @@ impl<'a> Painter<'a> {
         buffer: &'a mut Buffer,
         wrap_scratch: Vec<CompactString>,
     ) -> Self {
+        let clip = buffer.area();
         Self {
             buffer,
+            clip,
             wrap_scratch,
         }
     }
@@ -39,22 +43,41 @@ impl<'a> Painter<'a> {
     /// Paint the entire tree to the buffer.
     pub fn paint_tree(&mut self, tree: &RenderTree) {
         if let Some(root_id) = tree.root() {
-            self.paint_node(tree, root_id);
+            self.paint_node_clipped(tree, root_id, self.buffer.area());
         }
     }
 
     /// Paint a single node and its children.
     pub fn paint_node(&mut self, tree: &RenderTree, id: u64) {
+        self.paint_node_clipped(tree, id, self.buffer.area());
+    }
+
+    fn paint_node_clipped(&mut self, tree: &RenderTree, id: u64, ancestor_clip: Rect) {
         if let Some(node) = tree.get(id) {
-            if let Some(layout) = node.layout {
+            let node_clip = node
+                .layout
+                .map_or_else(Rect::empty, |layout| layout.intersection(&ancestor_clip));
+            if let Some(layout) = node.layout
+                && !node_clip.is_empty()
+            {
+                let previous_clip = std::mem::replace(&mut self.clip, node_clip);
                 self.paint_node_content(node, layout);
+                self.clip = previous_clip;
             }
 
-            // Paint children
+            let child_clip = if node.style.overflow == Overflow::Visible {
+                ancestor_clip
+            } else {
+                node_clip
+            };
             for &child_id in &node.children {
-                self.paint_node(tree, child_id);
+                self.paint_node_clipped(tree, child_id, child_clip);
             }
         }
+    }
+
+    fn set_string(&mut self, x: u16, y: u16, text: &str, style: Style) {
+        self.buffer.set_string_clipped(x, y, text, style, self.clip);
     }
 
     /// Paint a node's content.
@@ -71,7 +94,8 @@ impl<'a> Painter<'a> {
 
         // Fill background if specified
         if node.appearance.bg.is_some() {
-            self.buffer.fill(content_area, ' ', style);
+            self.buffer
+                .fill(content_area.intersection(&self.clip), ' ', style);
         }
 
         // Draw content based on node type
@@ -111,28 +135,24 @@ impl<'a> Painter<'a> {
         let (h, v, tl, tr, bl, br) = border.chars();
 
         // Top border
-        self.buffer.set_string(rect.x, rect.y, tl, style);
+        self.set_string(rect.x, rect.y, tl, style);
         for x in rect.x + 1..rect.x + rect.width - 1 {
-            self.buffer.set_string(x, rect.y, h, style);
+            self.set_string(x, rect.y, h, style);
         }
-        self.buffer
-            .set_string(rect.x + rect.width - 1, rect.y, tr, style);
+        self.set_string(rect.x + rect.width - 1, rect.y, tr, style);
 
         // Side borders
         for y in rect.y + 1..rect.y + rect.height - 1 {
-            self.buffer.set_string(rect.x, y, v, style);
-            self.buffer.set_string(rect.x + rect.width - 1, y, v, style);
+            self.set_string(rect.x, y, v, style);
+            self.set_string(rect.x + rect.width - 1, y, v, style);
         }
 
         // Bottom border
-        self.buffer
-            .set_string(rect.x, rect.y + rect.height - 1, bl, style);
+        self.set_string(rect.x, rect.y + rect.height - 1, bl, style);
         for x in rect.x + 1..rect.x + rect.width - 1 {
-            self.buffer
-                .set_string(x, rect.y + rect.height - 1, h, style);
+            self.set_string(x, rect.y + rect.height - 1, h, style);
         }
-        self.buffer
-            .set_string(rect.x + rect.width - 1, rect.y + rect.height - 1, br, style);
+        self.set_string(rect.x + rect.width - 1, rect.y + rect.height - 1, br, style);
     }
 
     /// Paint text content.
@@ -145,7 +165,7 @@ impl<'a> Painter<'a> {
         // is exactly what `set_string` does. Bypass wrapping entirely so we
         // avoid allocating a Vec + a CompactString copy of the whole string.
         if mode == WrapMode::NoWrap {
-            self.buffer.set_string(area.x, area.y, text, style);
+            self.set_string(area.x, area.y, text, style);
             return;
         }
 
@@ -156,7 +176,7 @@ impl<'a> Painter<'a> {
                 break;
             }
             self.buffer
-                .set_string(area.x, area.y + i as u16, line, style);
+                .set_string_clipped(area.x, area.y + i as u16, line, style, self.clip);
         }
     }
 
@@ -205,7 +225,7 @@ impl<'a> Painter<'a> {
                 break;
             }
             self.buffer
-                .set_string(area.x, area.y + i as u16, line, style);
+                .set_string_clipped(area.x, area.y + i as u16, line, style, self.clip);
         }
 
         if focused && selection_start < selection_end {
@@ -248,7 +268,7 @@ impl<'a> Painter<'a> {
                 break;
             }
             if (selection_start..selection_end).contains(&index) {
-                self.buffer.set_string(
+                self.set_string(
                     area.x.saturating_add(column),
                     area.y.saturating_add(row),
                     grapheme,
@@ -265,19 +285,18 @@ impl<'a> Painter<'a> {
             if i >= area.height as usize {
                 break;
             }
-            self.buffer
-                .set_string(area.x, area.y + i as u16, line, style);
+            self.set_string(area.x, area.y + i as u16, line, style);
         }
     }
 
     /// Clear an area.
     pub fn clear(&mut self, area: Rect) {
-        self.buffer.clear_area(area);
+        self.buffer.clear_area(area.intersection(&self.clip));
     }
 
     /// Fill an area with a character.
     pub fn fill(&mut self, area: Rect, ch: char, style: Style) {
-        self.buffer.fill(area, ch, style);
+        self.buffer.fill(area.intersection(&self.clip), ch, style);
     }
 }
 
@@ -342,7 +361,7 @@ mod input_tests {
 #[cfg(test)]
 mod tests {
     use super::{BorderStyle, Painter, RenderNode, RenderTree};
-    use crate::layout::Rect;
+    use crate::layout::{Overflow, Rect};
     use crate::terminal::{Buffer, Style};
     use crate::text::WrapMode;
 
@@ -357,6 +376,30 @@ mod tests {
 
         assert_eq!(buffer.get(0, 0).map(|c| c.symbol.as_str()), Some("H"));
         assert_eq!(buffer.get(5, 0).map(|c| c.symbol.as_str()), Some(" "));
+    }
+
+    #[test]
+    fn hidden_overflow_clips_descendants_in_absolute_coordinates() {
+        let mut tree = RenderTree::new();
+        let root_id = tree.next_id();
+        let mut root = RenderNode::box_node(root_id);
+        root.style.overflow = Overflow::Hidden;
+        root.layout = Some(Rect::new(1, 0, 3, 1));
+        tree.insert_root(root);
+
+        let child_id = tree.next_id();
+        let mut child = RenderNode::text_node(child_id, "abcdef");
+        child.layout = Some(Rect::new(0, 0, 6, 1));
+        tree.insert(child);
+        tree.add_child(root_id, child_id);
+
+        let mut buffer = Buffer::new(8, 1);
+        Painter::new(&mut buffer).paint_tree(&tree);
+
+        let row: String = (0..8)
+            .map(|x| buffer.get(x, 0).unwrap().symbol.as_str())
+            .collect();
+        assert_eq!(row, " bcd    ");
     }
 
     #[test]

@@ -49,6 +49,27 @@ fn clips_only_at_grapheme_boundaries() {
 }
 
 #[test]
+fn nested_clip_preserves_coordinates_and_complete_graphemes() {
+    let mut buffer = Buffer::new(8, 2);
+    let style = Style::new();
+
+    assert_eq!(
+        buffer.set_string_clipped(0, 0, "ab界cd", style, Rect::new(2, 0, 2, 1)),
+        2,
+    );
+    assert_eq!(buffer.get(0, 0).unwrap().symbol.as_str(), " ");
+    assert_eq!(buffer.get(2, 0).unwrap().symbol.as_str(), "界");
+    assert!(buffer.get(3, 0).unwrap().is_continuation);
+    assert_eq!(buffer.get(4, 0).unwrap().symbol.as_str(), " ");
+
+    assert_eq!(
+        buffer.set_string_clipped(0, 1, "abc", style, Rect::new(0, 0, 3, 1)),
+        0,
+        "vertical clipping rejects a complete line outside the region",
+    );
+}
+
+#[test]
 fn narrow_replacements_remove_every_stale_wide_cell() {
     let mut buffer = Buffer::new(4, 1);
     buffer.set_string(0, 0, "界", Style::new());
