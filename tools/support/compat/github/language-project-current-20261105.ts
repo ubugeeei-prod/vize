@@ -30,7 +30,7 @@ type PluginSourceSuccessor = {
 export const CURRENT_LANGUAGE_PROJECT_ROOT =
   "tests/_fixtures/tooling/language-project-current-20261105/";
 const custodySha256 = "6adafa56360823c8f6d39f5f3035c45e482ab7f9d06f6800b4bc50c6bb125b4d";
-const pluginSuccessorSha256 = "1d6f0b13fab4363b84483a9911fc99968248e71806f5ea51836f29779be520e2";
+const pluginSuccessorSha256 = "44c595ac374284bb1a7815fa7705b5a1f2346c06b6f57cc39b3675b87bbafd7d";
 const currentPluginSources = [
   {
     path: "npm/typescript-plugin/index.cjs",
@@ -44,8 +44,8 @@ const currentPluginSources = [
   },
   {
     path: "tests/tooling/language-project-classification-runtime.test.ts",
-    sha256: "b8b7010ee6278f46ede52852cc157fa809233fd5841ebe7a04502baa3833c65b",
-    edits: 1,
+    sha256: "04e7e3cc7c7643f91e525a89f1a63361e9549215cbeb5e86242496a6179af5f5",
+    edits: 2,
   },
 ];
 const paths = [
