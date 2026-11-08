@@ -128,6 +128,7 @@ pub(super) fn preamble_edits_before(mut current: String) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::props_fallback_segment::source_before(path, current);
     let current = super::jsx_exact_keys::source_before(path, current);
     match FILES.iter().find(|file| file.path == path) {
         Some(file) => invert(
@@ -195,7 +196,8 @@ mod tests {
     #[test]
     fn current_assets_preamble_and_sdk_reconstruct_only_the_input_channels_layer() {
         for file in &FILES {
-            let body = current(file.path);
+            let body =
+                super::super::props_fallback_segment::source_before(file.path, current(file.path));
             let body = super::super::strict_extra_keys::source_before(file.path, body);
             let body = super::super::integrated_source::repair_before(file.path, body);
             let layer = super::super::jsx_exact_keys::source_edits_before(file.path, body);
@@ -223,7 +225,8 @@ mod tests {
     fn missing_duplicate_stale_and_extra_bytes_refuse() {
         for file in &FILES {
             let body =
-                super::super::strict_extra_keys::source_before(file.path, current(file.path));
+                super::super::props_fallback_segment::source_before(file.path, current(file.path));
+            let body = super::super::strict_extra_keys::source_before(file.path, body);
             let body = super::super::integrated_source::repair_before(file.path, body);
             let body = super::super::jsx_exact_keys::source_edits_before(file.path, body);
             let (before, after) = file.edits[0];

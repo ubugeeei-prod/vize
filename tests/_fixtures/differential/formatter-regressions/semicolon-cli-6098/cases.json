@@ -1,6 +1,6 @@
 {
   "schema": "vize.formatter-semicolon-cli-6098",
-  "reference": { "package": "prettier", "version": "3.8.3" },
+  "reference": { "package": "prettier", "version": "3.9.10" },
   "provenance": "New authored JS/TS controls for the documented CLI option override contract; independent reference execution is required. These are not historical semi:false captures.",
   "cases": [
     {

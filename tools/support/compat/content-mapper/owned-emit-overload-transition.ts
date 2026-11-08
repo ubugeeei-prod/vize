@@ -18,8 +18,8 @@ const sourceHashes = [
   ],
   [
     preamblePath,
-    "38c8e437524c3983a57d089febbf49ac4898ddfc1318672ded78608728c0dde6",
-    "15ad52d5dbc3166ba6fb5d7386515b6929064862ac530795c6a56525b539076e",
+    "20b1de72b81b75038e4b4272ecf8843a3b3a1e2ebc96b0c343c0356008beb5d1",
+    "a8ef812b81fda63ef7d2f9104cccffaa5330df2ab5ea4e49360410536f0e4464",
   ],
   [
     "crates/vize_canon/src/virtual_ts/generator/emits.rs",
@@ -105,8 +105,10 @@ export function certifyEmitOverloadAssets(
       stdio: ["ignore", "pipe", "pipe"],
     });
   const previousPreamble = selected(sources.base, preamblePath);
-  const listenerAnchor = '    include_str!("declarations/shared-emit-inference.d.ts.txt"),\n';
-  const listenerAddition = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
+  const listenerAnchor =
+    '            include_str!("declarations/shared-emit-inference.d.ts.txt"),\n';
+  const listenerAddition =
+    '            include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
   assert.equal(previousPreamble.toString().split(listenerAnchor).length, 2);
   assert.deepEqual(
     selected(sources.head, preamblePath),

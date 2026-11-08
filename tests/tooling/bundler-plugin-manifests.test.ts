@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import YAML from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(import.meta.url);
@@ -66,19 +67,11 @@ function readWorkspaceYaml(): string {
 }
 
 function catalogPin(workspaceYaml: string, catalog: string, name: string): string | undefined {
-  const lines = workspaceYaml.split("\n");
-  const header = `  ${catalog}:`;
-  const start = lines.findIndex((line) => line === header);
-  if (start === -1) return undefined;
-
-  for (const line of lines.slice(start + 1)) {
-    if (/^\s{0,2}\S/.test(line) && !/^\s{4}/.test(line)) break;
-    const match = line.match(/^\s{4}"?([^":]+)"?:\s*"([^"]+)"\s*$/);
-    if (match && match[1] === name) {
-      return match[2];
-    }
-  }
-  return undefined;
+  const workspace = YAML.parse(workspaceYaml) as {
+    catalogs?: Record<string, Record<string, string | number>>;
+  };
+  const pin = workspace.catalogs?.[catalog]?.[name];
+  return pin == null ? undefined : String(pin);
 }
 
 function leadingMajor(pin: string): number {

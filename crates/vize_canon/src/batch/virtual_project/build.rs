@@ -69,6 +69,9 @@ pub(super) struct RegisteredFile {
     /// rewrite parse. Reachability consumes this once instead of cloning and
     /// parsing the same source again.
     pub(super) dependency_syntax_facts: Option<DependencySyntaxFacts>,
+    /// A template that leaves `checkUnknownProps` off: vue-tsc declares its
+    /// props fallback for such a file (#11628).
+    pub(super) props_fallback: bool,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -298,6 +301,11 @@ pub(super) fn build_vue_registered_file(
     Ok(RegisteredFile {
         diagnostic_route,
         star_projection,
+        props_fallback: !super::vue_compiler_comments::apply(
+            content,
+            context.virtual_ts_check_options,
+        )
+        .check_unknown_props,
         file: VirtualFile {
             content: rewritten.code,
             source_map,

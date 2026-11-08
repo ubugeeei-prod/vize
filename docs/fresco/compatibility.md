@@ -92,7 +92,7 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 | —                  | `ASCIIFontRenderable`   | —             | `AsciiFont`                 | Implemented | Provider-driven `@vizejs/fresco/ascii-font` entry; consumer glyph data stays outside the core bundle.                                                                         |
 | —                  | `QRCodeRenderable`      | —             | `QrCode`                    | Implemented | Provider-driven `@vizejs/fresco/qr-code` entry; consumer QR encoders stay outside the core bundle.                                                                            |
 | —                  | `ScrollBoxRenderable`   | `ScrollBox`   | `ScrollBox`                 | Partial     | Virtualized Vue facade with keyboard/wheel scrolling, sticky slots, imperative scrolling, and bounded row retention. Native coordinate clipping and routed input remain (M1). |
-| —                  | `ScrollBarRenderable`   | —             | `ScrollBar`                 | Partial     | Typed vertical/horizontal viewport indicator; mouse dragging and native renderable integration remain (M1).                                                                   |
+| —                  | `ScrollBarRenderable`   | —             | `ScrollBar`                 | Partial     | Typed vertical/horizontal viewport indicator with bounded track clicks and thumb dragging; native renderable integration remains (M1).                                        |
 | —                  | `FrameBufferRenderable` | —             | `FrameBuffer`               | Implemented | Public typed SFC accepts exact terminal rows and emits the native raw-node protocol without private renderer imports.                                                         |
 
 ### Vize-native components (no direct reference equivalent)
@@ -114,6 +114,10 @@ Fresco also exposes a typed theme contract with frozen zero-generation defaults.
 supplied color, spacing, border, or motion tokens; `useFrescoTheme()` consumes the resolved scope.
 
 Fresco implements the full Ink v6 hook list under the same names, as Vue composables.
+
+Configurable command input is available through [`useKeymap`](./keymaps.md), including exact
+single chords, Emacs-style multi-chords, Vim-style sequences, reactive mode maps, and typed command
+IDs.
 
 | Ink                                | OpenTUI                           | Vue TermUI                   | Fresco                             | Status      | Notes                                                                                                                                                                    |
 | ---------------------------------- | --------------------------------- | ---------------------------- | ---------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

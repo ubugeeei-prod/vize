@@ -29,22 +29,21 @@ const importManifest = oracle.resolve("eslint-plugin-import-x/package.json");
 const packageRoot = path.dirname(importManifest),
   provider = createRequire(importManifest);
 const engine = provider("eslint") as Engine;
-const patchHash = "18ff3cf468516ff3335e910419a6118af63fb6db7cadccbadfbd6d7869a0624a";
 const expectedSources = [
-  ["lib/index.cjs", "65de324b17fb3869fc2fc9627fd3968fb32664fd18a64baab2cf8e637284a57d"],
+  ["lib/index.cjs", "f1e01bddec075586d7a4d778d53f756c8cdffb79a476f4bd780e2d63275c2a1a"],
   [
     "lib/rules/no-internal-modules.js",
-    "1d5c8f1dd986dca5e6e3cadcb09027954b94ff51b91a22e4128893cf81dc3f21",
+    "e9725a2253f98d1cf60799a6b81bc9314d0598989ffbba9bc75b53fdccff9adb",
   ],
 ] as const;
 const hash = (bytes: Buffer | string): string => createHash("sha256").update(bytes).digest("hex");
 function assertInstalledIdentity(): void {
   assert.equal(
     record(JSON.parse(fs.readFileSync(importManifest, "utf8")) as unknown).version,
-    "4.17.1",
+    "4.18.0",
   );
   assert.equal(record(provider("minimatch/package.json") as unknown).version, "11.0.1");
-  assert.equal(record(provider("eslint/package.json") as unknown).version, "10.13.0");
+  assert.equal(record(provider("eslint/package.json") as unknown).version, "10.14.0");
   assert.equal(record(provider("minimatch") as unknown).makeRe, undefined);
   const constructor = record(provider("minimatch") as unknown).Minimatch;
   assert.equal(typeof constructor, "function");
@@ -52,23 +51,23 @@ function assertInstalledIdentity(): void {
   for (const [file, expected] of expectedSources)
     assert.equal(hash(fs.readFileSync(path.join(packageRoot, file))), expected);
   assert.equal(
-    hash(fs.readFileSync(path.join(root, "patches/eslint-plugin-import-x@4.17.1.patch"))),
-    patchHash,
+    fs.existsSync(path.join(root, "patches/eslint-plugin-import-x@4.17.1.patch")),
+    false,
   );
   const yaml = testsRequire("yaml") as Yaml;
   const lock = yaml.parseAllDocuments(fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8"));
   assert.equal(lock.length, 2);
   for (const document of lock) assert.deepEqual(document.errors, []);
   const project = record(lock[1]!.toJS());
-  assert.equal(record(project.patchedDependencies)["eslint-plugin-import-x@4.17.1"], patchHash);
+  assert.equal(record(project.patchedDependencies)["eslint-plugin-import-x@4.18.0"], undefined);
   const workspace = yaml.parseAllDocuments(
     fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf8"),
   );
   assert.equal(workspace.length, 1);
   assert.deepEqual(workspace[0]!.errors, []);
   assert.equal(
-    record(record(workspace[0]!.toJS()).patchedDependencies)["eslint-plugin-import-x@4.17.1"],
-    "patches/eslint-plugin-import-x@4.17.1.patch",
+    record(record(workspace[0]!.toJS()).patchedDependencies)["eslint-plugin-import-x@4.18.0"],
+    undefined,
   );
   const snapshots = record(project.snapshots);
   const parents = Object.keys(snapshots).filter((key) =>
@@ -78,7 +77,8 @@ function assertInstalledIdentity(): void {
   for (const parent of parents) {
     const reference = record(record(snapshots[parent]).dependencies)["eslint-plugin-import-x"];
     assert.equal(typeof reference, "string");
-    assert.ok((reference as string).startsWith("4.17.1(patch_hash=" + patchHash + ")"));
+    assert.ok((reference as string).startsWith("4.18.0("));
+    assert.doesNotMatch(reference as string, /patch_hash=/u);
     assert.ok("eslint-plugin-import-x@" + reference in snapshots);
   }
 }
@@ -207,14 +207,14 @@ async function runDefaultHostiles(): Promise<void> {
 if (process.argv.includes("--import-x-default-hostile-child")) {
   await runDefaultHostiles();
 } else {
-  test("the frozen workspace ImportX caller has the exact secure patch and provider", () => {
+  test("the workspace ImportX caller uses the exact upstream secure provider", () => {
     assertInstalledIdentity();
     console.log(
       JSON.stringify({
         node: process.versions.node,
         packageRoot,
         minimatch: provider.resolve("minimatch"),
-        patchHash,
+        sourceSha256: Object.fromEntries(expectedSources),
         lockSha256: hash(fs.readFileSync(path.join(root, "pnpm-lock.yaml"))),
       }),
     );

@@ -37,7 +37,7 @@ export function assertAppE2eAggregate({
   return { expectedCount, outcome: "success" };
 }
 
-function main(argv: readonly string[]): void {
+export function main(argv: readonly string[]): void {
   if (argv.length !== 6) {
     throw new Error(
       "Usage: app-e2e-aggregate.ts <profile> <suite> <run-required> <plan-result> <producer-result> <planned-count>",

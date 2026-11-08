@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "@volar/language-core": "2.4.30",
-    "@volar/typescript": "2.4.30"
+    "@volar/language-core": "2.4.31",
+    "@volar/typescript": "2.4.31"
   },
   "devDependencies": {
     "typescript": "catalog:typescript",

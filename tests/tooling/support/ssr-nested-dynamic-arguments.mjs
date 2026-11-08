@@ -44,7 +44,7 @@ try {
     compiler: "3.6.0-rc.9",
     vue: "3.6.0-rc.9",
     server: "3.6.0-rc.9",
-    plugin: "6.0.7",
+    plugin: "6.0.10",
   });
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
