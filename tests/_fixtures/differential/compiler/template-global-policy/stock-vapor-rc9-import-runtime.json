@@ -1,6 +1,6 @@
 {
   "compiler": "3.6.0-rc.9",
-  "plugin": "6.0.7",
+  "plugin": "6.0.10",
   "classification": "Additive independent imported-binding control; original16RC9 observations remain unchanged.",
   "archive": {
     "path": "stock-import-reference.json.gz.b64.txt",

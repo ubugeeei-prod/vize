@@ -441,7 +441,7 @@ overrides:
   zod@>=4.0.0 <4.6.6: 4.6.6
 
 patchedDependencies:
-  '@ox-content/vite-plugin@3.8.2': 4f78c21f9202dc64cc5af8398be89d5034fb6953e4ce39a338989f849933ee11
+  '@ox-content/vite-plugin@3.8.2': 6c898491579dc7aed83b949f2b2440f33bfbd7dbc9fe08e19a0312f663b2dec3
   braces@3.0.3: 4164fc10a66e95450b372dda14add9e336b8daa6ef49d472caed0f6d9bc28d74
   deepmerge@4.3.1: f24df4b40d35b586a5fb81a5e778a8328ad0479e12d1828ea585dc2cce1965bd
   vscode-languageclient@9.0.1: 507db4cd05afc3ee9f45acce0e15a195181d015379bff1e09a919a67b62bc41c
@@ -504,7 +504,7 @@ importers:
     devDependencies:
       '@ox-content/vite-plugin':
         specifier: catalog:integrations
-        version: 3.8.2(patch_hash=4f78c21f9202dc64cc5af8398be89d5034fb6953e4ce39a338989f849933ee11)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(csstype@3.2.3)(katex@0.16.47)(vue@3.5.35(typescript@6.0.3))
+        version: 3.8.2(patch_hash=6c898491579dc7aed83b949f2b2440f33bfbd7dbc9fe08e19a0312f663b2dec3)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(csstype@3.2.3)(katex@0.16.47)(vue@3.5.35(typescript@6.0.3))
       '@vizejs/vite-plugin':
         specifier: workspace:*
         version: link:../npm/builder/vite
@@ -17835,7 +17835,7 @@ snapshots:
       '@ox-content/binding-linux-x64-musl': 3.8.2
       '@ox-content/binding-win32-x64-msvc': 3.8.2
 
-  '@ox-content/vite-plugin@3.8.2(patch_hash=4f78c21f9202dc64cc5af8398be89d5034fb6953e4ce39a338989f849933ee11)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(csstype@3.2.3)(katex@0.16.47)(vue@3.5.35(typescript@6.0.3))':
+  '@ox-content/vite-plugin@3.8.2(patch_hash=6c898491579dc7aed83b949f2b2440f33bfbd7dbc9fe08e19a0312f663b2dec3)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.108.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))(csstype@3.2.3)(katex@0.16.47)(vue@3.5.35(typescript@6.0.3))':
     dependencies:
       '@cspell/dict-de-de': 4.1.3
       '@cspell/dict-en_us': 4.4.43

@@ -12,7 +12,7 @@ fn load() -> Value {
             .unwrap();
     assert_eq!(
         support::hash(&bytes),
-        "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f"
+        "9e1d29212711ee9f150050e668fc77fdb08c832af96ac80c725194c782a3a909"
     );
     let record: Value = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(record["version"], 1);

@@ -101,7 +101,12 @@ export async function buildHeadingHashFixture(output: string) {
   fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), { recursive: true });
   fs.copyFileSync(path.join(originalRoot, "package.json"), path.join(provider, "package.json"));
   fs.symlinkSync(path.resolve(originalRoot, "../.."), path.join(provider, "node_modules"), "dir");
-  removeHeadingHashRepair(provider);
+  // Ox Content now splits its SSG implementation into dev-server.{mjs,cjs}.
+  // Keep the unpatched control at a distinct module URL so Node cannot retain
+  // it when the repaired build is loaded later in this qualification process.
+  const controlProvider = path.join(output, "provider-control");
+  fs.cpSync(provider, controlProvider, { recursive: true });
+  removeHeadingHashRepair(controlProvider);
   const root = path.join(output, "fixture");
   fs.mkdirSync(path.join(root, "content"), { recursive: true });
   fs.writeFileSync(path.join(root, "index.html"), "<!doctype html><title>SSG input</title>");
@@ -118,8 +123,8 @@ export async function buildHeadingHashFixture(output: string) {
   const { build } = (await import(
     pathToFileURL(require.resolve("vite")).href
   )) as typeof import("vite");
-  async function compile(name: string, commonJs = false, bare = false) {
-    const entry = path.join(provider, "dist", commonJs ? "index.cjs" : "index.mjs");
+  async function compile(name: string, commonJs = false, bare = false, packageRoot = provider) {
+    const entry = path.join(packageRoot, "dist", commonJs ? "index.cjs" : "index.mjs");
     const plugin = commonJs
       ? (require(entry) as typeof import("@ox-content/vite-plugin"))
       : ((await import(
@@ -142,12 +147,8 @@ export async function buildHeadingHashFixture(output: string) {
     });
     return directory;
   }
-  const before = await compile("before");
+  const before = await compile("before", false, false, controlProvider);
   const originalCore = verifyCoreAsset(before, false);
-  fs.cpSync(path.join(originalRoot, "dist"), path.join(provider, "dist"), {
-    force: true,
-    recursive: true,
-  });
   const esm = fs.readFileSync(path.join(provider, "dist/dev-server.mjs"), "utf8");
   const cjs = fs.readFileSync(path.join(provider, "dist/dev-server.cjs"), "utf8");
   const extract = (source: string) =>

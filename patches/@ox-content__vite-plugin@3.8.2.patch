@@ -11,7 +11,7 @@ index 169881d..07abae8 100644
 +function vizeRepairSsgHashTargets(html) {
 +	const start = "<!-- ox-content:scripts:start -->";
 +	const end = "<!-- ox-content:scripts:end -->";
-+	const prefix = '<script>const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
++	const prefix = 'const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
 +	const lookup = "document.querySelector(hash)";
 +	const scroll = "const scrollToHash = () => {";
 +	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");
@@ -71,7 +71,7 @@ index 4755f15..35ff713 100644
 +function vizeRepairSsgHashTargets(html) {
 +	const start = "<!-- ox-content:scripts:start -->";
 +	const end = "<!-- ox-content:scripts:end -->";
-+	const prefix = '<script>const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
++	const prefix = 'const mobileMenuBtn = document.querySelector("[data-mobile-menu]"),\n';
 +	const lookup = "document.querySelector(hash)";
 +	const scroll = "const scrollToHash = () => {";
 +	if (html.split(start).length !== 2 || html.split(end).length !== 2 || html.split(prefix).length !== 2) throw new Error("Vize docs: unsupported Ox Content core markers");

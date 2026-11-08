@@ -54,8 +54,10 @@
             "sources": [
               "/native-vapor-setup/mutable-js.vue"
             ],
-            "names": [],
-            "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAtB,aAAK",
+            "names": [
+              "_unref(count)"
+            ],
+            "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,aAAK",
             "sourcesContent": [
               "<script setup>let count=1</script><template>{{count}}</template>"
             ]
@@ -110,8 +112,10 @@
                 "sources": [
                   "/native-vapor-setup/mutable-js.vue"
                 ],
-                "names": [],
-                "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAtB,aAAK",
+                "names": [
+                  "_unref(count)"
+                ],
+                "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,aAAK",
                 "sourcesContent": [
                   "<script setup>let count=1</script><template>{{count}}</template>"
                 ]
@@ -128,7 +132,7 @@
               "/native-vapor-setup/mutable-js.vue"
             ],
             "names": [],
-            "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAtB,aAAK",
+            "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,aAAK",
             "sourcesContent": [
               "<script setup>let count=1</script><template>{{count}}</template>"
             ]
@@ -184,7 +188,7 @@
                   "/native-vapor-setup/mutable-js.vue"
                 ],
                 "names": [],
-                "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAtB,aAAK",
+                "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,aAAK",
                 "sourcesContent": [
                   "<script setup>let count=1</script><template>{{count}}</template>"
                 ]
@@ -258,8 +262,10 @@
             "sources": [
               "/native-vapor-setup/var-unicode-crlf.vue"
             ],
-            "names": [],
-            "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAP,SAAC",
+            "names": [
+              "_unref(雪)"
+            ],
+            "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,SAAC",
             "sourcesContent": [
               "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
             ]
@@ -314,8 +320,10 @@
                 "sources": [
                   "/native-vapor-setup/var-unicode-crlf.vue"
                 ],
-                "names": [],
-                "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAP,SAAC",
+                "names": [
+                  "_unref(雪)"
+                ],
+                "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,SAAC",
                 "sourcesContent": [
                   "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
                 ]
@@ -332,7 +340,7 @@
               "/native-vapor-setup/var-unicode-crlf.vue"
             ],
             "names": [],
-            "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAP,SAAC",
+            "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,SAAC",
             "sourcesContent": [
               "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
             ]
@@ -388,7 +396,7 @@
                   "/native-vapor-setup/var-unicode-crlf.vue"
                 ],
                 "names": [],
-                "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAP,SAAC",
+                "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,SAAC",
                 "sourcesContent": [
                   "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
                 ]
@@ -462,8 +470,10 @@
             "sources": [
               "/native-vapor-setup/const-boolean.vue"
             ],
-            "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,OAAO",
+            "names": [
+              "enabled"
+            ],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,OAAO",
             "sourcesContent": [
               "<script setup>const enabled=true</script><template>{{enabled}}</template>"
             ]
@@ -518,8 +528,10 @@
                 "sources": [
                   "/native-vapor-setup/const-boolean.vue"
                 ],
-                "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,OAAO",
+                "names": [
+                  "enabled"
+                ],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,OAAO",
                 "sourcesContent": [
                   "<script setup>const enabled=true</script><template>{{enabled}}</template>"
                 ]
@@ -536,7 +548,7 @@
               "/native-vapor-setup/const-boolean.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,OAAO",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,OAAO",
             "sourcesContent": [
               "<script setup>const enabled=true</script><template>{{enabled}}</template>"
             ]
@@ -592,7 +604,7 @@
                   "/native-vapor-setup/const-boolean.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,OAAO",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,OAAO",
                 "sourcesContent": [
                   "<script setup>const enabled=true</script><template>{{enabled}}</template>"
                 ]
@@ -666,8 +678,10 @@
             "sources": [
               "/native-vapor-setup/const-lf.vue"
             ],
-            "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,KAAK",
+            "names": [
+              "count"
+            ],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
             ]
@@ -722,8 +736,10 @@
                 "sources": [
                   "/native-vapor-setup/const-lf.vue"
                 ],
-                "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,KAAK",
+                "names": [
+                  "count"
+                ],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
                 ]
@@ -740,7 +756,7 @@
               "/native-vapor-setup/const-lf.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,KAAK",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
             ]
@@ -796,7 +812,7 @@
                   "/native-vapor-setup/const-lf.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,KAAK",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
                 ]
@@ -870,8 +886,10 @@
             "sources": [
               "/native-vapor-setup/const-valid-pair.vue"
             ],
-            "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAvC,KAAK",
+            "names": [
+              "count"
+            ],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
             ]
@@ -926,8 +944,10 @@
                 "sources": [
                   "/native-vapor-setup/const-valid-pair.vue"
                 ],
-                "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAvC,KAAK",
+                "names": [
+                  "count"
+                ],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
                 ]
@@ -944,7 +964,7 @@
               "/native-vapor-setup/const-valid-pair.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAvC,KAAK",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
             ]
@@ -1000,7 +1020,7 @@
                   "/native-vapor-setup/const-valid-pair.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAvC,KAAK",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
                 ]
@@ -1074,8 +1094,10 @@
             "sources": [
               "/native-vapor-setup/const-replacement.vue"
             ],
-            "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAjC,KAAK",
+            "names": [
+              "count"
+            ],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
             ]
@@ -1130,8 +1152,10 @@
                 "sources": [
                   "/native-vapor-setup/const-replacement.vue"
                 ],
-                "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAjC,KAAK",
+                "names": [
+                  "count"
+                ],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsBA,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
                 ]
@@ -1148,7 +1172,7 @@
               "/native-vapor-setup/const-replacement.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAjC,KAAK",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
             "sourcesContent": [
               "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
             ]
@@ -1204,7 +1228,7 @@
                   "/native-vapor-setup/const-replacement.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAjC,KAAK",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
                 ]
@@ -1294,8 +1318,10 @@
                   "sources": [
                     "/native-vapor-setup/const-ts-number.vue"
                   ],
-                  "names": [],
-                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAzC,KAAK",
+                  "names": [
+                    "count"
+                  ],
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAsBA,KAAK",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
                   ]
@@ -1304,8 +1330,10 @@
               "transformed": {
                 "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { toDisplayString as _toDisplayString, setText as _setText, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nconst count = 1;\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"const-ts-number\",\n\tsetup(__props) {\n\t\tconst n0 = t0();\n\t\t_setText(n0, _toDisplayString(count));\n\t\treturn n0;\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;;AAAwB,MAAM,QAAa;;;;;gCAAzC,KAAK,CAAA",
-                  "names": [],
+                  "mappings": ";;;AAAwB,MAAM,QAAa;;;;;gCAAsBA,KAAK,CAAA",
+                  "names": [
+                    "count"
+                  ],
                   "sources": [
                     "/native-vapor-setup/const-ts-number.vue"
                   ],
@@ -1367,8 +1395,10 @@
                 "sources": [
                   "/native-vapor-setup/const-ts-number.vue"
                 ],
-                "names": [],
-                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAzC,KAAK",
+                "names": [
+                  "count"
+                ],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAsBA,KAAK",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
                 ]
@@ -1394,7 +1424,7 @@
                     "/native-vapor-setup/const-ts-number.vue"
                   ],
                   "names": [],
-                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzC,KAAK",
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
                   ]
@@ -1403,7 +1433,7 @@
               "transformed": {
                 "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst count = 1;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"const-ts-number\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(count)}`);\n\t\t};\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;AAAwB,MAAM,QAAa;;;;;;;4BAAzC,KAAK,GAAA",
+                  "mappings": ";;AAAwB,MAAM,QAAa;;;;;;;4BAAsB,KAAK,GAAA",
                   "names": [],
                   "sources": [
                     "/native-vapor-setup/const-ts-number.vue"
@@ -1467,7 +1497,7 @@
                   "/native-vapor-setup/const-ts-number.vue"
                 ],
                 "names": [],
-                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzC,KAAK",
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
                 ]
@@ -1564,8 +1594,10 @@
                   "sources": [
                     "/native-vapor-setup/let-ts-unused.vue"
                   ],
-                  "names": [],
-                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAArE,aAAK",
+                  "names": [
+                    "_unref(count)"
+                  ],
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,aAAK",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
                   ]
@@ -1574,8 +1606,10 @@
               "transformed": {
                 "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nconst unused = \"unused\";\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"let-ts-unused\",\n\tsetup(__props) {\n\t\tlet count = 2;\n\t\tconst n0 = t0();\n\t\t_renderEffect(() => _setText(n0, _toDisplayString(_unref(count))));\n\t\treturn n0;\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;EAAU,IAAI,QAAa;;oDAArE,OAAA,KAAA,CAAK,CAAA,CAAA",
-                  "names": [],
+                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;EAAU,IAAI,QAAa;;oDAAsBA,OAAAA,KAAAA,CAAK,CAAA,CAAA",
+                  "names": [
+                    "_unref(count)"
+                  ],
                   "sources": [
                     "/native-vapor-setup/let-ts-unused.vue"
                   ],
@@ -1638,8 +1672,10 @@
                 "sources": [
                   "/native-vapor-setup/let-ts-unused.vue"
                 ],
-                "names": [],
-                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAArE,aAAK",
+                "names": [
+                  "_unref(count)"
+                ],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,aAAK",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
                 ]
@@ -1665,7 +1701,7 @@
                     "/native-vapor-setup/let-ts-unused.vue"
                   ],
                   "names": [],
-                  "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAArE,aAAK",
+                  "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,aAAK",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
                   ]
@@ -1674,7 +1710,7 @@
               "transformed": {
                 "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst unused = \"unused\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"let-ts-unused\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\tlet count = 2;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(count))}`);\n\t\t};\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;;;EAAU,IAAI,QAAa;;4BAArE,OAAA,KAAA,CAAK,GAAA",
+                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;;;EAAU,IAAI,QAAa;;4BAAsB,OAAA,KAAA,CAAK,GAAA",
                   "names": [],
                   "sources": [
                     "/native-vapor-setup/let-ts-unused.vue"
@@ -1739,7 +1775,7 @@
                   "/native-vapor-setup/let-ts-unused.vue"
                 ],
                 "names": [],
-                "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAArE,aAAK",
+                "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,aAAK",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
                 ]
@@ -1829,8 +1865,10 @@
                   "sources": [
                     "/native-vapor-setup/var-ts-boolean.vue"
                   ],
-                  "names": [],
-                  "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAA9C,eAAO",
+                  "names": [
+                    "_unref(enabled)"
+                  ],
+                  "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,eAAO",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
                   ]
@@ -1839,8 +1877,10 @@
               "transformed": {
                 "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"var-ts-boolean\",\n\tsetup(__props) {\n\t\tvar enabled = false;\n\t\tconst n0 = t0();\n\t\t_renderEffect(() => _setText(n0, _toDisplayString(_unref(enabled))));\n\t\treturn n0;\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;;;;;EAAwB,IAAI,UAAgB;;oDAA1C,OAAA,OAAA,CAAO,CAAA,CAAA",
-                  "names": [],
+                  "mappings": ";;;;;;EAAwB,IAAI,UAAgB;;oDAA0BA,OAAAA,OAAAA,CAAO,CAAA,CAAA",
+                  "names": [
+                    "_unref(enabled)"
+                  ],
                   "sources": [
                     "/native-vapor-setup/var-ts-boolean.vue"
                   ],
@@ -1902,8 +1942,10 @@
                 "sources": [
                   "/native-vapor-setup/var-ts-boolean.vue"
                 ],
-                "names": [],
-                "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAA9C,eAAO",
+                "names": [
+                  "_unref(enabled)"
+                ],
+                "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAsBA,eAAO",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
                 ]
@@ -1929,7 +1971,7 @@
                     "/native-vapor-setup/var-ts-boolean.vue"
                   ],
                   "names": [],
-                  "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA9C,eAAO",
+                  "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,eAAO",
                   "sourcesContent": [
                     "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
                   ]
@@ -1938,7 +1980,7 @@
               "transformed": {
                 "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"var-ts-boolean\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\tvar enabled = false;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(enabled))}`);\n\t\t};\n\t}\n});\n",
                 "map": {
-                  "mappings": ";;;;;;;;EAAwB,IAAI,UAAgB;;4BAA1C,OAAA,OAAA,CAAO,GAAA",
+                  "mappings": ";;;;;;;;EAAwB,IAAI,UAAgB;;4BAA0B,OAAA,OAAA,CAAO,GAAA",
                   "names": [],
                   "sources": [
                     "/native-vapor-setup/var-ts-boolean.vue"
@@ -2002,7 +2044,7 @@
                   "/native-vapor-setup/var-ts-boolean.vue"
                 ],
                 "names": [],
-                "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA9C,eAAO",
+                "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,eAAO",
                 "sourcesContent": [
                   "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
                 ]
@@ -2075,7 +2117,7 @@
               "/native-vapor-setup/scalar-number.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,GAAG",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{123}}</template>"
             ]
@@ -2131,7 +2173,7 @@
                   "/native-vapor-setup/scalar-number.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,GAAG",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{123}}</template>"
                 ]
@@ -2148,7 +2190,7 @@
               "/native-vapor-setup/scalar-number.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,GAAG",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{123}}</template>"
             ]
@@ -2204,7 +2246,7 @@
                   "/native-vapor-setup/scalar-number.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,GAAG",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{123}}</template>"
                 ]
@@ -2277,7 +2319,7 @@
               "/native-vapor-setup/scalar-boolean.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,KAAK",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,KAAK",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{false}}</template>"
             ]
@@ -2333,7 +2375,7 @@
                   "/native-vapor-setup/scalar-boolean.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,KAAK",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{false}}</template>"
                 ]
@@ -2350,7 +2392,7 @@
               "/native-vapor-setup/scalar-boolean.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,KAAK",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{false}}</template>"
             ]
@@ -2406,7 +2448,7 @@
                   "/native-vapor-setup/scalar-boolean.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,KAAK",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,KAAK",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{false}}</template>"
                 ]
@@ -2479,7 +2521,7 @@
               "/native-vapor-setup/scalar-null.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,IAAI",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,IAAI",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{null}}</template>"
             ]
@@ -2535,7 +2577,7 @@
                   "/native-vapor-setup/scalar-null.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,IAAI",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,IAAI",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{null}}</template>"
                 ]
@@ -2552,7 +2594,7 @@
               "/native-vapor-setup/scalar-null.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,IAAI",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,IAAI",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{null}}</template>"
             ]
@@ -2608,7 +2650,7 @@
                   "/native-vapor-setup/scalar-null.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,IAAI",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,IAAI",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{null}}</template>"
                 ]
@@ -2681,7 +2723,7 @@
               "/native-vapor-setup/scalar-bigint.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,GAAG",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{12n}}</template>"
             ]
@@ -2737,7 +2779,7 @@
                   "/native-vapor-setup/scalar-bigint.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAsB,GAAG",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{12n}}</template>"
                 ]
@@ -2754,7 +2796,7 @@
               "/native-vapor-setup/scalar-bigint.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,GAAG",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{12n}}</template>"
             ]
@@ -2810,7 +2852,7 @@
                   "/native-vapor-setup/scalar-bigint.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,GAAG",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{12n}}</template>"
                 ]
@@ -2883,7 +2925,7 @@
               "/native-vapor-setup/scalar-string.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,OAAO",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAsB,OAAO",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
             ]
@@ -2939,7 +2981,7 @@
                   "/native-vapor-setup/scalar-string.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,OAAO",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAsB,OAAO",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
                 ]
@@ -2956,7 +2998,7 @@
               "/native-vapor-setup/scalar-string.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,OAAO",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,OAAO",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
             ]
@@ -3012,7 +3054,7 @@
                   "/native-vapor-setup/scalar-string.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,OAAO",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,OAAO",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
                 ]
@@ -3085,7 +3127,7 @@
               "/native-vapor-setup/scalar-empty-string.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,EAAE",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAsB,EAAE",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{''}}</template>"
             ]
@@ -3141,7 +3183,7 @@
                   "/native-vapor-setup/scalar-empty-string.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,EAAE",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAsB,EAAE",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{''}}</template>"
                 ]
@@ -3158,7 +3200,7 @@
               "/native-vapor-setup/scalar-empty-string.vue"
             ],
             "names": [],
-            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,EAAE",
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,EAAE",
             "sourcesContent": [
               "<script setup>const unused=1</script><template>{{''}}</template>"
             ]
@@ -3214,7 +3256,7 @@
                   "/native-vapor-setup/scalar-empty-string.vue"
                 ],
                 "names": [],
-                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,EAAE",
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAsB,EAAE",
                 "sourcesContent": [
                   "<script setup>const unused=1</script><template>{{''}}</template>"
                 ]
