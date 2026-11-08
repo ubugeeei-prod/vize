@@ -26,6 +26,7 @@ wild_http="${wild_http%|}"
 
 case "$wild_primary_status:$wild_http" in
   0:200) ;;
+  7:000|18:200|28:000|28:200|28:302|52:000|55:000|55:200|56:000|56:200|\
   22:500|22:502|22:503|22:504)
     wild_api_status=0
     curl --fail-with-body --show-error --location \

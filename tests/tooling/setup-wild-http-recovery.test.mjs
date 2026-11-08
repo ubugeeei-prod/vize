@@ -244,6 +244,29 @@ void test("Primary authorization, rate, TLS and malformed status failures never 
       );
     assertBeforeExtraction(run({ env: { PRIMARY_EXIT: "0", HTTP: "503" } }), 1, 1);
   }));
+void test("Recoverable primary transport failures use the authenticated API route", () =>
+  fixture(({ run }) => {
+    const expected = run({ original: true });
+    for (const [status, http] of [
+      ["7", "000"],
+      ["18", "200"],
+      ["28", "000"],
+      ["28", "200"],
+      ["28", "302"],
+      ["52", "000"],
+      ["55", "000"],
+      ["55", "200"],
+      ["56", "000"],
+      ["56", "200"],
+    ]) {
+      const observed = run({ env: { PRIMARY_EXIT: status, HTTP: http } });
+      assert.equal(observed.status, 0, observed.stderr);
+      assert.deepEqual(observed.files, expected.files);
+      assert.equal(observed.calls.length, 2);
+      assert.equal(observed.calls[1].at(-1), alternative);
+      assert.deepEqual(observed.cargoCalls, []);
+    }
+  }));
 void test("Failed API status and wrong complete or truncated body refuse before original tar", () =>
   fixture(({ run, root }) => {
     assertBeforeExtraction(
