@@ -15,6 +15,12 @@ today against the three reference surfaces:
 Statuses reflect audited source, not intentions. A PR that changes a status must update the
 affected rows in the same PR.
 
+Migration and extension contracts:
+
+- [Migrate from Ink](./migration-ink.md)
+- [Migrate from Vue TermUI](./migration-vue-termui.md)
+- [Stability and extension support](./support-policy.md)
+
 ## Audit basis
 
 | Surface          | Audited source                                                                                            |
