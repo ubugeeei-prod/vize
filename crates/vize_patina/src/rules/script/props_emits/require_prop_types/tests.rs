@@ -59,7 +59,17 @@ export default {
 }
 
 #[test]
-fn test_invalid_null_value() {
+fn local_define_component_array_props_require_types() {
+    let source = r#"
+const ModalForm = defineComponent({ props: ['email', 'password'] })
+export default { components: { ModalForm } }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_valid_null_value() {
     let source = r#"
 export default {
   props: {
@@ -68,7 +78,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 1);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -95,6 +105,19 @@ export default {
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn validator_counts_as_a_type_contract() {
+    let source = r#"
+export default {
+  props: {
+    status: { validator: value => value !== null }
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
 }
 
 #[test]
@@ -138,7 +161,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 2);
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]
@@ -170,7 +193,7 @@ export default {
 }
 
 #[test]
-fn spread_descriptor_may_carry_the_type() {
+fn spread_descriptor_does_not_prove_a_type() {
     let source = r#"
 export default {
   props: {
@@ -179,7 +202,7 @@ export default {
 }
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.error_count, 0);
+    assert_eq!(result.error_count, 1);
 }
 
 #[test]
@@ -204,4 +227,26 @@ fn plain_modules_need_define_component() {
             .iter()
             .any(|d| d.rule_name == "script/require-prop-types")
     );
+}
+
+#[test]
+fn define_model_without_runtime_or_type_argument_requires_a_type() {
+    let source = "const show = defineModel('show', { default: false })";
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "{ default: false }"
+    );
+}
+
+#[test]
+fn typed_define_model_and_runtime_type_are_valid() {
+    for source in [
+        "const show = defineModel<boolean>('show', { default: false })",
+        "const show = defineModel('show', { type: Boolean, default: false })",
+    ] {
+        assert_eq!(create_linter().lint(source, 0).error_count, 0, "{source}");
+    }
 }

@@ -33,6 +33,8 @@ fn accepts_closed_optional_and_ordinary_tags() {
             "../../../../../../tests/_fixtures/differential/linter/closed-link-component-20261105/template.html.txt"
         ),
         "<p><Input>content</Input></p>",
+        "<p><popover>content</popover></p>",
+        "<p><popover><p>nested</p></popover></p>",
         "<table><tr><td>a</td></tr></table>",
         "<ul><li>a<ul><li>b</li></ul></li></ul>",
         "<li v-for=\"x in xs\">{{ x }}</li>",

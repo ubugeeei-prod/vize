@@ -123,7 +123,7 @@ export const manual7: Record<string, RuleExample> = {
     good: {
       language: "vue",
       source:
-        '<template>\n  <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>\n  <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>\n  <template v-slot="{ data }">\n    <span>{{ data }}</span>\n  </template>\n</template>',
+        '<template>\n  <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>\n  <li v-for="item in items" :key="item.id">{{ item.name }}</li>\n  <template v-slot="{ data }">\n    <span>{{ data }}</span>\n  </template>\n</template>',
     },
     evidence: "docs/content/rules/vue-template-structure.md",
   },

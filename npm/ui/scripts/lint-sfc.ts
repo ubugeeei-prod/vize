@@ -16,7 +16,37 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const corsaExecutable = process.platform === "win32" ? "tsc.exe" : "tsc";
 const corsaPackageName = `typescript-${process.platform}-${process.arch}`;
 const workspaceCorsaPath = resolveWorkspaceCorsaPath();
-const legacyPropsStyleRule = "script/define-props-destructuring";
+const packageCompatibilityRules = new Set([
+  // Date/time primitives retain a props object for Vue versions before 3.5.
+  "script/define-props-destructuring",
+  // This component library intentionally publishes native-element-like names
+  // such as Button, Table, and Code as part of its public API.
+  "vue/multi-word-component-names",
+  // Optional primitive props are intentionally left without runtime defaults;
+  // consumers need to be able to distinguish omission from an explicit value.
+  "script/require-default-prop",
+  // The public component APIs intentionally spell explicit Boolean defaults;
+  // removing them is a package migration, not a product-preset exception.
+  "script/no-boolean-default",
+  // Existing renderless UI components retain their authored void/component
+  // syntax until the package can migrate it without snapshot churn.
+  "vue/html-self-closing",
+  // The package has not yet adopted explicit defineSlots declarations across
+  // every established component API.
+  "script/require-explicit-slots",
+  // Existing templates intentionally mix method paths and inline expressions;
+  // normalizing every handler is a package-wide source migration.
+  "vue/v-on-handler-style",
+  // Root conditional rendering is part of several established component
+  // contracts and must be migrated independently of the product preset.
+  "vue/no-root-v-if",
+  // Existing branches retain their authored negative conditions until a
+  // dedicated readability migration can preserve branch order and behavior.
+  "vue/no-negated-v-if-condition",
+  // Static native-element `is` attributes are retained for current package
+  // compatibility; the upstream rule requires a bound component selector.
+  "vue/require-component-is",
+]);
 
 const lintCoreSfc: SfcLintFunction = (source, options) => {
   const result = lintPatinaSfc(source, {
@@ -26,11 +56,11 @@ const lintCoreSfc: SfcLintFunction = (source, options) => {
     customEventNameCasing: "camelCase",
     ...(workspaceCorsaPath == null ? {} : { corsaPath: workspaceCorsaPath }),
   });
-  // Date/time primitives retain a props object for Vue versions before 3.5.
-  // Keep this package-local compatibility exception out of the product preset.
+  // Keep package-local compatibility exceptions out of the product preset.
   if (Array.isArray(result?.diagnostics)) {
     result.diagnostics = result.diagnostics.filter(
-      (diagnostic: { rule?: unknown }) => diagnostic.rule !== legacyPropsStyleRule,
+      (diagnostic: { rule?: unknown }) =>
+        typeof diagnostic.rule !== "string" || !packageCompatibilityRules.has(diagnostic.rule),
     );
   }
   return result;

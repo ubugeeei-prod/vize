@@ -177,7 +177,7 @@
   },
   "linter/current-api/valid-v-else-autofix-preserves-directive": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__valid-v-else-autofix-preserves-directive.snap",
-    "sha256": "606d5afb73fe7512be388241ace3e5f8a9de84fc6f6c2215ebeb3ac8942154a0"
+    "sha256": "f085854cdbdc8596b2c1e935bd22d5e47040ead8e4d716fd2350311b41e43416"
   },
   "linter/current-api/custom-event-name-casing-9879": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__custom-event-name-casing-9879.snap",
@@ -201,7 +201,7 @@
   },
   "linter/current-api/dotted-slot-name-9865": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__dotted-slot-name-9865.snap",
-    "sha256": "e7b8d1aa5ae5203aff3a697d09b3c7edaff4fb61e2f50381fda250f11c912d4f"
+    "sha256": "e5a71348b6927122688bcf5f76c351b47b4f42372ff7fb77f56bfc5bc1d5cf6f"
   },
   "linter/current-api/cli-preset-validation-9853": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__cli-preset-validation-9853.snap",

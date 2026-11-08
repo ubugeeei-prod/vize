@@ -1,0 +1,16 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  emits: ["save", "cancel"],
+  methods: {
+    save() {
+      this.$emit("save");
+    },
+  },
+});
+</script>
+
+<template>
+  <button type="button" @click="save">Save</button>
+</template>

@@ -66,6 +66,11 @@ test("all pinned LSP cases retain their inputs and only the configured cases gai
       "vize.config.json.fixture",
       "vite.config.mjs",
     ],
+    "lsp/regression/real-project-rule-accuracy-12069": [
+      "App.vue",
+      "vize.config.json.fixture",
+      "vite.config.mjs",
+    ],
     "lsp/regression/versioned-template-suppression-6876": [
       "App.vue",
       "vize.config.json.fixture",

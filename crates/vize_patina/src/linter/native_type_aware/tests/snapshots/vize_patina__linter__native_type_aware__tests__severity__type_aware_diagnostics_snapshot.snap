@@ -7,7 +7,7 @@ expression: diagnostics
         "script/define-emits-declaration",
         "Prefer the type-based defineEmits<{}>() declaration over the runtime/array form",
         72,
-        83,
+        93,
         Some(
             "Use the type-based form: `const emit = defineEmits<{ change: [id: number] }>()`",
         ),
@@ -28,6 +28,15 @@ expression: diagnostics
         71,
         Some(
             "Use `const { prop = defaultValue } = defineProps<Props>()`; Vue 3.5+ preserves reactivity.",
+        ),
+    ),
+    (
+        "script/no-unused-emit-declarations",
+        "The 'save' event is declared but never emitted.",
+        85,
+        91,
+        Some(
+            "Emit this event via the captured emit function, or remove it from the defineEmits declaration.",
         ),
     ),
     (
@@ -122,11 +131,11 @@ expression: diagnostics
     ),
     (
         "vue/v-on-handler-style",
-        "Prefer a method reference or an inline function over an inline statement for this v-on handler",
-        380,
-        401,
+        "Prefer a method reference over an inline function or statement for this v-on handler",
+        388,
+        400,
         Some(
-            "Write the handler as a method reference (e.g. @click=\"handler\") or an inline function (e.g. @click=\"() => count++\") instead of an inline statement.",
+            "Write the handler as a method reference (e.g. @click=\"handler\") instead of an inline function or statement.",
         ),
     ),
 ]

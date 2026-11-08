@@ -30,10 +30,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{
-        walk_call_expression, walk_import_declaration, walk_static_member_expression,
-        walk_variable_declarator,
-    },
+    walk::{walk_call_expression, walk_import_declaration, walk_variable_declarator},
 };
 use oxc_span::Span;
 use vize_l0::{CompactString, FxHashSet};
@@ -79,6 +76,7 @@ impl ScriptRule for NoDeprecatedDeleteSet {
             result,
             vue_modules: FxHashSet::default(),
             callables: FxHashSet::default(),
+            this_aliases: FxHashSet::default(),
         };
         visitor.visit_program(program);
     }
@@ -89,6 +87,7 @@ struct DeleteSetVisitor<'result> {
     result: &'result mut ScriptLintResult,
     vue_modules: FxHashSet<CompactString>,
     callables: FxHashSet<CompactString>,
+    this_aliases: FxHashSet<CompactString>,
 }
 
 impl<'a> Visit<'a> for DeleteSetVisitor<'_> {
@@ -119,14 +118,20 @@ impl<'a> Visit<'a> for DeleteSetVisitor<'_> {
     }
 
     fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'a>) {
-        if let Some(init) = &it.init
-            && is_vue_require(init)
-        {
-            if let BindingPattern::BindingIdentifier(identifier) = &it.id {
-                self.vue_modules
+        if let Some(init) = &it.init {
+            if matches!(init.get_inner_expression(), Expression::ThisExpression(_))
+                && let BindingPattern::BindingIdentifier(identifier) = &it.id
+            {
+                self.this_aliases
                     .insert(CompactString::new(identifier.name.as_str()));
-            } else {
-                self.bind_require_destructure(&it.id);
+            }
+            if is_vue_require(init) {
+                if let BindingPattern::BindingIdentifier(identifier) = &it.id {
+                    self.vue_modules
+                        .insert(CompactString::new(identifier.name.as_str()));
+                } else {
+                    self.bind_require_destructure(&it.id);
+                }
             }
         }
         walk_variable_declarator(self, it);
@@ -137,21 +142,20 @@ impl<'a> Visit<'a> for DeleteSetVisitor<'_> {
             && self.callables.contains(identifier.name.as_str())
         {
             self.report(identifier.span);
+        } else if let Expression::StaticMemberExpression(member) =
+            call.callee.get_inner_expression()
+        {
+            let name = member.property.name.as_str();
+            let flagged = match name {
+                "$set" | "$delete" => self.is_this_receiver(&member.object),
+                "set" | "delete" => self.is_vue_receiver(&member.object),
+                _ => false,
+            };
+            if flagged {
+                self.report(member.property.span);
+            }
         }
         walk_call_expression(self, call);
-    }
-
-    fn visit_static_member_expression(&mut self, it: &oxc_ast::ast::StaticMemberExpression<'a>) {
-        let name = it.property.name.as_str();
-        let flagged = match name {
-            "$set" | "$delete" => is_this(&it.object),
-            "set" | "delete" => self.is_vue_receiver(&it.object),
-            _ => false,
-        };
-        if flagged {
-            self.report(it.span);
-        }
-        walk_static_member_expression(self, it);
     }
 }
 
@@ -188,19 +192,22 @@ impl DeleteSetVisitor<'_> {
         }
     }
 
+    fn is_this_receiver(&self, expression: &Expression<'_>) -> bool {
+        match expression.get_inner_expression() {
+            Expression::ThisExpression(_) => true,
+            Expression::Identifier(identifier) => {
+                self.this_aliases.contains(identifier.name.as_str())
+            }
+            _ => false,
+        }
+    }
+
     fn report(&mut self, span: Span) {
         let start = self.offset as u32 + span.start;
         let end = self.offset as u32 + span.end;
         self.result
             .add_diagnostic(LintDiagnostic::error(META.name, MESSAGE, start, end));
     }
-}
-
-fn is_this(expression: &Expression<'_>) -> bool {
-    matches!(
-        expression.get_inner_expression(),
-        Expression::ThisExpression(_)
-    )
 }
 
 fn is_vue_require(expression: &Expression<'_>) -> bool {
@@ -277,6 +284,18 @@ mod tests {
         assert_eq!(
             lint("function set(value) { return value }\nset(1)").error_count,
             0
+        );
+    }
+
+    #[test]
+    fn tracks_this_aliases_and_reports_only_the_property_name() {
+        let source = "const me = this; me.$set(item, 'ready', true)";
+        let result = lint(source);
+        assert_eq!(result.error_count, 1);
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            "$set"
         );
     }
 }

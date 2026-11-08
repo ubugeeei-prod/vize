@@ -51,6 +51,15 @@ const inputEl = ref(null)
 }
 
 #[test]
+fn a_prop_binding_does_not_count_as_a_template_ref_binding() {
+    let sfc = r#"<template><label ref="label" /></template>
+<script setup>
+defineProps({ label: String })
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
 fn test_valid_use_template_ref_differing_var_name() {
     // The ref is wired via the string key, not a matching variable name.
     let sfc = r#"<template><input ref="inputEl" /></template>
@@ -89,6 +98,33 @@ export default {
 }
 
 #[test]
+fn static_refs_destructuring_does_not_hide_other_unused_refs() {
+    let sfc = r#"<template>
+  <input ref="inputEl" />
+  <input ref="dead" />
+</template>
+<script>
+export default {
+  mounted() {
+    const { inputEl: input } = this.$refs
+    input.focus()
+  }
+}
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'dead' is never referenced in <script>"
+    );
+}
+
+#[test]
 fn test_valid_options_api_setup_return() {
     let sfc = r#"<template><input ref="inputEl" /></template>
 <script>
@@ -101,6 +137,22 @@ export default {
 }
 </script>"#;
     assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn custom_factory_setup_return_does_not_hide_an_unused_ref() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+import { ref } from 'vue'
+import { create } from './factory'
+export default create({
+  setup() {
+    const inputEl = ref(null)
+    return { inputEl }
+  }
+})
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
 }
 
 #[test]
@@ -123,10 +175,9 @@ const setRef = (el) => {}
 }
 
 #[test]
-fn test_skip_when_no_script_block() {
-    // No script to correlate against: report nothing (conservative).
+fn test_reports_when_no_script_block_can_use_the_ref() {
     let sfc = r#"<template><input ref="orphan" /></template>"#;
-    assert_eq!(warnings(sfc), 0);
+    assert_eq!(warnings(sfc), 1);
 }
 
 #[test]
@@ -145,6 +196,55 @@ export default {
 }
 
 #[test]
+fn static_computed_refs_access_does_not_hide_other_unused_refs() {
+    let sfc = r#"<template>
+  <input ref="used" />
+  <input ref="dead" />
+</template>
+<script>
+export default {
+  mounted() {
+    this.$refs['used'].focus()
+  }
+}
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'dead' is never referenced in <script>"
+    );
+}
+
+#[test]
+fn refs_text_in_a_script_comment_does_not_hide_an_unused_ref() {
+    let sfc = r#"<template><input ref="dead" /></template>
+<script>
+// this.$refs[`dynamic-${name}`]
+export default {}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn reports_unused_ref_on_the_sfc_template_element() {
+    let sfc = r#"<template ref="container"><div /></template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &sfc[diagnostic.start as usize..diagnostic.end as usize],
+        "\"container\""
+    );
+}
+
+#[test]
 fn test_bailout_whole_refs_passed() {
     // `$refs` handed off as a whole object: bail out.
     let sfc = r#"<template><input ref="inputEl" /></template>
@@ -159,12 +259,54 @@ export default {
 }
 
 #[test]
+fn a_bare_refs_comparison_does_not_hide_an_unrelated_unused_ref() {
+    let sfc = r#"<template><input ref="img" /></template>
+<script>
+export default {
+  mounted() {
+    if (document.activeElement !== this.$refs) return
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
 fn test_valid_ref_used_in_template_refs_expression() {
     // `$refs.inputEl` appears in the template; the `$refs` bail keeps us quiet.
     let sfc = r#"<template><input ref="inputEl" /><span>{{ $refs.inputEl }}</span></template>
 <script setup>
 const x = 1
 </script>"#;
+    assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn test_template_static_refs_use_does_not_hide_another_dead_ref() {
+    let sfc = r#"<template>
+  <button ref="calendar" @click="$refs.calendar.open()" />
+  <input ref="inlineCalendar" />
+</template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'inlineCalendar' is never referenced in <script>"
+    );
+}
+
+#[test]
+fn test_template_static_refs_use_keeps_the_named_ref() {
+    let sfc = r#"<template>
+  <button ref="calendar" @click="$refs.calendar.open()" />
+</template>
+<script>export default {}</script>"#;
     assert_eq!(warnings(sfc), 0);
 }
 
@@ -204,6 +346,87 @@ import { ref } from 'vue'
 const inputElement = ref(null)
 </script>"#;
     assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn test_name_in_script_string_does_not_count_as_usage() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+export default {
+  mounted() {
+    const docs = `const inputEl = ref(null)`
+    console.log(docs)
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn test_unrelated_options_api_local_does_not_count_as_usage() {
+    let sfc = r#"<template><input ref="tab" /></template>
+<script>
+export default {
+  mounted() {
+    let tab = 0
+    tab++
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 1);
+}
+
+#[test]
+fn test_static_computed_refs_access_keeps_the_rule_conservative() {
+    let sfc = r#"<template><input ref="inputEl" /></template>
+<script>
+export default {
+  mounted() {
+    this.$refs['inputEl'].focus()
+  }
+}
+</script>"#;
+    assert_eq!(warnings(sfc), 0);
+}
+
+#[test]
+fn test_fatal_template_parse_does_not_report_partial_ref_analysis() {
+    let sfc = r#"<template><div><input ref="inputEl" /></template>
+<script setup>
+import { ref } from 'vue'
+const inputEl = ref(null)
+</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/no-unused-refs"),
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn recovered_table_foster_parenting_keeps_unused_ref_analysis() {
+    let sfc = r#"<template>
+  <div ref="article">
+    <table><thead><th>Heading</th></thead></table>
+  </div>
+</template>
+<script>export default {}</script>"#;
+    let result = create_linter().lint_sfc(sfc, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/no-unused-refs")
+        .collect();
+
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(
+        findings[0].message,
+        "Template ref 'article' is never referenced in <script>"
+    );
 }
 
 #[test]

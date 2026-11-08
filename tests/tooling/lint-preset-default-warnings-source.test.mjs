@@ -46,7 +46,7 @@ const read = createSourceReader({
   latestSourceInverse: inversePatinaCurrentSource,
 });
 const bytes = read(`${directory}/successor.json`);
-assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
+assert.equal(sha(bytes), "d1e19ad380da5773cfc5aadbf1b622249deb40439eb53352d29caca21d82f3ce");
 const manifest = JSON.parse(bytes);
 
 // Keep the original retirement/receipt edits and this additive class-default

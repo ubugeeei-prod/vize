@@ -240,7 +240,7 @@ try {
             line: casing === "PascalCase" ? 2 : 3,
             column: 3,
             endLine: casing === "PascalCase" ? 2 : 3,
-            endColumn: 3 + tag.length + 4,
+            endColumn: 4 + tag.length,
             fix: { range: [nameStart, nameEnd], text: replacement },
           },
         ]

@@ -116,31 +116,31 @@ defineProps<{ href: string; src: string; alt: string }>();
 }
 
 #[test]
-fn default_preset_accepts_dotted_static_slot_names() {
+fn default_preset_rejects_dotted_static_slot_names() {
     let source =
         r#"<DataTable><template #item.name="{ row }">{{ row.name }}</template></DataTable>"#;
     let result = Linter::with_preset(LintPreset::HappyPath).lint_template(source, "App.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .all(|diagnostic| diagnostic.rule_name != "vue/valid-v-slot"),
-        "{:?}",
-        result.diagnostics
-    );
-
-    let strict = Linter::with_preset(LintPreset::HappyPath)
-        .with_valid_v_slot_allow_modifiers(false)
-        .lint_template(source, "App.vue");
     assert_eq!(
-        strict
+        result
             .diagnostics
             .iter()
             .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-slot")
             .count(),
         1,
         "{:?}",
-        strict.diagnostics
+        result.diagnostics
+    );
+
+    let allowed = Linter::with_preset(LintPreset::HappyPath)
+        .with_valid_v_slot_allow_modifiers(true)
+        .lint_template(source, "App.vue");
+    assert!(
+        allowed
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "vue/valid-v-slot"),
+        "{:?}",
+        allowed.diagnostics
     );
 
     let dynamic = r#"<DataTable><template #[name].memo="{ row }">{{ row }}</template></DataTable>"#;

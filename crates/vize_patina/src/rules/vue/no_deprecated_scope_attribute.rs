@@ -66,9 +66,13 @@ impl Rule for NoDeprecatedScopeAttribute {
             if let PropNode::Attribute(attr) = prop
                 && attr.name == "scope"
             {
+                let loc = vize_relief::SourceLocation::new(
+                    attr.loc.span.start,
+                    attr.loc.span.start + "scope".len() as u32,
+                );
                 ctx.error_with_help(
                     ctx.t("vue/no-deprecated-scope-attribute.message"),
-                    &attr.loc,
+                    &loc,
                     ctx.t("vue/no-deprecated-scope-attribute.help"),
                 );
             }
@@ -96,6 +100,7 @@ mod tests {
             "App.vue",
         );
         assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].end - result.diagnostics[0].start, 5);
     }
 
     #[test]

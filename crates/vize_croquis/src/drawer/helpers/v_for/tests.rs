@@ -1,6 +1,15 @@
 use super::parse_v_for_scope_expression;
 
 #[test]
+fn unparenthesized_vue2_tuple_aliases_are_retained() {
+    let aliases = parse_v_for_scope_expression("item,index in items").unwrap();
+    assert_eq!(aliases.value_bindings.as_slice(), ["item"]);
+    assert_eq!(aliases.key_alias.as_deref(), Some("index"));
+    assert_eq!(aliases.index_alias, None);
+    assert_eq!(aliases.source, "items");
+}
+
+#[test]
 fn parse_scope_expression_keeps_destructured_value_pattern() {
     let aliases = parse_v_for_scope_expression("{ id, name: label } in items").unwrap();
 

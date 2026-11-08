@@ -17,7 +17,7 @@ const rule = "script/no-deep-destructure-in-props";
 await test("owned prop destructuring preserves thirty six whole source CLI packets", async () => {
   const bytes = fs.readFileSync(path.join(fixture, "cases.json"));
   const corpus = JSON.parse(bytes);
-  assert.equal(sha256(bytes), "d522ae6c3fc8a04403c43661c7d66584188a2168b1e01947093044f4239de8c8");
+  assert.equal(sha256(bytes), "b8d829cc0ec72c458c2a9f42ef10af7aeae19218a31067382cf3ddb06c74d66b");
   assert.equal(corpus.cases.length, 33);
   const vectors = corpus.cases.map((entry) => ({
     entry,

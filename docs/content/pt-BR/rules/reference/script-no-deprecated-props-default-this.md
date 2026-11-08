@@ -17,7 +17,7 @@ Aplicável a: Scripts JS/TS em SFCs Vue; os exemplos mostram a forma relevante d
 
 O valor padrão e o validador da prop leem `this`, mas essas funções não podem depender da instância do componente no Vue 3.
 
-```vue annotate="remove:6,7,8,13,14"
+```vue annotate="remove:6,7,8"
 <script lang="ts">
 export default {
   props: {
@@ -28,12 +28,6 @@ export default {
         return this.defaultSize
       }
     },
-    value: {
-      type: Number,
-      validator() {
-        return this.value > 0
-      }
-    }
   }
 }
 </script>
@@ -43,7 +37,7 @@ export default {
 
 A função de valor padrão lê `props.baseSize` de seu argumento, e o validador testa seu argumento `value`. Ambos deixam de depender de um objeto receptor de instância indisponível.
 
-```vue annotate="add:6,7,8,13,14"
+```vue annotate="add:6,7,8,11,12,13,14,15,16"
 <script lang="ts">
 export default {
   props: {
@@ -86,4 +80,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de tipo e script](../type-and-script.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L66)

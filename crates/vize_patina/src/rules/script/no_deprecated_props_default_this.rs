@@ -1,6 +1,6 @@
 //! script/no-deprecated-props-default-this
 //!
-//! Disallow accessing `this` inside a prop `default` or `validator` function.
+//! Disallow accessing `this` inside a prop `default` factory function.
 //! In Vue 2 these functions ran with `this` bound to the (pre-creation)
 //! component instance, so deriving a default via `this.*` was common. In Vue 3
 //! they are called as plain functions, so `this` is `undefined` and any
@@ -8,10 +8,11 @@
 //! to the `default` factory instead.
 //!
 //! This is a Vue 2 -> 3 migration rule, scoped to the Options API object-form
-//! `props` option. For each object-form prop, the `default` and `validator`
-//! functions (regular or arrow) are inspected, and a `this.*` reference at the
-//! function's own `this`-scope is reported; nested regular functions (which
-//! rebind `this`) are not traversed.
+//! `props` option. For each object-form prop, a regular `default` factory is
+//! inspected and a `this.*` reference at the function's own `this`-scope is
+//! reported; nested regular functions (which rebind `this`) are not traversed.
+//! Function-valued props are excluded because their `default` is the prop value
+//! itself rather than a factory Vue invokes to obtain a value.
 //!
 //! ## Examples
 //!
@@ -26,12 +27,6 @@
 //!         return this.defaultSize
 //!       }
 //!     },
-//!     value: {
-//!       type: Number,
-//!       validator() {
-//!         return this.value > 0
-//!       }
-//!     }
 //!   }
 //! }
 //! ```
@@ -74,11 +69,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Error,
 };
 
-/// The prop-declaration properties whose function value used to receive the
-/// component instance as `this` in Vue 2.
-const THIS_AWARE_PROP_FUNCTIONS: &[&str] = &["default", "validator"];
-
-/// Disallow `this` inside a prop `default`/`validator` function.
+/// Disallow `this` inside a prop `default` factory function.
 pub struct NoDeprecatedPropsDefaultThis;
 
 impl ScriptRule for NoDeprecatedPropsDefaultThis {
@@ -131,6 +122,9 @@ fn check_prop_declaration(
     offset: usize,
     result: &mut ScriptLintResult,
 ) {
+    if prop_has_function_type(declaration) {
+        return;
+    }
     for property in &declaration.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -141,7 +135,7 @@ fn check_prop_declaration(
         let Some(name) = property_key_name(&property.key) else {
             continue;
         };
-        if !THIS_AWARE_PROP_FUNCTIONS.contains(&name) {
+        if name != "default" {
             continue;
         }
         check_prop_function(property, offset, result);
@@ -156,22 +150,33 @@ fn check_prop_function(
     result: &mut ScriptLintResult,
 ) {
     let mut visitor = ThisVisitor { offset, result };
-    match &property.value {
-        // `default() {}` / `default: function () {}`.
-        Expression::FunctionExpression(function) => {
-            if let Some(body) = function.body.as_ref() {
-                visitor.visit_function_body(body);
-            }
-        }
-        // `default: () => this.x`. An arrow has no own `this`, so a `this`
-        // reference here captures the (module) enclosing scope.
-        Expression::ArrowFunctionExpression(arrow) => {
-            for statement in &arrow.body.statements {
-                visitor.visit_statement(statement);
-            }
-        }
-        _ => {}
+    // `default() {}` / `default: function () {}`. Arrow functions have no
+    // factory-local `this` and are outside the upstream rule's contract.
+    if let Expression::FunctionExpression(function) = &property.value
+        && let Some(body) = function.body.as_ref()
+    {
+        visitor.visit_function_body(body);
     }
+}
+
+fn prop_has_function_type(declaration: &ObjectExpression<'_>) -> bool {
+    declaration.properties.iter().any(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return false;
+        };
+        if property.computed || property_key_name(&property.key) != Some("type") {
+            return false;
+        }
+        match &property.value {
+            Expression::Identifier(identifier) => identifier.name == "Function",
+            Expression::ArrayExpression(array) => array.elements.iter().any(|element| {
+                element
+                    .as_expression()
+                    .is_some_and(|expression| matches!(expression, Expression::Identifier(identifier) if identifier.name == "Function"))
+            }),
+            _ => false,
+        }
+    })
 }
 
 /// Reports every `this` reference bound to the visited function's own

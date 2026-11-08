@@ -62,6 +62,10 @@ pub struct SfcScriptContext<'a> {
     /// parsed as TypeScript, so rules that only make sense with type syntax
     /// read this instead of the parse result.
     pub typescript: bool,
+    /// Whether the TypeScript block/file uses the TSX dialect. A few upstream
+    /// rules intentionally require an exact `lang="ts"` SFC block and do not
+    /// run for `lang="tsx"`.
+    pub typescript_jsx: bool,
     /// Raw `<template>` block content, when the SFC declares a template.
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled
@@ -89,6 +93,12 @@ pub struct SfcScriptContext<'a> {
     /// `<script setup>` and that block parsed cleanly. A whole-file rule can
     /// combine both halves from one invocation instead of skipping the file.
     pub sibling_program: Option<&'a oxc_ast::ast::Program<'a>>,
+    /// Byte offset of [`Self::sibling_program`] within the SFC source.
+    ///
+    /// Rules which resolve a declaration from the other script block need its
+    /// own origin when they report at that declaration. Reusing the current
+    /// block's offset silently points diagnostics at the wrong line.
+    pub sibling_offset: Option<usize>,
 }
 
 impl<'a> SfcScriptContext<'a> {

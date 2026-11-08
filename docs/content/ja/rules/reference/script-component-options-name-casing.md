@@ -20,7 +20,7 @@ description: "コンポーネントの name オプションを PascalCase に揃
 ```vue annotate="remove:3"
 <script lang="ts">
 export default {
-  name: 'my-component' // kebab-case
+  components: { myComponent }
 }
 </script>
 ```
@@ -32,7 +32,7 @@ export default {
 ```vue annotate="add:3"
 <script lang="ts">
 export default {
-  name: 'MyComponent'
+  components: { MyComponent }
 }
 </script>
 ```
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [型と script のルール](../type-and-script.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L40)

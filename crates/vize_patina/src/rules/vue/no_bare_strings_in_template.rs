@@ -9,11 +9,11 @@
 //! an internationalized application that text should instead flow through a
 //! translation function (e.g. `{{ $t('...') }}` / `:title="$t('...')"`).
 //!
-//! To stay conservative this rule only reports text that contains an actual
-//! letter (any Unicode alphabetic character). Whitespace-, punctuation-, symbol-
-//! and number-only text (`-`, `|`, `/`, `123`, `&nbsp;`, …) is ignored, as are
-//! mustache interpolations `{{ }}` (already dynamic), bound attributes
-//! (`:title="..."`), and the content of `<script>` / `<style>` blocks.
+//! The eslint-plugin-vue default punctuation allowlist is honored, while other
+//! non-whitespace text (including numbers) is reported. Mustache interpolations
+//! `{{ }}` (already dynamic) and bound attributes (`:title="..."`) are skipped.
+//! Text nodes inside `<script>` / `<style>` elements are checked just like the
+//! upstream rule's unqualified `VText` visitor.
 //!
 //! Mirrors eslint's `vue/no-bare-strings-in-template` (with its default target
 //! attributes). It is opt-in: it only runs when a project explicitly enables the
@@ -34,17 +34,18 @@
 //! <div>{{ $t('hello') }}</div>
 //! <img :alt="$t('cat')" />
 //! <div>-</div>
-//! <div>123</div>
 //! <button :title="$t('close')">{{ $t('x') }}</button>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::markup::{
-    MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule, MarkupTraversal,
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule,
+    MarkupText, MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-bare-strings-in-template",
@@ -57,10 +58,8 @@ static META: RuleMeta = RuleMeta {
 /// Attribute names whose raw string value is user-facing and should be
 /// internationalized. Matches eslint `vue/no-bare-strings-in-template`'s default
 /// target attributes.
-const TARGET_ATTRIBUTES: &[&str] = &[
-    "alt",
+const COMMON_TARGET_ATTRIBUTES: &[&str] = &[
     "title",
-    "placeholder",
     "aria-label",
     "aria-placeholder",
     "aria-roledescription",
@@ -71,43 +70,53 @@ const TARGET_ATTRIBUTES: &[&str] = &[
 pub struct NoBareStringsInTemplate;
 
 impl NoBareStringsInTemplate {
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        // The content of <script>/<style> is code/CSS, never user-facing copy.
-        if is_raw_text_element(element.tag()) {
-            return;
-        }
-
-        // Bare text content of the element (direct text children only; nested
-        // elements are visited on their own).
-        element.walk_children(&mut |child| {
-            if let MarkupNode::Text(text) = child
-                && has_bare_string(text.content())
-            {
-                ctx.warn_at_with_help(
-                    ctx.t("vue/no-bare-strings-in-template.message"),
-                    text.range(),
-                    ctx.t("vue/no-bare-strings-in-template.help"),
-                );
-            }
-        });
-
+    fn check_bindings(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // Bare string in a user-facing static attribute. Bound attributes
         // (`:title="..."`) are directives, so they are skipped here.
         element.walk_bindings(&mut |binding| {
             if binding.kind() == MarkupBindingKind::Attribute
-                && TARGET_ATTRIBUTES
-                    .iter()
-                    .any(|target| binding.is_unqualified_arg_eq_ignore_ascii_case(target))
+                && is_target_attribute(element.tag(), &binding)
                 && let Some(value) = binding.static_value()
                 && has_bare_string(value)
             {
                 ctx.warn_at_with_help(
                     ctx.t("vue/no-bare-strings-in-template.message"),
-                    binding.range(),
+                    value_range(ctx.source, binding),
+                    ctx.t("vue/no-bare-strings-in-template.help"),
+                );
+            } else if binding.kind() == MarkupBindingKind::Custom
+                && binding.is_unqualified_arg_exact("text")
+                && let Some(value) = binding.literal_string_value()
+                && has_bare_string(value)
+            {
+                ctx.warn_at_with_help(
+                    ctx.t("vue/no-bare-strings-in-template.message"),
+                    value_range(ctx.source, binding),
                     ctx.t("vue/no-bare-strings-in-template.help"),
                 );
             }
         });
+    }
+
+    fn check_text(ctx: &mut LintContext<'_>, text: &MarkupText<'_>) {
+        if has_bare_string(text.content()) {
+            ctx.warn_at_with_help(
+                ctx.t("vue/no-bare-strings-in-template.message"),
+                text.range(),
+                ctx.t("vue/no-bare-strings-in-template.help"),
+            );
+        }
+    }
+
+    fn check_element_legacy(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        // The legacy Relief visitor has no text callback. Keep its direct-child
+        // projection here while the unified markup lane uses `enter_text`.
+        element.walk_children(&mut |child| {
+            if let MarkupNode::Text(text) = child {
+                Self::check_text(ctx, &text);
+            }
+        });
+        Self::check_bindings(ctx, element);
     }
 }
 
@@ -117,11 +126,27 @@ impl MarkupRule for NoBareStringsInTemplate {
     }
 
     fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Elements
+        MarkupTraversal::ElementsAndText
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        Self::check_element(ctx.lint(), element);
+        // JSX diagnostics follow authored source order: attributes precede
+        // children. Vue keeps the legacy visitor's element-exit ordering below.
+        if ctx.is_jsx() {
+            Self::check_bindings(ctx.lint(), element);
+        }
+    }
+
+    fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if ctx.is_template() {
+            Self::check_element_legacy(ctx.lint(), element);
+        }
+    }
+
+    fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
+        if ctx.is_jsx() || ctx.current_element().is_none() {
+            Self::check_text(ctx.lint(), text);
+        }
     }
 }
 
@@ -141,22 +166,59 @@ impl Rule for NoBareStringsInTemplate {
         true
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+    fn exit_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element_legacy(ctx, &MarkupElement::new(element));
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        // Root-level text has no owning element, so the legacy element-exit
+        // visitor cannot observe it.
+        for child in &root.children {
+            let TemplateChildNode::Text(text) = child else {
+                continue;
+            };
+            if has_bare_string(text.content) {
+                ctx.warn_at_with_help(
+                    ctx.t("vue/no-bare-strings-in-template.message"),
+                    ByteRange::new(text.loc.span.start, text.loc.span.end),
+                    ctx.t("vue/no-bare-strings-in-template.help"),
+                );
+            }
+        }
     }
 }
 
-/// Whether `tag` is an element whose text content is raw (non-markup) data and
-/// therefore never user-facing copy.
-fn is_raw_text_element(tag: &str) -> bool {
-    tag.eq_ignore_ascii_case("script") || tag.eq_ignore_ascii_case("style")
+fn is_target_attribute(tag: &str, binding: &MarkupBinding<'_>) -> bool {
+    COMMON_TARGET_ATTRIBUTES
+        .iter()
+        .any(|target| binding.is_unqualified_arg_exact(target))
+        || (tag == "input" && binding.is_unqualified_arg_exact("placeholder"))
+        || (tag == "img" && binding.is_unqualified_arg_exact("alt"))
 }
 
-/// Whether `text` contains human-readable copy: at least one alphabetic
-/// character (any language). Whitespace-, punctuation-, symbol- and number-only
-/// text is treated as non-translatable and ignored.
 fn has_bare_string(text: &str) -> bool {
-    text.chars().any(char::is_alphabetic)
+    const ALLOWLIST: &[char] = &[
+        '(', ')', ',', '.', '&', '+', '-', '=', '*', '/', '#', '%', '!', '?', ':', '[', ']', '{',
+        '}', '<', '>', '·', '•', '‐', '–', '—', '−', '|',
+    ];
+    text.trim()
+        .chars()
+        .any(|character| !character.is_whitespace() && !ALLOWLIST.contains(&character))
+}
+
+fn value_range(source: &str, binding: MarkupBinding<'_>) -> ByteRange {
+    let range = binding.range();
+    let Some(authored) = source.get(range.start as usize..range.end as usize) else {
+        return range;
+    };
+    let Some(equal) = authored.find('=') else {
+        return range;
+    };
+    let Some(value) = authored.get(equal + 1..) else {
+        return range;
+    };
+    let whitespace = value.bytes().take_while(u8::is_ascii_whitespace).count();
+    ByteRange::new(range.start + (equal + 1 + whitespace) as u32, range.end)
 }
 
 #[cfg(test)]
@@ -184,6 +246,15 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div><span>Save</span></div>"#, "App.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn reports_bare_text_at_the_template_root() {
+        let result = create_linter().lint_template(
+            "Base Empty <CompSwitch v-model:value=\"loadData\" />",
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]
@@ -254,10 +325,38 @@ mod tests {
     }
 
     #[test]
-    fn allows_number_only_text() {
+    fn reports_number_only_text() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>123</div>"#, "App.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn limits_alt_and_placeholder_to_the_upstream_default_tags() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div alt="copy" placeholder="copy"></div><img alt="copy"><input placeholder="copy">"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 2);
+    }
+
+    #[test]
+    fn reports_the_static_attribute_value_range() {
+        let linter = create_linter();
+        let source = r#"<img alt="a cat">"#;
+        let result = linter.lint_template(source, "App.vue");
+        assert_eq!(result.warning_count, 1);
+        let start = source.find('"').unwrap() as u32;
+        assert_eq!(result.diagnostics[0].start, start);
+        assert_eq!(result.diagnostics[0].end, source.len() as u32 - 1);
+    }
+
+    #[test]
+    fn reports_static_v_text_values() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<p v-text="'Save'"></p>"#, "App.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

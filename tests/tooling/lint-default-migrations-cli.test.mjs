@@ -12,6 +12,13 @@ import { withoutHelp } from "./support/lint-help-policy.mjs";
 import { vueConfigFixtureSource, writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const findingsForPreset = (entry, preset, findings) =>
+  [
+    ...findings,
+    ...(["essential", "opinionated", "nuxt"].includes(preset)
+      ? (entry.strictPresetDiagnostics ?? [])
+      : []),
+  ].sort((left, right) => left.start - right.start);
 await test("source CLI presets retain complete Vue 3 migration results and explicit n8n selection", () => {
   const fixture = path.join(root, "tests/_fixtures/lint-default-migrations");
   const corpus = JSON.parse(
@@ -43,7 +50,11 @@ await test("source CLI presets retain complete Vue 3 migration results and expli
         entry,
         preset,
         config: null,
-        findings: preset === "essential" ? entry.essentialDiagnostics : entry.diagnostics,
+        findings: findingsForPreset(
+          entry,
+          preset,
+          preset === "essential" ? entry.essentialDiagnostics : entry.diagnostics,
+        ),
       })),
       { entry, preset: "incremental", config: null, findings: [] },
       {

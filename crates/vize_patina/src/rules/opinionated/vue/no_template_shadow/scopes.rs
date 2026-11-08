@@ -16,7 +16,11 @@ struct Scope {
 }
 
 pub(super) fn check<'a>(ctx: &mut LintContext<'a>, children: &[TemplateChildNode<'a>]) {
-    walk(ctx, children, &mut Scope::default());
+    let mut scope = Scope {
+        visible: super::script_bindings::collect(ctx),
+        introduced: Vec::new(),
+    };
+    walk(ctx, children, &mut scope);
 }
 
 fn walk<'a>(ctx: &mut LintContext<'a>, children: &[TemplateChildNode<'a>], scope: &mut Scope) {
@@ -95,16 +99,7 @@ fn element_bindings<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>, sc
 
 impl Scope {
     fn declare(&mut self, ctx: &mut LintContext<'_>, binding: Binding) {
-        let shadows_setup = ctx.analysis().is_some_and(|analysis| {
-            analysis.bindings.is_script_setup
-                && (analysis.bindings.contains(binding.name.as_str())
-                    || analysis
-                        .macros
-                        .props()
-                        .iter()
-                        .any(|prop| prop.name == binding.name))
-        });
-        if !shadows_setup && self.visible.insert(binding.name.clone()) {
+        if self.visible.insert(binding.name.clone()) {
             self.introduced.push(binding.name);
         } else {
             ctx.warn_with_help(

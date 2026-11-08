@@ -1826,12 +1826,12 @@ script/component-options-name-casing · lint 规则
 
 错误示例:
   export default {
-    name: 'my-component' // kebab-case
+    components: { myComponent }
   }
 
 正确示例:
   export default {
-    name: 'MyComponent'
+    components: { MyComponent }
   }
 === script/consistent-props-emits-key-quotes
 script/consistent-props-emits-key-quotes · lint 规则
@@ -1881,7 +1881,7 @@ script/custom-event-name-casing · lint 规则
 script/define-emits-declaration · lint 规则
 强制使用基于类型的 defineEmits<{}>() 形式，而不是运行时/数组形式
 
-精度层级: exact
+精度层级: complete
 适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 严重级别: 警告
 类别: script
@@ -1929,7 +1929,7 @@ script/define-macros-order · lint 规则
 script/define-props-declaration · lint 规则
 强制使用基于类型的 defineProps<{ ... }>()，而不是运行时/对象形式
 
-精度层级: exact
+精度层级: complete
 适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 严重级别: 警告
 类别: script
@@ -2253,12 +2253,10 @@ script/no-deprecated-dollar-scopedslots-api · lint 规则
 
 错误示例:
   const header = this.$scopedSlots.header
-  const footer = ctx.$scopedSlots.footer
   render($scopedSlots.default)
 
 正确示例:
   const header = this.$slots.header
-  const footer = ctx.$slots.footer
   render($slots.default)
 === script/no-deprecated-events-api
 script/no-deprecated-events-api · lint 规则
@@ -2339,12 +2337,6 @@ script/no-deprecated-props-default-this · lint 规则
           return this.defaultSize
         }
       },
-      value: {
-        type: Number,
-        validator() {
-          return this.value > 0
-        }
-      }
     }
   }
 
@@ -3020,12 +3012,8 @@ script/one-component-per-file · lint 规则
 文档: docs/content/rules/reference/script-one-component-per-file.md
 
 错误示例:
-  export default {
-    name: 'Parent',
-    components: {
-      Child: { name: 'Child' }
-    }
-  }
+  const First = defineComponent({ name: 'First' })
+  const Second = defineComponent({ name: 'Second' })
 
 正确示例:
   export default {
@@ -3089,7 +3077,12 @@ script/prefer-define-options · lint 规则
 文档: docs/content/rules/reference/script-prefer-define-options.md
 
 错误示例:
+  <script lang="ts">
   export default { name: 'MyComponent', inheritAttrs: false }
+  </script>
+  <script setup lang="ts">
+  const ready = true
+  </script>
 
 正确示例:
   // Real options logic — keep the plain script.
@@ -3333,8 +3326,12 @@ script/require-explicit-slots · lint 规则
 文档: docs/content/rules/reference/script-require-explicit-slots.md
 
 错误示例:
-  const props = defineProps<{ id: number }>()
-  const slots = useSlots()
+  <script setup lang="ts">
+  defineSlots<{ default(): unknown }>()
+  </script>
+  <template>
+    <div><slot /><slot name="footer" /></div>
+  </template>
 
 正确示例:
   defineSlots<{ default(props: { msg: string }): unknown }>()
@@ -3466,7 +3463,7 @@ script/require-slots-as-functions · lint 规则
 错误示例:
   export default {
     render() {
-      return this.$slots.default
+      return [this.$slots.default]
     }
   }
 
@@ -4162,13 +4159,13 @@ vue/html-self-closing · lint 规则
 
 错误示例:
   <div></div>  <!-- should be <div /> when empty -->
-  <img>        <!-- should be <img /> -->
-  <br>         <!-- should be <br /> -->
+  <img />      <!-- should be <img> -->
+  <br />       <!-- should be <br> -->
 
 正确示例:
   <div />
-  <img />
-  <br />
+  <img>
+  <br>
   <div>content</div>
 
 帮助:
@@ -4326,7 +4323,6 @@ vue/no-bare-strings-in-template · lint 规则
   <div>{{ $t('hello') }}</div>
   <img :alt="$t('cat')" />
   <div>-</div>
-  <div>123</div>
   <button :title="$t('close')">{{ $t('x') }}</button>
 
 帮助:
@@ -5030,7 +5026,7 @@ vue/no-script-non-standard-lang · lint 规则
 vue/no-setup-props-reactivity-loss · lint 规则
 禁止导致响应性丢失的 setup prop 读取
 
-精度层级: exact
+精度层级: complete
 适用范围: the syntax of <script> and <script setup> programs, without type information
 严重级别: 警告
 类别: script
@@ -5350,9 +5346,6 @@ vue/no-unused-vars · lint 规则
 正确示例:
   <li v-for="(item, index) in items" :key="index">{{ item }}</li>
   <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-  
-  <!-- Underscore prefix indicates intentionally unused -->
-  <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
   
   <template v-slot="{ data }">
     <span>{{ data }}</span>
@@ -5698,12 +5691,11 @@ vue/prefer-true-attribute-shorthand · lint 规则
 文档: docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md
 
 错误示例:
-  <input :disabled="true" />
+  <MyComponent :visible="true" />
 
 正确示例:
-  <input disabled />
-  <input :disabled="false" />
-  <MyComponent :visible="true" />
+  <MyComponent visible />
+  <MyComponent :visible="false" />
   <MyComponent :visible="isVisible" />
 
 帮助:
@@ -5753,7 +5745,7 @@ vue/require-component-is · lint 规则
 
 正确示例:
   <component :is="currentComponent" />
-  <component is="MyComponent" />
+  <component :is="'MyComponent'" />
 
 帮助:
   <component>是动态组件，需要is属性来确定要渲染的组件
@@ -5917,16 +5909,12 @@ vue/slot-name-casing · lint 规则
 文档: docs/content/rules/reference/vue-slot-name-casing.md
 
 错误示例:
-  <MyComponent>
-    <template #mySlot>...</template>
-    <template #my_slot>...</template>
-  </MyComponent>
+  <slot name="my-slot" />
+  <slot name="MySlot" />
 
 正确示例:
-  <MyComponent>
-    <template #my-slot>...</template>
-    <template #default>...</template>
-  </MyComponent>
+  <slot name="mySlot" />
+  <slot name="default" />
 
 帮助:
   请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。
@@ -6067,7 +6055,7 @@ vue/v-on-event-hyphenation · lint 规则
   请将监听器重命名为 kebab-case，以与发出的事件名称匹配。
 === vue/v-on-handler-style
 vue/v-on-handler-style · lint 规则
-强制将v-on处理函数写成方法引用或内联函数
+强制将v-on处理函数写成方法引用
 
 精度层级: exact
 适用范围: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -6084,11 +6072,9 @@ vue/v-on-handler-style · lint 规则
 正确示例:
   <button @click="handler"></button>
   <button @click="foo.bar"></button>
-  <button @click="() => count++"></button>
-  <button @click="function () { count++ }"></button>
 
 帮助:
-  请将处理函数写成方法引用（例如 @click="handler"）或内联函数（例如 @click="() => count++"），而不是内联语句。
+  请将处理函数写成方法引用（例如 @click="handler"），而不是内联函数或内联语句。
 === vue/v-on-style
 vue/v-on-style · lint 规则
 强制v-on指令风格
@@ -6177,9 +6163,7 @@ vue/valid-template-root · lint 规则
 文档: docs/content/rules/reference/vue-valid-template-root.md
 
 错误示例:
-  <template>
-    <template>content</template>
-  </template>
+  <template></template>
 
 正确示例:
   <template>
@@ -6187,7 +6171,7 @@ vue/valid-template-root · lint 规则
   </template>
 
 帮助:
-  请用真实的根元素（例如 <div>）包裹内容，而不要把 <template> 或 <slot> 作为根节点。
+  请添加可渲染的模板内容，或保持带有 src 的模板为空。
 === vue/valid-v-bind
 vue/valid-v-bind · lint 规则
 强制有效的v-bind指令

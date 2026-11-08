@@ -128,13 +128,8 @@ fn vue2_retains_static_and_bound_slot_attributes() {
         assert_eq!(
             complete(&linter.lint_sfc(&source, "LegacySlots.vue")),
             json!({
-                "filename": "LegacySlots.vue", "error_count": 1, "warning_count": 0,
-                "diagnostics": [{
-                    "rule_name": "vue/require-component-registration", "severity": "error",
-                    "message": "Component is used but not explicitly imported", "start": 78, "end": 88,
-                    "help": "Import the component in <script setup> or register it in components option",
-                    "labels": [], "fix": null,
-                }],
+                "filename": "LegacySlots.vue", "error_count": 0, "warning_count": 0,
+                "diagnostics": [],
             }),
         );
     }

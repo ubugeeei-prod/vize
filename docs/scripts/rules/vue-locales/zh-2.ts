@@ -40,9 +40,9 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
     "两个选择器都保留在同一个带作用域的 style 块中，满足单块规范，也没有丢弃任何样式。",
   ],
   "vue/slot-name-casing": [
-    "要求通过 v-slot 使用的具名插槽采用 kebab-case",
-    "具名插槽 `mySlot` 使用驼峰命名，而规则要求连字符名称。",
-    "`#my-slot` 使用 kebab-case。将对应的插槽出口重命名为相同名称。",
+    "要求渲染的插槽出口静态名称采用 camelCase",
+    "渲染的插槽出口使用连字符静态名称 `my-slot`，而默认规范要求 camelCase。",
+    "出口的静态名称使用 camelCase。父组件侧的 `#name` 提供语法不在此规则范围内。",
   ],
   "vue/this-in-template": [
     "禁止在模板表达式中使用 `this.`",
@@ -70,9 +70,9 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
     "`@my-event` 符合要求的自定义事件写法。下方展示的原生元素监听器和动态事件参数不在此检查范围内。",
   ],
   "vue/v-on-handler-style": [
-    "要求 v-on 处理器写为方法引用或内联函数",
-    "处理器将修改操作和多条语句直接写在事件属性中。",
-    "使用处理器引用；需要内联逻辑时，使用箭头函数或函数表达式。函数边界使处理器形式明确。",
+    "要求 v-on 处理器写为方法引用",
+    "处理器使用内联函数、修改操作或多条语句，而不是可复用的方法引用。",
+    "使用处理器引用。将内联逻辑移到具名方法中，使模板保留稳定且可复用的处理器。",
   ],
   "vue/v-on-style": [
     "规范 `v-on` 指令风格",
@@ -187,6 +187,8 @@ export const chineseVue2: Record<string, readonly [purpose: string, bad: string,
 };
 
 export const chineseVueNotes = {
+  "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.":
+    "检查渲染的插槽出口的静态名称。父组件侧的 v-slot 和 #name 提供语法不在此规则范围内。",
   "The component filename is checked. PascalCase and kebab-case are accepted; mixed casing is reported.":
     "检查的是组件文件名。接受 PascalCase 和 kebab-case；混合大小写会被报告。",
   "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.":
