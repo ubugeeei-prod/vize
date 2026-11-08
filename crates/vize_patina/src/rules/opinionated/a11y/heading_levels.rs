@@ -26,7 +26,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::ir::{ByteRange, TemplateSyntax};
-use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::cstr;
 use vize_relief::RootNode;
@@ -109,6 +109,10 @@ impl HeadingLevels {
 impl MarkupRule for HeadingLevels {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
     }
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
