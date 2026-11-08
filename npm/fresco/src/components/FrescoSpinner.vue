@@ -17,7 +17,7 @@ defineOptions({ name: "Spinner" });
 const frameIndex = ref(0);
 const frames = computed(() => customFrames ?? spinnerTypes[type] ?? spinnerTypes.dots);
 const content = computed(() => {
-  const frame = frames.value[frameIndex.value];
+  const frame = frames.value[frameIndex.value % frames.value.length];
   return label ? `${frame} ${label}` : frame;
 });
 
