@@ -32,75 +32,127 @@ pub use observed::{
 /// refusals keep their provider's authored-file or decoded-relative coordinates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateRefusal {
+    /// Plain template layout refused before typed operands were joined.
     Template(TemplateRefusal),
     /// Exact original directive-value content in authored-file coordinates.
     DirectiveValue {
+        /// Authored-file span of the directive value.
         span: Span,
     },
+    /// A conditional directive head could not expose an admissible value.
     AttributeHead {
+        /// Template-relative byte offset of the directive head.
         offset: usize,
+        /// Typed operand error reported by the markup observer.
         kind: NativeAttributeOperandError,
     },
+    /// Observing a conditional directive value failed.
     AttributeObservation {
+        /// Authored-file span of the directive value.
         span: Span,
+        /// Zero-based conditional observation ordinal.
         index: usize,
+        /// Typed operand error reported by the markup observer.
         kind: NativeAttributeOperandError,
     },
+    /// The traversal reached a conditional directive without its observation.
     MissingAttributeOperand {
+        /// Template-relative byte offset of the directive.
         offset: usize,
+        /// Expected conditional observation ordinal.
         index: usize,
     },
+    /// A conditional value is not quoted and cannot be rewritten safely.
     UnquotedConditionalValue {
+        /// Authored-file span of the unquoted value.
         span: Span,
     },
+    /// The conditional expression was not admitted by the syntax provider.
     AttributeRejected {
+        /// Authored-file span of the rejected expression.
         span: Span,
+        /// Zero-based conditional observation ordinal.
         index: usize,
+        /// Typed admission hole, when one was recorded.
         hole: Option<EmbedHole>,
     },
+    /// Formatting an admitted conditional expression refused.
     AttributeExpression {
+        /// Authored-file span of the conditional expression.
         span: Span,
+        /// Typed expression refusal.
         refusal: ExpressionRefusal,
     },
+    /// A binding directive head could not expose an admissible value.
     BindingHead {
+        /// Authored-file span of the binding directive head.
         span: Span,
+        /// Typed operand error reported by the markup observer.
         kind: NativeAttributeOperandError,
     },
+    /// Observing a binding directive value failed.
     BindingObservation {
+        /// Authored-file span of the binding value.
         span: Span,
+        /// Zero-based binding observation ordinal.
         index: usize,
+        /// Typed operand error reported by the markup observer.
         kind: NativeAttributeOperandError,
     },
+    /// The traversal reached a binding directive without its observation.
     MissingBindingOperand {
+        /// Template-relative byte offset of the binding directive.
         offset: usize,
+        /// Expected binding observation ordinal.
         index: usize,
     },
+    /// A binding value is not quoted and cannot be rewritten safely.
     UnquotedBindingValue {
+        /// Authored-file span of the unquoted value.
         span: Span,
     },
+    /// The binding expression was not admitted by the syntax provider.
     BindingRejected {
+        /// Authored-file span of the rejected expression.
         span: Span,
+        /// Zero-based binding observation ordinal.
         index: usize,
+        /// Typed admission hole, when one was recorded.
         hole: Option<EmbedHole>,
     },
+    /// Formatting an admitted binding expression refused.
     BindingExpression {
+        /// Authored-file span of the binding expression.
         span: Span,
+        /// Typed expression refusal.
         refusal: ExpressionRefusal,
     },
+    /// The traversal reached an interpolation without its retained operand.
     MissingOperand {
+        /// Template-relative byte offset of the interpolation.
         offset: usize,
+        /// Expected interpolation observation ordinal.
         index: usize,
     },
+    /// More interpolation observations were supplied than the template owns.
     ExtraOperand {
+        /// Zero-based ordinal of the first unexpected operand.
         index: usize,
     },
+    /// An interpolation operand was not admitted by the syntax provider.
     OperandRejected {
+        /// Template-relative byte offset of the interpolation.
         offset: usize,
+        /// Zero-based interpolation observation ordinal.
         index: usize,
+        /// Typed admission hole, when one was recorded.
         hole: Option<EmbedHole>,
     },
+    /// Formatting an admitted interpolation expression refused.
     Expression {
+        /// Template-relative byte offset of the interpolation.
         offset: usize,
+        /// Typed expression refusal.
         refusal: ExpressionRefusal,
     },
 }
@@ -131,12 +183,15 @@ impl core::fmt::Debug for NativeTemplateDocument<'_, '_> {
 }
 
 impl<'p, 'a> NativeTemplateDocument<'p, 'a> {
+    /// Borrow the original selected template component.
     pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
         self.original
     }
+    /// Borrow interpolation operands in their retained source order.
     pub fn operands(&self) -> &'p [&'p NativeInterpolationOperand<'a>] {
         self.operands
     }
+    /// Borrow the complete document tree for the selected template.
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }

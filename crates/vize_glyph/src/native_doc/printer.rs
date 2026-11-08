@@ -7,16 +7,21 @@ use super::document::{Doc, Kind, Line};
 /// Newline bytes for generated layout. Source text keeps its original bytes.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum LineEnding {
+    /// Emit a line-feed byte for generated line breaks.
     #[default]
     Lf,
+    /// Emit carriage-return followed by line-feed for generated line breaks.
     CrLf,
 }
 
 /// Layout policy. Width measures Unicode scalars, not UTF-8 byte lengths.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PrintOptions {
+    /// Preferred maximum line width in Unicode scalar values.
     pub width: usize,
+    /// Number of spaces emitted for one indentation level.
     pub indent_width: usize,
+    /// Byte sequence used for generated line breaks.
     pub line_ending: LineEnding,
 }
 

@@ -121,6 +121,15 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     /cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports/,
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
+  const glyphDocs = parallel.steps?.find((step) => step.name === "Document Glyph public APIs");
+  assert.equal(
+    glyphDocs?.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_glyph') }}",
+  );
+  assert.match(
+    glyphDocs?.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs/,
+  );
   assert.doesNotMatch(validation, /nextest archive/);
   assert.equal(Object.hasOwn(products.jobs, "merge-rust-source"), false);
   for (const [report, names] of [
@@ -281,6 +290,16 @@ function restoreRustCaseReporting(job: RustJob, contracts: number) {
   job.steps.splice(named("Record native navigation case").index, 1);
   for (const name of ["Require Rust source test cases", "Upload Rust source test cases"])
     job.steps.splice(named(name).index, 1);
+  const glyphDocs = named("Document Glyph public APIs");
+  assert.equal(
+    glyphDocs.step.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_glyph') }}",
+  );
+  assert.match(
+    glyphDocs.step.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs/,
+  );
+  job.steps.splice(glyphDocs.index, 1);
 }
 
 function requireSplitRustRecipes(

@@ -153,6 +153,12 @@ jobs:
           node tools/support/compat/github/rust-test-cases.ts record
           --label "Affected native Program and Vue navigation"
           --path crates/vize_maestro --outcome "$NAVIGATION_OUTCOME"
+      - name: Document Glyph public APIs
+        if: ${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_glyph') }}
+        run: >-
+          node tools/support/compat/github/rust-test-cases.ts capture
+          --label "Glyph public API documentation" --package vize_glyph --
+          cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs
       - name: Run affected Rust doctests
         if: ${{ matrix.lane == 'clippy' }}
         env: { VIZE_RUST_CASE_LABEL: "Affected Rust doctests" }

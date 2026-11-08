@@ -8,11 +8,16 @@ use super::{Doc, ExpressionRefusal, LineEnding, PrintOptions, expression::borrow
 /// Whole-document refusal. The component retains its original observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vue1TextDocumentRefusal {
+    /// The interpolation span does not belong to its retained component source.
     SourceMismatch {
+        /// Offending authored-file span.
         span: Span,
     },
+    /// The admitted interpolation expression could not produce a document.
     Operand {
+        /// Authored-file span of the interpolation operand.
         span: Span,
+        /// Typed expression refusal returned by the shared provider.
         error: ExpressionRefusal,
     },
 }
@@ -20,6 +25,7 @@ pub enum Vue1TextDocumentRefusal {
 /// Historical Vue 1 framing rejects every physical CR, including CRLF.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vue1TextPrintRefusal {
+    /// CRLF output is incompatible with Vue 1's physical-CR policy.
     CrLf,
 }
 
@@ -138,6 +144,7 @@ pub struct Vue1TextDocument<'o, 'a> {
 }
 
 impl<'o, 'a> Vue1TextDocument<'o, 'a> {
+    /// Borrow the original Vue 1 text view that authorized this document.
     pub fn original(&self) -> &TextView<'o, 'a> {
         &self.original
     }

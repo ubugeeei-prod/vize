@@ -17,22 +17,32 @@ pub(super) use value::{AttributeValuePolicy, PreserveOpaque};
 /// Work still requiring typed dialect/embed formatting providers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UnsupportedSyntax {
+    /// A directive requires a typed value-formatting provider.
     Directive,
+    /// An interpolation requires an admitted expression provider.
     Interpolation,
+    /// The template exceeds the bounded native traversal depth.
     NestingLimit,
 }
 
 /// Refusal never consumes or replaces the caller's retained parse observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TemplateRefusal {
+    /// The source tree contains parser recovery and is not authoritative.
     Recovered {
+        /// Template-relative byte offset of the first recovery.
         offset: usize,
     },
+    /// The source contains syntax outside the supported native subset.
     Unsupported {
+        /// Template-relative byte offset of the unsupported syntax.
         offset: usize,
+        /// Unsupported syntax family encountered at the offset.
         syntax: UnsupportedSyntax,
     },
+    /// A parser span or cursor does not match the retained source bytes.
     SourceMismatch {
+        /// Template-relative byte offset where custody diverged.
         offset: usize,
     },
 }
@@ -46,10 +56,12 @@ pub struct TemplateDocument<'p, 'a> {
 }
 
 impl<'p, 'a> TemplateDocument<'p, 'a> {
+    /// Return the retained component parse that authorized this document.
     pub fn original(&self) -> &'p ComponentParse<'a> {
         self.original
     }
 
+    /// Borrow the complete document tree for the retained template.
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }
