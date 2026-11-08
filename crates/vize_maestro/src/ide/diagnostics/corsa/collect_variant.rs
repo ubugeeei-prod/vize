@@ -8,7 +8,7 @@ use super::collect_virtual::{CorsaDocument, CorsaFinished, fetch_finished_diagno
 /// participate in native TypeScript module resolution.
 pub(super) struct VariantProjectContext<'a> {
     pub options: vize_canon::CorsaVueVirtualDocumentOptions,
-    pub overlays: &'a [(std::path::PathBuf, &'a str)],
+    pub overlays: &'a vize_canon::CorsaOverlaySnapshot,
     pub virtual_ts_options: &'a vize_canon::virtual_ts::VirtualTsOptions,
 }
 
@@ -25,16 +25,17 @@ pub(super) async fn collect_virtual_result_diagnostics(
     vize_canon::CorsaBridgeError,
 > {
     let opened = bridge
-        .open_script_virtual_document_with_vue_dependencies(
+        .open_script_virtual_document_with_overlay_snapshot(
             vize_canon::CorsaScriptVirtualDocumentRequest {
                 source_path: std::path::Path::new(&virtual_name),
                 request_path: &virtual_name,
                 code: &virtual_result.code,
                 source_type: oxc_span::SourceType::ts(),
                 options: project.options,
-                overlays: project.overlays,
+                overlays: &[],
                 virtual_ts_options: project.virtual_ts_options,
             },
+            project.overlays,
         )
         .await?;
     virtual_result.semantic_links = super::semantic_links_after_import_rewrite(

@@ -20,28 +20,27 @@ pub(crate) async fn open_canonical_script_document(
         return Some(document);
     }
     let cached_overlays = ctx.state.corsa_overlays();
-    let overlays = cached_overlays
-        .iter()
-        .map(|(path, content)| (path.clone(), &**content))
-        .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.virtual_ts_options();
     let project = bridge
-        .open_script_virtual_project(CorsaScriptVirtualDocumentRequest {
-            source_path: &source_path,
-            request_path: ctx.uri.as_str(),
-            code: &ctx.content,
-            source_type,
-            options: CorsaVueVirtualDocumentOptions {
-                options_api: ctx.state.options_api_enabled(),
-                legacy_vue2: ctx.state.legacy_vue2_enabled(),
-                jsx_typecheck: ctx.state.jsx_typecheck_enabled(),
-                experimental_patterned_template: ctx.state.patterned_template_enabled(),
-                preserve_event_navigation: true,
-                dialect: ctx.state.type_checker_vue_version(),
+        .open_script_virtual_project_with_overlay_snapshot(
+            CorsaScriptVirtualDocumentRequest {
+                source_path: &source_path,
+                request_path: ctx.uri.as_str(),
+                code: &ctx.content,
+                source_type,
+                options: CorsaVueVirtualDocumentOptions {
+                    options_api: ctx.state.options_api_enabled(),
+                    legacy_vue2: ctx.state.legacy_vue2_enabled(),
+                    jsx_typecheck: ctx.state.jsx_typecheck_enabled(),
+                    experimental_patterned_template: ctx.state.patterned_template_enabled(),
+                    preserve_event_navigation: true,
+                    dialect: ctx.state.type_checker_vue_version(),
+                },
+                overlays: &[],
+                virtual_ts_options: &virtual_ts_options,
             },
-            overlays: &overlays,
-            virtual_ts_options: &virtual_ts_options,
-        })
+            &cached_overlays,
+        )
         .await
         .ok()?;
     let mut opened = project.document;

@@ -24,7 +24,7 @@ pub struct CorsaVueWorkspaceRequest {
     pub source_path: PathBuf,
     pub content: Box<str>,
     pub options: CorsaVueVirtualDocumentOptions,
-    pub overlays: Vec<(PathBuf, Arc<str>)>,
+    pub overlays: Vec<(PathBuf, Arc<String>)>,
     pub virtual_ts_options: VirtualTsOptions,
     pub requested_sources: Vec<(PathBuf, Box<str>)>,
 }
@@ -50,7 +50,7 @@ impl PreparationInputs {
             .request
             .overlays
             .iter()
-            .map(|(path, content)| (path.clone(), &**content))
+            .map(|(path, content)| (path.clone(), content.as_str()))
             .collect::<Vec<_>>();
         let overlays = canonical_overlays(&overlays);
         let requested_sources = self

@@ -253,7 +253,7 @@ impl CorsaBridge {
         let overlays = request
             .overlays
             .iter()
-            .map(|(path, text)| (path.clone(), &**text))
+            .map(|(path, text)| (path.clone(), text.as_str()))
             .collect::<Vec<_>>();
         let requested = request
             .requested_sources

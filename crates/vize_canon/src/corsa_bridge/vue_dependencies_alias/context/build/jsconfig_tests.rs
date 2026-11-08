@@ -65,7 +65,7 @@ fn explicit_config_retains_authority_over_nearest_jsconfig() {
     let context = super::build(
         &host,
         &source,
-        &Default::default(),
+        &vize_carton::FxHashMap::<std::path::PathBuf, &str>::default(),
         super::SourceRevision {
             requested_sources: &[],
             overlay_identity: 0,

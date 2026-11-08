@@ -35,20 +35,60 @@ pub(super) fn build_vue_virtual_workspace_project(
     requested_sources: &[(PathBuf, &str)],
     environment: CorsaProjectEnvironment<'_>,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    let overlays = canonical_overlays(overlays);
+    build_vue_virtual_workspace_project_inner(
+        source_path,
+        content,
+        options,
+        &overlays,
+        None,
+        requested_sources,
+        environment,
+    )
+}
+
+pub(super) fn build_vue_virtual_workspace_project_with_overlay_snapshot(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    overlay_snapshot: &super::CorsaOverlaySnapshot,
+    requested_sources: &[(PathBuf, &str)],
+    environment: CorsaProjectEnvironment<'_>,
+) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    build_vue_virtual_workspace_project_inner(
+        source_path,
+        content,
+        options,
+        overlay_snapshot.sources(),
+        Some(overlay_snapshot.fingerprint()),
+        requested_sources,
+        environment,
+    )
+}
+
+fn build_vue_virtual_workspace_project_inner(
+    source_path: &Path,
+    content: &str,
+    options: CorsaVueVirtualDocumentOptions,
+    overlays: &dyn super::OverlaySources,
+    overlay_fingerprint: Option<&super::OverlayFingerprint>,
+    requested_sources: &[(PathBuf, &str)],
+    environment: CorsaProjectEnvironment<'_>,
+) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
     let project_phase = crate::corsa_bridge::preparation_trace::Phase::start(
         "vue_project_build",
         requested_sources.len() + overlays.len() + 1,
     );
     let rewriter = ImportRewriter::new();
-    let overlays = canonical_overlays(overlays);
     // The alias mirror is built before generation, and from the same buffers the
     // dependency walk reads, so a specifier the resolver rewrites always has a
     // materialized target (#3900).
     let alias_context =
-        crate::corsa_bridge::vue_dependencies_alias::AliasContext::for_hosts_cached(
+        crate::corsa_bridge::vue_dependencies_alias::AliasContext::for_hosts_cached_with_overlay_fingerprint(
             source_path,
             content,
-            &overlays,
+            overlays,
+            overlay_fingerprint,
             requested_sources,
             options,
             environment,
@@ -60,7 +100,7 @@ pub(super) fn build_vue_virtual_workspace_project(
             source_path,
             content,
             options,
-            &overlays,
+            overlays,
             requested_sources,
             environment,
             &rewriter,
@@ -78,7 +118,7 @@ pub(super) fn build_vue_virtual_workspace_project(
     if alias_context.refresh_live_overlays
         && let Some(root) = host.session_project_root.as_deref()
     {
-        source_catalog.extend_open_project_document_batch(root, &overlays, &mut documents);
+        source_catalog.extend_open_project_document_batch(root, overlays, &mut documents);
     }
     project_phase.finish();
     Ok(CorsaVueVirtualProject {
@@ -109,7 +149,7 @@ fn build_surface(
     source_path: &Path,
     content: &str,
     options: CorsaVueVirtualDocumentOptions,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn super::OverlaySources,
     requested_sources: &[(PathBuf, &str)],
     environment: CorsaProjectEnvironment<'_>,
     rewriter: &ImportRewriter,

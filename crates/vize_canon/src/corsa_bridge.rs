@@ -93,11 +93,12 @@ pub use types::{
 };
 pub use vue_document::{
     CorsaInitialVueDocument, CorsaInitialVueProject, CorsaMaterializedMappingKind,
-    CorsaMaterializedSource, CorsaVueHoverDocument, CorsaVueVirtualDependency,
-    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, CorsaVueWorkspaceRequest,
+    CorsaMaterializedSource, CorsaOverlaySnapshot, CorsaVueHoverDocument,
+    CorsaVueVirtualDependency, CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
+    CorsaVueWorkspaceRequest,
 };
 pub(crate) use vue_document::{
-    CorsaProjectEnvironment, CorsaVueVirtualProject,
+    CorsaProjectEnvironment, CorsaVueVirtualProject, OverlaySources,
     build_vue_virtual_project_with_overlays_and_options_and_package_routes,
 };
 

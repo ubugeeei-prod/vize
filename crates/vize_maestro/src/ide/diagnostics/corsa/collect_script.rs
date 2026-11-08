@@ -37,28 +37,27 @@ impl DiagnosticService {
             return Err(CollectFailure::Unavailable);
         };
         let cached_overlays = state.corsa_overlays();
-        let overlays = cached_overlays
-            .iter()
-            .map(|(path, text)| (path.clone(), &**text))
-            .collect::<Vec<_>>();
         let virtual_ts_options = state.virtual_ts_options();
         let opened = bridge
-            .open_script_virtual_document_with_vue_dependencies(CorsaScriptVirtualDocumentRequest {
-                source_path: &source_path,
-                request_path: uri.as_str(),
-                code: &content,
-                source_type,
-                options: CorsaVueVirtualDocumentOptions {
-                    options_api: state.options_api_enabled(),
-                    legacy_vue2: state.legacy_vue2_enabled(),
-                    jsx_typecheck: state.jsx_typecheck_enabled(),
-                    experimental_patterned_template: state.patterned_template_enabled(),
-                    preserve_event_navigation: true,
-                    dialect: state.type_checker_vue_version(),
+            .open_script_virtual_document_with_overlay_snapshot(
+                CorsaScriptVirtualDocumentRequest {
+                    source_path: &source_path,
+                    request_path: uri.as_str(),
+                    code: &content,
+                    source_type,
+                    options: CorsaVueVirtualDocumentOptions {
+                        options_api: state.options_api_enabled(),
+                        legacy_vue2: state.legacy_vue2_enabled(),
+                        jsx_typecheck: state.jsx_typecheck_enabled(),
+                        experimental_patterned_template: state.patterned_template_enabled(),
+                        preserve_event_navigation: true,
+                        dialect: state.type_checker_vue_version(),
+                    },
+                    overlays: &[],
+                    virtual_ts_options: &virtual_ts_options,
                 },
-                overlays: &overlays,
-                virtual_ts_options: &virtual_ts_options,
-            })
+                &cached_overlays,
+            )
             .await
             .map_err(|error| classify(&bridge, error))?;
         state.record_typecheck_dependencies(uri, revision, &opened.resolved_dependencies);

@@ -2,10 +2,9 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
-
 use super::{AliasContext, ContextFingerprint, PreparedAliasContext, build};
 use crate::batch::ModuleSpecifierFactsCache;
+use crate::corsa_bridge::vue_document::OverlaySources;
 
 struct HostRevision<'a> {
     source_path: &'a Path,
@@ -14,10 +13,11 @@ struct HostRevision<'a> {
 }
 
 impl AliasContext {
+    #[cfg(test)]
     pub(in crate::corsa_bridge) fn for_host_cached(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
@@ -25,10 +25,31 @@ impl AliasContext {
     }
 
     /// Build or reuse a context while every route input remains unchanged.
+    #[cfg(test)]
     pub(in crate::corsa_bridge) fn for_hosts_cached(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
+        requested_sources: &[(PathBuf, &str)],
+        options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
+        environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
+    ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        Self::for_hosts_cached_with_overlay_fingerprint(
+            source_path,
+            content,
+            overlays,
+            None,
+            requested_sources,
+            options,
+            environment,
+        )
+    }
+
+    pub(in crate::corsa_bridge) fn for_hosts_cached_with_overlay_fingerprint(
+        source_path: &Path,
+        content: &str,
+        overlays: &dyn OverlaySources,
+        overlay_fingerprint: Option<&super::super::super::vue_document::OverlayFingerprint>,
         requested_sources: &[(PathBuf, &str)],
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
@@ -37,10 +58,11 @@ impl AliasContext {
             "alias_fingerprint",
             overlays.len(),
         );
-        let fingerprint = Self::request_fingerprint(
+        let fingerprint = Self::request_fingerprint_with_overlay(
             source_path,
             content,
             overlays,
+            overlay_fingerprint,
             requested_sources,
             options,
             environment,
@@ -57,8 +79,15 @@ impl AliasContext {
             // This non-recursive entry refreshes all changed live sources
             // once; several dirty buffers cannot recursively prepare each
             // other. The unchanged caller retains its own graph.
-            let sibling_fingerprint =
-                Self::request_fingerprint(&sibling, source, overlays, &[], options, environment);
+            let sibling_fingerprint = Self::request_fingerprint_with_overlay(
+                &sibling,
+                source,
+                overlays,
+                overlay_fingerprint,
+                &[],
+                options,
+                environment,
+            );
             drop(Self::prepare_hosts_cached(
                 HostRevision {
                     source_path: &sibling,
@@ -105,7 +134,7 @@ impl AliasContext {
     #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     fn prepare_hosts_cached(
         host: HostRevision<'_>,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
