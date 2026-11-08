@@ -2,6 +2,7 @@ import { cacheInputs, testedPackages } from "../task-inputs.ts";
 import { testedPackageGroups } from "../tested-package-groups.ts";
 import {
   defineTasks,
+  nodeCommand,
   nodeTool,
   noCacheTask,
   runInPackages,
@@ -95,7 +96,7 @@ const rustBranchCoverageMinimums = [
   "--min-branches",
   "40",
 ];
-const benchmarkDispatcher = (...args: string[]) => rustTool("benchmarks/dispatch", ...args);
+const benchmarkDispatcher = (...args: string[]) => nodeCommand("benchmarks/dispatch", ...args);
 const rustSourceCoverageCommand = [
   "mkdir -p target/llvm-cov",
   [
@@ -226,8 +227,12 @@ export const testAndBenchmarkTasks = defineTasks({
   "coverage:diff": task("cargo run -p vize_test_runner --bin coverage -- -vv", {
     input: cacheInputs.rust,
   }),
-  "generate:rule-types": task(rustTool("generate/rule-types"), {
-    input: cacheInputs.rust,
+  "generate:rule-types": task(nodeCommand("generate/rule-types"), {
+    input: [
+      "tools/commands/generate/rule-types.ts",
+      "tools/support/command-runtime.ts",
+      "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap",
+    ],
   }),
   "expected:generate": task(nodeTool("tasks/generate-expected")),
   "expected:generate:sfc": task(nodeTool("tasks/generate-expected", "--mode", "sfc")),
