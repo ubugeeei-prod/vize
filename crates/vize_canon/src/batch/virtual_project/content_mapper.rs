@@ -176,6 +176,7 @@ fn transform_with_shared_sources(
             preserve_authored_component: true,
             preserve_script_on_template_error: true,
             component_name: Some(component_name.as_str()),
+            template_use_navigation: true,
             external_component_attrs_module: transform_options
                 .external_component_attrs_module
                 .then_some(if transform_options.external_component_type_helpers {
@@ -425,6 +426,7 @@ fn protocol_spans(
         spans.extend(delimiters.map(|(_, close)| delimiter(close)));
     }
     component_export::insert_spans(&mut spans, mappings, metadata);
+    span_features::retain_template_hover_owner(generated, &mut spans);
     spans
 }
 

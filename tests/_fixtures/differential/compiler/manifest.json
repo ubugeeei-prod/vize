@@ -2458,6 +2458,61 @@
       }
     },
     {
+      "id": "compiler/sfc/resolved-macro-prop-shapes-11487",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "resolved-macro-prop-shapes-11487",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "50fd08d4b8b6e4176352ddfe1e07960481aa93081999611040f43e97b144008e",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "resolved-macro-prop-shapes-11487/module.expected.txt",
+        "sha256": "61e9253358fcfd2278540e5c2ccdbddb9366003d02337e62653a7bef59c63bd8",
+        "source": "tests/_fixtures/differential/compiler/resolved-macro-prop-shapes-11487/Layout.vue.txt; compiler-cli-ssr-v1 resolved Partial/Omit baseline for #11487"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable; this row guards the resolved utility-type control while the rejected unresolved shapes are pinned by the compiler regression."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "scriptLang": "ts",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/root-text-patch-flag-10168",
       "state": "active",
       "targets": [

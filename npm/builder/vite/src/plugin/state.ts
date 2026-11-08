@@ -38,6 +38,8 @@ export interface VizePluginState {
   ssrCache: Map<string, CompiledModule>;
   collectedCss: Map<string, string>;
   precompileMetadata: Map<string, PrecompileFileMetadata>;
+  /** SSR scan metadata is separate because client and SSR outputs are distinct. */
+  ssrPrecompileMetadata?: Map<string, PrecompileFileMetadata>;
   pendingHmrUpdateTypes: Map<string, HmrUpdateType>;
   viteResolveCache?: Map<string, Promise<{ id: string; external?: boolean } | null>>;
   isProduction: boolean;
@@ -235,6 +237,7 @@ export function clearBuildCaches(
     | "collectedCss"
     | "pendingHmrUpdateTypes"
     | "precompileMetadata"
+    | "ssrPrecompileMetadata"
     | "ssrCache"
     | "viteResolveCache"
   >,
@@ -243,6 +246,7 @@ export function clearBuildCaches(
   state.ssrCache.clear();
   state.collectedCss.clear();
   state.precompileMetadata.clear();
+  state.ssrPrecompileMetadata?.clear();
   state.pendingHmrUpdateTypes.clear();
   state.viteResolveCache?.clear();
 }

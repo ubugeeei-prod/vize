@@ -139,12 +139,14 @@ void test("delegation precedes persistent restore, clears stale state and leaves
     };
     const claimed = ownersFor(capability);
     first.ssrCache.set(file, compiled);
+    first.ssrPrecompileMetadata = new Map(first.precompileMetadata);
     first.collectedCss.set(file, "stale CSS");
     await compileAll(first, claimed);
     assert.equal(first.cache.has(file), false);
     assert.equal(first.ssrCache.has(file), false);
     assert.equal(first.collectedCss.has(file), false);
     assert.equal(first.precompileMetadata.has(file), false);
+    assert.equal(first.ssrPrecompileMetadata?.has(file), false);
     assert.ok(first.cache.has(ordinary));
     const cold = state(root);
     await compileAll(cold, claimed);

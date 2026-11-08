@@ -13,6 +13,7 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
   assert.equal(inputs.base_sha?.required, true);
   assert.equal(inputs.head_sha?.required, true);
   assert.equal(inputs.runs?.default, "5");
+  assert.equal(inputs.workloads?.default, "");
   const job = workflow.jobs.measure;
   assert.equal(job?.["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   const script = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -29,4 +30,5 @@ void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU
   );
   assert.match(script, /build:native/u);
   assert.match(script, /node tools\/benchmarks\/scripts\/typecheck-corpus-pair\.ts/u);
+  assert.match(script, /--workloads "\$OWNED_WORKLOADS"/u);
 });

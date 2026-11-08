@@ -624,7 +624,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 generation_options,
                 generic_param.is_some(),
                 inferred_slots || template_record.any(),
-                &mut semantic_links,
+                template_ast.map_or("", |root| root.source),
+                &script_source_offset,
+                (&mut semantic_links, &mut mappings, template_offset),
             );
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
@@ -720,14 +722,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             ts.push_str("  })();\n");
         });
     }
-
     if has_template_scope && !check_options.check_template_bindings && preserve_unused_diagnostics {
         binding_anchors.emit(
             &mut ts,
             "canon.virtual_ts.emit_no_check_template_binding_anchors",
         );
     }
-
     if generation_options.preserve_event_navigation {
         setup_helpers.emit_event_navigation(
             &mut ts,

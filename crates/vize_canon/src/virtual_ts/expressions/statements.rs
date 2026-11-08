@@ -29,6 +29,9 @@ use vize_croquis::drawer::{
     strip_js_comments_with_offsets,
 };
 
+mod giant_interpolations;
+use giant_interpolations::{generate_isolated_interpolations, should_isolate_interpolations};
+
 pub(crate) fn guarded_callback_reads(expr: &TemplateExpression) -> Vec<CompactString> {
     let Some(guard) = expr.vif_guard.as_deref() else {
         return Vec::new();
@@ -66,6 +69,11 @@ pub(crate) fn generate_expressions(
     template_binding_access: &TemplateBindingAccess,
     context: &ExpressionListEmitContext<'_>,
 ) {
+    if should_isolate_interpolations(exprs, context) {
+        generate_isolated_interpolations(ts, mappings, exprs, template_binding_access, context);
+        return;
+    }
+
     let mut index = 0;
     while let Some(&expr) = exprs.get(index) {
         if context

@@ -1,6 +1,7 @@
 //! TypeScript Content Mapper protocol-v1 feature bits.
 
-use super::ContentMapperSpanKind;
+use super::{ContentMapperSpan, ContentMapperSpanKind};
+use vize_l0::FxHashMap;
 
 /// TypeScript Content Mapper protocol-v1 feature bits.
 ///
@@ -81,6 +82,18 @@ pub(super) const CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL: usize = ContentMappe
     | ContentMapperSpanFeature::Implementation as usize
     | ContentMapperSpanFeature::References as usize
     | ContentMapperSpanFeature::DocumentHighlights as usize;
+
+/// A template use's projection onto its authored setup binding: symbol
+/// navigation and rename. Hover uses a separate unwrapped proxy below.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE: usize =
+    ContentMapperSpanFeature::Definition as usize
+        | ContentMapperSpanFeature::References as usize
+        | ContentMapperSpanFeature::DocumentHighlights as usize
+        | ContentMapperSpanFeature::Rename as usize;
+
+/// A template use's const-preserving, unwrapped hover projection.
+pub(super) const CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER: usize =
+    ContentMapperSpanFeature::Hover as usize;
 
 /// Navigation-only features for generated type-level references that can appear
 /// as target locations but should not answer source-side hover/completion.
@@ -174,10 +187,46 @@ pub(super) fn content_mapper_span_features(
         (_, Some(prefix)) if is_whole_symbol_projection(prefix) => {
             CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL
         }
+        (ContentMapperSpanKind::Verbatim, Some(prefix))
+            if prefix.trim_start() == crate::virtual_ts::generated_names::TEMPLATE_USE_PREFIX =>
+        {
+            CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_USE
+        }
+        (ContentMapperSpanKind::Verbatim, _) if is_template_hover_projection(generated, start) => {
+            CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
+        }
         (ContentMapperSpanKind::Verbatim, _) => CONTENT_MAPPER_SPAN_FEATURES_ALL,
         (ContentMapperSpanKind::Atom, _) => CONTENT_MAPPER_SPAN_FEATURES_ATOM,
         (ContentMapperSpanKind::Alias, _) => CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
     }
+}
+
+/// Keep the const-preserving proxy as the only hover owner for a template use.
+///
+/// The ordinary generated template expression maps to the same authored span
+/// and otherwise contributes `var` hover text beside the proxy's `const` text.
+/// Its navigation and diagnostic ownership remain unchanged.
+pub(super) fn retain_template_hover_owner(generated: &str, spans: &mut [ContentMapperSpan]) {
+    let mut owners = FxHashMap::default();
+    for span in spans.iter().filter(|span| {
+        span.0[5] == CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER
+            && is_template_hover_projection(generated, span.0[0])
+    }) {
+        owners.entry((span.0[2], span.0[3])).or_insert(span.0[0]);
+    }
+    for span in spans {
+        if let Some(owner) = owners.get(&(span.0[2], span.0[3]))
+            && span.0[0] != *owner
+        {
+            span.0[5] &= !CONTENT_MAPPER_SPAN_FEATURES_TEMPLATE_HOVER;
+        }
+    }
+}
+
+fn is_template_hover_projection(generated: &str, start: usize) -> bool {
+    projection_prefix(generated, start).is_some_and(|prefix| {
+        prefix.trim_start() == crate::virtual_ts::generated_names::TEMPLATE_HOVER_PREFIX
+    })
 }
 
 fn is_diagnostic_handler_anchor(

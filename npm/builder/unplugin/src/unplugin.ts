@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { readFile } from "node:fs/promises";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
 import { createFilter } from "./filter.ts";
@@ -221,6 +222,13 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       if (options.hostCompiler) {
         return null;
       }
+      // Bun classifies unknown extensions with its `file` loader before an
+      // onLoad hook runs. Returning the authored SFC here lets unplugin retain
+      // this plugin as the loader owner and apply the JavaScript loader after
+      // the ordinary transform hook compiles the file.
+      if (meta.framework === "bun" && isVueFile(id)) {
+        return { code: await readFile(id, "utf8"), map: null };
+      }
       if (!isVueStyleRequest(id)) {
         return null;
       }
@@ -371,6 +379,21 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
         buildOptions.define = {
           ...createVueDefineMap(options.isProduction),
           ...buildOptions.define,
+        };
+      },
+    },
+
+    bun: {
+      loader(_code, id) {
+        return isVueStyleRequest(id) ? "css" : "js";
+      },
+      setup(build) {
+        if (options.hostCompiler) {
+          return;
+        }
+        build.config.define = {
+          ...createVueDefineMap(options.isProduction),
+          ...build.config.define,
         };
       },
     },

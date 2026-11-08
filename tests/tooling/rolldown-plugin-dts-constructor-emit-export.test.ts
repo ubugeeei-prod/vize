@@ -8,7 +8,7 @@ import { build } from "tsdown";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
-void test("rolldown-plugin-dts links the split constructor emit helper", async () => {
+void test("rolldown-plugin-dts drops the unused constructor emit helper", async () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-constructor-emit-export-"));
   const outDir = path.join(temporary, "dist");
   try {
@@ -25,7 +25,8 @@ void test("rolldown-plugin-dts links the split constructor emit helper", async (
       tsconfig: false,
     });
     const bundled = fs.readFileSync(path.join(outDir, "virtual-ts-emits.d.ts"), "utf8");
-    assert.match(bundled, /^type \$ConstructorEmitPropsFactory</mu);
+    assert.doesNotMatch(bundled, /^type \$ConstructorEmitPropsFactory</mu);
+    assert.match(bundled, /^type \$MemberConstructorEmitPropsFactory</mu);
     assert.match(bundled, /export type \{ \$EmitPropsFactory, \$NativeEmitPropsFactory \};/u);
   } finally {
     fs.rmSync(temporary, { recursive: true });

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { assertPreservedCallbackPacket } from "../../tools/support/compat/content-mapper/callback-owner-packet-parity.ts";
 import { guardedInferenceEdits } from "../../tools/support/compat/content-mapper/callback-owner-current-source.ts";
+import { beforeEmitMemberInfer } from "./support/emit-member-infer-source.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 import {
   beforeStaticListenerSource,
@@ -29,6 +30,7 @@ function template(source: string) {
 }
 function fixture(newline = "\n") {
   const currentEmit = read(emitPath),
+    memberInferPredecessor = beforeEmitMemberInfer(read, emitPath, currentEmit),
     oldEmit = beforeGenericEventSpecialization(read, emitPath, currentEmit);
   const currentGenerator = read(staticListenerSource),
     oldGenerator = beforeStaticListenerSource(read, staticListenerSource, currentGenerator);
@@ -71,6 +73,7 @@ function fixture(newline = "\n") {
   };
   return {
     before: packet(template(oldGenerator), oldEmit),
+    memberInferPredecessor: packet(template(currentGenerator), memberInferPredecessor),
     after: packet(template(currentGenerator), currentEmit),
     source,
   };
@@ -79,6 +82,12 @@ void test("current callback packets retain every field under exact d9 and static
   for (const newline of ["\n", "\r\n"]) {
     const { before, after, source } = fixture(newline);
     assertPreservedCallbackPacket(before, after, source);
+  }
+});
+void test("callback history accepts the member-infer predecessor as one whole helper edit", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    const { memberInferPredecessor, after, source } = fixture(newline);
+    assertPreservedCallbackPacket(memberInferPredecessor, after, source);
   }
 });
 void test("guarded listener inference is certified as one exact source edit", () => {

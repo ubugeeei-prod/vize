@@ -45,6 +45,8 @@ import {
   type FrescoElement,
   type FrescoNode,
 } from "./renderer.js";
+import { createNoopReadStream, createNoopWriteStream } from "./renderToStringStreams.js";
+import { isStaticItemNode, isStaticNode } from "./staticNodes.js";
 
 export type {
   CompositionEvent,
@@ -58,11 +60,17 @@ export type {
   ResizeEvent,
 } from "./protocol.js";
 
+/** Latest normalized key event received by the active Fresco application. */
 export const lastKeyEvent: Ref<KeyEvent | null> = ref(null);
+/** Latest bracketed-paste event received by the active Fresco application. */
 export const lastPasteEvent: Ref<PasteEvent | null> = ref(null);
+/** Latest terminal resize event received by the active Fresco application. */
 export const lastResizeEvent: Ref<ResizeEvent | null> = ref(null);
+/** Latest normalized mouse event received by the active Fresco application. */
 export const lastMouseEvent: Ref<MouseEvent | null> = ref(null);
+/** Latest terminal focus event received by the active Fresco application. */
 export const lastFocusEvent: Ref<FocusEvent | null> = ref(null);
+/** Latest IME composition event received by the active Fresco application. */
 export const lastCompositionEvent: Ref<CompositionEvent | null> = ref(null);
 
 // Import native bindings
@@ -83,42 +91,44 @@ async function loadNative() {
  * App options
  */
 export interface AppOptions {
-  /** Enable mouse support */
+  /** Enable mouse support. @default false */
   mouse?: boolean;
-  /** Exit on Ctrl+C */
+  /** Exit on Ctrl+C. @default true */
   exitOnCtrlC?: boolean;
-  /** Custom error handler */
+  /** Custom render error handler. @default undefined */
   onError?: (error: Error) => void;
-  /** Debug mode - logs render tree */
+  /** Log every native render tree to stderr. @default false */
   debug?: boolean;
-  /** Ink-compatible option, accepted for API parity */
+  /** Output stream used for frames and external output. @default process.stdout */
   stdout?: NodeJS.WriteStream;
-  /** Ink-compatible option, accepted for API parity */
+  /** Input stream used for terminal events. @default process.stdin */
   stdin?: NodeJS.ReadStream;
-  /** Ink-compatible option, accepted for API parity */
+  /** Error stream used for warnings and errors. @default process.stderr */
   stderr?: NodeJS.WriteStream;
-  /** Ink-compatible option, accepted for API parity */
+  /** Route console methods through terminal-safe output. @default true */
   patchConsole?: boolean;
-  /** Called after a frame is rendered */
+  /** Callback invoked after a frame is rendered. @default undefined */
   onRender?: (metrics: RenderMetrics) => void;
-  /** Enable screen reader rendering hints */
+  /** Enable semantic screen-reader rendering. @default environment detection */
   isScreenReaderEnabled?: boolean;
-  /** Maximum render frames per second */
+  /** Maximum render frames per second. @default 30 */
   maxFps?: number;
-  /** Use alternate screen buffer */
+  /** Use the alternate terminal screen buffer. @default false */
   alternateScreen?: boolean;
-  /** Ink-compatible option, accepted for API parity */
+  /** Ink-compatible no-op retained for source compatibility. @default false */
   incrementalRendering?: boolean;
-  /** Ink-compatible option, accepted for API parity */
+  /** Ink-compatible no-op retained for source compatibility. @default false */
   concurrent?: boolean;
-  /** Override interactive mode detection */
+  /** Override TTY and CI interactive-mode detection. @default automatic detection */
   interactive?: boolean;
-  /** Configure Kitty keyboard protocol support */
+  /** Configure Kitty keyboard protocol support. @default undefined */
   kittyKeyboard?: KittyKeyboardOptions;
 }
 
+/** Rendering options accepted by createApp and render. */
 export type RenderOptions = AppOptions;
 
+/** Vue component or already-created VNode accepted as the application root. */
 export type AppRoot = Component | VNode;
 
 /**
@@ -149,6 +159,7 @@ export interface App {
   getTerminalInfo(): Promise<TerminalInfoNapi>;
 }
 
+/** Ink-compatible handle returned by render. */
 export interface RenderInstance {
   rerender(root: AppRoot): void;
   unmount(errorOrResult?: unknown): Promise<void>;
@@ -158,51 +169,18 @@ export interface RenderInstance {
   clear(): void;
 }
 
+/** Compatibility alias for the render handle. */
 export type Instance = RenderInstance;
 
+/** Options for deterministic, non-interactive string rendering. */
 export interface RenderToStringOptions {
-  /** Width of the virtual terminal in columns */
+  /** Width of the virtual terminal in columns. @default 80 */
   columns?: number;
 }
 
+/** Minimal writable stream contract accepted by the render compatibility overload. */
 export interface WritableStreamLike {
   write(...args: unknown[]): unknown;
-}
-
-type Listener = (...args: unknown[]) => void;
-
-function createNoopWriteStream(columns: number, rows: number): NodeJS.WriteStream {
-  const stream = {
-    isTTY: false,
-    columns,
-    rows,
-    write: () => true,
-    on: (_event: string, _listener: Listener) => stream,
-    off: (_event: string, _listener: Listener) => stream,
-    once: (_event: string, _listener: Listener) => stream,
-    removeListener: (_event: string, _listener: Listener) => stream,
-  };
-
-  return stream as unknown as NodeJS.WriteStream;
-}
-
-function createNoopReadStream(): NodeJS.ReadStream {
-  const stream = {
-    isTTY: false,
-    isPaused: () => true,
-    pause: () => stream,
-    resume: () => stream,
-    ref: () => stream,
-    unref: () => stream,
-    setEncoding: () => stream,
-    setRawMode: () => stream,
-    on: (_event: string, _listener: Listener) => stream,
-    off: (_event: string, _listener: Listener) => stream,
-    once: (_event: string, _listener: Listener) => stream,
-    removeListener: (_event: string, _listener: Listener) => stream,
-  };
-
-  return stream as unknown as NodeJS.ReadStream;
 }
 
 function isWritableStream(value: unknown): value is WritableStreamLike {
@@ -266,10 +244,6 @@ function nodeText(node: FrescoNode): string {
   return "";
 }
 
-function isStaticNode(node: FrescoNode): boolean {
-  return node.props.internal_static === true || node.props.internalStatic === true;
-}
-
 function joinOutput(parts: string[], separator = "\n"): string {
   return parts.filter(Boolean).join(separator);
 }
@@ -306,13 +280,14 @@ function captureStaticOutput(node: FrescoNode, renderedStaticItems: Map<number, 
   function visit(current: FrescoNode) {
     if (isStaticNode(current)) {
       const renderedItems = renderedStaticItems.get(current.id) ?? 0;
-      const nextItems = current.children.slice(renderedItems);
+      const staticItems = current.children.filter(isStaticItemNode);
+      const nextItems = staticItems.slice(renderedItems);
       const nextOutput = joinOutput(
         nextItems.map((child) => treeToString(child)),
         "\n",
       );
       if (nextOutput) output.push(nextOutput);
-      renderedStaticItems.set(current.id, current.children.length);
+      renderedStaticItems.set(current.id, staticItems.length);
       return;
     }
 

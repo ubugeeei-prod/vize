@@ -119,6 +119,7 @@ function nonEmptyStringValue(value: unknown): string | undefined {
   return string ? string : undefined;
 }
 
+/** Normalize component style input into the canonical native render style. */
 export function normalizeFrescoStyle(value: unknown): FrescoRenderStyle | undefined {
   const source = recordValue(value);
   const style: FrescoRenderStyle = {};
@@ -220,6 +221,7 @@ function wrappingEnabled(value: unknown, mode: FrescoTextWrapMode | undefined): 
   return !(mode?.startsWith("truncate") ?? false);
 }
 
+/** Convert one internal Fresco node into its strict public render protocol node. */
 export function frescoNodeToRenderNode(node: FrescoNode): FrescoRenderNode {
   const common = commonFields(node);
 

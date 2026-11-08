@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { Note } from './types';
+const props = defineProps<{ note: Note }>();
+const appearNote = props.note;
+const renoteCollapsed = ref(false);
+const items = ref([1, 2]);
+function toggle() { renoteCollapsed.value = !renoteCollapsed.value; }
+renoteCollapsed.value = true;
+</script>
+<template>
+  <div v-if="renoteCollapsed" @click="renoteCollapsed = false">{{ appearNote.text }}</div>
+  <button @click="toggle">{{ renoteCollapsed }}</button>
+  <ul>
+    <li v-for="renoteCollapsed in items" :key="renoteCollapsed">{{ renoteCollapsed }}</li>
+  </ul>
+</template>

@@ -1,4 +1,5 @@
 use oxc_syntax::identifier::is_identifier_part;
+use std::ops::Range;
 
 use crate::drawer::helpers::VForScopeAliases;
 use crate::scope::ParamNames;
@@ -37,13 +38,20 @@ pub(super) fn v_for_alias_declaration_offsets(
     offsets
 }
 
-pub(super) fn v_for_source_offset(
+pub(super) fn v_for_source_span(
     exp: &ExpressionNode<'_>,
     aliases: &VForScopeAliases,
     template_source: &str,
-) -> Option<u32> {
+) -> Option<Range<u32>> {
     let (content, base_offset) = expression_content_and_offset(exp, template_source);
-    source_offset_in_expression(content, base_offset, aliases.source.as_str())
+    let decoded = source_offset_in_expression(content, 0, aliases.source.as_str())?;
+    let authored = exp.loc().span.slice(template_source);
+    let start = if authored == content {
+        base_offset + decoded
+    } else {
+        base_offset + crate::drawer::attribute_source_offset(authored, decoded)
+    };
+    Some(start..exp.loc().span.end)
 }
 
 fn source_offset_in_expression(content: &str, base_offset: u32, source: &str) -> Option<u32> {

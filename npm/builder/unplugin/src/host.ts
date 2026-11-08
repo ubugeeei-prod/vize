@@ -16,6 +16,9 @@ import type { HostCss } from "./types.ts";
  * never follows an import, and its CSS loaders compile no preprocessor.
  */
 export function hostCss(context: unknown, framework: string): HostCss {
+  if (framework === "bun") {
+    return "css";
+  }
   if (framework !== "esbuild") {
     return "preprocessors";
   }

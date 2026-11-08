@@ -1,0 +1,4 @@
+<script setup lang="ts" generic="T">
+function defineModel<V>(name: string): { value: V | undefined } { throw new Error(name) }
+const list = defineModel<T[]>('list')
+</script>

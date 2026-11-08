@@ -1,0 +1,60 @@
+name: Vite precompile cache identities
+on:
+  pull_request:
+    paths:
+      - .github/workflows/vite-precompile-cache.yml
+      - npm/builder/vite/src/plugin/cache-path.ts
+      - npm/builder/vite/src/plugin/compiled-module-cache.ts
+      - npm/builder/vite/src/plugin/compiled-module-cache.test.ts
+      - npm/builder/vite/src/plugin/index.ts
+      - npm/builder/vite/src/plugin/index-helpers.ts
+      - npm/builder/vite/src/plugin/precompile-cache-store.ts
+      - npm/builder/vite/src/plugin/precompile-cache-path.test.ts
+      - npm/builder/vite/src/plugin/precompile-cache.ts
+      - npm/builder/vite/src/plugin/precompile-run.ts
+      - npm/builder/vite/src/plugin/precompile-scopes.ts
+      - npm/builder/vite/src/plugin/precompile.test.ts
+      - npm/builder/vite/src/plugin/startup-precompile.test.ts
+      - npm/builder/vite/src/plugin/state.ts
+      - npm/builder/vite/src/plugin/vue-identity.test.ts
+      - npm/builder/vite/src/test/precompile-cache-project.ts
+      - npm/builder/vite/src/test/startup-scan-project.ts
+      - npm/builder/vite/package.json
+      - npm/native/package.json
+      - pnpm-lock.yaml
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: vite-precompile-cache-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+jobs:
+  windows-cache-identities:
+    name: Windows cache and SSR identities
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run: { shell: bash }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install the locked Vite adapter graph
+        run: >-
+          vp install --frozen-lockfile --prefer-offline
+          --filter './npm/builder/vite...'
+          --filter './npm/native...'
+      - name: Verify in-memory, persistent and SSR precompile identities
+        run: >-
+          node --test --test-concurrency=1
+          npm/builder/vite/src/plugin/compiled-module-cache.test.ts
+          npm/builder/vite/src/plugin/precompile-cache-path.test.ts
+          npm/builder/vite/src/plugin/precompile.test.ts

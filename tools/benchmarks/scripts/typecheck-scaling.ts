@@ -53,9 +53,11 @@ import {
   renderSummary,
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
+import { writeRunReceipt } from "./typecheck-scaling-receipt.ts";
 import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
 import {
+  ALL_TOOLS,
   NUXT_BUILD,
   NUXT_BUILD_VIZE,
   NUXT_ENV,
@@ -67,6 +69,7 @@ import {
   nuxtCli,
   prepareProjectPackages,
   resolveScalingEnv,
+  topologyDiagnosticRefusal,
 } from "./typecheck-scaling-tools.ts";
 import { CONTENT_MAPPERS, mapperTsconfigName } from "./typecheck-mapper-hosts.ts";
 
@@ -74,9 +77,7 @@ const GNU_TIME = "/usr/bin/time";
 const GNU_TIME_FORMAT = "vize-time wall=%e user=%U sys=%S maxrss_kb=%M status=%x";
 const GNU_TIME_LINE =
   /^vize-time wall=(\d+\.\d+) user=(\d+\.\d+) sys=(\d+\.\d+) maxrss_kb=(\d+) status=(\d+)$/gmu;
-/** vue-tsc on the largest corpora needs more than V8's default old space. */
 export const NODE_OPTIONS = "--max-old-space-size=98304";
-
 export function parseGnuTime(text: string): { maxRssKb: number; status: number } {
   const matches = [...text.matchAll(GNU_TIME_LINE)];
   if (matches.length !== 1) throw new Error(`unexpected GNU time output:\n${text}`);
@@ -198,6 +199,20 @@ function runOnce(
       options.timed,
       corpus.kind === "nuxt" ? NUXT_ENV : {},
     );
+    writeRunReceipt({
+      out: options.out,
+      tool: lane.tool.id,
+      tag,
+      phase,
+      bin,
+      args,
+      cwd,
+      cacheDir,
+      timed: options.timed,
+      nodeOptions: NODE_OPTIONS,
+      extraEnv: corpus.kind === "nuxt" ? NUXT_ENV : {},
+      run,
+    });
     if (format === "build") {
       const assets = join(cwd, ".output", "public", "_nuxt");
       const scripts = existsSync(assets)
@@ -298,8 +313,9 @@ function main(): void {
   if (!Number.isInteger(giantBlocks) || giantBlocks < 0)
     throw new Error("--giant-blocks must be a natural number");
   const tools = values.tools.split(",").map((id) => {
-    const tool = TOOLS.find((candidate) => candidate.id === id);
-    if (!tool) throw new Error(`unknown tool ${id}; known: ${TOOLS.map((t) => t.id).join(", ")}`);
+    const tool = ALL_TOOLS.find((candidate) => candidate.id === id);
+    if (!tool)
+      throw new Error(`unknown tool ${id}; known: ${ALL_TOOLS.map((t) => t.id).join(", ")}`);
     return tool;
   });
   const timed = process.platform === "linux";
@@ -442,6 +458,22 @@ function main(): void {
         save();
       }
       if (!timed) break;
+    }
+    const topologyRefusal = topologyDiagnosticRefusal(
+      lanes.map((lane) => ({
+        tool: lane.tool.id,
+        fingerprint: lane.firstFingerprint,
+        refused: lane.cell.refused,
+      })),
+    );
+    if (topologyRefusal) {
+      for (const lane of lanes.filter((entry) => entry.tool.id.startsWith("vize-check-servers-"))) {
+        lane.cell.refused = lane.cell.refused
+          ? `${lane.cell.refused}\n${topologyRefusal}`
+          : topologyRefusal;
+      }
+      console.error(`::error::${topologyRefusal} on ${label}`);
+      save();
     }
     if (!values.keep) {
       for (const path of [dir, `${dir}-vize`]) rmSync(path, { recursive: true, force: true });

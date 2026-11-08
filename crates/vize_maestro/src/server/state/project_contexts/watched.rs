@@ -86,14 +86,13 @@ impl ServerState {
                     .map(|path| physical_path(path)),
             );
         }
+        let marker_cache = &self.project_contexts.marker_cache;
         let untracked = marker_paths
             .iter()
             .filter(|path| !tracked.contains(path))
             .map(|path| {
-                (
-                    path.clone(),
-                    super::paths::document_context_root(path, &roots),
-                )
+                let root = super::paths::cached_document_context_root(path, &roots, marker_cache);
+                (path.clone(), root)
             })
             .collect::<Vec<_>>();
         // A new boundary for an open buffer checks its own policy first. Its

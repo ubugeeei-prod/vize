@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "kind": "exact-emit-member-infer-source-inverse",
+  "date": "2026-11-08",
+  "beforeSourceRevision": "2fa2a35b56c36d1b09a0d8ca18837b3e8f22c6de",
+  "nativeAcceptanceCredit": false,
+  "canonicalAssetsChangedByThisFix": true,
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
+      "before": {
+        "bytes": 2775,
+        "sha256": "82e9767d55f20b032024840ae4ace6e9bbc72b8419362876593a5dd174a6505a"
+      },
+      "after": {
+        "bytes": 3354,
+        "sha256": "d51186127c7f1baa26dd60f3317751190479b91f8aee9459cddd89f4a0469f84"
+      },
+      "edits": [
+        {
+          "before": "type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\ntype $LooseEmitProps = { readonly __vizeLooseListener: [] };\n",
+          "after": "type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\ntype $MemberConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (component: unknown) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\ntype $LooseEmitProps = { readonly __vizeLooseListener: [] };\n"
+        },
+        {
+          "before": "type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;\n",
+          "after": "type $LooseEmitPropsFactory<C, E = never> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : [E] extends [never] ? (component: C) => (props: {}) => $LooseEmitProps : (component: unknown) => (props: {}) => __EmitProps<E>;\n"
+        },
+        {
+          "before": "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C>;\ntype $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;\n",
+          "after": "type $UnionEmit<All> = (All extends new (...args: any[]) => { $emit: infer E } ? () => E : never) extends () => infer U ? U : never;\ntype $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? C extends new (props: infer P, ...args: any[]) => any ? $MemberConstructorEmitPropsFactory<P, $UnionEmit<All>, C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : never : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C, $UnionEmit<All>>;\ntype $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : $NativeEmitPropsFactory<C, All>;\ntype $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : $EmitPropsRoutes<C, C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-inference.d.ts.txt",
+      "before": {
+        "bytes": 2846,
+        "sha256": "d6daefb4cb7cf6d7b8a17b55d487e555e9c3ee6cf4d9b66c7f521a463dc77106"
+      },
+      "after": {
+        "bytes": 3431,
+        "sha256": "c301cc804cb973e5d2ed5c606ea2138fde0d34d8dee335a4006376340763411f"
+      },
+      "edits": [
+        {
+          "before": "  type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $LooseEmitProps = { readonly __vizeLooseListener: [] };\n",
+          "after": "  type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $MemberConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (component: unknown) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $LooseEmitProps = { readonly __vizeLooseListener: [] };\n"
+        },
+        {
+          "before": "  type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;\n",
+          "after": "  type $LooseEmitPropsFactory<C, E = never> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : [E] extends [never] ? (component: C) => (props: {}) => $LooseEmitProps : (component: unknown) => (props: {}) => __EmitProps<E>;\n"
+        },
+        {
+          "before": "  type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C>;\n  export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;\n",
+          "after": "  type $UnionEmit<All> = (All extends new (...args: any[]) => { $emit: infer E } ? () => E : never) extends () => infer U ? U : never;\n  type $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? C extends new (props: infer P, ...args: any[]) => any ? $MemberConstructorEmitPropsFactory<P, $UnionEmit<All>, C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : never : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C, $UnionEmit<All>>;\n  type $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : $NativeEmitPropsFactory<C, All>;\n  export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : $EmitPropsRoutes<C, C>;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/scripts/emit-inference-exports.ts",
+      "before": {
+        "bytes": 9387,
+        "sha256": "d95d2bf2bb69aa96aae0c4fc7c733b155c0842d1baeae18c03ca23cf63ea7a61"
+      },
+      "after": {
+        "bytes": 10593,
+        "sha256": "72bb500e65187c53578c12c3edb5b6266125a7c33b3d984a25b3c0af59dba651"
+      },
+      "edits": [
+        {
+          "before": "const names = [\n  \"$LooseEmitProps\",\n",
+          "after": "const names = [\n  \"$EmitRequiredKeys\",\n  \"$EmitRequiredFields\",\n  \"$EmitFiniteFields\",\n  \"$EmitFallthrough\",\n  \"$EmitInput\",\n  \"$MemberConstructorEmitPropsFactory\",\n  \"$LooseEmitProps\",\n"
+        },
+        {
+          "before": "  \"$EmitIsWide\",\n  \"$NativeEmitPropsFactory\",\n",
+          "after": "  \"$EmitIsWide\",\n  \"$UnionEmit\",\n  \"$NativeEmitPropsFactory\",\n"
+        },
+        {
+          "before": "  \"$NativeEmitPropsFactory\",\n  \"$EmitPropsFactory\",\n",
+          "after": "  \"$NativeEmitPropsFactory\",\n  \"$EmitPropsRoutes\",\n  \"$EmitPropsFactory\",\n"
+        },
+        {
+          "before": "];\nconst previous = `\n",
+          "after": "];\n// Input helpers the public entry keeps privately beside its own constructor factory.\nconst inputHelpers = names.slice(0, 5);\n// The published five-alias family that predates the private module.\nconst legacyFamily = [\n  \"$LooseEmitProps\",\n  \"$LooseEmitPropsFactory\",\n  \"$EmitIsWide\",\n  \"$NativeEmitPropsFactory\",\n  \"$EmitPropsFactory\",\n];\nconst previous = `\n"
+        },
+        {
+          "before": "const previousLeafSha256 = \"970d2e01606062f48faed4194df96322c53b57158eee854196afe6f71f117809\";\n",
+          "after": "const previousLeafSha256 = \"88aa94a140aff34fa904615d1ca84b3cc70d186ca3209eec3bde3dc34b67c59e\";\n"
+        },
+        {
+          "before": "  \"type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;\";\nconst namespaceImport =\n",
+          "after": "  \"type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;\";\nconst previousFactory =\n  \"type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;\";\nconst namespaceImport =\n"
+        },
+        {
+          "before": "      .filter((node) => node.name.text !== \"$DeferredEmitProps\")\n",
+          "after": "      .filter((node) => legacyFamily.includes(node.name.text))\n"
+        },
+        {
+          "before": "        node.name.text === \"$NativeEmitPropsFactory\" ? previousNative : node.getText(shared.source),\n",
+          "after": "        node.name.text === \"$NativeEmitPropsFactory\"\n          ? previousNative\n          : node.name.text === \"$EmitPropsFactory\"\n            ? previousFactory\n            : node.getText(shared.source),\n"
+        },
+        {
+          "before": "    const actual = family(text, file);\n",
+          "after": "    const published = family(text, file);\n    const actual = {\n      source: published.source,\n      nodes: published.nodes.filter((node) => !inputHelpers.includes(node.name.text)),\n    };\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-emits.d.ts",
+      "before": {
+        "bytes": 2045,
+        "sha256": "88aa94a140aff34fa904615d1ca84b3cc70d186ca3209eec3bde3dc34b67c59e"
+      },
+      "after": {
+        "bytes": 3539,
+        "sha256": "870774cb9f53d39bc7f0165695c9c4016cc01d608964a46703a520d5e9d6d5aa"
+      },
+      "edits": [
+        {
+          "before": "} from \"./virtual-ts.js\" with { \"resolution-mode\": \"import\" };\ntype $LooseEmitProps = { readonly __vizeLooseListener: [] };\n",
+          "after": "} from \"./virtual-ts.js\" with { \"resolution-mode\": \"import\" };\ntype $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];\ntype $EmitRequiredFields<T> = T extends unknown\n  ? {} extends T\n    ? Pick<T, never>\n    : Pick<T, $EmitRequiredKeys<T>>\n  : never;\ntype $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };\ntype $EmitFallthrough<F> =\n  $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;\ntype $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown\n  ? F extends unknown\n    ? {\n        [K in keyof A]: K extends O\n          ? K extends keyof P\n            ? P[K]\n            : never\n          : K extends keyof F\n            ? F[K]\n            : K extends keyof P\n              ? P[K]\n              : unknown;\n      } & $EmitRequiredFields<P> &\n        $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>>\n    : never\n  : never;\ntype $MemberConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (\n  component: unknown,\n) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\ntype $LooseEmitProps = { readonly __vizeLooseListener: [] };\n"
+        },
+        {
+          "before": "type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any\n",
+          "after": "type $LooseEmitPropsFactory<C, E = never> = C extends (props: infer P, ...args: any[]) => any\n"
+        },
+        {
+          "before": "  : (component: C) => (props: {}) => $LooseEmitProps;\n",
+          "after": "  : [E] extends [never]\n    ? (component: C) => (props: {}) => $LooseEmitProps\n    : (component: unknown) => (props: {}) => __EmitProps<E>;\n"
+        },
+        {
+          "before": "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any }\n",
+          "after": "type $UnionEmit<All> = (\n  All extends new (...args: any[]) => { $emit: infer E } ? () => E : never\n) extends () => infer U\n  ? U\n  : never;\ntype $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any }\n"
+        },
+        {
+          "before": "    ? $ConstructorEmitPropsFactory<\n        C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},\n        $EmitOwnedKeys<C>\n      >\n",
+          "after": "    ? C extends new (props: infer P, ...args: any[]) => any\n      ? $MemberConstructorEmitPropsFactory<\n          P,\n          $UnionEmit<All>,\n          C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},\n          $EmitOwnedKeys<C>\n        >\n      : never\n"
+        },
+        {
+          "before": "  : $LooseEmitPropsFactory<C>;\n",
+          "after": "  : $LooseEmitPropsFactory<C, $UnionEmit<All>>;\ntype $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F }\n  ? F extends (...args: any[]) => any\n    ? (component: C) => F\n    : $NativeEmitPropsFactory<C, All>\n  : C extends { __vizeResolveProps?: infer F }\n    ? F extends (...args: any[]) => any\n      ? (component: C) => F\n      : $NativeEmitPropsFactory<C, All>\n    : $NativeEmitPropsFactory<C, All>;\n"
+        },
+        {
+          "before": "    : C extends { __vizeResolveEmitProps?: infer F }\n      ? F extends (...args: any[]) => any\n        ? (component: C) => F\n        : $NativeEmitPropsFactory<C>\n      : C extends { __vizeResolveProps?: infer F }\n        ? F extends (...args: any[]) => any\n          ? (component: C) => F\n          : $NativeEmitPropsFactory<C>\n        : $NativeEmitPropsFactory<C>;\n",
+          "after": "    : $EmitPropsRoutes<C, C>;\n"
+        }
+      ]
+    }
+  ],
+  "preamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 47137,
+      "sha256": "15b8c986ecc0b3eba8bba2ea7797793564cce0600b4f1e0e575e5572e0f133d5"
+    },
+    "after": {
+      "bytes": 47722,
+      "sha256": "34d04a1c79037c2bfdc6a43d6d005f33dc11abb4ff5237d086c332dc2e506ec6"
+    },
+    "edits": [
+      {
+        "before": "  type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $LooseEmitProps = { readonly __vizeLooseListener: [] };\n",
+        "after": "  type $ConstructorEmitPropsFactory<F, O extends PropertyKey> = <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $MemberConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (component: unknown) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;\n  type $LooseEmitProps = { readonly __vizeLooseListener: [] };\n"
+      },
+      {
+        "before": "  type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : (component: C) => (props: {}) => $LooseEmitProps;\n",
+        "after": "  type $LooseEmitPropsFactory<C, E = never> = C extends (props: infer P, ...args: any[]) => any ? ($IsAny<P> extends true ? (component: C) => (props: {}) => $LooseEmitProps : (component: C) => (props: P) => {}) : [E] extends [never] ? (component: C) => (props: {}) => $LooseEmitProps : (component: unknown) => (props: {}) => __EmitProps<E>;\n"
+      },
+      {
+        "before": "  type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C>;\n  export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;\n",
+        "after": "  type $UnionEmit<All> = (All extends new (...args: any[]) => { $emit: infer E } ? () => E : never) extends () => infer U ? U : never;\n  type $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? C extends new (props: infer P, ...args: any[]) => any ? $MemberConstructorEmitPropsFactory<P, $UnionEmit<All>, C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : never : <P, E>(component: new (props: P, ...args: any[]) => { $emit: E }) => (props: P) => $DeferredEmitProps<E> : $LooseEmitPropsFactory<C, $UnionEmit<All>>;\n  type $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C, All> : $NativeEmitPropsFactory<C, All>;\n  export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : $EmitPropsRoutes<C, C>;\n"
+      }
+    ]
+  }
+}

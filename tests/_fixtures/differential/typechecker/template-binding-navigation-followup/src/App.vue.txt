@@ -1,0 +1,16 @@
+<script lang="ts">
+import { ref } from 'vue';
+
+export default {
+  setup() {
+    return {
+      ready: ref(1),
+      rows: ref([1, 2]),
+    };
+  },
+};
+</script>
+<template>
+  {{ /* 🌸 */ 0 &lt; ready }}
+  <i v-for="row in (0 &lt; rows.length ? rows : [])" :key="row">{{ row }}</i>
+</template>

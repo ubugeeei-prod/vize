@@ -9,7 +9,7 @@ use vize_carton::{CompactString, cstr};
 
 /// Unknown syntax or direct eval cannot prove absence of a setup read.
 pub(super) fn checked_reads(source: &str) -> Option<Vec<CompactString>> {
-    checked_semantic_references(source).map(|references| {
+    checked_semantic_references(source, false).map(|references| {
         references
             .into_iter()
             .map(|reference| reference.name)
@@ -23,7 +23,16 @@ pub(super) fn checked_references(source: &str) -> Option<Vec<IdentifierRef>> {
 }
 
 pub(super) fn checked_references_with_witness(source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
-    let references = checked_semantic_references(source)?;
+    witnessed(checked_semantic_references(source, false)?, source)
+}
+
+/// Every free read or write, at its exact authored offset.
+pub(super) fn checked_uses(source: &str) -> Option<Vec<IdentifierRef>> {
+    let (references, witnessed) = witnessed(checked_semantic_references(source, true)?, source)?;
+    witnessed.then_some(references)
+}
+
+fn witnessed(references: Vec<IdentifierRef>, source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
     let witnessed = references.iter().all(|reference| {
         let start = reference.offset as usize;
         start
@@ -33,7 +42,7 @@ pub(super) fn checked_references_with_witness(source: &str) -> Option<(Vec<Ident
     Some((references, witnessed))
 }
 
-fn checked_semantic_references(source: &str) -> Option<Vec<IdentifierRef>> {
+fn checked_semantic_references(source: &str, writes: bool) -> Option<Vec<IdentifierRef>> {
     let allocator = Allocator::default();
     let wrapped = cstr!("({source})");
     let expression = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
@@ -64,7 +73,11 @@ fn checked_semantic_references(source: &str) -> Option<Vec<IdentifierRef>> {
     for id in scoping.root_unresolved_references_ids().flatten() {
         let reference = scoping.get_reference(id);
         let flags = reference.flags();
-        if !(flags.is_read() || flags.is_type() || flags.is_value_as_type()) {
+        if !(flags.is_read()
+            || flags.is_type()
+            || flags.is_value_as_type()
+            || writes && flags.is_write())
+        {
             continue;
         }
         let span = semantic.reference_span(reference);

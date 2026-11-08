@@ -99,7 +99,10 @@ export async function startupHost(
   assert.ok(plugin && sfcPlugin);
   const watchedFiles: string[] = [];
   const context = {
-    environment: { getTopLevelConfig: () => resolved },
+    environment: {
+      name: resolved.build.ssr ? "ssr" : "client",
+      getTopLevelConfig: () => resolved,
+    },
     addWatchFile(file: string) {
       watchedFiles.push(file);
     },

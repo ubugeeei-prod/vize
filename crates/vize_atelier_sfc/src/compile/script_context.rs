@@ -71,7 +71,7 @@ pub(super) fn validate(
     descriptor: &SfcDescriptor<'_>,
 ) -> Result<(), SfcError> {
     context
-        .validate_imported_macro_types(imports)
+        .validate_macro_types(imports)
         .map_err(|message| SfcError {
             message,
             code: Some("V_SFC_TYPE_RESOLUTION".into()),

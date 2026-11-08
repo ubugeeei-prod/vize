@@ -273,13 +273,16 @@ void test("the oracle reads the generator's own text", () => {
 void test("the gate mirrors every $EmitPropsFactory route", () => {
   const factory = inference
     .split("\n")
-    .find((line) => line.startsWith("type $EmitPropsFactory<C> ="));
+    .find((line) => line.startsWith("type $EmitPropsRoutes<C, All> ="));
   assert.ok(factory);
   // The shared module declares the same factory for hoisted modules.
   for (const name of [
     "$EmitPropsFactory",
+    "$EmitPropsRoutes",
+    "$UnionEmit",
     "$NativeEmitPropsFactory",
     "$ConstructorEmitPropsFactory",
+    "$MemberConstructorEmitPropsFactory",
     "$LooseEmitPropsFactory",
     "$EmitIsWide",
   ]) {
@@ -293,14 +296,12 @@ void test("the gate mirrors every $EmitPropsFactory route", () => {
     assert.equal(shared?.trim().replace(/^export /u, ""), local, name);
   }
   // A generic resolver reads the props (`true`); every other route does not.
-  const mirror = factory
-    .slice("type $EmitPropsFactory<C> = ".length, -1)
-    .replace(
-      "$IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps",
-      "0 extends (1 & C) ? false",
-    )
+  // The `any` route stays in `$EmitPropsFactory`; the member routes thread the whole argument.
+  const mirror = (
+    "0 extends (1 & C) ? false : " + factory.slice("type $EmitPropsRoutes<C, All> = ".length, -1)
+  )
     .replaceAll("(component: C) => F", "true")
-    .replaceAll("$NativeEmitPropsFactory<C>", "__vize_emit_native_input<C>")
+    .replaceAll("$NativeEmitPropsFactory<C, All>", "__vize_emit_native_input<C>")
     .replaceAll("infer F", "infer X")
     .replaceAll("F extends", "X extends");
   assert.ok(GATE_ALIASES.includes(`true extends (${mirror}) ? F :`), mirror);

@@ -235,6 +235,9 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// Public-facing component symbol used by Content Mapper hover responses.
     /// `None` preserves the internal default export used by batch projections.
     pub(crate) component_name: Option<&'a str>,
+    /// Give each template use of a shadowed setup binding a use of the
+    /// authored binding, for hosts that read only the span map.
+    pub(crate) template_use_navigation: bool,
     /// Authored file stem used for implicit recursive component resolution.
     pub(crate) self_component_name: Option<&'a str>,
     /// Preserve symbol links from component listeners to authored emit keys.

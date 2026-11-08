@@ -255,16 +255,18 @@ fn resolve_type_to_object_body_inner(
         return Some(inner.trim().to_compact_string());
     }
 
-    // Resolve utility types structurally when their inner type is known.
-    if let Some(body) = resolve_utility_type(
-        trimmed,
-        interfaces,
-        type_aliases,
-        stack,
-        missing,
-        collect_missing,
-    ) {
-        return Some(body);
+    // Resolve supported utility types structurally. When their inner shape is
+    // missing, the recursive call already records that authored reference;
+    // do not report the built-in wrapper itself as unresolved.
+    if split_generic_call(trimmed).is_some_and(|(name, _)| is_supported_utility_type(name)) {
+        return resolve_utility_type(
+            trimmed,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        );
     }
 
     let base_name = strip_generic_params(trimmed);
@@ -352,8 +354,19 @@ fn resolve_utility_type(
         "Record" => {
             let keys_arg = type_args.first()?;
             let value_arg = type_args.get(1)?;
-            let keys = parse_string_literal_union(keys_arg);
+            let keys = match resolve_record_keys(keys_arg, interfaces, type_aliases, stack) {
+                Ok(keys) => keys,
+                Err(reference) => {
+                    if collect_missing {
+                        missing(&reference);
+                    }
+                    return None;
+                }
+            };
             if keys.is_empty() {
+                if collect_missing {
+                    missing(strip_generic_params(keys_arg));
+                }
                 return None;
             }
             let value = value_arg.trim();
@@ -370,6 +383,36 @@ fn resolve_utility_type(
         }
         _ => None,
     }
+}
+
+fn resolve_record_keys(
+    expression: &str,
+    interfaces: &FxHashMap<String, String>,
+    type_aliases: &FxHashMap<String, String>,
+    stack: &mut FxHashSet<String>,
+) -> Result<Vec<String>, String> {
+    let keys = parse_string_literal_union(expression);
+    if !keys.is_empty() {
+        return Ok(keys);
+    }
+
+    let name = strip_generic_params(expression);
+    if !stack.insert(name.to_compact_string()) {
+        return Err(name.to_compact_string());
+    }
+    let resolved = match resolve_single_type_ref(name, interfaces, type_aliases) {
+        Some(body) => resolve_record_keys(&body, interfaces, type_aliases, stack),
+        None => Err(name.to_compact_string()),
+    };
+    stack.remove(name);
+    resolved
+}
+
+fn is_supported_utility_type(name: &str) -> bool {
+    matches!(
+        name,
+        "Partial" | "Required" | "Readonly" | "Pick" | "Omit" | "Record"
+    )
 }
 
 /// Split a generic type reference `Name<args>` into `("Name", "args")`.

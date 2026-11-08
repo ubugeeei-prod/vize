@@ -72,6 +72,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::emit_member_infer::source_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
@@ -86,6 +87,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::emit_member_infer::preamble_before(current);
     invert(
         current,
         CANONICAL_BEFORE,
@@ -137,7 +139,7 @@ mod tests {
         let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
         assert_eq!(
             preamble_before(preamble).replacen(super::CANONICAL_BEFORE, super::CANONICAL_AFTER, 1),
-            preamble
+            super::super::emit_member_infer::preamble_before(preamble)
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));

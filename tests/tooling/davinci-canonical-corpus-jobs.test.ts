@@ -29,7 +29,16 @@ const job = (entry: Check, attempt = 1) => ({
   head_sha: run.head_sha,
   status: "completed",
   conclusion: "success",
-  steps: [{ name: "Upload required observer evidence", number: 6, conclusion: "success" }],
+  steps: [
+    "Plan canonical corpus identity",
+    "Select and hydrate full fixture corpus",
+    "Capture canonical corpus identity",
+    "Run L2 DOM differential corpus",
+    "Run L4 SSR and pug L1 differential corpora",
+    "Measure Davinci production reach on the hydrated corpus",
+    "Record required observer evidence",
+    "Upload required observer evidence",
+  ].map((name, index) => ({ name, number: index + 1, conclusion: "success" })),
   runner_id: 9,
   runner_name: "worker",
   labels: ["linux"],
@@ -53,6 +62,20 @@ function provider(checks: Check[], jobs: Job[]) {
     const result = jobs.find(
       (entry) => url.pathname === `/repos/${options.repository}/actions/jobs/${entry.id}`,
     );
+    const attempt =
+      /^\/repos\/ubugeeei-prod\/vize\/actions\/runs\/12\/attempts\/(\d+)\/jobs$/u.exec(
+        url.pathname,
+      )?.[1];
+    if (attempt != null) {
+      assert.equal(url.searchParams.get("filter"), "all");
+      assert.equal(url.searchParams.get("per_page"), "100");
+      const matching = jobs.filter((entry) => entry.run_attempt === Number(attempt));
+      const start = (Number(url.searchParams.get("page")) - 1) * 100;
+      return Response.json({
+        total_count: matching.length,
+        jobs: matching.slice(start, start + 100),
+      });
+    }
     assert(result, `Unexpected API request: ${url.pathname}`);
     return Response.json(result);
   };
@@ -119,6 +142,30 @@ await test("eventually consistent observer completion is read from the same exac
   );
   assert.equal(jobReads, 2);
   assert.deepEqual(waits, [1_000]);
+});
+
+await test("an incomplete individual job reads the full exact-attempt step inventory", async () => {
+  const entry = check(1, 21);
+  const complete = job(entry, 2);
+  const partial = { ...complete, steps: complete.steps.slice(-3) };
+  const fixture = provider([entry], [complete]);
+  const read = fixture.fetchImpl;
+  let individualReads = 0;
+  let attemptReads = 0;
+  const fetchImpl: typeof fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    if (url.pathname.endsWith("/actions/jobs/21")) {
+      individualReads += 1;
+      return Response.json(partial);
+    }
+    if (url.pathname.includes("/actions/runs/12/attempts/2/jobs")) attemptReads += 1;
+    return read(input);
+  };
+  assert.deepEqual(await readCanonicalJobs({ ...options, fetchImpl }, run), [
+    { ...complete, canonicalCheck: entry },
+  ]);
+  assert.equal(individualReads, 1);
+  assert.equal(attemptReads, 1);
 });
 
 await test("persistent pending observer metadata remains fail-closed after a bounded wait", async () => {
@@ -190,6 +237,7 @@ await test("individual job responses must match the exact check, run, head and o
   for (const change of [
     { check_run_url: `${api}/check-runs/2` },
     { run_id: 13 },
+    { run_attempt: 0 },
     { head_sha: "b".repeat(40) },
     { name: "canonical observer (reach)" },
   ]) {

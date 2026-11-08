@@ -8,11 +8,24 @@
 
 import { h } from "vue";
 
+import Badge from "./FrescoBadge.vue";
 import { Box, type BoxProps } from "./Box.js";
+import type {
+  BadgeProps,
+  LinkProps,
+  SpinnerProps,
+  StaticProps,
+} from "./display-primitive-types.js";
+import Link from "./FrescoLink.vue";
+import Newline from "./FrescoNewline.vue";
 import ScrollBox from "./ScrollBox.vue";
+import Spacer from "./FrescoSpacer.vue";
+import Spinner from "./FrescoSpinner.vue";
+import Static from "./FrescoStatic.vue";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
+import Transform from "./FrescoTransform.vue";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -99,6 +112,19 @@ export const textInputRejectsBadSubmitHandler: TextInputProps = {
   onSubmit: (value: number) => value,
 };
 
+export const staticAcceptsTypedItems: StaticProps<string> = { items: ["done"] };
+export const linkAcceptsDocumentedProps: LinkProps = {
+  text: "Docs",
+  url: "https://example.test",
+  showUrl: true,
+};
+export const badgeAcceptsDocumentedProps: BadgeProps = { label: "Ready", variant: "success" };
+export const spinnerAcceptsDocumentedProps: SpinnerProps = {
+  type: "line",
+  interval: 100,
+  label: "Loading",
+};
+
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
   viewportSize: 24,
@@ -133,6 +159,35 @@ export function componentsRenderWithTypedProps() {
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
+    h(Spacer),
+    h(Newline, { count: 2 }),
+    h(Transform, { transform: (line: string, index: number) => `${index}:${line}` }),
+    h(Static, { items: ["done"] }),
+    h(Link, { text: "Docs", showUrl: false }),
+    h(Badge, { label: "Ready", variant: "success" }),
+    h(Spinner, { type: "line", label: "Loading" }),
+  ];
+}
+
+export function textUtilityComponentsRejectMistypedProps() {
+  return [
+    // @ts-expect-error - count is numeric.
+    h(Newline, { count: "2" }),
+  ];
+}
+
+// @ts-expect-error - transform is required.
+export const transformRejectsMissingCallback: InstanceType<typeof Transform>["$props"] = {};
+
+// @ts-expect-error - text is required.
+export const linkRejectsMissingText: InstanceType<typeof Link>["$props"] = {};
+
+export function displayPrimitivesRejectMistypedProps() {
+  return [
+    // @ts-expect-error - unknown is not a Badge variant.
+    h(Badge, { label: "Bad", variant: "unknown" }),
+    // @ts-expect-error - wave is not a built-in Spinner frame set.
+    h(Spinner, { type: "wave" }),
   ];
 }
 
@@ -149,6 +204,13 @@ export function textRejectsMistypedRenderProps() {
 // --- Emits -----------------------------------------------------------------
 
 type TextInputEmit = InstanceType<typeof TextInput>["$emit"];
+type LinkEmit = InstanceType<typeof Link>["$emit"];
+
+export function linkEmitsDocumentedEvents(emit: LinkEmit) {
+  emit("click");
+  // @ts-expect-error - activate is not a declared event.
+  emit("activate");
+}
 
 export function textInputEmitsDocumentedEvents(emit: TextInputEmit) {
   emit("update:modelValue", "next");

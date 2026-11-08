@@ -8,7 +8,10 @@ import {
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   type VizePluginState,
 } from "./state.ts";
+import { CompiledModuleCache } from "./compiled-module-cache.ts";
 import { compileAll } from "./precompile-run.ts";
+import { loadSfcModule } from "../test/sfc-module.ts";
+import { toVirtualId } from "../virtual.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,8 +43,8 @@ export const Basic = () => <Button />;
 );
 
 const state: VizePluginState = {
-  cache: new Map(),
-  ssrCache: new Map(),
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
   collectedCss: new Map(),
   precompileMetadata: new Map(),
   pendingHmrUpdateTypes: new Map(),
@@ -84,6 +87,62 @@ assert.equal(
   "TSX scan matches should not get SFC precompile metadata",
 );
 
+const environmentRoot = fs.mkdtempSync(path.join(testRoot, "environment-scan-"));
+const environmentSourceRoot = path.join(environmentRoot, "src");
+fs.mkdirSync(environmentSourceRoot, { recursive: true });
+const environmentApp = path.join(environmentSourceRoot, "App.vue");
+const environmentSource = `<template><div>{{ message }}</div></template><script setup>const message = "environment"</script>`;
+fs.writeFileSync(environmentApp, environmentSource);
+const transformLogs: string[] = [];
+const environmentState: VizePluginState = {
+  ...state,
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
+  collectedCss: new Map(),
+  precompileMetadata: new Map(),
+  ssrPrecompileMetadata: new Map(),
+  pendingHmrUpdateTypes: new Map(),
+  root: environmentRoot,
+  scanPatterns: ["src/**/*.vue"],
+  isProduction: true,
+  logger: {
+    log: (...args: unknown[]) => transformLogs.push(args.join(" ")),
+    info() {},
+    warn() {},
+    error() {},
+  } as never,
+};
+
+await compileAll(environmentState);
+await compileAll(environmentState, [], undefined, undefined, true);
+const clientModule = environmentState.cache.get(environmentApp);
+const ssrModule = environmentState.ssrCache.get(environmentApp);
+assert.ok(clientModule, "client precompile must populate the client cache");
+assert.ok(ssrModule, "SSR precompile must populate the SSR cache despite client scan metadata");
+assert.notEqual(clientModule.code, ssrModule.code, "SSR must use SSR compiler options");
+
+transformLogs.length = 0;
+await loadSfcModule(environmentState, toVirtualId(environmentApp, true), { ssr: true });
+assert.equal(
+  transformLogs.some((line) => line.includes("transform: compiling")),
+  false,
+  "an SSR transform must reuse the SSR precompile result",
+);
+
+await compileAll(environmentState, [() => true]);
+assert.equal(
+  environmentState.cache.has(environmentApp),
+  false,
+  "a claimed input must leave no stale client result",
+);
+assert.equal(
+  environmentState.ssrCache.has(environmentApp),
+  false,
+  "a claimed input must leave no stale SSR result",
+);
+assert.equal(environmentState.precompileMetadata.has(environmentApp), false);
+assert.equal(environmentState.ssrPrecompileMetadata?.has(environmentApp), false);
+
 const workspaceRootForScan = fs.mkdtempSync(path.join(testRoot, "workspace-scan-"));
 const workspaceSourceRoot = path.join(workspaceRootForScan, "src");
 fs.mkdirSync(workspaceSourceRoot, { recursive: true });
@@ -116,8 +175,8 @@ try {
 
 const workspaceState: VizePluginState = {
   ...state,
-  cache: new Map(),
-  ssrCache: new Map(),
+  cache: new CompiledModuleCache(),
+  ssrCache: new CompiledModuleCache(),
   collectedCss: new Map(),
   precompileMetadata: new Map(),
   pendingHmrUpdateTypes: new Map(),

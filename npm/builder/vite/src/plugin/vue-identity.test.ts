@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { fromPluginVisibleVirtualId, toPluginVisibleVirtualId } from "../virtual.ts";
-import { resolveHookSsr } from "./index-helpers.ts";
+import { resolveBuildStartSsr, resolveHookSsr } from "./index-helpers.ts";
 
 void test("client/server share Vue identity while SSR follows the execution environment", () => {
   assert.equal(toPluginVisibleVirtualId("/app/Page.vue"), "/app/Page.vue?vue&vize");
@@ -35,6 +35,12 @@ void test("client/server share Vue identity while SSR follows the execution envi
   );
   assert.equal(resolveHookSsr({ environment: { name: "ssr" } }, { ssr: false }), false);
   assert.equal(resolveHookSsr({}, { ssr: true }), true);
+  assert.equal(resolveBuildStartSsr({}, { build: { ssr: "src/entry.ts" } }), true);
+  assert.equal(
+    resolveBuildStartSsr({ environment: { name: "client" } }, { build: { ssr: true } }),
+    false,
+  );
+  assert.equal(resolveBuildStartSsr({ environment: { name: "server" } }), true);
 });
 
 void test("the same canonical ID loads real client and SSR compilation caches independently", async () => {

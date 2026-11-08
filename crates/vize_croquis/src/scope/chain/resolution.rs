@@ -235,6 +235,7 @@ mod tests {
             left.directive_expression_offsets,
             right.directive_expression_offsets
         );
+        assert_eq!(left.v_for_source_spans, right.v_for_source_spans);
     }
 
     #[test]

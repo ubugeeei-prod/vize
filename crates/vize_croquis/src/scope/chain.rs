@@ -14,6 +14,7 @@ mod visibility;
 use core::fmt;
 use index_vec::IndexVec;
 use std::borrow::Cow;
+use std::ops::Range;
 
 use vize_carton::{
     CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
@@ -248,6 +249,7 @@ pub struct ScopeChain {
     /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
     dynamic_v_slot_scopes: FxHashSet<ScopeId>,
     directive_expression_offsets: FxHashMap<ScopeId, u32>,
+    v_for_source_spans: FxHashMap<ScopeId, Range<u32>>,
 }
 
 impl fmt::Debug for ScopeChain {
@@ -291,6 +293,7 @@ impl ScopeChain {
             current: ScopeId::ROOT,
             dynamic_v_slot_scopes: FxHashSet::default(),
             directive_expression_offsets: FxHashMap::default(),
+            v_for_source_spans: FxHashMap::default(),
         }
     }
 

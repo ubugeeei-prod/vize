@@ -247,6 +247,12 @@ pub(crate) fn helper(name: &'static str, constraints: &'static [&'static str]) -
     })
 }
 
+/// The line prefix of a template use projected onto its setup binding.
+pub(crate) const TEMPLATE_USE_PREFIX: &str = "/* __vize_template_use */ typeof ";
+
+/// The line prefix of a template use's unwrapped, const-preserving hover proxy.
+pub(crate) const TEMPLATE_HOVER_PREFIX: &str = "/* __vize_template_hover */ const ";
+
 /// Declare the helper aliases requested so far, outside every generic scope.
 pub(crate) fn emit_forwarded_helpers(ts: &mut String) {
     CURRENT.with_borrow(|projection| {

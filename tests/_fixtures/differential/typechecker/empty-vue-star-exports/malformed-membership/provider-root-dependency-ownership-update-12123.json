@@ -42,7 +42,7 @@
   "ownerManifests": [
     { "path": "docs/package.json", "bytes": 1231, "sha256": "327a565c5dc08e0891337c683002bf23efe7d7137b93b8ef6b123fa0535d3806", "gitBlob": "1a36c8ed8b28b14ed392c92b6ab2e29ea056c9e1" },
     { "path": "editors/package.json", "bytes": 174, "sha256": "764e69b4547464b0e94070c0dd46ee2d9ae5a49974870d29fb1d2bdbe561a2f2", "gitBlob": "029e91724d6e845e2c1e115e687a5532e9281b51" },
-    { "path": "npm/builder/unplugin/package.json", "bytes": 2925, "sha256": "cb9e3c22719b321a0c81f34fcaccba82118073082c4738fefb0322ffdf1c03b6", "gitBlob": "97da4e60aa1567417f94439ff81f286aefb098d4" },
+    { "path": "npm/builder/unplugin/package.json", "bytes": 3066, "sha256": "bf2e7daf15a4c56436a8d6855165963a99ecf2a488fb755b7ce6e5277ad9db9f", "gitBlob": "8b1442eff4606452c0f91447c95bb910dfac0e2f" },
     { "path": "npm/builder/vite/package.json", "bytes": 2742, "sha256": "86405a1b0f138a85a0a53c7e1b58562a45a2bd7e3adde1bd23a328dab05d7d41", "gitBlob": "2666d936aa778f225b273cb597b1264feae26183" },
     { "path": "npm/cli/package.json", "bytes": 4362, "sha256": "11abb0e379b919dcff38cc4aed99e1a8934aab4a55d9000115cf54dc1608f5c9", "gitBlob": "dad46ee29384cc40f38cda5a425d90f102424d41" },
     { "path": "npm/framework/nuxt-lint-config/package.json", "bytes": 1691, "sha256": "96a247a24b95b6af7a97275679fb7cd552a6e86ee8941f3411ea549db2e58c84", "gitBlob": "4a0a24564c7f2599d4e7a6192aa28b68f5a65ef1" },
