@@ -10,6 +10,8 @@ import {
   restoreHistoryToolchainSelection,
   restoreNativeRuntimeCasePacket,
   restoreNodeEngineCasePacket,
+  restoreTestReportComment,
+  restoreToolingCasePacketJob,
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
@@ -150,66 +152,6 @@ function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   step.env = structuredClone(previous.env);
   step.run = previous.run;
   assert.deepEqual(report, before);
-}
-
-// #11652 posts the PR test report after the unchanged gate; invert exactly that.
-const testReportSteps = [
-  {
-    name: "Download test case reports",
-    id: "cases",
-    if: "${{ !cancelled() }}",
-    "continue-on-error": true,
-    uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
-    with: { pattern: "test-cases-*", path: "${{ runner.temp }}/test-cases" },
-  },
-  {
-    name: "Report test results",
-    if: "${{ !cancelled() }}",
-    "continue-on-error": true,
-    env: {
-      GITHUB_TOKEN: "${{ github.token }}",
-      TEST_REPORT_GATE: "${{ steps.gate.outcome }}",
-      TEST_REPORT_CASES: "${{ steps.cases.outcome }}",
-      TEST_REPORT_CASES_DIR: "${{ runner.temp }}/test-cases",
-      TEST_REPORT_HEAD_SHA:
-        "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}",
-      TEST_REPORT_PR_NUMBER:
-        "${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number || '' }}",
-    },
-    run: "node tools/support/compat/github/comment-test-report.ts",
-  },
-];
-
-function restoreTestReportComment(workflow: Workflow, original: Workflow) {
-  const before = original.jobs["test-report"];
-  restoreMaximumRunner(workflow.jobs["test-report"], before);
-  const steps = before.steps ?? [];
-  const gate = steps.at(-1);
-  assert.equal(gate?.name, "Require every needed job to succeed");
-  assert.deepEqual(workflow.jobs["test-report"], {
-    ...before,
-    permissions: { ...(before.permissions as Record<string, string>), "pull-requests": "write" },
-    steps: [...steps.slice(0, -1), { ...gate, id: "gate" }, ...testReportSteps],
-  });
-  workflow.jobs["test-report"] = structuredClone(before);
-}
-
-function restoreToolingCasePacketJob(workflow: Workflow, original: Workflow) {
-  const before = original.jobs["affected-tooling"];
-  const steps = before.steps ?? [];
-  const worker = steps.at(-1);
-  assert.equal(worker?.uses, "./.github/actions/test-affected-tooling");
-  assert.deepEqual(workflow.jobs["affected-tooling"], {
-    ...before,
-    steps: [
-      ...steps.slice(0, -1),
-      {
-        ...worker,
-        with: { ...(worker.with as Record<string, string>), job: before.name },
-      },
-    ],
-  });
-  workflow.jobs["affected-tooling"] = structuredClone(before);
 }
 
 test("maximum non-release runners preserve every original job contract", () => {
