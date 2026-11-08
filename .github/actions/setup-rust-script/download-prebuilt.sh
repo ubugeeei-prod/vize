@@ -4,6 +4,7 @@ set -euo pipefail
 # Contain the staging-file trap: this helper is sourced by the install action,
 # whose existing trap still owns the complete runner temporary directory.
 download_rust_script() (
+  readonly download_defer_status=75
   download_archive="${1:?expected archive}"
   if [ "$#" -ne 1 ] || [ -d "$download_archive" ]; then
     echo "::error::expected one rust-script archive file path" >&2
@@ -47,11 +48,21 @@ download_rust_script() (
           sleep 1
           continue
         fi
-        download_via_api || exit "$?"
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
         break
         ;;
       22:500|22:502|22:503|22:504)
-        download_via_api || exit "$?"
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
         break
         ;;
       *)
