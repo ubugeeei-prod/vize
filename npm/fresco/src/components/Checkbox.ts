@@ -2,7 +2,8 @@
  * Checkbox Component - Toggle checkbox
  */
 
-import { defineComponent, h } from "vue";
+import { computed, defineComponent, h } from "vue";
+import { useInput } from "../composables/useInput.js";
 
 export interface CheckboxProps {
   /** Whether the checkbox is checked */
@@ -54,9 +55,21 @@ export const Checkbox = defineComponent({
     },
   },
   emits: ["update:modelValue", "change"],
-  setup(props, { emit: _emit }) {
-    // Note: toggle is designed for keyboard event handlers
-    // It is currently not wired up but kept for future use
+  setup(props, { emit }) {
+    const toggle = () => {
+      if (props.disabled) return;
+      const next = !props.modelValue;
+      emit("update:modelValue", next);
+      emit("change", next);
+    };
+
+    useInput({
+      isActive: computed(() => props.focused && !props.disabled),
+      onChar: (character) => {
+        if (character === " ") toggle();
+      },
+      onSubmit: toggle,
+    });
 
     return () => {
       const indicator = props.modelValue ? props.checked : props.unchecked;
