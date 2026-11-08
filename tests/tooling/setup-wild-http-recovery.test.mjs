@@ -36,12 +36,36 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     "/0.9.0/wild-linker-0.9.0-",
     "/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-",
   );
-  const sourceLine = ' . "$GITHUB_ACTION_PATH/download-linux-x64.sh" "${archive}" "${url}" "5"';
+  const recoveryBlock = [
+    'if bash "$GITHUB_ACTION_PATH/download-linux-x64.sh" "${archive}" "${url}" "5"; then',
+    '  tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1',
+    "else",
+    "  download_status=$?",
+    '  if [[ "$download_status" -ne 75 ]]; then',
+    '    exit "$download_status"',
+    "  fi",
+    '  echo "::warning::Wild release assets unavailable; building pinned wild-linker from crates.io" >&2',
+    '  cargo_root="$(mktemp -d "${RUNNER_TEMP}/wild-cargo.XXXXXX")"',
+    "  cargo_status=0",
+    '  cargo install wild-linker --version "0.9.0" --locked --root "$cargo_root" || cargo_status=$?',
+    '  if [[ "$cargo_status" -ne 0 ]]; then',
+    '    rm -rf "$cargo_root"',
+    '    rm -f "${archive}"',
+    '    exit "$cargo_status"',
+    "  fi",
+    '  install -m 0755 "$cargo_root/bin/wild" "${RUNNER_TEMP}/wild-install/wild"',
+    '  rm -rf "$cargo_root"',
+    "fi",
+  ].join("\n");
   const originalDownload = before.runs.steps[0].run.match(
     /curl --fail-with-body[\s\S]*?"\$\{url\}"/,
   )[0];
-  assert.equal(step.run.split(sourceLine.trim()).length, 2);
-  step.run = step.run.replace(sourceLine.trim(), originalDownload);
+  assert.equal(step.run.split(recoveryBlock).length, 2);
+  step.run = step.run.replace(
+    recoveryBlock,
+    originalDownload +
+      '\n\ntar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1',
+  );
   assert.deepEqual(after, before);
 });
 void test("Wild delegation is complementary for every unsupported host or input", () => {
@@ -132,8 +156,10 @@ void test("Expanded primary success equals original stdout/stderr/files/config a
       assert.equal(before.status, 0);
       assert.equal(after.status, 0);
       assert.deepEqual({ ...after, calls: [] }, { ...before, calls: [] });
-      assert.deepEqual(before.calls[0], primaryArguments(before.calls[0][7], false));
-      assert.deepEqual(after.calls[0], primaryArguments(after.calls[0][7]));
+      const beforeOutput = before.calls[0][before.calls[0].indexOf("--output") + 1];
+      const afterOutput = after.calls[0][after.calls[0].indexOf("--output") + 1];
+      assert.deepEqual(before.calls[0], primaryArguments(beforeOutput, false, false));
+      assert.deepEqual(after.calls[0], primaryArguments(afterOutput));
       assert.equal(
         after.files.some((r) => r.path === "temporary/wild.tar.gz"),
         false,
@@ -155,7 +181,8 @@ for (const http of ["500", "502", "503", "504"])
       assert.deepEqual(after.tarCalls, before.tarCalls);
       assert.equal(after.stdout, before.stdout);
       assert.equal(after.stderr, "primary fixture stderr\napi fixture stderr\n");
-      assert.deepEqual(after.calls[0], primaryArguments(after.calls[0][7]));
+      const primaryOutput = after.calls[0][after.calls[0].indexOf("--output") + 1];
+      assert.deepEqual(after.calls[0], primaryArguments(primaryOutput));
       assert.deepEqual(after.calls[1], [
         "--fail-with-body",
         "--show-error",
@@ -173,12 +200,14 @@ for (const http of ["500", "502", "503", "504"])
         "--retry-all-errors",
         "--retry-delay",
         "1",
+        "--retry-max-time",
+        "30",
         "--header",
         "Accept: application/octet-stream",
         "--header",
         "X-GitHub-Api-Version: 2022-11-28",
         "--output",
-        after.calls[0][7],
+        primaryOutput,
         alternative,
       ]);
     }));
@@ -217,12 +246,6 @@ void test("Primary authorization, rate, TLS and malformed status failures never 
   }));
 void test("Failed API status and wrong complete or truncated body refuse before original tar", () =>
   fixture(({ run, root }) => {
-    for (const status of ["22", "28"])
-      assertBeforeExtraction(
-        run({ env: { PRIMARY_EXIT: "22", HTTP: "504", API_EXIT: status } }),
-        Number(status),
-        2,
-      );
     assertBeforeExtraction(
       run({ env: { PRIMARY_EXIT: "22", HTTP: "504", API_BODY: "wrong" } }),
       1,
@@ -232,10 +255,45 @@ void test("Failed API status and wrong complete or truncated body refuse before 
     fs.writeFileSync(payload, fs.readFileSync(payload).subarray(0, 25));
     assertBeforeExtraction(run({ env: { PRIMARY_EXIT: "22", HTTP: "504" } }), 1, 2);
   }));
+void test("Failed API transfers build the locked crate and preserve the installed recipe", () =>
+  fixture(({ run }) => {
+    const expected = run({ original: true });
+    for (const status of ["22", "28"]) {
+      const observed = run({ env: { PRIMARY_EXIT: "22", HTTP: "504", API_EXIT: status } });
+      assert.equal(observed.status, 0, observed.stderr);
+      assert.deepEqual(observed.files, expected.files);
+      assert.equal(observed.calls.length, 2);
+      assert.deepEqual(observed.tarCalls, []);
+      assert.equal(observed.cargoCalls.length, 1);
+      assert.deepEqual(observed.cargoCalls[0].slice(0, 5), [
+        "install",
+        "wild-linker",
+        "--version",
+        "0.9.0",
+        "--locked",
+      ]);
+      assert.equal(observed.cargoCalls[0][5], "--root");
+      assert.match(observed.stderr, /building pinned wild-linker from crates\.io/u);
+    }
+  }));
+void test("A failed locked Wild build preserves the Cargo status", () =>
+  fixture(({ run }) => {
+    const observed = run({
+      env: { PRIMARY_EXIT: "22", HTTP: "504", API_EXIT: "28", CARGO_EXIT: "73" },
+    });
+    assert.equal(observed.status, 73);
+    assert.equal(observed.calls.length, 2);
+    assert.equal(observed.cargoCalls.length, 1);
+    assert.deepEqual(observed.tarCalls, []);
+    assert.equal(
+      observed.files.some((entry) => entry.path === "temporary/wild-install/wild"),
+      false,
+    );
+  }));
 void test("Changed member bytes or mode and primary wrong body fail whole archive SHA", () =>
   fixture(({ run, root }) => {
     assertBeforeExtraction(run({ env: { PRIMARY_BODY: "wrong" } }), 1, 1);
-    for (const bytes of [archive("different inert member\n"), archive(undefined, "0000755\0")]) {
+    for (const bytes of [archive("different inert member\n"), archive(undefined, "0000644\0")]) {
       fs.writeFileSync(path.join(root, "payload"), bytes);
       assertBeforeExtraction(run(), 1, 1);
     }
@@ -280,7 +338,7 @@ void test("Exact context refusal and API nonzero status do not depend on inherit
       );
       assert.equal(
         p.status,
-        Object.keys(change).length === 0 && requested === url && retry === "5" ? 28 : 1,
+        Object.keys(change).length === 0 && requested === url && retry === "5" ? 75 : 1,
       );
       assert.equal(p.stdout.includes("AFTER_HELPER"), false);
     }

@@ -19,7 +19,7 @@ const upstream = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 // Harmless real USTAR/gzip bytes. Extracted files are never executed.
-function archive(body = "inert Wild transport fixture\n", mode = "0000644\0") {
+function archive(body = "inert Wild transport fixture\n", mode = "0000755\0") {
   const bytes = Buffer.from(body),
     header = Buffer.alloc(512);
   header.write("wild-0.9.0/wild");
@@ -85,6 +85,7 @@ function fixture(callback) {
     assert.match(shaVersion.stdout, /GNU coreutils/);
     const bytes = archive();
     fs.writeFileSync(path.join(root, "payload"), bytes);
+    fs.writeFileSync(path.join(root, "wild"), "inert Wild transport fixture\n", { mode: 0o755 });
     assert.equal(helper.split(pin).length, 2);
     const copied = helper.replace(pin, digest(bytes));
     assert.equal(copied.replace(digest(bytes), pin), helper);
@@ -110,6 +111,18 @@ fs.appendFileSync(process.env.TAR_CALLS, JSON.stringify(process.argv.slice(2))+'
 const p=spawnSync(${JSON.stringify(realTar.stdout.trim())},process.argv.slice(2),{stdio:'inherit'});
 process.exit(p.status??1);`,
     );
+    executable(
+      path.join(bin, "cargo"),
+      `
+import assert from 'node:assert/strict'; import fs from 'node:fs'; import path from 'node:path';
+const args=process.argv.slice(2), root=args[args.indexOf('--root')+1];
+fs.appendFileSync(process.env.CARGO_CALLS,JSON.stringify(args)+'\\n');
+assert.deepEqual(args.slice(0,5),['install','wild-linker','--version','0.9.0','--locked']);
+if(Number(process.env.CARGO_EXIT)!==0) process.exit(Number(process.env.CARGO_EXIT));
+fs.mkdirSync(path.join(root,'bin'),{recursive:true});
+fs.copyFileSync(process.env.WILD_BINARY,path.join(root,'bin/wild'));
+fs.chmodSync(path.join(root,'bin/wild'),0o755);`,
+    );
     function run(options = {}) {
       fs.rmSync(work, { recursive: true, force: true });
       fs.mkdirSync(work);
@@ -123,9 +136,11 @@ process.exit(p.status??1);`,
       }
       if (options.existing) fs.mkdirSync(path.join(temporary, "wild-install"));
       const calls = path.join(root, "calls"),
-        tarCalls = path.join(root, "tar-calls");
+        tarCalls = path.join(root, "tar-calls"),
+        cargoCalls = path.join(root, "cargo-calls");
       fs.writeFileSync(calls, "");
       fs.writeFileSync(tarCalls, "");
+      fs.writeFileSync(cargoCalls, "");
       const parsed = parse(options.original ? original : action);
       let recipe = parsed.runs.steps.find((s) => s.run).run;
       recipe = recipe
@@ -141,6 +156,9 @@ process.exit(p.status??1);`,
         GITHUB_ACTION_PATH: local,
         CALLS: calls,
         TAR_CALLS: tarCalls,
+        CARGO_CALLS: cargoCalls,
+        CARGO_EXIT: "0",
+        WILD_BINARY: path.join(root, "wild"),
         PAYLOAD: path.join(root, "payload"),
         HTTP: "200",
         PRIMARY_EXIT: "0",
@@ -171,6 +189,12 @@ process.exit(p.status??1);`,
           .split("\n")
           .filter(Boolean)
           .map((s) => JSON.parse(s)),
+        cargoCalls: fs
+          .readFileSync(cargoCalls, "utf8")
+          .trim()
+          .split("\n")
+          .filter(Boolean)
+          .map((s) => JSON.parse(s)),
       };
     }
     callback({ run, root, local, bytes });
@@ -178,14 +202,18 @@ process.exit(p.status??1);`,
     fs.rmSync(root, { recursive: true, force: true });
   }
 }
-function primaryArguments(output, writeOut = true) {
+function primaryArguments(output, writeOut = true, bounded = true) {
   return [
     "--fail-with-body",
     "--show-error",
     "--location",
+    ...(bounded
+      ? ["--connect-timeout", "10", "--max-time", "60", "--speed-limit", "1", "--speed-time", "10"]
+      : []),
     "--retry",
     "5",
     "--retry-all-errors",
+    ...(bounded ? ["--retry-max-time", "90"] : []),
     "--output",
     output,
     ...(writeOut ? ["--write-out", "%{http_code}"] : []),
@@ -196,6 +224,7 @@ function assertBeforeExtraction(result, status, calls) {
   assert.equal(result.status, status);
   assert.equal(result.calls.length, calls);
   assert.deepEqual(result.tarCalls, []);
+  assert.deepEqual(result.cargoCalls, []);
   assert.equal(
     result.files.some((r) => r.path.startsWith("home/.cargo")),
     false,

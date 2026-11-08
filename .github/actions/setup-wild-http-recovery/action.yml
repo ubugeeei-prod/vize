@@ -31,9 +31,25 @@ runs:
 
         url="https://github.com/wild-linker/wild/releases/download/0.9.0/wild-linker-0.9.0-${target_arch}-unknown-linux-gnu.tar.gz"
         archive="${RUNNER_TEMP}/wild.tar.gz"
-        . "$GITHUB_ACTION_PATH/download-linux-x64.sh" "${archive}" "${url}" "5"
-
-        tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        if bash "$GITHUB_ACTION_PATH/download-linux-x64.sh" "${archive}" "${url}" "5"; then
+          tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        else
+          download_status=$?
+          if [[ "$download_status" -ne 75 ]]; then
+            exit "$download_status"
+          fi
+          echo "::warning::Wild release assets unavailable; building pinned wild-linker from crates.io" >&2
+          cargo_root="$(mktemp -d "${RUNNER_TEMP}/wild-cargo.XXXXXX")"
+          cargo_status=0
+          cargo install wild-linker --version "0.9.0" --locked --root "$cargo_root" || cargo_status=$?
+          if [[ "$cargo_status" -ne 0 ]]; then
+            rm -rf "$cargo_root"
+            rm -f "${archive}"
+            exit "$cargo_status"
+          fi
+          install -m 0755 "$cargo_root/bin/wild" "${RUNNER_TEMP}/wild-install/wild"
+          rm -rf "$cargo_root"
+        fi
         rm -f "${archive}"
 
         mkdir -p "$HOME/.cargo"
