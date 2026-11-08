@@ -1,3 +1,5 @@
+import type { CSSProperties } from "vue";
+
 export interface DividerProps {
   /** Divider direction */
   direction?: "horizontal" | "vertical";
@@ -47,4 +49,3 @@ export const stackJustifyValues: Record<
   around: "space-around",
   evenly: "space-evenly",
 };
-import type { CSSProperties } from "vue";
