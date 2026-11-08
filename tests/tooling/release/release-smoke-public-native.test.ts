@@ -6,7 +6,6 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { rustSmokeInvocation } from "../support/release-smoke-reference.ts";
 import { runCommand } from "../../../tools/support/release/smoke_release_install/process.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -27,7 +26,7 @@ function object(value: unknown): Record<string, unknown> {
 }
 
 test(
-  "Rust and TypeScript smoke the same fresh public native image and compiled SFC",
+  "stable Node smokes a fresh public native image and compiled SFC",
   { timeout: 240_000 },
   async () => {
     const temporary = fs.realpathSync.native(
@@ -106,20 +105,11 @@ test(
         packages.push(directory);
       }
       assert.equal(sourceImages.length, 1, "one actual platform native image required");
-      const observations: unknown[] = [];
-      for (const driver of ["rust", "typescript"]) {
-        const entry = path.join(
-          root,
-          `tools/commands/release/npm/smoke-release-install.${driver === "rust" ? "rs" : "ts"}`,
-        );
-        const invocation =
-          driver === "rust"
-            ? rustSmokeInvocation(["--runtime-checks", "--keep-temp", ...packages])
-            : {
-                command: process.execPath,
-                args: [entry, "--runtime-checks", "--keep-temp", ...packages],
-              };
-        const result = spawnSync(invocation.command, invocation.args, {
+      const entry = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
+      const result = spawnSync(
+        process.execPath,
+        [entry, "--runtime-checks", "--keep-temp", ...packages],
+        {
           cwd: root,
           encoding: "utf8",
           maxBuffer: Infinity,
@@ -130,29 +120,30 @@ test(
             NPM_BIN: process.platform === "win32" ? "npm.cmd" : "npm",
             VIZE_NATIVE_BUILD_TOKEN: "11111111111111111111111111111111",
           },
-        });
-        assert.ifError(result.error);
-        assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-        const kept = /^kept (.+)$/m.exec(result.stdout)?.[1];
-        assert.ok(kept);
-        retained.push(kept);
-        assert.equal(
-          result.stdout.replaceAll(kept, "$SMOKE"),
-          [
-            `install: @vizejs/native@${version}`,
-            `install: ${names[1]}@${version}`,
-            "runtime: @vizejs/native require/import compileSfc",
-            "smoked 2/2 package tarballs",
-            "kept $SMOKE",
-            "",
-          ].join("\n"),
-        );
-        assert.equal(result.stderr, "");
-        const loaded = spawnSync(
-          process.execPath,
-          [
-            "-e",
-            `
+        },
+      );
+      assert.ifError(result.error);
+      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      const kept = /^kept (.+)$/m.exec(result.stdout)?.[1];
+      assert.ok(kept);
+      retained.push(kept);
+      assert.equal(
+        result.stdout.replaceAll(kept, "$SMOKE"),
+        [
+          `install: @vizejs/native@${version}`,
+          `install: ${names[1]}@${version}`,
+          "runtime: @vizejs/native require/import compileSfc",
+          "smoked 2/2 package tarballs",
+          "kept $SMOKE",
+          "",
+        ].join("\n"),
+      );
+      assert.equal(result.stderr, "");
+      const loaded = spawnSync(
+        process.execPath,
+        [
+          "-e",
+          `
 const assert = require("node:assert/strict"), fs = require("node:fs"), path = require("node:path"), crypto = require("node:crypto");
 const installed = process.argv[1];
 const native = require(path.join(installed, "node_modules/@vizejs/native"));
@@ -165,30 +156,27 @@ assert.equal(images.length, 1);
 for (const image of images) assert.ok(fs.realpathSync(image).startsWith(fs.realpathSync(installed) + path.sep));
 console.log(JSON.stringify({token,images:images.map(name => {const body=fs.readFileSync(name);return {sha256:crypto.createHash("sha256").update(body).digest("hex"),bytes:body.length};})}));
 `,
-            path.join(kept, "install"),
-          ],
-          {
-            encoding: "utf8",
-            env: { ...process.env, VIZE_NATIVE_BUILD_TOKEN: "11111111111111111111111111111111" },
-          },
-        );
-        assert.ifError(loaded.error);
-        assert.equal(loaded.status, 0, loaded.stderr);
-        assert.equal(loaded.stderr, "");
-        const image = object(JSON.parse(loaded.stdout));
-        assert.deepEqual(
-          image.images,
-          sourceImages,
-          "actually loaded image must equal public SRI-bound native bytes",
-        );
-        observations.push(image);
-      }
-      assert.deepEqual(observations[1], observations[0]);
+          path.join(kept, "install"),
+        ],
+        {
+          encoding: "utf8",
+          env: { ...process.env, VIZE_NATIVE_BUILD_TOKEN: "11111111111111111111111111111111" },
+        },
+      );
+      assert.ifError(loaded.error);
+      assert.equal(loaded.status, 0, loaded.stderr);
+      assert.equal(loaded.stderr, "");
+      const image = object(JSON.parse(loaded.stdout));
+      assert.deepEqual(
+        image.images,
+        sourceImages,
+        "actually loaded image must equal public SRI-bound native bytes",
+      );
       console.log(
         JSON.stringify({
-          fixture: "public-native-smoke-parity",
+          fixture: "public-native-smoke",
           packages: evidence,
-          images: observations,
+          image,
         }),
       );
     } finally {

@@ -9,12 +9,8 @@ import { fileURLToPath } from "node:url";
 import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";
-const smokeCommand = path.join(
-  root,
-  `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`,
-);
-const smokeModule = path.join(root, "tools/support/compat/npm/smoke-release-install.ts");
+const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
+const smokeModule = path.join(root, "tools/support/release/smoke_release_install/main.ts");
 
 test("release install smoke packs and installs local package tarballs", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
@@ -237,14 +233,10 @@ test("release install smoke skips libc-incompatible tarballs", () => {
 test("release install smoke can run runtime checks for Vize packages", () => {
   const script = fs.readFileSync(smokeModule, "utf8");
   const runtimeScript = fs.readFileSync(
-    path.join(root, "tools/support/compat/npm/smoke-release-runtime.ts"),
+    path.join(root, "tools/support/release/smoke_release_install/runtime.ts"),
     "utf8",
   );
   const smokeSources = `${script}\n${runtimeScript}`;
-  const rustScript = fs.readFileSync(
-    path.join(root, "tools/commands/release/npm/smoke-release-install.rs"),
-    "utf8",
-  );
   const initTypecheckScript = fs.readFileSync(
     path.join(root, "tools/support/compat/npm/smoke-release-init-typecheck.mjs"),
     "utf8",
@@ -265,9 +257,7 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /vizeBin, "--version"/);
   assert.match(smokeSources, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(smokeSources, /"lint"[\s\S]*"src\/App\.vue"/);
-  assert.match(smokeSources, /runInitTypecheckChecks\([\s\S]*RUNTIME_PEER_DEPENDENCIES\)/);
-  assert.match(rustScript, /npm_smoke_init::run\(/);
-  assert.doesNotMatch(rustScript, /"--language"/);
+  assert.match(smokeSources, /peers: RUNTIME_PEER_DEPENDENCIES/);
   assert.match(runtimeScript, /VIZE_TEST_CONTENT_MAPPER_TSGO/);
   assert.match(runtimeScript, /runInstalledContentMapperChecks/);
   assert.match(runtimeScript, /content mapper project with spaces/);
@@ -359,15 +349,11 @@ type SmokeResult = {
 };
 
 function runSmokeArgs(args: string[], options: SmokeOptions = {}): SmokeResult {
-  const result = spawnSync(
-    typescriptDriver ? process.execPath : "rust-script",
-    [smokeCommand, ...args],
-    {
-      cwd: root,
-      encoding: "utf8",
-      env: { ...process.env, ...options.env },
-    },
-  );
+  const result = spawnSync(process.execPath, [smokeCommand, ...args], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...process.env, ...options.env },
+  });
 
   if (result.error != null) {
     throw result.error;
