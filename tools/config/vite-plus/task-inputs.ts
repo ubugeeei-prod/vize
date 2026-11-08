@@ -149,6 +149,8 @@ export const cacheInputs = {
     "npm/**/vite.config.ts",
     "npm/**/rspack.config.ts",
     "npm/**/src/**",
+    "npm/builder/unplugin/example/build/**",
+    "npm/builder/unplugin/example/test/**",
     "examples/**/package.json",
     "examples/**/vite.config.ts",
     "examples/**/playwright.config.ts",
