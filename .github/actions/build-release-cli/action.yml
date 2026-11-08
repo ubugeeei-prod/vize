@@ -41,8 +41,6 @@ runs:
       with:
         toolchain: ${{ steps.rust-toolchain.outputs.channel }}
         targets: ${{ inputs.target }}
-    - uses: ./.github/actions/setup-rust-script
-      if: runner.os == 'Linux' && endsWith(inputs.target, '-musl')
     # x86_64 gnu links with rust-lld so crates/vize/build.rs can fold identical code.
     - name: Setup Wild linker (Linux)
       if: runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'
@@ -64,7 +62,7 @@ runs:
     - name: Configure Zig linker (Linux musl CLI)
       if: endsWith(inputs.target, '-musl')
       shell: bash
-      run: rust-script tools/commands/ci/github/configure-zig-musl-linkers.rs
+      run: node tools/commands/ci/github/configure-zig-musl-linkers.ts
     - name: Mount Rust sticky disks (Linux)
       if: runner.os == 'Linux'
       uses: ./.github/actions/setup-rust-sticky-cache
@@ -102,7 +100,7 @@ runs:
         RELEASE_ARCHIVE: ${{ inputs.archive }}
       run: |
         if [[ "$RELEASE_TARGET" == *-musl ]]; then
-          rust-script tools/commands/ci/github/verify-musl-cli-binary.rs "$RELEASE_TARGET"
+          node tools/commands/ci/github/verify-musl-cli-binary.ts "$RELEASE_TARGET"
         fi
         node tools/support/github/create-cli-archive.ts "$RELEASE_TARGET" "$RELEASE_ARCHIVE" vize
     - name: Create archive (Windows)

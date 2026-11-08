@@ -31,7 +31,7 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
     "commands",
     "ci",
     "github",
-    "configure-zig-musl-linkers.rs",
+    "configure-zig-musl-linkers.ts",
   );
 
   try {
@@ -40,7 +40,7 @@ test("Zig musl wrappers use rust-lld for final links and normalize cc-rs flags",
     fs.chmodSync(fakeZig, 0o755);
 
     const pathEnv = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
-    execFileSync("rust-script", [commandPath], {
+    execFileSync(process.execPath, [commandPath], {
       cwd: root,
       env: { ...process.env, GITHUB_ENV: envFile, PATH: pathEnv, RUNNER_TEMP: tempDir },
     });
@@ -89,7 +89,7 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
     "commands",
     "ci",
     "github",
-    "verify-musl-cli-binary.rs",
+    "verify-musl-cli-binary.ts",
   );
 
   try {
@@ -129,7 +129,7 @@ test("musl CLI verifier rejects dynamic interpreters and glibc symbol requiremen
     }
 
     const runVerifier = (mode: string) =>
-      execFileSync("rust-script", [commandPath, target], {
+      execFileSync(process.execPath, [commandPath, target], {
         cwd: tempDir,
         env: {
           ...process.env,
