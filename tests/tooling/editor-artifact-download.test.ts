@@ -4,11 +4,12 @@ import { createHash } from "node:crypto";
 import { once } from "node:events";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
-import type { ServerResponse } from "node:http";
+import type { IncomingHttpHeaders, ServerResponse } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import type { TestContext } from "node:test";
+import { parse } from "yaml";
 
 const script = path.resolve(
   import.meta.dirname,
@@ -48,6 +49,38 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
   }
 });
 
+test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
+  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const workflow = readFileSync(
+    path.resolve(path.dirname(script), "../../workflows/release-zed-host.yml"),
+    "utf8",
+  );
+  type Step = { name?: string; env?: Record<string, string>; run?: string };
+  const actionSteps = (parse(action) as { runs: { steps: Step[] } }).runs.steps;
+  const workflowSteps = (parse(workflow) as { jobs: { zed: { steps: Step[] } } }).jobs.zed.steps;
+  const actionStep = actionSteps.find((step) => step.name === "Validate the Zed extension");
+  const workflowStep = workflowSteps.find(
+    (step) => step.name === "Package the candidate Zed extension",
+  );
+  for (const step of [actionStep, workflowStep]) {
+    assert.ok(step?.run);
+    assert.deepEqual(step.env, { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180" });
+    assert.match(
+      step.run,
+      /download-artifact\.sh" \\\n\s+"https:\/\/github\.com\/WebAssembly\/wasi-sdk\/releases\/download\/wasi-sdk-25\/wasi-sdk-25\.0-x86_64-linux\.tar\.gz" \\\n\s+"\$wasi_archive" \\\n\s+"52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \\\n\s+"https:\/\/api\.github\.com\/repos\/WebAssembly\/wasi-sdk\/releases\/assets\/212790091"/u,
+    );
+    assert.match(
+      step.run,
+      /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/u,
+    );
+    assert.match(
+      step.run,
+      /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/u,
+    );
+    assert.match(step.run, /--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/u);
+  }
+});
+
 test(
   "editor download accepts a slower verified body within its configured budget",
   options,
@@ -84,6 +117,29 @@ test(
   },
 );
 
+test("editor download can recover through a pinned alternative", options, async (t) => {
+  let primaryAttempts = 0,
+    fallbackAttempts = 0;
+  const fixture = await serverFixture(t, (response, requestUrl, headers) => {
+    if (requestUrl === "/fallback") {
+      fallbackAttempts++;
+      assert.equal(headers.accept, "application/octet-stream");
+      assert.equal(headers["x-github-api-version"], "2022-11-28");
+      response.end(content);
+    } else {
+      primaryAttempts++;
+      response.writeHead(504).end("gateway timeout");
+    }
+  });
+  const fallbackUrl = fixture.url.replace(/\/editor$/u, "/fallback");
+  const result = await download(fixture, checksum, {}, fallbackUrl);
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(primaryAttempts, 3);
+  assert.equal(fallbackAttempts, 1);
+  assert.equal(readFileSync(fixture.destination, "utf8"), content);
+  assert.deepEqual(readdirSync(fixture.directory), ["editor"]);
+});
+
 test(
   "editor download rejects a checksum mismatch and retains the prior artifact",
   options,
@@ -112,9 +168,14 @@ test("editor download terminates a stalled body and removes partial files", opti
   assert.deepEqual(readdirSync(fixture.directory), []);
 });
 
-async function serverFixture(t: TestContext, respond: (response: ServerResponse) => void) {
+async function serverFixture(
+  t: TestContext,
+  respond: (response: ServerResponse, requestUrl: string, headers: IncomingHttpHeaders) => void,
+) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-editor-download-"));
-  const server = createServer((_request, response) => respond(response));
+  const server = createServer((request, response) =>
+    respond(response, request.url ?? "", request.headers),
+  );
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => {
@@ -135,8 +196,11 @@ async function download(
   fixture: { url: string; destination: string },
   digest: string,
   environment = {},
+  fallbackUrl?: string,
 ) {
-  const child = spawn("bash", [script, fixture.url, fixture.destination, digest], {
+  const args = [script, fixture.url, fixture.destination, digest];
+  if (fallbackUrl) args.push(fallbackUrl);
+  const child = spawn("bash", args, {
     env: { ...process.env, ...environment },
     stdio: ["ignore", "pipe", "pipe"],
     timeout: 10_000,
