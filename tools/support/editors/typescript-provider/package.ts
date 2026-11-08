@@ -16,7 +16,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.
 const [target, artifactInput, outputInput, ...extra] = process.argv.slice(2);
 assert(
   target && artifactInput && outputInput && extra.length === 0,
-  "Usage: package-typescript-provider.rs <rustTarget> <artifactDir> <outVsix>",
+  "Usage: node tools/support/editors/typescript-provider/package.ts <rustTarget> <artifactDir> <outVsix>",
 );
 assert(Object.hasOwn(targets, target), `Unknown Rust target: ${target}`);
 const artifactDir = path.resolve(artifactInput),

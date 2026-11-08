@@ -513,7 +513,7 @@ jobs:
           # receipt must match the attempt SHA the native artifacts were built for.
           VIZE_RELEASE_CANDIDATE_SHA: ${{ needs.version.outputs.sha }}
         run: >-
-          rust-script tools/commands/editors/vscode/package-typescript-provider.rs
+          node tools/support/editors/typescript-provider/package.ts
           "$RUST_TARGET" "$RUNNER_TEMP/native-provider"
           "$GITHUB_WORKSPACE/.artifacts/vscode/$VSIX_ARCHIVE"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

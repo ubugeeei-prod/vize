@@ -61,7 +61,7 @@ test("platform providers publish after their packages without gating the release
   const packaging = job.steps.find(
     (step: { name?: string }) => step.name === "Package the exact target provider",
   );
-  assert.match(packaging.run, /package-typescript-provider\.rs/);
+  assert.match(packaging.run, /typescript-provider\/package\.ts/);
   assert.match(packaging.run, /GITHUB_WORKSPACE\/\.artifacts\/vscode/);
   assert.doesNotMatch(packaging.run, /cargo|build-napi/);
   const upload = job.steps.find((step: { uses?: string }) =>
