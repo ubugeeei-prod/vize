@@ -14,6 +14,8 @@ export type ProcessIdentity = {
   kernelAfter?: KernelIdentity;
 };
 const key = (row: KernelIdentity) => row.pid + ":" + row.startTicks;
+export const requiresOwnerMarker = (identity: KernelIdentity, knownOwned: ReadonlySet<string>) =>
+  !knownOwned.has(key(identity));
 export function hasTerminalProof(
   identity: KernelIdentity | undefined,
   before: KernelIdentity | undefined,
@@ -77,6 +79,7 @@ function processes(
     before?: KernelIdentity,
     after?: KernelIdentity,
   ) => void,
+  knownOwned: ReadonlySet<string> = new Set(),
 ): ProcessIdentity[] {
   const marker = ownerVariable + "=" + nonce;
   if (process.platform === "linux")
@@ -86,11 +89,13 @@ function processes(
         let before: ProcessIdentity | undefined;
         try {
           before = linuxIdentity(name);
-          // Discard all environment bytes after testing this nonsecret owner marker.
-          const environment = readFileSync("/proc/" + name + "/environ");
-          before.ownerMarker = Buffer.concat([Buffer.from([0]), environment]).includes(
-            Buffer.from("\0" + marker + "\0"),
-          );
+          if (requiresOwnerMarker(before, knownOwned)) {
+            // Discard all environment bytes after testing this nonsecret owner marker.
+            const environment = readFileSync("/proc/" + name + "/environ");
+            before.ownerMarker = Buffer.concat([Buffer.from([0]), environment]).includes(
+              Buffer.from("\0" + marker + "\0"),
+            );
+          }
           const after = linuxIdentity(name);
           return key(before) === key(after)
             ? [
@@ -249,8 +254,11 @@ export class OwnedProcesses {
   }
   scan(): ProcessIdentity[] {
     try {
-      const rows = processes(this.nonce, (value, pid, identity, before, after) =>
-        this.recordIssue(value, pid, identity, before, after),
+      const rows = processes(
+        this.nonce,
+        (value, pid, identity, before, after) =>
+          this.recordIssue(value, pid, identity, before, after),
+        new Set(this.identities.keys()),
       );
       for (const row of rows) if (row.ownerMarker) this.identities.set(key(row), row);
       let changed = true;
