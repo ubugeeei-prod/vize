@@ -48,6 +48,15 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
   }
 });
 
+test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
+  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const step = action.split("- name: Validate the Zed extension")[1].split(/\n {4}- name: /)[0];
+  assert.match(step, /wasi-sdk-25\.0-x86_64-linux\.tar\.gz/);
+  assert.match(step, /52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c/);
+  assert.match(step, /releases\/assets\/212790091/);
+  assert.match(step, /wasi-sdk\/bin\/clang/);
+});
+
 test(
   "editor download accepts a slower verified body within its configured budget",
   options,
