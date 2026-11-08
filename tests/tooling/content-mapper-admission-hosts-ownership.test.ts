@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 void test("only exact pre-spawn protected identities can be excluded from ownership errors", async () => {
-  const { observationDisposition } =
+  const { observationDisposition, requiresOwnerMarker } =
     await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
   const identity = {
     pid: 42,
@@ -14,6 +14,13 @@ void test("only exact pre-spawn protected identities can be excluded from owners
   };
   const baseline = new Set(["42:100"]),
     owned = new Set<string>();
+  assert.equal(requiresOwnerMarker(identity, owned), true);
+  assert.equal(requiresOwnerMarker(identity, new Set(["42:100"])), false);
+  assert.equal(
+    requiresOwnerMarker({ ...identity, startTicks: "101" }, new Set(["42:100"])),
+    true,
+    "PID reuse must require a fresh owner marker",
+  );
   assert.deepEqual(observationDisposition(identity, baseline, owned, "EACCES"), {
     scope: "preexisting-unrelated",
     excluded: true,

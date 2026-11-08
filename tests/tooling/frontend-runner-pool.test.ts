@@ -13,10 +13,14 @@ import {
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
+import { restorePinnedWildAction } from "./support/github-workflows.ts";
 
-type Step = { name?: string; if?: string; [key: string]: unknown };
-type Job = { "runs-on"?: string; if?: string; steps?: Step[]; [key: string]: unknown };
-type Workflow = { jobs: Record<string, Job>; [key: string]: unknown };
+type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
+  string,
+  unknown
+>;
+type Job = { "runs-on"?: string; if?: string; steps?: Step[] } & Record<string, unknown>;
+type Workflow = { jobs: Record<string, Job> };
 const oldRunner = "blacksmith-32vcpu-ubuntu-2404";
 const hosted = "ubuntu-24.04";
 const fastEvents = ["pull_request", "merge_group", "push"];
@@ -203,7 +207,12 @@ test("the seven runner selectors and exact runtime steps preserve every original
     protectedJobs = 0;
   for (const { specification, before, after } of workflows) {
     const restored = structuredClone(after);
+    let restoredWildSteps = 0;
     if (specification.name === "check") {
+      restoredWildSteps += Object.values(restored.jobs).reduce(
+        (count, job) => count + restorePinnedWildAction(job.steps ?? []),
+        0,
+      );
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
@@ -223,11 +232,13 @@ test("the seven runner selectors and exact runtime steps preserve every original
       restoreEmptyPrToolingBuild(restored, before);
       restoreToolingCasePacketJob(restored, before);
       restorePlaygroundCaseReporting(restored, before);
+      restoredWildSteps += restorePinnedWildAction(restored.jobs["pr-native-runtime"].steps ?? []);
       restoreNativeRuntimeCasePacket(
         restored.jobs["pr-native-runtime"],
         before.jobs["pr-native-runtime"],
       );
     }
+    assert.equal(restoredWildSteps, specification.name === "check" ? 4 : 1);
     for (const id of specification.jobs) {
       const original = before.jobs[id],
         updated = after.jobs[id],
