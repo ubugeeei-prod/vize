@@ -9,7 +9,7 @@ export function normalizeMachinePaths(text: string): string {
     (_match, prefix: string, candidate: string) => {
       const trailingEllipsis = candidate.endsWith("...") ? "..." : "";
       const path = trailingEllipsis === "" ? candidate : candidate.slice(0, -3);
-      const slashCount = [...path].filter((character) => character === "/").length;
+      const slashCount = path.split("/").length - 1;
       return slashCount >= 2 ? `${prefix}<abs>${trailingEllipsis}` : `${prefix}${candidate}`;
     },
   );
