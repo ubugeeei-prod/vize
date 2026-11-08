@@ -21,12 +21,14 @@ import {
 } from "./setup/config.js";
 import { planViteMigration } from "./setup/vite.js";
 
+/** External command planned by the setup workflow. */
 export interface SetupCommand {
   readonly command: string;
   readonly args: readonly string[];
   readonly cwd: string;
 }
 
+/** Complete receipt for files, scripts, migrations, and dependency commands planned by setup. */
 export interface SetupResult {
   readonly root: string;
   readonly createdFiles: readonly string[];
@@ -40,13 +42,18 @@ export interface SetupResult {
   readonly migrationWarnings: readonly string[];
 }
 
+/** Injectable host controls for the setup workflow. */
 export interface SetupOptions {
   readonly root: string;
+  /** Whether missing dependencies and obsolete plugins are changed. @default true */
   readonly install?: boolean;
+  /** Command executor used for dependency changes. @default built-in synchronous runner */
   readonly runCommand?: (command: SetupCommand) => void;
+  /** File writer used for generated configuration. @default atomic project writer */
   readonly writeFile?: (filename: string, source: string) => void;
 }
 
+/** Configures Vize in an existing Vite or Vite+ project. */
 export function setupProject(options: SetupOptions): SetupResult {
   const root = path.resolve(options.root);
   const packagePath = path.join(root, "package.json");
@@ -167,6 +174,7 @@ export function setupProject(options: SetupOptions): SetupResult {
   };
 }
 
+/** Runs the `setup` command against parsed CLI arguments. */
 export function runSetupCli(args: readonly string[]): void {
   if (args.includes("--help") || args.includes("-h")) {
     process.stdout.write(setupHelp());
