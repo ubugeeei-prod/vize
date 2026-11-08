@@ -59,6 +59,14 @@ const originalFiles = {
   "src/App.vue": thirdVue,
 };
 const originalCall = "inject(InListKey, false)";
+const providerScript = `<script setup lang="ts">
+import { provide } from "vue";
+import { InListKey } from "./keys";
+
+provide(InListKey, true);
+</script>
+
+`;
 const cases: Input[] = [];
 for (const [name, call, removed, required, provider, outer] of [
   ["original-issue", originalCall, 1, 0, true, true],
@@ -77,11 +85,11 @@ for (const [name, call, removed, required, provider, outer] of [
     originalCall,
     call,
   );
-  if (!provider)
-    files["src/components/MyList.vue"] = files["src/components/MyList.vue"].replace(
-      "provide(InListKey, true);",
-      "",
-    );
+  if (!provider) {
+    const list = files["src/components/MyList.vue"];
+    assert.equal(list.split(providerScript).length, 2);
+    files["src/components/MyList.vue"] = list.replace(providerScript, "");
+  }
   if (!outer)
     files["src/App.vue"] = files["src/App.vue"].replace("  <MyDivider />\n  <MyDivider />\n", "");
   cases.push({ name, files, call, removed, required });
