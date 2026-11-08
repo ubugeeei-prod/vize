@@ -79,7 +79,7 @@ impl ScriptRule for PreferComputed {
         // A sibling script or an unparsed template can contain unobservable writes.
         if sfc.is_sfc
             && (!sfc.sole_script_block
-                || (sfc.template_source.is_some() && sfc.template_root.is_none()))
+                || (sfc.template_source.is_some() && sfc.template_surface.is_none()))
         {
             return;
         }
