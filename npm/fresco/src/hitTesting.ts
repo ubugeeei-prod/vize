@@ -1,5 +1,6 @@
 import type { LayoutResultNapi } from "@vizejs/fresco-native";
 
+import { normalizeFrescoStyle } from "./renderPayload.js";
 import type { FrescoHostNode } from "./renderer.js";
 
 interface HitRegion {
@@ -13,28 +14,9 @@ function clipsOverflow(value: unknown): boolean {
   return value === "hidden" || value === "scroll";
 }
 
-function overflowAxes(node: FrescoHostNode): { x: boolean; y: boolean } {
-  const style =
-    typeof node.props.style === "object" && node.props.style !== null
-      ? (node.props.style as Record<string, unknown>)
-      : {};
-  const overflow = style.overflow ?? node.props.overflow;
-  return {
-    x: clipsOverflow(
-      style.overflowX ??
-        style.overflow_x ??
-        node.props.overflowX ??
-        node.props.overflow_x ??
-        overflow,
-    ),
-    y: clipsOverflow(
-      style.overflowY ??
-        style.overflow_y ??
-        node.props.overflowY ??
-        node.props.overflow_y ??
-        overflow,
-    ),
-  };
+function clipsDescendants(node: FrescoHostNode): boolean {
+  const style = normalizeFrescoStyle(node.props.style);
+  return clipsOverflow(style?.overflow ?? style?.overflowX ?? style?.overflowY);
 }
 
 function containsPoint(layout: LayoutResultNapi, clip: HitRegion, x: number, y: number): boolean {
@@ -69,15 +51,13 @@ export function hitTest(
 
   const visit = (node: FrescoHostNode, ancestorClip: HitRegion): FrescoHostNode | undefined => {
     const layout = byId.get(node.id);
-    const axes = overflowAxes(node);
+    const clips = clipsDescendants(node);
     const childClip = layout
       ? {
-          left: axes.x ? Math.max(ancestorClip.left, layout.x) : ancestorClip.left,
-          top: axes.y ? Math.max(ancestorClip.top, layout.y) : ancestorClip.top,
-          right: axes.x
-            ? Math.min(ancestorClip.right, layout.x + layout.width)
-            : ancestorClip.right,
-          bottom: axes.y
+          left: clips ? Math.max(ancestorClip.left, layout.x) : ancestorClip.left,
+          top: clips ? Math.max(ancestorClip.top, layout.y) : ancestorClip.top,
+          right: clips ? Math.min(ancestorClip.right, layout.x + layout.width) : ancestorClip.right,
+          bottom: clips
             ? Math.min(ancestorClip.bottom, layout.y + layout.height)
             : ancestorClip.bottom,
         }
