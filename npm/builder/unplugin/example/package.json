@@ -18,7 +18,6 @@
     "@vizejs/unplugin": "workspace:*",
     "esbuild": "catalog:bundlers",
     "typescript": "catalog:typescript",
-    "vite-plus": "catalog:vite-stack",
     "webpack": "catalog:bundlers"
   }
 }

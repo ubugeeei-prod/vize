@@ -54,6 +54,7 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
 
     Ok(RegisteredFile {
         diagnostic_route: Default::default(),
+        props_fallback: false,
         star_projection: super::super::star_exports::StarProjection::from_rewrite(
             &rewritten, stars,
         ),

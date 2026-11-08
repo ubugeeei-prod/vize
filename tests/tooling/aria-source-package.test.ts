@@ -20,7 +20,7 @@ test("source ARIA consumers copy every declared physical SDK file without alteri
   try {
     const files = sourceAriaDeclarationFiles(manifest);
     assert.deepEqual(files, declared);
-    assert.equal(files.length, 14);
+    assert.equal(files.length, 15);
     copyAriaDeclarations(source, scratch, files);
     for (const file of declared) {
       assert.deepEqual(
@@ -56,7 +56,12 @@ test("every missing declared SDK file rejects the source package before writing 
 
 test("the source SDK exports the checker module included in its copied declarations", () => {
   assert.equal(manifest.exports["./virtual-ts-checker"].types, "./virtual-ts-checker.d.ts");
+  assert.equal(
+    manifest.exports["./virtual-ts-checker-strict"].types,
+    "./virtual-ts-checker-strict.d.ts",
+  );
   assert.ok(sourceAriaDeclarationFiles(manifest).includes("virtual-ts-checker.d.ts"));
+  assert.ok(sourceAriaDeclarationFiles(manifest).includes("virtual-ts-checker-strict.d.ts"));
 });
 
 test("the declaration receipt detects changes to every shipped SDK declaration", () => {

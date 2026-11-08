@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "kind": "exact-provider-roster-dependency-successor",
+  "sourceRevision": "61bd990166c50be9676b171c978b6fad3d78584a",
+  "sourceTree": "e44830439c0512013c5b21a1ef8484d6f30a043c",
+  "previousProviderRosterRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json",
+    "bytes": 12627,
+    "sha256": "9e1d29212711ee9f150050e668fc77fdb08c832af96ac80c725194c782a3a909",
+    "gitBlob": "e5f11772e1ae2df19881a6dd3cd43b9825be4cd3"
+  },
+  "providerQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json",
+    "bytes": 4614,
+    "sha256": "a1ec9df453280cbadcdda62fd9669a138d5c298b4e03914d52f018c1b51daa14",
+    "gitBlob": "394457a85e3364cf812f92fa53b44308e55db6f3"
+  },
+  "wholeBeforeRosterSha256": "be8c7cca5e5861c07a7563d49c13ac2517fc1772f5a757c6e2d7064ab663f227",
+  "changes": [
+    {
+      "entry": 64,
+      "before": [
+        "providers/@babel+types@7.29.8/node_modules/@babel/types/lib/index.d.ts",
+        665892,
+        "69d4b61c408556b97b796782a1110f7e01a03ed80f31741f2c59b722185830ed"
+      ],
+      "after": [
+        "providers/@babel+types@7.29.11/node_modules/@babel/types/lib/index.d.ts",
+        665892,
+        "69d4b61c408556b97b796782a1110f7e01a03ed80f31741f2c59b722185830ed"
+      ]
+    },
+    {
+      "entry": 65,
+      "before": [
+        "providers/@babel+parser@7.29.8/node_modules/@babel/parser/typings/babel-parser.d.ts",
+        9334,
+        "e6ca59368dce5a594dcde9bbb6ae640d668fa6c28c31639dd2a75b731bb036a2"
+      ],
+      "after": [
+        "providers/@babel+parser@7.29.13/node_modules/@babel/parser/typings/babel-parser.d.ts",
+        9334,
+        "e6ca59368dce5a594dcde9bbb6ae640d668fa6c28c31639dd2a75b731bb036a2"
+      ]
+    },
+    {
+      "entry": 76,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hmrPayload.d.ts",
+        1398,
+        "3b89216a7e38a454985ad17bb2ff85792837dc812f2a89fa5f60ad0a2e216fa7"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hmrPayload.d.ts",
+        1398,
+        "3b89216a7e38a454985ad17bb2ff85792837dc812f2a89fa5f60ad0a2e216fa7"
+      ]
+    },
+    {
+      "entry": 77,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/customEvent.d.ts",
+        1970,
+        "de4a612aa8f1704af486f701e21993c786ba7d8cfed55fffa6684026aea2346e"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/customEvent.d.ts",
+        1970,
+        "de4a612aa8f1704af486f701e21993c786ba7d8cfed55fffa6684026aea2346e"
+      ]
+    },
+    {
+      "entry": 78,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hot.d.ts",
+        1063,
+        "4e003c868b0d8f8ad200b96cbc653e18e513fa23e1c19c4fe3cc25d4394efc47"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/hot.d.ts",
+        1063,
+        "4e003c868b0d8f8ad200b96cbc653e18e513fa23e1c19c4fe3cc25d4394efc47"
+      ]
+    },
+    {
+      "entry": 79,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importGlob.d.ts",
+        2291,
+        "59f8dc89b9e724a6a667f52cdf4b90b6816ae6c9842ce176d38fcc973669009e"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importGlob.d.ts",
+        2291,
+        "59f8dc89b9e724a6a667f52cdf4b90b6816ae6c9842ce176d38fcc973669009e"
+      ]
+    },
+    {
+      "entry": 80,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importMeta.d.ts",
+        884,
+        "72429cda84a47f092a3bf777bbc4ece9dda492fe0f02324aa7f197f3800089c6"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/types/importMeta.d.ts",
+        884,
+        "72429cda84a47f092a3bf777bbc4ece9dda492fe0f02324aa7f197f3800089c6"
+      ]
+    },
+    {
+      "entry": 81,
+      "before": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+        5177,
+        "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913"
+      ],
+      "after": [
+        "providers/@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/dist/vite/client.d.ts",
+        5177,
+        "c8da07c75bdc3ff36752f3f33f2beb000a78a02aced96ce70ca6e807072eb913"
+      ]
+    }
+  ],
+  "wholeAfterRosterSha256": "00fd44822530b1148837972f142fb41f351a441c0420ce3fe974c0004525e867",
+  "nativeAcceptanceCredit": false,
+  "scope": "Advance only eight authenticated provider paths after the dependency refresh; retain all 86 bodies and their order."
+}

@@ -47,7 +47,12 @@ export function assertSourceProtocolAdmission(responses: readonly unknown[], con
   assert.equal(contract.schema, 1);
   assert.deepEqual(
     contract.modules.map((row) => row.subpath),
-    ["./content-mapper-helpers", "./virtual-ts", "./virtual-ts-checker"],
+    [
+      "./content-mapper-helpers",
+      "./virtual-ts",
+      "./virtual-ts-checker",
+      "./virtual-ts-checker-strict",
+    ],
   );
 
   const watched = new Set([config]);
@@ -90,7 +95,7 @@ export function assertSourceProtocolAdmission(responses: readonly unknown[], con
   absent(path.join(sdk, "node_modules/vue/package.json"));
   absent(path.join(project, "node_modules/node_modules/vue/package.json"));
   assert.equal(selectedPackage(vue), projectVue);
-  // The seeded flat profile owns all three helper imports and the same Vue.
+  // The seeded flat profile owns all four helper imports and the same Vue.
   // Selection is fixed by those inputs, never borrowed from the mapper reply.
   fingerprint.update(new Uint8Array([1, 1]));
   const base = createHash("sha256")

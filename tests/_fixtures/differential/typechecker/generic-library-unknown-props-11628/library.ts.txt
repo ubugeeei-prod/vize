@@ -1,0 +1,5 @@
+type PinValue<Type extends 'text' | 'number'> = [Type] extends ['number'] ? number[] : string[];
+export declare const PinRoot: <Type extends 'text' | 'number' = 'text'>(
+  props: import('vue').PublicProps & { type?: Type; modelValue?: PinValue<Type> | null; mask?: boolean } & (typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P } ? P : {}),
+  ctx?: any,
+) => import('vue').VNode & { __ctx?: { props: { type?: Type } } };

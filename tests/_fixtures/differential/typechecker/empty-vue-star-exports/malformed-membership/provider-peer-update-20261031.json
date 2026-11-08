@@ -70,7 +70,7 @@
         "packageAlias": "vite",
         "relativePath": "dist/vite/client.d.ts"
       },
-      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/package.json",
+      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/package.json",
       "manifest": {
         "name": "@voidzero-dev/vite-plus-core",
         "version": "0.1.24",
@@ -90,7 +90,7 @@
         "packageAlias": "vite",
         "relativePath": "package.json"
       },
-      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_esbuild@0.28_a6c9f1199916a734d9b93ba95b0ddf69/node_modules/@voidzero-dev/vite-plus-core/package.json",
+      "manifestRelativePath": "@voidzero-dev+vite-plus-core@0.1.24_@types+node@25.9.2_esbuild@0.28.1_jiti@2.7.0_sass@1_648447c260f78446a04fe3ae6b71971f/node_modules/@voidzero-dev/vite-plus-core/package.json",
       "manifest": {
         "name": "@voidzero-dev/vite-plus-core",
         "version": "0.1.24",

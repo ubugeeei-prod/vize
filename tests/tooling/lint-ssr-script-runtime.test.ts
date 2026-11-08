@@ -31,7 +31,7 @@ await test("actual pinned Vue SSR executes setup/server prefetch and defers moun
   const rows: Array<Record<string, unknown>> = [];
   const record = {
     schema: "vize.ssr.script-execution-7982",
-    provider: { vue: "3.5.35", plugin: "6.0.7" },
+    provider: { vue: "3.5.35", plugin: "6.0.10" },
     rows,
     status: "PENDING",
     error: null as string | null,
