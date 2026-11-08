@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, realpathSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type TestContext, test } from "node:test";
@@ -32,6 +32,7 @@ import {
   invocation,
   topologyDiagnosticRefusal,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-tools.ts";
+import { writeRunReceipt } from "../../tools/benchmarks/scripts/typecheck-scaling-receipt.ts";
 
 void test("focused Corsa topology lanes pin one checker and the selected server count", () => {
   assert.deepEqual(
@@ -88,6 +89,39 @@ void test("focused Corsa topology comparisons require every exact diagnostic fin
     ) ?? "",
     /incomplete lanes \(vize-check-servers-2\)/u,
   );
+});
+
+void test("scaling evidence preserves complete output and a compact receipt", () => {
+  const out = mkdtempSync(join(tmpdir(), "vize-scaling-evidence-"));
+  try {
+    writeRunReceipt({
+      out,
+      tool: "vize-check-servers-1",
+      tag: "topology",
+      phase: "sample 1",
+      bin: "/vize",
+      args: ["check"],
+      cwd: "/project",
+      cacheDir: "/cache",
+      timed: true,
+      nodeOptions: "--max-old-space-size=98304",
+      run: {
+        output: { status: 0, stdout: "diagnostics\n", stderr: "timing\n" },
+        wallMs: 12,
+        cpuMs: 30,
+        maxRssKb: 4096,
+      },
+    });
+    const raw = join(out, "raw", "topology");
+    assert.equal(readFileSync(join(raw, "sample-1.stdout"), "utf8"), "diagnostics\n");
+    assert.equal(readFileSync(join(raw, "sample-1.stderr"), "utf8"), "timing\n");
+    const receipt = JSON.parse(readFileSync(join(raw, "sample-1.json"), "utf8"));
+    assert.equal(receipt.tool, "vize-check-servers-1");
+    assert.equal("stdout" in receipt, false);
+    assert.equal("stderr" in receipt, false);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
 });
 
 const diagnostic = (file: string, line: number, code: string, kind = "error"): Diagnostic => [

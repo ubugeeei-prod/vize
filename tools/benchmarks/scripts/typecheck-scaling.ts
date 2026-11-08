@@ -77,9 +77,7 @@ const GNU_TIME = "/usr/bin/time";
 const GNU_TIME_FORMAT = "vize-time wall=%e user=%U sys=%S maxrss_kb=%M status=%x";
 const GNU_TIME_LINE =
   /^vize-time wall=(\d+\.\d+) user=(\d+\.\d+) sys=(\d+\.\d+) maxrss_kb=(\d+) status=(\d+)$/gmu;
-/** vue-tsc on the largest corpora needs more than V8's default old space. */
 export const NODE_OPTIONS = "--max-old-space-size=98304";
-
 export function parseGnuTime(text: string): { maxRssKb: number; status: number } {
   const matches = [...text.matchAll(GNU_TIME_LINE)];
   if (matches.length !== 1) throw new Error(`unexpected GNU time output:\n${text}`);
