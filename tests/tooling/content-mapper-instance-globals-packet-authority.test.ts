@@ -325,16 +325,21 @@ test("CURRENT resolves the complete authenticated population in authored case or
   assert.ok(files.has(golden.provenance as string));
   const provenance = JSON.parse(files.get(golden.provenance as string)!);
   assert.equal(provenance.producer.sourceRevision, producer.sourceRevision);
-  assert.equal(provenance.artifact.run, 42379142226);
-  assert.equal(provenance.artifact.job, 128423168142);
-  assert.equal(provenance.artifact.id, 13577645615);
-  assert.equal(provenance.capturedQualification.totalOutcomes, 499);
-  assert.equal(provenance.capturedQualification.passedOutcomes, 495);
-  assert.equal(provenance.capturedQualification.gapCount, 4);
+  assert.equal(provenance.artifact.run, 42458808867);
+  assert.equal(provenance.artifact.job, 128663852122);
+  assert.equal(provenance.artifact.id, 13609395863);
+  assert.equal(provenance.capturedQualification.totalOutcomes, 398);
+  assert.equal(provenance.capturedQualification.passedOutcomes, 318);
+  assert.equal(provenance.capturedQualification.gapCount, 80);
+  assert.equal(provenance.capturedQualification.status, "unqualified");
+  assert.equal(provenance.capturedQualification.fullPacketQualification, false);
+  assert.equal(provenance.capturedQualification.hostMatrixQualification, false);
+  assert.equal(provenance.review.completePackets, 80);
   assert.equal(provenance.review.allNonWholePacketOutcomesPassed, true);
-  assert.equal(provenance.review.sourceHostAdmitted, true);
   assert.equal(provenance.review.qualificationCredit, false);
+  assert.equal(provenance.review.nativeAcceptanceCredit, false);
   assert.equal(provenance.review.publicPackageAcceptanceCredit, false);
+  assert.equal(provenance.review.performanceCredit, false);
   for (const [index, packet] of golden.packets.entries()) {
     const entry = cases[index % 40]!;
     const source =

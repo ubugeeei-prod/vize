@@ -63,6 +63,7 @@ function normalize(
 
 function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const entry = expected.generated[kind];
+  const transitionFile = entry.file.replace(".canon-leftovers", "");
   assert.match(
     entry.file,
     /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers)?\.virtual\.ts\.txt$/u,
@@ -77,7 +78,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const successor = JSON.parse(historicalReceipt.toString("utf8"));
   assert.equal(successor.schema, "vize.experimental-router-generated-transition.v1");
   assert.equal(successor.qualificationCredit, false);
-  const transition = successor.entries.find((row: { file: string }) => row.file === entry.file);
+  const transition = successor.entries.find((row: { file: string }) => row.file === transitionFile);
   assert.ok(transition);
   const sharedHelperReceipt = fs.readFileSync(
     path.join(custody, "shared-helper-preamble-20261106.json"),
@@ -95,7 +96,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     createHash("sha256").update(historicalReceipt).digest("hex"),
   );
   const currentTransition = sharedHelper.entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(currentTransition);
   assert.equal(currentTransition.previousSha256, transition.currentSha256);
@@ -113,47 +114,52 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     createHash("sha256").update(sharedHelperReceipt).digest("hex"),
   );
   const strictTransition = strictExtra.entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(strictTransition);
   assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
-  const canonLeftoversReceipt = fs.readFileSync(
-    path.join(custody, "canon-leftovers-20261108.json"),
-  );
-  assert.equal(
-    createHash("sha256").update(canonLeftoversReceipt).digest("hex"),
-    "3c798c9d6cc2ef02d1a59658ab43fe90631fd7a06f057b5aaeac1552bcae5dfd",
-  );
-  const canonLeftovers = JSON.parse(canonLeftoversReceipt.toString("utf8"));
-  assert.equal(canonLeftovers.schema, "vize.experimental-router-canon-leftovers-transition.v1");
-  assert.equal(canonLeftovers.issue, 11499);
-  assert.equal(canonLeftovers.pullRequest, 12162);
-  assert.equal(canonLeftovers.qualificationCredit, false);
-  const sourceReceipt = fs.readFileSync(path.join(root, canonLeftovers.sourceReceipt.path));
-  assert.equal(
-    createHash("sha256").update(sourceReceipt).digest("hex"),
-    canonLeftovers.sourceReceipt.sha256,
-  );
-  const canonTransition = canonLeftovers.entries.find(
-    (row: { current: { file: string } }) => row.current.file === entry.file,
-  );
-  assert.ok(canonTransition);
-  assert.equal(canonTransition.previous.sha256, strictTransition.currentSha256);
-  assert.equal(canonTransition.current.sha256, entry.sha256);
-  const previousBytes = fs.readFileSync(path.join(custody, canonTransition.previous.file));
-  assert.equal(previousBytes.length, canonTransition.previous.bytes);
-  assert.equal(
-    createHash("sha256").update(previousBytes).digest("hex"),
-    canonTransition.previous.sha256,
-  );
-  assert.equal(bytes.length, canonTransition.current.bytes);
+  if (entry.file.includes(".canon-leftovers")) {
+    const canonLeftoversReceipt = fs.readFileSync(
+      path.join(custody, "canon-leftovers-20261108.json"),
+    );
+    assert.equal(
+      createHash("sha256").update(canonLeftoversReceipt).digest("hex"),
+      "3c798c9d6cc2ef02d1a59658ab43fe90631fd7a06f057b5aaeac1552bcae5dfd",
+    );
+    const canonLeftovers = JSON.parse(canonLeftoversReceipt.toString("utf8"));
+    assert.equal(canonLeftovers.schema, "vize.experimental-router-canon-leftovers-transition.v1");
+    assert.equal(canonLeftovers.issue, 11499);
+    assert.equal(canonLeftovers.pullRequest, 12162);
+    assert.equal(canonLeftovers.qualificationCredit, false);
+    const sourceReceipt = fs.readFileSync(path.join(root, canonLeftovers.sourceReceipt.path));
+    assert.equal(
+      createHash("sha256").update(sourceReceipt).digest("hex"),
+      canonLeftovers.sourceReceipt.sha256,
+    );
+    const canonTransition = canonLeftovers.entries.find(
+      (row: { current: { file: string } }) => row.current.file === entry.file,
+    );
+    assert.ok(canonTransition);
+    assert.equal(canonTransition.previous.file, transitionFile);
+    assert.equal(canonTransition.previous.sha256, strictTransition.currentSha256);
+    assert.equal(canonTransition.current.sha256, entry.sha256);
+    const previousBytes = fs.readFileSync(path.join(custody, canonTransition.previous.file));
+    assert.equal(previousBytes.length, canonTransition.previous.bytes);
+    assert.equal(
+      createHash("sha256").update(previousBytes).digest("hex"),
+      canonTransition.previous.sha256,
+    );
+    assert.equal(bytes.length, canonTransition.current.bytes);
+  } else {
+    assert.equal(strictTransition.currentSha256, entry.sha256);
+  }
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),
     successor.ownedConstructor.sha256,
   );
   const owned = JSON.parse(ownedReceipt.toString("utf8")).entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(owned);
   assert.equal(owned.beforeSha256, transition.baselineSha256);
