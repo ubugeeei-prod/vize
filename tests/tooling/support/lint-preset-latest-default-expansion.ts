@@ -6,12 +6,12 @@ const publicApiDocSuccessors = [
   {
     path: "crates/vize_patina/src/linter/script_rules/registry.rs",
     before: {
-      bytes: 5249,
-      sha256: "dc8023d6c67373216c4e4a4f714f9ee73156ede1053bdbd9b36e9e69fe914bae",
+      bytes: 5285,
+      sha256: "0e41487dca6e08c8a804a2ba371fd25aa7debd6884f628e8fe07765d5c3c0d44",
     },
     after: {
-      bytes: 5667,
-      sha256: "10b3ba58251ccedaa9d758002b4d6ab86e5d3468e2364fc7c690970f9393857d",
+      bytes: 5703,
+      sha256: "c28114f6926486fd6beb846592bc48f1fb448423a61157803e91fc3f0a49be4f",
     },
     replacements: [
       [
@@ -60,12 +60,12 @@ pub struct BuiltinScriptRuleMeta {
   {
     path: "crates/vize_patina/src/rules/script/define_macros_order.rs",
     before: {
-      bytes: 10276,
-      sha256: "3b21b505315a3082da09cc5d76ec7f2845c8b8fa1265e97f705ff985ee38c959",
+      bytes: 10320,
+      sha256: "7e19410c1a45b832d6b2c2a87428186ec92d21f704b732a4108e7600a0d30ae3",
     },
     after: {
-      bytes: 10348,
-      sha256: "129c8b2f61d6adb3efb7ba7d76f812a5e7cdd5ab7af65b88d1ffd7535fa517be",
+      bytes: 10392,
+      sha256: "0c3cf2751e785c214728f2652da7e006badd3eb73715633daa9d6110fa319cea",
     },
     replacements: [
       ["    /// Create a rule that uses the configured compiler-macro ordering.\n", ""],
