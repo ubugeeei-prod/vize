@@ -122,6 +122,7 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Record<ChainedKeys, Missing>",
         "ResolvedConditional",
         "Partial<{ title: string }> extends object ? { title: string } : never",
+        "{ kind: 'a' } extends object ? { first: string } | { second: number } : never",
     ] {
         assert_eq!(
             unresolved_property_shape_references(expression, &FxHashMap::default(), &aliases),
@@ -138,6 +139,7 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Unknown | Missing",
         "{ value?: string } | Missing",
         "Conditional",
+        "T extends object ? U extends object ? { value: string } : never : never",
     ] {
         let expected = if expression == "Unknown | Missing" {
             vec![cstr!("Unknown"), cstr!("Missing")]
@@ -152,6 +154,8 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
             vec![cstr!("CycleA")]
         } else if expression == "Conditional" {
             vec![String::from("T extends { __output: infer R } ? R : never")]
+        } else if expression.starts_with("T extends object") {
+            vec![expression.to_compact_string()]
         } else {
             vec![cstr!("Missing")]
         };

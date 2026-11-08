@@ -192,6 +192,22 @@ fn resolve_type_to_object_body_inner(
         return None;
     }
 
+    if is_conditional_type(trimmed) {
+        let resolved = resolve_conditional_type(
+            trimmed,
+            None,
+            interfaces,
+            type_aliases,
+            stack,
+            missing,
+            collect_missing,
+        );
+        if resolved.is_none() && collect_missing {
+            missing(trimmed);
+        }
+        return resolved;
+    }
+
     let union_parts = split_top_level(trimmed, '|');
     if union_parts.len() > 1 {
         return union::resolve_members(
@@ -256,22 +272,6 @@ fn resolve_type_to_object_body_inner(
         return Some(inner.trim().to_compact_string());
     }
 
-    if is_conditional_type(trimmed) {
-        let resolved = resolve_conditional_type(
-            trimmed,
-            None,
-            interfaces,
-            type_aliases,
-            stack,
-            missing,
-            collect_missing,
-        );
-        if resolved.is_none() && collect_missing {
-            missing(trimmed);
-        }
-        return resolved;
-    }
-
     // Resolve supported utility types structurally. When their inner shape is
     // missing, the recursive call already records that authored reference;
     // do not report the built-in wrapper itself as unresolved.
@@ -320,6 +320,9 @@ fn resolve_type_to_object_body_inner(
 
     let base_name = strip_generic_params(trimmed);
     if !is_type_reference_name(base_name) {
+        if collect_missing {
+            missing(trimmed);
+        }
         return None;
     }
     if !stack.insert(base_name.to_compact_string()) {

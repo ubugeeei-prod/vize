@@ -6,6 +6,7 @@ use super::{
 };
 use vize_carton::cstr;
 
+/// Merge resolvable union branches without erasing an unresolved branch.
 pub(super) fn resolve_members(
     parts: &[String],
     interfaces: &FxHashMap<String, String>,
