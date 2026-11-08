@@ -115,7 +115,10 @@ void test(
       largeReport.diagnostics.filter(({ code }) => code === "vize(vue/no-v-html)").length,
       400,
     );
-    assert.equal(largeReport.diagnostics.every(({ filename }) => filename.includes("large")), true);
+    assert.equal(
+      largeReport.diagnostics.every(({ filename }) => filename.includes("large")),
+      true,
+    );
     const clean = invoke(["-c", ".oxlintrc.json", "-f", "json", "clean"]);
     assert.equal(clean.error, undefined);
     assert.equal(clean.signal, null);

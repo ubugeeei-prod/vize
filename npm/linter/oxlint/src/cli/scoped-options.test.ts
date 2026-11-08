@@ -155,7 +155,11 @@ void test("Windows transport keeps selected Vue files out of the command line", 
   for (const file of files) fs.writeFileSync(file, "<template />\n");
   const config = path.join(root, "config.json");
   fs.writeFileSync(config, '{"ignorePatterns":["**/oxlint-vize-*/**"]}\n');
-  const selected = files.map((file) => path.basename(file)).sort().join("\n") + "\n";
+  const selected =
+    files
+      .map((file) => path.basename(file))
+      .sort()
+      .join("\n") + "\n";
   let selections = 0;
   const result = await prepareScopedSelection(
     root,
@@ -184,7 +188,10 @@ void test("Windows transport keeps selected Vue files out of the command line", 
   try {
     assert.equal(result.args.filter((arg) => arg.endsWith(".vue")).length, 0);
     assert.equal(result.args.includes("--ignore-pattern"), false);
-    assert.equal(result.args.some((arg) => arg.startsWith("--ignore-pattern=")), false);
+    assert.equal(
+      result.args.some((arg) => arg.startsWith("--ignore-pattern=")),
+      false,
+    );
     const target = result.args.at(-1);
     assert.ok(target);
     assert.equal(fs.lstatSync(target).isDirectory(), true);
