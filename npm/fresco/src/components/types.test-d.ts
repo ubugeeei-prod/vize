@@ -20,6 +20,7 @@ import type {
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
 import Markdown from "./FrescoMarkdown.vue";
+import Modal from "./FrescoModal.vue";
 import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
@@ -51,6 +52,7 @@ import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
+import type { ModalProps } from "./modal-types.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -221,6 +223,14 @@ export const textAreaAcceptsEditingProps: TextAreaProps = {
   cursorColumn: 3,
   validate: (value) => value.length > 0 || "required",
 };
+export const modalAcceptsFocusPolicyProps: ModalProps = {
+  visible: true,
+  focusId: "dialog",
+  initialFocusId: "confirm",
+  trapFocus: true,
+  restoreFocus: true,
+  closeOnEscape: true,
+};
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
@@ -256,6 +266,7 @@ export function componentsRenderWithTypedProps() {
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(TextArea, { modelValue: "first\nsecond", focused: true, rows: 2 }),
+    h(Modal, { visible: true, focusId: "dialog", initialFocusId: "confirm" }),
     h(LineNumber, { value: 42, width: 3 }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
     h(Spacer),
