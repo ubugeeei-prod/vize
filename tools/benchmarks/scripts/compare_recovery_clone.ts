@@ -29,6 +29,48 @@ function median(values: bigint[]): bigint {
   assert(values.length > 0 && values.length % 2 === 1);
   return [...values].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))[Math.floor(values.length / 2)]!;
 }
+
+export function assertInstrumentedBinaryIdentity(
+  baseSources: RecordValue,
+  headSources: RecordValue,
+  baseBinary: unknown,
+  headBinary: unknown,
+): void {
+  const sourceKeys = ["recoverySha256", "lockSha256", "carrierSha256"];
+  const sourcesMatch = sourceKeys.every(
+    (key) => string(baseSources[key]) === string(headSources[key]),
+  );
+  if (sourcesMatch)
+    assert.equal(
+      string(baseBinary),
+      string(headBinary),
+      "identical authenticated inputs must produce the same instrumented binary",
+    );
+  else
+    assert.notEqual(
+      string(baseBinary),
+      string(headBinary),
+      "changed authenticated inputs must produce a distinct instrumented binary",
+    );
+}
+
+function selfTestInstrumentedBinaryIdentity(): void {
+  const original = {
+    recoverySha256: "recovery-a",
+    lockSha256: "lock-a",
+    carrierSha256: "carrier-a",
+  };
+  assertInstrumentedBinaryIdentity(original, structuredClone(original), "binary-a", "binary-a");
+  assert.throws(() =>
+    assertInstrumentedBinaryIdentity(original, structuredClone(original), "binary-a", "binary-b"),
+  );
+  const changed = { ...original, recoverySha256: "recovery-b" };
+  assertInstrumentedBinaryIdentity(original, changed, "binary-a", "binary-b");
+  assert.throws(() =>
+    assertInstrumentedBinaryIdentity(original, changed, "binary-a", "binary-a"),
+  );
+}
+
 function profileIdentity(root: string, requireNormal = true): void {
   const receipt = record(readExact(path.join(root, "identity.json")));
   assert.deepEqual(receipt.base, receipt.firstParent);
@@ -98,7 +140,12 @@ function profileIdentity(root: string, requireNormal = true): void {
       ),
     };
   }
-  assert.notEqual(records.base!.binarySha256, records.head!.binarySha256);
+  assertInstrumentedBinaryIdentity(
+    record(roles.base),
+    record(roles.head),
+    records.base!.binarySha256,
+    records.head!.binarySha256,
+  );
   for (const index of [0, 1])
     for (const key of ["features", "profile"]) {
       assert.deepEqual(
@@ -206,6 +253,7 @@ export function main(): void {
   const mode = process.argv[2] ?? "";
   if (mode === "--self-test") {
     selfTest();
+    selfTestInstrumentedBinaryIdentity();
     return;
   }
   const root = path.resolve(process.argv[3] ?? "evidence");
