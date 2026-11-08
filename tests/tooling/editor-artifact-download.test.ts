@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { once } from "node:events";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
-import type { ServerResponse } from "node:http";
+import type { IncomingHttpHeaders, ServerResponse } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -117,6 +117,29 @@ test(
   },
 );
 
+test("editor download can recover through a pinned alternative", options, async (t) => {
+  let primaryAttempts = 0,
+    fallbackAttempts = 0;
+  const fixture = await serverFixture(t, (response, requestUrl, headers) => {
+    if (requestUrl === "/fallback") {
+      fallbackAttempts++;
+      assert.equal(headers.accept, "application/octet-stream");
+      assert.equal(headers["x-github-api-version"], "2022-11-28");
+      response.end(content);
+    } else {
+      primaryAttempts++;
+      response.writeHead(504).end("gateway timeout");
+    }
+  });
+  const fallbackUrl = fixture.url.replace(/\/editor$/u, "/fallback");
+  const result = await download(fixture, checksum, {}, fallbackUrl);
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(primaryAttempts, 3);
+  assert.equal(fallbackAttempts, 1);
+  assert.equal(readFileSync(fixture.destination, "utf8"), content);
+  assert.deepEqual(readdirSync(fixture.directory), ["editor"]);
+});
+
 test(
   "editor download rejects a checksum mismatch and retains the prior artifact",
   options,
@@ -145,9 +168,14 @@ test("editor download terminates a stalled body and removes partial files", opti
   assert.deepEqual(readdirSync(fixture.directory), []);
 });
 
-async function serverFixture(t: TestContext, respond: (response: ServerResponse) => void) {
+async function serverFixture(
+  t: TestContext,
+  respond: (response: ServerResponse, requestUrl: string, headers: IncomingHttpHeaders) => void,
+) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-editor-download-"));
-  const server = createServer((_request, response) => respond(response));
+  const server = createServer((request, response) =>
+    respond(response, request.url ?? "", request.headers),
+  );
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => {
@@ -168,8 +196,11 @@ async function download(
   fixture: { url: string; destination: string },
   digest: string,
   environment = {},
+  fallbackUrl?: string,
 ) {
-  const child = spawn("bash", [script, fixture.url, fixture.destination, digest], {
+  const args = [script, fixture.url, fixture.destination, digest];
+  if (fallbackUrl) args.push(fallbackUrl);
+  const child = spawn("bash", args, {
     env: { ...process.env, ...environment },
     stdio: ["ignore", "pipe", "pipe"],
     timeout: 10_000,
