@@ -13,6 +13,7 @@ import {
 import { applyCurrentSlotPreamble } from "./canon-slot-provider-current-preamble.ts";
 import { applyDiscriminatedJsxUnionIn } from "../../support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import { applyStrictExtraKeysIn } from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
+import { applyEmitMemberInferIn } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
 
 export function slotCliPacket(
   process: { stdout: Buffer; stderr: Buffer; status: number | null },
@@ -55,9 +56,11 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyStrictExtraKeysIn(
-    applyDiscriminatedJsxUnionIn(
-      applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+  const currentPreamble = applyEmitMemberInferIn(
+    applyStrictExtraKeysIn(
+      applyDiscriminatedJsxUnionIn(
+        applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+      ),
     ),
   );
   assert.equal(currentPreamble.split(replacement).length, 2);

@@ -5,17 +5,47 @@ import type {
   $EmitOwnedKeys,
   __EmitProps,
 } from "./virtual-ts.js" with { "resolution-mode": "import" };
+type $EmitRequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+type $EmitRequiredFields<T> = T extends unknown
+  ? {} extends T
+    ? Pick<T, never>
+    : Pick<T, $EmitRequiredKeys<T>>
+  : never;
+type $EmitFiniteFields<T> = { [K in keyof T as {} extends Record<K, unknown> ? never : K]: T[K] };
+type $EmitFallthrough<F> =
+  $IsAny<F> extends true ? {} : [NonNullable<F>] extends [never] ? {} : NonNullable<F>;
+type $EmitInput<P, F, O extends PropertyKey, A> = P extends unknown
+  ? F extends unknown
+    ? {
+        [K in keyof A]: K extends O
+          ? K extends keyof P
+            ? P[K]
+            : never
+          : K extends keyof F
+            ? F[K]
+            : K extends keyof P
+              ? P[K]
+              : unknown;
+      } & $EmitRequiredFields<P> &
+        $EmitRequiredFields<Omit<$EmitFiniteFields<F>, O>>
+    : never
+  : never;
+type $MemberConstructorEmitPropsFactory<P, E, F, O extends PropertyKey> = (
+  component: unknown,
+) => <A>(props: $EmitInput<P, $EmitFallthrough<F>, O, A>) => __EmitProps<E>;
 type $LooseEmitProps = { readonly __vizeLooseListener: [] };
 type $DeferredEmitProps<E, P = __EmitProps<E>> = `on${Capitalize<string>}` extends keyof P
   ? $EmitIsWide<new () => { $emit: E }> extends true
     ? $LooseEmitProps
     : P
   : P;
-type $LooseEmitPropsFactory<C> = C extends (props: infer P, ...args: any[]) => any
+type $LooseEmitPropsFactory<C, E = never> = C extends (props: infer P, ...args: any[]) => any
   ? $IsAny<P> extends true
     ? (component: C) => (props: {}) => $LooseEmitProps
     : (component: C) => (props: P) => {}
-  : (component: C) => (props: {}) => $LooseEmitProps;
+  : [E] extends [never]
+    ? (component: C) => (props: {}) => $LooseEmitProps
+    : (component: unknown) => (props: {}) => __EmitProps<E>;
 type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E }
   ? $IsAny<E> extends true
     ? true
@@ -29,26 +59,36 @@ type $EmitIsWide<C> = C extends new (...args: any[]) => { $emit: infer E }
           : false
       : false
   : false;
-type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any }
+type $UnionEmit<All> = (
+  All extends new (...args: any[]) => { $emit: infer E } ? () => E : never
+) extends () => infer U
+  ? U
+  : never;
+type $NativeEmitPropsFactory<C, All = C> = C extends new (...args: any[]) => { $emit: any }
   ? C extends { readonly __vizeComponentMarker: true }
-    ? $ConstructorEmitPropsFactory<
-        C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
-        $EmitOwnedKeys<C>
-      >
+    ? C extends new (props: infer P, ...args: any[]) => any
+      ? $MemberConstructorEmitPropsFactory<
+          P,
+          $UnionEmit<All>,
+          C extends { readonly __vizeFallthroughProps?: infer F } ? F : {},
+          $EmitOwnedKeys<C>
+        >
+      : never
     : <P, E>(
         component: new (props: P, ...args: any[]) => { $emit: E },
       ) => (props: P) => $DeferredEmitProps<E>
-  : $LooseEmitPropsFactory<C>;
+  : $LooseEmitPropsFactory<C, $UnionEmit<All>>;
+type $EmitPropsRoutes<C, All> = C extends { __vizeResolveEmitProps?: infer F }
+  ? F extends (...args: any[]) => any
+    ? (component: C) => F
+    : $NativeEmitPropsFactory<C, All>
+  : C extends { __vizeResolveProps?: infer F }
+    ? F extends (...args: any[]) => any
+      ? (component: C) => F
+      : $NativeEmitPropsFactory<C, All>
+    : $NativeEmitPropsFactory<C, All>;
 type $EmitPropsFactory<C> =
   $IsAny<C> extends true
     ? (component: C) => (props: {}) => $LooseEmitProps
-    : C extends { __vizeResolveEmitProps?: infer F }
-      ? F extends (...args: any[]) => any
-        ? (component: C) => F
-        : $NativeEmitPropsFactory<C>
-      : C extends { __vizeResolveProps?: infer F }
-        ? F extends (...args: any[]) => any
-          ? (component: C) => F
-          : $NativeEmitPropsFactory<C>
-        : $NativeEmitPropsFactory<C>;
+    : $EmitPropsRoutes<C, C>;
 export type { $NativeEmitPropsFactory, $EmitPropsFactory };

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { emitMemberInferEditsBefore, readRepository } from "./emit-member-infer-source.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Edit = { before: string; after: string };
@@ -224,6 +225,7 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  current = emitMemberInferEditsBefore(readRepository, path, current);
   if (
     path === "npm/cli/package.json" &&
     identity(current).sha256 === cliDependencyOwnershipTransition.after.sha256
