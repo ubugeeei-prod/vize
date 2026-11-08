@@ -13,6 +13,12 @@ use crate::markup::Namespace;
 pub(crate) trait Frame<'a> {
     fn tag(&self) -> &'a str;
     fn namespace(&self) -> Namespace;
+    fn ignored_start(&self) -> bool {
+        false
+    }
+    fn table_tree_element(&self) -> bool {
+        true
+    }
 }
 
 struct Closed<'a> {
@@ -39,6 +45,8 @@ enum Mark {
 /// Holds only the redundant-end-tag evidence already needed by the builder.
 pub(crate) struct Recovery<'a> {
     closed: Vec<'a, Closed<'a>>,
+    reopened_formatting: Vec<'a, &'a str>,
+    consumed_implicit_close: bool,
     marks: Vec<'a, (usize, Mark)>,
     repair_interactive: bool,
 }
@@ -47,6 +55,8 @@ impl<'a> Recovery<'a> {
     pub(crate) fn new(allocator: &'a Allocator, repair_interactive: bool) -> Self {
         Self {
             closed: Vec::new_in(&allocator),
+            reopened_formatting: Vec::new_in(&allocator),
+            consumed_implicit_close: false,
             marks: Vec::new_in(&allocator),
             repair_interactive,
         }
@@ -101,17 +111,112 @@ impl<'a> Recovery<'a> {
     /// Matching an ancestor also ends descendants; stray and redundant
     /// implicitly closed tags leave the caller's live scope intact.
     pub(crate) fn close<F: Frame<'a>>(&mut self, stack: &[F], tag: &str) -> Option<usize> {
+        self.consumed_implicit_close = false;
         let matched = authored_close(stack, tag);
         if self.closed.last().is_some_and(|closed| {
             closed.tag.eq_ignore_ascii_case(tag) && matched.is_none_or(|depth| depth < closed.depth)
         }) {
             self.closed.pop();
+            self.consumed_implicit_close = true;
             return None;
         }
         if let Some(depth) = matched {
             self.truncate(depth);
         }
         matched
+    }
+
+    pub(crate) fn take_consumed_implicit_close(&mut self) -> bool {
+        core::mem::take(&mut self.consumed_implicit_close)
+    }
+
+    /// Record the formatting elements the browser-style adoption agency
+    /// reopens after closing a misnested formatting ancestor. The surface
+    /// tree remains authored-order; this evidence is only needed to keep the
+    /// later authored end tags from becoming false `InvalidEndTag` reports.
+    pub(crate) fn adoption<F: Frame<'a>>(&mut self, stack: &[F], tag: &str) -> Option<usize> {
+        if !is_formatting_tag(tag) {
+            return None;
+        }
+        let depth = authored_close(stack, tag)?;
+        if depth + 1 == stack.len() {
+            return None;
+        }
+        for frame in stack.iter().skip(depth + 1) {
+            if is_formatting_tag(frame.tag()) {
+                self.reopened_formatting.push(frame.tag());
+            }
+        }
+        Some(depth)
+    }
+
+    pub(crate) fn is_repeated_form<F: Frame<'a>>(&self, stack: &[F], tag: &str) -> bool {
+        tag.eq_ignore_ascii_case("form")
+            && stack.iter().any(|frame| {
+                frame.namespace() == Namespace::Html
+                    && !frame.ignored_start()
+                    && frame.tag().eq_ignore_ascii_case("form")
+            })
+    }
+
+    pub(crate) fn should_foster_start<F: Frame<'a>>(
+        &self,
+        stack: &[F],
+        tag: &str,
+        namespace: Namespace,
+        tree_element: bool,
+    ) -> bool {
+        if namespace != Namespace::Html || !tree_element {
+            return false;
+        }
+        let Some(table) = stack.iter().rposition(|frame| {
+            frame.namespace() == Namespace::Html && frame.tag().eq_ignore_ascii_case("table")
+        }) else {
+            return false;
+        };
+        if stack.iter().skip(table + 1).any(|frame| {
+            frame.namespace() != Namespace::Html
+                || !frame.table_tree_element()
+                || matches!(frame.tag(), "caption" | "td" | "th")
+        }) {
+            return false;
+        }
+
+        let current = stack.last().map(Frame::tag);
+        let allowed = match current {
+            Some("tbody" | "thead" | "tfoot") => {
+                matches!(tag, "tr" | "script" | "style" | "template")
+            }
+            Some("tr") => matches!(tag, "td" | "th" | "script" | "style" | "template"),
+            _ => matches!(
+                tag,
+                "caption"
+                    | "colgroup"
+                    | "col"
+                    | "tbody"
+                    | "thead"
+                    | "tfoot"
+                    | "tr"
+                    | "td"
+                    | "th"
+                    | "script"
+                    | "style"
+                    | "template"
+            ),
+        };
+        !allowed
+    }
+
+    pub(crate) fn consume_reopened_formatting(&mut self, tag: &str) -> bool {
+        let Some(index) = self
+            .reopened_formatting
+            .iter()
+            .rposition(|reopened| reopened.eq_ignore_ascii_case(tag))
+        else {
+            return false;
+        };
+        self.reopened_formatting.remove(index);
+        true
     }
 
     fn truncate(&mut self, depth: usize) {
@@ -224,10 +329,29 @@ fn mark(tag: &str) -> Option<Mark> {
     })
 }
 
+fn is_formatting_tag(tag: &str) -> bool {
+    matches!(
+        tag,
+        "a" | "b"
+            | "big"
+            | "code"
+            | "em"
+            | "font"
+            | "i"
+            | "nobr"
+            | "s"
+            | "small"
+            | "strike"
+            | "strong"
+            | "tt"
+            | "u"
+    )
+}
+
 pub(crate) fn authored_close<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Option<usize> {
     stack
         .iter()
-        .rposition(|frame| frame.tag().eq_ignore_ascii_case(tag))
+        .rposition(|frame| !frame.ignored_start() && frame.tag().eq_ignore_ascii_case(tag))
 }
 
 pub(crate) fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
@@ -242,7 +366,12 @@ pub(crate) fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
                 Namespace::Svg if matches!(frame.tag(), "foreignObject" | "desc" | "title") => {
                     Namespace::Html
                 }
-                Namespace::MathMl if matches!(frame.tag(), "mi" | "mo" | "mn" | "ms" | "mtext") => {
+                Namespace::MathMl
+                    if matches!(
+                        frame.tag(),
+                        "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
+                    ) =>
+                {
                     Namespace::Html
                 }
                 other => other,
@@ -252,6 +381,15 @@ pub(crate) fn namespace<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Namespace {
 
 fn interactive(tag: &str) -> bool {
     (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button")) && is_html_tag(tag)
+}
+
+pub(crate) fn can_omit_end_tag(tag: &str) -> bool {
+    [
+        "li", "dt", "dd", "p", "rt", "rp", "optgroup", "option", "thead", "tbody", "tfoot", "tr",
+        "td", "th",
+    ]
+    .iter()
+    .any(|candidate| tag.eq_ignore_ascii_case(candidate))
 }
 
 const BUTTON_SCOPE: &[&str] = &[

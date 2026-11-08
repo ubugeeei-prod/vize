@@ -18,7 +18,7 @@ use vize_l0::ErrorCode;
 use vize_l0::{Allocator, String};
 use vize_l1::markup::{
     ElementClose, HoleCounts, SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity,
-    hole_counts, parse, parse_with_options, render,
+    hole_counts, parse, parse_with_authored_diagnostics, parse_with_options, render,
 };
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
@@ -84,6 +84,19 @@ fn eof_in_tag_holes_are_typed() {
     assert!(matches!(element.close, ElementClose::Missing));
     assert_eq!(errors.len(), 1);
     assert!(matches!(errors[0].code, ErrorCode::EofInTag));
+}
+
+#[test]
+fn structural_diagnostics_are_an_explicit_product_opt_in() {
+    let allocator = Allocator::new();
+    let (_, ordinary) = parse(&allocator, "<div");
+    assert_eq!(ordinary.len(), 1);
+    assert!(matches!(ordinary[0].code, ErrorCode::EofInTag));
+
+    let (_, _, complete) = parse_with_authored_diagnostics(&allocator, "<div");
+    assert_eq!(complete.len(), 2);
+    assert!(matches!(complete[0].code, ErrorCode::EofInTag));
+    assert!(matches!(complete[1].code, ErrorCode::MissingEndTag));
 }
 
 #[test]

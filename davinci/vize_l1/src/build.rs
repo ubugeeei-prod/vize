@@ -35,6 +35,9 @@ struct Frame<'a> {
     open: OpenTag<'a>,
     children: Vec<'a, SurfaceChild<'a>>,
     ns: Namespace,
+    ignored_start: bool,
+    in_v_pre: bool,
+    table_tree_element: bool,
 }
 
 impl<'a> scope::Frame<'a> for Frame<'a> {
@@ -46,18 +49,28 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     fn namespace(&self) -> Namespace {
         self.ns
     }
+
+    fn ignored_start(&self) -> bool {
+        self.ignored_start
+    }
+
+    fn table_tree_element(&self) -> bool {
+        self.table_tree_element
+    }
 }
 
 pub(crate) fn build<'a, const RAW: bool, const LINT: bool>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
+    errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
 ) -> (SurfaceTree<'a>, bool) {
     let mut b = Builder::<RAW, LINT> {
         src,
         allocator,
         events,
+        errors,
         i: 0,
         cursor: 0,
         root: Vec::new_in(&allocator),
@@ -72,6 +85,7 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool>(
     b.flush_gap(src.len());
     // …then every still-open element gets its node-level `Missing` hole.
     while let Some(frame) = b.stack.pop() {
+        b.missing_end_tag(&frame);
         let element = Element {
             open: frame.open,
             children: frame.children,
@@ -92,6 +106,7 @@ struct Builder<'a, 'e, const RAW: bool, const LINT: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
+    errors: &'e mut Vec<'a, crate::markup::SurfaceError>,
     i: usize,
     cursor: usize,
     root: Vec<'a, SurfaceChild<'a>>,
@@ -166,6 +181,33 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             .map(|p| from + p)
     }
 
+    fn source_offset(&self, slice: &str) -> u32 {
+        (slice.as_ptr() as usize).saturating_sub(self.src.as_ptr() as usize) as u32
+    }
+
+    fn open_span(&self, open: &OpenTag<'_>) -> vize_l0::Span {
+        let start = self.source_offset(open.lt_name.text);
+        let gt_start = self.source_offset(open.gt.text);
+        let end = gt_start.saturating_add(open.gt.text.len() as u32);
+        vize_l0::Span::new(start, end.max(start))
+    }
+
+    fn missing_end_tag(&mut self, frame: &Frame<'_>) {
+        if frame.ignored_start {
+            return;
+        }
+        let text = frame.open.lt_name.text;
+        let tag = text.get(1..).unwrap_or(text);
+        if !crate::build::scope::can_omit_end_tag(tag) {
+            let span = self.open_span(&frame.open);
+            self.errors.push(crate::markup::SurfaceError::at_encounter(
+                vize_l0::ErrorCode::MissingEndTag,
+                span,
+                self.cursor as u32,
+            ));
+        }
+    }
+
     fn push_child(&mut self, child: SurfaceChild<'a>) {
         match self.stack.last_mut() {
             Some(frame) => frame.children.push(child),
@@ -230,6 +272,18 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     /// and the closer (if present in the source) is probed after it. One
     /// verbatim token covers the whole construct.
     fn raw_node(&mut self, ev: Event, kind: RawKind) {
+        if matches!(kind, RawKind::Cdata)
+            && self
+                .stack
+                .last()
+                .is_none_or(|frame| frame.ns == Namespace::Html)
+        {
+            let start = (ev.start as usize).saturating_sub(9) as u32;
+            self.errors.push(crate::markup::SurfaceError::at(
+                vize_l0::ErrorCode::CdataInHtmlContent,
+                vize_l0::Span::new(start, start.saturating_add(1)),
+            ));
+        }
         let e = ev.end as usize;
         self.i += 1;
         let tail = crate::slice::from(self.src, e.min(self.src.len()));

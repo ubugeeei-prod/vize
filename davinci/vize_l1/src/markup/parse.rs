@@ -1,7 +1,10 @@
 //! The parse entry: L1's moved tokenizer → event stream → surface tree,
 //! with the byte-fidelity verifier asserted on every construction.
 
+mod error;
 mod namespace;
+
+pub use error::SurfaceError;
 
 use crate::markup::{Component, LexOptions, Lexer};
 use namespace::NamespaceSink;
@@ -42,15 +45,6 @@ impl core::fmt::Debug for SurfaceParseOptions {
             )
             .finish()
     }
-}
-
-/// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps
-/// the moved tokenizer's codes verbatim; rendering them through the P2-1
-/// `Diagnostic` channel is the L1→L2 lowering's job (P2-8).
-#[derive(Debug, Clone, Copy)]
-pub struct SurfaceError {
-    pub code: ErrorCode,
-    pub offset: u32,
 }
 
 /// Parse a Vue template into its lossless L1 surface tree.
@@ -103,6 +97,7 @@ pub fn parse_with_options_and_caps<'a>(
         options,
         authored,
         caps.raw_html_interpolation,
+        false,
     );
     (authored_tree.unwrap_or(tree), errors)
 }
@@ -124,6 +119,31 @@ pub fn parse_with_authored<'a>(
         SurfaceParseOptions::default(),
         true,
         false,
+        false,
+    )
+}
+
+/// Parse once while retaining the complete parser/template diagnostic vector.
+///
+/// The ordinary surface entries preserve their historical lexer-error
+/// contract. Product owners that replace a legacy template parser can opt in
+/// to the structural recoveries produced while the L1 event stream becomes a
+/// tree, without running a second parser.
+pub fn parse_with_authored_diagnostics<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    parse_projection(
+        allocator,
+        source,
+        SurfaceParseOptions::default(),
+        true,
+        false,
+        true,
     )
 }
 
@@ -133,15 +153,30 @@ fn parse_projection<'a>(
     options: SurfaceParseOptions,
     authored: bool,
     raw_interpolation: bool,
+    structural_diagnostics: bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
     if raw_interpolation {
-        parse_projection_mode::<true>(allocator, source, options, authored, true)
+        parse_projection_mode::<true>(
+            allocator,
+            source,
+            options,
+            authored,
+            true,
+            structural_diagnostics,
+        )
     } else {
-        parse_projection_mode::<false>(allocator, source, options, authored, false)
+        parse_projection_mode::<false>(
+            allocator,
+            source,
+            options,
+            authored,
+            false,
+            structural_diagnostics,
+        )
     }
 }
 
@@ -151,13 +186,18 @@ fn parse_projection_mode<'a, const RAW: bool>(
     options: SurfaceParseOptions,
     authored: bool,
     raw_interpolation: bool,
+    structural_diagnostics: bool,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    let (tree, authored_tree, mut errors) =
-        construct::<RAW>(allocator, source, authored, |events, errors| {
+    let (tree, authored_tree, mut errors) = construct_with_diagnostics::<RAW>(
+        allocator,
+        source,
+        authored,
+        structural_diagnostics,
+        |events, errors| {
             let recorder = Recorder { events, errors };
             let sink = NamespaceSink::new(allocator, source, recorder);
             Lexer::<Component, _>::new(
@@ -170,7 +210,8 @@ fn parse_projection_mode<'a, const RAW: bool>(
                 },
             )
             .run();
-        });
+        },
+    );
     if options.syntax.is_quirks() {
         errors.retain(|error| error.code != ErrorCode::MissingWhitespaceBetweenAttributes);
     }
@@ -189,7 +230,27 @@ pub(crate) fn construct<'a, const RAW: bool>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct_with_lint::<RAW, false>(allocator, source, authored, record)
+    construct_with_lint_and_diagnostics::<RAW, false>(allocator, source, authored, false, record)
+}
+
+fn construct_with_diagnostics<'a, const RAW: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    authored: bool,
+    structural_diagnostics: bool,
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    construct_with_lint_and_diagnostics::<RAW, false>(
+        allocator,
+        source,
+        authored,
+        structural_diagnostics,
+        record,
+    )
 }
 
 /// The selected native owner may retain already-resolved lint-header facts.
@@ -198,6 +259,20 @@ pub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    construct_with_lint_and_diagnostics::<RAW, LINT>(allocator, source, authored, false, record)
+}
+
+fn construct_with_lint_and_diagnostics<'a, const RAW: bool, const LINT: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    authored: bool,
+    structural_diagnostics: bool,
     record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
 ) -> (
     SurfaceTree<'a>,
@@ -215,9 +290,21 @@ pub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(
         return (SurfaceTree { source, children }, None, errors);
     }
     record(&mut events, &mut errors);
-    let (tree, repaired) = build::<RAW, LINT>(allocator, source, &events, true);
-    let authored =
-        (authored && repaired).then(|| build::<RAW, LINT>(allocator, source, &events, false).0);
+    // Native lint admission owns typed holes, duplicate headers and unsupported
+    // directive heads separately. Ordinary surface callers also retain the
+    // historical lexer-only contract; replacing product owners opt in to the
+    // complete parser/template vector explicitly.
+    let (tree, repaired) = if LINT || !structural_diagnostics {
+        let mut ignored = Vec::new_in(&allocator);
+        build::<RAW, LINT>(allocator, source, &events, &mut ignored, true)
+    } else {
+        build::<RAW, LINT>(allocator, source, &events, &mut errors, true)
+    };
+    let authored = (authored && repaired).then(|| {
+        let mut ignored = Vec::new_in(&allocator);
+        build::<RAW, LINT>(allocator, source, &events, &mut ignored, false).0
+    });
+    errors.sort_by_key(|error| error.encounter);
     debug_assert!(
         check_fidelity(&tree).is_ok(),
         "L1 fidelity: render(tree) != source"

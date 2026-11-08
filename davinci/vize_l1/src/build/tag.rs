@@ -75,13 +75,66 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             }
         }
         let self_closing = slash.is_some();
+        let inherited_v_pre = self.stack.last().is_some_and(|frame| frame.in_v_pre);
+        let in_v_pre = inherited_v_pre || attrs.iter().any(|attr| attr.name.text == "v-pre");
+        for (index, attr) in attrs.iter().enumerate() {
+            if (!is_directive(attr.name.text) || inherited_v_pre)
+                && attrs
+                    .get(..index)
+                    .unwrap_or_default()
+                    .iter()
+                    .any(|existing| {
+                        (!is_directive(existing.name.text) || inherited_v_pre)
+                            && existing.name.text.eq_ignore_ascii_case(attr.name.text)
+                    })
+            {
+                let start = self.source_offset(attr.name.text);
+                self.errors
+                    .push(crate::markup::SurfaceError::duplicate_attribute(
+                        vize_l0::Span::new(
+                            start,
+                            start.saturating_add(attr.name.text.len() as u32),
+                        ),
+                    ));
+            }
+        }
+        // The lint-header provider already records unsupported directive heads
+        // in its typed `unsupported` channel. Keep that selected-owner contract
+        // separate; the ordinary surface path owns parser/template diagnostics.
+        if !LINT && !inherited_v_pre {
+            for attr in &attrs {
+                self.directive_errors(attr.name.text);
+            }
+        }
+        let ignored_start = self.recovery.is_repeated_form(&self.stack, tag);
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
+        let table_tree_element = is_table_tree_element(tag, in_v_pre, &attrs);
         let open = OpenTag {
             lt_name,
             attrs,
             slash,
             gt,
         };
+        if ignored_start {
+            let span = self.open_span(&open);
+            self.errors
+                .push(crate::markup::SurfaceError::ignored_repeated_form(span));
+        }
+        if !self_closing
+            && !is_void_tag(tag)
+            && self
+                .recovery
+                .should_foster_start(&self.stack, tag, ns, table_tree_element)
+        {
+            let span = self.open_span(&open);
+            self.errors
+                .push(crate::markup::SurfaceError::foster_parenting(span));
+        }
+        if !ignored_start && !self_closing && !is_void_tag(tag) && self.stack.len() == 4096 {
+            let span = self.open_span(&open);
+            self.errors
+                .push(crate::markup::SurfaceError::nesting_too_deep(span));
+        }
         if let Some(depth) = implicit_depth {
             self.repaired = true;
             self.implicitly_close_stack_element_at(depth);
@@ -99,6 +152,9 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
                 open,
                 children: Vec::new_in(&self.allocator),
                 ns,
+                ignored_start,
+                in_v_pre,
+                table_tree_element,
             });
         }
     }
@@ -130,16 +186,39 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
         let gt_pos = self.find_byte(b'>', e, self.src.len());
         let name = crate::slice::range(self.src, s, e);
         self.flush_gap(lt_start);
+        let adoption_depth = self.recovery.adoption(&self.stack, name);
         let Some(depth) = self.recovery.close(&self.stack, name) else {
+            if self.recovery.take_consumed_implicit_close() {
+                let end = gt_pos.map_or(self.src.len(), |g| g + 1);
+                let token = self.token_at(lt_start, end);
+                self.push_child(SurfaceChild::Unexpected(token));
+                return;
+            }
+            if self.recovery.consume_reopened_formatting(name) {
+                let end = gt_pos.map_or(self.src.len(), |g| g + 1);
+                let token = self.token_at(lt_start, end);
+                self.push_child(SurfaceChild::Unexpected(token));
+                return;
+            }
             // Stray end tag: a typed `Unexpected` hole, whole extent.
             self.unexpected_close_tag(lt_start, gt_pos);
             return;
         };
+        if adoption_depth.is_some() {
+            let end = gt_pos.map_or(self.src.len(), |g| g + 1);
+            self.errors
+                .push(crate::markup::SurfaceError::adoption_agency(
+                    vize_l0::Span::new(lt_start as u32, end as u32),
+                ));
+        }
         // Elements left open above the match get node-level holes.
         while self.stack.len() > depth + 1 {
             let Some(frame) = self.stack.pop() else {
                 break;
             };
+            if adoption_depth.is_none() {
+                self.missing_end_tag(&frame);
+            }
             let element = Element {
                 open: frame.open,
                 children: frame.children,
@@ -191,8 +270,57 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
 
     fn unexpected_close_tag(&mut self, lt_start: usize, gt_pos: Option<usize>) {
         let end = gt_pos.map_or(self.src.len(), |g| g + 1);
+        self.errors.push(crate::markup::SurfaceError::at_encounter(
+            vize_l0::ErrorCode::InvalidEndTag,
+            vize_l0::Span::new(lt_start as u32, end as u32),
+            end as u32,
+        ));
         let token = self.token_at(lt_start, end);
         self.push_child(SurfaceChild::Unexpected(token));
+    }
+
+    fn directive_errors(&mut self, name: &str) {
+        let start = self.source_offset(name);
+        if name
+            .strip_prefix("v-")
+            .is_some_and(|tail| tail.is_empty() || tail.starts_with(['.', ':']))
+        {
+            self.errors
+                .push(crate::markup::SurfaceError::missing_directive_name(
+                    vize_l0::Span::new(start, start.saturating_add(name.len() as u32)),
+                ));
+            return;
+        }
+        if !is_directive(name) {
+            return;
+        }
+
+        let mut dynamic_depth = 0_u32;
+        let mut modifier_start = None;
+        for (index, byte) in name.bytes().enumerate() {
+            match byte {
+                b'[' => dynamic_depth = dynamic_depth.saturating_add(1),
+                b']' => dynamic_depth = dynamic_depth.saturating_sub(1),
+                b'.' if dynamic_depth == 0 && !(index == 0 && name.starts_with('.')) => {
+                    if modifier_start == Some(index) {
+                        let offset = start.saturating_add(index as u32);
+                        self.errors.push(crate::markup::SurfaceError::at(
+                            vize_l0::ErrorCode::MissingDirectiveModifier,
+                            vize_l0::Span::new(offset, offset),
+                        ));
+                    }
+                    modifier_start = Some(index + 1);
+                }
+                _ => {}
+            }
+        }
+        if modifier_start == Some(name.len()) {
+            let end = start.saturating_add(name.len() as u32);
+            self.errors.push(crate::markup::SurfaceError::at(
+                vize_l0::ErrorCode::MissingDirectiveModifier,
+                vize_l0::Span::new(end, end),
+            ));
+        }
     }
 
     fn implicitly_close_stack_element_at(&mut self, depth: usize) {
@@ -215,4 +343,38 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             self.attach(element);
         }
     }
+}
+
+fn is_directive(name: &str) -> bool {
+    matches!(name.as_bytes().first(), Some(b':' | b'@' | b'#' | b'.')) || name.starts_with("v-")
+}
+
+fn is_table_tree_element(tag: &str, in_v_pre: bool, attrs: &[Attribute<'_>]) -> bool {
+    if in_v_pre {
+        return true;
+    }
+    if tag == "slot"
+        || tag == "component"
+        || tag.chars().next().is_some_and(char::is_uppercase)
+        || matches!(
+            tag,
+            "Teleport"
+                | "Suspense"
+                | "KeepAlive"
+                | "BaseTransition"
+                | "Transition"
+                | "TransitionGroup"
+        )
+    {
+        return false;
+    }
+    if tag != "template" {
+        return true;
+    }
+    !attrs.iter().any(|attr| {
+        matches!(
+            attr.name.text,
+            "v-if" | "v-else-if" | "v-else" | "v-for" | "v-slot"
+        ) || attr.name.text.starts_with('#')
+    })
 }
