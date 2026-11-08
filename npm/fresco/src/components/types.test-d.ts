@@ -17,11 +17,16 @@ import type {
   StaticProps,
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
+import Divider from "./FrescoDivider.vue";
+import HStack from "./FrescoHStack.vue";
 import Newline from "./FrescoNewline.vue";
 import ScrollBox from "./ScrollBox.vue";
 import Spacer from "./FrescoSpacer.vue";
 import Spinner from "./FrescoSpinner.vue";
+import Stack from "./FrescoStack.vue";
 import Static from "./FrescoStatic.vue";
+import VStack from "./FrescoVStack.vue";
+import type { DividerProps, StackProps } from "./layout-primitive-types.js";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
@@ -124,6 +129,20 @@ export const spinnerAcceptsDocumentedProps: SpinnerProps = {
   interval: 100,
   label: "Loading",
 };
+export const dividerAcceptsDocumentedProps: DividerProps = {
+  direction: "horizontal",
+  char: "=",
+  title: "Summary",
+  fg: "gray",
+  titleFg: "cyan",
+};
+export const stackAcceptsDocumentedProps: StackProps = {
+  direction: "horizontal",
+  gap: 2,
+  align: "center",
+  justify: "between",
+  wrap: true,
+};
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
@@ -166,6 +185,10 @@ export function componentsRenderWithTypedProps() {
     h(Link, { text: "Docs", showUrl: false }),
     h(Badge, { label: "Ready", variant: "success" }),
     h(Spinner, { type: "line", label: "Loading" }),
+    h(Divider, { title: "Summary", direction: "horizontal" }),
+    h(Stack, { direction: "horizontal", gap: 2, align: "center" }),
+    h(HStack, { gap: 1, justify: "between" }),
+    h(VStack, { gap: 0, align: "stretch" }),
   ];
 }
 
@@ -188,6 +211,17 @@ export function displayPrimitivesRejectMistypedProps() {
     h(Badge, { label: "Bad", variant: "unknown" }),
     // @ts-expect-error - wave is not a built-in Spinner frame set.
     h(Spinner, { type: "wave" }),
+  ];
+}
+
+export function layoutPrimitivesRejectMistypedProps() {
+  return [
+    // @ts-expect-error - diagonal is not a Divider direction.
+    h(Divider, { direction: "diagonal" }),
+    // @ts-expect-error - left is not a Stack alignment.
+    h(Stack, { align: "left" }),
+    // @ts-expect-error - gaps are numeric.
+    h(HStack, { gap: "1" }),
   ];
 }
 

@@ -5,8 +5,11 @@
 // Layout
 export { Box, type BoxProps } from "./Box.js";
 export { default as Spacer } from "./FrescoSpacer.vue";
-export { Divider, type DividerProps } from "./Divider.js";
-export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
+export { default as Divider } from "./FrescoDivider.vue";
+export { default as Stack } from "./FrescoStack.vue";
+export { default as HStack } from "./FrescoHStack.vue";
+export { default as VStack } from "./FrescoVStack.vue";
+export type { DividerProps, StackProps } from "./layout-primitive-types.js";
 export { Grid, type GridProps } from "./Grid.js";
 export { Card, type CardProps } from "./Card.js";
 export { default as ScrollBox } from "./ScrollBox.vue";

@@ -5,14 +5,18 @@ import { test } from "vitest";
 
 const canonicalSfcComponents = [
   { name: "Badge", file: "FrescoBadge" },
+  { name: "Divider", file: "FrescoDivider" },
+  { name: "HStack", file: "FrescoHStack" },
   { name: "Link", file: "FrescoLink" },
   { name: "Newline", file: "FrescoNewline" },
   { name: "ScrollBar", file: "ScrollBar" },
   { name: "ScrollBox", file: "ScrollBox" },
   { name: "Spacer", file: "FrescoSpacer" },
   { name: "Spinner", file: "FrescoSpinner" },
+  { name: "Stack", file: "FrescoStack" },
   { name: "Static", file: "FrescoStatic" },
   { name: "Transform", file: "FrescoTransform" },
+  { name: "VStack", file: "FrescoVStack" },
 ];
 const packageRoot = existsSync(path.join(process.cwd(), "src", "components"))
   ? process.cwd()

@@ -94,12 +94,12 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 All are Implemented as display components and follow the same M2/M3 interaction and theming
 polish track as the tables above.
 
-| Group      | Components                                           |
-| ---------- | ---------------------------------------------------- |
-| Layout     | `Stack`/`HStack`/`VStack`, `Grid`, `Card`, `Divider` |
-| Feedback   | `Alert`, `Badge` (typed SFC), `Timer`, `Avatar`      |
-| Navigation | `Breadcrumb`, `Stepper` (`Menu`, `Tabs` above)       |
-| Chrome     | `StatusBar`, `Header`, `KeyHint`                     |
+| Group      | Components                                                                    |
+| ---------- | ----------------------------------------------------------------------------- |
+| Layout     | `Stack`/`HStack`/`VStack` (typed SFCs), `Grid`, `Card`, `Divider` (typed SFC) |
+| Feedback   | `Alert`, `Badge` (typed SFC), `Timer`, `Avatar`                               |
+| Navigation | `Breadcrumb`, `Stepper` (`Menu`, `Tabs` above)                                |
+| Chrome     | `StatusBar`, `Header`, `KeyHint`                                              |
 
 ## Composables
 
