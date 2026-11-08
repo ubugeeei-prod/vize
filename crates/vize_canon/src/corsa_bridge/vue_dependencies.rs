@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 
 use oxc_span::SourceType;
-use vize_carton::{FxHashMap, FxHashSet, String, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_paths::{normalize_path, resolve_relative_script_import};
@@ -30,7 +30,7 @@ pub(super) fn collect_dependency_documents(
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn super::vue_document::OverlaySources,
 ) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     let source_key = vize_carton::path::canonicalize_non_verbatim(&host.source_path);
@@ -73,7 +73,7 @@ pub(super) fn collect_script_dependency_documents(
     options: CorsaVueVirtualDocumentOptions,
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn super::vue_document::OverlaySources,
 ) -> Vec<PathBuf> {
     let mut visited_vue = FxHashSet::<PathBuf>::default();
     let mut visited_ts = FxHashSet::<PathBuf>::default();
@@ -112,7 +112,7 @@ pub(super) struct ImportQueue<'a> {
     pub(super) queue: &'a mut VecDeque<DependencyScan>,
     pub(super) visited_vue: &'a mut FxHashSet<PathBuf>,
     pub(super) visited_ts: &'a mut FxHashSet<PathBuf>,
-    pub(super) overlays: &'a FxHashMap<PathBuf, &'a str>,
+    pub(super) overlays: &'a dyn super::vue_document::OverlaySources,
 }
 
 pub(super) enum DependencyScan {

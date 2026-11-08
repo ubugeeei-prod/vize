@@ -57,7 +57,18 @@ impl CorsaBridge {
         &self,
         request: CorsaScriptVirtualDocumentRequest<'_>,
     ) -> Result<CorsaScriptVirtualDocument, CorsaBridgeError> {
-        self.open_script_virtual_project(request)
+        self.open_script_virtual_project_inner(request, None)
+            .await
+            .map(|project| project.document)
+    }
+
+    /// Open a script host against the persistent editor overlay revision.
+    pub async fn open_script_virtual_document_with_overlay_snapshot(
+        &self,
+        request: CorsaScriptVirtualDocumentRequest<'_>,
+        snapshot: &super::CorsaOverlaySnapshot,
+    ) -> Result<CorsaScriptVirtualDocument, CorsaBridgeError> {
+        self.open_script_virtual_project_inner(request, Some(snapshot))
             .await
             .map(|project| project.document)
     }
@@ -67,9 +78,28 @@ impl CorsaBridge {
         &self,
         request: CorsaScriptVirtualDocumentRequest<'_>,
     ) -> Result<CorsaScriptVirtualProject, CorsaBridgeError> {
+        self.open_script_virtual_project_inner(request, None).await
+    }
+
+    /// Retain script mappings without reconstructing the complete overlay map.
+    pub async fn open_script_virtual_project_with_overlay_snapshot(
+        &self,
+        request: CorsaScriptVirtualDocumentRequest<'_>,
+        snapshot: &super::CorsaOverlaySnapshot,
+    ) -> Result<CorsaScriptVirtualProject, CorsaBridgeError> {
+        self.open_script_virtual_project_inner(request, Some(snapshot))
+            .await
+    }
+
+    async fn open_script_virtual_project_inner(
+        &self,
+        request: CorsaScriptVirtualDocumentRequest<'_>,
+        snapshot: Option<&super::CorsaOverlaySnapshot>,
+    ) -> Result<CorsaScriptVirtualProject, CorsaBridgeError> {
         let virtual_ts_options = request.virtual_ts_options;
         let project = build_script_virtual_project_with_package_routes(
             request,
+            snapshot,
             super::vue_document::CorsaProjectEnvironment {
                 virtual_ts_options,
                 package_routes: &self.package_route_resolver,
@@ -121,6 +151,7 @@ pub(super) fn build_script_virtual_project(
     let virtual_ts_options = request.virtual_ts_options;
     let project = build_script_virtual_project_with_package_routes(
         request,
+        None,
         super::vue_document::CorsaProjectEnvironment {
             virtual_ts_options,
             package_routes: &crate::PackageRouteResolver::default(),
@@ -140,24 +171,37 @@ pub(super) fn build_script_virtual_project(
 
 fn build_script_virtual_project_with_package_routes(
     request: CorsaScriptVirtualDocumentRequest<'_>,
+    snapshot: Option<&super::CorsaOverlaySnapshot>,
     environment: super::vue_document::CorsaProjectEnvironment<'_>,
 ) -> Result<BuiltScriptVirtualProject, CorsaBridgeError> {
     let rewriter = ImportRewriter::new();
-    let overlays = request
-        .overlays
-        .iter()
-        .map(|(path, content)| {
-            let key = vize_carton::path::canonicalize_non_verbatim(path);
-            (key, *content)
-        })
-        .collect::<FxHashMap<_, _>>();
-    let alias_context = super::vue_dependencies_alias::AliasContext::for_host_cached(
-        request.source_path,
-        request.code,
-        &overlays,
-        request.options,
-        environment,
-    )?;
+    let canonical_overlays;
+    let (overlays, overlay_fingerprint): (
+        &dyn super::vue_document::OverlaySources,
+        Option<&super::vue_document::OverlayFingerprint>,
+    ) = if let Some(snapshot) = snapshot {
+        (snapshot.sources(), Some(snapshot.fingerprint()))
+    } else {
+        canonical_overlays = request
+            .overlays
+            .iter()
+            .map(|(path, content)| {
+                let key = vize_carton::path::canonicalize_non_verbatim(path);
+                (key, *content)
+            })
+            .collect::<FxHashMap<_, _>>();
+        (&canonical_overlays, None)
+    };
+    let alias_context =
+        super::vue_dependencies_alias::AliasContext::for_hosts_cached_with_overlay_fingerprint(
+            request.source_path,
+            request.code,
+            overlays,
+            overlay_fingerprint,
+            &[],
+            request.options,
+            environment,
+        )?;
     let (path, generated) = alias_context
         .editor_script_document(request.source_path)
         .ok_or_else(|| {
@@ -182,13 +226,13 @@ fn build_script_virtual_project_with_package_routes(
         request.options,
         &rewriter,
         &alias_context,
-        &overlays,
+        overlays,
     );
     let session_project_root = alias_context.mirror_project_root_for_source(request.source_path);
     super::vue_document::materialized_documents::append_materialized_documents(
         &mut documents,
         &materialized_sources,
-        &overlays,
+        overlays,
         false,
     );
     Ok(BuiltScriptVirtualProject {

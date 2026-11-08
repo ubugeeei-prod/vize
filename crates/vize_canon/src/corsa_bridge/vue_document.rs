@@ -17,10 +17,13 @@ use crate::virtual_ts::VirtualTsOptions;
 
 pub(in crate::corsa_bridge) mod build;
 pub(super) mod materialized_documents;
-use build::build_vue_virtual_workspace_project;
+use build::{
+    build_vue_virtual_workspace_project, build_vue_virtual_workspace_project_with_overlay_snapshot,
+};
 mod hover_document;
 mod initial_project;
 mod model;
+pub(in crate::corsa_bridge) mod overlay_snapshot;
 pub use hover_document::CorsaVueHoverDocument;
 pub use initial_project::{CorsaInitialVueDocument, CorsaInitialVueProject};
 mod prepare;
@@ -30,6 +33,9 @@ pub use model::{
     CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions,
 };
 pub(crate) use model::{CorsaNativeDocumentBatch, CorsaVueVirtualProject};
+pub use overlay_snapshot::CorsaOverlaySnapshot;
+pub(crate) use overlay_snapshot::OverlaySources;
+pub(in crate::corsa_bridge) use overlay_snapshot::{OverlayFingerprint, PersistentOverlayMap};
 pub use prepare::CorsaVueWorkspaceRequest;
 
 pub(crate) use model::CorsaProjectEnvironment;
@@ -151,6 +157,34 @@ impl CorsaBridge {
                 content,
                 options,
                 overlays,
+                None,
+                virtual_ts_options,
+                requested_sources,
+            )
+            .await?;
+        let mut host = (*host).clone();
+        host.source_catalog = source_catalog;
+        Ok(host)
+    }
+
+    /// Synchronize a Vue revision while reusing its precomputed overlay
+    /// identities across every semantic request.
+    pub async fn open_vue_virtual_workspace_document_with_overlay_snapshot(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlay_snapshot: &CorsaOverlaySnapshot,
+        virtual_ts_options: &VirtualTsOptions,
+        requested_sources: &[(PathBuf, &str)],
+    ) -> Result<CorsaVueVirtualDocument, CorsaBridgeError> {
+        let (host, source_catalog) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                &[],
+                Some(overlay_snapshot),
                 virtual_ts_options,
                 requested_sources,
             )
@@ -176,6 +210,7 @@ impl CorsaBridge {
                 content,
                 options,
                 overlays,
+                None,
                 virtual_ts_options,
                 &[],
             )
@@ -183,12 +218,41 @@ impl CorsaBridge {
         Ok(CorsaVueHoverDocument::new(host))
     }
 
+    /// Borrow the immutable hover surface and its revision-scoped overlay
+    /// identities without rehashing every open buffer.
+    pub async fn open_vue_hover_document_with_overlay_snapshot(
+        &self,
+        source_path: &Path,
+        content: &str,
+        options: CorsaVueVirtualDocumentOptions,
+        overlay_snapshot: &CorsaOverlaySnapshot,
+        virtual_ts_options: &VirtualTsOptions,
+    ) -> Result<CorsaVueHoverDocument, CorsaBridgeError> {
+        let (host, _) = self
+            .open_vue_virtual_workspace_project(
+                source_path,
+                content,
+                options,
+                &[],
+                Some(overlay_snapshot),
+                virtual_ts_options,
+                &[],
+            )
+            .await?;
+        Ok(CorsaVueHoverDocument::new(host))
+    }
+
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "one private boundary binds source, overlay revision, generation and workspace inputs"
+    )]
     async fn open_vue_virtual_workspace_project(
         &self,
         source_path: &Path,
         content: &str,
         options: CorsaVueVirtualDocumentOptions,
         overlays: &[(PathBuf, &str)],
+        overlay_snapshot: Option<&CorsaOverlaySnapshot>,
         virtual_ts_options: &VirtualTsOptions,
         requested_sources: &[(PathBuf, &str)],
     ) -> Result<
@@ -200,20 +264,36 @@ impl CorsaBridge {
     > {
         let project = vize_l0::profile!(
             "canon.editor.project_prepare",
-            build_vue_virtual_workspace_project(
-                source_path,
-                content,
-                options,
-                overlays,
-                requested_sources,
-                CorsaProjectEnvironment {
-                    virtual_ts_options,
-                    package_routes: &self.package_route_resolver,
-                    project_root: self.config.working_dir.as_deref(),
-                    tsconfig_path: self.config.tsconfig_path.as_deref(),
-                    editor_session: &self.editor_session,
-                },
-            )
+            match overlay_snapshot {
+                Some(snapshot) => build_vue_virtual_workspace_project_with_overlay_snapshot(
+                    source_path,
+                    content,
+                    options,
+                    snapshot,
+                    requested_sources,
+                    CorsaProjectEnvironment {
+                        virtual_ts_options,
+                        package_routes: &self.package_route_resolver,
+                        project_root: self.config.working_dir.as_deref(),
+                        tsconfig_path: self.config.tsconfig_path.as_deref(),
+                        editor_session: &self.editor_session,
+                    },
+                ),
+                None => build_vue_virtual_workspace_project(
+                    source_path,
+                    content,
+                    options,
+                    overlays,
+                    requested_sources,
+                    CorsaProjectEnvironment {
+                        virtual_ts_options,
+                        package_routes: &self.package_route_resolver,
+                        project_root: self.config.working_dir.as_deref(),
+                        tsconfig_path: self.config.tsconfig_path.as_deref(),
+                        editor_session: &self.editor_session,
+                    },
+                ),
+            }
         )?;
         let CorsaVueVirtualProject {
             host,

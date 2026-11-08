@@ -60,7 +60,9 @@ impl VirtualProject {
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
         vize_carton::profile!(
             "canon.project.reachable_dependencies",
-            self.register_reachable_dependencies_with_overlays(&FxHashMap::default())
+            self.register_reachable_dependencies_with_overlays(
+                &FxHashMap::<PathBuf, &str>::default(),
+            )
         )
     }
 
@@ -72,7 +74,7 @@ impl VirtualProject {
     ) -> CorsaResult<()> {
         self.register_reachable_dependencies_inner(
             Some(sources),
-            &FxHashMap::default(),
+            &FxHashMap::<PathBuf, &str>::default(),
             &[],
             None,
             None,
@@ -89,7 +91,7 @@ impl VirtualProject {
     /// point at until the buffer is saved (#3900).
     pub(crate) fn register_reachable_dependencies_with_overlays(
         &mut self,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::OverlaySources,
     ) -> CorsaResult<()> {
         self.register_reachable_dependencies_inner(None, overlays, &[], None, None)
     }
@@ -97,7 +99,7 @@ impl VirtualProject {
     #[cfg(test)]
     pub(crate) fn register_reachable_dependencies_with_package_resolver(
         &mut self,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::OverlaySources,
         workspace_package_specifiers: &[CompactString],
         package_resolver: PackageResolver<'_>,
     ) -> CorsaResult<()> {
@@ -114,7 +116,7 @@ impl VirtualProject {
     /// Resolution, registration and edge replacement still run on every walk.
     pub(crate) fn register_reachable_dependencies_with_import_facts(
         &mut self,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::OverlaySources,
         workspace_package_specifiers: &[CompactString],
         package_resolver: PackageResolver<'_>,
         facts: &mut ModuleSpecifierFactsCache,
@@ -131,7 +133,7 @@ impl VirtualProject {
     fn register_reachable_dependencies_inner(
         &mut self,
         initial_sources: Option<&[PathBuf]>,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn crate::corsa_bridge::OverlaySources,
         workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
         mut facts: Option<&mut ModuleSpecifierFactsCache>,

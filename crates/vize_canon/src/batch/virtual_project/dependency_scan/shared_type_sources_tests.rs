@@ -69,7 +69,7 @@ fn reachable_siblings_share_dependency_text_between_registration_markers() {
     let mut mutations = Vec::new();
     shared
         .register_reachable_dependencies_with_package_resolver(
-            &Default::default(),
+            &FxHashMap::<PathBuf, &str>::default(),
             &[],
             &mut |importer, specifier, _| {
                 match specifier {

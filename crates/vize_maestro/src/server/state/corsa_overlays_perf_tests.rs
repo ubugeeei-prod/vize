@@ -22,12 +22,14 @@ fn a_pass_materializes_only_the_documents_that_changed() {
     // Cold pass reads every open document exactly once.
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 40);
+    assert_eq!(state.corsa_overlay_document_visits(), 40);
     assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 1);
 
     // A pass with nothing changed clones the complete snapshot pointer without
     // reading or even walking the open documents again.
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 40);
+    assert_eq!(state.corsa_overlay_document_visits(), 40);
     assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 1);
 
     // Ten keystrokes on one file read one document each, regardless of the 40
@@ -42,18 +44,21 @@ fn a_pass_materializes_only_the_documents_that_changed() {
         let _ = state.corsa_overlays();
     }
     assert_eq!(state.corsa_overlay_materializations(), 50);
+    assert_eq!(state.corsa_overlay_document_visits(), 50);
     assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 11);
 
     // Opening one more document reads only that one.
     open(&state, "C40.vue", &document);
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 51);
+    assert_eq!(state.corsa_overlay_document_visits(), 51);
     assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 12);
 
     // Closing one reads nothing.
     state.close_document(&uri("C40.vue"));
     let _ = state.corsa_overlays();
     assert_eq!(state.corsa_overlay_materializations(), 51);
+    assert_eq!(state.corsa_overlay_document_visits(), 51);
     assert_eq!(state.corsa_overlay_snapshot_rebuilds(), 13);
 }
 
@@ -109,8 +114,8 @@ fn overlay_pass_cost(
 /// Sweeping the buffer size at a fixed document count is what isolates the
 /// claim. A cold pass copies every open buffer, so its cost tracks
 /// `documents x bytes`; a warm pass copies only the edited one, so growing the
-/// buffers must leave it flat. Any residual growth in the warm column is the
-/// per-document bookkeeping (path clone, hash lookup) that survives caching.
+/// buffers must leave it flat. Any residual growth in the warm column comes
+/// from the edited buffer itself and the persistent map's logarithmic path.
 #[test]
 #[ignore = "wall-clock benchmark; run manually on an idle host"]
 fn a_warm_pass_does_not_scale_with_open_buffer_size() {

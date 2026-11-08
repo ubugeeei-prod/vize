@@ -2,26 +2,46 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashMap;
-
 use super::{AliasContext, ContextFingerprint, build};
 use crate::batch::ModuleSpecifierFactsCache;
 use crate::corsa_bridge::types::CorsaBridgeError;
 use crate::corsa_bridge::vue_document::{CorsaProjectEnvironment, CorsaVueVirtualDocumentOptions};
+use crate::corsa_bridge::vue_document::{OverlayFingerprint, OverlaySources};
 
 impl AliasContext {
     pub(super) fn request_fingerprint(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
     ) -> ContextFingerprint {
-        let mut fingerprint = ContextFingerprint::capture(
+        Self::request_fingerprint_with_overlay(
             source_path,
             content,
             overlays,
+            None,
+            requested_sources,
+            options,
+            environment,
+        )
+    }
+
+    pub(super) fn request_fingerprint_with_overlay(
+        source_path: &Path,
+        content: &str,
+        overlays: &dyn OverlaySources,
+        overlay_fingerprint: Option<&OverlayFingerprint>,
+        requested_sources: &[(PathBuf, &str)],
+        options: CorsaVueVirtualDocumentOptions,
+        environment: CorsaProjectEnvironment<'_>,
+    ) -> ContextFingerprint {
+        let mut fingerprint = ContextFingerprint::capture_with_overlay(
+            source_path,
+            content,
+            overlays,
+            overlay_fingerprint,
             options,
             environment.virtual_ts_options,
             environment.project_root,
@@ -35,7 +55,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn preparation_key(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -56,7 +76,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn hosts_are_prepared(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -80,7 +100,7 @@ impl AliasContext {
     pub(in crate::corsa_bridge) fn prebuild_for_hosts(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,
@@ -118,7 +138,7 @@ impl AliasContext {
     fn prebuild_host(
         source_path: &Path,
         content: &str,
-        overlays: &FxHashMap<PathBuf, &str>,
+        overlays: &dyn OverlaySources,
         requested_sources: &[(PathBuf, &str)],
         options: CorsaVueVirtualDocumentOptions,
         environment: CorsaProjectEnvironment<'_>,

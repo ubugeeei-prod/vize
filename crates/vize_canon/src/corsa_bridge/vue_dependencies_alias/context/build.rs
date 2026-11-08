@@ -10,6 +10,7 @@ use crate::batch::ModuleSpecifierFactsCache;
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_generated_dependency;
 use crate::corsa_bridge::types::CorsaBridgeError;
+use crate::corsa_bridge::vue_document::OverlaySources;
 
 pub(super) struct SourceRevision<'a> {
     pub requested_sources: &'a [(PathBuf, &'a str)],
@@ -20,7 +21,7 @@ pub(super) struct SourceRevision<'a> {
 pub(super) fn build(
     source_path: &Path,
     content: &str,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn OverlaySources,
     revision: SourceRevision<'_>,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
@@ -47,7 +48,7 @@ pub(super) fn build(
 pub(super) fn build_with_import_facts(
     source_path: &Path,
     content: &str,
-    overlays: &FxHashMap<PathBuf, &str>,
+    overlays: &dyn OverlaySources,
     revision: SourceRevision<'_>,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
@@ -171,7 +172,7 @@ pub(super) fn build_with_import_facts(
         if path == source_path {
             continue;
         }
-        let source = overlays.get(&path).copied().unwrap_or(source);
+        let source = overlays.get(&path).unwrap_or(source);
         inputs.push((path, source));
     }
     // One revision shares its dependency type sources. A workspace-wide query

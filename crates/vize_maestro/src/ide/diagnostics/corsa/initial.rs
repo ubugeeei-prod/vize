@@ -118,10 +118,6 @@ impl DiagnosticService {
         };
         let virtual_options = state.editor_virtual_ts_options().await;
         let cached_overlays = state.corsa_overlays();
-        let overlays = cached_overlays
-            .iter()
-            .map(|(path, text)| (path.clone(), &**text))
-            .collect::<Vec<_>>();
         let options = CorsaVueVirtualDocumentOptions {
             options_api: state.options_api_enabled(),
             legacy_vue2: state.legacy_vue2_enabled(),
@@ -131,12 +127,13 @@ impl DiagnosticService {
             dialect: state.type_checker_vue_version(),
         };
         let opened = bridge
-            .open_vue_virtual_document_with_borrowed_overlays_and_options(
+            .open_vue_virtual_workspace_document_with_overlay_snapshot(
                 &source_path,
                 &content,
                 options,
-                &overlays,
+                &cached_overlays,
                 &virtual_options,
+                &[],
             )
             .await
             .map_err(|error| (Arc::clone(&bridge), error))?;

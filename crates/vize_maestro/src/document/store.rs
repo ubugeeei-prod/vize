@@ -8,6 +8,8 @@
 #[cfg(feature = "native")]
 mod closed;
 mod edits;
+#[cfg(feature = "native")]
+mod overlay_journal;
 mod structural_navigation;
 mod uri_snapshot;
 
@@ -17,6 +19,8 @@ use std::sync::{Arc, OnceLock};
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
+#[cfg(feature = "native")]
+use self::overlay_journal::OverlayMutationJournal;
 use self::uri_snapshot::UriSnapshotCache;
 use super::DocumentText;
 use super::edit_cancel::EditCancellation;
@@ -168,6 +172,8 @@ pub struct DocumentStore {
     revision: Arc<AtomicU64>,
     mutations: Arc<AtomicUsize>,
     edits: Arc<EditCancellation>,
+    #[cfg(feature = "native")]
+    overlay_journal: Arc<OverlayMutationJournal>,
 }
 
 impl Default for DocumentStore {
@@ -185,6 +191,8 @@ impl DocumentStore {
             revision: Arc::new(AtomicU64::new(0)),
             mutations: Arc::new(AtomicUsize::new(0)),
             edits: Arc::default(),
+            #[cfg(feature = "native")]
+            overlay_journal: Arc::default(),
         }
     }
 
@@ -195,6 +203,8 @@ impl DocumentStore {
         let doc = Document::new(uri.clone(), content, version, language_id);
         self.documents.insert(uri.clone(), doc);
         self.revision.fetch_add(1, Ordering::Release);
+        #[cfg(feature = "native")]
+        self.overlay_journal.record(uri.clone());
         uri_set.opened(uri);
     }
 
@@ -207,6 +217,8 @@ impl DocumentStore {
         let uri_set = self.uri_snapshots.mutation(uri, None);
         if self.documents.remove(uri).is_some() {
             self.revision.fetch_add(1, Ordering::Release);
+            #[cfg(feature = "native")]
+            self.overlay_journal.record(uri.clone());
             uri_set.closed(uri);
         }
     }
@@ -246,6 +258,9 @@ impl DocumentStore {
         document.revision = next_revision();
         self.documents.insert(new_uri.clone(), document);
         self.revision.fetch_add(1, Ordering::Release);
+        #[cfg(feature = "native")]
+        self.overlay_journal
+            .record_many([old_uri.clone(), new_uri.clone()]);
         uri_set.renamed(old_uri, new_uri);
         true
     }
@@ -263,6 +278,8 @@ impl DocumentStore {
         document.text_snapshot = OnceLock::new();
         document.structural_snapshot = OnceLock::new();
         self.revision.fetch_add(1, Ordering::Release);
+        #[cfg(feature = "native")]
+        self.overlay_journal.record(uri.clone());
         Some(document)
     }
 
@@ -332,6 +349,8 @@ impl DocumentStore {
             doc.apply_change(&change, version);
         }
         self.revision.fetch_add(1, Ordering::Release);
+        #[cfg(feature = "native")]
+        self.overlay_journal.record(uri.clone());
         true
     }
 

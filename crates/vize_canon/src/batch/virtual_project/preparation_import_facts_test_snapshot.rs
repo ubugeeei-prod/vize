@@ -299,7 +299,7 @@ fn walk_with_resolver(
         };
     project
         .register_reachable_dependencies_with_import_facts(
-            &Default::default(),
+            &vize_carton::FxHashMap::<PathBuf, &str>::default(),
             &["future-widget".into()],
             &mut resolve,
             facts,

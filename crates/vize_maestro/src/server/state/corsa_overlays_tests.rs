@@ -195,6 +195,49 @@ fn incremental_edits_are_reflected_in_the_overlay_set() {
     );
 }
 
+#[test]
+fn overlay_snapshot_reuses_resident_text_and_path_copies_only_the_edit() {
+    let state = ServerState::new();
+    open(&state, "A.vue", "<template>A1</template>");
+    open(&state, "B.vue", "<template>B1</template>");
+
+    let resident_a = state.documents.text_snapshot(&uri("A.vue")).unwrap();
+    let first = state.corsa_overlays();
+    let first_a = Arc::clone(
+        first
+            .iter()
+            .find(|(path, _)| *path == &self::path("A.vue"))
+            .unwrap()
+            .1,
+    );
+    let first_b = Arc::clone(
+        first
+            .iter()
+            .find(|(path, _)| *path == &self::path("B.vue"))
+            .unwrap()
+            .1,
+    );
+    assert!(Arc::ptr_eq(&resident_a, &first_a));
+
+    rewrite(&state, "A.vue", "<template>A2</template>", 2);
+    let second = state.corsa_overlays();
+    let second_a = second
+        .iter()
+        .find(|(path, _)| *path == &self::path("A.vue"))
+        .unwrap()
+        .1;
+    let second_b = second
+        .iter()
+        .find(|(path, _)| *path == &self::path("B.vue"))
+        .unwrap()
+        .1;
+
+    assert_eq!(first_a.as_str(), "<template>A1</template>");
+    assert_eq!(second_a.as_str(), "<template>A2</template>");
+    assert!(!Arc::ptr_eq(&first_a, second_a));
+    assert!(Arc::ptr_eq(&first_b, second_b));
+}
+
 /// A rename moves text to a new path; the overlay must follow and the old path
 /// must not linger.
 #[test]

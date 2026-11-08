@@ -5,6 +5,45 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashMap;
 
 use crate::batch::ModuleSpecifierFactsCache;
+use crate::corsa_bridge::vue_document::{
+    OverlayFingerprint, OverlaySources, PersistentOverlayMap, overlay_snapshot,
+};
+
+#[derive(Clone)]
+enum OverlayInputs {
+    Complete(std::sync::Arc<PersistentOverlayMap>),
+    Compact(std::sync::Arc<FxHashMap<PathBuf, u64>>),
+}
+
+impl OverlayInputs {
+    fn get(&self, path: &Path) -> Option<u64> {
+        match self {
+            Self::Complete(inputs) => inputs.content_identity(path),
+            Self::Compact(inputs) => inputs.get(path).copied(),
+        }
+    }
+
+    fn contains_key(&self, path: &Path) -> bool {
+        self.get(path).is_some()
+    }
+
+    #[cfg(test)]
+    fn len(&self) -> usize {
+        match self {
+            Self::Complete(inputs) => inputs.len(),
+            Self::Compact(inputs) => inputs.len(),
+        }
+    }
+
+    #[cfg(test)]
+    fn shares_storage_with(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Complete(left), Self::Complete(right)) => std::sync::Arc::ptr_eq(left, right),
+            (Self::Compact(left), Self::Compact(right)) => std::sync::Arc::ptr_eq(left, right),
+            _ => false,
+        }
+    }
+}
 
 /// The import closure and disk inputs a cached editor route depends on.
 #[derive(Clone)]
@@ -17,7 +56,7 @@ pub(crate) struct ContextFingerprint {
     overlays: u64,
     /// Requests capture every overlay; stored revisions retain only their
     /// registered sources and resolution probes, including failed probes.
-    overlay_inputs: FxHashMap<PathBuf, u64>,
+    overlay_inputs: OverlayInputs,
     generation_options: u64,
     /// Requested workspace sources are part of this revision.
     workspace: bool,
@@ -33,6 +72,7 @@ impl PartialEq for ContextFingerprint {
 }
 
 impl ContextFingerprint {
+    #[cfg(test)]
     pub(crate) fn capture(
         source_path: &Path,
         content: &str,
@@ -42,22 +82,69 @@ impl ContextFingerprint {
         project_root: Option<&Path>,
         tsconfig_path: Option<&Path>,
     ) -> Self {
+        Self::capture_with_overlay(
+            source_path,
+            content,
+            overlays,
+            None,
+            options,
+            virtual_ts_options,
+            project_root,
+            tsconfig_path,
+        )
+    }
+
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "the fingerprint binds every independent revision input at one boundary"
+    )]
+    pub(crate) fn capture_with_overlay(
+        source_path: &Path,
+        content: &str,
+        overlays: &dyn OverlaySources,
+        overlay_fingerprint: Option<&OverlayFingerprint>,
+        options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
+        virtual_ts_options: &crate::virtual_ts::VirtualTsOptions,
+        project_root: Option<&Path>,
+        tsconfig_path: Option<&Path>,
+    ) -> Self {
         use std::hash::{Hash, Hasher};
+        let host_path = vize_carton::path::canonicalize_non_verbatim(source_path);
         let mut host = vize_l0::micro_default_hasher!("canon.context.host");
         source_path.hash(&mut host);
-        content.hash(&mut host);
-        let host_path = vize_carton::path::canonicalize_non_verbatim(source_path);
-        let mut overlay_entries: Vec<_> = overlays.iter().collect();
-        overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
-        let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
+        match overlay_fingerprint
+            .and_then(|fingerprint| fingerprint.inputs.content_identity(&host_path))
+        {
+            Some(identity) => identity.hash(&mut host),
+            None => content.hash(&mut host),
+        }
         let mut dependencies = vize_l0::micro_default_hasher!("canon.context.dependencies");
         source_path.hash(&mut dependencies);
-        let mut overlay_inputs = FxHashMap::default();
-        for (path, text) in overlay_entries {
-            path.hash(&mut overlay_hash);
-            text.hash(&mut overlay_hash);
-            overlay_inputs.insert(path.clone(), overlay_content_identity(text));
-        }
+        let (overlays, overlay_inputs) = match overlay_fingerprint {
+            Some(fingerprint) => (
+                fingerprint.identity,
+                OverlayInputs::Complete(std::sync::Arc::clone(&fingerprint.inputs)),
+            ),
+            None => {
+                let mut overlay_entries = Vec::with_capacity(overlays.len());
+                overlays.visit(&mut |path, text| overlay_entries.push((path, text)));
+                overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
+                let mut overlay_hash = vize_l0::micro_default_hasher!("canon.context.overlays");
+                let mut overlay_inputs = FxHashMap::default();
+                for (path, text) in overlay_entries {
+                    path.hash(&mut overlay_hash);
+                    text.hash(&mut overlay_hash);
+                    overlay_inputs.insert(
+                        path.to_path_buf(),
+                        overlay_snapshot::overlay_content_identity(text),
+                    );
+                }
+                (
+                    overlay_hash.finish(),
+                    OverlayInputs::Compact(std::sync::Arc::new(overlay_inputs)),
+                )
+            }
+        };
         let generation_options =
             editor_namespace_identity(options, virtual_ts_options, project_root, tsconfig_path);
         Self {
@@ -65,7 +152,7 @@ impl ContextFingerprint {
             host_path,
             host_graph: None,
             dependencies: dependencies.finish(),
-            overlays: overlay_hash.finish(),
+            overlays,
             overlay_inputs,
             generation_options,
             workspace: false,
@@ -182,13 +269,11 @@ impl ContextFingerprint {
         if previous.stamps.is_empty() {
             return false;
         }
-        self.overlay_inputs
-            .keys()
-            .chain(previous.overlay_inputs.keys())
-            .all(|path| {
-                self.overlay_inputs.get(path) == previous.overlay_inputs.get(path)
-                    || !previous.reads_dependency_overlay(path)
-            })
+        previous.stamps.iter().all(|stamp| {
+            let path = stamp.path();
+            !previous.reads_dependency_overlay(path)
+                || self.overlay_inputs.get(path) == previous.overlay_inputs.get(path)
+        })
     }
 
     fn reads_dependency_overlay(&self, path: &Path) -> bool {
@@ -201,17 +286,15 @@ impl ContextFingerprint {
 
     /// Source text equality does not make a live root current when one of its
     /// imported open buffers changed. Keep that dependent root in the rebuild.
-    pub(super) fn dependency_overlays_current(&self, overlays: &FxHashMap<PathBuf, &str>) -> bool {
-        overlays
-            .keys()
-            .chain(self.overlay_inputs.keys())
-            .all(|path| {
-                !self.reads_dependency_overlay(path)
-                    || overlays
-                        .get(path)
-                        .map(|text| overlay_content_identity(text))
-                        == self.overlay_inputs.get(path).copied()
-            })
+    pub(super) fn dependency_overlays_current(&self, overlays: &dyn OverlaySources) -> bool {
+        self.stamps.iter().all(|stamp| {
+            let path = stamp.path();
+            !self.reads_dependency_overlay(path)
+                || overlays
+                    .get(path)
+                    .map(overlay_snapshot::overlay_content_identity)
+                    == self.overlay_inputs.get(path)
+        })
     }
 
     pub(super) fn matches_revision(&self, previous: &Self) -> bool {
@@ -239,16 +322,21 @@ impl ContextFingerprint {
     }
 
     pub(in super::super) fn compact_overlay_inputs(&mut self) {
-        // stamp_inner sorts and de-duplicates paths. Search only actual open
-        // overlays instead of allocating a second index of the whole graph.
-        let stamps = &self.stamps;
-        self.overlay_inputs.retain(|path, _| {
-            path == &self.host_path
-                || stamps
-                    .binary_search_by(|stamp| stamp.path().cmp(path))
-                    .is_ok()
-        });
-        self.overlay_inputs.shrink_to_fit();
+        // A revision snapshot is shared by every host. Materialize only this
+        // graph's read set instead of cloning and filtering the complete map.
+        let mut compact = FxHashMap::default();
+        if let Some(identity) = self.overlay_inputs.get(&self.host_path) {
+            compact.insert(self.host_path.clone(), identity);
+        }
+        for stamp in &self.stamps {
+            let path = stamp.path();
+            if path != self.host_path
+                && let Some(identity) = self.overlay_inputs.get(path)
+            {
+                compact.insert(path.to_path_buf(), identity);
+            }
+        }
+        self.overlay_inputs = OverlayInputs::Compact(std::sync::Arc::new(compact));
     }
 
     /// Disk inputs do not move with the host's buffer; a revision keeps them.
@@ -295,13 +383,6 @@ impl ContextFingerprint {
     }
 }
 
-fn overlay_content_identity(text: &str) -> u64 {
-    use std::hash::{Hash, Hasher};
-    let mut input = vize_l0::micro_default_hasher!("canon.context.overlay_input");
-    text.hash(&mut input);
-    input.finish()
-}
-
 #[cfg(test)]
 impl super::SessionCache {
     pub(in super::super) fn cached_input_stamps(
@@ -313,5 +394,63 @@ impl super::SessionCache {
             .filter(|(key, _)| key.source_path == source_path)
             .max_by_key(|(_, cached)| cached.last_used)
             .map(|(_, cached)| cached.fingerprint.input_stamps())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use super::ContextFingerprint;
+    use crate::corsa_bridge::vue_document::CorsaOverlaySnapshot;
+
+    #[test]
+    fn revision_snapshot_shares_complete_identities_then_compacts_per_host() {
+        let host = std::path::PathBuf::from("/workspace/Host.vue");
+        let dependency = std::path::PathBuf::from("/workspace/Dependency.vue");
+        let snapshot = CorsaOverlaySnapshot::new(
+            7,
+            vec![
+                (host.clone(), Arc::new("<template />".to_owned())),
+                (
+                    dependency.clone(),
+                    Arc::new("<template>{{ value }}</template>".to_owned()),
+                ),
+            ],
+        );
+        let overlays: vize_carton::FxHashMap<std::path::PathBuf, &str> = snapshot
+            .iter()
+            .map(|(path, content)| (path.clone(), content.as_str()))
+            .collect();
+        let capture = || {
+            ContextFingerprint::capture_with_overlay(
+                &host,
+                "<template />",
+                &overlays,
+                Some(snapshot.fingerprint()),
+                Default::default(),
+                &Default::default(),
+                None,
+                None,
+            )
+        };
+
+        let first = capture();
+        let mut second = capture();
+        assert_eq!(first.overlay_identity(), 7);
+        assert!(
+            first
+                .overlay_inputs
+                .shares_storage_with(&second.overlay_inputs)
+        );
+
+        second.compact_overlay_inputs();
+        assert_eq!(second.overlay_inputs.len(), 1);
+        assert!(second.overlay_inputs.contains_key(&host));
+        assert!(
+            !first
+                .overlay_inputs
+                .shares_storage_with(&second.overlay_inputs)
+        );
     }
 }

@@ -169,10 +169,6 @@ impl DiagnosticService {
         // one (#3442). The snapshot is owned and lock-free, so holding it
         // across the bridge `.await` below is safe (#3315).
         let cached_overlays = state.corsa_overlays();
-        let overlays = cached_overlays
-            .iter()
-            .map(|(path, text)| (path.clone(), &**text))
-            .collect::<Vec<(std::path::PathBuf, &str)>>();
         let document_options = CorsaVueVirtualDocumentOptions {
             options_api,
             legacy_vue2,
@@ -219,7 +215,7 @@ impl DiagnosticService {
                         variant.virtual_result,
                         VariantProjectContext {
                             options: document_options,
-                            overlays: &overlays,
+                            overlays: &cached_overlays,
                             virtual_ts_options: &virtual_ts_options,
                         },
                         documents.len(),
@@ -236,12 +232,13 @@ impl DiagnosticService {
                 return Ok(vec![]);
             };
             let opened = bridge
-                .open_vue_virtual_document_with_borrowed_overlays_and_options(
+                .open_vue_virtual_workspace_document_with_overlay_snapshot(
                     &source_path,
                     &content,
                     document_options,
-                    &overlays,
+                    &cached_overlays,
                     &virtual_ts_options,
+                    &[],
                 )
                 .await
                 .map_err(|error| classify(&bridge, error))?;
@@ -295,7 +292,7 @@ impl DiagnosticService {
                         inline_virtual,
                         VariantProjectContext {
                             options: document_options,
-                            overlays: &overlays,
+                            overlays: &cached_overlays,
                             virtual_ts_options: &virtual_ts_options,
                         },
                         documents.len(),
