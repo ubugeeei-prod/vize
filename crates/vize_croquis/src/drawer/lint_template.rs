@@ -60,6 +60,7 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
 
 impl Drawer {
     /// Draw lint facts from L1/L2 without a second template parse.
+    #[inline]
     pub fn draw_lint_template(&mut self, template: LintTemplate<'_, '_>) -> &mut Self {
         let root = CompatibilityRoot::new(template).build();
         self.draw_template(&root);
