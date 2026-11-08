@@ -189,7 +189,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
       "davinci-dom-divergence-promotion",
     ],
     permissions: { contents: "read", actions: "read", issues: "write" },
-    "runs-on": "ubuntu-latest",
+    "runs-on": "blacksmith-32vcpu-ubuntu-2404",
     "timeout-minutes": 5,
     steps: [
       {
