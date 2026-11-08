@@ -179,9 +179,9 @@ body[data-theme="dark"] {
   --editor-hover-link: #a5c8e3;
 }
 
-/* Monaco hover widgets use inline dimensions and colors; our theme must win. */
 /* vize-disable css/no-important */
 .monaco-hover {
+  /* Monaco hover widgets use inline dimensions and colors; our theme must win. */
   width: min(440px, calc(100vw - 32px)) !important;
   max-width: min(440px, calc(100vw - 32px)) !important;
   border: 1px solid var(--editor-hover-border) !important;
