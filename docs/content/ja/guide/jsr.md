@@ -7,7 +7,9 @@ description: Node・Deno・Bun で公開済みの JSR パッケージを使い�
 
 # JSR から JavaScript API を使う
 
-[`@vizejs/vize`](https://jsr.io/@vizejs/vize) は Vize の JavaScript API を提供します。各エントリーポイントは、同じ Vize バージョンの npm パッケージを再エクスポートします。コンパイラが使うネイティブバイナリは npm から取得します。
+Vize の npm リリースに含まれる JavaScript パッケージは、すべて同じバージョンで JSR にも公開されます。JSR パッケージは npm 成果物を再エクスポートする型付きのソース facade なので、どちらの registry でも同じ実装が動きます。コンパイラが使うプラットフォーム別ネイティブバイナリは npm から取得します。
+
+[`@vizejs/vize`](https://jsr.io/@vizejs/vize) は、よく使う API をまとめた facade です。
 
 | import                | API                                     | npm パッケージ         |
 | --------------------- | --------------------------------------- | ---------------------- |
@@ -18,9 +20,32 @@ description: Node・Deno・Bun で公開済みの JSR パッケージを使い�
 | `@vizejs/vize/oxlint` | Oxlint プラグイン・preset・Vite+ 設定   | `oxlint-plugin-vize`   |
 | `@vizejs/vize/vite`   | Vite プラグインとオプション             | `@vizejs/vite-plugin`  |
 
+まとめた facade を使わず、次のパッケージを直接導入することもできます。
+
+| JSR パッケージ                 | npm パッケージ                  |
+| ------------------------------ | ------------------------------- |
+| `@vizejs/vize`                 | `vize`                          |
+| `@vizejs/vite-plugin`          | `@vizejs/vite-plugin`           |
+| `@vizejs/oxlint-plugin-vize`   | `oxlint-plugin-vize`            |
+| `@vizejs/unplugin`             | `@vizejs/unplugin`              |
+| `@vizejs/fresco`               | `@vizejs/fresco`                |
+| `@vizejs/musea-mcp-server`     | `@vizejs/musea-mcp-server`      |
+| `@vizejs/vite-plugin-musea`    | `@vizejs/vite-plugin-musea`     |
+| `@vizejs/rspack-plugin`        | `@vizejs/rspack-plugin`         |
+| `@vizejs/musea-nuxt`           | `@vizejs/musea-nuxt`            |
+| `@vizejs/nuxt-lint-config`     | `@vizejs/nuxt-lint-config`      |
+| `@vizejs/nuxt`                 | `@vizejs/nuxt`                  |
+| `@vizejs/marquette`            | `@vizejs/marquette`             |
+| `@vizejs/composable`           | `@vizejs/composable`            |
+| `@vizejs/router`               | `@vizejs/router`                |
+| `@vizejs/data`                 | `@vizejs/data`                  |
+| `@vizejs/ui`                   | `@vizejs/ui`                    |
+| `@vizejs/plugin-sdk`           | `@vizejs/plugin-sdk`            |
+| `@vizejs/babel-plugin`         | `@vizejs/babel-plugin`          |
+
 ## Node.js と Bun
 
-Node.js 22 または 24 以降のプロジェクトで、JSR パッケージと Vite 連携に必要な peer dependency を導入します。
+Node.js 22 または 24 以降のプロジェクトで、まとめた JSR facade と Vite 連携に必要な peer dependency を導入します。
 
 ```bash
 npm install vite@8 vue@3
@@ -56,7 +81,7 @@ void oxlintPlugin;
 void recommendedRules;
 ```
 
-導入された facade は、依存する Vize の npm パッケージを同じリリースへ厳密に固定します。生成された package manifest・lockfile・`.npmrc` はコミットしてください。Bun と npm は、その設定を通じて JSR の npm 互換 registry を利用します。Vue アプリの設定は [Vite 連携](./vite-plugin.md)と[導入ガイド](../getting-started.md)を参照してください。
+導入した各 JSR パッケージは、依存する Vize の npm パッケージを同じリリースへ厳密に固定します。生成された package manifest・lockfile・`.npmrc` はコミットしてください。Bun と npm は、その設定を通じて JSR の npm 互換 registry を利用します。Vue アプリの設定は [Vite 連携](./vite-plugin.md)と[導入ガイド](../getting-started.md)を参照してください。
 
 ## Deno 2.9.7
 

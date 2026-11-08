@@ -1,8 +1,9 @@
 # Vize through JSR
 
-`@vizejs/vize` exposes Vize's JavaScript APIs through JSR. Every entry point
-re-exports the npm package of the same version, so JSR and npm users run the
-same code and the same native binaries.
+Every JavaScript package in a Vize npm release is published to JSR at the same
+exact version. `@vizejs/vize` is the combined facade for the most common APIs;
+the individual builders, frameworks and libraries are also available directly
+under their `@vizejs` names.
 
 | Import                | API                                                  | npm package            |
 | --------------------- | ---------------------------------------------------- | ---------------------- |

@@ -3,11 +3,7 @@ on:
   pull_request:
     paths:
       - "jsr/**"
-      - "npm/builder/babel/package.json"
-      - "npm/builder/vite/package.json"
-      - "npm/cli/package.json"
-      - "npm/linter/oxlint/package.json"
-      - "npm/native/package.json"
+      - "npm/**/package.json"
       - "tools/support/release/jsr/**"
       - "tests/tooling/jsr-package.test.ts"
       - "tests/tooling/release-jsr-workflow.test.ts"
@@ -52,16 +48,15 @@ jobs:
         run: echo "version=$(node tools/support/release/jsr/package.ts latest-public)" >> "$GITHUB_OUTPUT"
       - name: Generate a PR preview from that public release
         env: { JSR_PREVIEW_VERSION: "${{ steps.preview.outputs.version }}" }
-        run: node tools/support/release/jsr/package.ts prepare-preview "$RUNNER_TEMP/jsr-package" "$JSR_PREVIEW_VERSION"
-      - name: Check the publication graph and public types
-        working-directory: ${{ runner.temp }}/jsr-package
-        run: deno publish --dry-run --config jsr.json
+        run: node tools/support/release/jsr/package.ts prepare-preview-all "$RUNNER_TEMP/jsr-packages" "$JSR_PREVIEW_VERSION"
+      - name: Check every publication graph and public type surface
+        run: node tools/support/release/jsr/verify-staged.ts dry-run "$RUNNER_TEMP/jsr-packages"
       - name: Import the staged entry points under Deno
         env: { DENO_DIR: "${{ runner.temp }}/staged-jsr-deno" }
         run: |
           cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/consumer.ts"
           cp tools/support/release/jsr/consumer-deno.json "$RUNNER_TEMP/consumer-deno.json"
-          deno run --config "$RUNNER_TEMP/consumer-deno.json" --lock "$RUNNER_TEMP/staged-jsr-deno.lock" --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-package/"
+          deno run --config "$RUNNER_TEMP/consumer-deno.json" --lock "$RUNNER_TEMP/staged-jsr-deno.lock" --allow-all "$RUNNER_TEMP/consumer.ts" "file://$RUNNER_TEMP/jsr-packages/vize/"
       - name: Install the public preview in a fresh Bun project and execute the tool APIs
         env: { JSR_PREVIEW_VERSION: "${{ steps.preview.outputs.version }}" }
         run: |
