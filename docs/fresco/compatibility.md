@@ -48,10 +48,10 @@ means the surface has no equivalent.
 | ------------- | ---------------- | ---------- | ----------- | ----------- | --------------------------------------------------------------------------------------- |
 | `<Box>`       | `BoxRenderable`  | `Box`      | `Box`       | Implemented | Taffy flexbox, `borderStyle`, colors, padding/margin/gap, absolute positioning.         |
 | `<Text>`      | `TextRenderable` | `Text`     | `Text`      | Implemented | Styling plus `wrap`/`truncate`/`truncate-start`/`truncate-middle`/`truncate-end` modes. |
-| `<Newline>`   | —                | `Newline`  | `Newline`   | Implemented |                                                                                         |
-| `<Spacer>`    | —                | —          | `Spacer`    | Implemented |                                                                                         |
+| `<Newline>`   | —                | `Newline`  | `Newline`   | Implemented | Canonical source is a typed `.vue` SFC.                                                 |
+| `<Spacer>`    | —                | —          | `Spacer`    | Implemented | Canonical source is a typed `.vue` SFC.                                                 |
 | `<Static>`    | —                | —          | `Static`    | Implemented | Append-only output above the live area; also used by the non-interactive/CI path.       |
-| `<Transform>` | —                | —          | `Transform` | Implemented | `(children, index) => string`; supports `accessibilityLabel` in screen-reader output.   |
+| `<Transform>` | —                | —          | `Transform` | Implemented | Canonical typed SFC; transforms `(children, index)` and supports `accessibilityLabel`.  |
 
 ### Interaction primitives
 

@@ -9,10 +9,13 @@
 import { h } from "vue";
 
 import { Box, type BoxProps } from "./Box.js";
+import Newline from "./FrescoNewline.vue";
 import ScrollBox from "./ScrollBox.vue";
+import Spacer from "./FrescoSpacer.vue";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
+import Transform from "./FrescoTransform.vue";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -133,8 +136,21 @@ export function componentsRenderWithTypedProps() {
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
+    h(Spacer),
+    h(Newline, { count: 2 }),
+    h(Transform, { transform: (line: string, index: number) => `${index}:${line}` }),
   ];
 }
+
+export function textUtilityComponentsRejectMistypedProps() {
+  return [
+    // @ts-expect-error - count is numeric.
+    h(Newline, { count: "2" }),
+  ];
+}
+
+// @ts-expect-error - transform is required.
+export const transformRejectsMissingCallback: InstanceType<typeof Transform>["$props"] = {};
 
 export function boxRejectsMistypedRenderProps() {
   // @ts-expect-error - flexGrow is a number, not a string
