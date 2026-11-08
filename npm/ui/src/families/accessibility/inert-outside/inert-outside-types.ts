@@ -8,7 +8,7 @@ export interface InertOutsideOptions {
   /** Primary allowed root. It may be `null` during SSR and before mount. */
   readonly root: MaybeRefOrGetter<Element | null | undefined>;
 
-  /** Additional portalled or exceptional roots that remain available. */
+  /** Additional portalled or exceptional roots that remain available. @default undefined */
   readonly branches?: MaybeRefOrGetter<readonly Element[] | undefined>;
 
   /** Whether an activated controller currently isolates outside content. @default true */

@@ -83,19 +83,19 @@ export interface PressOptions {
    */
   readonly allowTextSelectionOnPress?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Called after pressed state becomes active. */
+  /** Called after pressed state becomes active. @default undefined */
   readonly onPressStart?: (event: PressEvent) => void;
 
-  /** Called after pressed state ends or pauses at the pointer boundary. */
+  /** Called after pressed state ends or pauses at the pointer boundary. @default undefined */
   readonly onPressEnd?: (event: PressEvent) => void;
 
-  /** Called for every distinct pressed-state transition. */
+  /** Called for every distinct pressed-state transition. @default undefined */
   readonly onPressChange?: (isPressed: boolean) => void;
 
-  /** Called when keyboard or pointing hardware is released over the host. */
+  /** Called when keyboard or pointing hardware is released over the host. @default undefined */
   readonly onPressUp?: (event: PressEvent) => void;
 
-  /** Called exactly once for a completed activation. */
+  /** Called exactly once for a completed activation. @default undefined */
   readonly onPress?: (event: PressEvent) => void;
 }
 

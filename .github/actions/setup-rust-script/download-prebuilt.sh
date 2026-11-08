@@ -4,14 +4,24 @@ set -euo pipefail
 # Contain the staging-file trap: this helper is sourced by the install action,
 # whose existing trap still owns the complete runner temporary directory.
 download_rust_script() (
+  readonly download_defer_status=75
   download_archive="${1:?expected archive}"
   if [ "$#" -ne 1 ] || [ -d "$download_archive" ]; then
     echo "::error::expected one rust-script archive file path" >&2
     exit 1
   fi
   download_primary="https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+  download_api="https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817"
   download_partial="$(mktemp "${download_archive}.partial.XXXXXX")"
   trap 'rm -f -- "$download_partial"' EXIT
+  download_via_api() {
+    : > "$download_partial"
+    curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+      --connect-timeout 10 --max-time 30 \
+      --retry 5 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
+      --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
+      --output "$download_partial" "$download_api"
+  }
   download_attempt=1
   while :; do
     : > "$download_partial"
@@ -38,15 +48,21 @@ download_rust_script() (
           sleep 1
           continue
         fi
-        exit "$download_status"
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
+        break
         ;;
       22:500|22:502|22:503|22:504)
-        : > "$download_partial"
-        curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
-          --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
-          --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
-          --output "$download_partial" \
-          "https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817" || exit "$?"
+        download_via_api || {
+          download_api_status=$?
+          printf 'rust-script API download failed: curl=%s URL=%s; deferring to source install\n' \
+            "$download_api_status" "$download_api" >&2
+          exit "$download_defer_status"
+        }
         break
         ;;
       *)

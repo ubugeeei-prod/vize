@@ -74,7 +74,7 @@ export interface SelectCollectionOptions {
   /** Idle time before a typeahead query resets. */
   readonly typeaheadTimeout: MaybeRefOrGetter<number>;
 
-  /** Options traversed by PageUp and PageDown. */
+  /** Options traversed by PageUp and PageDown. @default 10 */
   readonly pageSize?: MaybeRefOrGetter<number>;
 }
 

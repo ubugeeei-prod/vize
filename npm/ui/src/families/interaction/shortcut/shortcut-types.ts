@@ -130,7 +130,7 @@ export interface ShortcutBindingOptions {
    */
   readonly allowInEditable?: boolean;
 
-  /** Help description surfaced through binding and conflict metadata. */
+  /** Help description surfaced through binding and conflict metadata. @default undefined */
   readonly description?: string;
 }
 

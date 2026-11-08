@@ -17,7 +17,7 @@ import {
 } from "./support/lint-preset-source-successors.ts";
 import {
   currentPresetCases,
-  inverseLatestDefaultExpansion,
+  inversePatinaCurrentSource,
 } from "./support/lint-preset-latest-default-expansion.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -43,7 +43,7 @@ const read = createSourceReader({
   reviewedNextest,
   currentSources,
   presetSuccessors,
-  latestSourceInverse: inverseLatestDefaultExpansion,
+  latestSourceInverse: inversePatinaCurrentSource,
 });
 const bytes = read(`${directory}/successor.json`);
 assert.equal(sha(bytes), "30d630da3f38e9eb667e2097bda2b65d8e0e3b82bb5f62c61e4aead8a4cdc295");
@@ -133,7 +133,7 @@ function inverseCurrent(row, body) {
 
 void test("current source successors preserve whole histories and reject missing, partial, duplicate and unrelated bytes", () => {
   for (const row of currentSources.sources) {
-    const current = inverseLatestDefaultExpansion(
+    const current = inversePatinaCurrentSource(
       row.path,
       fs.readFileSync(path.join(root, row.path)),
     );
@@ -174,7 +174,7 @@ void test("current source successors preserve whole histories and reject missing
 void test("the latest general-default expansion has one exact finite inverse", () => {
   for (const row of currentSources.sources) {
     const live = fs.readFileSync(path.join(root, row.path));
-    const predecessor = inverseLatestDefaultExpansion(row.path, live);
+    const predecessor = inversePatinaCurrentSource(row.path, live);
     identity(predecessor, row.after);
     if (predecessor.equals(live)) continue;
     for (const changed of [

@@ -102,6 +102,11 @@ test("source roles, isolated fresh builds, and separate measurement artifacts st
   assert.ok(
     steps.every((step) => !/actions\/cache@|setup-rust-sticky-cache/.test(step.uses ?? "")),
   );
+  const linker = steps.find(
+    (step) => step.uses === "./driver/.github/actions/setup-wild-http-recovery",
+  );
+  assert.deepEqual(linker?.with, { "wild-version": "0.9.0" });
+  assert.ok(steps.indexOf(linker!) > steps.findIndex((step) => step.uses?.startsWith("dtolnay/")));
   const observe = steps.find((step) => step.name?.startsWith("Observe alternating latency"));
   assert.match(observe?.run ?? "", /--base-source "\$BASE_SHA" --head-source "\$HEAD_SHA"/);
   assert.match(observe?.run ?? "", /--runs 5 --warmups 1/);

@@ -121,6 +121,15 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     /cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports/,
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
+  const patinaDocs = parallel.steps?.find((step) => step.name === "Document Patina public APIs");
+  assert.equal(
+    patinaDocs?.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
+  );
+  assert.match(
+    patinaDocs?.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
+  );
   assert.doesNotMatch(validation, /nextest archive/);
   assert.equal(Object.hasOwn(products.jobs, "merge-rust-source"), false);
   for (const [report, names] of [
@@ -281,6 +290,16 @@ function restoreRustCaseReporting(job: RustJob, contracts: number) {
   job.steps.splice(named("Record native navigation case").index, 1);
   for (const name of ["Require Rust source test cases", "Upload Rust source test cases"])
     job.steps.splice(named(name).index, 1);
+  const patinaDocs = named("Document Patina public APIs");
+  assert.equal(
+    patinaDocs.step.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
+  );
+  assert.match(
+    patinaDocs.step.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
+  );
+  job.steps.splice(patinaDocs.index, 1);
 }
 
 function requireSplitRustRecipes(
@@ -314,6 +333,11 @@ function requireSplitRustRecipes(
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id]);
     if (id === "pr-rust-build") {
+      const wild = job.steps.find(
+        (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
+      );
+      assert.deepEqual(wild?.with, { "wild-version": "0.9.0" });
+      wild!.uses = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
       restoreRustCaseReporting(job, contracts);
       job.steps[contracts].run =
         "node --test --test-concurrency=1 tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-consumer-migration-surfaces.test.mjs tests/tooling/docs-reviewed-translations.test.ts";

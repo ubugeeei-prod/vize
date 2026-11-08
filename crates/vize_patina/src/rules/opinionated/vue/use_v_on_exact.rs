@@ -37,6 +37,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `opinionated/vue/use-v-on-exact` lint rule.
 pub struct UseVOnExact;
 
 /// System key modifiers that create overlapping handlers

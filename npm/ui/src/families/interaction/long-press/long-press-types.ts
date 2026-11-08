@@ -47,12 +47,16 @@ export interface LongPressOptions {
    * Accessible explanation of the long action, for example
    * "Long press to open actions". Used as `aria-description` unless
    * `accessibilityDescriptionId` is supplied.
+   *
+   * @default undefined
    */
   readonly accessibilityDescription?: MaybeRefOrGetter<string | undefined>;
 
   /**
    * ID of consumer-rendered descriptive content. When supplied, the host uses
    * `aria-describedby` and the inline accessibility description is omitted.
+   *
+   * @default undefined
    */
   readonly accessibilityDescriptionId?: MaybeRefOrGetter<string | undefined>;
 
@@ -70,18 +74,20 @@ export interface LongPressOptions {
    */
   readonly preventFocusOnPress?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Called after a qualifying primary pointer starts. */
+  /** Called after a qualifying primary pointer starts. @default undefined */
   readonly onLongPressStart?: (event: LongPressEvent) => void;
 
-  /** Called when an attempt ends, whether before or after the threshold. */
+  /** Called when an attempt ends, whether before or after the threshold. @default undefined */
   readonly onLongPressEnd?: (event: LongPressEvent) => void;
 
-  /** Called exactly once when the configured threshold is reached. */
+  /** Called exactly once when the configured threshold is reached. @default undefined */
   readonly onLongPress?: (event: LongPressEvent) => void;
 
   /**
    * Called for an ordinary short, keyboard, or virtual activation.
    * Use this as the keyboard-accessible alternative to a long-only action.
+   *
+   * @default undefined
    */
   readonly onPress?: (event: PressEvent) => void;
 }

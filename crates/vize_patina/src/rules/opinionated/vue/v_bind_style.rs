@@ -37,12 +37,15 @@ static META: RuleMeta = RuleMeta {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum VBindStyleOption {
     #[default]
+    /// Require `:name` shorthand syntax.
     Shorthand,
+    /// Require explicit `v-bind:name` syntax.
     Longform,
 }
 
 /// Enforce v-bind directive style
 pub struct VBindStyle {
+    /// Directive spelling accepted by the rule.
     pub style: VBindStyleOption,
 }
 
