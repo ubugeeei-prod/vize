@@ -6,6 +6,12 @@ use dependency_ownership::{
     OWNER_MANIFESTS, OwnershipQualificationGraph, update as dependency_ownership_update,
     verify as verify_dependency_ownership_update,
 };
+mod strict_checker;
+use strict_checker::{
+    CHECKER_DECLARATION, MANIFEST as STRICT_CHECKER_MANIFEST, STRICT_DECLARATION,
+    StrictCheckerQualificationGraph, update as strict_checker_update,
+    verify as verify_strict_checker_update,
+};
 mod fresco;
 use fresco::{
     FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
@@ -465,8 +471,31 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         workspace: &workspace,
         owners: &owners,
     };
-    verify_dependency_ownership_update(&fresco_update(), &predecessor_bytes, &update, &graph)?;
-    Ok(Some(update))
+    if verify_dependency_ownership_update(&fresco_update(), &predecessor_bytes, &update, &graph)
+        .is_ok()
+    {
+        return Ok(Some(update));
+    }
+
+    let predecessor_bytes = fs::read(support::corpus().join(dependency_ownership::UPDATE))
+        .map_err(|_| "complete strict checker qualification predecessor")?;
+    let successor = strict_checker_update();
+    let manifest = fs::read(support::repository().join(STRICT_CHECKER_MANIFEST))
+        .map_err(|_| "complete strict checker manifest")?;
+    let checker_declaration = fs::read(support::repository().join(CHECKER_DECLARATION))
+        .map_err(|_| "complete checker declaration")?;
+    let strict_declaration = fs::read(support::repository().join(STRICT_DECLARATION))
+        .map_err(|_| "complete strict checker declaration")?;
+    let graph = StrictCheckerQualificationGraph {
+        lock,
+        package,
+        workspace: &workspace,
+        manifest: &manifest,
+        checker_declaration: &checker_declaration,
+        strict_declaration: &strict_declaration,
+    };
+    verify_strict_checker_update(&update, &predecessor_bytes, &successor, &graph)?;
+    Ok(Some(successor))
 }
 
 #[cfg(test)]
