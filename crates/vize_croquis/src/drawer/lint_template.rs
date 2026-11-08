@@ -1,0 +1,382 @@
+//! Lint-template projection from the completed Davinci L1/L2 artifact.
+//!
+//! The existing template drawer still owns the compatibility semantics. This
+//! module supplies its short-lived node view without running Armature again:
+//! structure and authored coordinates come from L1, while normalized element
+//! identity and retained JavaScript expressions come from L2.
+
+use oxc_allocator::CloneIn;
+use vize_carton::FxHashMap;
+use vize_l0::{Allocator, Box, Span, Vec};
+use vize_l1::markup::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::markup::{
+    AttrValue, Attribute, Element, ElementClose, SurfaceChild, SurfaceTree, Token,
+};
+use vize_l1_to_l2::Lowered;
+use vize_l2::expr::ExprRef;
+use vize_relief::{
+    AttributeNode, CommentNode, ConstantType, DirectiveNode, ElementNode, ElementType,
+    ExpressionNode, InterpolationNode, PropNode, RetainedJsAst, RetainedJsAstKind, RootNode,
+    SimpleExpressionNode, SourceLocation, TemplateChildNode, TextNode,
+};
+
+use super::{Drawer, helpers::is_component_tag};
+
+mod index;
+use index::{ElementIdentity, collect_region};
+
+#[cfg(test)]
+mod tests;
+
+/// One completed template artifact for lint semantic analysis.
+#[derive(Clone, Copy)]
+pub struct LintTemplate<'t, 'a> {
+    surface: &'t SurfaceTree<'a>,
+    lowered: &'t Lowered<'a>,
+}
+
+impl<'t, 'a> LintTemplate<'t, 'a> {
+    /// Pair the lossless L1 surface with the L2 lowering produced from it.
+    #[must_use]
+    pub const fn new(surface: &'t SurfaceTree<'a>, lowered: &'t Lowered<'a>) -> Self {
+        Self { surface, lowered }
+    }
+
+    /// Original template source shared by both stages.
+    #[must_use]
+    pub const fn source(self) -> &'a str {
+        self.surface.source
+    }
+}
+
+impl Drawer {
+    /// Draw lint facts from L1/L2 without a second template parse.
+    pub fn draw_lint_template(&mut self, template: LintTemplate<'_, '_>) -> &mut Self {
+        let root = CompatibilityRoot::new(template).build();
+        self.draw_template(&root);
+        self
+    }
+}
+
+struct CompatibilityRoot<'t, 'a> {
+    allocator: &'a Allocator,
+    surface: &'t SurfaceTree<'a>,
+    expressions: FxHashMap<(u32, u32), ExprRef<'a>>,
+    elements: FxHashMap<u32, ElementIdentity<'a>>,
+}
+
+impl<'t, 'a> CompatibilityRoot<'t, 'a> {
+    fn new(template: LintTemplate<'t, 'a>) -> Self {
+        let mut expressions = std::vec::Vec::new();
+        let mut elements = std::vec::Vec::new();
+        collect_region(&template.lowered.root, &mut expressions, &mut elements);
+        let mut expression_index = FxHashMap::default();
+        expression_index.reserve(expressions.len());
+        for expression in expressions {
+            let span = expression.span();
+            expression_index
+                .entry((span.start, span.end))
+                .or_insert(expression);
+        }
+        let mut element_index = FxHashMap::default();
+        element_index.reserve(elements.len());
+        for identity in elements {
+            element_index.entry(identity.start).or_insert(identity);
+        }
+        Self {
+            allocator: template.lowered.allocator,
+            surface: template.surface,
+            expressions: expression_index,
+            elements: element_index,
+        }
+    }
+
+    fn build(&self) -> RootNode<'a> {
+        let mut root = RootNode::new(self.allocator, self.surface.source);
+        self.push_children(&mut root.children, &self.surface.children);
+        root
+    }
+
+    fn push_children(
+        &self,
+        output: &mut Vec<'a, TemplateChildNode<'a>>,
+        children: &[SurfaceChild<'a>],
+    ) {
+        for child in children {
+            let node = match child {
+                SurfaceChild::Element(element) => {
+                    TemplateChildNode::Element(Box::new_in(self.element(element), &self.allocator))
+                }
+                SurfaceChild::Text(token) => TemplateChildNode::Text(Box::new_in(
+                    TextNode::new(token.text, self.token_loc(token)),
+                    &self.allocator,
+                )),
+                SurfaceChild::Comment(token) => TemplateChildNode::Comment(Box::new_in(
+                    CommentNode::new(comment_body(token.text), self.token_loc(token)),
+                    &self.allocator,
+                )),
+                SurfaceChild::Interpolation(interpolation) => {
+                    let raw = interpolation.content.text;
+                    let trimmed = raw.trim();
+                    let leading = raw.len().saturating_sub(raw.trim_start().len()) as u32;
+                    let start = self.offset(interpolation.content.text) + leading;
+                    let span = Span::new(start, start + trimmed.len() as u32);
+                    let expression = self.expression(trimmed, span, false);
+                    let loc = SourceLocation {
+                        span: Span::new(
+                            self.offset(interpolation.open.text),
+                            self.offset(interpolation.close.text)
+                                + interpolation.close.text.len() as u32,
+                        ),
+                    };
+                    TemplateChildNode::Interpolation(Box::new_in(
+                        InterpolationNode::new(expression, loc, interpolation.is_raw_html()),
+                        &self.allocator,
+                    ))
+                }
+                SurfaceChild::Cdata(_)
+                | SurfaceChild::ProcessingInstruction(_)
+                | SurfaceChild::Unexpected(_) => continue,
+            };
+            output.push(node);
+        }
+    }
+
+    fn element(&self, surface: &Element<'a>) -> ElementNode<'a> {
+        let start = self.offset(surface.open.lt_name.text);
+        let end = self.offset(surface.open.gt.text) + surface.open.gt.text.len() as u32;
+        let authored_tag = surface.tag();
+        let identity = self.elements.get(&start).copied();
+        let tag = identity.map_or(authored_tag, |identity| identity.name);
+        let mut element = ElementNode::new(
+            self.allocator,
+            tag,
+            SourceLocation {
+                span: Span::new(start, end),
+            },
+        );
+        if let Some(identity) = identity {
+            element.tag_type = identity.kind;
+            element.ns = identity.namespace;
+        } else {
+            element.tag_type = element_type(authored_tag);
+        }
+        element.is_self_closing =
+            surface.open.slash.is_some() || matches!(surface.close, ElementClose::NotExpected);
+
+        let frozen = surface.open.is_verbatim();
+        for attribute in &surface.open.attrs {
+            if let Some(prop) = self.prop(attribute, frozen) {
+                element.props.push(prop);
+            }
+        }
+        self.push_children(&mut element.children, &surface.children);
+        element
+    }
+
+    fn prop(&self, attribute: &Attribute<'a>, frozen: bool) -> Option<PropNode<'a>> {
+        let name_start = self.offset(attribute.name.text);
+        let decomposition = VueDirectives
+            .decompose(attribute.name.text, name_start)
+            .ok()
+            .flatten();
+        if frozen {
+            if decomposition.is_some_and(|name| {
+                name.prefix == DirectivePrefix::Full
+                    && name.name.slice(self.surface.source) == "pre"
+            }) {
+                return None;
+            }
+            return Some(PropNode::Attribute(Box::new_in(
+                self.attribute(attribute),
+                &self.allocator,
+            )));
+        }
+        match decomposition {
+            Some(name) => self
+                .directive(attribute, name)
+                .map(|directive| PropNode::Directive(Box::new_in(directive, &self.allocator))),
+            None => Some(PropNode::Attribute(Box::new_in(
+                self.attribute(attribute),
+                &self.allocator,
+            ))),
+        }
+    }
+
+    fn attribute(&self, attribute: &Attribute<'a>) -> AttributeNode<'a> {
+        let span = self.attribute_span(attribute);
+        let mut node = AttributeNode::new(attribute.name.text, SourceLocation { span });
+        node.name_loc = SourceLocation {
+            span: self.token_span(&attribute.name),
+        };
+        node.value = attribute.value.as_ref().map(|value| {
+            let span = self.token_span(&value.content);
+            TextNode::new(self.decoded_value(value), SourceLocation { span })
+        });
+        node
+    }
+
+    fn directive(
+        &self,
+        attribute: &Attribute<'a>,
+        decomposition: vize_l1::markup::directive::DirectiveName,
+    ) -> Option<DirectiveNode<'a>> {
+        let name = match decomposition.prefix {
+            DirectivePrefix::Full => decomposition.name.slice(self.surface.source),
+            DirectivePrefix::Bind | DirectivePrefix::Prop => "bind",
+            DirectivePrefix::On => "on",
+            DirectivePrefix::Slot => "slot",
+        };
+        if name.is_empty() {
+            return None;
+        }
+        let mut node = DirectiveNode::new(
+            self.allocator,
+            name,
+            SourceLocation {
+                span: self.attribute_span(attribute),
+            },
+        );
+        node.raw_name = Some(attribute.name.text);
+        node.arg = decomposition.arg.map(|argument| {
+            let (span, is_static) = match argument {
+                ArgSyntax::Static(span) => (span, true),
+                ArgSyntax::Dynamic(span) => (span, false),
+            };
+            self.expression(span.slice(self.surface.source), span, is_static)
+        });
+        if decomposition.prefix == DirectivePrefix::Prop {
+            node.modifiers.push(SimpleExpressionNode::new(
+                "prop",
+                true,
+                SourceLocation {
+                    span: Span::new(decomposition.modifiers.start, decomposition.modifiers.start),
+                },
+            ));
+        }
+        self.push_modifiers(&mut node.modifiers, decomposition.modifiers);
+
+        if let Some(value) = attribute.value.as_ref() {
+            let span = self.token_span(&value.content);
+            let mut expression = self.expression(self.decoded_value(value), span, false);
+            if name == "slot"
+                && let ExpressionNode::Simple(expression) = &mut expression
+            {
+                expression.js_ast = Some(vize_armature::retain_slot_parameters_in(
+                    self.allocator,
+                    expression.content,
+                ));
+            }
+            node.exp = Some(expression);
+        } else if name == "bind"
+            && let Some(ExpressionNode::Simple(argument)) = node.arg.as_ref()
+            && argument.is_static
+        {
+            let content = self
+                .allocator
+                .alloc_str(vize_l0::camelize(argument.content).as_str());
+            node.exp = Some(self.expression(content, argument.loc.span, false));
+            node.shorthand = true;
+        }
+        Some(node)
+    }
+
+    fn push_modifiers(&self, output: &mut Vec<'a, SimpleExpressionNode<'a>>, span: Span) {
+        let authored = span.slice(self.surface.source);
+        let mut cursor = span.start;
+        for part in authored.split('.') {
+            if part.is_empty() {
+                cursor = cursor.saturating_add(1);
+                continue;
+            }
+            let start = cursor;
+            let end = start + part.len() as u32;
+            output.push(SimpleExpressionNode::new(
+                part,
+                true,
+                SourceLocation {
+                    span: Span::new(start, end),
+                },
+            ));
+            cursor = end.saturating_add(1);
+        }
+    }
+
+    fn expression(&self, fallback: &'a str, span: Span, is_static: bool) -> ExpressionNode<'a> {
+        let retained = self.expressions.get(&(span.start, span.end)).copied();
+        let content = retained.map_or(fallback, |expression| expression.source());
+        let mut node = SimpleExpressionNode::new(content, is_static, SourceLocation { span });
+        if let Some(ExprRef::Js(js)) = retained {
+            node.js_ast = Some(RetainedJsAst {
+                ast: self.allocator.as_oxc().alloc(RetainedJsAstKind::Expression(
+                    js.ast.clone_in(self.allocator.as_oxc()),
+                )),
+                raw: js.source,
+            });
+            node.const_type = ConstantType::NotConstant;
+        }
+        ExpressionNode::Simple(Box::new_in(node, &self.allocator))
+    }
+
+    fn decoded_value(&self, value: &AttrValue<'a>) -> &'a str {
+        let raw = value.content.text;
+        if raw.contains('&') {
+            self.allocator
+                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(raw).as_str())
+        } else {
+            raw
+        }
+    }
+
+    fn attribute_span(&self, attribute: &Attribute<'a>) -> Span {
+        let start = self.offset(attribute.name.text);
+        let end = attribute.value.as_ref().map_or_else(
+            || start + attribute.name.text.len() as u32,
+            |value| {
+                value.close_quote.as_ref().map_or_else(
+                    || self.offset(value.content.text) + value.content.text.len() as u32,
+                    |quote| self.offset(quote.text) + quote.text.len() as u32,
+                )
+            },
+        );
+        Span::new(start, end)
+    }
+
+    fn token_loc(&self, token: &Token<'a>) -> SourceLocation {
+        SourceLocation {
+            span: self.token_span(token),
+        }
+    }
+
+    fn token_span(&self, token: &Token<'a>) -> Span {
+        let start = self.offset(token.text);
+        Span::new(start, start + token.text.len() as u32)
+    }
+
+    fn offset(&self, slice: &str) -> u32 {
+        let offset =
+            (slice.as_ptr() as usize).saturating_sub(self.surface.source.as_ptr() as usize);
+        debug_assert!(
+            offset <= self.surface.source.len() && offset <= u32::MAX as usize,
+            "L1 tokens borrow a source admitted by its u32 coordinate model"
+        );
+        offset as u32
+    }
+}
+
+fn comment_body(text: &str) -> &str {
+    text.strip_prefix("<!--")
+        .and_then(|text| text.strip_suffix("-->"))
+        .unwrap_or(text)
+}
+
+fn element_type(tag: &str) -> ElementType {
+    match tag {
+        "slot" => ElementType::Slot,
+        "template" => ElementType::Template,
+        _ if is_component_tag(tag) || crate::builtins::is_runtime_builtin_component(tag) => {
+            ElementType::Component
+        }
+        _ => ElementType::Element,
+    }
+}

@@ -96,10 +96,11 @@ impl crate::linter::config::Linter {
 }
 
 use crate::linter::sfc_scripts::SfcScripts;
+use crate::markup::L2Template;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
-use vize_relief::RootNode;
 
 /// Document-level inputs shared by the template-rule passes.
 ///
@@ -123,19 +124,18 @@ pub(crate) struct TemplateRuleEnv<'a> {
 
 pub(crate) fn analyze_descriptor_for_lint(
     scripts: &SfcScripts<'_>,
-    template_ast: Option<&RootNode<'_>>,
+    template: Option<&L2Template<'_>>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
-    analyze_descriptor_for_lint_with_reuse(scripts, template_ast, unused, derived, None)
+    analyze_descriptor_for_lint_with_template(scripts, template, unused, derived)
 }
 
-pub(crate) fn analyze_descriptor_for_lint_with_reuse(
+pub(crate) fn analyze_descriptor_for_lint_with_template(
     scripts: &SfcScripts<'_>,
-    template_ast: Option<&RootNode<'_>>,
+    template: Option<&L2Template<'_>>,
     unused: bool,
     derived: bool,
-    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
     let options = SfcCroquisOptions::lint_demand();
     let options = if unused {
@@ -148,21 +148,19 @@ pub(crate) fn analyze_descriptor_for_lint_with_reuse(
     } else {
         options
     };
-    vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_template_reuse(
+    vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template(
         scripts,
-        template_ast,
+        template.map(|template| LintTemplate::new(template.surface(), template.lowered())),
         options,
-        reuse,
     )
 }
 
 /// Request positive authored reads within the existing single descriptor draw.
 pub(super) fn analyze_descriptor_for_component_reads(
     scripts: &SfcScripts<'_>,
-    template_ast: Option<&RootNode<'_>>,
+    template: Option<&L2Template<'_>>,
     unused: bool,
     derived: bool,
-    reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> Croquis {
     if scripts
         .descriptor()
@@ -176,13 +174,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
                     .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
         })
     {
-        return analyze_descriptor_for_lint_with_reuse(
-            scripts,
-            template_ast,
-            unused,
-            derived,
-            reuse,
-        );
+        return analyze_descriptor_for_lint_with_template(scripts, template, unused, derived);
     }
     let options = SfcCroquisOptions::lint_demand();
     let options = if unused {
@@ -196,11 +188,10 @@ pub(super) fn analyze_descriptor_for_component_reads(
         options
     };
     let (mut analysis, packet) =
-        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_occurrences_and_template_reuse(
+        vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences(
             scripts,
-            template_ast,
+            template.map(|template| LintTemplate::new(template.surface(), template.lowered())),
             options,
-            reuse,
         );
     let component_reads = analysis.croquis.authored_component_reads_are_qualified();
     // Preserve the complete editor refusal separately from independently
