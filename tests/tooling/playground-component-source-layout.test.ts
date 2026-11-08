@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const sourceRoot = fileURLToPath(new URL("../src", import.meta.url));
+const sourceRoot = fileURLToPath(new URL("../../playground/src", import.meta.url));
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
