@@ -2,17 +2,21 @@
 
 import type { RenderNodeNapi } from "@vizejs/fresco-native";
 
-import type {
-  BoxProps,
-  FrescoInputEvent,
-  FrescoRenderNode,
-  FrescoRenderNodeKind,
-  FrescoRenderStyle,
-  FrescoStyle,
-  InputEvent,
-  StaticProps,
-  TextInputProps,
-  TextProps,
+import {
+  createRenderer,
+  type BoxProps,
+  type FrescoDeclaredSize,
+  type FrescoHostNode,
+  type FrescoInputEvent,
+  type FrescoNodeUpdateKind,
+  type FrescoRenderNode,
+  type FrescoRenderNodeKind,
+  type FrescoRenderStyle,
+  type FrescoStyle,
+  type InputEvent,
+  type StaticProps,
+  type TextInputProps,
+  type TextProps,
 } from "./index.js";
 
 type Equal<Left, Right> =
@@ -29,6 +33,32 @@ type _PublicProtocolFitsTheCurrentNativeBoundary = Expect<
   FrescoRenderNode extends RenderNodeNapi ? true : false
 >;
 type _InputCompatibilityAliasIsExact = Expect<Equal<InputEvent, FrescoInputEvent>>;
+
+export const hostRenderer = createRenderer({
+  onMutation: () => {},
+  lifecycle: {
+    onCreate(node: FrescoHostNode) {
+      void node.id;
+    },
+    onUpdate(node: FrescoHostNode, kind: FrescoNodeUpdateKind) {
+      void [node.type, kind];
+    },
+    onResize(node: FrescoHostNode, previous: FrescoDeclaredSize, current: FrescoDeclaredSize) {
+      void [node.id, previous.width, current.height];
+    },
+    onRemove(node: FrescoHostNode) {
+      void node.parent;
+    },
+  },
+});
+export const lookedUpHostNode: FrescoHostNode | undefined = hostRenderer.getNode(1);
+export const descendantHostNode: FrescoHostNode | undefined = lookedUpHostNode
+  ? hostRenderer.findDescendantById(lookedUpHostNode, 2)
+  : undefined;
+export const destroyedHostNode: boolean = hostRenderer.destroyRecursively(1);
+
+// @ts-expect-error - stable host ids are numeric.
+hostRenderer.getNode("1");
 
 export const authoringStyle: FrescoStyle = {
   width: 40,

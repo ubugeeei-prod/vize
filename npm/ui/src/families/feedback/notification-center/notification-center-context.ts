@@ -25,6 +25,7 @@ export interface NotificationCenterContextValue {
   readonly itemId: (id: string) => string;
 }
 
+/** Required context shared by one NotificationCenter compound component tree. */
 export const notificationCenterContext =
   createContext<NotificationCenterContextValue>("NotificationCenter");
 

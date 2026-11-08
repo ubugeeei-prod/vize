@@ -1,0 +1,9 @@
+<template>
+  <p v-pre><div><meta :role="paragraph" /></div></p>
+  <select>
+    <option v-pre><option><meta :role="option" /></option></option>
+    <optgroup v-pre><optgroup><meta :role="group" /></optgroup></optgroup>
+  </select>
+  <li v-pre><li><meta :role="list" /></li></li>
+  <dt v-pre><dd><meta :role="term" /></dd></dt>
+</template>

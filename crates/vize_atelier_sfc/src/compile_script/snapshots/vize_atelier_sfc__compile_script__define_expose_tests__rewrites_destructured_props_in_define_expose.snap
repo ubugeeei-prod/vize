@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/define_expose_tests.rs
+expression: compile_inline(content)
+---
+
+export default {
+  __name: 'TestComponent',
+  props: {
+    foo: { type: Number, required: true }
+  },
+  setup(__props, { expose: __expose }) {
+
+__expose({
+  arrow: (value) => __props.foo + value,
+  method() {
+    return __props.foo;
+  },
+  functionExpression: function() {
+    return __props.foo;
+  },
+  plain: __props.foo,
+  get value() {
+    return __props.foo;
+  },
+  object: () => ({ localFoo: __props.foo })
+})
+
+return (_ctx, _cache) => {
+  return null
+}
+}
+
+}

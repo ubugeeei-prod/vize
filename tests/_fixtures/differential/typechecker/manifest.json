@@ -12822,6 +12822,40 @@
       }
     },
     {
+      "id": "typechecker/regression/canon-cache-gc-12135",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "canon-cache-gc-12135/App.vue.txt",
+          "sha256": "5c507dc7fe54554495e8f507533abd6583268f2fb6c77c487458b61dc7aa36c2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "canon-cache-gc-12135/tsconfig.json.txt",
+          "sha256": "96f56d48338d377bcb03a67b988f5b3bcecf6dc24327ec7d328eb74e41dee463",
+          "role": "project-configuration"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "cache_gc::maintenance_escapes_a_saturated_recent_window and identity::configured_cache_root_is_exact_and_stays_outside_the_checked_tree; #12135 pins an isolated batch project input without assigning native qualification credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/capture-free-component-instance-11699",
       "state": "active",
       "targets": [

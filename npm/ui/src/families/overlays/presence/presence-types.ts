@@ -20,10 +20,10 @@ export interface PresenceOptions {
    */
   readonly respectReducedMotion?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Called after enter animation completes or is skipped. */
+  /** Called after enter animation completes or is skipped. @default undefined */
   readonly onEnterComplete?: () => void;
 
-  /** Called after exit animation completes or is skipped. */
+  /** Called after exit animation completes or is skipped. @default undefined */
   readonly onExitComplete?: () => void;
 }
 

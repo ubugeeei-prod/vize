@@ -1,0 +1,3 @@
+<template>
+  <div><meta :role="activeBinding" /></div>
+</template>

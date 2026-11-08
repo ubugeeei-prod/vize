@@ -34,7 +34,7 @@ export interface FocusGuardsOptions {
   /** Primary guarded region. It may be `null` during SSR and before mount. */
   readonly root: MaybeRefOrGetter<Element | null | undefined>;
 
-  /** Portalled regions that share the primary region's focus order. */
+  /** Portalled regions that share the primary region's focus order. @default undefined */
   readonly branches?: MaybeRefOrGetter<readonly Element[] | null | undefined>;
 
   /** Whether an activated pair participates in its document's guard stack. @default true */
@@ -43,15 +43,17 @@ export interface FocusGuardsOptions {
   /** Avoid scrolling when a sentinel redirects focus. @default true */
   readonly preventScroll?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Additional filter applied after native sequential-focus checks. */
+  /** Additional filter applied after native sequential-focus checks. @default undefined */
   readonly accept?: (element: HTMLElement) => boolean;
 
-  /** Fallback used when no sequentially focusable descendant remains. */
+  /** Fallback used when no sequentially focusable descendant remains. @default undefined */
   readonly fallbackFocus?: () => HTMLElement | null | undefined;
 
   /**
    * Called before focus is redirected. If `preventDefault` retains sentinel focus, the consumer
    * must move focus elsewhere or provide a visible focus indicator.
+   *
+   * @default undefined
    */
   readonly onRedirect?: (event: FocusGuardRedirectEvent) => void;
 }
