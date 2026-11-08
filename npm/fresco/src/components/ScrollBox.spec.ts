@@ -24,6 +24,7 @@ test("scrollbar maps a bounded offset onto its track", () => {
     valueMin: 0,
     valueMax: 90,
     valueNow: 45,
+    disabled: false,
   });
   const glyphNodes = root.children.filter((node) => typeof node.props.text === "string");
   assert.deepEqual(
@@ -50,6 +51,7 @@ test("scrollbar normalizes invalid offsets and fractional bounds", () => {
       valueMin: 0,
       valueMax: 8,
       valueNow: 0,
+      disabled: false,
     });
     assert.deepEqual(
       root.children.flatMap((node) =>
@@ -89,6 +91,30 @@ test("scrollbar drags its thumb through the latest native layout", async () => {
 
     await rendered.input.mouse({ kind: "drag", button: "left", x: 5, y: 2 });
     assert.equal(offset.value, 80, "releasing the thumb ends pointer capture");
+  } finally {
+    updateLastRenderLayouts([]);
+    rendered.unmount();
+  }
+});
+
+test("scrollbar keeps its offset when the thumb is pressed without moving", async () => {
+  const updates: number[] = [];
+  const rendered = renderTui(() =>
+    h(ScrollBar, {
+      itemCount: 100,
+      viewportSize: 10,
+      offset: 25,
+      length: 10,
+      "onUpdate:offset": (value: number) => updates.push(value),
+    }),
+  );
+  const scrollbar = firstChild(rendered);
+  updateLastRenderLayouts([{ id: scrollbar.id, x: 5, y: 2, width: 1, height: 10 }]);
+
+  try {
+    await rendered.input.mouse({ kind: "down", button: "left", x: 5, y: 5 });
+    await rendered.input.mouse({ kind: "up", x: 5, y: 5 });
+    assert.deepEqual(updates, []);
   } finally {
     updateLastRenderLayouts([]);
     rendered.unmount();

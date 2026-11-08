@@ -82,6 +82,7 @@ const ariaState = computed(() => ({
   valueMin: 0,
   valueMax: metrics.value.maxOffset,
   valueNow: metrics.value.boundedOffset,
+  disabled,
 }));
 const accessibilityProps = computed(() => ({
   ariaRole: "scrollbar" as const,
@@ -109,8 +110,11 @@ function offsetAt(pointer: number, grabOffset: number): number {
 }
 
 function publishPointerOffset(pointer: number, grabOffset: number): void {
+  const { travel, thumbStart, boundedOffset } = metrics.value;
+  const targetStart = Math.min(travel, Math.max(0, pointer - grabOffset));
+  if (targetStart === thumbStart) return;
   const nextOffset = offsetAt(pointer, grabOffset);
-  if (nextOffset !== metrics.value.boundedOffset) emit("update:offset", nextOffset);
+  if (nextOffset !== boundedOffset) emit("update:offset", nextOffset);
 }
 
 useMouse(
@@ -119,11 +123,18 @@ useMouse(
       dragGrabOffset.value = null;
       return;
     }
+    if (event.kind === "up") {
+      dragGrabOffset.value = null;
+      return;
+    }
     if (event.button !== "left") return;
 
     if (event.kind === "down") {
       const pointer = pointerPosition(event, false);
-      if (pointer === undefined) return;
+      if (pointer === undefined) {
+        dragGrabOffset.value = null;
+        return;
+      }
       const { thumbStart, thumbSize } = metrics.value;
       const insideThumb = pointer >= thumbStart && pointer < thumbStart + thumbSize;
       const grabOffset = insideThumb ? pointer - thumbStart : Math.floor(thumbSize / 2);
@@ -137,8 +148,6 @@ useMouse(
       if (pointer !== undefined) publishPointerOffset(pointer, dragGrabOffset.value);
       return;
     }
-
-    if (event.kind === "up") dragGrabOffset.value = null;
   },
   { isActive: computed(() => !disabled) },
 );
