@@ -19,6 +19,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ecosystem/void-link-valid-method` lint rule.
 pub struct VoidLinkValidMethod;
 
 impl Rule for VoidLinkValidMethod {

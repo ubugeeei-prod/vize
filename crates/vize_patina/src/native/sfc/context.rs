@@ -5,6 +5,7 @@ use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_l0::{String, config::VueVersion};
 
+/// Reporting context sealed to one authenticated native SFC owner.
 pub struct NativeSfcLintContext<'o, 'a> {
     linter: &'o Linter,
     owner: &'o NativeSfcLintOwner<'a>,
@@ -29,30 +30,37 @@ impl<'o, 'a> NativeSfcLintContext<'o, 'a> {
             diagnostics: Vec::new(),
         }
     }
+    /// Returns the authenticated SFC owner for the current lint run.
     #[must_use]
     pub fn owner(&self) -> &'o NativeSfcLintOwner<'a> {
         self.owner
     }
+    /// Returns the complete original SFC source.
     #[must_use]
     pub fn source(&self) -> &'a str {
         self.owner.source()
     }
+    /// Returns the caller-provided filename used for reporting.
     #[must_use]
     pub fn filename(&self) -> &'o str {
         self.filename
     }
+    /// Returns the locale configured for diagnostic messages.
     #[must_use]
     pub fn locale(&self) -> Locale {
         self.linter.locale
     }
+    /// Returns the configured diagnostic help level.
     #[must_use]
     pub fn help_level(&self) -> HelpLevel {
         self.linter.help_level
     }
+    /// Returns the explicitly requested Vue version, if any.
     #[must_use]
     pub fn requested_vue_version(&self) -> Option<VueVersion> {
         self.linter.requested_vue_version
     }
+    /// Returns the explicitly requested Vapor mode, if any.
     #[must_use]
     pub fn requested_vapor_mode(&self) -> Option<bool> {
         self.linter.requested_vapor_mode

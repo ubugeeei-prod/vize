@@ -23,7 +23,7 @@ export interface PointerGraceOptions {
    */
   readonly delay?: MaybeRefOrGetter<number | undefined>;
 
-  /** Called once the pointer stays outside the polygon for `delay`. */
+  /** Called once the pointer stays outside the polygon for `delay`. @default undefined */
   readonly onGraceEnd?: () => void;
 }
 

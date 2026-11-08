@@ -115,7 +115,7 @@ export type ThemeScopeAttributes = Partial<Record<ThemeScopeAttributeName, strin
 
 /** Options for a declarative theme scope. */
 export interface ThemeScopeOptions {
-  /** Opt-in preset name or array-composed preset names. */
+  /** Opt-in preset name or array-composed preset names. @default undefined */
   readonly presets?: ThemePresetName | readonly ThemePresetName[];
 
   /**

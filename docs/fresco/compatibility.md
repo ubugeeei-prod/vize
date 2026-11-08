@@ -68,7 +68,7 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 | —                  | `TabSelectRenderable` | `TabSelect` | `Tabs`                                      | Partial | Display + `v-model`; tab switching keys not owned (M2).                                                                 |
 | —                  | —                     | —           | `Checkbox`, `RadioGroup`, `Confirm`, `Form` | Partial | State rendering + `v-model`/emits; keyboard, validation, and focus semantics pending (M2).                              |
 | —                  | —                     | —           | `List`, `Menu`, `Tree`                      | Partial | Typed items, selection/expansion rendering; navigation, typeahead, and scrolling pending (M2).                          |
-| —                  | —                     | —           | `Modal`, `Tooltip`                          | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                          |
+| —                  | —                     | —           | `Modal`, `Tooltip` (typed SFC)              | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                          |
 | —                  | `SliderRenderable`    | —           | —                                           | Planned | Keyboard/mouse slider with range-safe typed model (M2).                                                                 |
 
 ### Display and rich components
@@ -94,12 +94,12 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 All are Implemented as display components and follow the same M2/M3 interaction and theming
 polish track as the tables above.
 
-| Group      | Components                                                                    |
-| ---------- | ----------------------------------------------------------------------------- |
-| Layout     | `Stack`/`HStack`/`VStack` (typed SFCs), `Grid`, `Card`, `Divider` (typed SFC) |
-| Feedback   | `Alert`, `Badge` (typed SFC), `Timer`, `Avatar`                               |
-| Navigation | `Breadcrumb`, `Stepper` (`Menu`, `Tabs` above)                                |
-| Chrome     | `StatusBar`, `Header`, `KeyHint`                                              |
+| Group      | Components                                                            |
+| ---------- | --------------------------------------------------------------------- |
+| Layout     | `Card`, `Stack`/`HStack`/`VStack`, and `Divider` (typed SFCs); `Grid` |
+| Feedback   | `Alert`, `Badge`, and `Avatar` (typed SFCs); `Timer`                  |
+| Navigation | `Breadcrumb` (typed SFC), `Stepper` (`Menu`, `Tabs` above)            |
+| Chrome     | `Header` (typed SFC), `StatusBar`, `KeyHint`                          |
 
 ## Composables
 

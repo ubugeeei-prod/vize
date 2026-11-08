@@ -51,6 +51,7 @@ pub enum SpacingStyle {
 
 /// Mustache interpolation spacing rule
 pub struct MustacheInterpolationSpacing {
+    /// Spacing policy for the inside of interpolation delimiters.
     pub style: SpacingStyle,
 }
 

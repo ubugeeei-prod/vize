@@ -54,13 +54,13 @@ export interface InfiniteLoaderOptions {
    */
   readonly canLoadForward?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Load earlier items. Resolve after the collection is updated. */
+  /** Load earlier items. Resolve after the collection is updated. @default undefined */
   readonly onLoadBackward?: (context: InfiniteLoadContext) => Promise<void> | void;
 
-  /** Load later items. Resolve after the collection is updated. */
+  /** Load later items. Resolve after the collection is updated. @default undefined */
   readonly onLoadForward?: (context: InfiniteLoadContext) => Promise<void> | void;
 
-  /** Called when a non-stale load rejects. Without it, the rejection is rethrown. */
+  /** Called when a non-stale load rejects. Without it, the rejection is rethrown. @default undefined */
   readonly onLoadError?: (direction: InfiniteLoadDirection, error: unknown) => void;
 }
 

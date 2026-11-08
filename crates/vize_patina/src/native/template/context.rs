@@ -43,30 +43,37 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         }
     }
 
+    /// Returns the authenticated original bare-template owner.
     #[must_use]
     pub fn owner(&self) -> &'o NativeLintComponent<'a> {
         self.root
     }
+    /// Returns the caller-provided filename used for reporting.
     #[must_use]
     pub fn filename(&self) -> &'o str {
         self.filename
     }
+    /// Returns the complete original template source.
     #[must_use]
     pub fn source(&self) -> &'a str {
         self.root.component().block().source()
     }
+    /// Returns the locale configured for diagnostic messages.
     #[must_use]
     pub fn locale(&self) -> Locale {
         self.linter.locale
     }
+    /// Returns the configured diagnostic help level.
     #[must_use]
     pub fn help_level(&self) -> HelpLevel {
         self.linter.help_level
     }
+    /// Returns the explicitly requested Vue version, if any.
     #[must_use]
     pub fn requested_vue_version(&self) -> Option<VueVersion> {
         self.linter.requested_vue_version
     }
+    /// Returns the explicitly requested Vapor mode, if any.
     #[must_use]
     pub fn requested_vapor_mode(&self) -> Option<bool> {
         self.linter.requested_vapor_mode
@@ -249,6 +256,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
             .map(|data| NativeTemplateFirstOption { data, issuer }))
     }
 
+    /// Returns the first option's original value syntax after authenticating its token.
     pub fn first_option_value(
         &self,
         owner: &NativeTemplateClosedSelect<'_, '_, 'a>,
@@ -279,6 +287,7 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         Ok(option.data.opening)
     }
 
+    /// Reports the authenticated first option at its original opening range.
     pub fn warn_first_option_with_help(
         &mut self,
         owner: &NativeTemplateClosedSelect<'_, '_, 'a>,

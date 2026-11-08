@@ -23,4 +23,5 @@ export interface DialogContextValue {
   readonly toggle: (event?: Event | null) => boolean;
 }
 
+/** Required context shared by one Dialog compound component tree. */
 export const dialogContext = createContext<DialogContextValue>("Dialog");

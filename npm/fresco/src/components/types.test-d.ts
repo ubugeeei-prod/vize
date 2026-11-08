@@ -17,7 +17,12 @@ import type {
   StaticProps,
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
+import Alert from "./FrescoAlert.vue";
+import Avatar from "./FrescoAvatar.vue";
+import Breadcrumb from "./FrescoBreadcrumb.vue";
+import Card from "./FrescoCard.vue";
 import Divider from "./FrescoDivider.vue";
+import Header from "./FrescoHeader.vue";
 import HStack from "./FrescoHStack.vue";
 import Newline from "./FrescoNewline.vue";
 import ScrollBox from "./ScrollBox.vue";
@@ -27,10 +32,19 @@ import Stack from "./FrescoStack.vue";
 import Static from "./FrescoStatic.vue";
 import VStack from "./FrescoVStack.vue";
 import type { DividerProps, StackProps } from "./layout-primitive-types.js";
+import type {
+  AlertProps,
+  AvatarProps,
+  BreadcrumbProps,
+  CardProps,
+  HeaderProps,
+  TooltipProps,
+} from "./presentational-primitive-types.js";
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 import Transform from "./FrescoTransform.vue";
+import Tooltip from "./FrescoTooltip.vue";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -143,6 +157,14 @@ export const stackAcceptsDocumentedProps: StackProps = {
   justify: "between",
   wrap: true,
 };
+export const alertAcceptsDocumentedProps: AlertProps = { message: "Saved", type: "success" };
+export const avatarAcceptsDocumentedProps: AvatarProps = { name: "Ada Lovelace", status: "online" };
+export const breadcrumbAcceptsDocumentedProps: BreadcrumbProps = {
+  items: [{ key: "home", label: "Home" }],
+};
+export const cardAcceptsDocumentedProps: CardProps = { title: "Summary", border: "rounded" };
+export const headerAcceptsDocumentedProps: HeaderProps = { title: "Dashboard", borderBottom: true };
+export const tooltipAcceptsDocumentedProps: TooltipProps = { text: "Help", position: "right" };
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {
   itemCount: 100_000,
@@ -189,6 +211,12 @@ export function componentsRenderWithTypedProps() {
     h(Stack, { direction: "horizontal", gap: 2, align: "center" }),
     h(HStack, { gap: 1, justify: "between" }),
     h(VStack, { gap: 0, align: "stretch" }),
+    h(Alert, { message: "Saved", type: "success" }),
+    h(Avatar, { name: "Ada Lovelace", status: "online" }),
+    h(Breadcrumb, { items: [{ key: "home", label: "Home" }] }),
+    h(Card, { title: "Summary" }),
+    h(Header, { title: "Dashboard" }),
+    h(Tooltip, { text: "Help", visible: true }),
   ];
 }
 
@@ -222,6 +250,17 @@ export function layoutPrimitivesRejectMistypedProps() {
     h(Stack, { align: "left" }),
     // @ts-expect-error - gaps are numeric.
     h(HStack, { gap: "1" }),
+  ];
+}
+
+export function presentationalPrimitivesRejectMistypedProps() {
+  return [
+    // @ts-expect-error - critical is not an Alert type.
+    h(Alert, { message: "Bad", type: "critical" }),
+    // @ts-expect-error - diagonal is not a Tooltip position.
+    h(Tooltip, { text: "Bad", position: "diagonal" }),
+    // @ts-expect-error - Breadcrumb items require stable keys.
+    h(Breadcrumb, { items: [{ label: "Missing key" }] }),
   ];
 }
 

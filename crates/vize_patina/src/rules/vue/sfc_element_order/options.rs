@@ -81,6 +81,7 @@ pub struct SfcElementOrderGroup {
 }
 
 impl SfcElementOrderGroup {
+    /// Create one rank whose selectors may appear interchangeably.
     pub fn new(selectors: Vec<String>) -> Self {
         Self { selectors }
     }
@@ -89,6 +90,7 @@ impl SfcElementOrderGroup {
 /// Options for `vue/sfc-element-order`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SfcElementOrderOptions {
+    /// Ordered block groups from first to last.
     pub order: Vec<SfcElementOrderGroup>,
 }
 

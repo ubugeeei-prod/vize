@@ -39,7 +39,7 @@ export interface ScrollSpyOptions {
    */
   readonly isDisabled?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Called after a distinct active-id change. */
+  /** Called after a distinct active-id change. @default undefined */
   readonly onActiveChange?: (
     id: string | null,
     previous: string | null,

@@ -7,6 +7,7 @@ use super::NativeTemplateElement;
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum NativeTemplateOwnerProfile {
     #[default]
+    /// Admit no specialized bounded element-owner grammar.
     Strict,
     /// Explicitly closed select with direct, explicitly closed option children.
     /// No optgroup, label ancestry, dynamic owner or decoded value authority.

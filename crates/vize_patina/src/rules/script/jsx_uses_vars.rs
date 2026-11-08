@@ -38,6 +38,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Error,
 };
 
+/// Implements the `script/jsx-uses-vars` lint rule.
 pub struct JsxUsesVars;
 
 impl ScriptRule for JsxUsesVars {

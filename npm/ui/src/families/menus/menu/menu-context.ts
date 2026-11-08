@@ -122,10 +122,16 @@ export interface MenuGroupContextValue {
   readonly labelId: ShallowRef<string | null>;
 }
 
+/** Required context shared by every level of one menu tree. */
 export const menuTreeContext = createContext<MenuTreeContextValue>("MenuTree");
+/** Required context for the nearest root menu or submenu level. */
 export const menuLevelContext = createContext<MenuLevelContextValue>("MenuLevel");
+/** Required context for the nearest rendered menu content. */
 export const menuContentContext = createContext<MenuContentContextValue>("MenuContent");
+/** Optional checked-state context consumed by menu item indicators. */
 export const menuItemIndicatorContext =
   createContext<MenuItemIndicatorContextValue>("MenuItemIndicator");
+/** Required selection context shared by one menu radio group. */
 export const menuRadioGroupContext = createContext<MenuRadioGroupContextValue>("MenuRadioGroup");
+/** Required labelling context shared by one menu group and label. */
 export const menuGroupContext = createContext<MenuGroupContextValue>("MenuGroup");

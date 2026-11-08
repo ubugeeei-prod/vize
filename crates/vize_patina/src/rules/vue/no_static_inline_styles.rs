@@ -23,6 +23,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/no-static-inline-styles` lint rule.
 pub struct NoStaticInlineStyles;
 
 impl NoStaticInlineStyles {
