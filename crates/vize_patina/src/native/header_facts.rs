@@ -31,7 +31,7 @@ use groups::{CHECKS, REGISTRY};
 /// Header admission and SDK computation preserve their distinct exact errors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeHeaderFactError {
-    /// The original header failed native syntax admission.
+    /// Header syntax admission or element ownership validation failed.
     Header(NativeLintRefusal),
     /// A required SDK fact table or entry is unavailable.
     Fact(FactError),

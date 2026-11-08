@@ -95,9 +95,9 @@ pub enum NativeTemplateLintRefusal {
         /// Stable rule code that lacks the required capability.
         rule: String,
     },
-    /// The original parser recovered from an error at the component-relative offset.
+    /// The original parser recovered from an error at the root-source offset.
     Recovered {
-        /// Component-relative byte offset of the first recovery.
+        /// Root-source byte offset of the first recovery.
         offset: u32,
     },
     /// The component uses syntax outside the native template contract.

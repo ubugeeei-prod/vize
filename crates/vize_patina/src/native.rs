@@ -67,9 +67,9 @@ pub use textarea_mustache::NativeTextareaLintError;
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeLintRefusal {
-    /// The original parser recovered from an error at the component-relative offset.
+    /// The original parser recovered from an error at the root-source offset.
     Recovered {
-        /// Component-relative byte offset of the first recovery.
+        /// Root-source byte offset of the first recovery.
         offset: u32,
     },
     /// The selected component uses syntax outside the native lint contract.

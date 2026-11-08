@@ -34,7 +34,7 @@ pub enum NativeChildFactError {
     WrongParent,
     /// The child exposes an unclosed or otherwise raw interpolation marker.
     RawInterpolation,
-    /// The supplied child is not the original child at its retained ordinal.
+    /// The original surface child is an unsupported or malformed syntax fragment.
     UnexpectedChild,
     /// The selected component or child syntax failed native admission.
     Admission(NativeLintRefusal),
