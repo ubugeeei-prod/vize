@@ -1,7 +1,7 @@
 /** Public JavaScript protocol shared by Fresco components and the renderer. */
 
 /** Discriminant shared by JavaScript and native render nodes. */
-export type FrescoRenderNodeKind = "root" | "box" | "text" | "input";
+export type FrescoRenderNodeKind = "root" | "box" | "text" | "input" | "raw";
 /** Numeric or CSS-like dimension accepted by component style props. */
 export type FrescoDimension = number | string;
 /** Display modes supported by the native layout engine. */
@@ -185,8 +185,19 @@ export interface FrescoInputRenderNode extends FrescoRenderNodeBase {
   placeholder?: string;
   focused?: boolean;
   cursor?: number;
+  /** Inclusive grapheme index at the start of the active selection. */
+  selectionStart?: number;
+  /** Exclusive grapheme index at the end of the active selection. */
+  selectionEnd?: number;
   mask?: boolean;
   maskChar?: string;
+}
+
+/** Precomposed terminal lines emitted without text wrapping. */
+export interface FrescoRawRenderNode extends FrescoRenderNodeBase {
+  nodeType: "raw";
+  /** Exact terminal rows painted in order inside the computed layout. */
+  lines?: string[];
 }
 
 type UnionKeys<Union> = Union extends Union ? keyof Union : never;
@@ -197,7 +208,11 @@ type StrictUnion<Union> = StrictUnionHelper<Union, Union>;
 
 /** Strict discriminated union accepted by the native render bridge. */
 export type FrescoRenderNode = StrictUnion<
-  FrescoRootRenderNode | FrescoBoxRenderNode | FrescoTextRenderNode | FrescoInputRenderNode
+  | FrescoRootRenderNode
+  | FrescoBoxRenderNode
+  | FrescoTextRenderNode
+  | FrescoInputRenderNode
+  | FrescoRawRenderNode
 >;
 
 /** Lifecycle phase attached to a normalized keyboard event. */

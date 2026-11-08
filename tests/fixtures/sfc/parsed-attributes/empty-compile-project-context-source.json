@@ -88,7 +88,7 @@
     "crates/vize_atelier_sfc/src/compile/entry.rs": "95358501519df6a022fe4e906d45f02cca6694f7",
     "crates/vize_atelier_sfc/src/compile/entry/root_match.rs": "7c678c8a0b4a29f173ad67ad298afd1cb92ede8b",
     "crates/vize_atelier_sfc/src/compile/public.rs": "be954cc1594067ee5f5c0a57b061c1074b7ab2d1",
-    "crates/vize_atelier_sfc/src/compile/script_context.rs": "8f38f6395aeae0941035e84ad436c04a34fbb8cf",
+    "crates/vize_atelier_sfc/src/compile/script_context.rs": "7c181a24d6478d6c6f854c5de0d468d6c5e16c27",
     "crates/vize/src/type_projects.rs": "96073dbb55954781d825974cb3beff77b3fb9085",
     "crates/vize_vitrine/src/napi/sfc/types.rs": "9f76121fb52ce2eae282a3768a0f125b56a3d853",
     "crates/vize_vitrine/src/napi/sfc/types/conversions.rs": "5c313a0057306e74f031e7232f33472e86799e7a"

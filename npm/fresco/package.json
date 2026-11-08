@@ -51,7 +51,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "check": "vp check src vite.config.ts && vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json",
+    "check": "vp check src vite.config.ts && vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json && vue-tsc --noEmit -p tsconfig.external-plugin.json",
     "check:fix": "vp check --fix src vite.config.ts",
     "check:types": "vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json",
     "fmt": "vp fmt --write src vite.config.ts",

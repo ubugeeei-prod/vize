@@ -5,14 +5,14 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::cell::RefCell;
 
-use super::input_size::input_intrinsic_size;
+use super::render_node::create_render_node;
 use super::render_payload::{
-    RenderNodeKindNapi, parse_wrap_mode, unsupported_render_node_kind, validate_render_node_kinds,
+    RenderNodeKindNapi, unsupported_render_node_kind, validate_render_node_kinds,
 };
+use super::render_style::{convert_style, parse_color};
 use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
-use crate::terminal::{Color, Style};
 
 thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
@@ -153,13 +153,10 @@ pub fn set_cursor_shape(
 #[napi(js_name = "renderTree")]
 pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
     use crate::layout::{
-        AlignItems, AlignSelf, Dimension, Display, FlexDirection, FlexWrap, JustifyContent,
+        AlignItems, AlignSelf, Display, FlexDirection, FlexWrap, JustifyContent,
         LengthPercentageAuto, Overflow, Position,
     };
-    use crate::render::{
-        Appearance, BorderStyle, InputContent, NodeKind, Painter, RenderNode, RenderTree,
-        TextContent,
-    };
+    use crate::render::{Appearance, BorderStyle, Painter, RenderTree};
 
     let node_kinds = validate_render_node_kinds(&nodes).map_err(unsupported_render_node_kind)?;
 
@@ -168,44 +165,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
 
         // Build tree from NAPI nodes
         for (node, node_type) in nodes.iter().zip(&node_kinds) {
-            let text_content = node.text.clone().unwrap_or_default();
-            let kind = match node_type {
-                RenderNodeKindNapi::Text => NodeKind::Text(TextContent {
-                    text: text_content.clone().into(),
-                    wrap: node.wrap.unwrap_or(false),
-                    wrap_mode: parse_wrap_mode(node.wrap_mode.as_deref(), node.wrap),
-                }),
-                RenderNodeKindNapi::Input => NodeKind::Input(InputContent {
-                    value: node.value.clone().unwrap_or_default().into(),
-                    placeholder: node.placeholder.clone().unwrap_or_default().into(),
-                    cursor: node.cursor.unwrap_or(0) as usize,
-                    focused: node.focused.unwrap_or(false),
-                    mask: node.mask.unwrap_or(false),
-                    mask_char: node
-                        .mask_char
-                        .as_deref()
-                        .and_then(|s| s.chars().next())
-                        .unwrap_or('*'),
-                }),
-                RenderNodeKindNapi::Root | RenderNodeKindNapi::Box => NodeKind::Box,
-            };
-
-            let mut render_node = RenderNode::new(node.id as u64, kind);
-
-            // For text nodes, set the size based on text content
-            if *node_type == RenderNodeKindNapi::Text && !text_content.is_empty() {
-                use crate::text::TextWidth;
-                let text_width = TextWidth::width(&text_content) as f32;
-                let text_height = text_content.lines().count().max(1) as f32;
-                render_node.style.width = Dimension::Points(text_width);
-                render_node.style.height = Dimension::Points(text_height);
-            }
-
-            if *node_type == RenderNodeKindNapi::Input {
-                let (input_width, height) = input_intrinsic_size(node);
-                render_node.style.width = Dimension::Points(input_width);
-                render_node.style.height = Dimension::Points(height);
-            }
+            let mut render_node = create_render_node(node, *node_type);
 
             // Set flex style (start from existing style to preserve text/input sizes)
             if let Some(ref style) = node.style {
@@ -513,88 +473,4 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
             backend.cursor_mut().hide();
         }
     })
-}
-
-/// Convert StyleNapi to Style.
-fn convert_style(style: StyleNapi) -> Style {
-    let mut result = Style::default();
-
-    if let Some(ref fg) = style.fg {
-        result.fg = parse_color(fg);
-    }
-    if let Some(ref bg) = style.bg {
-        result.bg = parse_color(bg);
-    }
-    result.bold = style.bold.unwrap_or(false);
-    result.dim = style.dim.unwrap_or(false);
-    result.italic = style.italic.unwrap_or(false);
-    result.underline = style.underline.unwrap_or(false);
-    result.reverse = style.inverse.unwrap_or(false);
-    result.blink = style.blink.unwrap_or(false);
-    result.hidden = style.hidden.unwrap_or(false);
-    result.strikethrough = style.strikethrough.unwrap_or(false);
-
-    result
-}
-
-/// Parse color string.
-fn parse_color(s: &str) -> Option<Color> {
-    // Try hex color
-    if let Some(color) = Color::from_hex(s) {
-        return Some(color);
-    }
-
-    // Try named color (alloc-free, case-insensitive ASCII match)
-    if s.eq_ignore_ascii_case("black") {
-        return Some(Color::Black);
-    }
-    if s.eq_ignore_ascii_case("red") {
-        return Some(Color::Red);
-    }
-    if s.eq_ignore_ascii_case("green") {
-        return Some(Color::Green);
-    }
-    if s.eq_ignore_ascii_case("yellow") {
-        return Some(Color::Yellow);
-    }
-    if s.eq_ignore_ascii_case("blue") {
-        return Some(Color::Blue);
-    }
-    if s.eq_ignore_ascii_case("magenta") {
-        return Some(Color::Magenta);
-    }
-    if s.eq_ignore_ascii_case("cyan") {
-        return Some(Color::Cyan);
-    }
-    if s.eq_ignore_ascii_case("white") {
-        return Some(Color::White);
-    }
-    if s.eq_ignore_ascii_case("gray") || s.eq_ignore_ascii_case("grey") {
-        return Some(Color::Gray);
-    }
-    if s.eq_ignore_ascii_case("lightred") {
-        return Some(Color::LightRed);
-    }
-    if s.eq_ignore_ascii_case("lightgreen") {
-        return Some(Color::LightGreen);
-    }
-    if s.eq_ignore_ascii_case("lightyellow") {
-        return Some(Color::LightYellow);
-    }
-    if s.eq_ignore_ascii_case("lightblue") {
-        return Some(Color::LightBlue);
-    }
-    if s.eq_ignore_ascii_case("lightmagenta") {
-        return Some(Color::LightMagenta);
-    }
-    if s.eq_ignore_ascii_case("lightcyan") {
-        return Some(Color::LightCyan);
-    }
-    if s.eq_ignore_ascii_case("lightwhite") {
-        return Some(Color::LightWhite);
-    }
-    if s.eq_ignore_ascii_case("reset") {
-        return Some(Color::Reset);
-    }
-    None
 }

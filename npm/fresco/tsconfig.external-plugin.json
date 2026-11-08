@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "rewriteRelativeImportExtensions": false,
+    "paths": {
+      "@vizejs/fresco": ["./src/index.ts"]
+    }
+  },
+  "include": ["examples/external-plugin/**/*.ts", "examples/external-plugin/**/*.vue"],
+  "exclude": ["node_modules", "dist"]
+}
