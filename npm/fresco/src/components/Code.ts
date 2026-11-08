@@ -222,7 +222,7 @@ export const Code = defineComponent({
 
     const move = (key: string, extend: boolean) => {
       const current = internalSelection.value.focus;
-      let next = current;
+      let next: CodePosition;
       const currentParts = graphemes(lines.value[current.line] ?? "");
       if (key === "left") {
         next =
