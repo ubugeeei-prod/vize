@@ -14,6 +14,7 @@ import type {
 import type { HoverController, HoverOptions, HoverProps } from "../hover/hover.ts";
 import type { PressController, PressOptions, PressProps } from "../press/press.ts";
 
+/** Disabled, configured, or default-enabled options for one interaction feature. */
 export type InteractionFeatureOptions<Options> = false | Options | undefined;
 
 /** Platform family used to resolve `Mod` in host-scoped shortcuts. */
@@ -104,7 +105,9 @@ export interface InteractionShortcutController {
   readonly dispose: () => void;
 }
 
+/** Features composed into one host's interaction props and controller state. */
 export interface InteractionHooksOptions {
+  /** Disable every configured host interaction while preserving its state. @default false */
   readonly isDisabled?: MaybeRefOrGetter<boolean | undefined>;
   /**
    * Track document-level keyboard, pointer, touch, and virtual input modality.
@@ -112,9 +115,13 @@ export interface InteractionHooksOptions {
    * @default false
    */
   readonly modality?: InteractionFeatureOptions<InteractionModalityOptions>;
+  /** Configure direct-target focus-ring tracking. @default enabled with default options */
   readonly focusRing?: InteractionFeatureOptions<FocusRingOptions>;
+  /** Configure descendant focus tracking. @default enabled with default options */
   readonly focusWithin?: InteractionFeatureOptions<FocusWithinOptions>;
+  /** Configure hover normalization. @default enabled with default options */
   readonly hover?: InteractionFeatureOptions<HoverOptions>;
+  /** Configure press normalization. @default enabled with default options */
   readonly press?: InteractionFeatureOptions<PressOptions>;
   /**
    * Route element-scoped or explicitly attached keyboard shortcuts.
@@ -149,6 +156,7 @@ type ShortcutFeature<Options> = Options extends { readonly shortcuts: infer Feat
 type FeatureController<Feature, Controller> = [Feature] extends [false] ? null : Controller;
 type FeatureProps<Feature, Props> = [Feature] extends [false] ? object : Props;
 
+/** Native host props contributed by the statically configured features. */
 export type InteractionHooksProps<Options extends InteractionHooksOptions = {}> = FeatureProps<
   PressFeature<Options>,
   PressProps
@@ -158,6 +166,7 @@ export type InteractionHooksProps<Options extends InteractionHooksOptions = {}> 
   FeatureProps<FocusWithinFeature<Options>, FocusProps> &
   FeatureProps<ShortcutFeature<Options>, InteractionShortcutProps>;
 
+/** Whether each feature had transient interaction state to cancel. */
 export interface InteractionHooksCancelResult {
   readonly focusRing: boolean;
   readonly focusWithin: boolean;
@@ -166,6 +175,7 @@ export interface InteractionHooksCancelResult {
   readonly shortcuts: boolean;
 }
 
+/** Composed feature controllers, state, host props, and lifecycle operations. */
 export interface InteractionHooksController<Options extends InteractionHooksOptions = {}> {
   readonly modalityTracker: FeatureController<ModalityFeature<Options>, InteractionModalityTracker>;
   readonly shortcutController: FeatureController<

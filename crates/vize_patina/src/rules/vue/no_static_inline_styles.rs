@@ -8,7 +8,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -21,6 +23,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/no-static-inline-styles` lint rule.
 pub struct NoStaticInlineStyles;
 
 impl NoStaticInlineStyles {
@@ -47,6 +50,10 @@ impl NoStaticInlineStyles {
 impl MarkupRule for NoStaticInlineStyles {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
     }
 
     fn enter_binding<'a>(

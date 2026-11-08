@@ -15,11 +15,29 @@ mod img_alt;
 /// Whole-query refusals retain the owner's original observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeCanonicalLintRefusal {
+    /// The retained canonical file does not match its admitted source owner.
     SourceMismatch,
-    ScriptComment { span: Span },
-    MarkupComment { span: Span },
-    IndeterminateAttribute { span: Span },
-    UnsupportedImageElement { span: Span },
+    /// A script comment requires suppression policy unavailable to this query.
+    ScriptComment {
+        /// Original comment range.
+        span: Span,
+    },
+    /// A markup comment requires suppression policy unavailable to this query.
+    MarkupComment {
+        /// Original comment range.
+        span: Span,
+    },
+    /// An attribute cannot be classified from the producer's canonical facts.
+    IndeterminateAttribute {
+        /// Original attribute range.
+        span: Span,
+    },
+    /// An image element uses syntax outside the canonical lint contract.
+    UnsupportedImageElement {
+        /// Original image-element range.
+        span: Span,
+    },
+    /// Traversal exceeded the bounded canonical node budget.
     NodeLimit,
 }
 
@@ -69,6 +87,7 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
         Ok(Self { file: owner.file() })
     }
 
+    /// Returns the authentic canonical file retained from the admitted owner.
     #[must_use]
     pub fn file(&self) -> &'o FileArtifact<'a> {
         self.file

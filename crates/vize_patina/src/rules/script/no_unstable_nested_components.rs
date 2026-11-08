@@ -22,6 +22,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/no-unstable-nested-components` lint rule.
 pub struct NoUnstableNestedComponents;
 
 impl ScriptRule for NoUnstableNestedComponents {

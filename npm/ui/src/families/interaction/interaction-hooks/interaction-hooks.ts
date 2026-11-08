@@ -239,6 +239,7 @@ function surfaceErrors(errors: readonly unknown[]): void {
   if (errors.length > 1) throw new AggregateError(errors, "Interaction hook cleanup failed");
 }
 
+/** Create explicitly disposable interaction features and merged host props. */
 export function createInteractionHooks<const Options extends InteractionHooksOptions = {}>(
   options: Options = {} as Options,
 ): InteractionHooksController<Options> {
@@ -305,6 +306,7 @@ export function createInteractionHooks<const Options extends InteractionHooksOpt
   }) as InteractionHooksController<Options>;
 }
 
+/** Scope {@link createInteractionHooks} to the active Vue effect scope. */
 export function useInteractionHooks<const Options extends InteractionHooksOptions = {}>(
   options: Options = {} as Options,
 ): InteractionHooksController<Options> {

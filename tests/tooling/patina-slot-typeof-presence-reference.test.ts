@@ -154,13 +154,16 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
     join(root, "crates/vize_patina/src/rules/script/require_slots_as_functions.rs"),
     "utf8",
   );
+  const publicApiDoc = "/// Implements the `script/require-slots-as-functions` lint rule.\n";
+  assert.equal(current.split(publicApiDoc).length, 2);
+  const currentWithoutPublicApiDoc = current.replace(publicApiDoc, "");
   const after =
     "if matches!(\n            expression.operator,\n            UnaryOperator::LogicalNot | UnaryOperator::Typeof\n        ) {";
-  assert.equal(current.split(after).length, 2);
+  assert.equal(currentWithoutPublicApiDoc.split(after).length, 2);
   const conditionalLines =
     "        self.suppress_direct_slot_function(&expression.consequent);\n        self.suppress_direct_slot_function(&expression.alternate);\n";
-  assert.equal(current.split(conditionalLines).length, 2);
-  const beforeConditional = current
+  assert.equal(currentWithoutPublicApiDoc.split(conditionalLines).length, 2);
+  const beforeConditional = currentWithoutPublicApiDoc
     .replace(conditionalLines, "")
     .replace("\n#[cfg(test)]\nmod conditional_tests;\n", "");
   assert.equal(hash(beforeConditional), conditionalSuccessors.beforeRuleSha256);

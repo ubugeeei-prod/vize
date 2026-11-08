@@ -14,6 +14,7 @@ impl Linter {
         self.lint_native_sfc_with_allocator(&allocator, source, filename)
     }
 
+    /// Lints one original SFC with caller-owned allocation and exact configured rules.
     pub fn lint_native_sfc_with_allocator<'a>(
         &self,
         allocator: &'a Allocator,

@@ -4,8 +4,13 @@ import path from "node:path";
 import { test } from "vitest";
 
 const canonicalSfcComponents = [
+  { name: "Alert", file: "FrescoAlert" },
+  { name: "Avatar", file: "FrescoAvatar" },
   { name: "Badge", file: "FrescoBadge" },
+  { name: "Breadcrumb", file: "FrescoBreadcrumb" },
+  { name: "Card", file: "FrescoCard" },
   { name: "FrameBuffer", file: "FrescoFrameBuffer" },
+  { name: "Header", file: "FrescoHeader" },
   { name: "Link", file: "FrescoLink" },
   { name: "Newline", file: "FrescoNewline" },
   { name: "ScrollBar", file: "ScrollBar" },
@@ -14,6 +19,7 @@ const canonicalSfcComponents = [
   { name: "Spinner", file: "FrescoSpinner" },
   { name: "Static", file: "FrescoStatic" },
   { name: "Transform", file: "FrescoTransform" },
+  { name: "Tooltip", file: "FrescoTooltip" },
 ];
 const packageRoot = existsSync(path.join(process.cwd(), "src", "components"))
   ? process.cwd()

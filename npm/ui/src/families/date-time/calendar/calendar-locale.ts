@@ -24,10 +24,12 @@ export interface CalendarLocaleOptions {
   /**
    * Intl calendar used for display only (for example `japanese` or `buddhist`).
    * Grid structure always follows ISO months.
+   *
+   * @default the locale's calendar
    */
   readonly calendar?: string | undefined;
 
-  /** Intl numbering system for day numbers and years. */
+  /** Intl numbering system for day numbers and years. @default the locale's numbering system */
   readonly numberingSystem?: string | undefined;
 }
 

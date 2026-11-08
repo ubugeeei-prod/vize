@@ -109,8 +109,8 @@ impl Lookup<'_> {
 /// Disallow references to the built-in default set of restricted globals.
 ///
 /// This unit rule is what the static registry references; it always uses
-/// [`DEFAULT_RESTRICTED`]. A project that configures a custom list gets a
-/// [`RestrictedGlobals`] instance instead (built by the linter and preferred
+/// `DEFAULT_RESTRICTED`. A project that configures a custom list gets a
+/// `RestrictedGlobals` instance instead (built by the linter and preferred
 /// over this singleton by the dispatch).
 pub struct NoRestrictedGlobals;
 

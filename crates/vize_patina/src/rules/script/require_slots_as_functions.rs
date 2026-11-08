@@ -56,6 +56,7 @@ enum Kind {
     NotSlot,
 }
 
+/// Implements the `script/require-slots-as-functions` lint rule.
 pub struct RequireSlotsAsFunctions;
 
 impl ScriptRule for RequireSlotsAsFunctions {
