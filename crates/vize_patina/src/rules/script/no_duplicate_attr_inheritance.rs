@@ -30,7 +30,7 @@ use oxc_ast::ast::{BooleanLiteral, Program};
 
 use self::options::{InheritAttrs, declared_inherit_attrs};
 use self::template::{AttrsSpread, attrs_spreads};
-use vize_relief::RootNode;
+use vize_l1::markup::SurfaceTree;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-duplicate-attr-inheritance",
@@ -128,7 +128,7 @@ impl ScriptRule for NoDuplicateAttrInheritance {
 impl NoDuplicateAttrInheritance {
     /// Existing-stage entry for a scriptless SFC, using its cached validated AST.
     pub(crate) fn check_scriptless_template(
-        root: &RootNode<'_>,
+        root: &SurfaceTree<'_>,
         template_offset: u32,
         result: &mut ScriptLintResult,
     ) {

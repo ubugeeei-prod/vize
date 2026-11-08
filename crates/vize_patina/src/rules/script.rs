@@ -82,6 +82,7 @@ mod return_in_computed_property;
 mod sfc_context;
 mod template_component_bindings;
 mod template_scan;
+mod template_surface;
 mod valid_define_emits;
 mod valid_define_options;
 mod valid_define_props;
@@ -262,10 +263,10 @@ pub trait ScriptRule: Send + Sync {
         false
     }
 
-    /// Whether this rule reads [`SfcScriptContext::template_root`].
+    /// Whether this rule reads [`SfcScriptContext::template_surface`].
     ///
     /// The template parses at most once, only if an enabled rule returns true.
-    /// Otherwise this rule receives template_root: None and no unused parse runs.
+    /// Otherwise this rule receives `template_surface: None` and no unused scan runs.
     #[inline]
     fn uses_template_ast(&self) -> bool {
         false

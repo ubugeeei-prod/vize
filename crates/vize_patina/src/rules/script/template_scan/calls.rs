@@ -9,7 +9,8 @@ use oxc_ast_visit::{
 };
 use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
-use vize_armature::patterns::attribute_source_span;
+
+use super::super::template_surface::DecodedSource;
 
 /// A call the template performs, with a plain identifier callee.
 pub(in crate::rules::script) struct TemplateCall<'a> {
@@ -56,21 +57,17 @@ pub(in crate::rules::script) struct TemplateStringArgument<'a> {
 /// expression (`@click="a(); b()"` is valid), so it is parsed as a program.
 /// Sources oxc rejects are skipped: a call invented from a mis-parse would be a
 /// false positive, and a template that does not compile has larger problems.
-pub(super) fn for_each_call(
-    source: &str,
-    authored: &str,
-    base: u32,
-    visit: &mut impl FnMut(TemplateCall<'_>),
-) {
+pub(super) fn for_each_call(source: &DecodedSource<'_>, visit: &mut impl FnMut(TemplateCall<'_>)) {
+    let text = source.text();
     // Cheap reject for the overwhelmingly common expression (`{{ msg }}`,
     // `:class="cls"`): no call syntax, nothing to parse.
-    if !source.contains('(') {
+    if !text.contains('(') {
         return;
     }
     let allocator = Allocator::default();
     let parsed = Parser::new(
         &allocator,
-        source,
+        text,
         SourceType::default().with_typescript(true),
     )
     .parse();
@@ -83,25 +80,27 @@ pub(super) fn for_each_call(
     };
     collector.visit_program(&parsed.program);
     for call in collector.calls {
-        let Some(callee_span) = attribute_source_span(authored, source, call.callee_span) else {
+        let Some(callee_span) = source.authored_span(call.callee_span) else {
             continue;
         };
-        let Some(span) = attribute_source_span(authored, source, call.span) else {
+        let Some(span) = source.authored_span(call.span) else {
             continue;
         };
         visit(TemplateCall {
             callee: call.callee,
             first_string_argument: call.first_string_argument.and_then(|(value, span)| {
-                attribute_source_span(authored, source, span).map(|span| TemplateStringArgument {
-                    value,
-                    start: base + span.start,
-                    end: base + span.end,
-                })
+                source
+                    .authored_span(span)
+                    .map(|span| TemplateStringArgument {
+                        value,
+                        start: source.start + span.start,
+                        end: source.start + span.end,
+                    })
             }),
-            callee_start: base + callee_span.start,
-            callee_end: base + callee_span.end,
-            start: base + span.start,
-            end: base + span.end,
+            callee_start: source.start + callee_span.start,
+            callee_end: source.start + callee_span.end,
+            start: source.start + span.start,
+            end: source.start + span.end,
             local_bindings: call.local_bindings,
         });
     }

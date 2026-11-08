@@ -1,57 +1,55 @@
 //! Template writes only suppress advice; token ambiguity is conservative.
+use super::super::template_surface::{
+    DecodedSource, DirectiveArgument, directive, element_verbatim, static_attribute_value,
+};
 use super::{SfcScriptContext, analysis::Inventory};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{CompactString, FxHashSet};
-use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+use vize_l1::markup::{SurfaceChild, SurfaceTree};
 
 pub(super) fn template_writes(sfc: SfcScriptContext<'_>) -> FxHashSet<CompactString> {
     let mut writes = FxHashSet::default();
-    if let Some(root) = sfc.template_root {
-        collect_template_writes(&root.children, root.source, &mut writes);
+    if let Some(root) = sfc.template_surface {
+        collect_template_writes(root, &root.children, false, &mut writes);
     }
     writes
 }
 
 fn collect_template_writes(
-    children: &[TemplateChildNode<'_>],
-    source: &str,
+    root: &SurfaceTree<'_>,
+    children: &[SurfaceChild<'_>],
+    inherited_verbatim: bool,
     writes: &mut FxHashSet<CompactString>,
 ) {
     for child in children {
-        if let TemplateChildNode::Interpolation(interpolation) = child {
-            let text = match &interpolation.content {
-                ExpressionNode::Simple(simple) => simple.content,
-                ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
-            };
-            collect_expression_writes(text, writes);
+        if let SurfaceChild::Interpolation(interpolation) = child
+            && !inherited_verbatim
+            && let Some(source) = DecodedSource::interpolation(root.source, &interpolation.content)
+        {
+            collect_expression_writes(source.text(), writes);
         }
-        if let TemplateChildNode::Element(element) = child {
-            for prop in &element.props {
-                if let PropNode::Attribute(attribute) = prop
-                    && attribute.name == "ref"
-                    && let Some(value) = &attribute.value
-                {
-                    writes.insert(CompactString::new(value.content));
-                }
-                if let PropNode::Directive(directive) = prop
-                    && let Some(expression) = &directive.exp
-                {
-                    let text = match expression {
-                        ExpressionNode::Simple(simple) => simple.content,
-                        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
+        if let SurfaceChild::Element(element) = child {
+            let verbatim = element_verbatim(element, inherited_verbatim);
+            for attribute in &element.open.attrs {
+                if let Some(directive) = directive(root, attribute, verbatim) {
+                    let Some(value) = directive.value else {
+                        continue;
                     };
-                    let is_bound_ref = directive.name == "bind" && directive.arg.as_ref().is_some_and(|argument| {
-                        matches!(argument, ExpressionNode::Simple(simple) if simple.is_static && simple.content == "ref")
-                    });
+                    let is_bound_ref = directive.name == "bind"
+                        && directive.argument == Some(DirectiveArgument::Static("ref"));
                     if directive.name == "model" || is_bound_ref {
-                        collect_tokens(text, writes);
+                        collect_tokens(value.text(), writes);
                     } else {
-                        collect_expression_writes(text, writes);
+                        collect_expression_writes(value.text(), writes);
                     }
+                } else if attribute.name.text == "ref"
+                    && let Some(value) = static_attribute_value(root, attribute)
+                {
+                    writes.insert(CompactString::new(value.text()));
                 }
             }
-            collect_template_writes(&element.children, source, writes);
+            collect_template_writes(root, &element.children, verbatim, writes);
         }
     }
 }

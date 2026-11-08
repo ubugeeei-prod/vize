@@ -44,7 +44,11 @@ impl Linter {
                     input.descriptor,
                     scripts,
                     &mut script_result,
-                    valid_template.then_some((input.root, input.template.loc.start as u32)),
+                    valid_template.then_some((
+                        input.root,
+                        input.l2.surface(),
+                        input.template.loc.start as u32,
+                    )),
                     input.template_syntax,
                     Some(ctx),
                 );

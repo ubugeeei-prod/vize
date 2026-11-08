@@ -39,10 +39,9 @@
 
 mod calls;
 
+use super::template_surface::{DecodedSource, directive, element_verbatim};
 use vize_l0::String;
-use vize_relief::{
-    DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
-};
+use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
 pub(super) use calls::TemplateCall;
 
@@ -56,7 +55,10 @@ pub(super) const DOLLAR_EMIT: &str = "$emit";
 /// Calls whose callee is shadowed by an enclosing `v-for` alias or slot
 /// variable are skipped: inside that subtree the name is the iteration /slot
 /// binding, not the component's own.
-pub(super) fn for_each_template_call(root: &RootNode<'_>, mut visit: impl FnMut(TemplateCall<'_>)) {
+pub(super) fn for_each_template_call(
+    root: &SurfaceTree<'_>,
+    mut visit: impl FnMut(TemplateCall<'_>),
+) {
     for_each_template_call_scoped(root, |call, _| visit(call));
 }
 
@@ -68,7 +70,7 @@ pub(super) fn for_each_template_call(root: &RootNode<'_>, mut visit: impl FnMut(
 /// still name the component binding at that location without exposing the
 /// walker's borrowed scope storage.
 pub(super) fn for_each_template_call_with_replacement(
-    root: &RootNode<'_>,
+    root: &SurfaceTree<'_>,
     replacement: Option<&str>,
     mut visit: impl FnMut(TemplateCall<'_>, bool),
 ) {
@@ -82,19 +84,18 @@ pub(super) fn for_each_template_call_with_replacement(
 }
 
 fn for_each_template_call_scoped(
-    root: &RootNode<'_>,
+    root: &SurfaceTree<'_>,
     mut visit: impl FnMut(TemplateCall<'_>, &[String]),
 ) {
     let mut walker = Walker {
-        source: root.source,
+        root,
         shadowed: Vec::new(),
     };
-    walker.walk(&root.children, &mut visit);
+    walker.walk(&root.children, false, &mut visit);
 }
 
-struct Walker<'s> {
-    /// The template source node-loc spans index into (`RootNode::source`).
-    source: &'s str,
+struct Walker<'a> {
+    root: &'a SurfaceTree<'a>,
     /// Names bound by an enclosing `v-for` alias or slot variable.
     ///
     /// Collected as bare identifier tokens out of the alias / slot expression
@@ -109,24 +110,22 @@ struct Walker<'s> {
 impl Walker<'_> {
     fn walk(
         &mut self,
-        children: &[TemplateChildNode<'_>],
+        children: &[SurfaceChild<'_>],
+        inherited_verbatim: bool,
         visit: &mut impl FnMut(TemplateCall<'_>, &[String]),
     ) {
         for child in children {
             match child {
-                TemplateChildNode::Element(element) => self.walk_element(element, visit),
-                TemplateChildNode::Interpolation(interpolation) => {
-                    self.scan(&interpolation.content, visit);
+                SurfaceChild::Element(element) => {
+                    self.walk_element(element, inherited_verbatim, visit)
                 }
-                // `v-if` / `v-for` are still plain directives in the parse this
-                // reads, so these arms only matter if a transformed AST is ever
-                // passed in. Walking them keeps that case correct.
-                TemplateChildNode::If(if_node) => {
-                    for branch in if_node.branches.iter() {
-                        self.walk(&branch.children, visit);
+                SurfaceChild::Interpolation(interpolation) if !inherited_verbatim => {
+                    if let Some(source) =
+                        DecodedSource::interpolation(self.root.source, &interpolation.content)
+                    {
+                        self.scan(&source, visit);
                     }
                 }
-                TemplateChildNode::For(for_node) => self.walk(&for_node.children, visit),
                 _ => {}
             }
         }
@@ -134,57 +133,59 @@ impl Walker<'_> {
 
     fn walk_element(
         &mut self,
-        element: &ElementNode<'_>,
+        element: &Element<'_>,
+        inherited_verbatim: bool,
         visit: &mut impl FnMut(TemplateCall<'_>, &[String]),
     ) {
         let depth = self.shadowed.len();
+        let verbatim = element_verbatim(element, inherited_verbatim);
 
         // A `v-for` alias is in scope for the element's *own* bindings as well
         // as its children (`v-for="total in rows" @click="total()"` calls the
         // iteration variable), so it is collected before any directive here is
         // scanned.
-        for prop in element.props.iter() {
-            if let PropNode::Directive(directive) = prop
+        for attribute in &element.open.attrs {
+            if let Some(directive) = directive(self.root, attribute, verbatim)
                 && directive.name == "for"
+                && let Some(value) = directive.value
             {
-                push_for_aliases(directive, &mut self.shadowed, self.source);
+                push_for_aliases(value.text(), &mut self.shadowed);
             }
         }
 
-        for prop in element.props.iter() {
-            if let PropNode::Directive(directive) = prop
-                && let Some(exp) = directive.exp.as_ref()
+        for attribute in &element.open.attrs {
+            if let Some(directive) = directive(self.root, attribute, verbatim)
+                && let Some(value) = directive.value
                 // `v-for`'s expression is `item in items`, not JavaScript, and
                 // `v-slot`'s is a binding pattern rather than a reference.
                 && !matches!(directive.name, "for" | "slot")
             {
-                self.scan(exp, visit);
+                self.scan(&value, visit);
             }
         }
 
         // A slot variable, by contrast, scopes the slot *content*, so it is
         // collected only after this element's own directives are scanned.
-        for prop in element.props.iter() {
-            if let PropNode::Directive(directive) = prop
+        for attribute in &element.open.attrs {
+            if let Some(directive) = directive(self.root, attribute, verbatim)
                 && directive.name == "slot"
-                && let Some(exp) = directive.exp.as_ref()
+                && let Some(value) = directive.value
             {
-                push_identifier_tokens(expression_source(exp, self.source), &mut self.shadowed);
+                push_identifier_tokens(value.text(), &mut self.shadowed);
             }
         }
 
-        self.walk(&element.children, visit);
+        self.walk(&element.children, verbatim, visit);
         self.shadowed.truncate(depth);
     }
 
-    fn scan(&self, exp: &ExpressionNode<'_>, visit: &mut impl FnMut(TemplateCall<'_>, &[String])) {
+    fn scan(
+        &self,
+        source: &DecodedSource<'_>,
+        visit: &mut impl FnMut(TemplateCall<'_>, &[String]),
+    ) {
         let shadowed = &self.shadowed;
-        let decoded = expression_source(exp, self.source);
-        let span = exp.loc().span;
-        let Some(authored) = self.source.get(span.start as usize..span.end as usize) else {
-            return;
-        };
-        calls::for_each_call(decoded, authored, span.start, &mut |call| {
+        calls::for_each_call(source, &mut |call| {
             if call.is_locally_shadowed(call.callee)
                 || shadowed.iter().any(|name| name.as_str() == call.callee)
             {
@@ -200,30 +201,14 @@ impl Walker<'_> {
 /// The parsed aliases are preferred; a `v-for` the parser could not split falls
 /// back to the whole expression, whose identifier tokens include the source as
 /// well as the aliases. Over-collecting only suppresses calls.
-fn push_for_aliases(directive: &DirectiveNode<'_>, out: &mut Vec<String>, source: &str) {
-    if let Some(parsed) = directive.for_parse_result.as_ref() {
-        for alias in [
-            parsed.value.as_ref(),
-            parsed.key.as_ref(),
-            parsed.index.as_ref(),
-        ]
-        .into_iter()
-        .flatten()
-        {
-            push_identifier_tokens(expression_source(alias, source), out);
-        }
+fn push_for_aliases(source: &str, out: &mut Vec<String>) {
+    if let Some(parsed) = vize_croquis::drawer::parse_v_for_scope_expression(source) {
+        out.extend(parsed.value_bindings);
+        out.extend(parsed.key_alias);
+        out.extend(parsed.index_alias);
         return;
     }
-    if let Some(exp) = directive.exp.as_ref() {
-        push_identifier_tokens(expression_source(exp, source), out);
-    }
-}
-
-fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
-    match exp {
-        ExpressionNode::Simple(simple) => simple.content,
-        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
-    }
+    push_identifier_tokens(source, out);
 }
 
 /// Push every identifier-shaped token of `source` onto `out`.
