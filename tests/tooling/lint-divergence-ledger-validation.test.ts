@@ -138,7 +138,7 @@ test("a ledger entry without a tracking issue is rejected", () => {
   );
 });
 
-test("recovered templates and conservative legacy surfaces are intentional on both reporters", () => {
+test("recovered templates remain comparable while conservative legacy surfaces are intentional", () => {
   const directory = `${cwd}/src`;
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(
@@ -219,17 +219,35 @@ test("recovered templates and conservative legacy surfaces are intentional on bo
       },
     ]),
   ];
-  const current = compareCurrent("fixture", cwd, map, [], baseline, {});
+  const recoveredFindings = [
+    {
+      file: "src/Table.vue",
+      ruleId: "script/require-explicit-slots",
+      severity: 1,
+      ...span(1, 60, 1, 79),
+      message: "[vize:script/require-explicit-slots] Slot 'row' is rendered but not declared.",
+    },
+    {
+      file: "src/Table.vue",
+      ruleId: "vue/no-unused-refs",
+      severity: 1,
+      ...span(1, 29, 1, 39),
+      message: "[vize:vue/no-unused-refs] Template ref 'list' is never referenced.",
+    },
+  ];
+  const current = compareCurrent("fixture", cwd, map, recoveredFindings, baseline, {});
   const compatible = compareCompatible({
     projectId: "fixture",
     cwd,
     ruleMap: map,
-    patinaFindings: [],
+    patinaFindings: recoveredFindings,
     eslintResults: baseline,
   });
   for (const result of [current, compatible]) {
+    assert.equal(result.summary.falsePositiveCount, 0);
     assert.equal(result.summary.falseNegativeCount, 0);
-    assert.equal(result.summary.intentionalDivergenceCount, 5);
+    assert.equal(result.summary.sharedCount, 2);
+    assert.equal(result.summary.intentionalDivergenceCount, 3);
   }
 });
 

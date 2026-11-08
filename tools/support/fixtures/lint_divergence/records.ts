@@ -259,13 +259,6 @@ export function baselineIntentionalReason(
   )
     return "Patina reads the authored template expression and sees this declared event being emitted; eslint-plugin-vue does not expose that template call to this rule.";
   if (
-    ["vue/require-explicit-slots", "vue/no-unused-refs"].includes(finding.ruleId) &&
-    source !== undefined &&
-    source !== null &&
-    hasTableTransitionRecoveryBoundary(source)
-  )
-    return "Patina refuses a cross-template unused or explicit-slot conclusion after HTML table tree construction reparents a transition component; the recovered partial tree is not proof of the authored Vue scope.";
-  if (
     finding.ruleId === "vue/no-deprecated-events-api" &&
     source !== undefined &&
     source !== null &&
@@ -751,10 +744,6 @@ function templateEmitsDeclaredEvent(finding: LintRecord, source: string): boolea
   if (event === undefined) return false;
   const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
   return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source);
-}
-
-function hasTableTransitionRecoveryBoundary(source: string): boolean {
-  return /<tbody\b[\s\S]*?<transition-group\b/iu.test(source);
 }
 
 function instanceEventsApiMayBeOverridden(finding: LintRecord, source: string): boolean {
