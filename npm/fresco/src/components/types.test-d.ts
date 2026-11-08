@@ -204,13 +204,6 @@ export function textRejectsMistypedRenderProps() {
 // --- Emits -----------------------------------------------------------------
 
 type TextInputEmit = InstanceType<typeof TextInput>["$emit"];
-type LinkEmit = InstanceType<typeof Link>["$emit"];
-
-export function linkEmitsDocumentedEvents(emit: LinkEmit) {
-  emit("click");
-  // @ts-expect-error - activate is not a declared event.
-  emit("activate");
-}
 
 export function textInputEmitsDocumentedEvents(emit: TextInputEmit) {
   emit("update:modelValue", "next");

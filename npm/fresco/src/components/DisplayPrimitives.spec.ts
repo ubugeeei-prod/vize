@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { h, nextTick } from "vue";
+import { h, nextTick, ref } from "vue";
 import { test, vi } from "vitest";
 
 import { firstChild, mountComponent, mountFresco } from "../testing/index.js";
@@ -94,6 +94,30 @@ test("Spinner advances custom frames and clears its timer on unmount", async () 
   } finally {
     vi.clearAllTimers();
     clearIntervalSpy.mockRestore();
+    vi.useRealTimers();
+  }
+});
+
+test("Spinner keeps a valid frame when its frame set shrinks", async () => {
+  vi.useFakeTimers();
+  try {
+    const frames = ref(["a", "b", "c"]);
+    const mounted = mountFresco(() => h(Spinner, { frames: frames.value, interval: 20 }));
+
+    await vi.advanceTimersByTimeAsync(40);
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "c");
+
+    frames.value = ["x"];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "x");
+
+    frames.value = [];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "⠹");
+    mounted.unmount();
+  } finally {
+    vi.clearAllTimers();
     vi.useRealTimers();
   }
 });
