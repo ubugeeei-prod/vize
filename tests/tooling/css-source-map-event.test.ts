@@ -111,7 +111,7 @@ await test("the actual dedicated workflow checks event source and retains role p
   assert.equal(checkout.with["fetch-depth"], 2);
   assert.equal(
     steps.find((step: WorkflowStep) => step.run?.startsWith("vp install "))?.run,
-    "vp install --filter './npm/native...' --filter './npm/cli...' --frozen-lockfile --prefer-offline",
+    "vp install --filter './npm/native...' --filter './npm/cli...' --filter './tests' --frozen-lockfile --prefer-offline",
   );
   const proof = steps.find(
     (step: WorkflowStep) =>

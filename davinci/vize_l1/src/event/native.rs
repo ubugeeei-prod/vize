@@ -95,10 +95,10 @@ impl Sink for Recorder<'_, '_> {
     fn on_end(&mut self) {}
 
     fn on_error(&mut self, code: LexErrorCode, index: usize) {
-        self.errors.push(SurfaceError {
-            code: surface_error_code(code),
-            offset: index as u32,
-        });
+        self.errors.push(SurfaceError::tokenizer(
+            surface_error_code(code),
+            index as u32,
+        ));
     }
 }
 

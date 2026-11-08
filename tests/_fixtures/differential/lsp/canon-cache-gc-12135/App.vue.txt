@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const cacheWitness: string = "isolated-canon-cache";
+</script>
+
+<template>
+  <p>{{ cacheWitness }}</p>
+</template>

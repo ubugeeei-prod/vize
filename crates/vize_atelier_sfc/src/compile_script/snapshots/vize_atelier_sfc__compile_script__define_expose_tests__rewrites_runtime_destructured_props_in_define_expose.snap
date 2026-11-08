@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/define_expose_tests.rs
+expression: output
+---
+
+export default {
+  __name: 'TestComponent',
+  props: ["foo"],
+  setup(__props, { expose: __expose }) {
+
+__expose({ bar: () => __props.foo })
+
+return (_ctx, _cache) => {
+  return null
+}
+}
+
+}

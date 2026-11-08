@@ -162,11 +162,20 @@ function relativeReexports(file: URL, sourceText: string): readonly URL[] {
     if (!specifier.startsWith(".")) continue;
 
     const target = new URL(specifier, file);
-    const candidates = specifier.endsWith(".ts")
-      ? [target]
-      : specifier.endsWith(".js")
-        ? [new URL(`${specifier.slice(0, -3)}.ts`, file)]
-        : [new URL(`${specifier}.ts`, file), new URL(`${specifier}/index.ts`, file)];
+    const candidates =
+      specifier.endsWith(".d.ts") || specifier.endsWith(".ts")
+        ? [target]
+        : specifier.endsWith(".js")
+          ? [
+              new URL(`${specifier.slice(0, -3)}.ts`, file),
+              new URL(`${specifier.slice(0, -3)}.d.ts`, file),
+            ]
+          : [
+              new URL(`${specifier}.ts`, file),
+              new URL(`${specifier}.d.ts`, file),
+              new URL(`${specifier}/index.ts`, file),
+              new URL(`${specifier}/index.d.ts`, file),
+            ];
     const resolved = candidates.find((candidate) => existsSync(candidate));
     if (resolved) reexports.push(resolved);
   }

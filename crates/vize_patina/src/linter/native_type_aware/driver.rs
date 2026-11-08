@@ -72,19 +72,16 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
     let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
+        let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
         let parser = TemplateParser::new(&allocator, &template.content);
-        let (root, parse_errors, syntax) = profile!(
+        let (root, _legacy_parse_errors, syntax) = profile!(
             "patina.type_aware.template_parse",
             super::super::script_rules::parse_template_for_script_rules(linter, parser)
         );
         template_syntax = syntax;
-        let has_fatal_parse_errors = Linter::has_fatal_template_parse_errors(&parse_errors);
-        (
-            root,
-            template.loc.start as u32,
-            parse_errors,
-            has_fatal_parse_errors,
-        )
+        let has_fatal_parse_errors =
+            Linter::has_fatal_l1_template_parse_errors(l2.surface_errors());
+        (root, l2, template.loc.start as u32, has_fatal_parse_errors)
     });
     let template_has_fatal_parse_errors = template_ast
         .as_ref()
@@ -127,7 +124,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             }),
         )
     });
-    let mut result = if let (Some((root, _, parse_errors, has_fatal)), Some(template)) =
+    let mut result = if let (Some((root, l2, _, has_fatal)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
     {
         let (lint_result, scripts) = profile!(
@@ -138,6 +135,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                     template,
                     allocator: &allocator,
                     root,
+                    l2,
                     descriptor,
                     analysis: if *has_fatal {
                         TemplateAnalysis::Disabled
@@ -150,7 +148,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             )
         );
         let mut parse_result =
-            Linter::template_parse_lint_result(filename, template.content.len(), parse_errors);
+            Linter::l1_template_parse_lint_result(filename, &template.content, l2.surface_errors());
         super::super::engine::offset_result(&mut parse_result, template.loc.start as u32);
         let mut result = Linter::merge_lint_results(parse_result, lint_result);
         result.error_count += scripts.error_count;
@@ -208,7 +206,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
 
     let template_offset = template_ast
         .as_ref()
-        .map(|(_, offset, _, _)| *offset)
+        .map(|(_, _, offset, _)| *offset)
         .unwrap_or(0);
     let parse_result = profile!("patina.type_aware.script_parse", {
         if let Some(script_setup) = descriptor.script_setup.as_ref() {
@@ -324,7 +322,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             descriptor,
             template_ast
                 .as_ref()
-                .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
+                .and_then(|(root, _, offset, fatal)| (!*fatal).then_some((root, *offset))),
             &mut virtual_ts,
         )
     });

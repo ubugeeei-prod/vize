@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/define_expose_tests.rs
+expression: result.code
+---
+import { defineComponent as _defineComponent, type PropType } from 'vue'
+
+// Reactive Props Destructure (Vue 3.5+)
+
+const __sfc__ = /*@__PURE__*/_defineComponent({
+  __name: 'Test',
+  props: {
+    foo: {},
+  },
+  setup(__props, { expose: __expose, emit: __emit }) {
+  __expose({ bar: () => __props.foo });
+  const __returned__ = {  }
+  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+  return __returned__
+  }
+
+});

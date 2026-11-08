@@ -198,7 +198,7 @@ fn projection<'a>(
     // Rebase only observations already produced by the single construction;
     // neither the original source, events nor either CST is visited again.
     for error in &mut errors {
-        error.offset += block.start();
+        *error = error.rebased(block.start());
     }
     for boundary in &mut unsupported {
         boundary.span.start += block.start();

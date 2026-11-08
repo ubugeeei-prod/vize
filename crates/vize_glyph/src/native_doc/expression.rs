@@ -26,13 +26,43 @@ pub const MAX_EXPRESSION_DOCUMENT_DEPTH: usize = 16;
 /// are decoded-relative coordinates in that retained expression's source.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExpressionRefusal {
-    Unadmitted { hole: Option<EmbedHole> },
-    SourceMismatch { span: Span },
-    Projection { offset: u32, error: SourceError },
-    UnsupportedNode { span: Span },
-    InvalidGap { span: Span },
-    InvalidFraming { span: Span },
-    DepthLimit { span: Span },
+    /// The retained expression was not admitted by the native syntax provider.
+    Unadmitted {
+        /// Typed admission hole, when the provider recorded one.
+        hole: Option<EmbedHole>,
+    },
+    /// The expression span does not belong to the supplied authored source.
+    SourceMismatch {
+        /// Offending authored-file span.
+        span: Span,
+    },
+    /// A decoded span could not be projected back into the authored source.
+    Projection {
+        /// Authored-file byte offset where the retained expression begins.
+        offset: u32,
+        /// Original projection error.
+        error: SourceError,
+    },
+    /// The admitted tree contains a node outside Glyph's supported subset.
+    UnsupportedNode {
+        /// Decoded-relative span of the unsupported node.
+        span: Span,
+    },
+    /// Bytes between adjacent syntax nodes could not be retained safely.
+    InvalidGap {
+        /// Decoded-relative span of the invalid gap.
+        span: Span,
+    },
+    /// The expression's surrounding authored frame is inconsistent.
+    InvalidFraming {
+        /// Decoded-relative span of the invalid frame.
+        span: Span,
+    },
+    /// The expression exceeds Glyph's bounded document traversal depth.
+    DepthLimit {
+        /// Decoded-relative span where the limit was reached.
+        span: Span,
+    },
 }
 
 /// The document borrows the same admitted expression and authored source.
@@ -57,9 +87,11 @@ pub struct ExpressionDocument<'p, 'a> {
 }
 
 impl<'p, 'a> ExpressionDocument<'p, 'a> {
+    /// Return the retained expression that authorized this document.
     pub fn original(&self) -> &'p RetainedExpression<'a> {
         self.original
     }
+    /// Borrow the complete document tree built from the retained expression.
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }

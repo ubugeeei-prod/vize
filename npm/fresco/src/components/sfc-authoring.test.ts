@@ -9,8 +9,10 @@ const canonicalSfcComponents = [
   { name: "Badge", file: "FrescoBadge" },
   { name: "Breadcrumb", file: "FrescoBreadcrumb" },
   { name: "Card", file: "FrescoCard" },
+  { name: "Divider", file: "FrescoDivider" },
   { name: "FrameBuffer", file: "FrescoFrameBuffer" },
   { name: "Header", file: "FrescoHeader" },
+  { name: "HStack", file: "FrescoHStack" },
   { name: "Link", file: "FrescoLink" },
   { name: "Markdown", file: "FrescoMarkdown" },
   { name: "Newline", file: "FrescoNewline" },
@@ -18,9 +20,11 @@ const canonicalSfcComponents = [
   { name: "ScrollBox", file: "ScrollBox" },
   { name: "Spacer", file: "FrescoSpacer" },
   { name: "Spinner", file: "FrescoSpinner" },
+  { name: "Stack", file: "FrescoStack" },
   { name: "Static", file: "FrescoStatic" },
   { name: "Transform", file: "FrescoTransform" },
   { name: "Tooltip", file: "FrescoTooltip" },
+  { name: "VStack", file: "FrescoVStack" },
 ];
 const packageRoot = existsSync(path.join(process.cwd(), "src", "components"))
   ? process.cwd()

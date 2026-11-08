@@ -6,10 +6,10 @@
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
-use crate::markup::{L2Template, MarkupContext, MarkupDocument};
+use crate::markup::{MarkupContext, MarkupDocument};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
-use vize_l0::{Allocator, profile};
+use vize_l0::profile;
 use vize_relief::RootNode;
 
 mod batch;
@@ -73,9 +73,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {
-    pub allocator: &'a Allocator,
-    pub source: &'a str,
     pub root: &'a RootNode<'a>,
+    pub l2: &'a crate::markup::L2Template<'a>,
     pub analysis: Option<&'a Croquis>,
     pub rules: &'static [&'static str],
     pub rule_count: usize,
@@ -114,11 +113,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
             *slot = false;
         }
     }
-    let lowered = profile!(
-        "patina.sfc.facade.lower",
-        L2Template::lower(input.allocator, input.source)
-    );
-    let markup = lowered.markup();
+    let markup = input.l2.markup();
     let markup = crate::markup::reborrow_markup(&markup);
     let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
     if let Some(analysis) = input.analysis {
