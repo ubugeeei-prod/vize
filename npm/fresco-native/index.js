@@ -653,7 +653,9 @@ if (!nativeBinding || forceWasi) {
     }
     return null
   }
-  if (!wasiBindingLoaded) {
+  {
+    // The local artifact is always the first WASI candidate. Keep this scope
+    // separate because the package fallback below reuses the candidate names.
     let candidateError = null
     let candidateFailed = false
     try {
