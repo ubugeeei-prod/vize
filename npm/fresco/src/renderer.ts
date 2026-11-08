@@ -340,6 +340,10 @@ function mapElementType(type: string): FrescoRenderNodeKind {
     case "input":
     case "textinput":
       return "input";
+    case "raw":
+    case "framebuffer":
+    case "frame-buffer":
+      return "raw";
     default:
       return "box";
   }

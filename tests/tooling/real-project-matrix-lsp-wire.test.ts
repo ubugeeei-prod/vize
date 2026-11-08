@@ -284,16 +284,18 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     /'enforced' \|\|[\s\S]*'release-gated'\) \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
   );
   current["run-name"] = original["run-name"];
-  // Preserve the pinned Wild version while routing the network transfer through
-  // the repository-owned retry action. Invert only that exact transport edit.
-  const wildAction = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
-  const wildRecovery = "./.github/actions/setup-wild-http-recovery";
-  const oldWildIndex = oldSteps.findIndex((step) => step.uses === wildAction);
-  const wildIndex = steps.findIndex((step) => step.uses === wildRecovery);
-  assert.equal(oldSteps.filter((step) => step.uses === wildAction).length, 1);
-  assert.equal(steps.filter((step) => step.uses === wildRecovery).length, 1);
-  assert.deepEqual(steps[wildIndex], { ...oldSteps[oldWildIndex], uses: wildRecovery });
-  steps[wildIndex].uses = wildAction;
+  // The release asset recovery moved the pinned Wild download behind a local
+  // action. Authenticate that single ownership change before restoring the
+  // archived third-party action for the whole-workflow comparison.
+  const wildStepName = "Setup Wild linker";
+  const oldWild = oldSteps.find((step) => step.name === wildStepName);
+  const wild = steps.find((step) => step.name === wildStepName);
+  assert.ok(oldWild && wild);
+  assert.deepEqual(wild, {
+    ...oldWild,
+    uses: "./.github/actions/setup-wild-http-recovery",
+  });
+  wild.uses = oldWild.uses;
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);

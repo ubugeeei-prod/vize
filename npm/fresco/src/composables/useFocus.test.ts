@@ -65,6 +65,7 @@ interface FocusProbe {
   id: string;
   isFocused: Ref<boolean>;
   hasFocusedDescendant: Ref<boolean>;
+  isFocusTrapActive: Ref<boolean>;
   focus: (targetId?: string) => void;
   blur: () => void;
 }
@@ -105,6 +106,63 @@ test("focused descendants are derived through direct and nested parents", () => 
   manager.setParent("field", "body");
   manager.setParent("body", null);
   assert.equal(manager.hasFocusedDescendant("modal"), false, "broken parent chains stop lookup");
+});
+
+test("focus delegation accepts active descendants and rejects boundary escapes", () => {
+  const manager = createFocusManager();
+  manager.register("panel", { delegateFocusTo: "field" });
+  manager.register("field", { parentId: "panel" });
+  manager.register("outside");
+
+  manager.focus("panel");
+  assert.equal(manager.focusedId.value, "field");
+
+  manager.setDelegate("field", "outside");
+  manager.focus("field");
+  assert.equal(manager.focusedId.value, "field", "delegation cannot escape the target subtree");
+
+  manager.setActive("field", false);
+  manager.focus("panel");
+  assert.equal(manager.focusedId.value, "panel", "inactive delegates fall back to their owner");
+});
+
+test("nested focus traps constrain direct and sequential focus without traversal stalls", () => {
+  const manager = createFocusManager();
+  manager.register("outside");
+  manager.register("dialog", { delegateFocusTo: "field" });
+  manager.register("field", { parentId: "dialog" });
+  manager.register("action", { parentId: "dialog" });
+  manager.register("nested", { parentId: "dialog", delegateFocusTo: "nested-field" });
+  manager.register("nested-field", { parentId: "nested" });
+
+  manager.focus("outside");
+  manager.trapFocus("dialog");
+  assert.equal(manager.activeTrapId.value, "dialog");
+  assert.equal(manager.focusedId.value, "field", "trap activation follows safe delegation");
+
+  manager.focus("outside");
+  assert.equal(manager.focusedId.value, "field", "programmatic focus cannot leave the trap");
+  manager.focusPrevious();
+  assert.equal(
+    manager.focusedId.value,
+    "nested-field",
+    "delegating ancestors do not stall reverse traversal",
+  );
+  manager.focusNext();
+  assert.equal(manager.focusedId.value, "field", "forward traversal wraps inside the trap");
+
+  manager.trapFocus("nested");
+  assert.equal(manager.activeTrapId.value, "nested");
+  assert.equal(manager.focusedId.value, "nested-field");
+  manager.focus("action");
+  assert.equal(manager.focusedId.value, "nested-field", "the innermost trap owns the boundary");
+
+  manager.releaseFocusTrap("nested");
+  assert.equal(manager.activeTrapId.value, "dialog");
+  manager.releaseFocusTrap("dialog");
+  assert.equal(manager.activeTrapId.value, undefined);
+  manager.focus("outside");
+  assert.equal(manager.focusedId.value, "outside");
 });
 
 test("empty string focus IDs stay addressable in hierarchy checks", () => {
@@ -212,6 +270,35 @@ test("a reactive isActive toggles traversal membership from inside the tree", as
   mounted.unmount();
 });
 
+test("a reactive isActive restores an opted-in focus trap", async () => {
+  const active = ref(false);
+  const probes = new Map<string, FocusProbe>();
+  const Boundary = defineComponent({
+    setup() {
+      probes.set("boundary", useFocus({ id: "boundary", isActive: active, trapFocus: true }));
+      return () => h("text", { text: "boundary" });
+    },
+  });
+  const mounted = mountFresco(() => h(Boundary));
+
+  assert.equal(mounted.focusManager.activeTrapId.value, undefined);
+  assert.equal(probes.get("boundary")?.isFocusTrapActive.value, false);
+
+  active.value = true;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, "boundary");
+  assert.equal(probes.get("boundary")?.isFocusTrapActive.value, true);
+
+  active.value = false;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, undefined);
+
+  active.value = true;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, "boundary");
+  mounted.unmount();
+});
+
 test("mounted focusables expose descendant-focus state", async () => {
   const probes = new Map<string, FocusProbe>();
   const parentId = ref<string | null>("panel");
@@ -230,5 +317,36 @@ test("mounted focusables expose descendant-focus state", async () => {
   assert.equal(probes.get("panel")?.hasFocusedDescendant.value, false);
   assert.equal(probes.get("aside")?.hasFocusedDescendant.value, true);
 
+  mounted.unmount();
+});
+
+test("mounted focus boundaries react to delegation and trap options", async () => {
+  const delegateFocusTo = ref<string | null>(null);
+  const trapsFocus = ref(false);
+  const probes = new Map<string, FocusProbe>();
+  const Panel = defineComponent({
+    setup() {
+      probes.set("panel", useFocus({ id: "panel", delegateFocusTo, trapFocus: trapsFocus }));
+      return () => h("text", { text: "panel" });
+    },
+  });
+  const Field = focusableStub("field", probes, undefined, "panel");
+  const Outside = focusableStub("outside", probes);
+  const mounted = mountFresco(() => h("box", [h(Panel), h(Field), h(Outside)]));
+
+  delegateFocusTo.value = "field";
+  trapsFocus.value = true;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, "panel");
+  assert.equal(mounted.focusManager.focusedId.value, "field");
+  assert.equal(probes.get("panel")?.isFocusTrapActive.value, true);
+
+  probes.get("outside")?.focus();
+  assert.equal(mounted.focusManager.focusedId.value, "field");
+
+  trapsFocus.value = false;
+  await nextTick();
+  probes.get("outside")?.focus();
+  assert.equal(mounted.focusManager.focusedId.value, "outside");
   mounted.unmount();
 });

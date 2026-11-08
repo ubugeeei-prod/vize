@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests/define_props_regressions/resolved_macro_prop_shapes.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode } from "vue"
+
+import type { Props } from "./handler"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'Page',
+  props: {
+    title: { type: String, required: true },
+    count: { type: Number, required: true }
+  },
+  setup(__props: any) {
+
+const props = __props
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _toDisplayString(props.title),
+    _createTextVNode(),
+    _toDisplayString(props.count)
+  ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+})
