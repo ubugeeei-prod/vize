@@ -33,9 +33,9 @@ fn identity_script_reuses_initial_dependency_syntax_once() {
         .as_ref()
         .expect("identity script keeps the initial parse facts until reachability");
     assert_eq!(syntax.occurrences.len(), 1);
-    assert!(syntax.occurrences.iter().any(|(start, end, mode)| {
-        *mode == crate::PackageResolutionMode::Contextual
-            && entry_source.get(*start as usize..*end as usize) == Some("./dependency")
+    assert!(syntax.occurrences.iter().any(|occurrence| {
+        occurrence.mode() == crate::PackageResolutionMode::Contextual
+            && occurrence.specifier(entry_source) == Some("./dependency")
     }));
     assert_eq!(
         syntax.references.as_ref(),
@@ -53,6 +53,37 @@ fn identity_script_reuses_initial_dependency_syntax_once() {
         project.registered_original_paths_sorted(),
         vec![dependency, entry, reference],
         "reachability must register the complete dependency graph exactly once",
+    );
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
+fn identity_script_reuses_decoded_dependency_specifiers() {
+    let root = case_dir("identity-decoded-syntax-reuse");
+    let src = root.join("src");
+    fs::create_dir_all(&src).unwrap();
+    let entry = src.join("entry.ts");
+    let dependency = src.join("dependency.ts");
+    let entry_source = "import { value } from './dep\\u0065ndency';\nexport { value };\n";
+    fs::write(&entry, entry_source).unwrap();
+    fs::write(&dependency, "export const value = 1;\n").unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path(&entry).unwrap();
+    let syntax = project.source_artifacts[&entry]
+        .dependency_syntax_facts
+        .as_ref()
+        .expect("identity script keeps its initial dependency facts");
+    assert!(syntax.occurrences.iter().any(|occurrence| {
+        occurrence.mode() == crate::PackageResolutionMode::Contextual
+            && occurrence.specifier(entry_source) == Some("./dependency")
+    }));
+
+    project.register_reachable_dependencies().unwrap();
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![dependency, entry],
+        "the reused walk must resolve the parser-decoded dependency path",
     );
     let _ = fs::remove_dir_all(&root);
 }
