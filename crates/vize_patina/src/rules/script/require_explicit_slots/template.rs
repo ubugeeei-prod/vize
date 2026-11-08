@@ -65,17 +65,18 @@ impl SlotCollector<'_> {
                         name = Some(CompactString::new(value.text()));
                     }
                 }
-                Some(directive) if directive.name == "bind" => {
-                    if directive.argument == Some(DirectiveArgument::Static("name")) {
-                        let Some(static_name) = directive
-                            .value
-                            .as_ref()
-                            .and_then(|value| static_string_expression(value.text()))
-                        else {
-                            return;
-                        };
-                        name = Some(static_name);
-                    }
+                Some(directive)
+                    if directive.name == "bind"
+                        && directive.argument == Some(DirectiveArgument::Static("name")) =>
+                {
+                    let Some(static_name) = directive
+                        .value
+                        .as_ref()
+                        .and_then(|value| static_string_expression(value.text()))
+                    else {
+                        return;
+                    };
+                    name = Some(static_name);
                 }
                 _ => {}
             }
