@@ -222,6 +222,45 @@ test("title policy workflow mutates only issue and PR metadata", () => {
   assert.ok(sparseCheckoutIndex < nodeSetupIndex);
 });
 
+test("canon helper baseline builds the fixed source before checking out the exact reviewed harness", () => {
+  const workflow = parse(
+    readRepoFile(".github", "workflows", "canon-helper-native-baseline.yml"),
+  ) as {
+    jobs?: {
+      baseline?: {
+        steps?: Array<{ name?: string; uses?: string; with?: { ref?: string }; run?: string }>;
+      };
+    };
+  };
+  const steps = workflow.jobs?.baseline?.steps ?? [];
+  const fixedSourceCheckout = steps.findIndex(
+    (step) =>
+      step.uses?.startsWith("actions/checkout@") && /^[0-9a-f]{40}$/.test(step.with?.ref ?? ""),
+  );
+  const sourceBuild = steps.findIndex(
+    (step) => step.name === "Regenerate and verify the fixed normal source image",
+  );
+  const reviewedHarness = steps.findIndex(
+    (step) => step.name === "Check out the reviewed helper harness",
+  );
+
+  assert.ok(fixedSourceCheckout >= 0, "the fixed source checkout must be explicit");
+  assert.ok(fixedSourceCheckout < sourceBuild, "the fixed source must precede its rebuild");
+  assert.ok(
+    sourceBuild < reviewedHarness,
+    "the fixed source rebuild must finish before checkout cleanup",
+  );
+  assert.equal(
+    steps[reviewedHarness]?.with?.ref,
+    "${{ github.event.pull_request.head.sha || github.sha }}",
+  );
+  assert.equal(
+    steps.some((step) => step.run?.includes(".workflow-driver")),
+    false,
+    "the exact reviewed checkout must remain available for every harness command",
+  );
+});
+
 test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {
   const workflow = readRepoFile(".github", "workflows", "e2e.yml");
   const job = workflowJobBody(workflow, "testbox");

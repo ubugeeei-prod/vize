@@ -125,6 +125,31 @@ function restoreCoverageBeforeRuntimeProvisioning(job: Job) {
   }
 }
 
+function restoreCoverageSummaryPublisher(job: Job, original: Job) {
+  const steps = job.steps;
+  const originalSteps = original.steps;
+  assert(steps && originalSteps);
+
+  const originalSetupIndex = originalSteps.findIndex(
+    (step) => step.uses === "./.github/actions/setup-rust-script",
+  );
+  assert.equal(originalSetupIndex >= 0, true);
+  assert.equal(
+    steps.some((step) => step.uses === "./.github/actions/setup-rust-script"),
+    false,
+  );
+  steps.splice(originalSetupIndex, 0, structuredClone(originalSteps[originalSetupIndex]));
+
+  const publisher = steps.find((step) => step.name === "Coverage report");
+  const originalPublisher = originalSteps.find((step) => step.name === "Coverage report");
+  assert(publisher && originalPublisher);
+  assert.deepEqual(publisher, {
+    ...originalPublisher,
+    run: "node tools/commands/ci/github/write-coverage-summary.ts",
+  });
+  publisher.run = originalPublisher.run;
+}
+
 function restoreEmptyPrToolingBuild(workflow: Workflow, original: Workflow) {
   const producer = "affected-tooling-cli";
   assert.deepEqual(workflow.jobs[producer], {
@@ -174,6 +199,7 @@ test("maximum non-release runners preserve every original job contract", () => {
       for (const site of ["iteration-plan", "test-report"] as const)
         restoreReviewedCheckout(restored.jobs[site], before.jobs[site], site);
       restoreCoverageBeforeRuntimeProvisioning(restored.jobs["source-coverage"]);
+      restoreCoverageSummaryPublisher(restored.jobs.coverage, before.jobs.coverage);
       restoreTestReportComment(restored, before);
       restoreCheckJsCasePacket(restored.jobs["check-js"], before.jobs["check-js"]);
       restoreNodeEngineCasePacket(
