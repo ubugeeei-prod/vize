@@ -6,7 +6,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 97,
+          "end": 94,
           "fix": {
             "edits": [
               {
@@ -96,7 +96,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 84,
+          "end": 81,
           "fix": {
             "edits": [
               {
@@ -152,7 +152,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 65,
+          "end": 62,
           "fix": {
             "edits": [
               {
@@ -184,7 +184,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 97,
+          "end": 94,
           "fix": {
             "edits": [
               {
@@ -216,7 +216,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 68,
+          "end": 65,
           "fix": {
             "edits": [
               {
@@ -248,7 +248,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 63,
+          "end": 60,
           "fix": {
             "edits": [
               {
@@ -280,7 +280,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 92,
+          "end": 89,
           "fix": {
             "edits": [
               {
@@ -312,7 +312,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 79,
+          "end": 76,
           "fix": {
             "edits": [
               {
@@ -344,7 +344,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 96,
+          "end": 93,
           "fix": {
             "edits": [
               {
@@ -388,7 +388,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 104,
+          "end": 101,
           "fix": {
             "edits": [
               {
@@ -420,7 +420,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 138,
+          "end": 135,
           "fix": {
             "edits": [
               {
@@ -476,7 +476,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 98,
+          "end": 95,
           "fix": {
             "edits": [
               {
@@ -532,7 +532,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 109,
+          "end": 106,
           "fix": {
             "edits": [
               {
@@ -564,7 +564,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 118,
+          "end": 115,
           "fix": {
             "edits": [
               {
@@ -596,7 +596,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 83,
+          "end": 80,
           "fix": {
             "edits": [
               {
@@ -628,7 +628,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 84,
+          "end": 81,
           "fix": {
             "edits": [
               {
@@ -672,7 +672,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 98,
+          "end": 95,
           "fix": {
             "edits": [
               {
@@ -716,7 +716,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 88,
+          "end": 85,
           "fix": {
             "edits": [
               {
@@ -760,7 +760,7 @@
     "result": {
       "diagnostics": [
         {
-          "end": 128,
+          "end": 125,
           "fix": {
             "edits": [
               {

@@ -10,12 +10,10 @@ mod depth;
 pub(super) use self::depth::ScriptPropMutationKind;
 use self::depth::{MutationOperation, PropBindingKind, script_mutation_kind};
 
-use crate::rules::script::script_source_type;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, AssignmentExpression, BindingPattern, CallExpression, Expression,
-    IdentifierReference, Program, SimpleAssignmentTarget, Statement, UnaryExpression,
-    UpdateExpression,
+    IdentifierReference, ObjectPropertyKind, Program, PropertyKey, SimpleAssignmentTarget,
+    Statement, UnaryExpression, UpdateExpression,
 };
 use oxc_ast_visit::{
     Visit,
@@ -24,12 +22,11 @@ use oxc_ast_visit::{
         walk_update_expression,
     },
 };
-use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::symbol::SymbolId;
-use vize_l0::{FxHashMap, String};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 const MUTATING_ARRAY_METHODS: &[&str] = &[
     "push",
@@ -49,20 +46,14 @@ pub(super) struct ScriptPropMutation {
     pub(super) kind: ScriptPropMutationKind,
 }
 
-pub(super) fn find_prop_mutations(source: &str) -> Vec<ScriptPropMutation> {
+pub(super) fn find_prop_mutations(source: &str, program: &Program<'_>) -> Vec<ScriptPropMutation> {
     if memchr::memmem::find(source.as_bytes(), b"defineProps").is_none() {
         return Vec::new();
     }
 
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return Vec::new();
-    }
-
-    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+    let semantic = SemanticBuilder::new().build(program).semantic;
     let scoping = semantic.scoping();
-    let prop_symbols = collect_prop_symbols(&parsed.program, scoping);
+    let prop_symbols = collect_prop_symbols(program, scoping);
     if prop_symbols.is_empty() {
         return Vec::new();
     }
@@ -73,11 +64,68 @@ pub(super) fn find_prop_mutations(source: &str) -> Vec<ScriptPropMutation> {
         prop_symbols: &prop_symbols,
         mutations: Vec::new(),
     };
-    collector.visit_program(&parsed.program);
+    collector.visit_program(program);
     collector
         .mutations
         .sort_unstable_by_key(|mutation| (mutation.span.start, mutation.span.end));
     collector.mutations
+}
+
+/// Collect statically declared runtime prop names and same-named local
+/// bindings for template fallbacks.
+///
+/// Croquis intentionally withholds template binding facts when HTML recovery
+/// changes the tree. The authored `v-model` target is still safe to compare
+/// against a clean, statically analyzable `defineProps({ ... })` declaration.
+/// A derived ref such as `useVModel(props, "value")` is returned as a local
+/// binding so it can shadow the runtime prop of the same name.
+pub(super) fn runtime_prop_scope(program: &Program<'_>) -> (FxHashSet<String>, FxHashSet<String>) {
+    let semantic = SemanticBuilder::new().build(program).semantic;
+    let scoping = semantic.scoping();
+    let mut props = FxHashSet::default();
+    let mut locals = FxHashSet::default();
+    for statement in &program.body {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            if let Some(initializer) = declarator.init.as_ref()
+                && let Some(call) = define_props_call(initializer, scoping)
+                && let Some(Expression::ObjectExpression(object)) = call
+                    .arguments
+                    .first()
+                    .and_then(Argument::as_expression)
+                    .map(Expression::get_inner_expression)
+            {
+                for property in &object.properties {
+                    let ObjectPropertyKind::ObjectProperty(property) = property else {
+                        continue;
+                    };
+                    let name = match &property.key {
+                        PropertyKey::StaticIdentifier(identifier) if !property.computed => {
+                            Some(identifier.name.as_str())
+                        }
+                        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+                        _ => None,
+                    };
+                    if let Some(name) = name {
+                        props.insert(String::from(name));
+                    }
+                }
+            }
+            if declarator
+                .init
+                .as_ref()
+                .is_some_and(|initializer| is_props_initializer(initializer, scoping))
+            {
+                continue;
+            }
+            for identifier in declarator.id.get_binding_identifiers() {
+                locals.insert(String::from(identifier.name.as_str()));
+            }
+        }
+    }
+    (props, locals)
 }
 
 fn collect_prop_symbols(
@@ -130,6 +178,25 @@ fn is_props_initializer(expression: &Expression<'_>, scoping: &Scoping) -> bool 
         .first()
         .and_then(|argument| argument.as_expression())
         .is_some_and(|argument| is_define_props_expression(argument, scoping))
+}
+
+fn define_props_call<'a>(
+    expression: &'a Expression<'a>,
+    scoping: &Scoping,
+) -> Option<&'a CallExpression<'a>> {
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+        return None;
+    };
+    if is_unresolved_macro_call(call, "defineProps", scoping) {
+        return Some(call);
+    }
+    if !is_unresolved_macro_call(call, "withDefaults", scoping) {
+        return None;
+    }
+    call.arguments
+        .first()
+        .and_then(Argument::as_expression)
+        .and_then(|argument| define_props_call(argument, scoping))
 }
 
 fn is_define_props_expression(expression: &Expression<'_>, scoping: &Scoping) -> bool {

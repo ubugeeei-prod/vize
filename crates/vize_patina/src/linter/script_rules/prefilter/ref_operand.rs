@@ -16,6 +16,13 @@ pub(super) fn source_may_contain_ref_operand(source: &str) -> bool {
         return true;
     }
 
+    // `emit('event', value)` is an ordinary call to the byte prefilter, but a
+    // captured `defineEmits()` binding makes every payload argument a value
+    // position. Keep these blocks so the AST rule can resolve both bindings.
+    if source.contains("defineEmits") {
+        return true;
+    }
+
     bindings
         .into_iter()
         .any(|binding| identifier_may_be_ref_operand(source, binding))
@@ -193,6 +200,13 @@ mod tests {
     fn keeps_template_literal_interpolation_operands() {
         assert!(source_may_contain_ref_operand(
             "const count = ref(0)\nconst text = `${count}`"
+        ));
+    }
+
+    #[test]
+    fn keeps_define_emits_payloads() {
+        assert!(source_may_contain_ref_operand(
+            "const emit = defineEmits(['change'])\nconst active = computed(() => true)\nemit('change', active)"
         ));
     }
 }

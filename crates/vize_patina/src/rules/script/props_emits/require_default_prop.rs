@@ -17,8 +17,11 @@
 //! options/props objects, and the `<script setup>` runtime form
 //! `defineProps({ ... })`. The array shorthand (`props: ['x']` /
 //! `defineProps(['x'])`) declares neither type nor default and is left to
-//! `require-prop-types`. The type-based `defineProps<{...}>()` form is not a
-//! runtime declaration and is not checked.
+//! `require-prop-types`. Type-based props are checked when they use a defaults
+//! surface (`withDefaults` or props destructuring), including a local generic
+//! interface declared in the SFC's sibling `<script>` block. A plain
+//! `defineProps<T>()` has no authored default surface and is left alone,
+//! matching eslint-plugin-vue.
 //!
 //! Port of [`vue/require-default-prop`](https://eslint.vuejs.org/rules/require-default-prop.html).
 //!
@@ -51,8 +54,9 @@ use oxc_span::Span;
 
 use vize_l0::CompactString;
 
-use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::{PropDescriptor, collect_runtime_props};
+use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
+use super::props_source::{PropDescriptor, PropsSource, collect_component_props};
+use super::typed_prop_defaults::collect_setup_props_with_types;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -77,25 +81,104 @@ impl ScriptRule for RequireDefaultProp {
     fn check_program<'a>(
         &self,
         program: &'a Program<'a>,
-        _source: &str,
+        source: &str,
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        for source in collect_component_props(program) {
             for prop in source.object_props() {
-                check_prop(prop, offset, result);
+                check_prop(prop, false, offset, result);
+            }
+        }
+
+        let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
+        for declaration in collect_setup_props_with_types(program, offset, sibling) {
+            if let Some(runtime) = declaration.runtime {
+                let source = PropsSource::Object(runtime);
+                for prop in source.object_props() {
+                    check_prop(
+                        prop,
+                        declaration.uses_destructure && declaration.has_default(prop.name),
+                        offset,
+                        result,
+                    );
+                }
+            }
+            if declaration.uses_destructure || declaration.uses_with_defaults {
+                for prop in &declaration.typed {
+                    if prop.required
+                        || prop.boolean
+                        || declaration.has_unknown_defaults
+                            && !prop_is_inline_intersection_extension(source, prop, offset)
+                        || declaration.has_default(&prop.name)
+                    {
+                        continue;
+                    }
+                    report(&prop.name, prop.span, prop.offset, result);
+                }
             }
         }
     }
 }
 
+/// Unknown spreads can supply defaults for imported/base contracts, but they
+/// cannot erase a prop explicitly appended by an inline intersection member:
+/// `type Props = ImportedProps & { local?: string }`.
+fn prop_is_inline_intersection_extension(
+    source: &str,
+    prop: &super::typed_prop_defaults::TypedProp,
+    offset: usize,
+) -> bool {
+    if prop.offset != offset {
+        return false;
+    }
+    let start = prop.span.start as usize;
+    let Some(prefix) = source.get(..start) else {
+        return false;
+    };
+    let Some(open) = prefix.rfind('{') else {
+        return false;
+    };
+    let Some(type_start) = prefix.get(..open).and_then(|text| text.rfind("type ")) else {
+        return false;
+    };
+    let Some(declaration_prefix) = source.get(type_start..open) else {
+        return false;
+    };
+    declaration_prefix.contains('=')
+        && declaration_prefix.contains('&')
+        && source
+            .get(start..)
+            .and_then(|suffix| suffix.find('}'))
+            .is_some()
+}
+
 /// Flag an object-descriptor prop that is optional, not Boolean-typed, and
 /// declares no `default`.
-fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintResult) {
+fn check_prop(
+    prop: PropDescriptor<'_>,
+    has_destructure_default: bool,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if prop.shorthand || has_destructure_default {
+        return;
+    }
     // Only object-descriptor props can carry `required`/`default`/`type`. A
     // shorthand prop value (`name: String`) is by definition optional with no
     // default, so it is flagged too — unless its shorthand type is Boolean.
-    match prop.value {
+    match prop.value.get_inner_expression() {
         Expression::ObjectExpression(descriptor) => {
             if descriptor_required_true(descriptor)
                 || descriptor_has_default(descriptor)
@@ -105,13 +188,31 @@ fn check_prop(prop: PropDescriptor<'_>, offset: usize, result: &mut ScriptLintRe
             }
             report(prop.name, prop.span, offset, result);
         }
-        value => {
-            // Shorthand `name: <type>`: a Boolean shorthand defaults to false.
-            if expression_is_boolean(value) {
+        Expression::Identifier(identifier) => {
+            if identifier.name == "Boolean" {
                 return;
             }
-            report(prop.name, prop.span, offset, result);
+            if matches!(
+                identifier.name.as_str(),
+                "String" | "Number" | "Function" | "Object" | "Array" | "Symbol"
+            ) {
+                report(prop.name, prop.span, offset, result);
+            }
         }
+        // Listener helpers intentionally describe optional callback props.
+        // Callers already have to tolerate an absent listener, and the
+        // reference rule treats this custom factory like every other opaque
+        // prop constructor rather than requiring a no-op default.
+        Expression::CallExpression(call)
+            if matches!(
+                call.callee.get_inner_expression(),
+                Expression::Identifier(identifier) if identifier.name == "defineListenerProp"
+            ) => {}
+        // Other factory calls and member references are custom prop
+        // constructors; eslint-plugin-vue cannot prove that they need a
+        // default.
+        Expression::CallExpression(_) | Expression::StaticMemberExpression(_) => {}
+        _ => report(prop.name, prop.span, offset, result),
     }
 }
 

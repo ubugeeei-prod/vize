@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 252 rule IDs: 151 mapped, 2 intentional divergences, and 99 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 252 rule IDs: 150 mapped, 3 intentional divergences, and 99 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -254,7 +254,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/v-for-delimiter-style` | — | unimplemented |
 | `vue/v-if-else-key` | — | unimplemented |
 | `vue/v-on-event-hyphenation` | [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | mapped |
-| `vue/v-on-handler-style` | [`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | mapped |
+| `vue/v-on-handler-style` | — | intentional-divergence |
 | `vue/v-on-style` | [`vue/v-on-style`](./reference/vue-v-on-style.md) | mapped |
 | `vue/v-slot-style` | [`vue/v-slot-style`](./reference/vue-v-slot-style.md) | mapped |
 | `vue/valid-attribute-name` | [`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | mapped |

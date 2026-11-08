@@ -113,9 +113,14 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     },
   ),
   "vue/slot-name-casing": pair(
-    template("<MyCard><template #mySlot>Content</template></MyCard>"),
-    template("<MyCard><template #my-slot>Content</template></MyCard>"),
+    template('<MyCard><slot name="my-slot" /></MyCard>'),
+    template('<MyCard><slot name="mySlot" /></MyCard>'),
     "crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs",
+    {
+      note: "Checks the static name of a rendered slot outlet. The parent-side v-slot and #name provider syntax is outside this rule.",
+      noteJa:
+        "描画する slot outlet の静的な name を検査します。親側の v-slot や #name による提供構文は、このルールの対象外です。",
+    },
   ),
   "vue/valid-attribute-name": pair(
     template('<div my"attr="value"></div>'),

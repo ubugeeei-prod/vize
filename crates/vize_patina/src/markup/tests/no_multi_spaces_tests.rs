@@ -96,8 +96,8 @@ fn no_multi_spaces_template_boundaries() {
         ),
         (
             r#"<div :class="{  active: isActive }"  id="panel"></div>"#,
-            vec!["  "],
-            "directive expression internals are ignored but attr gap is checked",
+            vec!["  ", "  "],
+            "directive expression internals and the attr gap are checked",
         ),
     ] {
         let ranges = run_over_template(&rule, source);

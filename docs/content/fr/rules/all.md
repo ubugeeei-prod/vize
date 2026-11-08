@@ -103,13 +103,13 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-scoped-event-names"></span>[`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | Recommander des noms d’événements préfixés par leur contexte au format context:event. | `nuxt`, `opinionated` |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | Imposer un ordre cohérent des éléments de premier niveau d’un SFC. | `happy-path` |  |
 | <span id="vue-single-style-block"></span>[`vue/single-style-block`](./reference/vue-single-style-block.md) | Recommander un seul bloc style. | `happy-path` |  |
-| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | Imposer kebab-case aux slots nommés utilisés avec v-slot. | `nuxt`, `opinionated` |  |
+| <span id="vue-slot-name-casing"></span>[`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | Imposer camelCase aux noms statiques des points d’insertion de slot rendus. | `nuxt`, `opinionated` |  |
 | <span id="vue-this-in-template"></span>[`vue/this-in-template`](./reference/vue-this-in-template.md) | Interdire `this.` dans les expressions des templates. | `happy-path` |  |
 | <span id="vue-use-unique-element-ids"></span>[`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | Imposer des identifiants d’éléments uniques avec useId() plutôt que des littéraux statiques. | `nuxt`, `opinionated` |  |
 | <span id="vue-use-v-on-exact"></span>[`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | Imposer le modificateur `.exact` sur `v-on` en présence de gestionnaires utilisant des modificateurs. | `essential` |  |
 | <span id="vue-v-bind-style"></span>[`vue/v-bind-style`](./reference/vue-v-bind-style.md) | Imposer un style de directive `v-bind`. | `happy-path` | ✓ |
 | <span id="vue-v-on-event-hyphenation"></span>[`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | Imposer des tirets dans les noms d’événements personnalisés de v-on sur les composants. | `happy-path` | ✓ |
-| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Imposer une référence de méthode ou une fonction en ligne pour les gestionnaires v-on. | `nuxt`, `opinionated` |  |
+| <span id="vue-v-on-handler-style"></span>[`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | Imposer une référence de méthode pour les gestionnaires v-on. | `nuxt`, `opinionated` |  |
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | Imposer un style de directive `v-on`. | `happy-path` | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | Imposer un style de directive `v-slot`. | `happy-path` | ✓ |
 | <span id="vue-valid-attribute-name"></span>[`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | Exiger des noms d’attributs valides. | `essential` |  |

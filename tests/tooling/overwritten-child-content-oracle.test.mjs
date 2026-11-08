@@ -117,28 +117,61 @@ await test("all36 whole official Vue-base packets reproduce twice with all51 exp
   }
 });
 
-await test("the whole historical delta introduces only12 owned comment findings", () => {
+await test("the whole historical delta owns12 comment findings and corrects12 child ranges", () => {
   const changed = [];
+  const ownedCommentFindings = [];
+  const correctedChildRanges = [];
   for (const id of ids) {
     const before = read("source-before", `${id}.json`);
     const after = read("native", `${id}.json`);
     if (JSON.stringify(before) === JSON.stringify(after)) continue;
     changed.push(id);
-    assert.match(id, /-(?:comment|empty-comment|comment-whitespace)-/);
-    assert.equal(
-      before.api.diagnostics.some((d) => d.rule === "vue/no-child-content"),
-      false,
-    );
     const expectedDelta = structuredClone(after);
-    expectedDelta.api.diagnostics = expectedDelta.api.diagnostics.filter(
-      (d) => d.rule !== "vue/no-child-content",
+
+    const beforeDiagnostic = before.api.diagnostics.find(
+      (diagnostic) => diagnostic.rule === "vue/no-child-content",
     );
-    expectedDelta.api.errorCount--;
-    expectedDelta.packet[0].messages = expectedDelta.packet[0].messages.filter(
-      (m) => m.ruleId !== "vue/no-child-content",
-    );
-    expectedDelta.packet[0].errorCount--;
+    if (beforeDiagnostic === undefined) {
+      assert.match(id, /-(?:comment|empty-comment|comment-whitespace)-/);
+      ownedCommentFindings.push(id);
+      expectedDelta.api.diagnostics = expectedDelta.api.diagnostics.filter(
+        (diagnostic) => diagnostic.rule !== "vue/no-child-content",
+      );
+      expectedDelta.api.errorCount--;
+      expectedDelta.packet[0].messages = expectedDelta.packet[0].messages.filter(
+        (message) => message.ruleId !== "vue/no-child-content",
+      );
+      expectedDelta.packet[0].errorCount--;
+    } else {
+      correctedChildRanges.push(id);
+      const afterDiagnostic = expectedDelta.api.diagnostics.find(
+        (diagnostic) => diagnostic.rule === "vue/no-child-content",
+      );
+      assert.equal(afterDiagnostic.start, beforeDiagnostic.end, id);
+      afterDiagnostic.start = beforeDiagnostic.start;
+      afterDiagnostic.end = beforeDiagnostic.end;
+
+      const beforeMessage = before.packet[0].messages.find(
+        (message) => message.ruleId === "vue/no-child-content",
+      );
+      const afterMessage = expectedDelta.packet[0].messages.find(
+        (message) => message.ruleId === "vue/no-child-content",
+      );
+      assert.deepEqual(
+        { line: afterMessage.line, column: afterMessage.column },
+        { line: beforeMessage.endLine, column: beforeMessage.endColumn },
+        id,
+      );
+      Object.assign(afterMessage, {
+        line: beforeMessage.line,
+        column: beforeMessage.column,
+        endLine: beforeMessage.endLine,
+        endColumn: beforeMessage.endColumn,
+      });
+    }
     assert.deepEqual(expectedDelta, before, id);
   }
-  assert.equal(changed.length, 12);
+  assert.equal(changed.length, 24);
+  assert.equal(ownedCommentFindings.length, 12);
+  assert.equal(correctedChildRanges.length, 12);
 });

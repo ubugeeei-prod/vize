@@ -143,7 +143,7 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
     eprintln!("whole actual applied no-fix suppression: {applied:?}");
     assert_eq!(
         applied,
-        "<template>\n  <!-- @vize:forget a11y/alt-text -->\n  <img src=\"/logo.png\">\n</template>\n"
+        "<template>\n  <!-- @vize:forget a11y/alt-text -->\n  <img src=\"/logo.png\" />\n</template>\n"
     );
     assert!(server.state.documents.apply_changes(
         &uri,
@@ -177,7 +177,7 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
     assert_eq!(
         serde_json::to_value(actual_peer.unwrap()).unwrap(),
         serde_json::json!([
-            {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[peer.clone()],"edit":edit(&uri,2,2,23,"<img src=\"/logo.png\" />",Some(9)),"isPreferred":true},
+            {"title":"Fix: Use separate start and end tags","kind":"quickfix","diagnostics":[peer.clone()],"edit":edit(&uri,2,22,24,"",Some(9)),"isPreferred":true},
             suppression(&uri,&peer,Some(9))
         ])
     );
@@ -189,7 +189,7 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
     eprintln!("whole suppressed-rule fresh requery: {actual_absent:#?}");
     assert!(actual_absent.is_none());
     assert_eq!(server.state.documents.text(&uri).unwrap(), applied);
-    let with_sibling = applied.replace("</template>", "  <img src=\"/logo.png\">\n</template>");
+    let with_sibling = applied.replace("</template>", "  <img src=\"/logo.png\" />\n</template>");
     assert!(server.state.documents.apply_changes(
         &uri,
         vec![TextDocumentContentChangeEvent {
@@ -209,7 +209,7 @@ fn selected_no_fix_suppression_keeps_full_diagnostic_and_only_suppresses_the_nex
     assert_eq!(
         serde_json::to_value(actual_sibling.unwrap()).unwrap(),
         serde_json::json!([
-            {"title":"Fix: Use self-closing syntax","kind":"quickfix","diagnostics":[peer],"edit":edit(&uri,3,2,23,"<img src=\"/logo.png\" />",Some(10)),"isPreferred":true},
+            {"title":"Fix: Use separate start and end tags","kind":"quickfix","diagnostics":[peer],"edit":edit(&uri,3,22,24,"",Some(10)),"isPreferred":true},
             suppression(&uri,&peer,Some(10))
         ])
     );

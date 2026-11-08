@@ -145,7 +145,7 @@ fn check_computed_object(
 ///
 /// Accepts the shorthand `foo() {}` / `foo: () => {}` getter forms and the
 /// accessor-object form `foo: { get() {} }`.
-fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
+pub(super) fn computed_getter_body<'a>(property: &'a ObjectProperty<'a>) -> Option<GetterBody<'a>> {
     match &property.value {
         Expression::FunctionExpression(function) => Some(GetterBody::Function(function)),
         Expression::ArrowFunctionExpression(arrow) => Some(GetterBody::Arrow(arrow)),
@@ -181,7 +181,7 @@ fn accessor_object_getter<'a>(object: &'a ObjectExpression<'a>) -> Option<Getter
     None
 }
 
-enum GetterBody<'a> {
+pub(super) enum GetterBody<'a> {
     Function(&'a Function<'a>),
     Arrow(&'a oxc_ast::ast::ArrowFunctionExpression<'a>),
 }
@@ -260,8 +260,21 @@ impl<'a> Visit<'a> for SideEffectVisitor<'_> {
 
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if let Expression::StaticMemberExpression(member) = &it.callee
+            && member.property.name == "$set"
+            && matches!(
+                member.object.get_inner_expression(),
+                Expression::ThisExpression(_)
+            )
+        {
+            self.report(member.property.span, "a call to `this.$set`");
+        }
+        if let Expression::StaticMemberExpression(member) = &it.callee
             && MUTATING_ARRAY_METHODS.contains(&member.property.name.as_str())
-            && (expression_root_is_this(&member.object)
+            && ((expression_root_is_this(&member.object)
+                && matches!(
+                    member.object.without_parentheses(),
+                    Expression::StaticMemberExpression(_) | Expression::ComputedMemberExpression(_)
+                ))
                 || composition::root_is_external(&member.object, self.scoping, self.getter_span))
         {
             self.report(
@@ -295,7 +308,9 @@ impl SideEffectVisitor<'_> {
     }
 }
 
-fn find_computed_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {
+pub(super) fn find_computed_object<'a>(
+    options: &'a ObjectExpression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     for property in &options.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -328,7 +343,9 @@ fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
 // expression wrappers.
 // ---------------------------------------------------------------------------
 
-fn find_component_options<'a>(program: &'a Program<'a>) -> Option<&'a ObjectExpression<'a>> {
+pub(super) fn find_component_options<'a>(
+    program: &'a Program<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
     let mut bindings: FxHashMap<&'a str, &'a ObjectExpression<'a>> = FxHashMap::default();
 
     for statement in program.body.iter() {
@@ -427,302 +444,4 @@ fn options_from_call<'a>(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoSideEffectsInComputed;
-    use crate::rules::script::ScriptLinter;
-
-    fn create_linter() -> ScriptLinter {
-        let mut linter = ScriptLinter::new();
-        linter.add_rule(Box::new(NoSideEffectsInComputed));
-        linter
-    }
-
-    #[test]
-    fn test_valid_pure_getter() {
-        let source = r#"
-export default {
-  data() {
-    return { count: 0 }
-  },
-  computed: {
-    doubled() {
-      return this.count * 2
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_no_options_object() {
-        let source = r#"
-import { computed } from 'vue'
-const doubled = computed(() => count.value * 2)
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_no_computed() {
-        let source = r#"
-export default {
-  data() {
-    return { count: 0 }
-  },
-  methods: {
-    bump() {
-      this.count++
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_assignment_to_this() {
-        let source = r#"
-export default {
-  data() {
-    return { count: 0 }
-  },
-  computed: {
-    doubled() {
-      this.count = this.count * 2
-      return this.count
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_compound_assignment_to_this() {
-        let source = r#"
-export default {
-  computed: {
-    total() {
-      this.sum += 1
-      return this.sum
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_update_expression_on_this() {
-        let source = r#"
-export default {
-  computed: {
-    next() {
-      this.count++
-      return this.count
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_nested_member_assignment() {
-        let source = r#"
-export default {
-  computed: {
-    label() {
-      this.state.label = 'x'
-      return this.state.label
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_computed_member_assignment() {
-        let source = r#"
-export default {
-  computed: {
-    first() {
-      this.items[0] = 1
-      return this.items[0]
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_mutating_array_method() {
-        let source = r#"
-export default {
-  computed: {
-    reversed() {
-      return this.items.reverse()
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-        insta::assert_debug_snapshot!(result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_push_on_nested_this() {
-        let source = r#"
-export default {
-  computed: {
-    grow() {
-      this.state.list.push(1)
-      return this.state.list
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_valid_mutating_method_on_local_copy() {
-        // `reverse` on a fresh array literal is fine — no `this` receiver.
-        let source = r#"
-export default {
-  computed: {
-    reversed() {
-      return [...this.items].reverse()
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_assignment_to_local_variable() {
-        let source = r#"
-export default {
-  computed: {
-    sum() {
-      let total = 0
-      for (const n of this.items) {
-        total += n
-      }
-      return total
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_valid_assignment_in_nested_function() {
-        // A non-arrow nested function rebinds `this`, so writing to its `this`
-        // does not mutate the component instance.
-        let source = r#"
-export default {
-  computed: {
-    handler() {
-      return function () {
-        this.count = 1
-      }
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-
-    #[test]
-    fn test_accessor_object_getter() {
-        let source = r#"
-export default {
-  computed: {
-    value: {
-      get() {
-        this.count = 1
-        return this.count
-      },
-      set(v) {
-        this.count = v
-      }
-    }
-  }
-}
-"#;
-        // Only the getter is checked; the setter's assignment is allowed.
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_define_component() {
-        let source = r#"
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  computed: {
-    doubled() {
-      this.count *= 2
-      return this.count
-    }
-  }
-})
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 1);
-    }
-
-    #[test]
-    fn test_multiple_side_effects_reported() {
-        let source = r#"
-export default {
-  computed: {
-    a() {
-      this.x = 1
-      this.y++
-      return this.x
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 2);
-    }
-
-    #[test]
-    fn test_valid_non_mutating_array_method() {
-        let source = r#"
-export default {
-  computed: {
-    mapped() {
-      return this.items.map((n) => n * 2)
-    }
-  }
-}
-"#;
-        let result = create_linter().lint(source, 0);
-        assert_eq!(result.error_count, 0);
-    }
-}
+mod tests;

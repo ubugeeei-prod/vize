@@ -66,7 +66,7 @@ fn bind_is_may_render_component(ctx: &LintContext<'_>, dir: &DirectiveNode<'_>) 
         if sfc_scripts_declare_string_identifier(ctx, content) || is_tag_name_carrier(content) {
             return false;
         }
-        return is_component_reference_like(content);
+        return true;
     }
 
     expression_has_component_reference(content)
@@ -109,8 +109,7 @@ fn is_tag_name_carrier(identifier: &str) -> bool {
     .iter()
     .any(|expected| {
         normalized_len == expected.len() && normalized_identifier_ends_with(identifier, expected)
-    }) || normalized_identifier_ends_with(identifier, "tag")
-        || normalized_identifier_ends_with(identifier, "tagname")
+    })
 }
 
 fn normalized_identifier_len(identifier: &str) -> usize {

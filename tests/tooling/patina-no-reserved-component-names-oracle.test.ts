@@ -24,6 +24,11 @@ const cases = [
     diagnostics: 1,
   },
   {
+    id: "explicit-deprecated-pascal-html-name",
+    source: `<script setup>defineOptions({ name: "Spacer" })</script><template><div /></template>`,
+    diagnostics: 1,
+  },
+  {
     id: "static-template-literal-name",
     source: "<script>export default { [`name`]: `button` }</script><template><div /></template>",
     diagnostics: 1,

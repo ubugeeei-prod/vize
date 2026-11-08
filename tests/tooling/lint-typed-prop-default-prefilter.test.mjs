@@ -25,6 +25,7 @@ await test("typed prop defaults reach the whole default CLI packet without polic
   );
   const focusedRules = {
     "script/define-props-destructuring": "off",
+    "vue/multi-word-component-names": "off",
     "vue/no-unused-setup-bindings": "off",
   };
   const focusedConfig = JSON.stringify({ linter: { rules: focusedRules } }) + "\n";

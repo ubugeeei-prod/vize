@@ -89,6 +89,14 @@ impl Rule for NoVForTemplateKeyOnChild {
             return;
         }
 
+        // Once the repeated template owns its key, a keyed dynamic child is
+        // not the Vue 2 placement mistake this migration rule targets.
+        // eslint-plugin-vue and the Vue compiler both restrict the diagnostic
+        // to the case where the key was left on the child instead of moved.
+        if Self::key_binding(element).is_some() {
+            return;
+        }
+
         for child in &element.children {
             let TemplateChildNode::Element(child) = child else {
                 continue;
@@ -147,6 +155,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_key_on_template_and_dynamic_component_child() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<template v-for="name in names" :key="name"><component :is="name" :key="name" /></template>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 0);

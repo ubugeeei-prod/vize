@@ -341,5 +341,11 @@ export function collectVueInputPaths(cwd: string, project: Json): string[] {
       inheritedIgnoreRules(baseDirectory),
     );
   }
-  return [...files].sort(byteOrder);
+  const excluded = new Set(
+    (get(project, "lintDivergenceExcludePaths") === null
+      ? []
+      : projectStrings(project, "lintDivergenceExcludePaths")
+    ).map(normalized),
+  );
+  return [...files].filter((file) => !excluded.has(normalized(file))).sort(byteOrder);
 }

@@ -71,14 +71,15 @@ function measureProject(
   if (expectedCount === 0 && files.length)
     throw new Error(`${id} matched ${files.length} Vue files, expected 0`);
   if (!files.length && expectedCount !== 0) throw new Error(`${id} matched no Vue files`);
-  const patina = runPatina(cwd, project, args, launch, files.length);
+  const patina = runPatina(cwd, project, args, launch, files);
   const started = performance.now(),
     baseline = runEslintBaseline(root, cwd, files, comparable.rules),
-    duration = Math.floor(performance.now() - started);
+    duration = Math.floor(performance.now() - started),
+    selectedPreset = args.preset ?? "all-mapped";
   reconcileCorpus(id, files, baseline.results, cwd);
   const divergence = compareLintFindings(id, cwd, ruleMap, patina.findings, baseline.results, {
     revision: get(project, "revision"),
-    preset: args.preset,
+    preset: selectedPreset,
     runtimeVersions: baseline.runtimeVersions,
     rules: comparable.rules,
     files,
@@ -88,7 +89,7 @@ function measureProject(
     version: 2,
     project: id,
     revision: get(project, "revision"),
-    preset: args.preset ?? "all-mapped",
+    preset: selectedPreset,
     evidence,
     files: { comparedCount: files.length, expectedCount },
     baseline: {

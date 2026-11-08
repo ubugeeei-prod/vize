@@ -82,9 +82,9 @@
           "severity": 2,
           "message": "[vize:script/no-deprecated-dollar-scopedslots-api] `$scopedSlots` was removed in Vue 3",
           "line": 2,
-          "column": 12,
+          "column": 13,
           "endLine": 2,
-          "endColumn": 29,
+          "endColumn": 30,
           "help": "Replace $scopedSlots with $slots. In Vue 3 every slot is a function, so the separate scoped-slots property no longer exists."
         }
       ]

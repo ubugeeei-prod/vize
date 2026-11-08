@@ -65,6 +65,7 @@ export interface RegistryProject extends JsonRecord {
   coverage: string[];
   vueGlobs: string[];
   expectedVueFileCount?: number | null;
+  lintDivergenceExcludePaths?: string[];
 }
 
 export interface RunEvidence extends JsonRecord {
@@ -201,7 +202,7 @@ export interface LinterDeletionArtifact extends JsonRecord {
   buildReceiptSha256: string;
   binarySha256: string;
   requiredStages: readonly string[];
-  measurement: { preset: "ecosystem"; measureCoverageGap: true };
+  measurement: { preset: "all-mapped"; measureCoverageGap: true };
   inputs: {
     matrix: { path: "summary.json"; sha256: string };
     divergenceIndex: { path: "lint-divergence-summary.json"; sha256: string };
@@ -329,12 +330,16 @@ export function validateSummary(value: unknown, label: string): LintSummary {
   const typed = result as LintSummary;
   const comparablePatinaCount =
     typed.sharedCount + typed.falsePositiveCount + typed.ruleLocationDivergenceCount;
-  assert.equal(
-    typed.patinaFindingCount,
+  const classifiedPatinaCount =
     comparablePatinaCount +
-      typed.patinaOnlyRuleFindingCount +
-      typed.patinaOutsideBaselineSurfaceCount,
-    `${label}.patinaFindingCount is not a complete partition`,
+    typed.patinaOnlyRuleFindingCount +
+    typed.patinaOutsideBaselineSurfaceCount;
+  const classifiedBaselineCount = typed.comparableBaselineCount + typed.unimplementedCount;
+  const patinaIntentionalCount = typed.patinaFindingCount - classifiedPatinaCount;
+  const baselineIntentionalCount = typed.baselineFindingCount - classifiedBaselineCount;
+  assert(
+    patinaIntentionalCount >= 0 && baselineIntentionalCount >= 0,
+    `${label} has an over-complete surface partition`,
   );
   assert.equal(
     typed.comparableBaselineCount,
@@ -342,9 +347,9 @@ export function validateSummary(value: unknown, label: string): LintSummary {
     `${label}.comparableBaselineCount is not a complete partition`,
   );
   assert.equal(
-    typed.baselineFindingCount,
-    typed.comparableBaselineCount + typed.unimplementedCount + typed.intentionalDivergenceCount,
-    `${label}.baselineFindingCount is not a complete partition`,
+    patinaIntentionalCount + baselineIntentionalCount,
+    typed.intentionalDivergenceCount,
+    `${label}.intentionalDivergenceCount is not partitioned across both reporters`,
   );
   assert(
     typed.messageDifferenceCount <= typed.sharedCount,

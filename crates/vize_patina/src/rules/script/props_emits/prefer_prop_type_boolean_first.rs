@@ -10,7 +10,7 @@ use oxc_ast::ast::{ArrayExpression, Expression, ObjectExpression, ObjectProperty
 use oxc_span::Span;
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use super::props_source::{collect_runtime_props, property_key_name};
+use super::props_source::{collect_all_runtime_props, property_key_name};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 const RULE: &str = "vue/prefer-prop-type-boolean-first";
@@ -41,7 +41,7 @@ impl ScriptRule for PreferPropTypeBooleanFirst {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        for source in collect_runtime_props(program) {
+        for source in collect_all_runtime_props(program) {
             for prop in source.object_props() {
                 if let Some(array) = type_array(prop.value) {
                     report_boolean_not_first(array, offset, result);
@@ -161,6 +161,12 @@ mod tests {
                 "export default { props: { a: [String, Boolean], b: { type: [Number, Boolean] } } }"
             ),
             vec![MESSAGE.to_owned(), MESSAGE.to_owned()]
+        );
+        assert_eq!(
+            messages(
+                "const Child = defineComponent({ props: { value: { type: [String, Boolean] } } })"
+            ),
+            bad
         );
     }
 

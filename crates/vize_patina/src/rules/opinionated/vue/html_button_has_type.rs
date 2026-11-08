@@ -65,7 +65,7 @@ impl MarkupRule for HtmlButtonHasType {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !element.is_tag("button") {
+        if !element.is_unqualified_tag_exact("button") {
             return;
         }
 
@@ -224,6 +224,13 @@ mod tests {
     fn test_non_button_ignored() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input type="foo" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_pascal_case_button_component_ignored() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<Button>Click</Button>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 

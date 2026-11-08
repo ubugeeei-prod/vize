@@ -77,7 +77,7 @@ impl ScriptRule for NoDeprecatedDataObjectDeclaration {
             return;
         };
         match find_invalid_data(options) {
-            Some(InvalidData::Object(data)) => report(data, offset, result),
+            Some(InvalidData::Object { key, data }) => report(key, data, offset, result),
             Some(InvalidData::Other(span)) => report_non_function(span, offset, result),
             None => {}
         }
@@ -85,7 +85,10 @@ impl ScriptRule for NoDeprecatedDataObjectDeclaration {
 }
 
 enum InvalidData<'a> {
-    Object(&'a ObjectExpression<'a>),
+    Object {
+        key: Span,
+        data: &'a ObjectExpression<'a>,
+    },
     Other(Span),
 }
 
@@ -98,16 +101,16 @@ fn find_invalid_data<'a>(options: &'a ObjectExpression<'a>) -> Option<InvalidDat
         if property.computed || !matches!(property_key_name(&property.key), Some("data")) {
             continue;
         }
-        return classify_data(&property.value);
+        return classify_data(&property.value, property.key.span());
     }
     None
 }
 
-fn classify_data<'a>(value: &'a Expression<'a>) -> Option<InvalidData<'a>> {
+fn classify_data<'a>(value: &'a Expression<'a>, key: Span) -> Option<InvalidData<'a>> {
     match value.get_inner_expression() {
         Expression::FunctionExpression(_) | Expression::ArrowFunctionExpression(_) => None,
         Expression::Identifier(_) => None,
-        Expression::ObjectExpression(object) => Some(InvalidData::Object(object)),
+        Expression::ObjectExpression(data) => Some(InvalidData::Object { key, data }),
         other => Some(InvalidData::Other(other.span())),
     }
 }
@@ -123,17 +126,18 @@ fn report_non_function(span: Span, offset: usize, result: &mut ScriptLintResult)
     ));
 }
 
-fn report(data: &ObjectExpression<'_>, offset: usize, result: &mut ScriptLintResult) {
-    let span: Span = data.span;
-    let start = offset as u32 + span.start;
-    let end = offset as u32 + span.end;
+fn report(key: Span, data: &ObjectExpression<'_>, offset: usize, result: &mut ScriptLintResult) {
+    let start = offset as u32 + key.start;
+    let end = offset as u32 + key.end;
+    let data_start = offset as u32 + data.span.start;
+    let data_end = offset as u32 + data.span.end;
     let diagnostic = LintDiagnostic::error(
         META.name,
         "Object declaration on `data` is deprecated. Use a function that returns the object instead.",
         start,
         end,
     )
-    .with_label("`data` is declared as an object literal", start, end)
+    .with_label("`data` is declared as an object literal", data_start, data_end)
     .with_help(
         "Vue 3 requires the component `data` option to be a function so each \
          instance gets a fresh state object. Wrap the object in a function, e.g. \

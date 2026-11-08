@@ -104,6 +104,10 @@ fn is_object_binding(prop: &PropNode<'_>) -> bool {
     matches!(prop, PropNode::Directive(dir) if dir.name == "bind" && dir.arg.is_none())
 }
 
+fn is_object_listener(prop: &PropNode<'_>) -> bool {
+    matches!(prop, PropNode::Directive(dir) if dir.name == "on" && dir.arg.is_none())
+}
+
 fn is_attribute_or_binding(prop: &PropNode<'_>) -> bool {
     matches!(prop, PropNode::Attribute(_))
         || matches!(prop, PropNode::Directive(dir) if matches!(dir.name, "bind" | "model")
@@ -116,8 +120,17 @@ fn ignored_object_binding(props: &[PropNode<'_>], index: usize) -> bool {
             || index
                 .checked_sub(1)
                 .and_then(|previous| props.get(previous))
+                .is_some_and(is_object_listener)
+            || props.get(index + 1).is_some_and(is_object_listener)
+            || index
+                .checked_sub(1)
+                .and_then(|previous| props.get(previous))
                 .is_some_and(is_attribute_or_binding)
             || props.get(index + 1).is_some_and(is_attribute_or_binding))
+}
+
+fn legacy_slot_attribute(prop: &PropNode<'_>, name: &str) -> bool {
+    matches!(prop, PropNode::Attribute(attribute) if attribute.name == name)
 }
 
 /// Implements the `vue/attribute-order` lint rule.
@@ -161,8 +174,13 @@ impl Rule for AttributeOrder {
                 AttrCategory::from_prop(prop)
             };
 
-            if let Some(highest_category_value) = highest_category
-                && category < highest_category_value
+            let legacy_slot_after_scope = legacy_slot_attribute(prop, "slot")
+                && element.props.get(..index).is_some_and(|props| {
+                    props
+                        .iter()
+                        .any(|previous| legacy_slot_attribute(previous, "slot-scope"))
+                });
+            if highest_category.is_some_and(|highest| category < highest) || legacy_slot_after_scope
             {
                 let loc = match prop {
                     PropNode::Attribute(attr) => &attr.loc,
@@ -282,6 +300,37 @@ mod tests {
     }
 
     #[test]
+    fn paired_object_listeners_and_bindings_preserve_merge_precedence() {
+        let linter = create_linter();
+        for (source, expected) in [
+            (
+                r#"<component v-if="component" v-bind="props" v-on="events" :is="component" :can-cancel="canCancel" @close="close" />"#,
+                2,
+            ),
+            (
+                r#"<md-button class="target" v-on="$listeners" v-bind="$attrs" @click="handleClick" />"#,
+                0,
+            ),
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, expected,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+            let binding_start = source.find("v-bind").unwrap() as u32;
+            assert!(
+                result
+                    .diagnostics
+                    .iter()
+                    .all(|diagnostic| diagnostic.start != binding_start),
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
+    }
+
+    #[test]
     fn test_valid_v_for_before_v_if() {
         let linter = create_linter();
         let result = linter.lint_template(
@@ -305,6 +354,10 @@ mod tests {
             r#"<div slot="header" class="panel"></div><div class="panel" slot-scope="scope"></div>"#,
             "test.vue",
         );
+        assert_eq!(result.warning_count, 1);
+
+        let result =
+            linter.lint_template(r#"<template slot-scope="props" slot="item" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
     }
 

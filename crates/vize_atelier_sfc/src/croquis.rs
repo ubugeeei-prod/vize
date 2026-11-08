@@ -46,6 +46,9 @@ pub struct SfcCroquisOptions {
     pub unused_bindings: bool,
     /// The supplied template AST is a proven dialect-derived HTML view.
     pub template_is_derived: bool,
+    /// Interpret authored Vue 2 slot-scope attributes during the template pass
+    /// without enabling legacy script analysis.
+    pub legacy_template_scopes: bool,
 }
 
 impl SfcCroquisOptions {
@@ -57,6 +60,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 
@@ -69,6 +73,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: true,
         }
     }
 
@@ -86,6 +91,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 
@@ -105,6 +111,7 @@ impl SfcCroquisOptions {
             merge_scripts: true,
             unused_bindings: false,
             template_is_derived: false,
+            legacy_template_scopes: false,
         }
     }
 

@@ -195,10 +195,11 @@ fn simple_tuple_part(part: Option<&str>) -> Option<Option<CompactString>> {
 
 fn simple_tuple_inner(alias: &str) -> Option<&str> {
     let alias = alias.trim();
-    alias
+    let parenthesized = alias
         .strip_prefix('(')
         .and_then(|rest| rest.strip_suffix(')'))
-        .map(str::trim)
+        .map(str::trim);
+    parenthesized.or_else(|| alias.contains(',').then_some(alias))
 }
 
 mod oxc;

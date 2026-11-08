@@ -40,20 +40,10 @@
           "column": 16,
           "endLine": 4,
           "endColumn": 18
-        },
-        {
-          "ruleId": "vue/require-expose",
-          "ruleDocsPath": "docs/content/rules/reference/vue-require-expose.md",
-          "severity": 1,
-          "message": "[vize:vue/require-expose] The public properties of the component must be explicitly declared using `expose`. If the component does not have public properties, declare it empty.",
-          "line": 4,
-          "column": 16,
-          "endLine": 4,
-          "endColumn": 18
         }
       ],
       "errorCount": 3,
-      "warningCount": 1
+      "warningCount": 0
     }
   ]
 }

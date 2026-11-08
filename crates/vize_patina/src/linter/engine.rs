@@ -176,7 +176,8 @@ impl Linter {
 
         let error_count = ctx.error_count();
         let warning_count = ctx.warning_count();
-        let diagnostics = ctx.into_diagnostics();
+        let mut diagnostics = ctx.into_diagnostics();
+        diagnostics.sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
 
         LintResult {
             filename: filename.to_compact_string(),

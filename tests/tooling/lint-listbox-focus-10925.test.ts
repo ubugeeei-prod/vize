@@ -97,7 +97,38 @@ void test("listbox roving focus preserves whole CLI packets across Vue, HTML, JS
     }
   };
   try {
-    const expectedOriginal = [{ ...before.packet[0], messages: [], warningCount: 0 }];
+    const expectedOriginal = [
+      {
+        ...before.packet[0],
+        messages: [
+          {
+            ruleId: "vue/v-on-handler-style",
+            ruleDocsPath: "docs/content/rules/vue.md",
+            severity: 1,
+            message:
+              "[vize:vue/v-on-handler-style] Prefer a method reference over an inline function or statement for this v-on handler",
+            line: 16,
+            column: 15,
+            endLine: 16,
+            endColumn: 38,
+            help: 'Write the handler as a method reference (e.g. @click="handler") instead of an inline function or statement.',
+          },
+          {
+            ruleId: "vue/v-on-handler-style",
+            ruleDocsPath: "docs/content/rules/vue.md",
+            severity: 1,
+            message:
+              "[vize:vue/v-on-handler-style] Prefer a method reference over an inline function or statement for this v-on handler",
+            line: 17,
+            column: 23,
+            endLine: 17,
+            endColumn: 46,
+            help: 'Write the handler as a method reference (e.g. @click="handler") instead of an inline function or statement.',
+          },
+        ],
+        warningCount: 2,
+      },
+    ];
     run(
       "original-issue",
       "opinionated",

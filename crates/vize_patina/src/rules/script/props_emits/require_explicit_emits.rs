@@ -339,7 +339,9 @@ impl<'a> EmitCallVisitor<'_, 'a> {
 }
 
 /// The `emit` binding and context parameter of the object's `setup` function.
-fn setup_context(object: &ObjectExpression<'_>) -> (Option<SymbolId>, Option<SymbolId>) {
+pub(in crate::rules::script) fn setup_context(
+    object: &ObjectExpression<'_>,
+) -> (Option<SymbolId>, Option<SymbolId>) {
     let mut found = (None, None);
     for property in &object.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {

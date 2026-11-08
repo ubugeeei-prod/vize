@@ -25,6 +25,7 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::NoBareStringsInTemplate));
+    linter.registry.mark_has_exit_element_rules();
     linter
 }
 
@@ -36,8 +37,16 @@ fn compare_template(source: &str) {
     // A raw template is the baseline: only its file offset is adjusted.
     offset_result(&mut expected, prefix.len() as u32);
     let actual = linter.lint_sfc(&sfc, "test.vue");
-    assert_eq!(actual.error_count, expected.error_count, "{source}");
-    assert_eq!(actual.warning_count, expected.warning_count, "{source}");
+    assert_eq!(
+        actual.error_count, expected.error_count,
+        "{source}\nactual: {:?}\nexpected: {:?}",
+        actual.diagnostics, expected.diagnostics
+    );
+    assert_eq!(
+        actual.warning_count, expected.warning_count,
+        "{source}\nactual: {:?}\nexpected: {:?}",
+        actual.diagnostics, expected.diagnostics
+    );
     assert_eq!(
         format!("{:?}", actual.diagnostics),
         format!("{:?}", expected.diagnostics),

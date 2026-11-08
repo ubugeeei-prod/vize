@@ -58,10 +58,10 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/slot-name-casing",
-    "The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.",
-    "`#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.",
-    "名前付きスロット `mySlot` が camelCase で、ハイフン区切りの規約に合いません。",
-    "スロット名を kebab-case の `#my-slot` にします。対応するスロットの出口の名前も合わせます。",
+    "The rendered slot outlet uses the hyphenated static name `my-slot`, while the default convention requires camelCase.",
+    "The outlet's static name uses camelCase. Parent-side `#name` provider syntax is outside this rule.",
+    "描画する slot outlet の静的な名前 `my-slot` がハイフン区切りで、既定の camelCase 規約に合いません。",
+    "outlet の静的な name を camelCase にします。親側の `#name` による提供構文は、このルールの対象外です。",
   ],
   [
     "vue/this-in-template",
@@ -100,10 +100,10 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/v-on-handler-style",
-    "The handlers put mutations and multiple statements directly in the event attribute.",
-    "Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.",
-    "イベント属性の中に変更処理や複数の文を直接記述しています。",
-    "handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。",
+    "The handlers use inline functions, mutations, or multiple statements instead of reusable method references.",
+    "Use a handler reference. Move inline logic into a named method so the template keeps a stable, reusable handler.",
+    "再利用可能なメソッド参照ではなく、インライン関数・変更処理・複数の文をイベント属性に記述しています。",
+    "handler などの関数への参照を使います。インライン処理は名前付きメソッドへ移し、テンプレートでは安定したハンドラーを参照します。",
   ],
   [
     "vue/v-on-style",

@@ -25,7 +25,7 @@ const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex")
 
 void test("selected no-fix suppression preserves the whole original diagnostic and authored insertion", () => {
   const reference = read("code-action-diagnostics/references.json");
-  assert.equal(hash(reference), "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2");
+  assert.equal(hash(reference), "28013efd08e0386a6a34ac94f718e29ec1d7d4196f0d8b63a7dd93bc703d13d0");
   const diagnostic = asRecord(
     asArray(asRecord(parseJson(reference.toString("utf8"))).diagnostics)[0],
   );

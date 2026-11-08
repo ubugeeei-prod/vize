@@ -9,6 +9,7 @@ use std::collections::BTreeSet;
 // and rule tests, so keep them out of these historical packet assertions.
 const LATER_DEFAULT_RULES: &[&str] = &[
     "script/define-props-destructuring",
+    "vue/html-self-closing",
     "vue/no-undefined-refs",
     "vue/no-unused-setup-bindings",
     "vue/no-this-in-before-route-enter",

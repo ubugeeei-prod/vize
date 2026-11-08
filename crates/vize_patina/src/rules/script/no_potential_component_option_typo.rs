@@ -49,6 +49,7 @@ const KNOWN_OPTIONS: &[&str] = &[
     "model",
     "delimiters",
     "compilerOptions",
+    "transitions",
     "__name",
     // Lifecycle hooks.
     "beforeCreate",

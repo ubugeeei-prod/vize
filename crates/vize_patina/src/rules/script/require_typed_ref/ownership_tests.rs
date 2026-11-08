@@ -57,3 +57,11 @@ fn annotations_do_not_silence_untyped_nested_or_other_binding_calls() {
         );
     }
 }
+
+#[test]
+fn an_assertion_between_the_call_and_annotated_binding_still_requires_a_type_argument() {
+    let source =
+        "import { ref } from 'vue'; const list: Ref<HTMLElement> = ref() as Ref<HTMLElement>;";
+    let result = lint(source);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}

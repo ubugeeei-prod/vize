@@ -40,14 +40,14 @@ pub(super) enum VueObjectKind {
 }
 
 /// Every Vue object of one script block, keyed by its span.
-pub(super) struct VueObjects {
+pub(crate) struct VueObjects {
     kinds: FxHashMap<Span, VueObjectKind>,
 }
 
 impl VueObjects {
     /// `export_default` is false for a `<script setup>` block or a standalone
     /// script, where upstream never treats `export default {}` as a component.
-    pub(super) fn collect<'a>(
+    pub(crate) fn collect<'a>(
         program: &Program<'a>,
         source: &str,
         semantic: &Semantic<'a>,
@@ -66,6 +66,10 @@ impl VueObjects {
 
     pub(super) fn kind(&self, object: &ObjectExpression<'_>) -> Option<VueObjectKind> {
         self.kinds.get(&object.span).copied()
+    }
+
+    pub(crate) fn contains(&self, object: &ObjectExpression<'_>) -> bool {
+        self.kinds.contains_key(&object.span)
     }
 }
 

@@ -30,12 +30,11 @@ description: "禁止在模板中直接写入应当国际化的用户可读文本
 
 可翻译内容调用 $t；示例中的标点和纯数字属于允许的例外。
 
-```vue annotate="add:2,3,4,5,6"
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
 <div>-</div>
-<div>123</div>
 <button :title="$t('close')">{{ $t('x') }}</button>
 </template>
 ```
@@ -61,4 +60,4 @@ export default defineConfig({}).withVue({
 
 - [Vue 规则](../vue.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L49)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)

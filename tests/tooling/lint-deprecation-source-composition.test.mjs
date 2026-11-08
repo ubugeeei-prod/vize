@@ -8,6 +8,7 @@ import {
   restoreHistoricalHelp,
   withoutDefaultBindStyle,
   withoutDefaultPropsDestructuring,
+  withoutCurrentUnusedSlotProps,
 } from "./support/lint-current-correctness-corpus.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -185,6 +186,7 @@ const vectors = [
     [
       [0, "sync", 18, 37, 18, 37],
       [2, "slot-scope", 28, 38, 28, 38],
+      [3, "scope", 28, 33, 28, 33],
       [4, "full-modifiers", 18, 49, 18, 49],
       [5, "utf8-crlf", 40, 59, 32, 51],
     ],
@@ -208,6 +210,24 @@ function validateCurrentPacket(original, current, changes, autofixes, firstNumer
   if (original.schema === "vize.lint.default-correctness") {
     withoutDefaultBindStyle(inverse);
     withoutDefaultPropsDestructuring(inverse);
+    withoutCurrentUnusedSlotProps(inverse);
+  } else if (original.schema === "vize.lint.default-migrations") {
+    for (const id of ["functional", "combined"]) {
+      const row = inverse.cases.find((entry) => entry.id === id);
+      assert.deepEqual(row.strictPresetDiagnostics, [
+        {
+          rule_name: "vue/multi-word-component-names",
+          severity: "error",
+          message: `Component name "${id}" should be multi-word to avoid conflicts with HTML elements`,
+          start: 0,
+          end: 0,
+          help: null,
+          labels: [],
+          fix: null,
+        },
+      ]);
+      delete row.strictPresetDiagnostics;
+    }
   }
   for (const [index, id, start, end, lspStart, lspEnd] of changes) {
     const row = inverse.cases[index];
@@ -269,7 +289,7 @@ function validateCurrentPacket(original, current, changes, autofixes, firstNumer
   restoreHistoricalHelp(inverse, original);
   assert.deepEqual(inverse, original);
 }
-void test("current whole preset packets preserve seven ranges, five numeric fixes and one first-modifier witness", () => {
+void test("current whole preset packets preserve eight ranges, five numeric fixes and one first-modifier witness", () => {
   for (const [directory, hash, changes, autofixes, firstNumericOnly] of vectors) {
     const fixture = path.join(root, "tests/_fixtures", directory);
     const old = fs.readFileSync(path.join(fixture, "cases.json"));

@@ -20,14 +20,14 @@
 //!
 //! # Direction of error
 //!
-//! * **Over-match** would be a false positive, so a `<slot>` whose name is not
-//!   a static attribute makes the whole scan [`RenderedSlots::Dynamic`] and the
-//!   rule reports nothing at all — the declared set cannot be checked
-//!   exhaustively against a name only the runtime knows.
+//! * **Over-match** would be a false positive, so a `<slot>` whose `:name` is
+//!   not a string literal is skipped. Other static outlets remain checkable.
 //! * **Under-match** loses a report: a `<slot>` in a template the parser could
 //!   not read, or one reached only through a dynamic name, is simply not
 //!   checked.
 
+use crate::rules::opinionated::vue::authored_element::closing;
+use oxc_ast::ast::Expression;
 use vize_l0::CompactString;
 use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
@@ -45,9 +45,6 @@ pub(super) struct RenderedSlot {
 pub(super) enum RenderedSlots {
     /// Every outlet name is statically known.
     Known(Vec<RenderedSlot>),
-    /// At least one outlet names itself with an expression, so the rendered set
-    /// is not fully known and nothing may be reported.
-    Dynamic,
 }
 
 /// Collect the `<slot>` outlets of `root`. `source` is the raw template block
@@ -56,20 +53,14 @@ pub(super) fn collect_rendered_slots(root: &RootNode<'_>, source: &str) -> Rende
     let mut collector = SlotCollector {
         source,
         slots: Vec::new(),
-        dynamic: false,
     };
     collector.walk(&root.children, false);
-    if collector.dynamic {
-        RenderedSlots::Dynamic
-    } else {
-        RenderedSlots::Known(collector.slots)
-    }
+    RenderedSlots::Known(collector.slots)
 }
 
 struct SlotCollector<'source> {
     source: &'source str,
     slots: Vec<RenderedSlot>,
-    dynamic: bool,
 }
 
 impl SlotCollector<'_> {
@@ -113,14 +104,21 @@ impl SlotCollector<'_> {
                 }
                 PropNode::Directive(directive) if directive.name == "bind" => {
                     match directive.arg.as_ref() {
-                        // `:name="x"` names the outlet with an expression.
-                        Some(arg) if argument_name(arg) == Some("name") => self.dynamic = true,
-                        // `:[key]="x"` may or may not be the name.
-                        Some(arg) if argument_name(arg).is_none() => self.dynamic = true,
+                        Some(arg) if argument_name(arg) == Some("name") => {
+                            let Some(static_name) =
+                                directive.exp.as_ref().and_then(static_string_expression)
+                            else {
+                                // This outlet is dynamic; eslint-plugin-vue
+                                // skips it but keeps checking sibling outlets.
+                                return;
+                            };
+                            name = Some(static_name);
+                        }
                         Some(_) => {}
-                        // An argument-less `v-bind="obj"` can carry a `name`
-                        // key, which only the runtime can resolve.
-                        None => self.dynamic = true,
+                        // An argument-less `v-bind` is not a `name` attribute
+                        // to the upstream rule, so this remains the default
+                        // outlet unless an explicit name is also present.
+                        None => {}
                     }
                 }
                 _ => {}
@@ -129,8 +127,28 @@ impl SlotCollector<'_> {
         self.slots.push(RenderedSlot {
             name: CompactString::new(name.unwrap_or("default")),
             start: element.loc.span.start,
-            end: element.loc.span.end,
+            end: if element.is_self_closing {
+                element.loc.span.end
+            } else {
+                closing(self.source, element)
+                    .map(|range| range.end as u32)
+                    .unwrap_or(element.loc.span.end)
+            },
         });
+    }
+}
+
+fn static_string_expression<'a>(expression: &'a ExpressionNode<'a>) -> Option<&'a str> {
+    let ExpressionNode::Simple(simple) = expression else {
+        return None;
+    };
+    let parsed = simple.js_ast?.as_expression()?;
+    match parsed.ast.get_inner_expression() {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+        Expression::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        _ => None,
     }
 }
 

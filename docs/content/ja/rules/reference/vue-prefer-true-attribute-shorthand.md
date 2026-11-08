@@ -19,7 +19,7 @@ true を指定するバインディングを真偽属性の省略形にします
 
 ```vue annotate="remove:2"
 <template>
-<input :disabled="true" />
+<MyComponent :visible="true" />
 </template>
 ```
 
@@ -27,11 +27,10 @@ true を指定するバインディングを真偽属性の省略形にします
 
 標準の真偽属性は省略形にします。false のバインディングやコンポーネントの prop は値を残します。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3,4"
 <template>
-<input disabled />
-<input :disabled="false" />
-<MyComponent :visible="true" />
+<MyComponent visible />
+<MyComponent :visible="false" />
 <MyComponent :visible="isVisible" />
 </template>
 ```
@@ -57,4 +56,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L28)
