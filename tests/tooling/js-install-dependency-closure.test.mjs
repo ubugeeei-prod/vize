@@ -36,9 +36,10 @@ void test("the pinned package manager selects private transitive dependencies fo
   ]);
   const paths = new Set([...groups.values()].flat());
   const native = "./npm/native";
+  const tools = "./tools";
   const uiFixture = "./npm/builder/vite/example";
   const names = new Map(
-    [...paths, native, uiFixture].map((path, index) => [path, `fixture-${index}`]),
+    [...paths, native, tools, uiFixture].map((path, index) => [path, `fixture-${index}`]),
   );
   const write = (path, value) => {
     const file = join(fixture, path, "package.json");
@@ -59,7 +60,7 @@ void test("the pinned package manager selects private transitive dependencies fo
     write(".", { name: "fixture-root", private: true, packageManager: manager });
     writeFileSync(
       join(fixture, "pnpm-workspace.yaml"),
-      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n",
+      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n  - 'tools'\n",
     );
     for (const [path, name] of names) {
       write(path, { name, devDependencies: { "fixture-shared": "workspace:*" } });
@@ -89,7 +90,7 @@ void test("the pinned package manager selects private transitive dependencies fo
       [names.get(rspack), "fixture-shared", "fixture-leaf", "fixture-optional"].sort(compareNames),
     );
     for (const [group, packages] of groups) {
-      const roots = [...packages, native, ...(group === "ui" ? [uiFixture] : [])];
+      const roots = [...packages, native, tools, ...(group === "ui" ? [uiFixture] : [])];
       assert.deepEqual(
         select(jsInstallFilters(group)),
         [
@@ -134,7 +135,8 @@ void test("paired install receipts are bound to the current event rather than ea
     event: "pull_request",
     triggerHead: trigger,
     inputs: authority.inputs,
-    projects: role === "before" ? ["consumer"] : ["@vizejs/builder-shared", "consumer"],
+    projects:
+      role === "before" ? ["consumer"] : ["@vize/tools", "@vizejs/builder-shared", "consumer"],
     install: { status: 0 },
     issuer:
       role === "before"
