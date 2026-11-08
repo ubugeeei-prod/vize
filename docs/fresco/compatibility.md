@@ -115,6 +115,10 @@ supplied color, spacing, border, or motion tokens; `useFrescoTheme()` consumes t
 
 Fresco implements the full Ink v6 hook list under the same names, as Vue composables.
 
+Configurable command input is available through [`useKeymap`](./keymaps.md), including exact
+single chords, Emacs-style multi-chords, Vim-style sequences, reactive mode maps, and typed command
+IDs.
+
 | Ink                                | OpenTUI                           | Vue TermUI                   | Fresco                             | Status      | Notes                                                                                                                                                                    |
 | ---------------------------------- | --------------------------------- | ---------------------------- | ---------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `useInput`                         | `onKeyDown` (per renderable)      | `onKeyDown`/`onKeyUp`        | `useInput` (+ `useKeyPress`)       | Partial     | Global subscription with Kitty press/repeat/release; not routed per element, no capture/bubble (M1).                                                                     |

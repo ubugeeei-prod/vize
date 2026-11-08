@@ -37,3 +37,15 @@ export {
   type VirtualViewportOptions,
   type VirtualViewportRange,
 } from "./useVirtualViewport.js";
+export {
+  createKeymapResolver,
+  defineKeymap,
+  useKeymap,
+  type Keymap,
+  type KeymapBinding,
+  type KeymapMatch,
+  type KeymapResolver,
+  type KeymapStroke,
+  type UseKeymapOptions,
+  type UseKeymapReturn,
+} from "./useKeymap.js";
