@@ -12,7 +12,7 @@ use oxc_span::SourceType;
 use vize_l0::cstr;
 use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
-use super::super::template_surface::{
+use crate::markup::surface_source::{
     directive, element_verbatim, has_directive as element_has_directive,
 };
 

@@ -86,6 +86,7 @@ mod relief_scopes;
 mod rule;
 mod scope;
 mod source_ranges;
+pub(crate) mod surface_source;
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

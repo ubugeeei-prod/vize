@@ -1,8 +1,8 @@
 //! Template writes only suppress advice; token ambiguity is conservative.
-use super::super::template_surface::{
+use super::{SfcScriptContext, analysis::Inventory};
+use crate::markup::surface_source::{
     DecodedSource, DirectiveArgument, directive, element_verbatim, static_attribute_value,
 };
-use super::{SfcScriptContext, analysis::Inventory};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{CompactString, FxHashSet};
