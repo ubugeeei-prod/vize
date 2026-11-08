@@ -16,8 +16,11 @@ fn render_node(id: i64, node_type: &str) -> RenderNodeNapi {
         placeholder: None,
         focused: None,
         cursor: None,
+        selection_start: None,
+        selection_end: None,
         mask: None,
         mask_char: None,
+        lines: None,
         style: None,
         appearance: None,
         border: None,
@@ -74,9 +77,15 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             placeholder: Some("type here".into()),
             focused: Some(true),
             cursor: Some(6),
+            selection_start: Some(1),
+            selection_end: Some(4),
             mask: Some(true),
             mask_char: Some("#".into()),
             ..render_node(4, "input")
+        },
+        RenderNodeNapi {
+            lines: Some(vec!["ab".into(), "cd".into()]),
+            ..render_node(5, "raw")
         },
     ];
 
@@ -87,6 +96,7 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
             RenderNodeKindNapi::Box,
             RenderNodeKindNapi::Text,
             RenderNodeKindNapi::Input,
+            RenderNodeKindNapi::Raw,
         ]
     );
 
@@ -120,8 +130,15 @@ fn render_node_kind_accepts_every_public_protocol_literal() {
     assert_eq!(nodes[3].placeholder.as_deref(), Some("type here"));
     assert_eq!(nodes[3].focused, Some(true));
     assert_eq!(nodes[3].cursor, Some(6));
+    assert_eq!(nodes[3].selection_start, Some(1));
+    assert_eq!(nodes[3].selection_end, Some(4));
     assert_eq!(nodes[3].mask, Some(true));
     assert_eq!(nodes[3].mask_char.as_deref(), Some("#"));
+    assert_eq!(nodes[4].node_type, "raw");
+    assert_eq!(
+        nodes[4].lines.as_deref(),
+        Some(["ab".into(), "cd".into()].as_slice())
+    );
 }
 
 #[test]
@@ -219,7 +236,7 @@ fn render_node_kind_rejects_unknown_protocol_values() {
 
 #[test]
 fn render_node_kind_literals_are_exact_and_case_sensitive() {
-    for value in ["", "Box", " box", "box ", "raw"] {
+    for value in ["", "Box", " box", "box ", "Raw"] {
         assert_eq!(parse_render_node_kind(value), None);
     }
 }

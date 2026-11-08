@@ -1,0 +1,7 @@
+<script setup lang="ts">
+type InferProps<T> = T extends { __output: infer R } ? R : never
+type Props = InferProps<{ __output: { title: string; count: number } }>
+const props = defineProps<Props>()
+</script>
+
+<template><p>{{ props.title }} {{ props.count }}</p></template>

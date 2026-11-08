@@ -88,6 +88,8 @@ impl InputNode {
             value: self.value,
             placeholder: self.placeholder,
             cursor: 0,
+            selection_start: 0,
+            selection_end: 0,
             focused: self.focused,
             mask: self.mask,
             mask_char: self.mask_char,
