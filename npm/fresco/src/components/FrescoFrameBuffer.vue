@@ -4,8 +4,22 @@ import type { FrameBufferProps } from "./frame-buffer-types.js";
 defineProps<FrameBufferProps>();
 
 defineOptions({ name: "FrameBuffer" });
+
+const rawElement = "raw";
 </script>
 
 <template>
-  <raw :lines :style :fg :bg :bold :dim :italic :underline :inverse :border />
+  <component
+    :is="rawElement"
+    :lines
+    :style
+    :fg
+    :bg
+    :bold
+    :dim
+    :italic
+    :underline
+    :inverse
+    :border
+  />
 </template>
