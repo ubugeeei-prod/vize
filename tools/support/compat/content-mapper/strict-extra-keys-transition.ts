@@ -30,7 +30,7 @@ const identity = (value: string | Buffer) => ({
   sha256: sha256(value),
 });
 
-export function beforeCanonLeftovers(path: string, current: string): string {
+function canonLeftoversTransition(path: string) {
   const receiptBytes = readFileSync(canonLeftoversUrl);
   assert.equal(sha256(receiptBytes), canonLeftoversSha256, "canon leftovers source record");
   const receipt = JSON.parse(receiptBytes.toString("utf8")) as {
@@ -47,7 +47,11 @@ export function beforeCanonLeftovers(path: string, current: string): string {
   assert.equal(receipt.version, 1);
   assert.equal(receipt.kind, "exact-canon-leftovers-source-inverse");
   assert.equal(receipt.issue, 11499);
-  const transition = receipt.files.find((transition) => transition.path === path);
+  return receipt.files.find((transition) => transition.path === path);
+}
+
+export function beforeCanonLeftovers(path: string, current: string): string {
+  const transition = canonLeftoversTransition(path);
   if (!transition) return current;
   const currentIdentity = identity(current);
   if (
@@ -63,6 +67,47 @@ export function beforeCanonLeftovers(path: string, current: string): string {
   }
   assert.deepEqual(identity(previous), transition.before);
   return previous;
+}
+
+export function applyCanonLeftovers(path: string, previous: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return previous;
+  const previousIdentity = identity(previous);
+  if (
+    previousIdentity.bytes === transition.after.bytes &&
+    previousIdentity.sha256 === transition.after.sha256
+  )
+    return previous;
+  assert.deepEqual(previousIdentity, transition.before, "canon leftovers predecessor identity");
+  let current = previous;
+  for (const edit of [...transition.edits].reverse()) {
+    assert.equal(current.split(edit.before).length - 1, 1);
+    current = current.replace(edit.before, () => edit.after);
+  }
+  assert.deepEqual(identity(current), transition.after);
+  return current;
+}
+
+export function beforeCanonLeftoversIn(path: string, current: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return current;
+  let previous = current;
+  for (const edit of transition.edits) {
+    assert.equal(previous.split(edit.after).length - 1, 1);
+    previous = previous.replace(edit.after, () => edit.before);
+  }
+  return previous;
+}
+
+export function applyCanonLeftoversIn(path: string, previous: string): string {
+  const transition = canonLeftoversTransition(path);
+  if (!transition) return previous;
+  let current = previous;
+  for (const edit of [...transition.edits].reverse()) {
+    assert.equal(current.split(edit.before).length - 1, 1);
+    current = current.replace(edit.before, () => edit.after);
+  }
+  return current;
 }
 
 function authenticateRecord() {

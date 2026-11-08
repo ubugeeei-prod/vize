@@ -53,6 +53,15 @@ export function certifyJsxWitnessChange(
   ) {
     const predecessor = Buffer.from(beforeCanonLeftovers(file, after.toString("utf8")));
     if (!predecessor.equals(after)) {
+      if (before.equals(predecessor))
+        return {
+          file,
+          beforeSha256: digest(before),
+          afterSha256: digest(after),
+          recordSha256: canonLeftoversSha256,
+          comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+          nativeAcceptanceCredit: false,
+        };
       const historical = certifyJsxWitnessChange(file, before, predecessor);
       const predecessorSuccessors =
         historical.successorRecordSha256s ??

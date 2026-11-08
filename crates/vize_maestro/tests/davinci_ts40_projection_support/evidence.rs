@@ -221,6 +221,18 @@ fn public_instance_slot_packets_remain_authenticated() {
         discriminated_jsx_union_successor,
         strict_extra_keys_successor,
     );
+    let canon_leftovers_successor = include_str!(
+        "fixtures/public-instance-options-api-slots/successor-canon-leftovers-11499/projection-record.txt"
+    );
+    authenticate_successor_receipt(
+        include_str!(
+            "fixtures/public-instance-options-api-slots/successor-canon-leftovers-11499/receipt.json"
+        ),
+        "957be3f7f37b51a862c169c4177e3b311dda112aed271540d96105010ab28bc4",
+        12162,
+        strict_extra_keys_successor,
+        canon_leftovers_successor,
+    );
     let non_text_fields = |record: &str| {
         record
             .lines()
@@ -244,7 +256,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        strict_extra_keys_successor
+        canon_leftovers_successor
     );
 }
 
@@ -430,6 +442,18 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             discriminated_jsx_union_successor,
             strict_extra_keys_successor,
         );
+        let canon_leftovers_successor = include_str!(
+            "fixtures/public-instance-mixed-vue2/successor-canon-leftovers-11499/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "fixtures/public-instance-mixed-vue2/successor-canon-leftovers-11499/receipt.json"
+            ),
+            "2134b77351d95fdb1a4de7c6768e271b0ebb7b649f9a66126f9103a097b2a827",
+            12162,
+            strict_extra_keys_successor,
+            canon_leftovers_successor,
+        );
         let non_text_fields = |record: &str| {
             record
                 .lines()
@@ -443,7 +467,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            strict_extra_keys_successor
+            canon_leftovers_successor
         );
     }
 }

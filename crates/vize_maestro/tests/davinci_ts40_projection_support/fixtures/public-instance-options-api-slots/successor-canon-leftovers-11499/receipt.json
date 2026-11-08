@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pullRequest": 12162,
+  "predecessor": {
+    "path": "successor-strict-extra-keys-11497/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "3f0fa59d0a624088cedb8493d43d8d110aa8b0e593f413e5562e16a0d2ac4052"
+  },
+  "successor": {
+    "path": "successor-canon-leftovers-11499/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "04e6fb1b046ca08e39393159b8c448853bfd0d573196ca9d888216771340b159"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 397,
+    "contentMapperGeneratedTextBytes": 397,
+    "maestroGeneratedTextBytes": 397,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "qualification": {
+    "head": "b741516fe163ed6c49e89607b5066d417143ffd0",
+    "pullRequestHead": "58aaaac352389b9293baa932b8dec45665869fe3",
+    "run": 42448079460,
+    "artifact": {
+      "id": 13604831136,
+      "name": "projection-import-geometry-default-b741516fe163ed6c49e89607b5066d417143ffd0-1",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+      "sha256": "b632a0ae33b68f65a44215c8aea785caecf7890eedd6e5b882660f864a495a3f"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authenticated exact GitHub Actions successor for #11499 public-instance helper stabilization. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+}

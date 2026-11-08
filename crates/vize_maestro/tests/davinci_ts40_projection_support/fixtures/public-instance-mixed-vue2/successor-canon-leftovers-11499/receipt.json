@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "pullRequest": 12162,
+  "predecessor": {
+    "path": "successor-strict-extra-keys-11497/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "100d52556824c50f3f52cde846e3ad8e16d9b2d7a305af9c77fcd9547975090d"
+  },
+  "successor": {
+    "path": "successor-canon-leftovers-11499/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "5e9b57dcf1a28de6c42fa1bf69fe5f6fdff9893ee13148d1f9db5d11d5173401"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 397,
+    "maestroGeneratedTextBytes": 397,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "qualification": {
+    "head": "b741516fe163ed6c49e89607b5066d417143ffd0",
+    "pullRequestHead": "58aaaac352389b9293baa932b8dec45665869fe3",
+    "run": 42448079460,
+    "artifact": {
+      "id": 13604467486,
+      "name": "projection-import-geometry-legacy-b741516fe163ed6c49e89607b5066d417143ffd0-1",
+      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+      "sha256": "4aa12b0b76515998969d5a11c4e7a2c7232d32c4d2197ea7016f9e76df0e1244"
+    }
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authenticated exact GitHub Actions successor for #11499 public-instance helper stabilization in the mixed Vue 2 projection. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+}

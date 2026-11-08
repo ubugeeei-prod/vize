@@ -386,3 +386,31 @@ void test("the current generator never remaps a whole component instance", () =>
   );
   assert.deepEqual(stale, []);
 });
+
+void test("the published ambient constructor helper matches the canonical ABI", () => {
+  const signature = (relative: string): string => {
+    const source = fs.readFileSync(`${repo}${relative}`, "utf8");
+    const parsed = ts.createSourceFile(relative, source, ts.ScriptTarget.Latest, true);
+    const matches: ts.TypeAliasDeclaration[] = [];
+    const visit = (node: ts.Node): void => {
+      if (ts.isTypeAliasDeclaration(node) && node.name.text === "$ComponentInstanceFor") {
+        matches.push(node);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(parsed);
+    assert.equal(matches.length, 1, relative);
+    const declaration = matches[0]!;
+    const parameters =
+      declaration.typeParameters?.map((parameter) => parameter.getText(parsed)) ?? [];
+    const type = ts
+      .createPrinter({ removeComments: true })
+      .printNode(ts.EmitHint.Unspecified, declaration.type, parsed);
+    return `<${parameters.join(", ")}> = ${type}`;
+  };
+
+  assert.equal(
+    signature("npm/cli/virtual-ts-globals.d.ts"),
+    signature("crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"),
+  );
+});
