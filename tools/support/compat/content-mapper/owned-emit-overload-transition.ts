@@ -56,15 +56,10 @@ export function certifyEmitOverloadAssets(
   }
   if (before.equals(after)) return;
   const baseHash = digest(before);
-  const composedHistory = before.length === 1883 && baseHash === previousHash;
-  assert.ok(
-    composedHistory || (before.length === 2535 && baseHash === historicalCurrentHash),
-    "unknown previous emit helper",
-  );
-  assert.equal(after.length, 3488, "unknown current emit helper");
+  const composedHistory = baseHash === previousHash;
+  assert.ok(composedHistory || baseHash === historicalCurrentHash, "unknown previous emit helper");
   assert.equal(digest(after), currentHash, "unknown current emit helper");
   const historicalAfter = Buffer.from(beforeCanonLeftovers(emitOverloadsPath, after.toString()));
-  assert.equal(historicalAfter.length, 2535, "unknown historical emit helper");
   assert.equal(digest(historicalAfter), historicalCurrentHash, "unknown historical emit helper");
   const line = (bytes: Buffer) => {
     const lines = bytes

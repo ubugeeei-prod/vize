@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -24,10 +25,6 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
   context.after(() => rmSync(pair.directory, { recursive: true, force: true }));
   const assets = readAssets(pair.base, pair.head, pair.sources);
   const packet = virtualPair(pair);
-  assert.equal(
-    pair.after.length + pair.afterOwner.length - pair.before.length - pair.beforeOwner.length,
-    1408,
-  );
   const proof = relocateVirtualPacket(
     packet.base,
     packet.head,
@@ -36,8 +33,12 @@ test("the owned overload asset relocates the complete Unicode virtual packet", (
     assets.headEmbedded,
   );
   assert.equal(proof.edits.length, 1);
-  assert.equal(proof.edits[0].end - proof.edits[0].start, 2125);
-  assert.equal(proof.edits[0].replacementBytes, 3533);
+  assert.equal(
+    proof.edits[0].replacementSha256,
+    createHash("sha256")
+      .update(Buffer.concat([pair.after, pair.afterOwner]))
+      .digest("hex"),
+  );
 });
 
 test("owned emit inventory rejects every unauthenticated helper state", async (context) => {

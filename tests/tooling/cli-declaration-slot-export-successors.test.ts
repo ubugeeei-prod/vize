@@ -209,7 +209,7 @@ function overloadOutputTransition(current: Buffer, direction: "forward" | "inver
       ? [encoded(currentOverloadAsset), encoded(previousOverloadAsset)]
       : [encoded(previousOverloadAsset), encoded(currentOverloadAsset)];
   const text = current.toString("utf8");
-  assert.ok(text.split(from).length - 1 >= 1);
+  assert.equal(text.split(from).length - 1, 1);
   assert.equal(text.split(to).length - 1, 0);
   return Buffer.from(text.replaceAll(from, to));
 }

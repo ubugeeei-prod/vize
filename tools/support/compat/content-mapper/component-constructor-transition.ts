@@ -7,8 +7,8 @@ import { certifiedTransition } from "./canonical-helper-transition.ts";
 const constructorSources = [
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
-    10729,
-    "87339d14141883c2a602afc9268cc29e0e2573c6c5577d005c77806c379f1505",
+    10946,
+    "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",

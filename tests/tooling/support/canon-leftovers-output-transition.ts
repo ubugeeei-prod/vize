@@ -81,7 +81,12 @@ export function canonLeftoversOutputTransition(
   for (const edit of edits) {
     const from = encoded(direction === "inverse" ? edit.after : edit.before),
       to = encoded(direction === "inverse" ? edit.before : edit.after);
-    if (text.includes(from)) text = text.replaceAll(from, () => to);
+    if (direction === "inverse") {
+      assert.equal(text.split(from).length - 1, 1);
+      text = text.replace(from, () => to);
+    } else if (text.includes(from)) {
+      text = text.replaceAll(from, () => to);
+    }
   }
   const memberships = direction === "inverse" ? exportEdits : [...exportEdits].reverse();
   for (const [before, after] of memberships) {

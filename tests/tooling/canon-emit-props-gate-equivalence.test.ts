@@ -456,17 +456,39 @@ void test("the immutable pre-marker oracle retains its original routes and union
 });
 
 void test("a successor refuses unknown producer bytes and altered historical context", () => {
-  for (const path of [
-    "tests/_fixtures/tooling/emit-props-gate-11697.json",
-    ...Object.keys(oracle.current.sourceHashes),
-  ]) {
+  const rejections = [
+    ["tests/_fixtures/tooling/emit-props-gate-11697.json", /immutable emit gate oracle context/u],
+    [`${declarations}emit-inference.d.ts.txt`, /generic specialization image/u],
+    [`${declarations}shared-emit-inference.d.ts.txt`, /generic specialization image/u],
+    [`${scope}component_events/generic_inference.rs`, /integrated static listener source/u],
+    [`${scope}component_events/emit_props_gate.rs`, /generic specialization image/u],
+    [
+      `${declarations}core-types.d.ts.txt`,
+      /selected emit gate producer: crates\/vize_canon\/src\/virtual_ts\/helpers\/declarations\/core-types\.d\.ts\.txt/u,
+    ],
+    [`${declarations}emit-overloads.d.ts.txt`, /canon leftovers source identity/u],
+    [`${declarations}emit-props.d.ts.txt`, /canon leftovers source identity/u],
+    [
+      "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      /canon leftovers source identity/u,
+    ],
+    [`${scope}component_events.rs`, /listener relation source/u],
+  ] as const;
+  assert.deepEqual(
+    rejections.map(([path]) => path),
+    [
+      "tests/_fixtures/tooling/emit-props-gate-11697.json",
+      ...Object.keys(oracle.current.sourceHashes),
+    ],
+  );
+  for (const [path, reason] of rejections) {
     assert.throws(
       () => emitGateOracle((selected) => read(selected) + (selected === path ? " " : "")),
-      /oracle context|selected emit gate producer|canon leftovers source identity/u,
+      reason,
     );
     assert.throws(
       () => emitGateOracle((selected) => (selected === path ? "" : read(selected))),
-      /oracle context|selected emit gate producer|canon leftovers source identity/u,
+      reason,
     );
   }
 });

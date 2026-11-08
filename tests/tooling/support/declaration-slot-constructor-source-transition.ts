@@ -9,8 +9,8 @@ const identity = (bytes: Buffer): Identity => ({
 });
 
 const currentConstructorSource: Identity = {
-  bytes: 10729,
-  sha256: "87339d14141883c2a602afc9268cc29e0e2573c6c5577d005c77806c379f1505",
+  bytes: 10946,
+  sha256: "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489",
 };
 
 const constructorSourceEdit = {
@@ -43,6 +43,25 @@ const constructorSourceEdit = {
       "        append!(",
       "            *ts,",
       '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
+      "        );",
+    ].join("\n") + "\n",
+};
+
+const authoredDefaultBaseEdit = {
+  before: constructorSourceEdit.after,
+  after:
+    [
+      "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and",
+      "        // leave undeclared attributes to the consumer's own excess-property",
+      "        // check; TSX binds `$JsxProps` and stays exact (#11629).",
+      "        let constructor_base = if aliases.has_authored_default {",
+      "            cstr!(\"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & {base}\")",
+      "        } else {",
+      "            base.clone()",
+      "        };",
+      "        append!(",
+      "            *ts,",
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
       "        );",
     ].join("\n") + "\n",
 };
@@ -87,6 +106,7 @@ export function constructorSourceTransition(
           currentConstructorSource,
           historical,
           [
+            [authoredDefaultBaseEdit.after, authoredDefaultBaseEdit.before],
             [constructorSourceEdit.after, constructorSourceEdit.before],
             [constructorBaseSplitEdit.after, constructorBaseSplitEdit.before],
           ],
@@ -97,6 +117,7 @@ export function constructorSourceTransition(
           [
             [constructorBaseSplitEdit.before, constructorBaseSplitEdit.after],
             [constructorSourceEdit.before, constructorSourceEdit.after],
+            [authoredDefaultBaseEdit.before, authoredDefaultBaseEdit.after],
           ],
         ] as const);
   assert.deepEqual(identity(current), {

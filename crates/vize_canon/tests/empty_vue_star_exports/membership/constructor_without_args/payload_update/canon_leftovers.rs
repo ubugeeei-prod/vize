@@ -3,7 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 
 const RECEIPT_BYTES: &[u8] = include_bytes!("canon_leftovers_11499.json");
-const RECEIPT_SHA: &str = "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306";
+const RECEIPT_SHA: &str = "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e";
 
 fn identity(text: &str, expected: &Value) {
     assert_eq!(json!(text.len()), expected["bytes"]);
@@ -77,8 +77,13 @@ pub(super) fn retain_provenance(manifest: &mut Value) {
     for transition in receipt["files"].as_array().unwrap() {
         let path = transition["path"].as_str().unwrap();
         let current = std::fs::read_to_string(support::repository().join(path)).unwrap();
+        identity(&current, &transition["after"]);
         inverse(&current, transition);
     }
+    identity(
+        vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        &receipt["compiledPreamble"]["after"],
+    );
     inverse(
         vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
         &receipt["compiledPreamble"],
