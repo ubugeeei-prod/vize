@@ -13,8 +13,9 @@ pub enum NativeVue2SfcNode {
 }
 
 /// Original observations remain on the normally owning descriptor.
-/// Template offsets are block-relative; other spans are authored-file ranges.
-/// Nested expression errors retain their original coordinate domains.
+/// Template refusal offsets are block-relative; other spans are authored-file
+/// coordinates. Component recovery and nested expression errors document their
+/// own coordinate domains.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeVue2SfcRefusal {
     /// The Vue 2 descriptor observation itself refused.
