@@ -37,6 +37,7 @@ impl VirtualProject {
             });
         }
         let shared_helpers_before = self.uses_shared_helpers();
+        let props_fallback_before = self.uses_props_fallback();
         self.incremental_source_nodes_rebuilt += 1;
         #[cfg(test)]
         {
@@ -78,7 +79,6 @@ impl VirtualProject {
             self.pre_rewrite_sources
                 .remove(&registered.file.virtual_path);
         }
-        let props_fallback_before = self.uses_props_fallback();
         self.props_fallback_files
             .remove(&registered.file.virtual_path);
         if registered.props_fallback {
@@ -170,7 +170,9 @@ impl VirtualProject {
 
     pub(crate) fn remove_registered_source(&mut self, original_path: &Path) -> Vec<PathBuf> {
         let before = self.uses_shared_helpers();
+        let props_fallback_before = self.uses_props_fallback();
         let removed = self.remove_registered_source_inner(original_path);
+        self.reconcile_props_fallback(props_fallback_before);
         self.reconcile_shared_helper_membership(before);
         removed
     }
@@ -211,9 +213,7 @@ impl VirtualProject {
             self.original_contents.remove(&path);
             self.pre_rewrite_sources.remove(&path);
             self.unchecked_javascript_files.remove(&path);
-            let props_fallback_before = self.uses_props_fallback();
             self.props_fallback_files.remove(&path);
-            self.reconcile_props_fallback(props_fallback_before);
             removed.push(path);
         }
         for path in artifacts.passthrough_paths {
