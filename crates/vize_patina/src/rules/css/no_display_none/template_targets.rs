@@ -306,7 +306,7 @@ mod tests {
         let allocator = Allocator::new();
         let (surface, _, errors) =
             vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
-        assert!(errors.is_empty(), "{errors:?}");
+        assert_eq!(errors.len(), 0, "{errors:?}");
         TemplateTargets::from_surface(&surface)
     }
 
