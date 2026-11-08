@@ -380,6 +380,7 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   for (const { name, packages, prebuilt } of testedPackageGroups) {
     const baseline = [
       packageName,
+      "{./tools}...",
       "{./npm/native}...",
       ...[...packages, ...prebuilt].map((pkg) => `{${pkg}}...`),
     ];
@@ -396,8 +397,12 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
   ] as const) {
     assert.deepEqual(
       jsInstallFilters(group),
-      [packageName, "{./npm/native}...", ...packages.map((pkg) => `{${pkg}}...`)],
+      [packageName, "{./tools}...", "{./npm/native}...", ...packages.map((pkg) => `{${pkg}}...`)],
       group,
     );
   }
+  assert.ok(
+    jsInstallFilters("builders").includes("{./tools}..."),
+    "builder tests install dependencies owned by tools/package.json",
+  );
 });

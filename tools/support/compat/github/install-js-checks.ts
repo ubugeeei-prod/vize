@@ -25,6 +25,7 @@ export function jsInstallFilters(group: string): string[] {
   return [
     ...new Set([
       root.name,
+      "{./tools}...",
       "{./npm/native}...",
       ...packages.map((pkg) => `{${pkg}}...`),
       ...fixtures,
