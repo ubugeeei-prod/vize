@@ -219,7 +219,6 @@ crates/vize_canon/src/package_route/tests.rs	1
 crates/vize_canon/src/package_route/tests/lifecycle.rs	4
 crates/vize_canon/src/package_route/tests/lifecycle/topology.rs	5
 crates/vize_canon/src/sfc_typecheck/tests.rs	35
-crates/vize_canon/src/sfc_typecheck/tests/emit_props.rs	4
 crates/vize_canon/src/sfc_typecheck/tests/optional_chain_props.rs	6
 crates/vize_canon/src/sfc_typecheck/tests/with_defaults.rs	9
 crates/vize_canon/src/template_ref_registry_scope.rs	6
