@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - crates/vize_carton/src/config/loader/**
+      - crates/vize_patina/src/linter/corsa_session/**
       - tools/support/config/windows_consumer/**
       - .github/workflows/windows-config-consumer.yml
   workflow_dispatch:
