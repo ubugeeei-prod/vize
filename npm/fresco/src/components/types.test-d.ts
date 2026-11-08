@@ -54,6 +54,7 @@ import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 import type { ModalProps } from "./modal-types.js";
 import type { TableProps, TableRow } from "./table-types.js";
+import { createCodeBuffer, type CodeProps, type CodeSyntaxProvider } from "./Code.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -231,6 +232,19 @@ export const modalAcceptsFocusPolicyProps: ModalProps = {
   trapFocus: true,
   restoreFocus: true,
   closeOnEscape: true,
+};
+
+export const codeSyntaxProvider: CodeSyntaxProvider = {
+  tokenize: (line, { language }) => [{ text: line, fg: language === "ts" ? "cyan" : undefined }],
+};
+export const codeAcceptsRichDisplayProps: CodeProps = {
+  buffer: createCodeBuffer("const answer = 42", { maxLines: 1_000 }),
+  language: "ts",
+  syntaxProvider: codeSyntaxProvider,
+  diagnostics: [{ line: 0, startColumn: 6, endColumn: 12, message: "example" }],
+  selection: { anchor: { line: 0, column: 0 }, focus: { line: 0, column: 5 } },
+  viewportSize: 40,
+  overscan: 4,
 };
 
 type ScoreRow = TableRow & { readonly name: string; readonly score: number };

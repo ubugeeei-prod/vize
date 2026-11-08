@@ -31,7 +31,18 @@ export { default as Static } from "./FrescoStatic.vue";
 export type { StaticProps } from "./display-primitive-types.js";
 export { default as Transform } from "./FrescoTransform.vue";
 export type { TransformProps } from "./text-utility-types.js";
-export { Code, type CodeProps } from "./Code.js";
+export { Code, createCodeBuffer } from "./Code.js";
+export type {
+  CodeBuffer,
+  CodeDiagnostic,
+  CodeDiagnosticSeverity,
+  CodePosition,
+  CodeProps,
+  CodeSelection,
+  CodeSyntaxContext,
+  CodeSyntaxProvider,
+  CodeSyntaxToken,
+} from "./Code.js";
 export { default as Markdown } from "./FrescoMarkdown.vue";
 export { defaultMarkdownRenderer, parseMarkdown, renderMarkdown } from "./markdown.js";
 export type {
