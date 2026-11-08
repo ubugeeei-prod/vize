@@ -188,20 +188,22 @@ function retained(run, count) {
   assert.equal(run.calls.length, count);
   assert.equal(run.read("cargo.log"), "");
   assert.deepEqual(fs.readdirSync(run.temporary), []);
-  assert.equal(run.calls[0].at(-1), primary);
-  assert.deepEqual(run.calls[0].slice(0, 7), [
-    "--fail",
-    "--silent",
-    "--show-error",
-    "--location",
-    "--proto",
-    "=https",
-    "--tlsv1.2",
-  ]);
-  assert.deepEqual(run.calls[0].slice(-3), ["--write-out", "%{http_code}", primary]);
-  if (run.calls.at(-1).at(-1) === alternative) {
+  const primaryCount = count === 3 ? 2 : 1;
+  for (const call of run.calls.slice(0, primaryCount)) {
+    assert.equal(call.at(-1), primary);
+    assert.deepEqual(call.slice(0, 7), [
+      "--fail",
+      "--silent",
+      "--show-error",
+      "--location",
+      "--proto",
+      "=https",
+      "--tlsv1.2",
+    ]);
+    assert.deepEqual(call.slice(-3), ["--write-out", "%{http_code}", primary]);
+  }
+  if (count > primaryCount) {
     const output = run.calls[0][run.calls[0].indexOf("--output") + 1];
-    assert.ok(run.calls.slice(0, -1).every((call) => call.at(-1) === primary));
     assert.deepEqual(run.calls.at(-1), [
       "--fail",
       "--silent",
@@ -212,6 +214,11 @@ function retained(run, count) {
       "--tlsv1.2",
       ...timeLimits,
       ...stallLimits,
+      "--retry",
+      "5",
+      "--retry-all-errors",
+      "--retry-delay",
+      "1",
       "--header",
       "Accept: application/octet-stream",
       "--header",
@@ -267,18 +274,6 @@ void test("primary HTTP200 never requests the alternative", () => {
     assert.equal(observed.result.stderr, "");
   });
 });
-void test("two HTTP-less timeouts use the same-byte API route", () => {
-  withRun({ primaryStatus: 28, primaryHttp: "000" }, (observed) => {
-    accepted(observed, 3);
-    assert.match(observed.result.stderr, /attempt=2 curl=28 HTTP=000/u);
-  });
-});
-void test("two redirect timeouts use the same-byte API route", () => {
-  withRun({ primaryStatus: 28, primaryHttp: "302" }, (observed) => {
-    accepted(observed, 3);
-    assert.match(observed.result.stderr, /attempt=2 curl=28 HTTP=302/u);
-  });
-});
 void test("HTTP authentication, missing asset and rate limiting keep original failure", () => {
   for (const http of ["401", "403", "404", "429"]) {
     withRun({ primaryHttp: http }, (observed) => {
@@ -290,9 +285,29 @@ void test("HTTP authentication, missing asset and rate limiting keep original fa
     });
   }
 });
-void test("network, timeout and TLS failures never recover even with a 5xx status", () => {
-  for (const status of [7, 28, 35, 60, 77]) {
-    withRun({ primaryStatus: status }, (observed) => {
+void test("two recoverable transport stalls use one same-byte API route", () => {
+  for (const [primaryStatus, primaryHttp] of [
+    [7, "000"],
+    [18, "200"],
+    [28, "000"],
+    [28, "200"],
+    [28, "302"],
+    [52, "000"],
+    [55, "000"],
+    [55, "200"],
+    [56, "000"],
+    [56, "200"],
+  ]) {
+    withRun({ primaryStatus, primaryHttp }, (observed) => {
+      accepted(observed, 3);
+      assert.match(observed.result.stderr, /attempt=1/);
+      assert.match(observed.result.stderr, /attempt=2/);
+    });
+  }
+});
+void test("unsupported transport and TLS failures never recover", () => {
+  for (const status of [35, 60, 77]) {
+    withRun({ primaryStatus: status, primaryHttp: "000" }, (observed) => {
       retained(observed, 1);
       assert.equal(observed.result.status, status);
       assert.equal(observed.read("helper.log"), "");
