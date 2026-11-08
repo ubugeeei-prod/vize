@@ -130,7 +130,7 @@ test("PR readiness plans six isolated rows behind one stable aggregator", () => 
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate app readiness").run ?? "",
-    /app-e2e-aggregate\.rs readiness all/,
+    /app-e2e-aggregate\.ts readiness all/,
   );
   assert.equal(
     Object.values(jobs).filter((job) => job.name === "app-readiness").length,
@@ -176,7 +176,7 @@ test("full App E2E uses a planner, isolated matrix producers, and stable release
   assert.match(aggregate.if ?? "", /always\(\)/);
   assert.match(
     namedStep(aggregate, "Aggregate full App E2E").run ?? "",
-    /app-e2e-aggregate\.rs full/,
+    /app-e2e-aggregate\.ts full/,
   );
   assert.equal(Object.values(jobs).filter((job) => job.name === "app-e2e").length, 1);
 });

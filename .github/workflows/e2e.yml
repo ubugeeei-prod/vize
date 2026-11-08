@@ -176,16 +176,13 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
       - name: Aggregate app readiness
         env:
           RUN_REQUIRED: ${{ needs.app-readiness-plan.outputs.run }}
           PLAN_RESULT: ${{ needs.app-readiness-plan.result }}
           PRODUCER_RESULT: ${{ needs.app-readiness-producer.result }}
           PLANNED_COUNT: ${{ needs.app-readiness-plan.outputs.count }}
-        run: rust-script tools/commands/ci/github/app-e2e-aggregate.rs readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
+        run: node tools/support/compat/github/app-e2e-aggregate.ts readiness all "$RUN_REQUIRED" "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
 
   testbox:
     name: Testbox
@@ -334,13 +331,10 @@ jobs:
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
       - name: Aggregate full App E2E
         env:
           PLAN_RESULT: ${{ needs.app-e2e-plan.result }}
           PRODUCER_RESULT: ${{ needs.app-e2e-producer.result }}
           PLANNED_COUNT: ${{ needs.app-e2e-plan.outputs.count }}
           PLANNED_SUITE: ${{ needs.app-e2e-plan.outputs.suite }}
-        run: rust-script tools/commands/ci/github/app-e2e-aggregate.rs full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
+        run: node tools/support/compat/github/app-e2e-aggregate.ts full "$PLANNED_SUITE" true "$PLAN_RESULT" "$PRODUCER_RESULT" "$PLANNED_COUNT"
