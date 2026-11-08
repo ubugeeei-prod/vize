@@ -34,6 +34,7 @@ interface Job {
   readonly strategy?: { readonly matrix: { readonly include: readonly unknown[] } };
 }
 interface Workflow {
+  readonly on?: { readonly pull_request?: { readonly paths?: readonly string[] } };
   readonly jobs: Readonly<Record<string, Job>>;
 }
 
@@ -45,6 +46,11 @@ const enabled = "needs.channel.outputs.enabled == 'true'";
 const jsr = workflow("release-jsr.yml");
 const publishSteps = jsr.jobs.publish?.steps ?? [];
 const runs = (step: Step, command: RegExp) => command.test(step.run ?? "");
+
+await test("every npm package manifest can trigger the JSR parity check", () => {
+  const paths = workflow("jsr-package.yml").on?.pull_request?.paths ?? [];
+  assert.ok(paths.includes("npm/**/package.json"));
+});
 
 await test("every release runs the JSR publish dry-run, whatever the channel says", () => {
   assert.equal(jsr.jobs.publish?.if, undefined, "the publish job itself is never skipped");
@@ -60,6 +66,27 @@ await test("only an enabled channel publishes to JSR and runs the consumers", ()
   assert.equal(publications.length, 1);
   assert.equal(publications[0]?.if, enabled);
   assert.equal(jsr.jobs.consumer?.if, enabled);
+});
+
+await test("every additional npm release package has an OIDC publication matrix cell", () => {
+  const job = jsr.jobs["publish-packages"];
+  assert.equal(job?.needs, "channel");
+  const steps = job?.steps ?? [];
+  const prepare = steps.find((step) => runs(step, /package\.ts prepare-one/));
+  assert.match(prepare?.run ?? "", /"\$JSR_PACKAGE" "\$JSR_VERSION"/);
+  const dryRuns = steps.filter((step) => runs(step, /deno publish --dry-run/));
+  assert.equal(dryRuns.length, 1);
+  assert.equal(dryRuns[0]?.if, undefined);
+  const publications = steps.filter(
+    (step) => runs(step, /deno publish/) && !runs(step, /--dry-run/),
+  );
+  assert.equal(publications.length, 1);
+  assert.equal(publications[0]?.if, enabled);
+  assert.match(publications[0]?.run ?? "", /is-public "\$JSR_PACKAGE"/);
+  const wait = steps.find((step) => runs(step, /package\.ts wait-public/));
+  assert.equal(wait?.if, enabled);
+  assert.match(wait?.run ?? "", /wait-public "\$JSR_PACKAGE"/);
+  assert.ok([jsr.jobs.consumer?.needs ?? []].flat().includes("publish-packages"));
 });
 
 await test("release verification dispatches the JSR workflow once the npm packages it re-exports are visible", () => {
@@ -170,7 +197,7 @@ const consumerFiles = [
 ] as const;
 const digest = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
-await test("only the consumer checkout narrows the original six-cell release workflow", () => {
+await test("the multi-package release retains the original six consumer cells", () => {
   const consumer = jsr.jobs.consumer;
   const [checkout, ...steps] = consumer.steps ?? [];
   assert.equal(checkout?.uses, "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd");
@@ -185,15 +212,16 @@ await test("only the consumer checkout narrows the original six-cell release wor
     "sparse-checkout-cone-mode": _cone,
     ...original
   } = checkout.with;
-  // Whole job objects from main725126c and frozen release source d3eb1c4 are identical.
-  // These protect every original ref, default fetch, runtime cell and install/oracle command.
+  // Whole job objects are frozen after adding the package-inventory output and
+  // making consumers wait for every JSR package. This protects every ref,
+  // runtime cell and install/oracle command from unrelated drift.
   assert.deepEqual(
     [jsr.jobs.channel, { ...consumer, steps: [{ ...checkout, with: original }, ...steps] }].map(
       digest,
     ),
     [
-      "deeb84e361bc452eab69cb4ec329902259ef15f443f5bafdd79ba5e46bc949ab",
-      "fabc364c2cc5046b5a9ec4688dd5d4698fbc93bad0a8c8787443835b46fb7d06",
+      "7ab3655958b6284a4f8b39a01bc4e45598cf2000593e4737dce3ea1f56d98a93",
+      "59d0a1e4d402aa99ea6faa370ea6231470d4eb4c5d3089f10cd8b77e77f4fb81",
     ],
   );
   assert.deepEqual(consumer.strategy?.matrix.include, [

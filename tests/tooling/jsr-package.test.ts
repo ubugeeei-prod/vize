@@ -10,10 +10,13 @@ import {
   latestPublishedVersion,
   parseChannel,
   preparePackage,
+  preparePackageSet,
   preparePreviewPackage,
+  preparePreviewPackageSet,
   publishedAt,
   waitForPublishedVersion,
 } from "../../tools/support/release/jsr/package.ts";
+import { jsrPackageDirectory, jsrPackages } from "../../tools/support/release/jsr/packages.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -55,6 +58,52 @@ await test("every JSR entry point re-exports one npm package at the release vers
     readFileSync(resolve(output, "LICENSE")),
     readFileSync(resolve(root, "LICENSE")),
   );
+});
+
+await test("JSR mirrors every JavaScript package shipped by the npm release", () => {
+  const release = readFileSync(resolve(root, ".github/workflows/release.yml"), "utf8");
+  const value = /^  RELEASE_JS_PACKAGES: (.+)$/mu.exec(release)?.[1];
+  assert.ok(value, "release workflow declares the JavaScript package inventory");
+  assert.deepEqual(
+    jsrPackages.map(({ directory }) => directory),
+    value.split(" "),
+  );
+  assert.equal(new Set(jsrPackages.map(({ directory }) => directory)).size, jsrPackages.length);
+  assert.equal(new Set(jsrPackages.map(({ jsrName }) => jsrName)).size, jsrPackages.length);
+  assert.equal(new Set(jsrPackages.map(({ npmName }) => npmName)).size, jsrPackages.length);
+});
+
+await test("the complete JSR set stages one exact-version package per npm release package", (t) => {
+  const output = temporaryDirectory(t, "vize-jsr-package-set-");
+  const prepared = preparePackageSet(output);
+  assert.equal(prepared.length, jsrPackages.length);
+  for (const descriptor of prepared) {
+    const directory = resolve(output, jsrPackageDirectory(descriptor.jsrName));
+    assert.equal(descriptor.output, directory);
+    const manifest = JSON.parse(readFileSync(resolve(directory, "jsr.json"), "utf8"));
+    assert.equal(manifest.name, descriptor.jsrName);
+    assert.equal(manifest.version, descriptor.version);
+    const module = readFileSync(resolve(directory, "mod.ts"), "utf8");
+    const specifier = JSON.stringify(`npm:${descriptor.npmName}@${descriptor.version}`);
+    assert.ok(module.includes(`export * from ${specifier};`));
+    assert.equal(module.includes("export { default }"), descriptor.hasDefault === true);
+    assert.deepEqual(
+      readFileSync(resolve(directory, "LICENSE")),
+      readFileSync(resolve(root, "LICENSE")),
+    );
+  }
+});
+
+await test("the complete preview set can qualify new facades against one public npm release", (t) => {
+  const output = temporaryDirectory(t, "vize-jsr-preview-set-");
+  const prepared = preparePreviewPackageSet(output, "0.708.0");
+  assert.equal(prepared.length, jsrPackages.length);
+  assert.ok(
+    readFileSync(resolve(output, "unplugin/mod.ts"), "utf8").includes(
+      '"npm:@vizejs/unplugin@0.708.0"',
+    ),
+  );
+  assert.throws(() => preparePreviewPackageSet(output, "latest"), /Invalid JSR version/);
 });
 
 await test("the JSR package refuses a version other than the checked-out release", (t) => {

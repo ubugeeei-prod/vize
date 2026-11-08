@@ -1,6 +1,6 @@
 name: Release JSR
-# Publishes `@vizejs/vize` to JSR after the same version is public on npm, then
-# installs the published package from JSR in fresh Node, Deno and Bun projects.
+# Publishes every npm release package to JSR at the same exact version, then
+# installs the compatibility facade from JSR in fresh Node, Deno and Bun projects.
 # release-verify.yml dispatches it as the maintainer once npm is verified.
 # Every release runs the publish dry-run against the just-published npm
 # packages. The real publication and the consumers wait for
@@ -29,6 +29,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       enabled: ${{ steps.channel.outputs.enabled }}
+      packages: ${{ steps.packages.outputs.packages }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
@@ -36,6 +37,8 @@ jobs:
         with: { node-version: "24", package-manager-cache: false }
       - id: channel
         run: node tools/support/release/jsr/package.ts channel >> "$GITHUB_OUTPUT"
+      - id: packages
+        run: node tools/support/release/jsr/package.ts matrix >> "$GITHUB_OUTPUT"
   publish:
     name: Publish the JSR package
     needs: channel
@@ -82,9 +85,56 @@ jobs:
         env:
           JSR_VERSION: ${{ inputs.version }}
         run: node tools/support/release/jsr/package.ts wait-public "${JSR_VERSION#v}"
+  publish-packages:
+    name: Publish JSR package (${{ matrix.jsrName }})
+    needs: channel
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.channel.outputs.packages) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 140
+    permissions: { contents: read, id-token: write }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.7" }
+      - name: Generate the package for the published npm release
+        env:
+          JSR_PACKAGE: ${{ matrix.jsrName }}
+          JSR_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/jsr/package.ts prepare-one "$RUNNER_TEMP/jsr-package" "$JSR_PACKAGE" "$JSR_VERSION"
+      - name: Check the publication graph and public types
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --dry-run --config jsr.json
+      - name: Publish through the package's repository OIDC link
+        if: needs.channel.outputs.enabled == 'true'
+        working-directory: ${{ runner.temp }}/jsr-package
+        env:
+          JSR_PACKAGE: ${{ matrix.jsrName }}
+          JSR_VERSION: ${{ inputs.version }}
+        run: |
+          if node "$GITHUB_WORKSPACE/tools/support/release/jsr/package.ts" is-public "$JSR_PACKAGE" "${JSR_VERSION#v}"; then
+            exit 0
+          fi
+          set +e
+          timeout --signal=INT --kill-after=30s 20m node "$GITHUB_WORKSPACE/tools/support/release/jsr/publish-with-fresh-provenance.ts" -- deno publish --config jsr.json
+          status=$?
+          set -e
+          if [[ $status -ne 0 && $status -ne 124 ]]; then
+            exit "$status"
+          fi
+      - name: Wait for the immutable public JSR version
+        if: needs.channel.outputs.enabled == 'true'
+        env:
+          JSR_PACKAGE: ${{ matrix.jsrName }}
+          JSR_VERSION: ${{ inputs.version }}
+        run: node tools/support/release/jsr/package.ts wait-public "$JSR_PACKAGE" "${JSR_VERSION#v}"
   consumer:
     name: JSR consumer (${{ matrix.runtime }}, ${{ matrix.os }})
-    needs: [channel, publish]
+    needs: [channel, publish, publish-packages]
     if: needs.channel.outputs.enabled == 'true'
     strategy:
       fail-fast: false

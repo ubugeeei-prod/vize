@@ -1,11 +1,13 @@
 ---
 title: JavaScript APIs through JSR
-description: Use Vize's published JSR facade with Node, Deno or Bun, including its native requirements.
+description: Use Vize's published JSR packages with Node, Deno or Bun, including their native requirements.
 ---
 
 # JavaScript APIs through JSR
 
-[`@vizejs/vize`](https://jsr.io/@vizejs/vize) exposes Vize's JavaScript APIs. Each entry point re-exports an npm package at the same exact Vize version. The compiler still loads the native binary from npm.
+Every JavaScript package in a Vize npm release is also published to JSR at the same exact version. The JSR packages are typed source facades over the npm artifacts, so both registries execute the same implementation. The compiler still loads its platform-specific native binary from npm.
+
+[`@vizejs/vize`](https://jsr.io/@vizejs/vize) is the combined facade for the most common APIs:
 
 | Import                | API                                           | npm package            |
 | --------------------- | --------------------------------------------- | ---------------------- |
@@ -16,9 +18,32 @@ description: Use Vize's published JSR facade with Node, Deno or Bun, including i
 | `@vizejs/vize/oxlint` | Oxlint plugin, presets and Vite+ config       | `oxlint-plugin-vize`   |
 | `@vizejs/vize/vite`   | Vite plugin and options                       | `@vizejs/vite-plugin`  |
 
+Packages can also be installed directly instead of through the combined facade:
+
+| JSR package                    | npm package                     |
+| ------------------------------ | ------------------------------- |
+| `@vizejs/vize`                 | `vize`                          |
+| `@vizejs/vite-plugin`          | `@vizejs/vite-plugin`           |
+| `@vizejs/oxlint-plugin-vize`   | `oxlint-plugin-vize`            |
+| `@vizejs/unplugin`             | `@vizejs/unplugin`              |
+| `@vizejs/fresco`               | `@vizejs/fresco`                |
+| `@vizejs/musea-mcp-server`     | `@vizejs/musea-mcp-server`      |
+| `@vizejs/vite-plugin-musea`    | `@vizejs/vite-plugin-musea`     |
+| `@vizejs/rspack-plugin`        | `@vizejs/rspack-plugin`         |
+| `@vizejs/musea-nuxt`           | `@vizejs/musea-nuxt`            |
+| `@vizejs/nuxt-lint-config`     | `@vizejs/nuxt-lint-config`      |
+| `@vizejs/nuxt`                 | `@vizejs/nuxt`                  |
+| `@vizejs/marquette`            | `@vizejs/marquette`             |
+| `@vizejs/composable`           | `@vizejs/composable`            |
+| `@vizejs/router`               | `@vizejs/router`                |
+| `@vizejs/data`                 | `@vizejs/data`                  |
+| `@vizejs/ui`                   | `@vizejs/ui`                    |
+| `@vizejs/plugin-sdk`           | `@vizejs/plugin-sdk`            |
+| `@vizejs/babel-plugin`         | `@vizejs/babel-plugin`          |
+
 ## Node.js and Bun
 
-In a project using Node.js 22 or 24+, install the JSR facade and the Vite integration's peers:
+In a project using Node.js 22 or 24+, install the combined JSR facade and the Vite integration's peers:
 
 ```bash
 npm install vite@8 vue@3
@@ -54,7 +79,7 @@ void oxlintPlugin;
 void recommendedRules;
 ```
 
-The installed facade pins its Vize npm dependencies to the same exact release. Commit the generated package manifest, lockfile and `.npmrc`; Bun and npm use JSR's npm compatibility registry through that configuration. For a Vue application, the [Vite integration](./vite-plugin.md) and [getting started guide](../getting-started.md) explain the project configuration.
+Every installed JSR package pins its Vize npm dependency to the same exact release. Commit the generated package manifest, lockfile and `.npmrc`; Bun and npm use JSR's npm compatibility registry through that configuration. For a Vue application, the [Vite integration](./vite-plugin.md) and [getting started guide](../getting-started.md) explain the project configuration.
 
 ## Deno 2.9.7
 
