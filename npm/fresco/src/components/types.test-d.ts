@@ -19,6 +19,7 @@ import type {
   StaticProps,
 } from "./display-primitive-types.js";
 import Link from "./FrescoLink.vue";
+import Markdown from "./FrescoMarkdown.vue";
 import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
@@ -42,6 +43,7 @@ import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
+import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -143,6 +145,19 @@ export const linkAcceptsDocumentedProps: LinkProps = {
   url: "https://example.test",
   showUrl: true,
 };
+export const markdownProvider: MarkdownBlockProvider = {
+  render: (block) =>
+    block.type === "thematic-break"
+      ? [{ key: "rule", spans: [{ text: "***", dim: true }] }]
+      : undefined,
+};
+export const markdownAcceptsDocumentedProps: MarkdownProps = {
+  source: "# Hello",
+  headingFg: "cyan",
+  providers: [markdownProvider],
+};
+// @ts-expect-error - Markdown source is text, not an array of rows.
+export const markdownRejectsArraySource: MarkdownProps = { source: ["hello"] };
 export const badgeAcceptsDocumentedProps: BadgeProps = { label: "Ready", variant: "success" };
 export const spinnerAcceptsDocumentedProps: SpinnerProps = {
   type: "line",
@@ -197,6 +212,7 @@ export function componentsRenderWithTypedProps() {
     h(Transform, { transform: (line: string, index: number) => `${index}:${line}` }),
     h(Static, { items: ["done"] }),
     h(Link, { text: "Docs", showUrl: false }),
+    h(Markdown, { source: "# Docs", linkFg: "cyan" }),
     h(Badge, { label: "Ready", variant: "success" }),
     h(FrameBuffer, { lines: ["first", "second"], fg: "cyan" }),
     h(Spinner, { type: "line", label: "Loading" }),

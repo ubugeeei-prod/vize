@@ -29,4 +29,15 @@ void test("Fresco publishes explicit pre-1.0 and extension compatibility rules",
   assert.match(matrix, /\.\/migration-ink\.md/u);
   assert.match(matrix, /\.\/migration-vue-termui\.md/u);
   assert.match(matrix, /\.\/support-policy\.md/u);
+  assert.match(matrix, /\.\/markdown\.md/u);
+});
+
+void test("Fresco Markdown documents its public extension boundary", () => {
+  const markdown = read("docs/fresco/markdown.md");
+
+  assert.match(markdown, /import \{ Markdown \} from "@vizejs\/fresco"/u);
+  assert.match(markdown, /MarkdownBlockProvider/u);
+  assert.match(markdown, /return undefined/u);
+  assert.match(markdown, /renderer/u);
+  assert.doesNotMatch(markdown, /@vizejs\/fresco\/src\//u);
 });
