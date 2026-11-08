@@ -62,7 +62,7 @@ names retains the current scanner's HTML-boundary recovery.
   coordinates. Current maps retain their script-provenance-only scope;
   whole official template-map parity and argument anchor coverage are not
   claimed.
-- Pinned Vue/compiler/server `3.6.0-rc.9` and plugin `6.0.7` must execute
+- Pinned Vue/compiler/server `3.6.0-rc.9` and plugin `6.0.10` must execute
   complete original Child and parent modules. Three selected-key states
   cover first, second, and reordered indices for both parent spellings.
   Twelve official/current renders must match independently written whole

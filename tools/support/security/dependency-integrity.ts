@@ -14,6 +14,7 @@ export const deepMergePatchPath = "patches/deepmerge@4.3.1.patch";
 export const deepMergePatchHash =
   "f24df4b40d35b586a5fb81a5e778a8328ad0479e12d1828ea585dc2cce1965bd";
 export const serializerVersion = "7.1.4";
+const terserPluginVersion = "1.0.2";
 
 function record(value: unknown): Record<string, unknown> {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
@@ -131,7 +132,7 @@ export function verifyDependencyIntegrity(root: string): {
   assertDependencyReferences(snapshots, "serialize-javascript", serializerVersion);
   const serializerRequire = packageRequire(
     root,
-    "@rollup+plugin-terser@1.0.0_",
+    `@rollup+plugin-terser@${terserPluginVersion}_`,
     "@rollup/plugin-terser",
   );
   const serializerPackage = record(

@@ -6,14 +6,14 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json",
     "bytes": 4614,
-    "sha256": "b2afd8741085c57f608b45aac75b0cb3189c5107d97854f4cf3516c9e05d8320",
-    "gitBlob": "feb6bf3f4558fa5e25d0f60542ff1117fd671932"
+    "sha256": "6c7317e017de5981da2e6a97451de6f1f7d62167b8cb54d3401a0f8b13f8eeca",
+    "gitBlob": "e2639f5f79a7610dacf27f0462c9a4365b23f928"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1169606,
-    "sha256": "cefa5cc8e091c5f42356e053e7c71dbb1bf778572dc8465857ba0f93e0caaa5c",
-    "gitBlob": "303ec1c99df7b1404a0626a68f1463336a4306a0"
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
   },
   "previousQualificationPackage": {
     "path": "package.json",
@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1169606,
-    "sha256": "cefa5cc8e091c5f42356e053e7c71dbb1bf778572dc8465857ba0f93e0caaa5c",
-    "gitBlob": "303ec1c99df7b1404a0626a68f1463336a4306a0"
+    "bytes": 1095263,
+    "sha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b",
+    "gitBlob": "99081858d72a16e56a2047c38d492613ae6501c8"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -35,9 +35,9 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9501,
-    "sha256": "5560a48e7c354af330e2d856db1394ee041d7d1d2b99862a8d9770d5c2432aa2",
-    "gitBlob": "24c28c3b03164b735d7b2caf9a4ffe4de228c8ae"
+    "bytes": 9348,
+    "sha256": "67d2d880b1c1927cda746a43bdcc074bb58260c925c4e67e3aaaa142e94d6f76",
+    "gitBlob": "57b5c377972ca2c4abc26a2084f1075bc2aa61a1"
   },
   "cliManifest": {
     "path": "npm/cli/package.json",
@@ -59,7 +59,7 @@
   },
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "cefa5cc8e091c5f42356e053e7c71dbb1bf778572dc8465857ba0f93e0caaa5c"
+    "fixedPointSha256": "9c2d946dd182aa6931af4868185d1ee812a20ce1ca17409005705abedc89c66b"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Bind the strict checker export, its open-policy predecessor, and the unchanged dependency graph. This record gives source provenance only."

@@ -38,7 +38,7 @@ assert.equal(compiler.version, "3.6.0-rc.9");
 assert.equal(vue.version, compiler.version);
 assert.equal(vapor.version, compiler.version);
 assert.equal(fromVue("@vue/server-renderer/package.json").version, compiler.version);
-assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.7");
+assert.equal(fromUi("@vitejs/plugin-vue/package.json").version, "6.0.10");
 const root = new URL("../../_fixtures/differential/compiler/", import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL("ssr-slot-forwarding.manifest.json", root)));
 const pinned = manifest.cases[0];
@@ -274,7 +274,7 @@ try {
     });
     process.stdout.write(
       JSON.stringify({
-        versions: { vue: vue.version, plugin: "6.0.7" },
+        versions: { vue: vue.version, plugin: "6.0.10" },
         observations,
         keyedTemplates,
       }),

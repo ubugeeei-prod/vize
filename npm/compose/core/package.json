@@ -986,7 +986,7 @@
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "dependencies": {
-    "temporal-polyfill-lite": "0.4.2"
+    "temporal-polyfill-lite": "1.0.0"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",

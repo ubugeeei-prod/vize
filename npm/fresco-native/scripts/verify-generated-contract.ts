@@ -49,6 +49,13 @@ function loaderExports(loader: string, label: string): string[] {
     }
     exports.push(match[1]);
   }
+  if (
+    /^module\.exports\.__napiBindingTarget\s*=\s*__napiStampBindingTarget\(\s*nativeBinding,\s*__napiLoadedBindingTarget,?\s*\);?[ \t]*$/m.test(
+      loader,
+    )
+  ) {
+    exports.push("__napiBindingTarget");
+  }
   return exports;
 }
 

@@ -102,7 +102,7 @@ export function sourceProviders(
   const dom = fromVue("@vue/compiler-dom") as {
     compile(source: string, options: Record<string, unknown>): unknown;
   };
-  assert.equal(prettier.version, "3.8.3");
+  assert.equal(prettier.version, "3.9.10");
   assert.equal(compiler.version, "3.5.35");
   assert.equal((fromVue("vue/package.json") as { version: string }).version, "3.5.35");
   assert.equal((fromUi("happy-dom/package.json") as { version: string }).version, "21.0.4");
