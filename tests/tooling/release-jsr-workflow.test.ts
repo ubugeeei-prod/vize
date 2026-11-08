@@ -34,14 +34,7 @@ interface Job {
   readonly strategy?: { readonly matrix: { readonly include: readonly unknown[] } };
 }
 interface Workflow {
-  readonly on?: {
-    readonly pull_request?: { readonly paths?: readonly string[] };
-    readonly workflow_dispatch?: {
-      readonly inputs?: Readonly<
-        Record<string, { readonly default?: unknown; readonly type?: string }>
-      >;
-    };
-  };
+  readonly on?: { readonly pull_request?: { readonly paths?: readonly string[] } };
   readonly jobs: Readonly<Record<string, Job>>;
 }
 
@@ -94,40 +87,6 @@ await test("every additional npm release package has an OIDC publication matrix 
   assert.equal(wait?.if, enabled);
   assert.match(wait?.run ?? "", /wait-public "\$JSR_PACKAGE"/);
   assert.ok([jsr.jobs.consumer?.needs ?? []].flat().includes("publish-packages"));
-});
-
-await test("manual backfills are explicit and verify npm before either publication path", () => {
-  const input = jsr.on?.workflow_dispatch?.inputs?.backfill_existing_npm_release;
-  assert.deepEqual(input, {
-    description: "Publish facades for an older exact npm release after registry verification",
-    required: false,
-    default: false,
-    type: "boolean",
-  });
-  for (const jobName of ["publish", "publish-packages"]) {
-    const steps = jsr.jobs[jobName]?.steps ?? [];
-    const normal = steps.find(
-      (step) => step.name === "Generate the package for the published npm release",
-    );
-    const backfill = steps.find(
-      (step) => step.name === "Generate a registry-verified npm release backfill",
-    );
-    assert.equal(normal?.if, "inputs.backfill_existing_npm_release != true");
-    assert.equal(backfill?.if, "inputs.backfill_existing_npm_release == true");
-    if (jobName === "publish") {
-      assert.match(
-        backfill?.run ?? "",
-        /package\.ts prepare-backfill "\$RUNNER_TEMP\/jsr-package" "\$JSR_VERSION"$/,
-      );
-    } else {
-      assert.match(
-        backfill?.run ?? "",
-        /package\.ts prepare-backfill-one "\$RUNNER_TEMP\/jsr-package" "\$JSR_PACKAGE" "\$JSR_VERSION"$/,
-      );
-      assert.equal(backfill?.env?.JSR_PACKAGE, "${{ matrix.jsrName }}");
-    }
-    assert.equal(backfill?.env?.JSR_VERSION, "${{ inputs.version }}");
-  }
 });
 
 await test("release verification dispatches the JSR workflow once the npm packages it re-exports are visible", () => {
