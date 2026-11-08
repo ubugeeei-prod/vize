@@ -17,7 +17,8 @@ on:
       - tests/tooling/cargo-metadata-observer.test.ts
       - tools/support/ci/cargo-metadata-observer.ts
       - tools/commands/editors/vscode/assert-vsix-package.rs
-      - tools/commands/editors/vscode/sync-typescript-plugin.rs
+      - tools/commands/editors/vscode/run-package-bin.ts
+      - tools/commands/editors/vscode/sync-typescript-plugin.ts
   merge_group:
     types: [checks_requested]
   workflow_dispatch:

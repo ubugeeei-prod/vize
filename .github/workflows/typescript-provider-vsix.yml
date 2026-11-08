@@ -6,7 +6,8 @@ on:
       - npm/typescript-plugin/**
       - npm/native/language-projection.*
       - tools/support/editors/typescript-provider/**
-      - tools/commands/editors/vscode/sync-typescript-plugin.rs
+      - tools/commands/editors/vscode/run-package-bin.ts
+      - tools/commands/editors/vscode/sync-typescript-plugin.ts
       - editors/vscode/test/run-typescript-provider-host.mjs
       - editors/vscode/test/suite/typescript-provider-host.cjs
       - tests/typescript-plugin/provider-packaging.test.ts
