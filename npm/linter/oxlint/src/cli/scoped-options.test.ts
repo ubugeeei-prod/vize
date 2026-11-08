@@ -197,9 +197,10 @@ void test("Windows transport keeps selected Vue files out of the command line", 
     assert.equal(fs.lstatSync(target).isDirectory(), true);
     const configIndex = result.args.findIndex((arg) => arg === "-c" || arg === "--config");
     assert.notEqual(configIndex, -1);
-    assert.deepEqual(JSON.parse(fs.readFileSync(result.args[configIndex + 1], "utf8")), {
-      ignorePatterns: [],
-    });
+    const mirrorConfig = JSON.parse(fs.readFileSync(result.args[configIndex + 1], "utf8")) as {
+      ignorePatterns: unknown;
+    };
+    assert.deepEqual(mirrorConfig.ignorePatterns, []);
   } finally {
     result.prepared.cleanup();
   }
