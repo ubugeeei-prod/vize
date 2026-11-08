@@ -95,6 +95,8 @@ void test("scheduled tooling owns the CLI producer without delaying independent 
 
 void test("one original CLI/oracle build supplies each digest-strict consumer without receipt restamping", () => {
   const steps = producer.jobs.cli.steps ?? [];
+  const linker = steps.find((step) => step.uses === "./.github/actions/setup-wild-http-recovery");
+  assert.deepEqual(linker?.with, { "wild-version": "0.9.0", distribution: "crates" });
   const build = steps.findIndex(
     (step) => step.name === "Build vize CLI and SFC oracle with original receipts",
   );
@@ -140,7 +142,7 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
   assert.equal(consumers[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
   assert.equal(consumers[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
   assert.equal(consumers[restore].with?.producer, "${{ inputs.producer }}");
-  const [validate, download, install] = restoreAction.runs.steps;
+  const [validate, download, reproduceLinker, install] = restoreAction.runs.steps;
   assert.equal(validate.env?.SOURCE_CLI_PRODUCER_OUTPUTS, "${{ inputs.producer }}");
   assert.match(validate.run ?? "", /source-cli-artifact\.ts producer$/);
   assert.equal(
@@ -150,6 +152,11 @@ void test("one original CLI/oracle build supplies each digest-strict consumer wi
   assert.equal(restoreAction.inputs.producer.required, true);
   assert.equal(download.with?.["digest-mismatch"], "error");
   assert.equal(download.with?.["run-id"], undefined);
+  assert.equal(reproduceLinker.uses, "./.github/actions/setup-wild-http-recovery");
+  assert.deepEqual(reproduceLinker.with, {
+    "wild-version": "0.9.0",
+    distribution: "crates",
+  });
   assert.deepEqual(install.env, {
     SOURCE_CLI_SHA256: "${{ steps.producer.outputs.sha256 }}",
     SOURCE_CLI_PRODUCER_ATTEMPT: "${{ steps.producer.outputs.producer-attempt }}",

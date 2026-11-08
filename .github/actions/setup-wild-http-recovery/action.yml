@@ -11,16 +11,22 @@ inputs:
     description: "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
     required: false
     default: "5"
+  distribution:
+    description: "Select the official release automatically, or build the pinned crates.io source for cross-job provenance."
+    required: false
+    default: "auto"
 
 runs:
   using: "composite"
   steps:
-    - if: ${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5' }}
+    - name: Delegate unsupported automatic contexts
+      if: ${{ inputs.distribution == 'auto' && (runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5') }}
       uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
       with:
         wild-version: ${{ inputs.wild-version }}
         download-retries: ${{ inputs.download-retries }}
-    - run: |
+    - name: Install the pinned release with bounded recovery
+      run: |
         case "$RUNNER_ARCH" in
           X64)   target_arch="x86_64" ;;
           ARM64) target_arch="aarch64" ;;
@@ -60,4 +66,37 @@ runs:
           fi
         done
       shell: bash
-      if: ${{ runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}
+      if: ${{ inputs.distribution == 'auto' && runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}
+    - name: Build the pinned crates.io source deterministically
+      run: |
+        mkdir -p "${RUNNER_TEMP}/wild-install"
+        cargo_root="${RUNNER_TEMP}/wild-cargo-root"
+        cargo_target="${RUNNER_TEMP}/wild-cargo-target"
+        if [[ -e "$cargo_root" || -e "$cargo_target" ]]; then
+          echo "Pinned Wild build directories must start absent" >&2
+          exit 1
+        fi
+        cargo_status=0
+        CARGO_TARGET_DIR="$cargo_target" cargo install wild-linker --version "0.9.0" --locked --root "$cargo_root" || cargo_status=$?
+        if [[ "$cargo_status" -ne 0 ]]; then
+          rm -rf "$cargo_root" "$cargo_target"
+          exit "$cargo_status"
+        fi
+        install -m 0755 "$cargo_root/bin/wild" "${RUNNER_TEMP}/wild-install/wild"
+        rm -rf "$cargo_root" "$cargo_target"
+
+        mkdir -p "$HOME/.cargo"
+        for libc in gnu musl; do
+          TARGET="target.x86_64-unknown-linux-${libc}"
+          if ! grep "${TARGET}" "$HOME/.cargo/config.toml" 2>/dev/null; then
+            echo -e "# Added by wild GitHub Action\n[${TARGET}]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=${RUNNER_TEMP}/wild-install/wild\"]\n" >>"$HOME/.cargo/config.toml"
+          fi
+        done
+      shell: bash
+      if: ${{ inputs.distribution == 'crates' && runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}
+    - name: Refuse unsupported pinned source contexts
+      if: ${{ (inputs.distribution != 'auto' && inputs.distribution != 'crates') || (inputs.distribution == 'crates' && (runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5')) }}
+      shell: bash
+      run: |
+        echo "Pinned Wild source build received an unsupported context" >&2
+        exit 1

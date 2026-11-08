@@ -30,7 +30,10 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     "wild-version": "${{ inputs.wild-version }}",
     "download-retries": "${{ inputs.download-retries }}",
   });
-  const step = after.runs.steps[0];
+  const step = after.runs.steps.shift();
+  after.runs.steps = [step];
+  delete after.inputs.distribution;
+  delete step.name;
   step.if = before.runs.steps[0].if;
   step.run = step.run.replaceAll(
     "/0.9.0/wild-linker-0.9.0-",
@@ -72,15 +75,18 @@ void test("Wild delegation is complementary for every unsupported host or input"
   const steps = parse(action).runs.steps;
   assert.equal(
     steps[0].if,
-    "${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5' }}",
+    "${{ inputs.distribution == 'auto' && (runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5') }}",
   );
   assert.equal(
     steps[1].if,
-    "${{ runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}",
+    "${{ inputs.distribution == 'auto' && runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '0.9.0' && inputs.download-retries == '5' }}",
   );
   function applies(expression, values) {
     return expression
       .slice(4, -3)
+      .replace("inputs.distribution == 'auto' && (", "")
+      .replace("inputs.distribution == 'auto' && ", "")
+      .replace(/\)$/u, "")
       .split(" || ")
       .some((group) =>
         group.split(" && ").every((part) => {
@@ -110,6 +116,25 @@ void test("Wild delegation is complementary for every unsupported host or input"
           assert.equal(applies(steps[0].if, values), !owned);
         }
 });
+void test("Pinned source mode builds one deterministic crates.io installation without release I/O", () =>
+  fixture(({ run }) => {
+    const expected = run({ original: true });
+    const observed = run({ distribution: "crates" });
+    assert.equal(observed.status, 0, observed.stderr);
+    assert.deepEqual(observed.files, expected.files);
+    assert.deepEqual(observed.calls, []);
+    assert.deepEqual(observed.tarCalls, []);
+    assert.equal(observed.cargoCalls.length, 1);
+    assert.deepEqual(observed.cargoCalls[0], [
+      "install",
+      "wild-linker",
+      "--version",
+      "0.9.0",
+      "--locked",
+      "--root",
+      path.join(observed.root, "temporary", "wild-cargo-root"),
+    ]);
+  }));
 void test("Core PR gates and canonical SSR-Pug use the recovery adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";

@@ -142,7 +142,14 @@ fs.chmodSync(path.join(root,'bin/wild'),0o755);`,
       fs.writeFileSync(tarCalls, "");
       fs.writeFileSync(cargoCalls, "");
       const parsed = parse(options.original ? original : action);
-      let recipe = parsed.runs.steps.find((s) => s.run).run;
+      const selected = options.original
+        ? parsed.runs.steps.find((s) => s.run)
+        : parsed.runs.steps.find((s) =>
+            options.distribution === "crates"
+              ? s.name === "Build the pinned crates.io source deterministically"
+              : s.name === "Install the pinned release with bounded recovery",
+          );
+      let recipe = selected.run;
       recipe = recipe
         .replaceAll("${{ inputs.wild-version }}", "0.9.0")
         .replaceAll("${{ inputs.download-retries }}", "5");
@@ -173,6 +180,7 @@ fs.chmodSync(path.join(root,'bin/wild'),0o755);`,
         encoding: "utf8",
       });
       return {
+        root: work,
         status: result.status,
         stdout: result.stdout,
         stderr: result.stderr,
