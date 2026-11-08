@@ -27,7 +27,7 @@ Focused gates:
 cargo fmt --all -- --check
 cargo test -p vize_atelier_dom --test davinci_s2_model --test davinci_s2_outlets --test davinci_s2_option_families
 rust-script tools/commands/davinci/assertion-lint.rs
-rust-script tools/commands/ci/source-file-lengths.rs --check --base-ref origin/main
+node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 git diff --check
 ```
 
