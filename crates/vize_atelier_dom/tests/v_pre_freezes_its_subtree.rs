@@ -32,6 +32,7 @@ use vize_atelier_core::options::{
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,
     compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture,
+    compile_template_with_template_syntax,
 };
 use vize_l0::Allocator;
 use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
@@ -141,6 +142,51 @@ fn a_v_pre_subtree_compiles_exactly_as_the_legacy_lane_does() {
             "{name}: {source:?}",
         );
         assert_eq!(s2.preamble, legacy.preamble, "{name} preamble: {source:?}");
+    }
+}
+
+#[test]
+fn implied_end_tags_keep_the_vue_v_pre_scope() {
+    for (source, expected) in [
+        (
+            r#"<p v-pre><div><meta :role="x" /></div></p>"#,
+            r#"return (_openBlock(), _createElementBlock("p", null, [ _createElementVNode("div", null, [ _createElementVNode("meta", { ":role": "x" }) ]) ])) }"#,
+        ),
+        (
+            r#"<select><option v-pre><option><meta :role="x" /></option></option></select>"#,
+            r#"return (_openBlock(), _createElementBlock("select", null, [ _createElementVNode("option", null, [ _createElementVNode("option", null, [ _createElementVNode("meta", { ":role": "x" }) ]) ]) ])) }"#,
+        ),
+        (
+            r#"<select><optgroup v-pre><optgroup><meta :role="x" /></optgroup></optgroup></select>"#,
+            r#"return (_openBlock(), _createElementBlock("select", null, [ _createElementVNode("optgroup", null, [ _createElementVNode("optgroup", null, [ _createElementVNode("meta", { ":role": "x" }) ]) ]) ])) }"#,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let (_, errors, selected) = compile_template(&allocator, source);
+        assert_eq!(
+            errors.len(),
+            1,
+            "standard diagnostics: {source}: {errors:?}"
+        );
+        assert_eq!(
+            errors[0].code,
+            vize_atelier_core::errors::ErrorCode::InvalidEndTag,
+            "standard diagnostic: {source}"
+        );
+        assert!(selected.code.is_empty(), "standard must not emit: {source}");
+
+        let quirks_allocator = Allocator::new();
+        let (_, quirks_errors, quirks) = compile_template_with_template_syntax(
+            &quirks_allocator,
+            source,
+            DomCompilerOptions::default(),
+            TemplateSyntaxMode::Quirks,
+        );
+        assert!(
+            quirks_errors.is_empty(),
+            "quirks diagnostics: {source}: {quirks_errors:?}"
+        );
+        assert_eq!(render_body(&quirks.code), expected, "{source}");
     }
 }
 
