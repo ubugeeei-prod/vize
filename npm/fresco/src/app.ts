@@ -415,7 +415,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
   let mounted = false;
-  let mounting = false;
   let pendingMount: Promise<void> | null = null;
   let hasMountedSuccessfully = false;
   let running = false;
@@ -462,11 +461,9 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   function mount(): Promise<void> {
     if (mounted) return Promise.resolve();
     if (pendingMount) return pendingMount;
-    mounting = true;
     pendingMount = Promise.resolve()
       .then(performMount)
       .finally(() => {
-        mounting = false;
         pendingMount = null;
       });
     return pendingMount;
@@ -489,9 +486,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     appContext = createAppContext({
       width: info.width,
       height: info.height,
-      exit: (value) => {
-        void unmount(value);
-      },
+      exit: (value) => void unmount(value),
       render,
       clear,
       waitUntilRenderFlush,
@@ -511,9 +506,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       }),
     );
 
-    // Create a root element for mounting
     rootElement = createRootElement();
-
     patchConsoleMethods();
     try {
       app.mount(rootElement);
@@ -528,12 +521,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     running = true;
     needsRender = true;
 
-    // Start event loop
     void eventLoop();
   }
 
   function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
-    if (mounting || hasMountedSuccessfully) {
+    if (pendingMount || hasMountedSuccessfully) {
       throw new Error("Fresco plugins must be installed before the first successful mount");
     }
     pluginInstallers.push((app) => {
