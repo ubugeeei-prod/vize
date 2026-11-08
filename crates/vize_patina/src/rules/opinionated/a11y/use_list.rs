@@ -61,6 +61,7 @@ const BULLET_CHARS: &[&str] = &[
 const LIST_CONTEXT_TAGS: &[&str] = &["ul", "ol", "li", "pre", "code", "script", "style"];
 
 #[derive(Default)]
+/// Implements the `opinionated/a11y/use-list` lint rule.
 pub struct UseList;
 
 impl UseList {

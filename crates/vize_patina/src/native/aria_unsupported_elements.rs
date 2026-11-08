@@ -16,9 +16,15 @@ use super::{
 /// SDK failures remain typed; no failure can become an unwitnessed Error.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeAriaLintError {
+    /// A required SDK fact table or entry is unavailable.
     Fact(FactError),
+    /// The causal witness does not verify against the authentic fact view.
     Witness(WitnessError),
-    IncompleteEvidence { attribute: u32 },
+    /// The counterexample lacks its original header, attribute, or witness chain.
+    IncompleteEvidence {
+        /// Stable key of the attribute whose evidence is incomplete.
+        attribute: u32,
+    },
 }
 impl From<FactError> for NativeAriaLintError {
     fn from(error: FactError) -> Self {

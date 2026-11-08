@@ -57,13 +57,17 @@ const OPINIONATED_AND_NUXT_CSS_PRESETS: &[&str] = &["opinionated", "nuxt"];
 
 /// Metadata the Oxlint plugin uses to register a built-in `css/*` rule.
 pub struct BuiltinCssRuleMeta {
+    /// Stable rule identifier, including the `css/` namespace.
     pub name: &'static str,
+    /// User-facing summary of the condition the rule enforces.
     pub description: &'static str,
+    /// Severity used when a preset enables the rule without an override.
     pub default_severity: crate::Severity,
+    /// Named presets that enable the rule.
     pub presets: &'static [&'static str],
 }
 
-/// Built-in `css/*` rules, in the same order as [`all_builtin_css_rule_names`].
+/// Return metadata for all built-in `css/*` rules in canonical registry order.
 ///
 /// These rules are not `RuleRegistry` entries, so hosts that only walk the
 /// registry (the Oxlint metadata collector) never see them unless this list
