@@ -55,6 +55,16 @@ const packages = [
     ],
   },
   {
+    name: "oxlint-plugin-vize",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 20,
+    minimumOptionalMembers: 10,
+    entrypoints: [
+      new URL("linter/oxlint/src/index.ts", npmRoot),
+      new URL("linter/oxlint/src/eslint.ts", npmRoot),
+    ],
+  },
+  {
     name: "@vizejs/volar-plugin",
     source: new URL("../../npm/volar/src/", import.meta.url),
   },

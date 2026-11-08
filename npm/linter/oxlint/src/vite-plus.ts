@@ -44,13 +44,17 @@ export type VitePlusLintPlugin =
  * one preset, while those shapes need exactly the emitted rule map to run.
  */
 export type VizeLintPreset = PatinaPreset | "happy-path" | "all";
+/** One Vize lint preset or an ordered set whose rules are unioned. */
 export type VizeLintPresetInput = VizeLintPreset | readonly VizeLintPreset[];
 type NormalizedVizeLintPreset = PatinaPreset | "all";
 
+/** Options for building the Vite+ Oxlint block that loads the Vize bridge. */
 export interface VizeLintConfigOptions {
   /**
    * Include Vize's unstable `vize/type/*` rules in the preset rule map. Off by
    * default, matching `createVizeRuleConfig`.
+   *
+   * @default false
    */
   includeTypeAware?: boolean;
   /**
@@ -60,43 +64,57 @@ export interface VizeLintConfigOptions {
    * would silently drop the diagnostics those plugins produce, so anything passed
    * here is merged rather than replaced. A `create-vue` project, for example,
    * needs `["eslint", "typescript", "unicorn", "oxc"]` carried over.
+   *
+   * @default []
    */
   plugins?: readonly VitePlusLintPlugin[];
   /**
    * Rule bundle or bundles to enable. Defaults to `"general-recommended"`, the
    * bridge's own default. `"incremental"` emits no preset rules, so only `rules`
    * run.
+   *
+   * @default "general-recommended"
    */
   preset?: VizeLintPresetInput;
   /**
    * Additional rule bundles to enable alongside `preset`. This is equivalent to
    * passing an array to `preset`, but reads better when the base preset is kept
    * separate from project-specific add-ons.
+   *
+   * @default []
    */
   presets?: readonly VizeLintPreset[];
   /**
    * Extra Oxlint rules merged after the preset rules. Core Oxlint rule ids pass
    * through untouched; `vize/*` ids are validated against the rules the native
    * bridge registers and, for a single gated preset, against the resolved preset.
+   *
+   * @default {}
    */
   rules?: OxlintRuleConfig;
   /**
    * CLI-compatible `vue.linter.ruleOptions`. Options are attached to rules
    * already enabled by a preset or by `rules`; options never enable a rule.
+   *
+   * @default {}
    */
   ruleOptions?: VizeRuleOptions;
   /**
    * Patina runtime settings forwarded through `settings.vize`. `preset` and
    * `rules` are derived from the selected presets and final rule map,
    * so the rule map and the bridge's runtime gate can never disagree.
+   *
+   * @default {}
    */
   settings?: Omit<PatinaSettings, "preset" | "rules">;
 }
 
+/** Runtime settings object emitted under the Oxlint `settings` key. */
 export interface VizeLintConfigSettings extends Record<string, unknown> {
   vize: PatinaSettings;
 }
 
+/** Complete Vite+ lint configuration emitted by the Vize bridge. */
 export interface VizeLintConfig extends Record<string, unknown> {
   jsPlugins: string[];
   plugins: VitePlusLintPlugin[];
@@ -142,6 +160,7 @@ export function createVizeLintConfig(options: VizeLintConfigOptions = {}): VizeL
   return buildVizeLintConfig(options, { forceIncrementalRuntime: false });
 }
 
+/** Build the bridge config while choosing whether composed fragments force incremental gating. */
 export function buildVizeLintConfig(
   options: VizeLintConfigOptions,
   buildOptions: { forceIncrementalRuntime: boolean },
