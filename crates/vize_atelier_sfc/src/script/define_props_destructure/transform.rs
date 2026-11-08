@@ -13,8 +13,49 @@ use vize_carton::FxHashMap;
 
 use super::PropsDestructuredBindings;
 use super::collector::collect_identifier_rewrites;
+use crate::script::ScriptCompileContext;
 use crate::types::SfcError;
 use vize_carton::{String, ToCompactString, profile};
+
+/// Rewrite destructured prop reads in the runtime argument of `defineExpose`.
+///
+/// Compiler macro statements are removed from the ordinary setup body before
+/// that body is transformed, so the expose argument must pass through the
+/// same AST rewrite independently before it is emitted as `__expose(...)`.
+pub(crate) fn transform_define_expose_destructured_props(
+    ctx: &mut ScriptCompileContext,
+) -> Result<(), SfcError> {
+    let Some(destructured) = ctx.macros.props_destructure.as_ref() else {
+        return Ok(());
+    };
+    let Some(expose) = ctx.macros.define_expose.as_mut() else {
+        return Ok(());
+    };
+    if expose.args.trim().is_empty() {
+        return Ok(());
+    }
+
+    const PREFIX: &str = "(";
+    const SUFFIX: &str = ");";
+    let mut wrapped = String::with_capacity(expose.args.len() + PREFIX.len() + SUFFIX.len());
+    wrapped.push_str(PREFIX);
+    wrapped.push_str(&expose.args);
+    wrapped.push_str(SUFFIX);
+
+    let transformed = transform_destructured_props(&wrapped, destructured)?;
+    let Some(args) = transformed
+        .strip_prefix(PREFIX)
+        .and_then(|source| source.strip_suffix(SUFFIX))
+    else {
+        return Err(SfcError {
+            message: String::from("Failed to recover the transformed defineExpose argument."),
+            code: Some("DEFINE_EXPOSE_DESTRUCTURE_TRANSFORM".to_compact_string()),
+            loc: None,
+        });
+    };
+    expose.args = args.to_compact_string();
+    Ok(())
+}
 
 /// Transform destructured props references in source code.
 ///
