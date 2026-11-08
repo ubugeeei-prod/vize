@@ -266,12 +266,7 @@ test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", ()
 });
 
 test("Linux Rust CI installs Wild linker before cargo builds", () => {
-  const recovery = readRepoFile(
-    ".github",
-    "actions",
-    "setup-wild-http-recovery",
-    "action.yml",
-  );
+  const recovery = readRepoFile(".github", "actions", "setup-wild-http-recovery", "action.yml");
   assert.match(
     recovery,
     /uses:\s*wild-linker\/action@[0-9a-f]{40}\s*# v0\.9\.0/,
