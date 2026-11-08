@@ -32,6 +32,25 @@ export const OWNED_WORKLOADS = [
   { id: "nuxt-2500", sfcs: 2500 },
   { id: "nuxt-10000", sfcs: 10000 },
 ] as const;
+export const FOCUSED_OWNED_WORKLOADS = [
+  { id: "giant-2500", sfcs: 1, kind: "giant", giantBlocks: 2500 },
+] as const;
+const OWNED_WORKLOAD_CATALOG = [...OWNED_WORKLOADS, ...FOCUSED_OWNED_WORKLOADS];
+
+export function selectOwnedWorkloads(requested?: string) {
+  if (!requested) return [...OWNED_WORKLOADS];
+  const ids = requested.split(",");
+  assert.ok(
+    ids.every((id) => id.length > 0 && id.trim() === id),
+    "invalid workload list",
+  );
+  assert.equal(new Set(ids).size, ids.length, "duplicate workload id");
+  return ids.map((id) => {
+    const specification = OWNED_WORKLOAD_CATALOG.find((entry) => entry.id === id);
+    assert.ok(specification, `unknown workload: ${id}`);
+    return specification;
+  });
+}
 
 export function installRole(workload: Workload, hosts: MapperHosts) {
   prepareMapperPackages(workload.directory, hosts);
@@ -50,20 +69,29 @@ export function prepareOwnedWorkload(
   out: string,
   hosts: MapperHosts,
 ): Workload {
-  const specification = OWNED_WORKLOADS.find((entry) => entry.id === id);
+  const specification = OWNED_WORKLOAD_CATALOG.find((entry) => entry.id === id);
   assert.ok(specification);
   const directory = join(work, id);
   assert.ok(!lstatSync(directory, { throwIfNoEntry: false }), "workload directory must be new");
   mkdirSync(directory, { recursive: true });
   const real = CORPORA.find((entry) => entry.id === id);
   let generated: ScaleProject | null = null;
-  const kind = id.startsWith("nuxt-") ? "nuxt" : "vue";
+  const kind =
+    "kind" in specification ? specification.kind : id.startsWith("nuxt-") ? "nuxt" : "vue";
   if (real) {
     for (const entry of real.copy)
       cpSync(join(root, real.source, entry), join(directory, entry), { recursive: true });
     writeJson(join(directory, "tsconfig.json"), real.tsconfig);
   } else {
-    generated = generateScaleProject({ kind, sfcs: specification.sfcs, seed: 0, plants: true });
+    generated = generateScaleProject({
+      kind,
+      sfcs: specification.sfcs,
+      seed: 0,
+      plants: true,
+      ...(kind === "giant" && "giantBlocks" in specification
+        ? { giantBlocks: specification.giantBlocks }
+        : {}),
+    });
     assert.equal(generated.sfcs, specification.sfcs);
     for (const [file, contents] of generated.files) {
       mkdirSync(dirname(join(directory, file)), { recursive: true });
