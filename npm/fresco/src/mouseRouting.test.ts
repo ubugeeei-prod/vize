@@ -38,7 +38,7 @@ test("publishes a mouse packet after a routed handler throws", () => {
 });
 
 test("publishes a mouse packet when no root is mounted", () => {
-  const event: MouseEvent = { type: "mouse", kind: "move", x: 0, y: 0 };
+  const event: MouseEvent = { type: "mouse", kind: "moved", x: 0, y: 0 };
   const published: { value: MouseEvent | null } = { value: null };
 
   routeAndPublishMouseInput(
