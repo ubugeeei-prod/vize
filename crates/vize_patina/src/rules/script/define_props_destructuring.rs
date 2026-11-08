@@ -37,6 +37,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 pub struct DefinePropsDestructuring;
 
 impl DefinePropsDestructuring {
+    /// Create a rule that enforces the configured destructuring mode.
     pub fn configured(mode: PropsDestructureMode) -> impl ScriptRule {
         ConfiguredDefinePropsDestructuring(mode)
     }

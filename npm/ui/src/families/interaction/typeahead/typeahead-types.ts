@@ -44,10 +44,10 @@ export interface TypeaheadOptions<Key extends CollectionKey, Value> {
    */
   readonly allowSpace?: boolean;
 
-  /** Comparator used to detect repeated graphemes before cycling matches. */
+  /** Comparator used to detect repeated graphemes before cycling matches. @default an accent-insensitive search collator for the host locale */
   readonly collator?: Intl.Collator;
 
-  /** Called after active collection state moves to a text match. */
+  /** Called after active collection state moves to a text match. @default undefined */
   readonly onMatch?: (match: TypeaheadMatch<Key>) => void;
 }
 

@@ -40,13 +40,14 @@ pub enum MarkupTraversal {
 /// This is the parallel of [`crate::rule::Rule`] for the unified IR: the same
 /// rule object can run over Vue templates *and* JSX/TSX. All hooks default to
 /// empty, so a rule overrides only what it needs. Drive a rule with
-/// [`MarkupDocument::visit_with`] / [`MarkupDocumentVisitor`].
+/// [`MarkupDocument::visit_with`] / [`super::MarkupDocumentVisitor`].
 ///
 /// Hooks fire in source order during a single depth-first traversal. Reporting
-/// uses [`MarkupContext::lint`] + the `*_at` [`LintContext`] helpers so all
+/// uses [`MarkupContext::lint`] + the `*_at` [`crate::context::LintContext`]
+/// helpers so all
 /// diagnostics and fixes map back to original syntax via [`ByteRange`].
 pub trait MarkupRule {
-    /// The rule name, used to set [`LintContext::current_rule`] before each
+    /// The rule name, used to set the lint context's current rule before each
     /// callback so diagnostics are attributed and rule-level suppression works.
     fn name(&self) -> &'static str;
 

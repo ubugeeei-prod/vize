@@ -86,6 +86,7 @@ export interface StateModelDefinition<
   readonly meta?: Meta;
 }
 
+/** Erased state model used when a collection contains independently typed models. */
 export type AnyStateModelDefinition = StateModelDefinition<
   StateModelKey,
   any,
@@ -94,17 +95,21 @@ export type AnyStateModelDefinition = StateModelDefinition<
   StateModelMeta
 >;
 
+/** Infer the state value owned by a state model definition. */
 export type InferState<Model> =
   Model extends StateModelDefinition<StateModelKey, infer State> ? State : never;
 
+/** Infer the reducer action accepted by a state model definition. */
 export type InferAction<Model> =
   Model extends StateModelDefinition<StateModelKey, infer _State, infer Action> ? Action : never;
 
+/** Infer the named command map exposed by a state model definition. */
 export type InferCommands<Model> =
   Model extends StateModelDefinition<StateModelKey, infer _State, infer _Action, infer Commands>
     ? Commands
     : never;
 
+/** Infer a model's stable literal key, falling back to the general key type. */
 export type InferKey<Model> = Model extends { readonly key: infer Key extends StateModelKey }
   ? Key
   : StateModelKey;
@@ -119,6 +124,7 @@ export interface StateSnapshot<Key extends StateModelKey = StateModelKey, State 
   readonly updatedAt: number;
 }
 
+/** Outcome of validating and restoring an SSR or persistence snapshot. */
 export type StateHydrationStatus =
   | "accepted"
   | "expired"
@@ -127,6 +133,7 @@ export type StateHydrationStatus =
   | "missing"
   | "mismatch";
 
+/** Restored state together with its validation and recovery outcome. */
 export interface StateHydrationResult<State> {
   readonly status: StateHydrationStatus;
   readonly state: State;
@@ -140,16 +147,39 @@ export interface StatePersistenceAdapter {
   readonly removeItem: (key: string) => void;
 }
 
+/** Runtime controls for creating a deterministic state store. */
 export interface CreateStateStoreOptions<State> {
+  /**
+   * Clock used to timestamp and expire snapshots.
+   *
+   * @default Date.now
+   */
   readonly now?: () => number;
+  /**
+   * Snapshot to validate and restore before the store is returned.
+   *
+   * @default undefined
+   */
   readonly snapshot?: StateSnapshot<StateModelKey, State>;
+  /**
+   * Undo/redo history configuration, or `false` to disable history.
+   *
+   * @default { capacity: 100 }
+   */
   readonly history?: false | StateHistoryOptions;
 }
 
+/** Bounded undo/redo history configuration. */
 export interface StateHistoryOptions {
+  /**
+   * Maximum number of past states retained by the store.
+   *
+   * @default 100
+   */
   readonly capacity?: number;
 }
 
+/** Reducer transaction receipt that can be passed back to `rollback`. */
 export interface StateTransaction<State, Action extends StateAction> {
   readonly id: number;
   readonly actions: readonly Action[];
@@ -157,12 +187,14 @@ export interface StateTransaction<State, Action extends StateAction> {
   readonly after: State;
 }
 
+/** Final state and disposition of an optimistic reducer update. */
 export interface StateOptimisticResult<State> {
   readonly status: "committed" | "rolled-back" | "superseded";
   readonly state: State;
   readonly reason?: unknown;
 }
 
+/** Read-only undo/redo capacity and depth exposed by a store. */
 export interface StateHistoryStatus {
   readonly canUndo: boolean;
   readonly canRedo: boolean;
@@ -198,6 +230,7 @@ export interface StateStore<Model extends AnyStateModelDefinition> {
   readonly snapshot: () => StateSnapshot<InferKey<Model>, InferState<Model>>;
 }
 
+/** Extract the caller-supplied argument tuple from a state command. */
 export type CommandArguments<Command> = Command extends (
   context: StateCommandContext<any>,
   ...args: infer Args
@@ -211,6 +244,7 @@ export interface StateManifest {
   readonly models: readonly StateManifestEntry[];
 }
 
+/** Machine-readable ownership and persistence metadata for one state model. */
 export interface StateManifestEntry {
   readonly key: StateModelKey;
   readonly source: StateSourceSpecifier;
@@ -222,39 +256,77 @@ export interface StateManifestEntry {
 /** Finite-state transition map used for literal transition type checks. */
 export type StateTransitionTable = Readonly<Record<string, readonly string[]>>;
 
+/** Union of states reachable from `From` in a finite transition table. */
 export type AllowedTransition<
   Table extends StateTransitionTable,
   From extends keyof Table & string,
 > = Table[From][number] & string;
 
+/** Direct or functional update accepted by a controllable state holder. */
 export type StateValueUpdater<State> = State | ((previous: Readonly<State>) => State);
 
+/** Previous and proposed values supplied to a controllable-state change handler. */
 export interface StateChangeContext<State> {
   readonly previous: Readonly<State>;
   readonly next: Readonly<State>;
   readonly controlled: boolean;
 }
 
+/** Observer called when a controllable state holder proposes a distinct value. */
 export type StateChangeHandler<State> = (next: State, context: StateChangeContext<State>) => void;
 
+/** Options for state whose current value is owned by its caller. */
 export interface ControlledStateOptions<State> {
   readonly value: () => State;
+  /**
+   * Controlled state cannot own an initial value.
+   *
+   * @default undefined
+   */
   readonly defaultValue?: never;
+  /**
+   * Observer for proposed value changes.
+   *
+   * @default undefined
+   */
   readonly onChange?: StateChangeHandler<State>;
+  /**
+   * Equality predicate used to suppress unchanged proposals.
+   *
+   * @default Object.is
+   */
   readonly equals?: (left: Readonly<State>, right: Readonly<State>) => boolean;
 }
 
+/** Options for state whose current value is owned by the returned holder. */
 export interface UncontrolledStateOptions<State> {
   readonly defaultValue: State;
+  /**
+   * Uncontrolled state has no external value reader.
+   *
+   * @default undefined
+   */
   readonly value?: never;
+  /**
+   * Observer called after a distinct local value is proposed.
+   *
+   * @default undefined
+   */
   readonly onChange?: StateChangeHandler<State>;
+  /**
+   * Equality predicate used to suppress unchanged local updates.
+   *
+   * @default Object.is
+   */
   readonly equals?: (left: Readonly<State>, right: Readonly<State>) => boolean;
 }
 
+/** Discriminated controlled or uncontrolled state ownership options. */
 export type ControllableStateOptions<State> =
   | ControlledStateOptions<State>
   | UncontrolledStateOptions<State>;
 
+/** Stateful facade returned by `createControllableState`. */
 export interface ControllableState<State, Controlled extends boolean = boolean> {
   readonly controlled: Controlled;
   readonly value: State;
@@ -263,16 +335,24 @@ export interface ControllableState<State, Controlled extends boolean = boolean> 
   readonly snapshot: () => State;
 }
 
+/** Controls whether diagnostic manifests may include development metadata. */
 export interface StateDiagnosticsOptions {
+  /**
+   * Omit model details from the diagnostics manifest.
+   *
+   * @default false
+   */
   readonly production?: boolean;
 }
 
+/** Machine-readable development metadata for state diagnostics and devtools. */
 export interface StateDiagnosticsManifest {
   readonly schemaVersion: 1;
   readonly production: boolean;
   readonly models: readonly StateDiagnosticsEntry[];
 }
 
+/** Diagnostic metadata for one state model. */
 export interface StateDiagnosticsEntry {
   readonly key: StateModelKey;
   readonly source: StateSourceSpecifier;

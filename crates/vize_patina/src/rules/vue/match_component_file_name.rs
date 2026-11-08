@@ -26,6 +26,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `vue/match-component-file-name` lint rule.
 pub struct MatchComponentFileName;
 
 pub(super) fn message(name: &str, filename: &str) -> String {

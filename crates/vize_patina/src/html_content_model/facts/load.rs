@@ -14,7 +14,7 @@ const CHILDREN_ROWS: usize = 64;
 impl Facts {
     /// Parse a fact table, skipping malformed, unknown or duplicate rows. The
     /// table is committed data, so the unit tests assert that
-    /// [`Self::parse_reporting`] finds no defect before any lint runs.
+    /// the internal `parse_reporting` path finds no defect before any lint runs.
     pub fn parse(tsv: &'static str) -> Self {
         Self::parse_reporting(tsv, &mut Vec::new())
     }

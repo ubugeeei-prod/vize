@@ -36,6 +36,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/no-child-content` lint rule.
 pub struct NoChildContent;
 
 impl NoChildContent {

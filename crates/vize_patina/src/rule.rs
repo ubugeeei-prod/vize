@@ -157,6 +157,7 @@ pub struct RuleRegistry {
 impl RuleRegistry {
     const ESSENTIAL_CAPACITY: usize = 32;
     const HAPPY_PATH_CAPACITY: usize = 90;
+    /// Create the default registry of built-in template rules.
     pub fn new() -> Self {
         Self {
             rules: Vec::new(),
@@ -198,6 +199,7 @@ impl RuleRegistry {
         self.register(rule);
     }
 
+    /// Register a rule, retaining compatibility with the legacy `add` API.
     pub fn add(&mut self, rule: Box<dyn Rule>) {
         self.register(rule);
     }
@@ -207,14 +209,17 @@ impl RuleRegistry {
         self.ecosystem_template_prefix
     }
 
+    /// Return registered rules in evaluation order.
     pub fn rules(&self) -> &[Box<dyn Rule>] {
         &self.rules
     }
 
+    /// Return stable identifiers for registered rules in evaluation order.
     pub fn rule_names(&self) -> &[&'static str] {
         &self.rule_names
     }
 
+    /// Return whether any rule needs the element-exit traversal hook.
     pub fn has_exit_element_rules(&self) -> bool {
         self.has_exit_element_rules
     }
@@ -223,6 +228,7 @@ impl RuleRegistry {
         self.has_exit_element_rules = true;
     }
 
+    /// Return whether a rule with `name` is registered.
     pub fn has_rule(&self, name: &str) -> bool {
         self.rule_names.contains(&name)
     }

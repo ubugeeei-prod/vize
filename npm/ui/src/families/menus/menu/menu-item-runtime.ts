@@ -35,14 +35,15 @@ export interface MenuItemOptions {
   readonly hint: string;
   readonly disabled: () => boolean;
   readonly textValue: () => string | undefined;
+  /** Submenu level opened by this item. @default undefined */
   readonly subLevel?: MenuLevelContextValue;
   /** Activate the item; return whether an activation happened. */
   readonly activate: (event: Event | null, source: MenuActivationSource) => boolean;
-  /** Item-specific keydown hook that runs before Enter/Space activation. */
+  /** Item-specific keydown hook that runs before Enter/Space activation. @default undefined */
   readonly keydown?: (event: KeyboardEvent) => void;
-  /** Item-specific pointer-leave hook; return `true` to skip clearing the highlight. */
+  /** Item-specific pointer-leave hook; return `true` to skip clearing the highlight. @default undefined */
   readonly pointerleave?: (event: PointerEvent) => boolean;
-  /** Item-specific pointer-move hook run after the highlight moved to this item. */
+  /** Item-specific pointer-move hook run after the highlight moved to this item. @default undefined */
   readonly pointermove?: (event: PointerEvent) => void;
 }
 

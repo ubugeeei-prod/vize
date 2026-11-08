@@ -10,7 +10,7 @@ export interface FocusScopeAutoFocusEvent {
 
 /** Programmatic movement options shared by the focus manager methods. */
 export interface FocusScopeMoveOptions {
-  /** Element from which traversal begins. Defaults to the deep active element. */
+  /** Element from which traversal begins. @default the deep active element */
   readonly from?: Element | null;
 
   /**
@@ -34,7 +34,7 @@ export interface FocusScopeMoveOptions {
    */
   readonly preventScroll?: boolean;
 
-  /** Additional consumer filter applied after native focusability checks. */
+  /** Additional consumer filter applied after native focusability checks. @default undefined */
   readonly accept?: (element: HTMLElement) => boolean;
 }
 
@@ -64,22 +64,22 @@ export interface FocusScopeOptions {
    */
   readonly restoreFocus?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Preferred initial target. It must resolve inside the current scope. */
+  /** Preferred initial target. It must resolve inside the current scope. @default undefined */
   readonly initialFocus?: () => HTMLElement | null | undefined;
 
-  /** Explicit restoration target, evaluated at deactivation time. */
+  /** Explicit restoration target, evaluated at deactivation time. @default undefined */
   readonly restoreTarget?: () => HTMLElement | null | undefined;
 
-  /** Fallback target when a scope has no tabbable descendants. */
+  /** Fallback target when a scope has no tabbable descendants. @default undefined */
   readonly fallbackFocus?: () => HTMLElement | null | undefined;
 
-  /** Consumer filter applied to automatically discovered focusable descendants. */
+  /** Consumer filter applied to automatically discovered focusable descendants. @default undefined */
   readonly accept?: (element: HTMLElement) => boolean;
 
-  /** Called before automatic entry focus. Call `preventDefault` to retain focus. */
+  /** Called before automatic entry focus. Call `preventDefault` to retain focus. @default undefined */
   readonly onMountAutoFocus?: (event: FocusScopeAutoFocusEvent) => void;
 
-  /** Called before automatic restoration. Call `preventDefault` to retain focus. */
+  /** Called before automatic restoration. Call `preventDefault` to retain focus. @default undefined */
   readonly onUnmountAutoFocus?: (event: FocusScopeAutoFocusEvent) => void;
 }
 

@@ -38,9 +38,17 @@ static CONFIGURED: Exemption = Exemption::new("vize_patina", "configured-error")
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UnifiedError {
     /// The diagnostic names neither a registered rule nor a parser.
-    UnknownRule { rule: &'static str },
+    UnknownRule {
+        /// Unrecognized rule identifier carried by the diagnostic.
+        rule: &'static str,
+    },
     /// A range is not a valid span of the authored file.
-    SpanOutsideSource { rule: &'static str, span: Span },
+    SpanOutsideSource {
+        /// Rule identifier whose diagnostic carried the invalid span.
+        rule: &'static str,
+        /// Rejected byte span.
+        span: Span,
+    },
 }
 
 /// `diagnostic` on the unified channel, measured against `source`.
