@@ -12,6 +12,22 @@ use vize_atelier_core::RootNode;
 use vize_carton::profile;
 use vize_croquis::Drawer;
 use vize_croquis::binding_occurrences::BindingOccurrences;
+use vize_croquis::drawer::LintTemplate;
+
+#[derive(Clone, Copy)]
+pub(super) enum DescriptorTemplate<'t, 'a> {
+    Relief(&'t RootNode<'a>),
+    L1L2(LintTemplate<'t, 'a>),
+}
+
+impl<'a> DescriptorTemplate<'_, 'a> {
+    pub(super) fn source(self) -> &'a str {
+        match self {
+            Self::Relief(root) => root.source,
+            Self::L1L2(template) => template.source(),
+        }
+    }
+}
 
 pub(super) struct DescriptorAnalysisMode {
     pub(super) options_api: bool,
@@ -29,7 +45,7 @@ pub(super) struct DescriptorObservation<'a> {
 
 pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     scripts: &super::SfcScriptParses<'_>,
-    template_ast: Option<&RootNode<'_>>,
+    template: Option<DescriptorTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
@@ -104,8 +120,14 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     };
     let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
 
-    if let Some(root) = template_ast {
-        profile!("atelier.sfc.croquis.template", drawer.draw_template(root));
+    if let Some(template) = template {
+        profile!(
+            "atelier.sfc.croquis.template",
+            match template {
+                DescriptorTemplate::Relief(root) => drawer.draw_template(root),
+                DescriptorTemplate::L1L2(template) => drawer.draw_lint_template(template),
+            }
+        );
     }
 
     let mut croquis = if CAPTURE {
@@ -116,7 +138,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
         drawer.finish()
     };
     if options.unused_bindings || CAPTURE {
-        if descriptor.template.is_some() && template_ast.is_none() {
+        if descriptor.template.is_some() && template.is_none() {
             croquis.unused_bindings.clear();
             packet = None;
         } else {

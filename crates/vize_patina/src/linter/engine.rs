@@ -87,7 +87,7 @@ impl<'a> TemplateRuleEnv<'a> {
 }
 
 pub(crate) use rule_sets::{
-    TemplateRuleEnv, analyze_descriptor_for_lint, analyze_descriptor_for_lint_with_reuse,
+    TemplateRuleEnv, analyze_descriptor_for_lint, analyze_descriptor_for_lint_with_template,
 };
 
 impl Linter {

@@ -99,9 +99,6 @@ impl Linter {
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
         let analysis = if !has_fatal_parse_errors && self.has_active_semantic_template_rules() {
-            let reuse = template_syntax.as_ref().and_then(|syntax| {
-                vize_croquis::drawer::collect_template_semantic_reuse(&root, syntax)
-            });
             Some(profile!(
                 "patina.sfc.descriptor.croquis",
                 if descriptor.script_setup.is_some()
@@ -118,18 +115,16 @@ impl Linter {
                 {
                     super::rule_sets::analyze_descriptor_for_component_reads(
                         scripts,
-                        Some(&root),
+                        Some(&l2),
                         self.has_unused_bindings_demand(),
                         derived,
-                        reuse,
                     )
                 } else {
-                    super::rule_sets::analyze_descriptor_for_lint_with_reuse(
+                    super::rule_sets::analyze_descriptor_for_lint_with_template(
                         scripts,
-                        Some(&root),
+                        Some(&l2),
                         self.has_unused_bindings_demand(),
                         derived,
-                        reuse,
                     )
                 }
             ))

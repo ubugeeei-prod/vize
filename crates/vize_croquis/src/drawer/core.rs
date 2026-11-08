@@ -55,6 +55,10 @@ pub struct Drawer {
     pub(super) occurrence_capture: Option<Box<super::occurrences::OccurrenceCapture>>,
     pub(super) module_export_capture: Option<crate::script_parser::ModuleExportCapture>,
     pub(super) template_semantic_reuse: Option<Box<super::TemplateSemanticReuse>>,
+    /// The current template was projected from the completed L1/L2 artifact.
+    /// This admits L2's total slot-pattern fallback where the compatibility
+    /// Relief view deliberately carries no Armature-owned parameter packet.
+    pub(super) l1_l2_template: bool,
 }
 
 impl Drawer {
@@ -89,6 +93,7 @@ impl Drawer {
             occurrence_capture: None,
             module_export_capture: None,
             template_semantic_reuse: None,
+            l1_l2_template: false,
         }
     }
 
@@ -117,6 +122,7 @@ impl Drawer {
             occurrence_capture: None,
             module_export_capture: None,
             template_semantic_reuse: None,
+            l1_l2_template: false,
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),

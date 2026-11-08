@@ -4,7 +4,7 @@
 //! during template traversal.
 
 use crate::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage, SpreadProp};
-use crate::drawer::helpers::extract_retained_slot_prop_bindings;
+use crate::drawer::helpers::{extract_retained_slot_prop_bindings, extract_slot_prop_bindings};
 use vize_carton::{CompactString, SmallVec, String, cstr};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode};
 
@@ -149,7 +149,7 @@ impl Drawer {
             if let PropNode::Directive(dir) = prop
                 && dir.name == "slot"
             {
-                push_slot_usage(usage, dir, &self.template_source);
+                push_slot_usage(usage, dir, &self.template_source, self.l1_l2_template);
             }
         }
 
@@ -164,7 +164,7 @@ impl Drawer {
                 if let PropNode::Directive(dir) = prop
                     && dir.name == "slot"
                 {
-                    push_slot_usage(usage, dir, &self.template_source);
+                    push_slot_usage(usage, dir, &self.template_source, self.l1_l2_template);
                 }
             }
         }
@@ -235,13 +235,19 @@ fn directive_argument(arg: &ExpressionNode<'_>, source: &str) -> (CompactString,
     }
 }
 
-fn push_slot_usage(usage: &mut ComponentUsage, dir: &vize_relief::DirectiveNode<'_>, source: &str) {
+fn push_slot_usage(
+    usage: &mut ComponentUsage,
+    dir: &vize_relief::DirectiveNode<'_>,
+    source: &str,
+    l1_l2_template: bool,
+) {
     let (name, name_is_static) = slot_argument_name(dir.arg.as_ref(), source);
     let scope_vars = dir
         .exp
         .as_ref()
         .and_then(|exp| match exp {
-            ExpressionNode::Simple(node) => extract_retained_slot_prop_bindings(node),
+            ExpressionNode::Simple(node) => extract_retained_slot_prop_bindings(node)
+                .or_else(|| l1_l2_template.then(|| extract_slot_prop_bindings(node.content))),
             ExpressionNode::Compound(_) => None,
         })
         .map(|bindings| bindings.into_iter().map(|(name, _)| name).collect())

@@ -15,7 +15,8 @@ mod source_offsets;
 mod unused;
 
 use self::analysis::{
-    DescriptorAnalysisMode, DescriptorObservation, analyze_sfc_descriptor_resolved_impl,
+    DescriptorAnalysisMode, DescriptorObservation, DescriptorTemplate,
+    analyze_sfc_descriptor_resolved_impl,
 };
 use crate::types::SfcDescriptor;
 pub use module_exports::{
@@ -23,6 +24,7 @@ pub use module_exports::{
     descriptor_module_sources_are_known,
 };
 pub use occurrences::{
+    analyze_sfc_descriptor_with_lint_template_and_occurrences,
     analyze_sfc_descriptor_with_occurrences,
     analyze_sfc_descriptor_with_occurrences_and_template_reuse,
 };
@@ -32,7 +34,7 @@ pub use resolved::{
 pub use script_parses::SfcScriptParses;
 use vize_atelier_core::RootNode;
 use vize_carton::{String, ToCompactString, cstr};
-use vize_croquis::{Croquis, DrawerOptions};
+use vize_croquis::{Croquis, DrawerOptions, drawer::LintTemplate};
 
 /// Options for descriptor-level Croquis analysis.
 #[derive(Debug, Clone, Copy)]
@@ -164,7 +166,7 @@ pub fn analyze_sfc_descriptor_with_template_reuse(
 ) -> Croquis {
     analyze_sfc_descriptor_resolved_impl::<false>(
         scripts,
-        template_ast,
+        template_ast.map(DescriptorTemplate::Relief),
         options,
         DescriptorAnalysisMode {
             options_api: false,
@@ -177,6 +179,29 @@ pub fn analyze_sfc_descriptor_with_template_reuse(
             template_semantic_reuse: reuse,
             ..Default::default()
         },
+    )
+    .croquis
+}
+
+/// Analyze a lint descriptor from its completed Davinci template artifact.
+#[doc(hidden)]
+pub fn analyze_sfc_descriptor_with_lint_template(
+    scripts: &SfcScriptParses<'_>,
+    template: Option<LintTemplate<'_, '_>>,
+    options: SfcCroquisOptions,
+) -> Croquis {
+    analyze_sfc_descriptor_resolved_impl::<false>(
+        scripts,
+        template.map(DescriptorTemplate::L1L2),
+        options,
+        DescriptorAnalysisMode {
+            options_api: false,
+            legacy_vue2: false,
+            include_script_content: false,
+        },
+        None,
+        None,
+        DescriptorObservation::default(),
     )
     .croquis
 }
@@ -222,7 +247,7 @@ fn analyze_sfc_descriptor_with_context_impl(
     let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
-        template_ast,
+        template_ast.map(DescriptorTemplate::Relief),
         options,
         DescriptorAnalysisMode {
             options_api,
@@ -256,7 +281,7 @@ pub fn analyze_sfc_descriptor_resolved(
     let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
-        template_ast,
+        template_ast.map(DescriptorTemplate::Relief),
         options,
         DescriptorAnalysisMode {
             options_api,
@@ -284,7 +309,7 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
     let scripts = SfcScriptParses::new(&allocator, descriptor, SfcScriptParses::compile_language);
     analyze_sfc_descriptor_resolved_impl::<false>(
         &scripts,
-        template_ast,
+        template_ast.map(DescriptorTemplate::Relief),
         options,
         DescriptorAnalysisMode {
             options_api,
