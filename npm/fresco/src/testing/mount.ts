@@ -36,6 +36,8 @@ export interface MountFrescoOptions {
   height?: number;
   /** Initial screen reader mode. Defaults to false. */
   screenReader?: boolean;
+  /** Observe host-tree mutations that require a native frame. */
+  onMutation?: () => void;
 }
 
 /** A mounted Fresco component tree under test. */
@@ -64,7 +66,7 @@ export function mountFresco(
   root: Component | (() => VNodeChild),
   options: MountFrescoOptions = {},
 ): MountedFresco {
-  const { createApp } = createRenderer();
+  const { createApp } = createRenderer(options.onMutation);
   const component: Component = typeof root === "function" ? { setup: () => root } : root;
   const app = createApp(component);
 

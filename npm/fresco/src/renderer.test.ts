@@ -63,6 +63,31 @@ test("patches props and text reactively without remounting", async () => {
   mounted.unmount();
 });
 
+test("reports only host-tree mutations as native frame work", async () => {
+  const message = ref("first");
+  let mutations = 0;
+  const mounted = mountFresco(() => h("text", { text: message.value }), {
+    onMutation: () => mutations++,
+  });
+
+  assert.ok(mutations > 0, "the initial host tree requires a frame");
+  const mountedMutations = mutations;
+  await nextTick();
+  assert.equal(mutations, mountedMutations, "an idle Vue tree schedules no frame");
+
+  message.value = "second";
+  await nextTick();
+  assert.ok(mutations > mountedMutations, "a host prop change requires a frame");
+  const changedMutations = mutations;
+
+  message.value = "second";
+  await nextTick();
+  assert.equal(mutations, changedMutations, "an identical assignment schedules no frame");
+
+  mounted.unmount();
+  assert.ok(mutations > changedMutations, "detaching the host tree requires a frame");
+});
+
 test("inserts, reorders, and removes list children through anchors", async () => {
   const items = ref(["a", "b"]);
   const mounted = mountFresco(() =>

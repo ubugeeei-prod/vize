@@ -41,82 +41,94 @@ function createNode(type: FrescoRenderNodeKind): FrescoNode {
 /**
  * Renderer options for Fresco
  */
-const rendererOptions: RendererOptions<FrescoNode, FrescoElement> = {
-  patchProp(el, key, _prevValue, nextValue) {
-    if (nextValue == null) {
-      delete el.props[key];
-    } else {
-      el.props[key] = nextValue;
-    }
-  },
-
-  insert(child, parent, anchor) {
-    // Vue reuses host nodes for keyed moves and re-inserts them without a
-    // preceding remove, relying on DOM insertBefore move semantics. Detach the
-    // child from its current position first so a reorder repositions the
-    // existing node instead of duplicating it.
-    if (child.parent) {
-      const existing = child.parent.children.indexOf(child);
-      if (existing !== -1) {
-        child.parent.children.splice(existing, 1);
+function rendererOptions(onMutation: () => void): RendererOptions<FrescoNode, FrescoElement> {
+  return {
+    patchProp(el, key, _prevValue, nextValue) {
+      if (nextValue == null) {
+        if (!(key in el.props)) return;
+        delete el.props[key];
+      } else {
+        if (Object.is(el.props[key], nextValue)) return;
+        el.props[key] = nextValue;
       }
-    }
-    child.parent = parent;
-    if (anchor) {
-      const index = parent.children.indexOf(anchor);
-      if (index !== -1) {
-        parent.children.splice(index, 0, child);
-        return;
+      onMutation();
+    },
+
+    insert(child, parent, anchor) {
+      // Vue reuses host nodes for keyed moves and re-inserts them without a
+      // preceding remove, relying on DOM insertBefore move semantics. Detach the
+      // child from its current position first so a reorder repositions the
+      // existing node instead of duplicating it.
+      if (child.parent) {
+        const existing = child.parent.children.indexOf(child);
+        if (existing !== -1) {
+          child.parent.children.splice(existing, 1);
+        }
       }
-    }
-    parent.children.push(child);
-  },
-
-  remove(child) {
-    if (child.parent) {
-      const index = child.parent.children.indexOf(child);
-      if (index !== -1) {
-        child.parent.children.splice(index, 1);
+      child.parent = parent;
+      if (anchor) {
+        const index = parent.children.indexOf(anchor);
+        if (index !== -1) {
+          parent.children.splice(index, 0, child);
+          onMutation();
+          return;
+        }
       }
-      child.parent = null;
-    }
-  },
+      parent.children.push(child);
+      onMutation();
+    },
 
-  createElement(type) {
-    const nodeType = mapElementType(type);
-    return createNode(nodeType) as FrescoElement;
-  },
+    remove(child) {
+      if (child.parent) {
+        const index = child.parent.children.indexOf(child);
+        if (index !== -1) {
+          child.parent.children.splice(index, 1);
+          onMutation();
+        }
+        child.parent = null;
+      }
+    },
 
-  createText(text) {
-    const node = createNode("text");
-    node.text = text;
-    return node;
-  },
+    createElement(type) {
+      const nodeType = mapElementType(type);
+      return createNode(nodeType) as FrescoElement;
+    },
 
-  createComment() {
-    // Comments are ignored in TUI
-    return createNode("text");
-  },
+    createText(text) {
+      const node = createNode("text");
+      node.text = text;
+      return node;
+    },
 
-  setText(node, text) {
-    node.text = text;
-  },
+    createComment() {
+      // Comments are ignored in TUI
+      return createNode("text");
+    },
 
-  setElementText(el, text) {
-    el.text = text;
-    el.children = [];
-  },
+    setText(node, text) {
+      if (node.text === text) return;
+      node.text = text;
+      onMutation();
+    },
 
-  parentNode(node) {
-    return node.parent;
-  },
+    setElementText(el, text) {
+      if (el.text === text && el.children.length === 0) return;
+      el.text = text;
+      el.children = [];
+      onMutation();
+    },
 
-  nextSibling(node) {
-    if (!node.parent) return null;
-    const index = node.parent.children.indexOf(node);
-    return node.parent.children[index + 1] || null;
-  },
-};
+    parentNode(node) {
+      return node.parent;
+    },
+
+    nextSibling(node) {
+      if (!node.parent) return null;
+      const index = node.parent.children.indexOf(node);
+      return node.parent.children[index + 1] || null;
+    },
+  };
+}
 
 /**
  * Map Vue element types to Fresco node types
@@ -141,8 +153,8 @@ function mapElementType(type: string): FrescoRenderNodeKind {
 /**
  * Create the Fresco renderer
  */
-export function createRenderer() {
-  return createVueRenderer(rendererOptions);
+export function createRenderer(onMutation: () => void = () => {}) {
+  return createVueRenderer(rendererOptions(onMutation));
 }
 
 /** Compatibility name for the render payload produced by this package. */
