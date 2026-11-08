@@ -430,6 +430,7 @@ struct SourceArtifacts {
     module_exports: Option<Box<[vize_croquis::script_parser::AuthoredModuleExport]>>,
     star_projection: Option<star_exports::StarProjection>,
     authored_vue_ts_specifiers: FxHashSet<CompactString>,
+    dependency_syntax_facts: Option<build::DependencySyntaxFacts>,
 }
 
 #[cfg(test)]

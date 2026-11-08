@@ -211,8 +211,32 @@ impl VirtualProject {
 
         while let Some(importer) = queue.pop() {
             vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
-            let Some((virtual_content, virtual_path, references, generated_vue)) =
+            let Some((original_path, virtual_path, generated_vue)) =
                 self.find_by_original(&importer).map(|file| {
+                    (
+                        file.original_path.clone(),
+                        file.virtual_path.clone(),
+                        file.source_map.sfc_map.is_some(),
+                    )
+                })
+            else {
+                continue;
+            };
+            let reused_syntax = self
+                .source_artifacts
+                .get_mut(&original_path)
+                .and_then(|artifacts| artifacts.dependency_syntax_facts.take());
+            let mut virtual_content = None;
+            let fallback_references;
+            let references = if let Some(syntax) = reused_syntax.as_ref() {
+                vize_carton::micro_count!("canon.dependency_scan.occurrences.reused.calls", 1);
+                vize_carton::micro_count!(
+                    "canon.dependency_scan.occurrences.reused.source_bytes",
+                    syntax.source_bytes
+                );
+                syntax.references.as_ref()
+            } else {
+                let Some((content, references)) = self.find_by_original(&importer).map(|file| {
                     let content = self.walked_source(file);
                     vize_carton::micro_count!("canon.dependency_scan.content.clone.calls", 1);
                     vize_carton::micro_count!(
@@ -232,26 +256,38 @@ impl VirtualProject {
                             "canon.dependency_scan.content.clone",
                             vize_carton::String::from(content.as_ref())
                         ),
-                        file.virtual_path.clone(),
-                        self.walked_references(file, &content),
-                        file.source_map.sfc_map.is_some(),
+                        self.walked_references(file, &content).into_boxed_slice(),
                     )
-                })
-            else {
-                continue;
+                }) else {
+                    continue;
+                };
+                virtual_content = Some(content);
+                fallback_references = references;
+                fallback_references.as_ref()
             };
             let mut dependency_targets = FxHashSet::default();
-            if references.is_empty()
-                && !may_resolve_a_dependency(
-                    &virtual_content,
-                    if is_declaration_file(&importer) {
-                        &declaration_alias_prefixes
-                    } else {
-                        &alias_prefixes
-                    },
-                    workspace_package_specifiers,
-                )
-            {
+            let has_no_dependency_syntax = if references.is_empty() {
+                match reused_syntax.as_ref() {
+                    Some(syntax) => syntax.occurrences.is_empty(),
+                    None => {
+                        let Some(virtual_content) = virtual_content.as_deref() else {
+                            continue;
+                        };
+                        !may_resolve_a_dependency(
+                            virtual_content,
+                            if is_declaration_file(&importer) {
+                                &declaration_alias_prefixes
+                            } else {
+                                &alias_prefixes
+                            },
+                            workspace_package_specifiers,
+                        )
+                    }
+                }
+            } else {
+                false
+            };
+            if has_no_dependency_syntax {
                 let released = self.replace_canonical_dependency_edges(
                     canonical_importer(&canonical_importers, &importer),
                     dependency_targets,
@@ -263,44 +299,58 @@ impl VirtualProject {
                 continue;
             };
             let source_type = super::editor_source_facts::walked_source_type(&virtual_path);
-            let occurrences = match facts.as_deref_mut() {
-                Some(facts) => {
-                    vize_carton::micro_count!("canon.dependency_scan.occurrences.cached.calls", 1);
-                    vize_carton::micro_count!(
-                        "canon.dependency_scan.occurrences.cached.source_bytes",
-                        virtual_content.len()
-                    );
-                    vize_carton::micro_span!(
-                        "canon.dependency_scan.occurrences.cached",
-                        facts.collect_occurrences(&virtual_content, source_type)
-                    )
-                }
-                None => {
-                    vize_carton::micro_count!(
-                        "canon.dependency_scan.occurrences.uncached.calls",
-                        1
-                    );
-                    vize_carton::micro_count!(
-                        "canon.dependency_scan.occurrences.uncached.source_bytes",
-                        virtual_content.len()
-                    );
-                    #[cfg(feature = "profiling")]
-                    crate::profiling::observe_dependency_input(&virtual_content, source_type);
-                    vize_carton::micro_span!(
-                        "canon.dependency_scan.occurrences.uncached",
-                        self.rewriter()
-                            .collect_all_specifier_occurrences(&virtual_content, source_type)
-                    )
-                }
+            let parsed_occurrences;
+            let occurrences = if let Some(syntax) = reused_syntax.as_ref() {
+                syntax.occurrences.as_ref()
+            } else {
+                let Some(virtual_content) = virtual_content.as_deref() else {
+                    continue;
+                };
+                parsed_occurrences = match facts.as_deref_mut() {
+                    Some(facts) => {
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.occurrences.cached.calls",
+                            1
+                        );
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.occurrences.cached.source_bytes",
+                            virtual_content.len()
+                        );
+                        vize_carton::micro_span!(
+                            "canon.dependency_scan.occurrences.cached",
+                            facts.collect_occurrences(virtual_content, source_type)
+                        )
+                    }
+                    None => {
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.occurrences.uncached.calls",
+                            1
+                        );
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.occurrences.uncached.source_bytes",
+                            virtual_content.len()
+                        );
+                        #[cfg(feature = "profiling")]
+                        crate::profiling::observe_dependency_input(virtual_content, source_type);
+                        vize_carton::micro_span!(
+                            "canon.dependency_scan.occurrences.uncached",
+                            self.rewriter()
+                                .collect_all_specifier_occurrences(virtual_content, source_type)
+                        )
+                    }
+                };
+                parsed_occurrences.as_slice()
             };
             let specifiers = occurrences
-                .into_iter()
-                .map(|(specifier, mode)| (specifier, mode, false))
-                .chain(
-                    references
-                        .into_iter()
-                        .map(|specifier| (specifier, crate::PackageResolutionMode::Import, true)),
-                );
+                .iter()
+                .map(|(specifier, mode)| (specifier.as_str(), *mode, false))
+                .chain(references.iter().map(|specifier| {
+                    (
+                        specifier.as_str(),
+                        crate::PackageResolutionMode::Import,
+                        true,
+                    )
+                }));
             // Routes are stable for one walk. Collect their logical roots only
             // when needed, then borrow matching importer ancestors instead of
             // scanning and cloning every route again for every importer.
@@ -320,13 +370,13 @@ impl VirtualProject {
                 // Path references are always relative to the containing file,
                 // even without `./`; import aliases and packages do not apply.
                 let native_target = if is_reference {
-                    resolution::probe_candidates(&importer_dir.join(&specifier))
+                    resolution::probe_candidates(&importer_dir.join(specifier))
                 } else {
-                    self.resolve_source_dependency(&importer, generated_vue, &specifier, &aliases)
+                    self.resolve_source_dependency(&importer, generated_vue, specifier, &aliases)
                 };
                 let Some(target) = native_target else {
                     if !is_reference && let Some(resolve) = package_resolver.as_deref_mut() {
-                        let _ = resolve(&importer, &specifier, mode);
+                        let _ = resolve(&importer, specifier, mode);
                     }
                     continue;
                 };
