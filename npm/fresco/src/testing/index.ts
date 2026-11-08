@@ -20,6 +20,7 @@ import {
   type PasteEvent,
   type ResizeEvent,
 } from "../app.js";
+import { treeToScreenReaderString } from "../accessibility.js";
 import type { FrescoNode } from "../renderer.js";
 import {
   dispatchKey,
@@ -68,6 +69,8 @@ export type MouseInput = Omit<MouseEvent, "type">;
 export interface FrescoFrameSnapshot {
   /** Plain terminal output projected from the current mounted tree. */
   output: string;
+  /** Deterministic semantic text exposed to assistive technology. */
+  screenReaderOutput: string;
   /** Serializable renderer tree for structural assertions. */
   tree: FrescoNodeSnapshot;
   /** Stable native protocol payload for assertions before crossing into Rust. */
@@ -255,6 +258,7 @@ export function renderTui(root: RenderTuiRoot, options: RenderTuiOptions = {}): 
     );
     const snapshot: FrescoFrameSnapshot = {
       output: renderFrame(mounted.root, staticOutput),
+      screenReaderOutput: treeToScreenReaderString(mounted.root),
       tree: toTreeSnapshot(mounted.root),
       protocolNodes: protocolSnapshot(mounted.root),
     };
