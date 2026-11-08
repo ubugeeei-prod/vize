@@ -44,12 +44,7 @@ impl Linter {
                     input.descriptor,
                     scripts,
                     &mut script_result,
-                    valid_template.then_some((
-                        input.root,
-                        input.l2.surface(),
-                        input.template.loc.start as u32,
-                    )),
-                    input.template_syntax,
+                    valid_template.then_some((input.l2, input.template.loc.start as u32)),
                     Some(ctx),
                 );
             },
@@ -71,7 +66,6 @@ impl Linter {
                 descriptor,
                 scripts,
                 &mut result,
-                None,
                 None,
             );
             if super::super::css_rules::has_active_builtin_css_rules(self) {
@@ -95,10 +89,9 @@ impl Linter {
             "patina.sfc.descriptor.template_l1_parse_lower",
             L2Template::lower(&allocator, &template.content)
         );
-        let parser = Parser::new(&allocator, &template.content);
-        let (root, _legacy_parse_errors, template_syntax) = profile!(
+        let (root, _legacy_parse_errors) = profile!(
             "patina.sfc.descriptor.template_parse",
-            super::super::script_rules::parse_template_for_script_rules(self, parser)
+            Parser::new(&allocator, &template.content).parse()
         );
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
@@ -154,7 +147,6 @@ impl Linter {
                 } else {
                     TemplateAnalysis::Lazy
                 },
-                template_syntax: template_syntax.as_ref(),
             },
             scripts,
         );

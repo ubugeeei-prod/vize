@@ -52,6 +52,7 @@ pub(super) fn try_emit_l2_vdom<'a>(
         provenance: Default::default(),
         scopes: l2.scopes,
         texts: Default::default(),
+        consumed_expressions: Default::default(),
         if_facts: Default::default(),
         for_facts: Default::default(),
         wrappers: Default::default(),

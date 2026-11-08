@@ -1,9 +1,8 @@
-use super::{Capture, MAX_DEPTH, TemplateReferenceGapKind};
-use vize_armature::parser::TemplateSyntaxRecord;
+use super::{Capture, MAX_DEPTH, SyntaxFacts, TemplateReferenceGapKind};
 use vize_l0::Span;
 use vize_relief::{ElementNode, ExpressionNode, IfBranchNode, PropNode, TemplateChildNode};
 
-impl Capture<'_, '_> {
+impl<'facts, 'source, F: SyntaxFacts<'source>> Capture<'facts, 'source, F> {
     pub(super) fn walk(&mut self, children: &[TemplateChildNode<'_>], depth: usize) {
         if depth > MAX_DEPTH {
             self.traversal_refused = true;
@@ -125,7 +124,7 @@ impl Capture<'_, '_> {
             }
         }
         for prop in &element.props {
-            let record: Option<&TemplateSyntaxRecord<'_>> = match prop {
+            let record: Option<&F::Record> = match prop {
                 PropNode::Directive(directive) if directive.name == "slot" => {
                     let Some(value) = &directive.exp else {
                         continue;

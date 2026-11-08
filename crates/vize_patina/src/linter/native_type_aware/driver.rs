@@ -71,15 +71,12 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let script_allocator = oxc_allocator::Allocator::default();
     let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
-    let mut template_syntax = None;
     let template_ast = descriptor.template.as_ref().map(|template| {
         let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
-        let parser = TemplateParser::new(&allocator, &template.content);
-        let (root, _legacy_parse_errors, syntax) = profile!(
+        let (root, _legacy_parse_errors) = profile!(
             "patina.type_aware.template_parse",
-            super::super::script_rules::parse_template_for_script_rules(linter, parser)
+            TemplateParser::new(&allocator, &template.content).parse()
         );
-        template_syntax = syntax;
         let has_fatal_parse_errors =
             Linter::has_fatal_l1_template_parse_errors(l2.surface_errors());
         (root, l2, template.loc.start as u32, has_fatal_parse_errors)
@@ -136,7 +133,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                     } else {
                         TemplateAnalysis::Precomputed(&analysis)
                     },
-                    template_syntax: template_syntax.as_ref(),
                 },
                 &scripts,
             )
@@ -161,7 +157,6 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             descriptor,
             &scripts,
             &mut result,
-            None,
             None,
         );
         result
