@@ -35,7 +35,7 @@ selection for that project, not authored syntax or a passing build. The ledger s
 evidence-backed Vue
 generations, API styles, Nuxt macros, and test oracles. Capability presence, exercised behavior, and runtime verification are independent levels:
 finding source text never promotes a project to runtime coverage. Run
-`rust-script tools/commands/fixtures/fixture-compatibility-report.rs` for the deterministic coverage report. Any
+`node tools/support/compat/fixtures/fixture-compatibility-report.ts` for the deterministic coverage report. Any
 unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.
 
 `davinci-remarks-baseline.folio` is the TS-32 optimization-remarks baseline (Davinci P3-13): every

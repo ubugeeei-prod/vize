@@ -116,6 +116,7 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
         module_exports,
         star_projection,
         dependency_syntax_facts,
+        props_fallback,
     } = left;
     assert_eq!(diagnostic_route, &right.diagnostic_route);
     assert_debug_equal(file, &right.file);
@@ -133,6 +134,7 @@ fn assert_registered_equal(left: &RegisteredFile, right: &RegisteredFile) {
     assert_eq!(empty_module_exports, &right.empty_module_exports);
     assert_eq!(module_exports, &right.module_exports);
     assert_eq!(dependency_syntax_facts, &right.dependency_syntax_facts);
+    assert_eq!(props_fallback, &right.props_fallback);
     let star = |value: &Option<super::super::star_exports::StarProjection>| {
         value
             .as_ref()

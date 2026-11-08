@@ -132,10 +132,10 @@ test("all shipping platforms retain target and ABI guards on accelerated runners
     );
   }
   const native = readRepoFile(".github", "actions", "build-release-native", "action.yml");
-  assert.equal((native.match(/verify-glibc-symbols\.rs --max 2\.36/g) ?? []).length, 2);
+  assert.equal((native.match(/verify-glibc-symbols\.ts --max 2\.36/g) ?? []).length, 2);
   const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
-  assert.match(cli, /verify-musl-cli-binary\.rs/);
-  assert.match(cli, /configure-zig-musl-linkers\.rs/);
+  assert.match(cli, /verify-musl-cli-binary\.ts/);
+  assert.match(cli, /configure-zig-musl-linkers\.ts/);
 });
 
 test("every produced native artifact is guarded against missing output", () => {

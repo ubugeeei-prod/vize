@@ -3,12 +3,9 @@ use davinci_test_support::script_block_project as project;
 
 /// The shape vue-tsc emits for a generic SFC in a library (reka-ui's
 /// `PinInputRoot`): a function whose return carries `__ctx`.
-const LIBRARY: &str = r#"type PinValue<Type extends 'text' | 'number'> = [Type] extends ['number'] ? number[] : string[];
-export declare const PinRoot: <Type extends 'text' | 'number' = 'text'>(
-  props: import('vue').PublicProps & { type?: Type; modelValue?: PinValue<Type> | null; mask?: boolean } & (typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P } ? P : {}),
-  ctx?: any,
-) => import('vue').VNode & { __ctx?: { props: { type?: Type } } };
-"#;
+const LIBRARY: &str = include_str!(
+    "../../../../tests/_fixtures/differential/typechecker/generic-library-unknown-props-11628/library.ts.txt"
+);
 
 /// Nuxt UI's PinInput forwards its own generic value to the library root.
 /// vue-tsc infers the root's `Type` from the call; extracting its props
@@ -182,5 +179,47 @@ const model = defineModel<TBaz>({ required: true });
             "src/Wrong.vue(11,38): error TS2322: Type 'number' is not assignable to type 'string'.",
             "src/Wrong.vue(11,63): error TS2322: Type 'TBaz' is not assignable to type 'never'.\nType 'string' is not assignable to type 'never'.",
         ]
+    );
+}
+
+/// #11628: vize's checker declares vue-tsc's props fallback only where vue-tsc
+/// would, so `checkUnknownProps` rejects an unknown attribute on a vue-tsc
+/// generic library component exactly as vue-tsc does.
+#[test]
+fn checked_unknown_props_reach_generic_library_children() {
+    let pin = include_str!(
+        "../../../../tests/_fixtures/differential/typechecker/generic-library-unknown-props-11628/Pin.vue.txt"
+    );
+    let unknown = "src/Pin.vue(4,32): error TS2353: Object literal may only specify known properties, and '\"customAttr\"' does not exist in type 'VNodeProps & AllowedComponentProps & ComponentCustomProps & { type?: \"text\" | undefined; modelValue?: string[] | null | undefined; mask?: boolean | undefined; }'.";
+    let strict = include_str!(
+        "../../../../tests/_fixtures/differential/typechecker/generic-library-unknown-props-11628/tsconfig-strict.json.txt"
+    );
+    assert_eq!(
+        project::check(&[
+            ("tsconfig.json", strict),
+            ("src/library.ts", LIBRARY),
+            ("src/Pin.vue", pin)
+        ]),
+        [unknown]
+    );
+    let opted = include_str!(
+        "../../../../tests/_fixtures/differential/typechecker/generic-library-unknown-props-11628/PinOptIn.vue.txt"
+    );
+    let opted_unknown = unknown.replace("(4,32)", "(5,32)");
+    assert_eq!(
+        project::check(&[("src/library.ts", LIBRARY), ("src/Pin.vue", opted)]),
+        [opted_unknown.as_str()]
+    );
+    // vue-tsc's default leaves the attribute to fall through.
+    let open = include_str!(
+        "../../../../tests/_fixtures/differential/typechecker/generic-library-unknown-props-11628/tsconfig-open.json.txt"
+    );
+    assert_eq!(
+        project::check(&[
+            ("tsconfig.json", open),
+            ("src/library.ts", LIBRARY),
+            ("src/Pin.vue", pin)
+        ]),
+        [] as [String; 0]
     );
 }

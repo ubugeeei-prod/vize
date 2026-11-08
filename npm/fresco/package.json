@@ -36,6 +36,10 @@
       "import": "./dist/components/index.mjs",
       "types": "./dist/components/index.d.mts"
     },
+    "./ascii-font": {
+      "import": "./dist/ascii-font/index.mjs",
+      "types": "./dist/ascii-font/index.d.mts"
+    },
     "./composables": {
       "import": "./dist/composables/index.mjs",
       "types": "./dist/composables/index.d.mts"
@@ -43,6 +47,10 @@
     "./testing": {
       "import": "./dist/testing/index.mjs",
       "types": "./dist/testing/index.d.mts"
+    },
+    "./qr-code": {
+      "import": "./dist/qr-code/index.mjs",
+      "types": "./dist/qr-code/index.d.mts"
     }
   },
   "publishConfig": {

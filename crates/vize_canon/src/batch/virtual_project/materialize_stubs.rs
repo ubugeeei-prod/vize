@@ -94,7 +94,7 @@ impl VirtualProject {
         if self.needs_vue_jsx_reference() {
             content.push_str("/// <reference types=\"vue/jsx\" />\n");
         }
-        content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
+        content.push_str(self.shared_helpers_preamble());
         let path = self.shared_helpers_path();
         if let Some(parent) = path.parent() {
             ensure_dir(parent)?;

@@ -10,8 +10,6 @@ import { verifyForgeSecurity } from "./node-forge-laws.ts";
 import { assertNoPackageConsumers, protectedModule } from "./node-forge-consumers.ts";
 
 export const advisoryId = "GHSA-86w9-cpqp-85rv";
-export const patchPath = "patches/node-forge@1.4.0.patch";
-export const patchHash = "8877267668e88fba4baeb2b574509e2d13a9cff4170179473cb808be833d2b1b";
 export const rsaHash = "6632e195295ce76f6bb9131ee770dcd6cc1ee4ffac7906302208b00faf95a87f";
 const forgeHash = "e14fd9f01d2b55c47c76db2c790f5396e6c737a066baf02cdaabfc179b8c3413";
 const listhenHash = "9e1fc5a27ba0c408bad0ec59d376ba8bb1b7b27ff2cd451ed437b69331b84979";
@@ -20,7 +18,7 @@ const forgeIntegrity =
 const listhenIntegrity =
   "sha512-6nt/86SkqUQSLW1ofz8MxC6RhRMqOl3ONISe6qqvJ3xj09aJWQx6DhgSZpugs3PX4PXdOas/WD6A9jx6J2N19A==";
 const forgeRef = "1.4.1";
-const listhenRef = "1.10.1(@parcel/watcher@2.5.6)(srvx@0.11.15)";
+const listhenRef = "1.10.1(srvx@0.11.15)";
 
 function record(value: unknown): Record<string, unknown> {
   assert.ok(value && typeof value === "object" && !Array.isArray(value), "expected record");
@@ -170,17 +168,6 @@ export function assertNoDirectForge(source: string): void {
   assertNoPackageConsumers(source);
 }
 
-export function verifyPatchFile(root: string): void {
-  // Preserve the retired 1.4.0 backport as immutable historical evidence.
-  // Active installation identity is the unpatched upstream 1.4.1 package.
-  assert.equal(
-    createHash("sha256")
-      .update(fs.readFileSync(path.join(root, patchPath)))
-      .digest("hex"),
-    patchHash,
-  );
-}
-
 export function assertForgePackage(packageRoot: string): void {
   packageRoot = fs.realpathSync(packageRoot);
   const require = createRequire(path.join(packageRoot, "package.json"));
@@ -215,7 +202,6 @@ export function verifyInstalledForge(root: string): {
   assert.equal(documents.length, 2);
   assert.ok(documents.every((document) => document.errors.length === 0));
   assertForgeLock(workspaceDocument.toJS(), documents[1].toJS());
-  verifyPatchFile(root);
   const tracked = spawnSync("git", ["ls-files", "-z"], {
     cwd: root,
     encoding: "utf8",

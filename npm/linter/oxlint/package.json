@@ -57,17 +57,17 @@
     "@nuxt/eslint-config": "catalog:nuxt-eslint-oracle",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
-    "@typescript-eslint/parser": "8.65.0",
+    "@typescript-eslint/parser": "8.72.1",
     "@vizejs/native": "workspace:*",
     "ajv": "catalog:repo-tooling",
-    "eslint": "10.13.0",
-    "eslint-plugin-vue": "10.9.2",
+    "eslint": "10.14.0",
+    "eslint-plugin-vue": "10.12.0",
     "oxlint": "catalog:linting",
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
-    "vue-eslint-parser": "10.4.1"
+    "vue-eslint-parser": "10.4.2"
   },
   "optionalDependencies": {
     "@vizejs/native-darwin-arm64": "catalog:native-binaries",

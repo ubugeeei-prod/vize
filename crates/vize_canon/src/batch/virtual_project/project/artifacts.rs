@@ -37,6 +37,7 @@ impl VirtualProject {
             });
         }
         let shared_helpers_before = self.uses_shared_helpers();
+        let props_fallback_before = self.uses_props_fallback();
         self.incremental_source_nodes_rebuilt += 1;
         #[cfg(test)]
         {
@@ -79,6 +80,13 @@ impl VirtualProject {
             self.pre_rewrite_sources
                 .remove(&registered.file.virtual_path);
         }
+        self.props_fallback_files
+            .remove(&registered.file.virtual_path);
+        if registered.props_fallback {
+            self.props_fallback_files
+                .insert(registered.file.virtual_path.clone());
+        }
+        self.reconcile_props_fallback(props_fallback_before);
         // Re-registration must refresh the classification, not accumulate it.
         self.unchecked_javascript_files
             .remove(&registered.file.virtual_path);
@@ -144,6 +152,17 @@ impl VirtualProject {
             usize::from(previous.is_some_and(|file| file.source_map.sfc_map.is_some()));
     }
 
+    pub(crate) fn uses_props_fallback(&self) -> bool {
+        !self.props_fallback_files.is_empty()
+    }
+
+    fn reconcile_props_fallback(&mut self, before: bool) {
+        if before != self.uses_props_fallback() {
+            self.incremental_materialized_candidates
+                .insert(self.shared_helpers_path());
+        }
+    }
+
     fn reconcile_shared_helper_membership(&mut self, before: bool) {
         if before != self.uses_shared_helpers() {
             self.incremental_materialized_candidates
@@ -154,7 +173,9 @@ impl VirtualProject {
 
     pub(crate) fn remove_registered_source(&mut self, original_path: &Path) -> Vec<PathBuf> {
         let before = self.uses_shared_helpers();
+        let props_fallback_before = self.uses_props_fallback();
         let removed = self.remove_registered_source_inner(original_path);
+        self.reconcile_props_fallback(props_fallback_before);
         self.reconcile_shared_helper_membership(before);
         removed
     }
@@ -195,6 +216,7 @@ impl VirtualProject {
             self.original_contents.remove(&path);
             self.pre_rewrite_sources.remove(&path);
             self.unchecked_javascript_files.remove(&path);
+            self.props_fallback_files.remove(&path);
             removed.push(path);
         }
         for path in artifacts.passthrough_paths {

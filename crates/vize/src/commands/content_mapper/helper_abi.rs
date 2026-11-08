@@ -167,8 +167,10 @@ pub(super) fn installed_helpers(
             })
     };
     capability.core_types = qualified("./content-mapper-helpers");
-    capability.virtual_module =
-        capability.core_types && qualified("./virtual-ts") && qualified("./virtual-ts-checker");
+    capability.virtual_module = capability.core_types
+        && qualified("./virtual-ts")
+        && qualified("./virtual-ts-checker")
+        && qualified("./virtual-ts-checker-strict");
     fingerprint.update([
         u8::from(capability.core_types),
         u8::from(capability.virtual_module),
@@ -197,6 +199,7 @@ fn supports_sdk_resolution(
         "vize/content-mapper-helpers",
         "vize/virtual-ts",
         "vize/virtual-ts-checker",
+        "vize/virtual-ts-checker-strict",
     ];
     if compiler_options.get("noResolve") == Some(&Value::Bool(true)) {
         return false;
