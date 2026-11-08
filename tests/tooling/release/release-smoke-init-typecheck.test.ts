@@ -24,10 +24,8 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
   };
   replaceOnce(
     [
-      'const typescriptDriver = process.env.VIZE_RELEASE_SMOKE_DRIVER === "typescript";',
-      'const command = typescriptDriver ? process.execPath : "rust-script";',
-      'const entry = `tools/commands/release/npm/smoke-release-install.${typescriptDriver ? "ts" : "rs"}`;',
-      'const prefix = typescriptDriver ? [] : ["--force"];',
+      "const command = process.execPath;",
+      'const entry = "tools/commands/release/npm/smoke-release-install.ts";',
       "",
     ].join("\n"),
     "",
@@ -72,7 +70,7 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
   // and refusal check. Only the reviewed driver selector and Windows canonical
   // roots change. An altered option cannot disappear behind the inverse.
   const calls = [
-    `    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", cli, platform], {
+    `    const result = spawnSync(command, [entry, "--runtime-checks", cli, platform], {
       cwd: root,
       encoding: "utf8",
       timeout: 180_000,
@@ -89,7 +87,7 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
       },
     });
 `,
-    `    const result = spawnSync(command, [...prefix, entry, "--runtime-checks", packageRoot], {
+    `    const result = spawnSync(command, [entry, "--runtime-checks", packageRoot], {
       cwd: root,
       encoding: "utf8",
       timeout: 180_000,
@@ -320,11 +318,8 @@ test("the driver successor inverse refuses undeclared dispatcher or invocation c
     "utf8",
   );
   for (const [before, after] of [
-    [
-      'const command = typescriptDriver ? process.execPath : "rust-script";',
-      'const command = "npm";',
-    ],
-    ['[...prefix, entry, "--runtime-checks", cli, platform]', "[...prefix, entry, cli]"],
+    ["const command = process.execPath;", 'const command = "npm";'],
+    ['[entry, "--runtime-checks", cli, platform]', "[entry, cli]"],
     ["timeout: 180_000", "timeout: 360_000"],
     ['CORSA_PATH: "/unrelated/host/corsa"', "CORSA_PATH: process.env.CORSA_PATH"],
     ['TSRS_PATH: "/unrelated/host/tsrs"', "TSRS_PATH: process.env.TSRS_PATH"],
