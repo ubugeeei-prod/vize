@@ -54,9 +54,11 @@ fn identity_script_reuses_initial_dependency_syntax_once() {
             .is_none(),
         "the one-shot facts must not become retained project memory"
     );
-    let registered = project.registered_original_paths_sorted();
-    assert!(registered.contains(&dependency), "{registered:?}");
-    assert!(registered.contains(&reference), "{registered:?}");
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![dependency, entry, reference],
+        "reachability must register the complete dependency graph exactly once",
+    );
     let _ = fs::remove_dir_all(&root);
 }
 
@@ -308,8 +310,11 @@ fn an_editor_paths_declaration_is_mirrored_but_not_a_program_root() {
     project.register_path(&vue_path).unwrap();
     project.register_reachable_dependencies().unwrap();
 
-    let registered = project.registered_original_paths_sorted();
-    assert!(registered.contains(&declaration), "{registered:?}");
+    assert_eq!(
+        project.registered_original_paths_sorted(),
+        vec![vue_path, declaration.clone()],
+        "the editor mirror must include only the authored SFC and its declaration",
+    );
     assert!(!project.is_declaration_root(&declaration));
     assert_eq!(
         project
