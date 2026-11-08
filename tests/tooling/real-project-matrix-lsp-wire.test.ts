@@ -296,6 +296,30 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     uses: "./.github/actions/setup-wild-http-recovery",
   });
   wild.uses = oldWild.uses;
+  // These fixture commands moved from the archived Rust scripts to their
+  // qualified Node successors. Authenticate each complete command before
+  // restoring the archived steps for the whole-workflow comparison.
+  for (const [name, run] of [
+    [
+      "Install pinned typecheck baseline dependencies",
+      "node --experimental-strip-types tools/commands/fixtures/typecheck-dependency-prepare.ts \\\n" +
+        '  --output-dir "$FIXTURE_REPORT_DIR" \\\n' +
+        '  --shard-index "$FIXTURE_SHARD_INDEX" \\\n' +
+        '  --shard-count "$FIXTURE_SHARD_COUNT" \\\n' +
+        "  --timeout-ms 600000\n",
+    ],
+    [
+      "Audit formatter waiver owners",
+      "node tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts \\\n" +
+        '  --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"\n',
+    ],
+  ] as const) {
+    const oldStep = oldSteps.find((step) => step.name === name);
+    const step = steps.find((candidate) => candidate.name === name);
+    assert.ok(oldStep && step);
+    assert.deepEqual(step, { ...oldStep, run });
+    step.run = oldStep.run;
+  }
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);
