@@ -4,7 +4,7 @@
 
 // Layout
 export { Box, type BoxProps } from "./Box.js";
-export { Spacer } from "./Spacer.js";
+export { default as Spacer } from "./FrescoSpacer.vue";
 export { Divider, type DividerProps } from "./Divider.js";
 export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
 export { Grid, type GridProps } from "./Grid.js";
@@ -21,9 +21,11 @@ export {
 
 // Text
 export { Text, type TextProps } from "./Text.js";
-export { Newline, type NewlineProps } from "./Newline.js";
+export { default as Newline } from "./FrescoNewline.vue";
+export type { NewlineProps } from "./text-utility-types.js";
 export { Static, type StaticProps } from "./Static.js";
-export { Transform, type TransformProps } from "./Transform.js";
+export { default as Transform } from "./FrescoTransform.vue";
+export type { TransformProps } from "./text-utility-types.js";
 export { Code, type CodeProps } from "./Code.js";
 export { Link, type LinkProps } from "./Link.js";
 
