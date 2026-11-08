@@ -40,6 +40,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `opinionated/a11y/heading-levels` lint rule.
 pub struct HeadingLevels;
 
 struct HeadingInfo {

@@ -75,8 +75,8 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
 
     /// Current element being visited.
     ///
-    /// The current element is pushed before [`MarkupRule::enter_element`] and
-    /// popped after [`MarkupRule::exit_element`], matching the legacy template
+    /// The current element is pushed before [`super::MarkupRule::enter_element`] and
+    /// popped after [`super::MarkupRule::exit_element`], matching the legacy template
     /// visitor's [`LintContext`] element-stack timing.
     #[inline]
     pub fn current_element(&self) -> Option<MarkupElement<'a>> {

@@ -53,6 +53,7 @@ impl FactConsumer for NoMutatingProps {
 }
 
 impl NoMutatingProps {
+    /// Create the rule with the configured mutation exceptions.
     pub fn new(options: NoMutatingPropsOptions) -> Self {
         Self {
             options: options.into(),

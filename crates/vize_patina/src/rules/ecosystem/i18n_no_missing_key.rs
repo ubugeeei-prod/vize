@@ -22,6 +22,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ecosystem/i18n-no-missing-key` lint rule.
 pub struct VueI18nNoMissingKey;
 
 impl Rule for VueI18nNoMissingKey {

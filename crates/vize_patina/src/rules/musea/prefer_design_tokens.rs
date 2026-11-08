@@ -74,10 +74,12 @@ pub struct PreferDesignTokens {
 }
 
 impl PreferDesignTokens {
+    /// Create the rule with the design-token lookup used for replacements.
     pub fn new(config: PreferDesignTokensConfig) -> Self {
         Self { config }
     }
 
+    /// Return the static registration metadata for this rule.
     pub fn meta() -> &'static MuseaRuleMeta {
         &META
     }

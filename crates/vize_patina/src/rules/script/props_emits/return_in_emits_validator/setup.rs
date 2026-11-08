@@ -18,10 +18,15 @@ use super::{ScriptLintResult, check_emits_object};
 /// Ownership evidence for the normal script block, distinct from its absence.
 #[derive(Clone, Copy)]
 pub enum EmitsModuleScript<'a> {
+    /// The SFC has no normal `<script>` block.
     Absent,
+    /// A normal script exists but could not be parsed safely.
     Unavailable,
+    /// The normal script was parsed and can provide macro-ownership evidence.
     Parsed {
+        /// Parsed normal-script program.
         program: &'a Program<'a>,
+        /// Byte offset of the script block within the SFC source.
         offset: usize,
     },
 }
