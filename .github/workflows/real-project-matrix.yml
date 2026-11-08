@@ -165,7 +165,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         run: |
-          rust-script tools/commands/fixtures/typecheck-dependency-prepare.rs \
+          node --experimental-strip-types tools/commands/fixtures/typecheck-dependency-prepare.ts \
             --output-dir "$FIXTURE_REPORT_DIR" \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \

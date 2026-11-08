@@ -241,7 +241,10 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
       dependencyIndex < waiverAuditIndex &&
       waiverAuditIndex < runIndex,
   );
-  assert.match(dependency.run ?? "", /tools\/commands\/fixtures\/typecheck-dependency-prepare\.rs/);
+  assert.match(
+    dependency.run ?? "",
+    /node --experimental-strip-types tools\/commands\/fixtures\/typecheck-dependency-prepare\.ts/,
+  );
   assert.match(dependency.run ?? "", /--output-dir "\$FIXTURE_REPORT_DIR"/);
   assert.match(dependency.run ?? "", /--shard-index "\$FIXTURE_SHARD_INDEX"/);
   assert.match(dependency.run ?? "", /--shard-count "\$FIXTURE_SHARD_COUNT"/);
