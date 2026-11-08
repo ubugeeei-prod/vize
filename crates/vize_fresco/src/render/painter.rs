@@ -396,10 +396,12 @@ mod tests {
         let mut buffer = Buffer::new(8, 1);
         Painter::new(&mut buffer).paint_tree(&tree);
 
-        let row: String = (0..8)
-            .map(|x| buffer.get(x, 0).unwrap().symbol.as_str())
-            .collect();
-        assert_eq!(row, " bcd    ");
+        for (x, symbol) in [" ", "b", "c", "d", " ", " ", " ", " "]
+            .into_iter()
+            .enumerate()
+        {
+            assert_eq!(buffer.get(x as u16, 0).unwrap().symbol.as_str(), symbol);
+        }
     }
 
     #[test]
