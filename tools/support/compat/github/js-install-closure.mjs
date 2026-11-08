@@ -33,6 +33,14 @@ const inputs = [
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 const hashes = (root) =>
   Object.fromEntries(inputs.map((file) => [file, digest(readFileSync(resolve(root, file)))]));
+
+export function declaredWebpackSourcesVersion(root = observer) {
+  const manifest = JSON.parse(readFileSync(resolve(root, "npm/builder/shared/package.json")));
+  const version = manifest.dependencies?.["webpack-sources"];
+  assert.match(version ?? "", /^\d+\.\d+\.\d+$/, "exact webpack-sources dependency");
+  return version;
+}
+
 const git = (root, args) =>
   execFileSync("git", args, {
     cwd: root,
@@ -149,6 +157,7 @@ async function capture(role, directory, destination) {
   }
   assert.equal(existsSync(resolve(root, "npm/builder/shared/node_modules")), false);
   const originalInputs = hashes(root);
+  const expectedIssuerVersion = declaredWebpackSourcesVersion(root);
   const manager = run("package-manager", "vp", ["env", "exec", "pnpm", "--version"]);
   assert.equal(manager.status, 0, manager.stderr);
   assert.equal(manager.stdout.trim(), "12.1.0");
@@ -218,7 +227,7 @@ async function capture(role, directory, destination) {
     assert.match(tests.stdout + tests.stderr, /Cannot find package 'webpack-sources'/);
   } else {
     assert.equal(probe.status, 0, probe.stderr);
-    assert.equal(issuer.version, "3.5.1");
+    assert.equal(issuer.version, expectedIssuerVersion);
     assert.equal(tests.status, 0, tests.stdout + tests.stderr);
   }
   assert.deepEqual(hashes(root), originalInputs, "frozen install preserves source and lock bytes");
@@ -256,6 +265,7 @@ async function capture(role, directory, destination) {
 export function compareInstallClosure(directory, environment = process.env) {
   const context = githubContext(environment);
   const authority = currentInstallSource();
+  const expectedIssuerVersion = declaredWebpackSourcesVersion();
   assert.equal(authority.source.revision, context.githubSha, "current observer source");
   const packets = ["before", "after"].map((role) => {
     const packet = JSON.parse(readFileSync(resolve(directory, role, "qualification.json")));
@@ -295,7 +305,7 @@ export function compareInstallClosure(directory, environment = process.env) {
   for (const key of ["event", "triggerHead", "node", "packageManager", "installedPackageManager"])
     assert.equal(after[key], before[key], key);
   assert.equal(before.issuer.code, "ERR_MODULE_NOT_FOUND");
-  assert.equal(after.issuer.version, "3.5.1");
+  assert.equal(after.issuer.version, expectedIssuerVersion);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

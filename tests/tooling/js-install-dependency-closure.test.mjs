@@ -9,6 +9,7 @@ import { jsInstallFilters } from "../../tools/support/compat/github/install-js-c
 import {
   compareInstallClosure,
   currentInstallSource,
+  declaredWebpackSourcesVersion,
   historicalInstaller,
   inspectInstallRecipe,
   prepareInstallRecipe,
@@ -127,6 +128,7 @@ void test("the pinned package manager selects private transitive dependencies fo
 void test("paired install receipts are bound to the current event rather than each other's labels", () => {
   const fixture = mkdtempSync(join(tmpdir(), "vize-install-authority-"));
   const authority = currentInstallSource();
+  const expectedIssuerVersion = declaredWebpackSourcesVersion();
   const actor = authority.source.revision;
   const trigger = "b".repeat(40);
   const eventFile = join(fixture, "event.json");
@@ -153,7 +155,7 @@ void test("paired install receipts are bound to the current event rather than ea
     issuer:
       role === "before"
         ? { status: 1, code: "ERR_MODULE_NOT_FOUND" }
-        : { status: 0, version: "3.5.1" },
+        : { status: 0, version: expectedIssuerVersion },
     tests: { status: role === "before" ? 1 : 0 },
   }));
   const save = (values) => {
