@@ -416,6 +416,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let rootElement: FrescoElement | null = null;
   let mounted = false;
   let mounting = false;
+  let pendingMount: Promise<void> | null = null;
   let hasMountedSuccessfully = false;
   let running = false;
   let needsRender = true;
@@ -458,71 +459,77 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     options.onRender?.(metrics);
   }
 
-  async function mount() {
-    if (mounted || mounting) return;
+  function mount(): Promise<void> {
+    if (mounted) return Promise.resolve();
+    if (pendingMount) return pendingMount;
     mounting = true;
-
-    try {
-      // Plugins run before terminal initialization so installation failures
-      // cannot leave raw mode, IME, or cursor state enabled.
-      const app = renderer.createApp(componentFromRoot(rootComponent));
-      for (const install of pluginInstallers) install(app);
-
-      const n = interactive ? await loadNative() : null;
-
-      if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
-
-      const info = n?.getTerminalInfo() ?? {
-        width: streamsContext.stdout.columns ?? 80,
-        height: streamsContext.stdout.rows ?? 24,
-      };
-      appContext = createAppContext({
-        width: info.width,
-        height: info.height,
-        exit: (value) => {
-          void unmount(value);
-        },
-        render,
-        clear,
-        waitUntilRenderFlush,
-        stdout: streamsContext.stdout,
+    pendingMount = Promise.resolve()
+      .then(performMount)
+      .finally(() => {
+        mounting = false;
+        pendingMount = null;
       });
-      focusManager = createFocusManager();
-      app.provide(APP_KEY, appContext);
-      app.provide(FOCUS_KEY, focusManager);
-      app.provide(SCREEN_READER_KEY, screenReaderEnabled);
-      app.provide(STREAMS_KEY, streamsContext);
-      app.provide(
-        CURSOR_KEY,
-        createCursorContext((position) => {
-          hasCursorOverride = true;
-          cursorPosition = position;
-          needsRender = true;
-        }),
-      );
+    return pendingMount;
+  }
 
-      // Create a root element for mounting
-      rootElement = createRootElement();
+  async function performMount(): Promise<void> {
+    // Plugins run before terminal initialization so installation failures
+    // cannot leave raw mode, IME, or cursor state enabled.
+    const app = renderer.createApp(componentFromRoot(rootComponent));
+    for (const install of pluginInstallers) install(app);
 
-      patchConsoleMethods();
-      try {
-        app.mount(rootElement);
-      } catch (error) {
-        restoreConsoleMethods();
-        throw error;
-      }
-      vueApp = app;
+    const n = interactive ? await loadNative() : null;
 
-      mounted = true;
-      hasMountedSuccessfully = true;
-      running = true;
-      needsRender = true;
+    if (n) initializeTerminal(n, { alternateScreen: options.alternateScreen === true, mouse });
 
-      // Start event loop
-      void eventLoop();
-    } finally {
-      mounting = false;
+    const info = n?.getTerminalInfo() ?? {
+      width: streamsContext.stdout.columns ?? 80,
+      height: streamsContext.stdout.rows ?? 24,
+    };
+    appContext = createAppContext({
+      width: info.width,
+      height: info.height,
+      exit: (value) => {
+        void unmount(value);
+      },
+      render,
+      clear,
+      waitUntilRenderFlush,
+      stdout: streamsContext.stdout,
+    });
+    focusManager = createFocusManager();
+    app.provide(APP_KEY, appContext);
+    app.provide(FOCUS_KEY, focusManager);
+    app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+    app.provide(STREAMS_KEY, streamsContext);
+    app.provide(
+      CURSOR_KEY,
+      createCursorContext((position) => {
+        hasCursorOverride = true;
+        cursorPosition = position;
+        needsRender = true;
+      }),
+    );
+
+    // Create a root element for mounting
+    rootElement = createRootElement();
+
+    patchConsoleMethods();
+    try {
+      app.mount(rootElement);
+    } catch (error) {
+      restoreConsoleMethods();
+      throw error;
     }
+    vueApp = app;
+
+    mounted = true;
+    hasMountedSuccessfully = true;
+    running = true;
+    needsRender = true;
+
+    // Start event loop
+    void eventLoop();
   }
 
   function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
@@ -589,6 +596,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   async function waitUntilRenderFlush(): Promise<void> {
+    if (pendingMount) await pendingMount;
     await nextTick();
     if (!needsRender) return;
     needsRender = false;
