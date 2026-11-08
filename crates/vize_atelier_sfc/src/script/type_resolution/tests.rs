@@ -95,8 +95,20 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
             cstr!("Inherited"),
             String::from("Missing & { value?: string }"),
         ),
+        (cstr!("BaseKeys"), String::from("'first' | 'second'")),
+        (cstr!("ChainedKeys"), String::from("BaseKeys")),
+        (cstr!("Keys"), String::from("'first' | 'second'")),
+        (cstr!("MissingAlias"), String::from("MissingKeys")),
+        (cstr!("CycleA"), String::from("CycleB")),
+        (cstr!("CycleB"), String::from("CycleA")),
     ]);
-    for expression in ["{ value?: Missing }", "Props", "Record<'value', Missing>"] {
+    for expression in [
+        "{ value?: Missing }",
+        "Props",
+        "Record<'value', Missing>",
+        "Record<Keys, Missing>",
+        "Record<ChainedKeys, Missing>",
+    ] {
         assert_eq!(
             unresolved_property_shape_references(expression, &FxHashMap::default(), &aliases),
             Vec::<String>::new()
@@ -106,13 +118,23 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Missing",
         "Inherited",
         "Partial<Missing>",
+        "Record<MissingKeys, string>",
+        "Record<MissingAlias, string>",
+        "Record<CycleA, string>",
         "Unknown | Missing",
         "{ value?: string } | Missing",
     ] {
         let expected = if expression == "Unknown | Missing" {
             vec![cstr!("Unknown"), cstr!("Missing")]
         } else if expression == "Partial<Missing>" {
-            vec![cstr!("Missing"), cstr!("Partial")]
+            vec![cstr!("Missing")]
+        } else if matches!(
+            expression,
+            "Record<MissingKeys, string>" | "Record<MissingAlias, string>"
+        ) {
+            vec![cstr!("MissingKeys")]
+        } else if expression == "Record<CycleA, string>" {
+            vec![cstr!("CycleA")]
         } else {
             vec![cstr!("Missing")]
         };
@@ -121,4 +143,14 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
             expected
         );
     }
+
+    assert_eq!(
+        resolve_type_to_object_body(
+            "Record<ChainedKeys, string>",
+            &FxHashMap::default(),
+            &aliases,
+        )
+        .as_deref(),
+        Some("first: string; second: string")
+    );
 }

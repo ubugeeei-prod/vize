@@ -1,4 +1,4 @@
-//! Reject unresolved imports that determine the typed props object shape.
+//! Reject unresolved references that determine the typed props object shape.
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{TSTypeName, TSTypeReference};
@@ -27,13 +27,7 @@ impl<'a> Visit<'a> for References {
 }
 
 impl ScriptCompileContext {
-    pub(crate) fn validate_imported_macro_types(
-        &self,
-        imports: &[(String, String)],
-    ) -> Result<(), String> {
-        if imports.is_empty() {
-            return Ok(());
-        }
+    pub(crate) fn validate_macro_types(&self, imports: &[(String, String)]) -> Result<(), String> {
         let Some(type_args) = self
             .macros
             .define_props
@@ -42,8 +36,10 @@ impl ScriptCompileContext {
         else {
             return Ok(());
         };
-        for reference in
+        if let Some(reference) =
             unresolved_property_shape_references(type_args, &self.interfaces, &self.type_aliases)
+                .into_iter()
+                .next()
         {
             // Only an unresolved property-shape expression needs AST reference discovery.
             // A resolved object body and its value types never enter this fallback.
@@ -59,6 +55,7 @@ impl ScriptCompileContext {
                     ));
                 }
             }
+            return Err(cstr!("Cannot resolve macro type `{reference}`."));
         }
         Ok(())
     }

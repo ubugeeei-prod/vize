@@ -1,0 +1,10 @@
+<script setup lang="ts">
+interface Base {
+  x: string
+  y?: number
+}
+type Props = Partial<Omit<Base, 'x'>> & { label?: string }
+defineProps<Props>()
+</script>
+
+<template><p>{{ label }} {{ y }}</p></template>
