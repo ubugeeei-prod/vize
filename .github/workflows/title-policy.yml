@@ -28,23 +28,16 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: |
-            .github/actions/setup-rust-script
-            tools/commands/ci/github/issue-pr-title-policy.rs
-            tools/support/Cargo.toml
-            tools/support/lib.rs
-            tools/support/common.rs
-            tools/support/editors
-            tools/support/fixtures
-            tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json
+            tools/commands/ci/github/issue-pr-title-policy.ts
           sparse-checkout-cone-mode: false
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: stable }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.14.0"
+          package-manager-cache: false
 
       - name: Apply issue and PR title policy
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: rust-script tools/commands/ci/github/issue-pr-title-policy.rs
+        run: node tools/commands/ci/github/issue-pr-title-policy.ts
