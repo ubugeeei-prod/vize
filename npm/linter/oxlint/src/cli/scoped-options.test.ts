@@ -145,3 +145,55 @@ void test("alternate inspection and suppression modes refuse before stock select
     assert.equal(fs.readFileSync(config, "utf8"), '{"ignorePatterns":[]}\n');
   }
 });
+
+void test("Windows transport keeps selected Vue files out of the command line", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-scoped-windows-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const files = Array.from({ length: 400 }, (_, index) =>
+    path.join(root, `Component${String(index + 1).padStart(3, "0")}.vue`),
+  );
+  for (const file of files) fs.writeFileSync(file, "<template />\n");
+  const config = path.join(root, "config.json");
+  fs.writeFileSync(config, '{"ignorePatterns":["**/oxlint-vize-*/**"]}\n');
+  const selected = files.map((file) => path.basename(file)).sort().join("\n") + "\n";
+  let selections = 0;
+  const result = await prepareScopedSelection(
+    root,
+    ["-c", config, "--ignore-pattern", "ignored/**", "."],
+    files,
+    async (args) => {
+      if (args.includes("--debug")) {
+        selections += 1;
+        if (selections <= 2) return { status: 0, stdout: selected, stderr: "" };
+        const target = args.at(-1);
+        assert.ok(target);
+        const inside = path.join(target, "inside");
+        const copies = fs
+          .readdirSync(inside)
+          .map((file) => path.join(inside, file))
+          .sort()
+          .join("\n");
+        return { status: 0, stdout: copies + "\n", stderr: "" };
+      }
+      return { status: 0, stdout: "", stderr: "" };
+    },
+    new Set(files),
+    "win32",
+  );
+  assert.ok(result && "prepared" in result);
+  try {
+    assert.equal(result.args.filter((arg) => arg.endsWith(".vue")).length, 0);
+    assert.equal(result.args.includes("--ignore-pattern"), false);
+    assert.equal(result.args.some((arg) => arg.startsWith("--ignore-pattern=")), false);
+    const target = result.args.at(-1);
+    assert.ok(target);
+    assert.equal(fs.lstatSync(target).isDirectory(), true);
+    const configIndex = result.args.findIndex((arg) => arg === "-c" || arg === "--config");
+    assert.notEqual(configIndex, -1);
+    assert.deepEqual(JSON.parse(fs.readFileSync(result.args[configIndex + 1], "utf8")), {
+      ignorePatterns: [],
+    });
+  } finally {
+    result.prepared.cleanup();
+  }
+});
