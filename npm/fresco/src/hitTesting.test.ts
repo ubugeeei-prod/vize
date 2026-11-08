@@ -50,6 +50,24 @@ test("hit testing selects the topmost node within ancestor overflow clips", () =
   );
   visible.unmount();
 
+  const visibleOverride = mountFresco(() =>
+    h("box", { style: { overflow: "visible", overflowX: "hidden" } }, [
+      h("text", { text: "outside" }),
+    ]),
+  );
+  const visibleOverrideRoot = firstChild(visibleOverride);
+  const visibleOverrideChild = visibleOverrideRoot.children[0];
+  assert.ok(visibleOverrideChild);
+  assert.equal(
+    visibleOverride.renderer.hitTest(visibleOverrideRoot, 4, 0, [
+      { id: visibleOverrideRoot.id, x: 0, y: 0, width: 4, height: 1 },
+      { id: visibleOverrideChild.id, x: 4, y: 0, width: 2, height: 1 },
+    ]),
+    visibleOverrideChild,
+    "explicit visible overflow takes precedence over axis aliases",
+  );
+  visibleOverride.unmount();
+
   const axisAlias = mountFresco(() =>
     h("box", { style: { overflowX: "hidden" } }, [h("text", { text: "below" })]),
   );
