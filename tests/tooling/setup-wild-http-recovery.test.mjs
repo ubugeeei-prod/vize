@@ -53,7 +53,7 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     '  cargo install wild-linker --version "0.9.0" --locked --root "$cargo_root" || cargo_status=$?',
     '  if [[ "$cargo_status" -ne 0 ]]; then',
     '    rm -rf "$cargo_root"',
-    '    rm -f "${archive}"',
+    `    rm -f "\${archive}"`,
     '    exit "$cargo_status"',
     "  fi",
     '  install -m 0755 "$cargo_root/bin/wild" "${RUNNER_TEMP}/wild-install/wild"',
