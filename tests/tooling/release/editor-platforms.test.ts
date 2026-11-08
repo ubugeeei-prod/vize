@@ -142,7 +142,7 @@ test("platform providers install the extension's packager like the universal VSI
   );
 });
 
-test("provider packaging keeps Rust setup for only the universal VSIX", () => {
+test("provider packaging keeps Rust setup for universal and host VSIX tasks", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "typescript-provider-vsix.yml"));
   type Step = { name?: string; uses?: string; run?: string };
   const packageSteps = workflow.jobs.package.steps as Step[];
@@ -157,7 +157,11 @@ test("provider packaging keeps Rust setup for only the universal VSIX", () => {
   assert.ok(packageSteps.findIndex(rustScript) < universal);
   assert.ok(universal < platform);
   assert.match(packageSteps[platform]?.run ?? "", /typescript-provider\/package\.ts/);
-  assert.ok(!workflow.jobs["installed-extension"].steps.some(rustScript));
+  const hostSteps = workflow.jobs["installed-extension"].steps as Step[];
+  const check = hostSteps.findIndex(
+    (step) => step.run === "vp run --workspace-root check:vscode-extension",
+  );
+  assert.ok(hostSteps.findIndex(rustScript) < check);
 });
 
 test("editor publishers outwait registry validation and Open VSX maintenance", () => {
