@@ -8,6 +8,7 @@ import {
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 
 const uiRoot = new URL("../../npm/ui/", import.meta.url);
+const npmRoot = new URL("../../npm/", import.meta.url);
 
 const packages = [
   {
@@ -37,6 +38,21 @@ const packages = [
   {
     name: "@vizejs/devtools",
     source: new URL("../../npm/devtools/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/unplugin",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 20,
+    minimumOptionalMembers: 30,
+    entrypoints: [
+      new URL("builder/unplugin/src/index.ts", npmRoot),
+      new URL("builder/unplugin/src/esbuild.ts", npmRoot),
+      new URL("builder/unplugin/src/bun.ts", npmRoot),
+      new URL("builder/unplugin/src/rollup.ts", npmRoot),
+      new URL("builder/unplugin/src/rolldown.ts", npmRoot),
+      new URL("builder/unplugin/src/webpack.ts", npmRoot),
+      new URL("builder/unplugin/src/babel.ts", npmRoot),
+    ],
   },
   {
     name: "@vizejs/ui",
