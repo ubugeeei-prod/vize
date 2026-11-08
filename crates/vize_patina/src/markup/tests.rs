@@ -44,6 +44,8 @@ mod use_list_tests;
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod markup_ir_tests {
+    use std::cell::Cell;
+
     use crate::context::LintContext;
     use crate::markup::*;
     use crate::rules::a11y::ImgAlt;
@@ -51,6 +53,113 @@ mod markup_ir_tests {
     use crate::rules::vue::RequireVForKey;
     use vize_atelier_jsx::JsxLang;
     use vize_l0::Allocator;
+
+    #[derive(Default)]
+    struct ElementsAndTextProbe {
+        elements: Cell<usize>,
+        exits: Cell<usize>,
+        texts: Cell<usize>,
+        unrelated: Cell<usize>,
+    }
+
+    impl MarkupRule for ElementsAndTextProbe {
+        fn name(&self) -> &'static str {
+            "test/elements-and-text"
+        }
+
+        fn traversal(&self) -> MarkupTraversal {
+            MarkupTraversal::ElementsAndText
+        }
+
+        fn enter_element<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+        ) {
+            self.elements.set(self.elements.get() + 1);
+        }
+
+        fn exit_element<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+        ) {
+            self.exits.set(self.exits.get() + 1);
+        }
+
+        fn enter_text<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _text: &MarkupText<'a>) {
+            self.texts.set(self.texts.get() + 1);
+        }
+
+        fn enter_attributes<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+
+        fn enter_binding<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+            _binding: &MarkupBinding<'a>,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+
+        fn enter_directive<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _element: &MarkupElement<'a>,
+            _directive: &MarkupDirective<'a>,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+
+        fn enter_conditional<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _conditional: &MarkupConditional<'a>,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+
+        fn enter_list<'a>(
+            &self,
+            _ctx: &mut MarkupContext<'_, 'a>,
+            _list: &MarkupList<'a>,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+
+        fn enter_interpolation(
+            &self,
+            _ctx: &mut MarkupContext<'_, '_>,
+            _range: crate::ir::ByteRange,
+        ) {
+            self.unrelated.set(self.unrelated.get() + 1);
+        }
+    }
+
+    #[test]
+    fn elements_and_text_traversal_keeps_balanced_ancestry() {
+        let source = r#"<div title="x">Hello <span v-if="ok">world</span>{{ value }}</div>"#;
+        let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
+        let parser = vize_armature::Parser::new(&allocator, source);
+        let (root, _errors) = parser.parse();
+        let document = MarkupDocument::new(&root, TemplateSyntax::Vue);
+        let mut lint = LintContext::new(&allocator, source, "test.vue");
+        let mut ctx = MarkupContext::new(&mut lint, &document);
+        let rule = ElementsAndTextProbe::default();
+
+        document.visit_with(&rule, &mut ctx);
+
+        assert_eq!(rule.elements.get(), 2);
+        assert_eq!(rule.exits.get(), 2);
+        assert_eq!(rule.texts.get(), 2);
+        assert_eq!(rule.unrelated.get(), 0);
+    }
 
     /// Run a markup rule over a Vue template and return the diagnostic count.
     fn run_over_template<R: MarkupRule>(rule: &R, source: &str) -> usize {
