@@ -95,7 +95,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "e48dc47c56462b5df2a51d95dbd52d1f97cf43eefc73626a8b2317a54f0d92e4"
+          "sha256": "3d60a659057c8c1c44d12c4136af25aebbe29ebba5ba80dd3510a0548034d462"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -147,7 +147,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "e48dc47c56462b5df2a51d95dbd52d1f97cf43eefc73626a8b2317a54f0d92e4"
+          "sha256": "3d60a659057c8c1c44d12c4136af25aebbe29ebba5ba80dd3510a0548034d462"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
