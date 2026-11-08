@@ -7,9 +7,6 @@
 use super::super::template_surface::{
     DirectiveArgument, directive, element_span, element_verbatim, static_attribute_value,
 };
-use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_l0::CompactString;
 use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
@@ -93,15 +90,19 @@ impl SlotCollector<'_> {
 }
 
 fn static_string_expression(source: &str) -> Option<CompactString> {
-    let allocator = oxc_allocator::Allocator::default();
-    let parsed = Parser::new(&allocator, source, SourceType::ts())
-        .parse_expression()
-        .ok()?;
-    match parsed.get_inner_expression() {
-        Expression::StringLiteral(literal) => Some(CompactString::new(literal.value.as_str())),
-        Expression::TemplateLiteral(template) => template
-            .single_quasi()
-            .map(|value| CompactString::new(value.as_str())),
-        _ => None,
+    let source = source.trim();
+    let quote = *source.as_bytes().first()?;
+    if source.len() < 2
+        || !matches!(quote, b'\'' | b'"' | b'`')
+        || source.as_bytes().last() != Some(&quote)
+    {
+        return None;
     }
+
+    let value = source.get(1..source.len() - 1)?;
+    let is_unambiguous_literal = !value.as_bytes().contains(&b'\\')
+        && !value.as_bytes().contains(&quote)
+        && (quote == b'`' || !value.bytes().any(|byte| byte.is_ascii_control()))
+        && (quote != b'`' || !value.contains("${"));
+    is_unambiguous_literal.then(|| CompactString::new(value))
 }
