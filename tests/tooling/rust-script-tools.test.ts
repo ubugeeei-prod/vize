@@ -9,12 +9,6 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("tool command surface prefers stable Node and bounds the Rust migration", () => {
-  const source = readRepoFile("tools/commands/ci/verify-tool-layout.ts");
-  assert.match(source, /stable Node commands/);
-  assert.match(source, /Rust Script command budget grew/);
-  assert.match(source, /legacy_command\.rs/);
-  assert.match(source, /tool_host\.rs/);
-
   const rustCommands = collectFiles(path.join(root, "tools", "commands")).filter(
     (file) =>
       file.endsWith(".rs") &&
@@ -41,6 +35,47 @@ test("tool command surface prefers stable Node and bounds the Rust migration", (
     result.stdout.trim(),
     `tool commands: verified ${nodeCommands.length} stable Node commands; ${rustCommands.length} Rust Script commands remain`,
   );
+});
+
+test("tool layout verifier rejects retired runners and Rust Script budget growth", () => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "vize-tool-layout-"));
+  const commands = path.join(fixture, "tools/commands");
+  try {
+    fs.mkdirSync(commands, { recursive: true });
+    fs.writeFileSync(path.join(fixture, "Cargo.toml"), "[workspace]\n");
+    fs.writeFileSync(path.join(fixture, "pnpm-workspace.yaml"), "packages: []\n");
+    fs.writeFileSync(path.join(commands, "check.ts"), "export {};\n");
+
+    for (const retired of [
+      "tools/rust",
+      "tools/support/legacy_command.rs",
+      "tools/support/tool_host.rs",
+    ]) {
+      const target = path.join(fixture, retired);
+      if (path.extname(target)) {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, "");
+      } else {
+        fs.mkdirSync(target, { recursive: true });
+      }
+      const result = verify(fixture);
+      assert.equal(result.status, 1, retired);
+      assert.match(result.stderr, new RegExp(`${retired.replace(".", "\\.")} must not come back`));
+      fs.rmSync(target, { recursive: true, force: true });
+    }
+
+    for (let index = 0; index < 60; index++) {
+      fs.writeFileSync(
+        path.join(commands, `legacy-${index}.rs`),
+        "#!/usr/bin/env rust-script\nfn main() {}\n",
+      );
+    }
+    const overBudget = verify(fixture);
+    assert.equal(overBudget.status, 1);
+    assert.match(overBudget.stderr, /Rust Script command budget grew from 59 to 60/);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test("ordinary tool modules must be reachable and resolve without ambiguity", () => {
@@ -134,8 +169,4 @@ function collectFiles(dir: string): string[] {
 
 function normalize(filePath: string): string {
   return filePath.split(path.sep).join("/");
-}
-
-function readRepoFile(filePath: string): string {
-  return fs.readFileSync(path.join(root, filePath), "utf8");
 }
