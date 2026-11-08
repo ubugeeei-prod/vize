@@ -1,3 +1,4 @@
+use crate::linter::Linter;
 use crate::rules::script::RequireDefaultProp;
 use crate::rules::script::ScriptLinter;
 
@@ -135,13 +136,209 @@ const props = defineProps({
 }
 
 #[test]
-fn test_define_props_type_based_is_ignored() {
-    // No runtime descriptor exists, so nothing is checked.
+fn options_listener_prop_helper_does_not_require_a_noop_default() {
+    let source = r#"
+export default {
+  props: {
+    "onUpdate:modelValue": defineListenerProp<(value: string) => void>()
+  }
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn interface_heritage_keeps_shared_optional_props_visible() {
+    let source = r#"
+interface BaseProps { class?: string }
+type MotionProps = { motion?: string }
+type ProgressiveBlurProps = BaseProps & MotionProps
+interface Props extends ProgressiveBlurProps { direction?: string }
+const props = withDefaults(defineProps<Props>(), { direction: 'bottom' })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 2, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_plain_type_only_define_props_has_no_default_surface() {
     let source = r#"
 const props = defineProps<{ name?: string }>()
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn generic_props_from_sibling_script_use_the_sibling_location() {
+    let source = r#"<script lang="ts">
+interface Props<T> {
+  label?: T
+  active?: boolean
+}
+</script>
+<script setup lang="ts" generic="T extends string">
+withDefaults(defineProps<Props<T>>(), { active: false })
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(source, "Probe.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: T"
+    );
+}
+
+#[test]
+fn test_typed_destructure_requires_defaults_for_optional_non_boolean_props() {
+    let source = r#"
+interface Props {
+  title?: string
+  enabled?: boolean
+  count: number
+}
+const { title, enabled, count } = defineProps<Props>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "title?: string"
+    );
+}
+
+#[test]
+fn typed_boolean_literal_props_do_not_require_defaults() {
+    let source = r#"
+const { enabled, disabled } = defineProps<{
+  enabled?: true
+  disabled?: false
+}>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_typed_destructure_and_with_defaults_honor_declared_defaults() {
+    let destructure = r#"
+const { title = '' } = defineProps<{ title?: string }>()
+"#;
+    assert_eq!(create_linter().lint(destructure, 0).error_count, 0);
+
+    let wrapper = r#"
+const props = withDefaults(defineProps<{
+  title?: string
+  count?: number
+}>(), { title: '' })
+"#;
+    let result = create_linter().lint(wrapper, 0);
+    assert_eq!(result.error_count, 1);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &wrapper[diagnostic.start as usize..diagnostic.end as usize],
+        "count?: number"
+    );
+}
+
+#[test]
+fn with_defaults_spread_does_not_claim_a_default_is_missing() {
+    let source = r#"
+interface Props {
+  title?: string
+  count?: number
+}
+const props = withDefaults(defineProps<Props>(), {
+  ...importedDefaults,
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn unknown_defaults_spreads_do_not_hide_inline_intersection_props() {
+    let source = r#"
+type Props<T> = ImportedStatefulProps<T> & ImportedValidationProps<T> & {
+  clearValue?: T
+}
+const props = withDefaults(defineProps<Props<string>>(), {
+  ...statefulPropsDefaults,
+  ...validationPropsDefaults,
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "clearValue?: T"
+    );
+}
+
+#[test]
+fn with_defaults_resolves_a_same_file_sibling_script_spread() {
+    let source = r#"<script lang="ts">
+export const defaults = {
+  title: '',
+  count: 0,
+}
+export interface Props {
+  title?: string
+  count?: number
+  label?: string
+}
+</script>
+<script setup lang="ts">
+const props = withDefaults(defineProps<Props>(), {
+  ...defaults,
+})
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(source, "Probe.vue");
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: string"
+    );
+}
+
+#[test]
+fn union_props_report_each_shared_missing_default_once() {
+    let source = r#"
+type Base = { label?: string; enabled?: boolean }
+type Props = (Base & { mode?: 'a' }) | (Base & { mode?: 'b' })
+const props = withDefaults(defineProps<Props>(), { mode: 'a' })
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize..diagnostic.end as usize],
+        "label?: string;"
+    );
+}
+
+#[test]
+fn test_runtime_custom_constructors_and_shorthand_are_ignored_like_upstream() {
+    let source = r#"
+const custom = {}
+export default {
+  props: {
+    shorthand,
+    call: makeType(),
+    member: custom.Type,
+    unknown: CustomType
+  }
+}
+"#;
+    assert_eq!(create_linter().lint(source, 0).error_count, 0);
 }
 
 #[test]
@@ -157,6 +354,19 @@ export default defineComponent({
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 1);
+}
+
+#[test]
+fn test_local_define_component_props() {
+    let source = r#"
+const Child = defineComponent({
+  props: {
+    name: String
+  }
+})
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 1, "{:?}", result.diagnostics);
 }
 
 #[test]

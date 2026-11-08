@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const items = ["one", "two"];
+</script>
+
+<template>
+  <ul>
+    <li v-for="item,index in items" :key="index">{{ item }} {{ index }}</li>
+  </ul>
+</template>

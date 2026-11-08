@@ -5,8 +5,8 @@
   "originalFiles": [
     {
       "path": "App.vue.txt",
-      "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19",
-      "bytes": 47
+      "sha256": "62fd7e6ed65c106e226a01f03cc24af84e6eddeef29c25d85a25cacf45939051",
+      "bytes": 49
     },
     {
       "path": "vize.config.json",
@@ -15,8 +15,8 @@
     },
     {
       "path": "issue-body.md",
-      "sha256": "c618cf07506d565bedef53653cfdcb94e2be21a59d1ceaf1945044e8920c628a",
-      "bytes": 3147
+      "sha256": "9878476d9ab6b1c76630472cf9f23b1344689560edf5543a13f66513289dda31",
+      "bytes": 3154
     }
   ],
   "diagnostics": [
@@ -28,7 +28,7 @@
         },
         "end": {
           "line": 1,
-          "character": 23
+          "character": 25
         }
       },
       "severity": 2,
@@ -47,7 +47,7 @@
         },
         "end": {
           "line": 1,
-          "character": 23
+          "character": 25
         }
       },
       "severity": 2,
@@ -56,7 +56,7 @@
         "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
       },
       "source": "vize/lint",
-      "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+      "message": "Element must not use self-closing syntax\n\nHelp: Use separate start and end tags"
     }
   ],
   "cli": [
@@ -71,24 +71,24 @@
           "line": 2,
           "column": 3,
           "endLine": 2,
-          "endColumn": 24,
+          "endColumn": 26,
           "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
         },
         {
           "ruleId": "vue/html-self-closing",
           "ruleDocsPath": "docs/content/rules/vue.md",
           "severity": 1,
-          "message": "[vize:vue/html-self-closing] Void element should be self-closing",
+          "message": "[vize:vue/html-self-closing] Element must not use self-closing syntax",
           "line": 2,
           "column": 3,
           "endLine": 2,
-          "endColumn": 24,
-          "help": "Use self-closing syntax"
+          "endColumn": 26,
+          "help": "Use separate start and end tags"
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "fixedSource": "<template>\n  <img src=\"/logo.png\" alt=\"\" />\n</template>\n"
+  "fixedSource": "<template>\n  <img src=\"/logo.png\" alt=\"\">\n</template>\n"
 }

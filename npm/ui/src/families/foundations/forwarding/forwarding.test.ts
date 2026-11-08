@@ -1,4 +1,5 @@
 /* eslint-disable script/one-component-per-file -- this module defines more than one component */
+/* eslint-disable script/custom-event-name-casing -- this fixture exercises kebab-case forwarding */
 import assert from "node:assert/strict";
 
 import { mount } from "@vue/test-utils";

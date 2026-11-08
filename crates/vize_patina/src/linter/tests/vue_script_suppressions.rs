@@ -3,7 +3,7 @@
 use super::Linter;
 use vize_l0::{String, cstr};
 
-const CASES: [(&str, &str, &str, &str); 4] = [
+const CASES: [(&str, &str, &str, &str); 5] = [
     (
         "script/no-deprecated-dollar-listeners-api",
         "vue/no-deprecated-dollar-listeners-api",
@@ -27,6 +27,12 @@ const CASES: [(&str, &str, &str, &str); 4] = [
         "vue/require-valid-default-prop",
         "export default { props: { enabled: { type: Boolean, default: 3 } } }",
         "export default { props: { enabled: { type: Boolean, default: false } } }",
+    ),
+    (
+        "script/require-prop-types",
+        "vue/require-prop-types",
+        "export default { props: ['value'] }",
+        "export default { props: { value: String } }",
     ),
 ];
 
@@ -97,7 +103,7 @@ fn vue_and_native_script_names_share_region_enable_state() {
 
 #[test]
 fn each_vue_script_alias_preserves_every_other_enabled_finding() {
-    let body = "export default { props: { count: { type: Number, default: 'bad' } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }";
+    let body = "export default { props: { count: { type: Number, default: 'bad' }, value: { default: 1 } }, computed: { total() { return 1 } }, methods: { read() { this.$listeners; this.$scopedSlots; return this.total() } } }";
     let linter = Linter::new().with_enabled_rules(Some(
         CASES
             .iter()

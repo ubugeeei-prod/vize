@@ -30,12 +30,11 @@ Visible text and naming attributes embed untranslated strings directly in the te
 
 Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
 
-```vue annotate="add:2,3,4,5,6"
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
 <div>-</div>
-<div>123</div>
 <button :title="$t('close')">{{ $t('x') }}</button>
 </template>
 ```
@@ -61,4 +60,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L49)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)

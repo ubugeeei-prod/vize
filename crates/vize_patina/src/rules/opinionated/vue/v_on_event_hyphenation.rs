@@ -95,14 +95,17 @@ impl VOnEventHyphenation {
         // eslint-plugin-vue's element lists also know `<slot>` and a few newer
         // HTML elements, and `a`/`script`/`style` inside SVG.
         let tag = element.tag;
+        // A custom renderer parent such as Taro's `<view>` can leave a native
+        // HTML child in the parent's custom namespace. The tag itself remains
+        // authoritative for standard HTML elements.
+        if is_html_tag(tag) {
+            return false;
+        }
         match element.ns {
-            Namespace::Html => {
-                !is_html_tag(tag)
-                    && !matches!(
-                        tag,
-                        "slot" | "fencedframe" | "geolocation" | "selectedcontent"
-                    )
-            }
+            Namespace::Html => !matches!(
+                tag,
+                "slot" | "fencedframe" | "geolocation" | "selectedcontent"
+            ),
             Namespace::Svg => !is_svg_tag(tag) && !matches!(tag, "a" | "script" | "style"),
             Namespace::MathMl => !is_math_ml_tag(tag),
         }
@@ -290,6 +293,15 @@ mod tests {
         // not ours, so the rule must not flag native elements.
         let result = linter.lint_template(r#"<div @myEvent="handler" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn taro_attributes_do_not_turn_img_into_a_component() {
+        let result = create_linter().lint_template(
+            r#"<view><img mode="aspectFit" @longPress="hold" @longTap="tap" /></view>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

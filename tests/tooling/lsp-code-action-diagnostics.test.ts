@@ -44,8 +44,8 @@ function currentCliExpectation(expected: unknown) {
 
 void test("current code-action CLI expectations preserve the complete historical witness", () => {
   const frozen = fs.readFileSync(path.join(fixture, "references.json"));
-  assert.equal(frozen.length, 2619);
-  assert.equal(hash(frozen), "241817138323e3fbe957cae2d67f1ccd94782c2f71e3eb25987bdc901ed190e2");
+  assert.equal(frozen.length, 2643);
+  assert.equal(hash(frozen), "28013efd08e0386a6a34ac94f718e29ec1d7d4196f0d8b63a7dd93bc703d13d0");
   const saved = JSON.stringify(reference);
   const current = currentCliExpectation(reference.cli);
   assert.equal(JSON.stringify(reference), saved);
@@ -168,10 +168,22 @@ test("source LSP selects each same-range original diagnostic and preserves valid
     const [alt, style] = diagnostics;
     const expected = [
       {
-        title: "Fix: Use self-closing syntax",
+        title: "Fix: Use separate start and end tags",
         kind: "quickfix",
         diagnostics: [style],
-        edit: { changes: { [uri]: [{ range, newText: '<img src="/logo.png" />' }] } },
+        edit: {
+          changes: {
+            [uri]: [
+              {
+                range: {
+                  start: { line: 1, character: 22 },
+                  end: { line: 1, character: 24 },
+                },
+                newText: "",
+              },
+            ],
+          },
+        },
         isPreferred: true,
       },
       suppression(alt, 1),
@@ -230,7 +242,15 @@ test("source LSP selects each same-range original diagnostic and preserves valid
         diagnostics: [shiftedStyle],
         edit: {
           changes: {
-            [uri]: [{ range: shiftedStyle.range, newText: '<img src="/logo.png" />' }],
+            [uri]: [
+              {
+                range: {
+                  start: { line: 2, character: 22 },
+                  end: { line: 2, character: 24 },
+                },
+                newText: "",
+              },
+            ],
           },
         },
       },
@@ -255,7 +275,7 @@ test("source LSP selects each same-range original diagnostic and preserves valid
       message: "Multiple consecutive spaces",
     };
     const componentNameDiagnostic = {
-      range: { start: { line: 0, character: 10 }, end: { line: 0, character: 10 } },
+      range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } },
       severity: 1,
       code: "vue/multi-word-component-names",
       codeDescription: {

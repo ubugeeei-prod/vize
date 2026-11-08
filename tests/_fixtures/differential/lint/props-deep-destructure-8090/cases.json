@@ -1856,9 +1856,9 @@
               "severity": 1,
               "message": "[vize:script/no-deep-destructure-in-props] Avoid deeply nested destructuring in defineProps",
               "line": 2,
-              "column": 28,
+              "column": 29,
               "endLine": 2,
-              "endColumn": 46,
+              "endColumn": 47,
               "help": "Use simple destructuring and access nested properties via computed or direct prop access"
             }
           ],

@@ -3,6 +3,7 @@ use crate::diagnostic::LintDiagnostic;
 use crate::rules::script::ScriptLintResult;
 use oxc_ast::ast::{
     ArrayPattern, BindingPattern, Expression, FormalParameters, ImportDeclaration, ObjectPattern,
+    Program,
 };
 use oxc_span::Span;
 use vize_l0::{CompactString, FxHashMap};
@@ -20,19 +21,38 @@ pub(super) enum Kind {
     Other,
 }
 
-pub(super) struct Visitor<'a> {
+pub(super) struct Visitor<'result, 'ast> {
     pub(super) offset: usize,
-    pub(super) result: &'a mut ScriptLintResult,
+    pub(super) result: &'result mut ScriptLintResult,
     pub(super) fn_depth: u32,
     pub(super) writing: bool,
+    pub(super) suppress_reads: bool,
     pub(super) frames: Vec<FxHashMap<CompactString, Kind>>,
+    pub(super) sibling_program: Option<&'ast Program<'ast>>,
 }
 
-impl Visitor<'_> {
+impl Visitor<'_, '_> {
     pub(super) fn insert(&mut self, name: &str, kind: Kind) {
         if let Some(frame) = self.frames.last_mut() {
             frame.insert(CompactString::from(name), kind);
         }
+    }
+
+    pub(super) fn assign(&mut self, name: &str, kind: Kind) {
+        if let Some(frame) = self
+            .frames
+            .iter_mut()
+            .rev()
+            .find(|frame| frame.contains_key(name))
+        {
+            frame.insert(CompactString::from(name), kind);
+        }
+    }
+
+    pub(super) fn assigned_kind(&self, expression: &Expression<'_>) -> Option<Kind> {
+        self.bag_depth(expression)
+            .map(Kind::Bag)
+            .or_else(|| self.ref_depth(expression).map(Kind::Ref))
     }
 
     fn lookup(&self, name: &str) -> Option<Kind> {
@@ -60,6 +80,27 @@ impl Visitor<'_> {
             },
             Expression::StaticMemberExpression(member) => {
                 self.bag_member(&member.object, member.property.name.as_str())
+            }
+            Expression::CallExpression(call)
+                if self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee) =>
+            {
+                Some(self.fn_depth)
+            }
+            _ => None,
+        }
+    }
+
+    /// A ref factory only defines a tracked binding when the call is the
+    /// declarator's direct initializer. Type assertions sit between the call
+    /// and the declarator in ESTree, so eslint-plugin-vue deliberately does
+    /// not propagate ref identity through them.
+    fn binding_ref_depth(&self, expr: &Expression<'_>) -> Option<u32> {
+        match expr {
+            Expression::ParenthesizedExpression(parenthesized) => {
+                self.binding_ref_depth(&parenthesized.expression)
+            }
+            Expression::Identifier(_) | Expression::StaticMemberExpression(_) => {
+                self.ref_depth(expr)
             }
             Expression::CallExpression(call)
                 if self.is_ref_factory(&call.callee) || self.is_define_model(&call.callee) =>
@@ -259,7 +300,7 @@ impl Visitor<'_> {
                 Some(expr) => self
                     .bag_depth(expr)
                     .map(Kind::Bag)
-                    .or_else(|| self.ref_depth(expr).map(Kind::Ref))
+                    .or_else(|| self.binding_ref_depth(expr).map(Kind::Ref))
                     .unwrap_or(Kind::Other),
                 None => Kind::Other,
             };

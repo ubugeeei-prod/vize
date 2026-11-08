@@ -155,7 +155,8 @@ impl ScriptTemplateRule for NoDeprecatedDollarListenersApi {
 
 #[cfg(test)]
 mod tests {
-    use super::NoDeprecatedDollarListenersApi;
+    use super::{META, NoDeprecatedDollarListenersApi};
+    use crate::linter::Linter;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -254,5 +255,27 @@ const b = ctx.$listeners
         let linter = create_linter();
         let result = linter.lint("this.$listeners", 0);
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_template_dollar_listeners() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><Child v-on=\"$listeners\" /></template><script>export default {}</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_template_dollar_listeners_with_options_mixins() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                "<template><Child v-on=\"$listeners\" /></template><script>export default { mixins: [Locale] }</script>",
+                "Forwarder.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
     }
 }

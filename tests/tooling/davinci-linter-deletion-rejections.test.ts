@@ -133,6 +133,20 @@ void test("linter preflight rejects reduced, stale, stitched and forged evidence
     /every Matrix project must carry linter coverage/,
   );
 
+  const absentExclusion = control();
+  absentExclusion.registryProjects[0].lintDivergenceExcludePaths = ["src/Absent.vue"];
+  assert.throws(
+    () => assessLinterDeletionShard(absentExclusion),
+    /excluded lint path did not appear/,
+  );
+
+  const invalidExclusion = control();
+  invalidExclusion.registryProjects[0].lintDivergenceExcludePaths = ["../Outside.vue"];
+  assert.throws(
+    () => assessLinterDeletionShard(invalidExclusion),
+    /must be a normalized relative Vue path/,
+  );
+
   const forgedReason = control({
     projects: { "with-vue": { unusableReason: "unreviewed excuse" } },
   });

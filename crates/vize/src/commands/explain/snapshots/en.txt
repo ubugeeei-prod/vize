@@ -1802,7 +1802,7 @@ help:
   petite-vue's v-scope introduces scope bindings from an object literal, e.g. v-scope="{ count: 0 }". A non-object value declares no bindings. Use an object literal, or a bare v-scope to mark a scope root without bindings.
 === script/component-options-name-casing
 script/component-options-name-casing · lint rule
-Enforce PascalCase for the component `name` option
+Enforce PascalCase for registered component names
 
 tier: exact
 domain: Options API component definitions written as object literals
@@ -1813,12 +1813,12 @@ docs: docs/content/rules/reference/script-component-options-name-casing.md
 
 invalid:
   export default {
-    name: 'my-component' // kebab-case
+    components: { myComponent }
   }
 
 valid:
   export default {
-    name: 'MyComponent'
+    components: { MyComponent }
   }
 === script/consistent-props-emits-key-quotes
 script/consistent-props-emits-key-quotes · lint rule
@@ -1868,7 +1868,7 @@ valid:
 script/define-emits-declaration · lint rule
 Enforce the type-based defineEmits<{}>() form over the runtime/array form
 
-tier: exact
+tier: complete
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 severity: warning
 category: script
@@ -1916,7 +1916,7 @@ valid:
 script/define-props-declaration · lint rule
 Enforce type-based defineProps<{ ... }>() over the runtime/object form
 
-tier: exact
+tier: complete
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
 severity: warning
 category: script
@@ -2221,12 +2221,10 @@ docs: docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.m
 
 invalid:
   const header = this.$scopedSlots.header
-  const footer = ctx.$scopedSlots.footer
   render($scopedSlots.default)
 
 valid:
   const header = this.$slots.header
-  const footer = ctx.$slots.footer
   render($slots.default)
 === script/no-deprecated-events-api
 script/no-deprecated-events-api · lint rule
@@ -2307,12 +2305,6 @@ invalid:
           return this.defaultSize
         }
       },
-      value: {
-        type: Number,
-        validator() {
-          return this.value > 0
-        }
-      }
     }
   }
 
@@ -2962,12 +2954,8 @@ autofix: no
 docs: docs/content/rules/reference/script-one-component-per-file.md
 
 invalid:
-  export default {
-    name: 'Parent',
-    components: {
-      Child: { name: 'Child' }
-    }
-  }
+  const First = defineComponent({ name: 'First' })
+  const Second = defineComponent({ name: 'Second' })
 
 valid:
   export default {
@@ -3021,7 +3009,7 @@ autofix: yes
 docs: docs/content/rules/reference/script-prefer-define-emits-binding.md
 === script/prefer-define-options
 script/prefer-define-options · lint rule
-Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs
+Prefer defineOptions() over a default export paired with <script setup>
 
 tier: exact
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -3031,7 +3019,12 @@ autofix: no
 docs: docs/content/rules/reference/script-prefer-define-options.md
 
 invalid:
+  <script lang="ts">
   export default { name: 'MyComponent', inheritAttrs: false }
+  </script>
+  <script setup lang="ts">
+  const ready = true
+  </script>
 
 valid:
   // Real options logic — keep the plain script.
@@ -3275,8 +3268,12 @@ autofix: no
 docs: docs/content/rules/reference/script-require-explicit-slots.md
 
 invalid:
-  const props = defineProps<{ id: number }>()
-  const slots = useSlots()
+  <script setup lang="ts">
+  defineSlots<{ default(): unknown }>()
+  </script>
+  <template>
+    <div><slot /><slot name="footer" /></div>
+  </template>
 
 valid:
   defineSlots<{ default(props: { msg: string }): unknown }>()
@@ -3408,7 +3405,7 @@ docs: docs/content/rules/reference/script-require-slots-as-functions.md
 invalid:
   export default {
     render() {
-      return this.$slots.default
+      return [this.$slots.default]
     }
   }
 
@@ -4051,13 +4048,13 @@ docs: docs/content/rules/reference/vue-html-self-closing.md
 
 invalid:
   <div></div>  <!-- should be <div /> when empty -->
-  <img>        <!-- should be <img /> -->
-  <br>         <!-- should be <br /> -->
+  <img />      <!-- should be <img> -->
+  <br />       <!-- should be <br> -->
 
 valid:
   <div />
-  <img />
-  <br />
+  <img>
+  <br>
   <div>content</div>
 
 help:
@@ -4205,7 +4202,6 @@ valid:
   <div>{{ $t('hello') }}</div>
   <img :alt="$t('cat')" />
   <div>-</div>
-  <div>123</div>
   <button :title="$t('close')">{{ $t('x') }}</button>
 
 help:
@@ -4876,7 +4872,7 @@ docs: docs/content/rules/reference/vue-no-script-non-standard-lang.md
 vue/no-setup-props-reactivity-loss · lint rule
 Disallow setup prop reads that lose reactivity
 
-tier: exact
+tier: complete
 domain: the syntax of <script> and <script setup> programs, without type information
 severity: warning
 category: script
@@ -5171,9 +5167,6 @@ invalid:
 valid:
   <li v-for="(item, index) in items" :key="index">{{ item }}</li>
   <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-  
-  <!-- Underscore prefix indicates intentionally unused -->
-  <li v-for="(item, _index) in items" :key="item.id">{{ item }}</li>
   
   <template v-slot="{ data }">
     <span>{{ data }}</span>
@@ -5526,12 +5519,11 @@ autofix: no
 docs: docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md
 
 invalid:
-  <input :disabled="true" />
+  <MyComponent :visible="true" />
 
 valid:
-  <input disabled />
-  <input :disabled="false" />
-  <MyComponent :visible="true" />
+  <MyComponent visible />
+  <MyComponent :visible="false" />
   <MyComponent :visible="isVisible" />
 
 help:
@@ -5581,7 +5573,7 @@ invalid:
 
 valid:
   <component :is="currentComponent" />
-  <component is="MyComponent" />
+  <component :is="'MyComponent'" />
 
 help:
   Why: The <component> element is a dynamic component placeholder. Without is, Vue cannot determine which component to render.
@@ -5738,7 +5730,7 @@ autofix: no
 docs: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint rule
-Enforce kebab-case for named slots used via v-slot
+Enforce camelCase for rendered slot names
 
 tier: exact
 domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5748,16 +5740,12 @@ autofix: no
 docs: docs/content/rules/reference/vue-slot-name-casing.md
 
 invalid:
-  <MyComponent>
-    <template #mySlot>...</template>
-    <template #my_slot>...</template>
-  </MyComponent>
+  <slot name="my-slot" />
+  <slot name="MySlot" />
 
 valid:
-  <MyComponent>
-    <template #my-slot>...</template>
-    <template #default>...</template>
-  </MyComponent>
+  <slot name="mySlot" />
+  <slot name="default" />
 
 help:
   Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.
@@ -5901,7 +5889,7 @@ help:
   Rename the listener to kebab-case so it matches the emitted event name.
 === vue/v-on-handler-style
 vue/v-on-handler-style · lint rule
-Enforce writing v-on handlers as a method reference or an inline function
+Enforce writing v-on handlers as method references
 
 tier: exact
 domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5918,11 +5906,9 @@ invalid:
 valid:
   <button @click="handler"></button>
   <button @click="foo.bar"></button>
-  <button @click="() => count++"></button>
-  <button @click="function () { count++ }"></button>
 
 help:
-  Write the handler as a method reference (e.g. @click="handler") or an inline function (e.g. @click="() => count++") instead of an inline statement.
+  Write the handler as a method reference (e.g. @click="handler") instead of an inline function or statement.
 === vue/v-on-style
 vue/v-on-style · lint rule
 Enforce `v-on` directive style
@@ -5998,7 +5984,7 @@ autofix: no
 docs: docs/content/rules/reference/vue-valid-model-definition.md
 === vue/valid-template-root
 vue/valid-template-root · lint rule
-Enforce a valid `<template>` root for Vue 3 fragment semantics
+Enforce valid root content in an SFC `<template>` block
 
 tier: exact
 domain: elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement
@@ -6008,9 +5994,7 @@ autofix: no
 docs: docs/content/rules/reference/vue-valid-template-root.md
 
 invalid:
-  <template>
-    <template>content</template>
-  </template>
+  <template></template>
 
 valid:
   <template>
@@ -6018,7 +6002,7 @@ valid:
   </template>
 
 help:
-  Wrap the content in a real root element (e.g. <div>) instead of using <template> or <slot> as the root node.
+  Add rendered template content, or keep a template with src empty.
 === vue/valid-v-bind
 vue/valid-v-bind · lint rule
 Enforce valid `v-bind` directives

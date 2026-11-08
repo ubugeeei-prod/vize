@@ -15,7 +15,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 53,
-          "end": 66,
+          "end": 63,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -51,7 +51,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 53,
-          "end": 66,
+          "end": 63,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -87,7 +87,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 53,
-          "end": 66,
+          "end": 63,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -121,7 +121,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 10,
-          "end": 23,
+          "end": 20,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -157,7 +157,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 10,
-          "end": 23,
+          "end": 20,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -193,7 +193,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 10,
-          "end": 23,
+          "end": 20,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -251,7 +251,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 87,
-          "end": 101,
+          "end": 98,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -270,7 +270,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 115,
-          "end": 129,
+          "end": 126,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -289,7 +289,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 142,
-          "end": 154,
+          "end": 151,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -308,7 +308,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 166,
-          "end": 178,
+          "end": 175,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -400,7 +400,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 127,
-          "end": 140,
+          "end": 137,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {
@@ -444,7 +444,7 @@
           "severity": "warning",
           "message": "Component should use PascalCase",
           "start": 75,
-          "end": 88,
+          "end": 85,
           "help": "Use PascalCase for component names",
           "labels": [],
           "fix": {

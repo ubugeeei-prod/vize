@@ -21,7 +21,7 @@ use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::ir::ByteRange;
 use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ElementNode;
+use vize_relief::{ElementNode, InterpolationNode};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-multi-spaces",
@@ -32,17 +32,10 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Disallow multiple spaces
+#[derive(Default)]
 pub struct NoMultiSpaces {
     /// Ignore properties (v-if, v-for expressions)
     pub ignore_properties: bool,
-}
-
-impl Default for NoMultiSpaces {
-    fn default() -> Self {
-        Self {
-            ignore_properties: true,
-        }
-    }
 }
 
 impl Rule for NoMultiSpaces {
@@ -56,6 +49,17 @@ impl Rule for NoMultiSpaces {
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         self.check_element(ctx, &MarkupElement::new(element));
+    }
+
+    fn check_interpolation<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        interpolation: &InterpolationNode<'a>,
+    ) {
+        self.check_expression_range(
+            ctx,
+            ByteRange::new(interpolation.loc.span.start, interpolation.loc.span.end),
+        );
     }
 }
 
@@ -71,6 +75,10 @@ impl MarkupRule for NoMultiSpaces {
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         self.check_element(ctx.lint(), element);
     }
+
+    fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
+        self.check_expression_range(ctx.lint(), range);
+    }
 }
 
 impl NoMultiSpaces {
@@ -81,8 +89,34 @@ impl NoMultiSpaces {
             let gap_start = previous_binding_end
                 .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
             self.check_gap(ctx, gap_start, range.start);
+            if !self.ignore_properties {
+                self.check_structural_directive_expression(ctx, range);
+            }
             previous_binding_end = Some(range.end);
         });
+
+        let opening = element.open_tag_range(ctx.source);
+        let closing_start = opening_closing_start(ctx.source, opening);
+        let gap_start = previous_binding_end
+            .unwrap_or_else(|| tag_name_end_hint(element.range(), element.tag()));
+        self.check_gap(ctx, gap_start, closing_start);
+
+        if !self.ignore_properties {
+            element.walk_bindings(&mut |binding| {
+                let Some(expression) = binding.expression() else {
+                    return;
+                };
+                let range = binding.range();
+                let Some(authored) = ctx.source.get(range.start as usize..range.end as usize)
+                else {
+                    return;
+                };
+                let Some(relative) = authored.find(expression) else {
+                    return;
+                };
+                self.check_expression(ctx, range.start as usize + relative, expression.as_bytes());
+            });
+        }
     }
 
     fn check_gap(&self, ctx: &mut LintContext<'_>, gap_start: u32, gap_end: u32) {
@@ -115,6 +149,188 @@ impl NoMultiSpaces {
             .with_fix(fix),
         );
     }
+
+    fn check_structural_directive_expression(&self, ctx: &mut LintContext<'_>, range: ByteRange) {
+        let Some(item) = ctx.source.get(range.start as usize..range.end as usize) else {
+            return;
+        };
+        let Some((raw_name, raw_value)) = item.split_once('=') else {
+            return;
+        };
+        let name = raw_name.trim();
+        if !matches!(name, "v-if" | "v-else-if" | "v-for") {
+            return;
+        }
+        let raw_value = raw_value.trim_start();
+        let Some(quote @ ('\'' | '"')) = raw_value.chars().next() else {
+            return;
+        };
+        let Some(value) = raw_value
+            .strip_prefix(quote)
+            .and_then(|value| value.strip_suffix(quote))
+        else {
+            return;
+        };
+        let value_start =
+            range.start as usize + item.len().saturating_sub(raw_value.len()) + quote.len_utf8();
+        self.check_expression(ctx, value_start, value.as_bytes());
+    }
+
+    fn check_expression(&self, ctx: &mut LintContext<'_>, start: usize, expression: &[u8]) {
+        let mut cursor = 0;
+        while cursor < expression.len() {
+            let Some(&byte) = expression.get(cursor) else {
+                break;
+            };
+            match byte {
+                b'`' => {
+                    cursor = skip_template_literal(expression, cursor);
+                    continue;
+                }
+                b'\'' | b'"' => {
+                    cursor = skip_quoted(expression, cursor, byte);
+                    continue;
+                }
+                b'/' if expression.get(cursor + 1) == Some(&b'/') => {
+                    cursor = skip_line_comment(expression, cursor + 2);
+                    continue;
+                }
+                b'/' if expression.get(cursor + 1) == Some(&b'*') => {
+                    cursor = skip_block_comment(expression, cursor + 2);
+                    continue;
+                }
+                _ => {}
+            }
+            if !expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
+            {
+                cursor += 1;
+                continue;
+            }
+            let run_start = cursor;
+            while expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b' ' | b'\t'))
+            {
+                cursor += 1;
+            }
+            let starts_line = run_start == 0
+                || expression
+                    .get(run_start - 1)
+                    .is_some_and(|byte| matches!(byte, b'\n' | b'\r'));
+            let ends_line = expression
+                .get(cursor)
+                .is_some_and(|byte| matches!(byte, b'\n' | b'\r'));
+            if cursor - run_start > 1 && !starts_line && !ends_line {
+                self.check_gap(ctx, (start + run_start) as u32, (start + cursor) as u32);
+            }
+        }
+    }
+
+    fn check_expression_range(&self, ctx: &mut LintContext<'_>, range: ByteRange) {
+        let Some(expression) = ctx
+            .source
+            .get(range.start as usize..range.end as usize)
+            .map(str::as_bytes)
+        else {
+            return;
+        };
+        self.check_expression(ctx, range.start as usize, expression);
+    }
+}
+
+fn skip_quoted(source: &[u8], mut cursor: usize, delimiter: u8) -> usize {
+    cursor += 1;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            byte if byte == delimiter => return cursor + 1,
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_template_literal(source: &[u8], mut cursor: usize) -> usize {
+    cursor += 1;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            b'`' => return cursor + 1,
+            b'$' if source.get(cursor + 1) == Some(&b'{') => {
+                cursor = skip_template_expression(source, cursor + 2);
+            }
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_template_expression(source: &[u8], mut cursor: usize) -> usize {
+    let mut depth = 1usize;
+    while let Some(byte) = source.get(cursor).copied() {
+        match byte {
+            b'\\' => cursor = (cursor + 2).min(source.len()),
+            b'\'' | b'"' => cursor = skip_quoted(source, cursor, byte),
+            b'`' => cursor = skip_template_literal(source, cursor),
+            b'/' if source.get(cursor + 1) == Some(&b'/') => {
+                cursor = skip_line_comment(source, cursor + 2);
+            }
+            b'/' if source.get(cursor + 1) == Some(&b'*') => {
+                cursor = skip_block_comment(source, cursor + 2);
+            }
+            b'{' => {
+                depth += 1;
+                cursor += 1;
+            }
+            b'}' => {
+                depth -= 1;
+                cursor += 1;
+                if depth == 0 {
+                    return cursor;
+                }
+            }
+            _ => cursor += 1,
+        }
+    }
+    source.len()
+}
+
+fn skip_line_comment(source: &[u8], mut cursor: usize) -> usize {
+    while source
+        .get(cursor)
+        .is_some_and(|byte| !matches!(byte, b'\n' | b'\r'))
+    {
+        cursor += 1;
+    }
+    cursor
+}
+
+fn skip_block_comment(source: &[u8], mut cursor: usize) -> usize {
+    while cursor < source.len() {
+        if source.get(cursor) == Some(&b'*') && source.get(cursor + 1) == Some(&b'/') {
+            return cursor + 2;
+        }
+        cursor += 1;
+    }
+    source.len()
+}
+
+fn opening_closing_start(source: &str, opening: ByteRange) -> u32 {
+    let start = opening.start as usize;
+    let end = opening.end as usize;
+    let Some(authored) = source.get(start..end) else {
+        return opening.end;
+    };
+    let Some(close) = authored.rfind('>') else {
+        return opening.end;
+    };
+    let mut close = start + close;
+    if close > start && source.as_bytes().get(close - 1) == Some(&b'/') {
+        close -= 1;
+    }
+    close as u32
 }
 
 fn tag_name_end_hint(range: ByteRange, tag: &str) -> u32 {
@@ -196,5 +412,66 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_multiple_spaces_before_self_closing_end() {
+        let result = create_linter().lint_template(r#"<Input fluid  />"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_multiple_spaces_inside_expression() {
+        let result = create_linter().lint_template(
+            r#"<Input :aria-controls="expanded ?  id : undefined" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn quoted_expression_content_and_comments_are_not_rewritten() {
+        let linter = create_linter();
+        let clean = r#"<Input :one="'a  b'" :two="`c  d`" :three="value /* x  y */" />"#;
+        assert_eq!(linter.lint_template(clean, "test.vue").warning_count, 0);
+
+        let source = r#"<Input :one="'a  b'" :value="left  + right" />"#;
+        let result = linter.lint_template(source, "test.vue");
+        let start = source.find("left  +").unwrap() as u32 + 4;
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            (result.diagnostics[0].start, result.diagnostics[0].end),
+            (start, start + 2)
+        );
+    }
+
+    #[test]
+    fn nested_template_literal_content_is_not_template_spacing() {
+        let source = r#"<style>{{ `outer ${items.map(item => `  --color-${item}: red;`).join("\n")}` }}</style>"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_spacing_before_a_string_literal_in_a_directive() {
+        let source = r#"<span v-if="related && level ===  'error'" />"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn reports_multiple_spaces_in_interpolations_and_slot_patterns() {
+        for source in [
+            r#"<template><p>{{ value ?  'yes' : 'no' }}</p></template>"#,
+            r#"<template><p>{{  }}</p></template>"#,
+            r#"<template><Child><template #item="{ row,  expanded }">{{ row }}</template></Child></template>"#,
+        ] {
+            let result = create_linter().lint_sfc(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 1,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 }

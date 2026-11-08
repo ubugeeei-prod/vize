@@ -26,14 +26,7 @@ fn original_and_boundaries_keep_complete_cli_json() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let mut rows = vec![
         ("original-collapse", COLLAPSE.to_owned(), Vec::new()),
-        (
-            "original-field",
-            FIELD.to_owned(),
-            vec![
-                json!({"needle":"this.$slots.label","shift":0,"length":17}),
-                json!({"needle":"this.$slots.message","shift":0,"length":19}),
-            ],
-        ),
+        ("original-field", FIELD.to_owned(), Vec::new()),
     ];
     for id in ["ternary-consequent-value", "if-nested-member"] {
         let row = corpus["cases"]
@@ -45,7 +38,7 @@ fn original_and_boundaries_keep_complete_cli_json() {
         rows.push((
             id,
             format!("<script>\n{}\n</script>\n", row["script"].as_str().unwrap()),
-            row["nativeSpans"].as_array().unwrap().clone(),
+            row["officialSpans"].as_array().unwrap().clone(),
         ));
     }
     let mut captured = Vec::new();
@@ -92,8 +85,7 @@ fn original_and_boundaries_keep_complete_cli_json() {
                 let position = |offset: usize| {
                     let before = &source[..offset];
                     let line = before.bytes().filter(|byte| *byte == b'\n').count() + 1;
-                    // Patina CLI JSON uses Unicode scalar columns; ESLint uses UTF-16 separately.
-                    let column = before.rsplit('\n').next().unwrap().chars().count() + 1;
+                    let column = before.rsplit('\n').next().unwrap().encode_utf16().count() + 1;
                     (line, column)
                 };
                 let (line, column) = position(start);

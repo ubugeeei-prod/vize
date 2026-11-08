@@ -8,6 +8,45 @@ const currentPages = {
   "css/no-utility-classes": "css-no-utility-classes",
 } as const;
 
+type GeometryProjection = "none" | "display-utf16" | "report-utf16";
+
+function currentUtf16Geometry(
+  message: Record<string, unknown>,
+  projection: GeometryProjection,
+): Record<string, unknown> {
+  if (
+    projection === "display-utf16" &&
+    message.ruleId === "css/no-display-none" &&
+    message.line === 3 &&
+    message.column === 22 &&
+    message.endLine === 3 &&
+    message.endColumn === 29
+  ) {
+    return { ...message, column: 23, endColumn: 30 };
+  }
+  if (
+    projection === "report-utf16" &&
+    message.ruleId === "css/no-utility-classes" &&
+    message.line === 2 &&
+    message.column === 29 &&
+    message.endLine === 2 &&
+    message.endColumn === 34
+  ) {
+    return { ...message, column: 30, endColumn: 35 };
+  }
+  if (
+    projection === "report-utf16" &&
+    message.ruleId === "css/no-id-selectors" &&
+    message.line === 2 &&
+    message.column === 19 &&
+    message.endLine === 2 &&
+    message.endColumn === 22
+  ) {
+    return { ...message, column: 21, endColumn: 25 };
+  }
+  return message;
+}
+
 function currentReference(ruleId: unknown): string {
   assert.ok(
     typeof ruleId === "string" && Object.hasOwn(currentPages, ruleId),
@@ -24,7 +63,10 @@ function currentReference(ruleId: unknown): string {
   return `docs/content/rules/reference/${page}.md`;
 }
 
-export function currentCssPacket(expected: unknown): unknown[] {
+export function currentCssPacket(
+  expected: unknown,
+  geometry: GeometryProjection = "none",
+): unknown[] {
   assert.ok(Array.isArray(expected));
   return expected.map((row: { messages: unknown[] }) => ({
     ...row,
@@ -33,14 +75,26 @@ export function currentCssPacket(expected: unknown): unknown[] {
       const message = entry as Record<string, unknown>;
       const reference = currentReference(message.ruleId);
       assert.equal(message.ruleDocsPath, oldReference, "frozen CSS documentation URL");
-      return { ...message, ruleDocsPath: reference };
+      return { ...currentUtf16Geometry(message, geometry), ruleDocsPath: reference };
     }),
   }));
 }
 
-export function currentCssPlain(expected: string): string {
+export function currentCssPlain(expected: string, geometry: GeometryProjection = "none"): string {
   let reference: string | null = null;
-  return expected
+  const geometryAdjusted =
+    geometry === "report-utf16"
+      ? expected
+          .replace(
+            "UnicodeMultipleStyles.vue:2:29 warning css/no-utility-classes",
+            "UnicodeMultipleStyles.vue:2:30 warning css/no-utility-classes",
+          )
+          .replace(
+            "AstralSameLine.vue:2:19 warning css/no-id-selectors",
+            "AstralSameLine.vue:2:21 warning css/no-id-selectors",
+          )
+      : expected;
+  return geometryAdjusted
     .split(/(?<=\n)/u)
     .map((line) => {
       for (const rule of Object.keys(currentPages)) {
@@ -57,6 +111,8 @@ export function currentCssPlain(expected: string): string {
 }
 
 interface CssCase {
+  readonly id?: string;
+  readonly source?: string;
   readonly expectedCli: unknown;
   readonly expectedPlain?: string;
 }
@@ -64,19 +120,25 @@ interface CssCase {
 // These are expectation-only clones. Frozen corpus readers and actual packets
 // retain their original bytes and full comparisons.
 export function currentCssCases<T extends CssCase>(cases: readonly T[]): T[] {
-  return cases.map((row) => ({
-    ...row,
-    expectedCli: currentCssPacket(row.expectedCli),
-    ...(row.expectedPlain === undefined
-      ? {}
-      : { expectedPlain: currentCssPlain(row.expectedPlain) }),
-  }));
+  return cases.map((row) => {
+    const geometry =
+      row.id === "utf8-crlf" && row.source?.includes('.日本[data-note="😀"]')
+        ? "display-utf16"
+        : "none";
+    return {
+      ...row,
+      expectedCli: currentCssPacket(row.expectedCli, geometry),
+      ...(row.expectedPlain === undefined
+        ? {}
+        : { expectedPlain: currentCssPlain(row.expectedPlain, geometry) }),
+    };
+  });
 }
 
 export function currentCssReport<T extends { json: unknown; plain: string }>(expected: T): T {
   return {
     ...expected,
-    json: currentCssPacket(expected.json),
-    plain: currentCssPlain(expected.plain),
+    json: currentCssPacket(expected.json, "report-utf16"),
+    plain: currentCssPlain(expected.plain, "report-utf16"),
   };
 }

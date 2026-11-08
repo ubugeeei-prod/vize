@@ -196,3 +196,19 @@ export const A = defineComponent({});\n";
 
     assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }
+
+#[test]
+fn eslint_vue_require_default_prop_alias_suppresses_script_rule() {
+    let source = r#"<script>
+export default {
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    item: { type: Object }
+  }
+}
+</script>"#;
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-default-prop".into()]))
+        .lint_sfc(source, "probe.vue");
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}

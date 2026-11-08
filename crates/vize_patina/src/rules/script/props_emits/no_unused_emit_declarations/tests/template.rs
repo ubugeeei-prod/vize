@@ -73,10 +73,10 @@ const emit = defineEmits<{ save: []; cancel: [] }>();
         diagnostic.message,
         "The 'cancel' event is declared but never emitted."
     );
-    // The span must anchor the `cancel` key inside the whole-SFC source.
+    // Match eslint-plugin-vue by anchoring the complete type member.
     assert_eq!(
         &sfc[diagnostic.start as usize..diagnostic.end as usize],
-        "cancel"
+        "cancel: []"
     );
 }
 

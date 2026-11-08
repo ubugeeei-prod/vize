@@ -71,14 +71,13 @@ fn no_bare_strings_preserves_legacy_jsx_boundaries() {
     for source in [
         r#"const A = () => <div>{label}</div>;"#,
         r#"const A = () => <div>{t('hello')}</div>;"#,
-        r#"const A = () => <div>123</div>;"#,
         r#"const A = () => <div>-</div>;"#,
         r#"const A = () => <div>{'-'}</div>;"#,
         r#"const A = () => <img alt={caption} />;"#,
         r#"const A = () => <img title={title} />;"#,
         r#"const A = () => <img html:alt="a cat" />;"#,
+        r#"const A = () => <button TITLE="Close" />;"#,
         r#"const A = () => <div class="container"></div>;"#,
-        r#"const A = () => <script>const label = "Hello";</script>;"#,
         r#"const A = () => <style>{`.x::before { content: "Hello"; }`}</style>;"#,
     ] {
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
@@ -93,10 +92,11 @@ fn no_bare_strings_preserves_legacy_jsx_boundaries() {
     for source in [
         r#"const A = () => <div>Hello</div>;"#,
         r#"const A = () => <div>こんにちは</div>;"#,
+        r#"const A = () => <div>123</div>;"#,
         r#"const A = () => <img alt="a cat" />;"#,
         r#"const A = () => <input placeholder="Search" />;"#,
         r#"const A = () => <div aria-label="Menu" />;"#,
-        r#"const A = () => <button TITLE="Close" />;"#,
+        r#"const A = () => <script>const label = "Hello";</script>;"#,
         r#"const A = () => <div>{'Hello'}</div>;"#,
         r#"const A = () => <div>{/* comment */}Hello</div>;"#,
         r#"const A = () => <MyPanel>Hello</MyPanel>;"#,
@@ -130,7 +130,7 @@ fn no_bare_strings_reports_multiple_jsx_targets_in_source_order() {
     assert_eq!(result.error_count, 0);
     assert_eq!(
         diagnostic_slices(source, &result),
-        vec![r#"title="Close""#, "Save"]
+        vec![r#""Close""#, "Save"]
     );
 }
 

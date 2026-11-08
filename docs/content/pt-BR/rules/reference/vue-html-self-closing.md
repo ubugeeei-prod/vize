@@ -17,11 +17,12 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 O componente vazio usa uma tag de fechamento separada, enquanto os elementos vazios img e br omitem a grafia de fechamento automático configurada.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:3,4"
 <template>
-  <MyComponent></MyComponent>
-  <img>
-  <br>
+  <section>
+    <MyComponent></MyComponent>
+    <div></div>
+  </section>
 </template>
 ```
 
@@ -29,14 +30,15 @@ O componente vazio usa uma tag de fechamento separada, enquanto os elementos vaz
 
 O componente e os elementos vazios usam a sintaxe de fechamento automático; uma div com conteúdo mantém sua tag de fechamento.
 
-```vue annotate="add:2,3,4,5,6,7"
+```vue annotate="add:3,4,5,6,7"
 <template>
-  <MyComponent />
-  <div></div>
-  <div />
-  <img />
-  <br />
-  <div>content</div>
+  <section>
+    <MyComponent />
+    <div />
+    <img>
+    <br>
+    <div>content</div>
+  </section>
 </template>
 ```
 
@@ -62,4 +64,4 @@ Depois, execute `vp run lint`.
 - [Regras Vue](../vue.md)
 - [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L31)

@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs
+source: crates/vize_patina/src/rules/script/no_side_effects_in_computed/tests.rs
 expression: result.diagnostics
 ---
 [

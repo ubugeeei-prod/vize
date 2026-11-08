@@ -19,6 +19,20 @@ fn linter_with(style: HtmlQuotesOption) -> Linter {
     Linter::with_registry(registry)
 }
 
+#[test]
+fn reports_quotes_on_the_sfc_template_opening_tag() {
+    let source = "<template lang='html'>\n  <div />\n</template>\n";
+    let result = linter_with(HtmlQuotesOption::Double).lint_sfc(source, "test.vue");
+    let findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/html-quotes")
+        .collect();
+    assert_eq!(findings.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!((findings[0].start, findings[0].end), (15, 21));
+    assert_eq!(&source[15..21], "'html'");
+}
+
 /// Every diagnostic as `(rule, severity, start, end, covered text)`.
 fn findings(
     style: HtmlQuotesOption,

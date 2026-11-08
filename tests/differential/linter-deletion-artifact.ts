@@ -149,7 +149,7 @@ export function validateLinterDeletionArtifact(value: unknown): LinterDeletionAr
   assert.match(artifact.buildReceiptSha256, hashPattern);
   assert.match(artifact.binarySha256, hashPattern);
   assert.deepEqual(artifact.requiredStages, requiredStages);
-  assert.deepEqual(artifact.measurement, { preset: "ecosystem", measureCoverageGap: true });
+  assert.deepEqual(artifact.measurement, { preset: "all-mapped", measureCoverageGap: true });
   const inputPaths = {
     matrix: "summary.json",
     divergenceIndex: "lint-divergence-summary.json",

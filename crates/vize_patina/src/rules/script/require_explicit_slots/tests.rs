@@ -85,14 +85,12 @@ fn undeclared(
 }
 
 #[test]
-fn test_invalid_use_slots_without_define_slots() {
-    // TS syntax present (defineProps<T>()), useSlots() consumed, no defineSlots.
+fn test_use_slots_without_rendered_slot_is_valid() {
     let result = lint_setup_script(
         "const props = defineProps<{ id: number }>()\nconst slots = useSlots()",
         0,
     );
-    assert_eq!(result.warning_count, 1);
-    insta::assert_debug_snapshot!(result.diagnostics);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -115,31 +113,49 @@ fn test_regular_sfc_script_does_not_require_script_setup_macro() {
 }
 
 #[test]
-fn test_script_setup_still_requires_explicit_slots() {
+fn tsx_sfc_is_outside_the_upstream_rule_surface() {
+    let result = lint_sfc(
+        "<template><slot name=\"menu\" /></template><script setup lang=\"tsx\">const value = 1</script>",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn unresolved_slot_type_contributes_no_known_names() {
+    let sfc = "<template><slot name=\"menu\" /></template><script setup lang=\"ts\">defineSlots<ImportedSlots>()</script>";
+    let result = lint_sfc(sfc);
+    assert_eq!(
+        owned(&result),
+        vec![undeclared(sfc, "<slot name=\"menu\" />", "menu")]
+    );
+}
+
+#[test]
+fn test_script_setup_without_rendered_slot_is_valid() {
     let result = lint_sfc(
         "<script setup lang=\"ts\">\nconst value: number = 1\nconst slots = useSlots()\n</script>",
     );
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_with_type_annotation() {
+fn test_use_slots_with_type_annotation_is_valid_without_outlet() {
     // TS signalled by a plain type annotation.
     let result = lint_setup_script("const n: number = 1\nconst slots = useSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_with_interface() {
+fn test_use_slots_with_interface_is_valid_without_outlet() {
     let result = lint_setup_script("interface Props { id: number }\nconst s = useSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_invalid_use_slots_called_without_assignment() {
+fn test_use_slots_called_without_assignment_is_valid_without_outlet() {
     // A bare `useSlots()` expression statement still counts as consumption.
     let result = lint_setup_script("const x: string = ''\nuseSlots()", 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -206,19 +222,59 @@ fn test_no_warn_use_slots_in_string_literal() {
 }
 
 #[test]
-fn test_multiple_use_slots_reports_once_at_first() {
+fn test_multiple_use_slots_are_valid_without_outlet() {
     let source = "const x: number = 0\nconst a = useSlots()\nconst b = useSlots()";
     let result = lint_setup_script(source, 0);
-    assert_eq!(result.warning_count, 1);
-    let first = source.find("useSlots()").unwrap() as u32;
-    assert_eq!(result.diagnostics[0].start, first);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
-fn test_offset_applied() {
+fn test_offset_without_outlet_remains_silent() {
     let source = "const x: number = 0\nconst slots = useSlots()";
     let result = lint_setup_script(source, 100);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_script_setup_slot_requires_define_slots() {
+    let result = lint_sfc(
+        "<template><slot /></template><script setup lang=\"ts\">const ready = true</script>",
+    );
     assert_eq!(result.warning_count, 1);
-    let call_start = source.find("useSlots()").unwrap() as u32 + 100;
-    assert_eq!(result.diagnostics[0].start, call_start);
+}
+
+#[test]
+fn test_options_api_typescript_slot_requires_slots_type() {
+    let result =
+        lint_sfc("<template><slot /></template><script lang=\"ts\">export default {}</script>");
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn dual_script_setup_slot_requires_define_slots() {
+    let result = lint_sfc(
+        r#"<template><slot name="footer" /></template>
+<script lang="ts">export type Item = string</script>
+<script lang="ts" generic="T extends Item" setup>
+defineProps<{ item: T }>()
+</script>"#,
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn test_options_api_slots_type_declares_inline_slot_names() {
+    let valid = r#"
+<template><slot name="footer" /></template>
+<script lang="ts">
+import { defineComponent, SlotsType } from 'vue'
+export default defineComponent({
+  slots: Object as SlotsType<{ footer(): unknown }>
+})
+</script>
+"#;
+    assert_eq!(lint_sfc(valid).warning_count, 0);
+
+    let invalid = valid.replace("name=\"footer\"", "name=\"header\"");
+    assert_eq!(lint_sfc(&invalid).warning_count, 1);
 }

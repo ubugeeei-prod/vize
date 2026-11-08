@@ -26,6 +26,31 @@ fn parse_non_exported_interface_extends_props() {
 }
 
 #[test]
+fn multiline_generic_interface_heritage_stays_one_clause() {
+    let result = parse_script_setup(
+        r#"
+            import type { BaseProps } from './base'
+
+            interface FooProps extends Omit<
+                BaseProps,
+                'modelValue' | 'defaultValue'
+            > {
+                label: string
+            }
+
+            defineProps<FooProps>()
+        "#,
+    );
+
+    assert_eq!(
+        result.types.definitions().interface_extends("FooProps"),
+        [
+            "Omit<\n                BaseProps,\n                'modelValue' | 'defaultValue'\n            >"
+        ]
+    );
+}
+
+#[test]
 fn parse_define_props_type_reference_keeps_union_members_nested() {
     let result = parse_script_setup(
         r#"

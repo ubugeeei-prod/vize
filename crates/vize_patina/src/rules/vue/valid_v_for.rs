@@ -64,7 +64,7 @@ impl Rule for ValidVFor {
         }
 
         if !ctx.is_petite_vue() {
-            check_iteration_keys(ctx, element, directive.exp.as_ref());
+            check_iteration_keys(ctx, element, directive.exp.as_ref(), false);
         }
 
         // Check for modifiers (v-for should not have modifiers)
@@ -181,6 +181,7 @@ fn check_iteration_keys(
     ctx: &mut LintContext<'_>,
     element: &ElementNode<'_>,
     v_for_exp: Option<&ExpressionNode<'_>>,
+    inherited_iteration: bool,
 ) {
     // A template that combines v-for with v-slot creates one slot function per
     // iteration. Its children are slot bodies rather than repeated VNodes, so
@@ -217,14 +218,20 @@ fn check_iteration_keys(
                         .is_some_and(|(_, source)| expression_references_any(source, &variables))
                 });
                 if !depends_on_parent {
-                    ensure_sufficient_stack(|| check_iteration_keys(ctx, child, v_for_exp));
+                    ensure_sufficient_stack(|| check_iteration_keys(ctx, child, v_for_exp, true));
                 }
             }
         }
         return;
     }
     if relief_element_is_custom_component(element)
-        && !matches!(element.tag, "template" | "slot")
+        && element.tag != "template"
+        // An authored <slot v-for> does not create a component vnode that
+        // needs a key. A <slot> repeated by a parent <template v-for> is the
+        // iteration body only when it carries fallback VNodes; an empty outlet
+        // is still exempt.
+        && (element.tag != "slot"
+            || (inherited_iteration && slot_has_unkeyed_fallback(element)))
         && bound_key_directive(element).is_none()
     {
         ctx.error_with_help(
@@ -236,6 +243,25 @@ fn check_iteration_keys(
     if let Some(expression) = v_for_exp {
         check_key_uses_v_for_variables(ctx, element, expression);
     }
+}
+
+fn slot_has_unkeyed_fallback(element: &ElementNode<'_>) -> bool {
+    element.children.iter().any(|child| {
+        let TemplateChildNode::Element(child) = child else {
+            return false;
+        };
+        if bound_key_directive(child).is_some()
+            || child.props.iter().any(
+                |prop| matches!(prop, PropNode::Directive(directive) if directive.name == "for"),
+            )
+        {
+            return false;
+        }
+        if matches!(child.tag, "template" | "slot") {
+            return slot_has_unkeyed_fallback(child);
+        }
+        true
+    })
 }
 
 fn check_key_uses_v_for_variables(

@@ -25,9 +25,9 @@
 //! when it resolves (through lexical scoping) to such a binding. A same-named
 //! non-ref binding in an inner scope shadows the ref and is left alone.
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{Expression, Program};
+use oxc_ast::ast::{BindingPattern, Expression, Program, Statement};
 use oxc_ast_visit::Visit;
 use oxc_span::Span;
 use vize_l0::CompactString;
@@ -65,13 +65,64 @@ impl ScriptRule for NoRefAsOperand {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let mut visitor = RefOperandVisitor {
-            offset,
-            result,
-            scopes: Vec::new(),
-        };
-        visitor.visit_program(program);
+        check_program_with_scopes(program, offset, Vec::new(), result);
     }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        let scopes = sfc
+            .sibling_program
+            .map(|sibling| vec![scope::collect_function_scope(&sibling.body, &[])])
+            .unwrap_or_default();
+        check_program_with_scopes(program, offset, scopes, result);
+    }
+}
+
+fn check_program_with_scopes<'a>(
+    program: &'a Program<'a>,
+    offset: usize,
+    scopes: Vec<Frame>,
+    result: &mut ScriptLintResult,
+) {
+    let mut visitor = RefOperandVisitor {
+        offset,
+        result,
+        scopes,
+        emit_bindings: collect_emit_bindings(program),
+    };
+    visitor.visit_program(program);
+}
+
+fn collect_emit_bindings(program: &Program<'_>) -> vize_l0::FxHashSet<CompactString> {
+    let mut bindings = vize_l0::FxHashSet::default();
+    for statement in &program.body {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            let BindingPattern::BindingIdentifier(binding) = &declarator.id else {
+                continue;
+            };
+            let Some(Expression::CallExpression(call)) = declarator
+                .init
+                .as_ref()
+                .map(Expression::get_inner_expression)
+            else {
+                continue;
+            };
+            if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "defineEmits")
+            {
+                bindings.insert(CompactString::new(binding.name.as_str()));
+            }
+        }
+    }
+    bindings
 }
 
 /// Tracks, per lexical scope, which names are bound to a ref factory result.
@@ -86,6 +137,7 @@ struct RefOperandVisitor<'rule> {
     offset: usize,
     result: &'rule mut ScriptLintResult,
     scopes: Vec<Frame>,
+    emit_bindings: vize_l0::FxHashSet<CompactString>,
 }
 
 impl RefOperandVisitor<'_> {

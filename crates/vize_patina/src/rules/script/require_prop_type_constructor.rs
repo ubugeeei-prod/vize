@@ -55,12 +55,13 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, Program, StringLiteral};
+use oxc_ast::ast::{
+    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, StringLiteral,
+};
 use oxc_span::{GetSpan, Span};
 use vize_l0::CompactString;
 
-mod options;
-use options::{find_component_options, find_props_object, property_key_name};
+use super::props_emits::collect_runtime_props;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-prop-type-constructor",
@@ -89,28 +90,11 @@ impl ScriptRule for RequirePropTypeConstructor {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        let Some(options) = find_component_options(program) else {
-            return;
-        };
-        let Some(props) = find_props_object(options) else {
-            return;
-        };
-        check_props_object(props, source, offset, result);
-    }
-}
-
-/// Inspect each entry of the `props` object for a string-literal type.
-fn check_props_object(
-    props: &ObjectExpression<'_>,
-    source: &str,
-    offset: usize,
-    result: &mut ScriptLintResult,
-) {
-    for property in &props.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        check_prop_type(&property.value, source, offset, result);
+        for props in collect_runtime_props(program) {
+            for prop in props.object_props() {
+                check_prop_type(prop.value, source, offset, result);
+            }
+        }
     }
 }
 
@@ -154,6 +138,14 @@ fn find_type_value<'a>(object: &'a ObjectExpression<'a>) -> Option<&'a Expressio
         }
     }
     None
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        _ => None,
+    }
 }
 
 /// Report a type position that cannot be a constructor, or every such element

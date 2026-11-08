@@ -17,7 +17,7 @@ description: "禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 �
 
 prop 默认值和校验函数读取 `this`，但在 Vue 3 中这些函数不能依赖组件实例。
 
-```vue annotate="remove:6,7,8,13,14"
+```vue annotate="remove:6,7,8"
 <script lang="ts">
 export default {
   props: {
@@ -28,12 +28,6 @@ export default {
         return this.defaultSize
       }
     },
-    value: {
-      type: Number,
-      validator() {
-        return this.value > 0
-      }
-    }
   }
 }
 </script>
@@ -43,7 +37,7 @@ export default {
 
 默认值从参数读取 `props.baseSize`，校验函数检查 `value` 参数。两者都不再依赖不可用的实例接收对象。
 
-```vue annotate="add:6,7,8,13,14"
+```vue annotate="add:6,7,8,11,12,13,14,15,16"
 <script lang="ts">
 export default {
   props: {
@@ -86,4 +80,4 @@ export default defineConfig({}).withVue({
 
 - [类型与脚本规则](../type-and-script.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L66)

@@ -19,7 +19,7 @@ A native boolean disabled attribute binds the constant true value.
 
 ```vue annotate="remove:2"
 <template>
-<input :disabled="true" />
+<MyComponent :visible="true" />
 </template>
 ```
 
@@ -27,11 +27,10 @@ A native boolean disabled attribute binds the constant true value.
 
 The native attribute uses its boolean shorthand. False bindings and component props retain their explicit values.
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2,3,4"
 <template>
-<input disabled />
-<input :disabled="false" />
-<MyComponent :visible="true" />
+<MyComponent visible />
+<MyComponent :visible="false" />
 <MyComponent :visible="isVisible" />
 </template>
 ```
@@ -57,4 +56,4 @@ Then run `vp run lint`.
 
 - [Vue rules](../vue.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L28)

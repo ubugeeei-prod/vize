@@ -134,7 +134,7 @@ test("fixture tool matrix emits read-only commands with machine-readable diagnos
     );
     assert.doesNotMatch(runs.typechecker.command, /apps\/\*\*\/\*\.vue/);
     assert.match(runs.compiler.command, /apps\/\*\*\/\*\.vue/);
-    assert.match(runs.linter.command, /lint .*--format json --preset ecosystem --no-config/);
+    assert.match(runs.linter.command, /lint .*--format json --preset all --no-config/);
     assert.match(runs.formatter.command, /fmt .*--check --no-config/);
     for (const entry of Object.values(runs)) {
       assert.doesNotMatch(entry.command, /(?:^|\s)--write(?:\s|$)/);

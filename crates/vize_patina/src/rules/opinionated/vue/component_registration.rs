@@ -1,0 +1,171 @@
+//! Registration facts that remain available after a fatal template recovery.
+//!
+//! A malformed template must not erase an independently valid Options API
+//! `components` declaration. The ordinary Croquis path owns the complete
+//! registration model; this narrow AST fallback is only for template rules
+//! that still run on the recovered tree when that shared analysis is withheld.
+
+use crate::context::LintContext;
+use oxc_ast::ast::{
+    Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+};
+use vize_croquis::naming::to_pascal_case;
+use vize_l0::FxHashMap;
+
+pub(super) fn options_api_registers(ctx: &LintContext<'_>, tag: &str) -> bool {
+    ctx.sfc_scripts()
+        .and_then(|scripts| scripts.script())
+        .is_some_and(|parsed| {
+            program_registers(&parsed.program, tag)
+                || (ctx
+                    .sfc_descriptor()
+                    .is_some_and(|descriptor| descriptor.script_setup.is_some())
+                    && program_imports(&parsed.program, tag))
+        })
+}
+
+fn program_registers(program: &Program<'_>, tag: &str) -> bool {
+    let mut bindings = FxHashMap::default();
+    for statement in &program.body {
+        let Statement::VariableDeclaration(declaration) = statement else {
+            continue;
+        };
+        for declarator in &declaration.declarations {
+            let BindingPattern::BindingIdentifier(binding) = &declarator.id else {
+                continue;
+            };
+            if let Some(options) = declarator.init.as_ref().and_then(options_expression) {
+                bindings.insert(binding.name.as_str(), options);
+            }
+        }
+    }
+    program.body.iter().any(|statement| {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            return false;
+        };
+        options_object(&export.declaration, &bindings)
+            .and_then(components_object)
+            .is_some_and(|components| {
+                components.properties.iter().any(|property| {
+                    let ObjectPropertyKind::ObjectProperty(property) = property else {
+                        return false;
+                    };
+                    // eslint-plugin-vue compares the PascalCase form of the
+                    // authored tag with the registration key itself. Preserve
+                    // that asymmetry: a lower-camel shorthand such as
+                    // `{ svgIcon }` does not make `<svg-icon>` a target of the
+                    // default registered-components-only policy.
+                    static_key_name(&property.key).is_some_and(|name| to_pascal_case(tag) == name)
+                })
+            })
+    })
+}
+
+fn program_imports(program: &Program<'_>, tag: &str) -> bool {
+    let expected = to_pascal_case(tag);
+    program.body.iter().any(|statement| {
+        let Statement::ImportDeclaration(import) = statement else {
+            return false;
+        };
+        import.specifiers.as_ref().is_some_and(|specifiers| {
+            specifiers.iter().any(|specifier| match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier) => {
+                    !specifier.import_kind.is_type()
+                        && specifier.local.name.as_str() == expected.as_str()
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                    specifier.local.name.as_str() == expected.as_str()
+                }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(_) => false,
+            })
+        })
+    })
+}
+
+fn options_object<'a>(
+    declaration: &'a ExportDefaultDeclarationKind<'a>,
+    bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match declaration {
+        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
+        ExportDefaultDeclarationKind::CallExpression(call)
+            if is_component_options_callee(&call.callee) =>
+        {
+            call.arguments.iter().find_map(|argument| match argument {
+                Argument::ObjectExpression(object) => Some(object.as_ref()),
+                _ => None,
+            })
+        }
+        ExportDefaultDeclarationKind::Identifier(identifier) => {
+            bindings.get(identifier.name.as_str()).copied()
+        }
+        _ => None,
+    }
+}
+
+fn options_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+        return None;
+    };
+    if !is_component_options_callee(&call.callee) {
+        return None;
+    }
+    call.arguments.iter().find_map(|argument| match argument {
+        Argument::ObjectExpression(object) => Some(object.as_ref()),
+        _ => None,
+    })
+}
+
+fn is_component_options_callee(callee: &Expression<'_>) -> bool {
+    match callee {
+        Expression::Identifier(identifier) => matches!(
+            identifier.name.as_str(),
+            "defineComponent" | "_defineComponent" | "extend"
+        ),
+        Expression::StaticMemberExpression(member) => match member.property.name.as_str() {
+            "defineComponent" | "_defineComponent" => true,
+            "extend" => matches!(
+                &member.object,
+                Expression::Identifier(identifier)
+                    if matches!(identifier.name.as_str(), "Vue" | "_Vue")
+            ),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+fn components_object<'a>(options: &'a ObjectExpression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    options.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if static_key_name(&property.key) != Some("components") {
+            return None;
+        }
+        match &property.value {
+            Expression::ObjectExpression(object) => Some(object.as_ref()),
+            _ => None,
+        }
+    })
+}
+
+fn static_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    if let PropertyKey::TemplateLiteral(template) = key {
+        return template
+            .expressions
+            .is_empty()
+            .then(|| template.quasis.first())
+            .flatten()
+            .and_then(|quasi| quasi.value.cooked.as_ref().map(|value| value.as_str()));
+    }
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests;
