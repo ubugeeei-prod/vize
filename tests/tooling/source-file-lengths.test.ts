@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { repoRoot } from "./_helpers/tool-commands.ts";
 import { resolveSourceLengthBase as resolveBaseRef } from "./support/source-length-base.ts";
 
-const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.rs");
+const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.ts");
 
 function runGit(cwd: string, args: string[]): string {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });
@@ -22,7 +22,7 @@ function writeLines(filePath: string, count: number): void {
 }
 
 function runSourceLengthScript(args: string[] = [], cwd = repoRoot) {
-  return spawnSync("rust-script", [command, ...args], { cwd, encoding: "utf8" });
+  return spawnSync(process.execPath, [command, ...args], { cwd, encoding: "utf8" });
 }
 
 test("source length script checks the current checkout", () => {

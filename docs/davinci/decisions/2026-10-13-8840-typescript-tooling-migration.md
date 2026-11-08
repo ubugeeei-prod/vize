@@ -127,7 +127,7 @@ The test report comment is typed as
 
 ## Source-length budget
 
-`tools/commands/ci/source-file-lengths.rs` diffs the base against the work
+`tools/commands/ci/source-file-lengths.ts` diffs the base against the work
 tree with `git diff --find-renames`. It then reads a renamed file's old path
 in the base. A rename is therefore compared with its original, not treated
 as new, but only while Git still detects the rename at 50% similarity
