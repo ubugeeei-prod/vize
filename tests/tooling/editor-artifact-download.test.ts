@@ -84,6 +84,27 @@ test(
   },
 );
 
+test("editor download can recover through a pinned alternative", options, async (t) => {
+  let primaryAttempts = 0,
+    fallbackAttempts = 0;
+  const fixture = await serverFixture(t, (response, requestUrl) => {
+    if (requestUrl === "/fallback") {
+      fallbackAttempts++;
+      response.end(content);
+    } else {
+      primaryAttempts++;
+      response.writeHead(504).end("gateway timeout");
+    }
+  });
+  const fallbackUrl = fixture.url.replace(/\/editor$/u, "/fallback");
+  const result = await download(fixture, checksum, {}, fallbackUrl);
+  assert.equal(result.code, 0, result.stderr);
+  assert.equal(primaryAttempts, 3);
+  assert.equal(fallbackAttempts, 1);
+  assert.equal(readFileSync(fixture.destination, "utf8"), content);
+  assert.deepEqual(readdirSync(fixture.directory), ["editor"]);
+});
+
 test(
   "editor download rejects a checksum mismatch and retains the prior artifact",
   options,
@@ -112,9 +133,12 @@ test("editor download terminates a stalled body and removes partial files", opti
   assert.deepEqual(readdirSync(fixture.directory), []);
 });
 
-async function serverFixture(t: TestContext, respond: (response: ServerResponse) => void) {
+async function serverFixture(
+  t: TestContext,
+  respond: (response: ServerResponse, requestUrl: string) => void,
+) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-editor-download-"));
-  const server = createServer((_request, response) => respond(response));
+  const server = createServer((request, response) => respond(response, request.url ?? ""));
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => {
@@ -135,8 +159,11 @@ async function download(
   fixture: { url: string; destination: string },
   digest: string,
   environment = {},
+  fallbackUrl?: string,
 ) {
-  const child = spawn("bash", [script, fixture.url, fixture.destination, digest], {
+  const args = [script, fixture.url, fixture.destination, digest];
+  if (fallbackUrl) args.push(fallbackUrl);
+  const child = spawn("bash", args, {
     env: { ...process.env, ...environment },
     stdio: ["ignore", "pipe", "pipe"],
     timeout: 10_000,
