@@ -122,7 +122,7 @@ jobs:
               - '!tools/commands/ci/source-file-lengths.rs'
               - '!tools/commands/ci/check-warning-budget.ts'
               - '!tools/commands/release/npm/tag.ts'
-              - '!tools/commands/release/npm/inject-native-optional-deps.rs'
+              - '!tools/support/release/inject_native_optional_deps/**'
 
   tool-benchmark:
     name: tool-benchmark
