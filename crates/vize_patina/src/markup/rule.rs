@@ -29,6 +29,8 @@ pub enum MarkupTraversal {
     Full,
     /// Call element entries while omitting other empty traversal callbacks.
     Elements,
+    /// Call element entries, text nodes and element exits, preserving ancestry.
+    ElementsAndText,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
     /// Visit authored attributes and list scopes without unrelated callbacks.

@@ -65,7 +65,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn text(&mut self, text: MarkupText<'a>) {
-        if self.traversal == MarkupTraversal::Full {
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::ElementsAndText
+        ) {
             self.set_rule();
             self.rule.enter_text(self.ctx, &text);
         }
@@ -151,12 +154,18 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     self.visit_element(MarkupElement::from_l2(element, doc));
                 }
                 Op::Text(text) => {
-                    if self.traversal == MarkupTraversal::Full {
+                    if matches!(
+                        self.traversal,
+                        MarkupTraversal::Full | MarkupTraversal::ElementsAndText
+                    ) {
                         self.text(children::text_node(doc, text));
                     }
                 }
                 Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
-                    if self.traversal == MarkupTraversal::Full {
+                    if matches!(
+                        self.traversal,
+                        MarkupTraversal::Full | MarkupTraversal::ElementsAndText
+                    ) {
                         children::walk_interpolation(doc, interpolation, &mut |node| match node {
                             MarkupNode::Text(text) => self.text(text),
                             MarkupNode::Interpolation(range) => self.interpolation(range),
@@ -201,7 +210,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 
         if matches!(
             self.traversal,
-            MarkupTraversal::Full | MarkupTraversal::Elements
+            MarkupTraversal::Full
+                | MarkupTraversal::Elements
+                | MarkupTraversal::ElementsAndText
         ) {
             self.set_rule();
             self.rule.enter_element(self.ctx, &element);
@@ -254,7 +265,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             }
         }
 
-        if self.traversal == MarkupTraversal::Full {
+        if matches!(
+            self.traversal,
+            MarkupTraversal::Full | MarkupTraversal::ElementsAndText
+        ) {
             self.set_rule();
             self.rule.exit_element(self.ctx, &element);
         }
