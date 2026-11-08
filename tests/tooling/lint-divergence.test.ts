@@ -279,7 +279,7 @@ test("opaque component factories retain template binding uncertainty", () => {
       assert.equal(result.falseNegatives.length, 0, JSON.stringify(result, null, 2));
       assert.equal(result.intentionalDivergences.length, 1);
       const reason = get(result.intentionalDivergences[0] as Json, "reason");
-      assert.equal(typeof reason, "string");
+      if (typeof reason !== "string") throw new TypeError("divergence reason must be a string");
       assert.match(reason, /opaque user factory/u);
     }
   } finally {
