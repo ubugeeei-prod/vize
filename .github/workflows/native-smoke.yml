@@ -111,7 +111,7 @@ jobs:
         run: vp run --filter './npm/native' build:ci
       - name: Verify GNU native glibc compatibility
         if: runner.os == 'Linux' && endsWith(matrix.target, '-gnu')
-        run: rust-script tools/commands/ci/github/verify-glibc-symbols.rs --max 2.36 npm/native/*.linux-*-gnu.node
+        run: node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node
       - name: Smoke @vizejs/native
         run: node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')"
       - name: Package-install smoke for host native package
