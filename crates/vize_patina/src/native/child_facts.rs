@@ -25,13 +25,20 @@ use groups::{CHECKS, REGISTRY};
 pub use groups::{NativeDirectInterpolations, NativeTextareaMustache, TextareaMustacheDemand};
 pub use observations::{NativeInterpolationFact, NativeTextareaMustacheFact};
 
+/// Typed failures produced while admitting one original direct child.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeChildFactError {
+    /// The child belongs to a different selected component.
     ForeignChild,
+    /// The child is not a direct child of the authenticated header.
     WrongParent,
+    /// The child exposes an unclosed or otherwise raw interpolation marker.
     RawInterpolation,
+    /// The supplied child is not the original child at its retained ordinal.
     UnexpectedChild,
+    /// The selected component or child syntax failed native admission.
     Admission(NativeLintRefusal),
+    /// A required SDK fact table or entry is unavailable.
     Fact(FactError),
 }
 impl From<NativeLintRefusal> for NativeChildFactError {
@@ -112,22 +119,27 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
 }
 
 impl<'s, 'o, 'a> NativeChildFacts<'s, 'o, 'a> {
+    /// Returns the authenticated parent header facts.
     #[must_use]
     pub fn header(&self) -> &'s NativeHeaderFacts<'o, 'a> {
         self.header
     }
+    /// Reborrows the original supplied direct child.
     #[must_use]
     pub fn original(&self) -> NativeChild<'_, 'a> {
         self.original.reborrow()
     }
+    /// Opens the fact view declared by the consumer's demand.
     #[must_use]
     pub fn facts<C: FactConsumer>(&self) -> FactView<'_> {
         self.manager.view::<C>()
     }
+    /// Returns the admitted direct interpolation markers for this child.
     pub fn markers(&self) -> Result<&FactTable<NativeDirectInterpolations>, FactError> {
         self.facts::<TextareaMustacheDemand>()
             .get::<NativeDirectInterpolations>()
     }
+    /// Returns textarea counterexamples derived for this direct child.
     pub fn textarea_mustache(&self) -> Result<&FactTable<NativeTextareaMustache>, FactError> {
         self.facts::<TextareaMustacheDemand>()
             .get::<NativeTextareaMustache>()
@@ -162,6 +174,7 @@ impl<'s, 'o, 'a> NativeChildFacts<'s, 'o, 'a> {
             )),
         ))
     }
+    /// Verifies a causal chain against this child's declared fact view.
     pub fn verify(&self, chain: &WitnessChain) -> Result<(), WitnessError> {
         verify_chain(chain, &self.facts::<TextareaMustacheDemand>(), &CHECKS)
     }

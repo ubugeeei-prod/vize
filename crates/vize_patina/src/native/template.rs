@@ -30,6 +30,7 @@ pub use owner::{
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum NativeTemplateAttributeProfile {
     #[default]
+    /// Admit only plain static attributes with opaque literal values.
     StaticOnly,
     /// Fixed and nonempty lexically completed Bind/Prop/Full bind arguments.
     /// Original component lexer errors still refuse before any callback;
@@ -56,7 +57,9 @@ impl NativeTemplateAttributeProfile {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum NativeTemplateTextProfile {
     #[default]
+    /// Admit only whitespace text children.
     WhitespaceOnly,
+    /// Admit closed literal text while keeping entities and runtime meaning opaque.
     LiteralText,
 }
 
@@ -73,21 +76,66 @@ impl NativeTemplateTextProfile {
 /// No partial findings or silent omission can turn an unsupported input clean.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NativeTemplateLintRefusal {
+    /// The supplied source cannot establish a valid source frame.
     Source(SourceFrameError),
+    /// The original template could not be parsed.
     Parse(ComponentSourceError),
-    UnsupportedVueVersion { requested: VueVersion },
-    UnsupportedVaporMode { requested: bool },
-    UnprovidedRule { rule: String },
-    Recovered { offset: u32 },
+    /// The configured Vue version is outside the native template contract.
+    UnsupportedVueVersion {
+        /// Vue version requested by the linter configuration.
+        requested: VueVersion,
+    },
+    /// The configured Vapor mode is outside the native template contract.
+    UnsupportedVaporMode {
+        /// Vapor mode requested by the linter configuration.
+        requested: bool,
+    },
+    /// An enabled configured rule does not offer a native template implementation.
+    UnprovidedRule {
+        /// Stable rule code that lacks the required capability.
+        rule: String,
+    },
+    /// The original parser recovered from an error at the component-relative offset.
+    Recovered {
+        /// Component-relative byte offset of the first recovery.
+        offset: u32,
+    },
+    /// The component uses syntax outside the native template contract.
     UnsupportedComponent,
+    /// One retained owner or source range does not match the original template.
     SourceMismatch,
+    /// An element header failed native syntax admission.
     Header(NativeLintRefusal),
-    UnsupportedContext { span: Span },
-    UnsupportedAttribute { span: Span },
-    UnsupportedText { span: Span },
-    Comment { span: Span },
-    Interpolation { span: Span },
-    UnexpectedChild { span: Span },
+    /// A rule requested an element-owner grammar it did not declare.
+    UnsupportedContext {
+        /// Original context range that could not be admitted.
+        span: Span,
+    },
+    /// An attribute lies outside the intersection of declared callback profiles.
+    UnsupportedAttribute {
+        /// Original unsupported attribute range.
+        span: Span,
+    },
+    /// Text lies outside the intersection of declared callback profiles.
+    UnsupportedText {
+        /// Original unsupported text range.
+        span: Span,
+    },
+    /// A comment requires suppression policy unavailable to this capability.
+    Comment {
+        /// Original comment range.
+        span: Span,
+    },
+    /// An interpolation is outside the admitted literal-text grammar.
+    Interpolation {
+        /// Original interpolation range.
+        span: Span,
+    },
+    /// The original child is not valid for the admitted bounded owner grammar.
+    UnexpectedChild {
+        /// Original unexpected child range.
+        span: Span,
+    },
 }
 
 impl From<NativeLintRefusal> for NativeTemplateLintRefusal {
@@ -101,20 +149,24 @@ impl From<NativeLintRefusal> for NativeTemplateLintRefusal {
 /// Descriptor-selected wrapper. Results remain private until the driver's
 /// single original traversal admits the entire supported input profile.
 pub trait NativeTemplateRule: Send + Sync {
+    /// Declares the strongest original-attribute grammar accepted by the rule.
     fn attribute_profile(&self) -> NativeTemplateAttributeProfile {
         NativeTemplateAttributeProfile::StaticOnly
     }
 
+    /// Declares the strongest bounded owner grammar accepted by the rule.
     fn owner_profile(&self) -> NativeTemplateOwnerProfile {
         NativeTemplateOwnerProfile::Strict
     }
 
+    /// Runs once against the authenticated whole bare-template owner.
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
         root: &NativeLintComponent<'a>,
     ) -> Result<(), NativeTemplateLintRefusal>;
 
+    /// Runs for each admitted original element during the existing traversal.
     fn run_on_element<'a>(
         &self,
         _context: &mut NativeTemplateLintContext<'_, 'a>,

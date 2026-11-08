@@ -31,7 +31,9 @@ use groups::{CHECKS, REGISTRY};
 /// Header admission and SDK computation preserve their distinct exact errors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeHeaderFactError {
+    /// The original header failed native syntax admission.
     Header(NativeLintRefusal),
+    /// A required SDK fact table or entry is unavailable.
     Fact(FactError),
 }
 
@@ -124,11 +126,13 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
         })
     }
 
+    /// Returns the original selected template that owns this header.
     #[must_use]
     pub fn owner(&self) -> &'o NativeTemplateComponent<'a> {
         self.owner
     }
 
+    /// Returns the original authored element represented by these facts.
     #[must_use]
     pub fn original(&self) -> &'o Element<'a> {
         self.original
@@ -140,6 +144,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
         self.manager.view::<C>()
     }
 
+    /// Returns unsupported-ARIA counterexamples derived from this header.
     pub fn unsupported_aria(&self) -> Result<&FactTable<NativeUnsupportedAria>, FactError> {
         self.facts::<UnsupportedAriaDemand>()
             .get::<NativeUnsupportedAria>()

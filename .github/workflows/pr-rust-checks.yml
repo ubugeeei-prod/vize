@@ -153,6 +153,12 @@ jobs:
           node tools/support/compat/github/rust-test-cases.ts record
           --label "Affected native Program and Vue navigation"
           --path crates/vize_maestro --outcome "$NAVIGATION_OUTCOME"
+      - name: Document Patina native APIs
+        if: ${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
+        run: >-
+          node tools/support/compat/github/rust-test-cases.ts capture
+          --label "Patina native API documentation" --package vize_patina --
+          cargo rustdoc --locked -p vize_patina --lib
       - name: Run affected Rust doctests
         if: ${{ matrix.lane == 'clippy' }}
         env: { VIZE_RUST_CASE_LABEL: "Affected Rust doctests" }
