@@ -44,11 +44,10 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
                 (finding.primary.start, finding.primary.end)
             })
             .collect();
-        let locations = if case["path"] == current["path"] {
-            &current["currentDoctorLocations"]
-        } else {
-            &case["doctorLocations"]
-        };
+        let current_case = current.get(filename);
+        let locations = current_case
+            .map(|reference| &reference["currentDoctorLocations"])
+            .unwrap_or(&case["doctorLocations"]);
         let expected: Vec<_> = locations
             .as_array()
             .unwrap()
@@ -61,7 +60,9 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
             })
             .collect();
         assert_eq!(actual, expected, "{filename}: {output:?}");
-        if case["path"] == current["path"] {
+        if current_case
+            .is_some_and(|reference| reference["currentDoctorLocations"] != case["doctorLocations"])
+        {
             assert_ne!(locations, &case["doctorLocations"]);
         }
         assert_eq!(fs::read(workspace.path().join(filename)).unwrap(), input);
