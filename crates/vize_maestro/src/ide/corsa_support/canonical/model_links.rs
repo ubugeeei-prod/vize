@@ -349,11 +349,11 @@ mod tests {
                 &declaration,
             );
             // Short names round-trip through the synthesized `update:` prefix.
-            let mut expected_generic = vec![(105, 3), (131, 44)];
+            let mut expected_generic = vec![(106, 3), (132, 44)];
             if name.len() < "update:".len() {
                 expected_generic.push(prefix_position);
             }
-            expected_generic.extend([(171, 35), binding_position]);
+            expected_generic.extend([(172, 35), binding_position]);
             expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
@@ -417,11 +417,11 @@ mod tests {
                 &declaration,
             );
             // The broad row round-trips after the native rows.
-            let mut expected_generic = vec![(105, 3), (131, 44)];
+            let mut expected_generic = vec![(106, 3), (132, 44)];
             if name.len() < "update:".len() {
-                expected_generic.push((171, 28));
+                expected_generic.push((172, 28));
             }
-            expected_generic.extend([(171, 35), binding_position, script_position]);
+            expected_generic.extend([(172, 35), binding_position, script_position]);
             expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(

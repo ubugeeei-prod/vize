@@ -17,15 +17,29 @@ defineEmits<{
 
     assert!(!virtual_ts.contains("EmitsToProps"), "{virtual_ts}");
     assert!(
-        virtual_ts.contains("type __EmitProps<T> = { [K in keyof __EmitOptions<T> & string"),
+        virtual_ts.contains("type __EmitProps<T> = $ResolvedEmitProps<T>;"),
         "{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains(
+            "type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>>"
+        ),
+        "{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("$IsAny<T> extends true ? $EmitPropsFromOptions<O>"),
+        "{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains("string extends keyof O ? [keyof L] extends [never]"),
+        "a catch-all signature must retain any literal overload handlers:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains("type $Camelize<S extends string>"),
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("as ($Camelize<K> extends keyof __EmitOptions<T> ? string extends keyof __EmitOptions<T> ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]"),
+        virtual_ts.contains("as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]"),
         "Vue keys kebab events as `onScroll-top`; the camelized key alone rejects it, and a declared camel twin owns its key (#11453):\n{virtual_ts}"
     );
 }

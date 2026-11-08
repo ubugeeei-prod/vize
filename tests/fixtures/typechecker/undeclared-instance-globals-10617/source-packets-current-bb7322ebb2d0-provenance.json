@@ -1,0 +1,166 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12162,
+  "producer": {
+    "sourceRevision": "bb7322ebb2d08c85c18b79607a6b3eb083dcad32",
+    "sourceTree": "427825f8b1e84d8e1ddb37ebd40bb65c88f8b898",
+    "pullRequestHead": "17d4a7e511e19f623258dcef84f357226c1c7901",
+    "binarySha256": "3bf033282b712c69e3d4744e857a46856412ef0f3f89467a4a4531de9a9c7bf4",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42458808867,
+    "artifactId": 13609395863,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42458808867,
+    "job": 128663852122,
+    "id": 13609395863,
+    "name": "instance-globals-tooling-7-42458808867-1",
+    "digest": "sha256:326339daad7244bf9e0ab256402cc4de3765d632fe7afa8cdb4f4ba15e6f0cd3",
+    "bytes": 430134
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-807a8508f344.json",
+    "bytes": 395298,
+    "sha256": "6fada7a16b5bdd6cca8d6fa1931f8468cc3e69ecbc101ed206c7cea305f4e6b8"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-bb7322ebb2d0.json",
+    "bytes": 501174,
+    "sha256": "2c7e1eae54a2e004751011d454092f637a346ce7d600a0685073bbd0676045a4"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 1882,
+      "sha256": "0f2927cc4ffcd2aff676465a9a2110d05acc374aab00ddc6f1edc1dab5a24d40"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "91a1fbd4cf51927ee42ccedde12f1e8ce19d6e3a47d66200c6f299d26a16e621"
+    },
+    "source-protocol.json": {
+      "bytes": 468581,
+      "sha256": "e7998e1acecfcff76d97a71c42fe8575fcd4985ee297147450a29ca61c8f8f12"
+    },
+    "outcomes.json": {
+      "bytes": 811144,
+      "sha256": "629f8ed2c8de6b973a83c0d041ec0cef9b79a9b42c7c6afdb551dd649ff10ea8"
+    },
+    "qualification.json": {
+      "bytes": 814638,
+      "sha256": "70ff5ab345ce7716de3bd5e1c89ca8a9d1a8aa9b9be317bf41ab319f914779e9"
+    },
+    "host-matrix.json": {
+      "bytes": 3796,
+      "sha256": "4817471d63a311c6a2f976ae3003eca926518dee07e48de0218ef1ce9cba697f"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 398,
+    "passedOutcomes": 318,
+    "gapCount": 80,
+    "gapIds": [
+      "whole-packet/lf/original",
+      "whole-packet/lf/valid",
+      "whole-packet/lf/undeclared-only",
+      "whole-packet/lf/repaired",
+      "whole-packet/lf/repeated",
+      "whole-packet/lf/optional",
+      "whole-packet/lf/call",
+      "whole-packet/lf/v-for-source",
+      "whole-packet/lf/intentional-any",
+      "whole-packet/lf/declared-unknown",
+      "whole-packet/lf/plugin-valid",
+      "whole-packet/lf/plugin-invalid",
+      "whole-packet/lf/setup-shadow",
+      "whole-packet/lf/loop-shadow",
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/css-module",
+      "whole-packet/lf/own-props",
+      "whole-packet/lf/options-own-method",
+      "whole-packet/lf/expect-error-opening-child",
+      "whole-packet/lf/ignore-opening-child",
+      "whole-packet/lf/expect-owned-interpolation",
+      "whole-packet/lf/ignore-owned-interpolation",
+      "whole-packet/lf/expect-owned-attribute",
+      "whole-packet/lf/ignore-owned-attribute",
+      "whole-packet/lf/expect-owned-foreign-sibling",
+      "whole-packet/lf/ignore-owned-foreign-sibling",
+      "whole-packet/lf/shorthand-free",
+      "whole-packet/lf/typeof-value-free",
+      "whole-packet/lf/object-key",
+      "whole-packet/lf/member-key",
+      "whole-packet/lf/string-comment-role",
+      "whole-packet/lf/template-literal-raw",
+      "whole-packet/lf/template-literal-value",
+      "whole-packet/lf/callback-shadow",
+      "whole-packet/lf/callback-mixed",
+      "whole-packet/lf/callback-free",
+      "whole-packet/lf/computed-key-free",
+      "whole-packet/lf/mixed-loop-scope",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/lf/destructured-callback-shadow",
+      "whole-packet/crlf-unicode/original",
+      "whole-packet/crlf-unicode/valid",
+      "whole-packet/crlf-unicode/undeclared-only",
+      "whole-packet/crlf-unicode/repaired",
+      "whole-packet/crlf-unicode/repeated",
+      "whole-packet/crlf-unicode/optional",
+      "whole-packet/crlf-unicode/call",
+      "whole-packet/crlf-unicode/v-for-source",
+      "whole-packet/crlf-unicode/intentional-any",
+      "whole-packet/crlf-unicode/declared-unknown",
+      "whole-packet/crlf-unicode/plugin-valid",
+      "whole-packet/crlf-unicode/plugin-invalid",
+      "whole-packet/crlf-unicode/setup-shadow",
+      "whole-packet/crlf-unicode/loop-shadow",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/css-module",
+      "whole-packet/crlf-unicode/own-props",
+      "whole-packet/crlf-unicode/options-own-method",
+      "whole-packet/crlf-unicode/expect-error-opening-child",
+      "whole-packet/crlf-unicode/ignore-opening-child",
+      "whole-packet/crlf-unicode/expect-owned-interpolation",
+      "whole-packet/crlf-unicode/ignore-owned-interpolation",
+      "whole-packet/crlf-unicode/expect-owned-attribute",
+      "whole-packet/crlf-unicode/ignore-owned-attribute",
+      "whole-packet/crlf-unicode/expect-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/ignore-owned-foreign-sibling",
+      "whole-packet/crlf-unicode/shorthand-free",
+      "whole-packet/crlf-unicode/typeof-value-free",
+      "whole-packet/crlf-unicode/object-key",
+      "whole-packet/crlf-unicode/member-key",
+      "whole-packet/crlf-unicode/string-comment-role",
+      "whole-packet/crlf-unicode/template-literal-raw",
+      "whole-packet/crlf-unicode/template-literal-value",
+      "whole-packet/crlf-unicode/callback-shadow",
+      "whole-packet/crlf-unicode/callback-mixed",
+      "whole-packet/crlf-unicode/callback-free",
+      "whole-packet/crlf-unicode/computed-key-free",
+      "whole-packet/crlf-unicode/mixed-loop-scope",
+      "whole-packet/crlf-unicode/mixed-slot-scope",
+      "whole-packet/crlf-unicode/destructured-callback-shadow"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The exact #11499 generated helper successor shifted every complete transform packet while all 318 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the failed golden comparison run."
+  }
+}

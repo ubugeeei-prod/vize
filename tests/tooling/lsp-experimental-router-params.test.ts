@@ -63,7 +63,10 @@ function normalize(
 
 function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const entry = expected.generated[kind];
-  assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
+  assert.match(
+    entry.file,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers)?\.virtual\.ts\.txt$/u,
+  );
   const bytes = fs.readFileSync(path.join(custody, entry.file));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
   const historicalReceipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
@@ -114,7 +117,36 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   );
   assert.ok(strictTransition);
   assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
-  assert.equal(strictTransition.currentSha256, entry.sha256);
+  const canonLeftoversReceipt = fs.readFileSync(
+    path.join(custody, "canon-leftovers-20261108.json"),
+  );
+  assert.equal(
+    createHash("sha256").update(canonLeftoversReceipt).digest("hex"),
+    "3c798c9d6cc2ef02d1a59658ab43fe90631fd7a06f057b5aaeac1552bcae5dfd",
+  );
+  const canonLeftovers = JSON.parse(canonLeftoversReceipt.toString("utf8"));
+  assert.equal(canonLeftovers.schema, "vize.experimental-router-canon-leftovers-transition.v1");
+  assert.equal(canonLeftovers.issue, 11499);
+  assert.equal(canonLeftovers.pullRequest, 12162);
+  assert.equal(canonLeftovers.qualificationCredit, false);
+  const sourceReceipt = fs.readFileSync(path.join(root, canonLeftovers.sourceReceipt.path));
+  assert.equal(
+    createHash("sha256").update(sourceReceipt).digest("hex"),
+    canonLeftovers.sourceReceipt.sha256,
+  );
+  const canonTransition = canonLeftovers.entries.find(
+    (row: { current: { file: string } }) => row.current.file === entry.file,
+  );
+  assert.ok(canonTransition);
+  assert.equal(canonTransition.previous.sha256, strictTransition.currentSha256);
+  assert.equal(canonTransition.current.sha256, entry.sha256);
+  const previousBytes = fs.readFileSync(path.join(custody, canonTransition.previous.file));
+  assert.equal(previousBytes.length, canonTransition.previous.bytes);
+  assert.equal(
+    createHash("sha256").update(previousBytes).digest("hex"),
+    canonTransition.previous.sha256,
+  );
+  assert.equal(bytes.length, canonTransition.current.bytes);
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),

@@ -11,6 +11,11 @@ import {
 } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
 import { strictOutputTransition } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { createBuildIntegratedOutputTransition } from "./support/build-declaration-integrated-transition.ts";
+import {
+  canonLeftovers,
+  canonLeftoversOutputTransition,
+} from "./support/canon-leftovers-output-transition.ts";
+import { constructorSourceTransition } from "./support/declaration-slot-constructor-source-transition.ts";
 
 const originals = [
   [
@@ -82,110 +87,6 @@ const identity = (bytes: Buffer): Identity => ({
   bytes: bytes.length,
 });
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
-const currentConstructorSource: Identity = {
-  bytes: 10729,
-  sha256: "87339d14141883c2a602afc9268cc29e0e2573c6c5577d005c77806c379f1505",
-};
-const constructorSourceEdit = {
-  before:
-    [
-      "        append!(",
-      "            *ts,",
-      '            "type $ComponentConstructor = new <$AuthoredProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $UsePublicInstance<$AuthoredProps> extends true ? $ComponentInstance : $ReplaceComponentProps<{own}, $AuthoredKeyWitness<$AuthoredProps> & $ComponentInputProps<{props_ref}, {emit_props_ref}> & $ComponentInputGuard<{props_ref}, {emit_props_ref}, $AuthoredProps>> & "',
-      "        );",
-      "        if aliases.has_authored_default {",
-      "            append!(",
-      "                *ts,",
-      "                \"Omit<{authored_instance}, '$props' | '$emit' | '$slots'> & \"",
-      "            );",
-      "        }",
-      "        instance_base(",
-      "            ts,",
-      "            legacy_vue2,",
-      "            dialect,",
-      "            aliases.has_exposed_type,",
-      "            (aliases.has_root_el, aliases.has_refs),",
-      "        );",
-      '        ts.push_str(";\\n");',
-    ].join("\n") + "\n",
-  after:
-    [
-      "        // Constructor arguments (templates, `new`) bind `$AuthoredProps` and",
-      "        // leave undeclared attributes to the consumer's own excess-property",
-      "        // check; TSX binds `$JsxProps` and stays exact (#11629).",
-      "        append!(",
-      "            *ts,",
-      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
-      "        );",
-    ].join("\n") + "\n",
-};
-const constructorBaseSplitEdit = {
-  before:
-    [
-      '    ts.push_str(" & ");',
-      "    instance_base(",
-      "        ts,",
-      "        legacy_vue2,",
-      "        dialect,",
-      "        aliases.has_exposed_type,",
-      "        (aliases.has_root_el, aliases.has_refs),",
-      "    );",
-      '    ts.push_str(";\\n");',
-    ].join("\n") + "\n",
-  after:
-    [
-      "    let mut base = String::default();",
-      "    instance_base(",
-      "        &mut base,",
-      "        legacy_vue2,",
-      "        dialect,",
-      "        aliases.has_exposed_type,",
-      "        (aliases.has_root_el, aliases.has_refs),",
-      "    );",
-      '    ts.push_str(" & ");',
-      "    ts.push_str(&base);",
-      '    ts.push_str(";\\n");',
-    ].join("\n") + "\n",
-};
-
-function constructorSourceTransition(
-  current: Buffer,
-  direction: "forward" | "inverse",
-  historical: Identity,
-): Buffer {
-  const [fromIdentity, toIdentity, edits] =
-    direction === "inverse"
-      ? ([
-          currentConstructorSource,
-          historical,
-          [
-            [constructorSourceEdit.after, constructorSourceEdit.before],
-            [constructorBaseSplitEdit.after, constructorBaseSplitEdit.before],
-          ],
-        ] as const)
-      : ([
-          historical,
-          currentConstructorSource,
-          [
-            [constructorBaseSplitEdit.before, constructorBaseSplitEdit.after],
-            [constructorSourceEdit.before, constructorSourceEdit.after],
-          ],
-        ] as const);
-  assert.deepEqual(identity(current), {
-    bytes: fromIdentity.bytes,
-    sha256: fromIdentity.sha256,
-  });
-  let text = current.toString("utf8");
-  for (const [from, to] of edits) {
-    assert.equal(text.split(from).length - 1, 1);
-    assert.equal(text.split(to).length - 1, 0);
-    text = text.replace(from, to);
-  }
-  const changed = Buffer.from(text);
-  assert.deepEqual(identity(changed), { bytes: toIdentity.bytes, sha256: toIdentity.sha256 });
-  return changed;
-}
-
 function constructorTransition(
   current: Buffer,
   direction: "forward" | "inverse",
@@ -249,7 +150,7 @@ function integratedOutputTransition(current: Buffer, direction: "forward" | "inv
       direction === "forward" ? [edit.before, edit.after] : [edit.after, edit.before];
     assert.equal(text.split(from).length - 1, 1);
     assert.equal(text.split(to).length - 1, 0);
-    text = text.replace(from, to);
+    text = text.replace(from, () => to);
   }
   const changed = Buffer.from(text);
   assert.deepEqual(identity(changed), toIdentity);
@@ -308,9 +209,9 @@ function overloadOutputTransition(current: Buffer, direction: "forward" | "inver
       ? [encoded(currentOverloadAsset), encoded(previousOverloadAsset)]
       : [encoded(previousOverloadAsset), encoded(currentOverloadAsset)];
   const text = current.toString("utf8");
-  assert.equal(text.split(from).length - 1, 1);
+  assert.ok(text.split(from).length - 1 >= 1);
   assert.equal(text.split(to).length - 1, 0);
-  return Buffer.from(text.replace(from, to));
+  return Buffer.from(text.replaceAll(from, to));
 }
 
 test("the declaration constructor successor authenticates the whole source and both complete outputs", () => {
@@ -319,17 +220,21 @@ test("the declaration constructor successor authenticates the whole source and b
   const previousSource = constructorSourceTransition(sourceBytes, "inverse", source);
   assert.deepEqual(constructorSourceTransition(previousSource, "forward", source), sourceBytes);
   const current = fs.readFileSync(path.join(repoRoot, output.path));
-  const strictEnvelope = overloadOutputTransition(current, "inverse");
+  const canonEnvelope = canonLeftoversOutputTransition(current, "inverse");
+  const strictEnvelope = overloadOutputTransition(canonEnvelope, "inverse");
   const integratedEnvelope = strictOutputTransition(strictEnvelope, "inverse");
   const discriminatedEnvelope = discriminatedOutputTransition(integratedEnvelope, "inverse");
   const ownedEnvelope = integratedOutputTransition(discriminatedEnvelope, "inverse");
   const previous = constructorTransition(ownedEnvelope, "inverse");
   assert.deepEqual(constructorTransition(previous, "forward"), ownedEnvelope);
   assert.deepEqual(
-    overloadOutputTransition(
-      strictOutputTransition(
-        discriminatedOutputTransition(
-          integratedOutputTransition(ownedEnvelope, "forward"),
+    canonLeftoversOutputTransition(
+      overloadOutputTransition(
+        strictOutputTransition(
+          discriminatedOutputTransition(
+            integratedOutputTransition(ownedEnvelope, "forward"),
+            "forward",
+          ),
           "forward",
         ),
         "forward",
@@ -413,7 +318,7 @@ const historicalRecursive =
 
 // #11445 later key-remapped the public instance base; invert it first.
 const currentSharedPublicBase =
-  "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;";
+  "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', symbol extends keyof C ? {} : C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;";
 const currentPublicBase =
   "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;";
 const historicalPublicBase =
@@ -461,6 +366,18 @@ const successors = [
 
 function historicalSnapshot(current: Buffer, digest: string): Buffer {
   let text = current.toString("utf8");
+  const appliedCanonLeftovers: Array<{ before: string; after: string }> = [];
+  for (const edit of canonLeftovers) {
+    const now = encoded(edit.after),
+      then = encoded(edit.before);
+    const nowCount = text.split(now).length - 1,
+      thenCount = text.split(then).length - 1;
+    assert.ok(nowCount <= 1 && thenCount <= 1);
+    if (nowCount === 1) {
+      text = text.replace(now, () => then);
+      appliedCanonLeftovers.push(edit);
+    }
+  }
   for (const [now, then] of successors) {
     assert.equal(text.split(now).length - 1, 1);
     assert.equal(text.split(then).length - 1, 0);
@@ -470,6 +387,9 @@ function historicalSnapshot(current: Buffer, digest: string): Buffer {
   assert.equal(createHash("sha256").update(historical).digest("hex"), digest);
   let restored = historical.toString("utf8");
   for (const [now, then] of [...successors].reverse()) restored = restored.replace(then, now);
+  for (const edit of [...appliedCanonLeftovers].reverse()) {
+    restored = restored.replace(encoded(edit.before), () => encoded(edit.after));
+  }
   assert.deepEqual(Buffer.from(restored), current);
   return historical;
 }
@@ -483,9 +403,13 @@ for (const [name, digest, successorDigest] of originals) {
     const constructor = constructorSuccessors.find(
       (successor) => `${name}_slot_reexport.snap` === path.basename(successor.output.path),
     );
+    const canonEnvelope =
+      constructor === constructorSuccessor
+        ? canonLeftoversOutputTransition(currentSlot, "inverse")
+        : currentSlot;
     const integratedEnvelope = constructor
-      ? overloadOutputTransition(currentSlot, "inverse")
-      : currentSlot;
+      ? overloadOutputTransition(canonEnvelope, "inverse")
+      : canonEnvelope;
     const strictEnvelope =
       constructor === constructorSuccessor
         ? strictOutputTransition(integratedEnvelope, "inverse")

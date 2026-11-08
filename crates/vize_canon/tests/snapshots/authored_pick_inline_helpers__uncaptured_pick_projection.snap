@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/tests/authored_pick_inline_helpers.rs
+assertion_line: 112
 expression: virtual_ts.as_str()
 ---
 /// <reference lib="es2022" />
@@ -80,7 +81,7 @@ type $ReplaceComponentProps<T, P> = $PatternSafeOmit<T, '$props'> & { $props: P 
 type $PublicEmit<T, S = __EmitShape<T>, K extends keyof S & string = keyof S & string> = S extends (...args: any[]) => any ? S : [K] extends [never] ? (event: string, ...args: any[]) => void : __EmitFn<T>;
 type $PublicSlots<T> = [keyof T] extends [never] ? import('vue').ComponentPublicInstance['$slots'] : T;
 // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.
-type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;
+type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', symbol extends keyof C ? {} : C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;
 // @ts-ignore TS2694/TS2307: a `vue` without `NativeElements` must degrade native prop checks to unchecked, never error. See virtual_ts/expressions/native_props.rs.
 type $NativeElements = import('vue').NativeElements;
 type $NativeElement<Tag extends PropertyKey> = Tag extends keyof $NativeElements ? $NativeElements[Tag] : unknown;
@@ -134,7 +135,7 @@ function __setup() {
   const named = (value: string) => value
   const handler = ref(named)
   
-  // @vize-map: 15833:15909 -> 0:118
+  // @vize-map: 15863:15939 -> 0:118
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -297,7 +298,7 @@ type $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => 
 type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}` ? `${Head}${Capitalize<$Camelize<Tail>>}` : S;
 type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
 type $EmitPropsFromOptions<T> = { [K in keyof T & string as ($Camelize<K> extends keyof T ? string extends keyof T ? $HandlerKey<K> : never : $HandlerKey<K>) | `on${Capitalize<K>}`]?: T[K] };
-type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> & (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});
+type $ResolvedEmitProps<T, O = __EmitOptions<T>, L = $LiteralEmitOptions<T>> = $IsAny<T> extends true ? $EmitPropsFromOptions<O> : string extends keyof O ? [keyof L] extends [never] ? $EmitPropsFromOptions<O> : $EmitPropsFromOptions<O> & $EmitPropsFromOptions<L> : $EmitPropsFromOptions<O>;
 type __EmitProps<T> = $ResolvedEmitProps<T>;
 
 // ========== Default Export ==========
