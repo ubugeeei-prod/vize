@@ -247,6 +247,10 @@ function isStaticNode(node: FrescoNode): boolean {
   return node.props.internal_static === true || node.props.internalStatic === true;
 }
 
+function isStaticItemNode(node: FrescoNode): boolean {
+  return node.props.internal_static_item === true || node.props.internalStaticItem === true;
+}
+
 function joinOutput(parts: string[], separator = "\n"): string {
   return parts.filter(Boolean).join(separator);
 }
@@ -283,13 +287,14 @@ function captureStaticOutput(node: FrescoNode, renderedStaticItems: Map<number, 
   function visit(current: FrescoNode) {
     if (isStaticNode(current)) {
       const renderedItems = renderedStaticItems.get(current.id) ?? 0;
-      const nextItems = current.children.slice(renderedItems);
+      const staticItems = current.children.filter(isStaticItemNode);
+      const nextItems = staticItems.slice(renderedItems);
       const nextOutput = joinOutput(
         nextItems.map((child) => treeToString(child)),
         "\n",
       );
       if (nextOutput) output.push(nextOutput);
-      renderedStaticItems.set(current.id, current.children.length);
+      renderedStaticItems.set(current.id, staticItems.length);
       return;
     }
 
