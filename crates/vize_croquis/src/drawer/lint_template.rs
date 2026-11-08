@@ -53,9 +53,7 @@ impl Drawer {
     /// Draw lint facts from L1/L2 without a second template parse.
     pub fn draw_lint_template(&mut self, template: LintTemplate<'_, '_>) -> &mut Self {
         let root = CompatibilityRoot::new(template).build();
-        self.l1_l2_template = true;
         self.draw_template(&root);
-        self.l1_l2_template = false;
         self
     }
 }
@@ -260,7 +258,16 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
 
         if let Some(value) = attribute.value.as_ref() {
             let span = self.token_span(&value.content);
-            node.exp = Some(self.expression(self.decoded_value(value), span, false));
+            let mut expression = self.expression(self.decoded_value(value), span, false);
+            if name == "slot"
+                && let ExpressionNode::Simple(expression) = &mut expression
+            {
+                expression.js_ast = Some(vize_armature::retain_slot_parameters_in(
+                    self.allocator,
+                    expression.content,
+                ));
+            }
+            node.exp = Some(expression);
         } else if name == "bind"
             && let Some(ExpressionNode::Simple(argument)) = node.arg.as_ref()
             && argument.is_static

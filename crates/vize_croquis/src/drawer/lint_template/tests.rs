@@ -61,7 +61,7 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
 }
 
 #[test]
-fn l1_l2_slot_props_fall_back_to_decoded_authored_text() {
+fn l1_l2_slot_props_retain_decoded_authored_text() {
     let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
     let allocator = Allocator::default();
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
@@ -83,11 +83,14 @@ fn l1_l2_slot_props_fall_back_to_decoded_authored_text() {
     let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
         panic!("slot expression")
     };
-    assert!(
-        expression.js_ast.is_none(),
-        "fixture must exercise text fallback"
-    );
     assert_eq!(expression.content, "{ value = \"fallback\", ...rest }");
+    assert!(
+        expression
+            .js_ast
+            .and_then(|retained| retained.as_slot_parameters())
+            .is_some_and(|parameters| parameters.is_ok()),
+        "decoded slot parameters must retain their owned grammar role"
+    );
 
     let mut drawer = Drawer::for_lint();
     drawer.draw_lint_template(template);

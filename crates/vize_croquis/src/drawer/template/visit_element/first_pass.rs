@@ -111,13 +111,7 @@ impl Drawer {
                             "croquis.template.v_slot.extract_props",
                             match (exp, authored) {
                                 (ExpressionNode::Simple(node), Some(_)) =>
-                                    extract_retained_slot_prop_bindings(node).unwrap_or_else(|| {
-                                        if self.l1_l2_template {
-                                            extract_slot_prop_bindings(node.content)
-                                        } else {
-                                            SmallVec::new()
-                                        }
-                                    }),
+                                    extract_retained_slot_prop_bindings(node).unwrap_or_default(),
                                 _ => SmallVec::new(),
                             }
                         );
