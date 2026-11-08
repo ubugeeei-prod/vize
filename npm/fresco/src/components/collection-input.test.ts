@@ -96,5 +96,10 @@ test("List keeps keyboard navigation visible and selects by stable key", async (
 
   await typeChars("d");
   assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
+
+  await dispatchKey({ key: "pagedown" });
+  assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
+  await dispatchKey({ key: "pageup" });
+  assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
   mounted.unmount();
 });

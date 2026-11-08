@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -75,8 +76,7 @@ export const Select = defineComponent({
   emits: ["update:modelValue", "select"],
   setup(props, { emit }) {
     const highlightedIndex = ref(-1);
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     // Find initial index based on modelValue
     watch(
@@ -127,17 +127,10 @@ export const Select = defineComponent({
         if (key === "end") highlightedIndex.value = lastEnabledIndex(props.options);
       },
       onChar: (character) => {
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         highlightedIndex.value = typeaheadIndex(
           props.options,
           highlightedIndex.value,
-          typeahead,
+          typeahead.push(character),
           (option) => option.label,
         );
       },
