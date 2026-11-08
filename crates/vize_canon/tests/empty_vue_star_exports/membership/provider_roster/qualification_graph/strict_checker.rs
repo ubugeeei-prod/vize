@@ -1,4 +1,4 @@
-use super::{Checked, Value, bound, load};
+use super::{Checked, Value, bound, fs, load, support};
 use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-strict-checker-update-11628.json";
@@ -24,6 +24,32 @@ pub(super) struct StrictCheckerQualificationGraph<'a> {
     pub(super) manifest: &'a [u8],
     pub(super) checker_declaration: &'a [u8],
     pub(super) strict_declaration: &'a [u8],
+}
+
+pub(super) fn authorize(
+    predecessor: &Value,
+    predecessor_bytes: &[u8],
+    lock: &[u8],
+    package: &[u8],
+    workspace: &[u8],
+) -> Checked<Value> {
+    let successor = update();
+    let manifest = fs::read(support::repository().join(MANIFEST))
+        .map_err(|_| "complete strict checker manifest")?;
+    let checker_declaration = fs::read(support::repository().join(CHECKER_DECLARATION))
+        .map_err(|_| "complete checker declaration")?;
+    let strict_declaration = fs::read(support::repository().join(STRICT_DECLARATION))
+        .map_err(|_| "complete strict checker declaration")?;
+    let graph = StrictCheckerQualificationGraph {
+        lock,
+        package,
+        workspace,
+        manifest: &manifest,
+        checker_declaration: &checker_declaration,
+        strict_declaration: &strict_declaration,
+    };
+    verify(predecessor, predecessor_bytes, &successor, &graph)?;
+    Ok(successor)
 }
 
 pub(super) fn verify(
