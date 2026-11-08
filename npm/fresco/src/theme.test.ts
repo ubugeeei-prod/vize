@@ -3,12 +3,8 @@ import { test } from "vitest";
 import { defineComponent, h, nextTick, ref } from "vue";
 
 import { firstChild, mountFresco } from "./testing/mount.js";
-import {
-  defaultFrescoTheme,
-  provideFrescoTheme,
-  resolveFrescoTheme,
-  useFrescoTheme,
-} from "./theme.js";
+import { ThemeProbe } from "./theme-probe.test-support.js";
+import { defaultFrescoTheme, provideFrescoTheme, resolveFrescoTheme } from "./theme.js";
 
 test("resolves partial tokens without mutating static defaults", () => {
   const resolved = resolveFrescoTheme(defaultFrescoTheme, {
@@ -25,47 +21,31 @@ test("resolves partial tokens without mutating static defaults", () => {
 
 test("inherits reactive scoped overrides through component subtrees", async () => {
   const accent = ref("yellow");
-  const ThemedText = defineComponent({
-    setup() {
-      const theme = useFrescoTheme();
-      return () =>
-        h("text", {
-          text: theme.value.colors.accent,
-          reducedMotion: theme.value.motion.reduced,
-        });
-    },
-  });
-  const NestedScope = defineComponent({
-    setup() {
-      provideFrescoTheme({ motion: { reduced: true } });
-      return () => h(ThemedText);
-    },
-  });
   const RootScope = defineComponent({
+    name: "RootThemeScope",
     setup() {
-      provideFrescoTheme(() => ({ colors: { accent: accent.value } }));
-      return () => h("box", [h(ThemedText), h(NestedScope)]);
+      provideFrescoTheme(() => ({
+        colors: { accent: accent.value },
+        motion: { reduced: true },
+      }));
+      return () => h("box", [h(ThemeProbe)]);
     },
   });
   const mounted = mountFresco(() => h(RootScope));
-  const root = firstChild(mounted);
+  const probe = () => firstChild(mounted).children[0]?.props;
 
-  assert.deepEqual(
-    root.children.map((node) => [node.props.text, node.props.reducedMotion]),
-    [
-      ["yellow", false],
-      ["yellow", true],
-    ],
-  );
+  assert.deepEqual(probe(), {
+    accent: "yellow",
+    primary: "cyan",
+    reducedMotion: true,
+  });
 
   accent.value = "green";
   await nextTick();
-  assert.deepEqual(
-    root.children.map((node) => [node.props.text, node.props.reducedMotion]),
-    [
-      ["green", false],
-      ["green", true],
-    ],
-  );
+  assert.deepEqual(probe(), {
+    accent: "green",
+    primary: "cyan",
+    reducedMotion: true,
+  });
   mounted.unmount();
 });
