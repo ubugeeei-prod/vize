@@ -103,7 +103,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
                 },
                 template_ast
                     .as_ref()
-                    .and_then(|(root, _, _, fatal)| (!*fatal).then_some(root)),
+                    .and_then(|(_, l2, _, fatal)| (!*fatal).then_some(l2.surface())),
             ),
         )
     };

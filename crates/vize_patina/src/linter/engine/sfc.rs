@@ -172,7 +172,7 @@ impl Linter {
                 (!has_fatal_parse_errors
                     && template.src.is_none()
                     && template.lang.as_deref().is_none_or(|lang| lang == "html"))
-                .then_some(&root),
+                .then_some(l2.surface()),
             );
         }
         result

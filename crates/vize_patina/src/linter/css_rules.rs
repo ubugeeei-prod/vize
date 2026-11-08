@@ -166,7 +166,7 @@ pub(crate) fn append_builtin_css_diagnostics(
     linter: &Linter,
     descriptor: &SfcDescriptor<'_>,
     result: &mut LintResult,
-    template_root: Option<&vize_relief::RootNode<'_>>,
+    template_surface: Option<&vize_l1::markup::SurfaceTree<'_>>,
 ) {
     if descriptor.styles.is_empty() {
         return;
@@ -185,9 +185,9 @@ pub(crate) fn append_builtin_css_diagnostics(
                     .styles
                     .iter()
                     .any(|style| style.content.contains(":global("))
-                && let Some(root) = template_root
+                && let Some(surface) = template_surface
             {
-                Box::new(NoDisplayNoneForTemplate::new(root)) as Box<dyn CssRule>
+                Box::new(NoDisplayNoneForTemplate::new(surface)) as Box<dyn CssRule>
             } else {
                 rule
             };
