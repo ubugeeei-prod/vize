@@ -63,12 +63,7 @@ pub(super) fn variant(
     if unused {
         drawer = drawer.with_unused_bindings();
     }
-    let lowered = l2.lowered();
-    drawer.draw_lint_template(LintTemplate::new(
-        l2.surface(),
-        lowered.allocator,
-        &lowered.root,
-    ));
+    drawer.draw_lint_template(LintTemplate::new(l2));
     let mut analysis = drawer.finish();
     if unused {
         let reads = v_for_source_reads(root);

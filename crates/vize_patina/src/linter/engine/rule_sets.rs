@@ -150,10 +150,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     };
     vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template(
         scripts,
-        template.map(|template| {
-            let lowered = template.lowered();
-            LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
-        }),
+        template.map(LintTemplate::new),
         options,
     )
 }
@@ -193,10 +190,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     let (mut analysis, packet) =
         vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences(
             scripts,
-            template.map(|template| {
-                let lowered = template.lowered();
-                LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
-            }),
+            template.map(LintTemplate::new),
             options,
         );
     let component_reads = analysis.croquis.authored_component_reads_are_qualified();

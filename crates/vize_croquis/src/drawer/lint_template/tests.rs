@@ -1,9 +1,30 @@
-use super::{CompatibilityRoot, LintTemplate};
+use super::{CompatibilityRoot, LintTemplate, LintTemplateSource};
 use crate::Drawer;
 use vize_armature::Parser;
 use vize_l0::Allocator;
-use vize_l1_to_l2::lower_preserving_comments;
+use vize_l1::markup::SurfaceTree;
+use vize_l1_to_l2::{Lowered, lower_preserving_comments};
+use vize_l2::op::Region;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
+
+struct TestLintTemplate<'t, 'a> {
+    surface: &'t SurfaceTree<'a>,
+    lowered: &'t Lowered<'a>,
+}
+
+impl<'a> LintTemplateSource<'a> for TestLintTemplate<'_, 'a> {
+    fn surface(&self) -> &SurfaceTree<'a> {
+        self.surface
+    }
+
+    fn allocator(&self) -> &'a Allocator {
+        self.lowered.allocator
+    }
+
+    fn root(&self) -> &Region<'a> {
+        &self.lowered.root
+    }
+}
 
 const CASES: &[&str] = &[
     "<div id=app :aria-controls=panel>{{ title }}<input ref=field></div>",
@@ -33,15 +54,15 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
         let (surface, errors) = vize_l1::markup::parse(&allocator, source);
         assert!(errors.is_empty(), "L1 fixture must parse: {source}");
         let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+        let template = TestLintTemplate {
+            surface: &surface,
+            lowered: &lowered,
+        };
 
         let mut expected = Drawer::for_lint();
         expected.draw_template(&legacy);
         let mut actual = Drawer::for_lint();
-        actual.draw_lint_template(LintTemplate::new(
-            &surface,
-            lowered.allocator,
-            &lowered.root,
-        ));
+        actual.draw_lint_template(LintTemplate::new(&template));
 
         let actual = actual.finish().semantic_snapshot();
         let expected = expected.finish().semantic_snapshot();
@@ -66,13 +87,41 @@ fn l1_l2_lint_projection_matches_relief_semantics() {
 }
 
 #[test]
+fn l1_l2_static_attribute_entities_are_decoded() {
+    let source = "<p title=\"&fjlig;&amp;&#x1f642;\">entities</p>";
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    assert!(errors.is_empty());
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let input = TestLintTemplate {
+        surface: &surface,
+        lowered: &lowered,
+    };
+    let root = CompatibilityRoot::new(LintTemplate::new(&input)).build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("element root")
+    };
+    let PropNode::Attribute(attribute) = &element.props[0] else {
+        panic!("title attribute")
+    };
+    assert_eq!(
+        attribute.value.as_ref().expect("title value").content,
+        "fj&🙂"
+    );
+}
+
+#[test]
 fn l1_l2_slot_props_retain_decoded_authored_text() {
     let source = "<Child v-slot=\"{ value = &quot;fallback&quot;, ...rest }\">{{ value }}</Child>";
     let allocator = Allocator::default();
     let (surface, errors) = vize_l1::markup::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
-    let template = LintTemplate::new(&surface, lowered.allocator, &lowered.root);
+    let input = TestLintTemplate {
+        surface: &surface,
+        lowered: &lowered,
+    };
+    let template = LintTemplate::new(&input);
     let root = CompatibilityRoot::new(template).build();
     let TemplateChildNode::Element(element) = &root.children[0] else {
         panic!("component root")

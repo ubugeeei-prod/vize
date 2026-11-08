@@ -31,30 +31,36 @@ mod tests;
 /// One completed template artifact for lint semantic analysis.
 #[derive(Clone, Copy)]
 pub struct LintTemplate<'t, 'a> {
-    surface: &'t SurfaceTree<'a>,
-    allocator: &'a Allocator,
-    root: &'t Region<'a>,
+    source: &'t dyn LintTemplateSource<'a>,
+}
+
+#[cfg(target_pointer_width = "64")]
+const _: () = assert!(core::mem::size_of::<LintTemplate<'_, '_>>() == 16);
+
+/// Parse and lowering owners exposed to the lint projection without a
+/// dependency on the lowering crate.
+pub trait LintTemplateSource<'a> {
+    /// Lossless authored template surface.
+    fn surface(&self) -> &SurfaceTree<'a>;
+
+    /// Arena that owns the lowered artifact and projected compatibility nodes.
+    fn allocator(&self) -> &'a Allocator;
+
+    /// Root of the completed L2 lowering.
+    fn root(&self) -> &Region<'a>;
 }
 
 impl<'t, 'a> LintTemplate<'t, 'a> {
     /// Pair the lossless L1 surface with the L2 lowering produced from it.
     #[must_use]
-    pub const fn new(
-        surface: &'t SurfaceTree<'a>,
-        allocator: &'a Allocator,
-        root: &'t Region<'a>,
-    ) -> Self {
-        Self {
-            surface,
-            allocator,
-            root,
-        }
+    pub fn new(source: &'t impl LintTemplateSource<'a>) -> Self {
+        Self { source }
     }
 
     /// Original template source shared by both stages.
     #[must_use]
-    pub const fn source(self) -> &'a str {
-        self.surface.source
+    pub fn source(self) -> &'a str {
+        self.source.surface().source
     }
 }
 
@@ -79,7 +85,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     fn new(template: LintTemplate<'t, 'a>) -> Self {
         let mut expressions = std::vec::Vec::new();
         let mut elements = std::vec::Vec::new();
-        collect_region(template.root, &mut expressions, &mut elements);
+        collect_region(template.source.root(), &mut expressions, &mut elements);
         let mut expression_index = FxHashMap::default();
         expression_index.reserve(expressions.len());
         for expression in expressions {
@@ -94,8 +100,8 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             element_index.entry(identity.start).or_insert(identity);
         }
         Self {
-            allocator: template.allocator,
-            surface: template.surface,
+            allocator: template.source.allocator(),
+            surface: template.source.surface(),
             expressions: expression_index,
             elements: element_index,
         }
