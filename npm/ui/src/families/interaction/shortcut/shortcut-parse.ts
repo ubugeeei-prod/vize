@@ -74,6 +74,7 @@ export function detectShortcutPlatform(): ShortcutPlatform {
   return applePlatformPattern.test(surface) ? "apple" : "standard";
 }
 
+/** Resolve an explicit shortcut platform or detect the current environment. */
 export function readPlatform(platform: ShortcutPlatform | undefined): ShortcutPlatform {
   if (platform === undefined) return detectShortcutPlatform();
   if (!platforms.has(platform)) {

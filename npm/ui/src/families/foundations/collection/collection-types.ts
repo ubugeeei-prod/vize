@@ -93,10 +93,10 @@ export interface CollectionRegistryOptions<Key extends CollectionKey> {
    */
   readonly disabledBehavior?: CollectionDisabledBehavior;
 
-  /** Locale-aware comparator used by typeahead matching. */
+  /** Locale-aware comparator used by typeahead matching. @default an accent-insensitive search collator for the host locale */
   readonly collator?: Intl.Collator;
 
-  /** Called synchronously after a distinct active-key transition. */
+  /** Called synchronously after a distinct active-key transition. @default undefined */
   readonly onActiveKeyChange?: (change: CollectionActiveChange<Key>) => void;
 }
 
@@ -140,7 +140,7 @@ export interface CollectionTextSearchOptions<Key extends CollectionKey> {
    */
   readonly loop?: boolean;
 
-  /** Per-search locale comparator override. */
+  /** Per-search locale comparator override. @default the registry collator */
   readonly collator?: Intl.Collator;
 }
 

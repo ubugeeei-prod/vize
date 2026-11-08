@@ -94,19 +94,19 @@ export interface DismissableLayerOptions {
   /** Whether non-composing Escape keydown can request dismissal. @default true */
   readonly escapeKey?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Called before an outside pointer-down dismissal is committed. */
+  /** Called before an outside pointer-down dismissal is committed. @default undefined */
   readonly onPointerDownOutside?: (event: DismissableLayerPointerDownOutsideEvent) => void;
 
-  /** Called before an outside focus dismissal is committed. */
+  /** Called before an outside focus dismissal is committed. @default undefined */
   readonly onFocusOutside?: (event: DismissableLayerFocusOutsideEvent) => void;
 
-  /** Called for every outside pointer or focus interaction before dismissal is committed. */
+  /** Called for every outside pointer or focus interaction before dismissal is committed. @default undefined */
   readonly onInteractOutside?: (event: DismissableLayerInteractOutsideEvent) => void;
 
-  /** Called before an Escape dismissal is committed. */
+  /** Called before an Escape dismissal is committed. @default undefined */
   readonly onEscapeKeyDown?: (event: DismissableLayerEscapeKeyDownEvent) => void;
 
-  /** Called after a top-layer dismissal request has not been prevented. */
+  /** Called after a top-layer dismissal request has not been prevented. @default undefined */
   readonly onDismiss?: (event: DismissableLayerDismissEvent) => void;
 }
 

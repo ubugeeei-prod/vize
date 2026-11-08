@@ -53,7 +53,7 @@ pub fn compile_script_setup(
     ctx.analyze();
     validate_macro_scope_and_props(&ctx, 0, content)?;
     let mut erasure = Erasure::for_javascript(!is_ts, &mut ctx);
-
+    crate::script::transform_define_expose_destructured_props(&mut ctx)?;
     // Assembled in the heap buffer that becomes the returned code.
     let mut output: Vec<u8> = Vec::with_capacity(4096);
 

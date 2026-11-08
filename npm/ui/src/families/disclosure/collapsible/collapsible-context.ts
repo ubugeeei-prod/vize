@@ -17,4 +17,5 @@ export interface CollapsibleContextValue {
   readonly toggle: (event?: Event | null) => boolean;
 }
 
+/** Required context shared by one Collapsible compound component tree. */
 export const collapsibleContext = createContext<CollapsibleContextValue>("Collapsible");

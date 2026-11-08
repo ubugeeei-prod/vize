@@ -86,8 +86,10 @@ export interface UiFamilyCatalogEntry {
   readonly owner: string;
 }
 
+/** Version of the machine-readable family catalog contract. */
 export const UI_FAMILY_CATALOG_SCHEMA_VERSION = 1;
 
+/** Evidence required before a non-rendering family is stable. */
 export const stableQualityGates = [
   "behavior-contract",
   "mounted-dom",
@@ -96,8 +98,10 @@ export const stableQualityGates = [
   "bundle-size",
 ] as const;
 
+/** Compile evidence required for DOM, SSR, and Vapor renderers. */
 export const rendererQualityGates = ["dom-compile", "ssr-compile", "vapor-compile"] as const;
 
+/** Evidence required for interaction families. */
 export const interactionQualityGates = [
   ...stableQualityGates,
   "ssr",
@@ -105,6 +109,7 @@ export const interactionQualityGates = [
   ...rendererQualityGates,
 ] as const;
 
+/** Evidence required for rendered component families. */
 export const componentQualityGates = [
   ...stableQualityGates,
   "ssr",
@@ -112,4 +117,5 @@ export const componentQualityGates = [
   ...rendererQualityGates,
 ] as const;
 
+/** Default ownership label for catalogued UI families. */
 export const catalogOwner = "ui-foundations";

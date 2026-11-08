@@ -20,7 +20,7 @@ export interface TagsInputEvaluateOptions<T> {
   /** Consumer validator, if any. */
   readonly validate: TagsInputValidator<T> | undefined;
 
-  /** Index being replaced by an inline edit; it is excluded from duplicate and max checks. */
+  /** Index being replaced by an inline edit; it is excluded from duplicate and max checks. @default undefined */
   readonly replaceIndex?: number;
 }
 

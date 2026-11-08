@@ -26,7 +26,7 @@ affected rows in the same PR.
 | OpenTUI          | opentui.com core-concepts/renderables documentation, retrieved 2026-07-19                                 |
 | Vue TermUI       | `posva/vue-termui` `main` branch exports (OpenTUI-based rewrite), retrieved 2026-07-19                    |
 
-Re-audited from main commit `2d5a33d8b8` (2026-11-08). External surfaces (Ink, OpenTUI, Vue
+Re-audited from main commit `44ea6f778a` (2026-11-08). External surfaces (Ink, OpenTUI, Vue
 TermUI) remain pinned by retrieval date (2026-07-19) rather than by an upstream revision, since none
 publish per-release documentation snapshots; re-audit against those sources as of that date. `—`
 means the surface has no equivalent.
@@ -68,7 +68,7 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 | —                  | `TabSelectRenderable` | `TabSelect` | `Tabs`                                      | Partial | Display + `v-model`; tab switching keys not owned (M2).                                                                 |
 | —                  | —                     | —           | `Checkbox`, `RadioGroup`, `Confirm`, `Form` | Partial | State rendering + `v-model`/emits; keyboard, validation, and focus semantics pending (M2).                              |
 | —                  | —                     | —           | `List`, `Menu`, `Tree`                      | Partial | Typed items, selection/expansion rendering; navigation, typeahead, and scrolling pending (M2).                          |
-| —                  | —                     | —           | `Modal`, `Tooltip`                          | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                          |
+| —                  | —                     | —           | `Modal`, `Tooltip` (typed SFC)              | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                          |
 | —                  | `SliderRenderable`    | —           | —                                           | Planned | Keyboard/mouse slider with range-safe typed model (M2).                                                                 |
 
 ### Display and rich components
@@ -94,12 +94,12 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 All are Implemented as display components and follow the same M2/M3 interaction and theming
 polish track as the tables above.
 
-| Group      | Components                                           |
-| ---------- | ---------------------------------------------------- |
-| Layout     | `Stack`/`HStack`/`VStack`, `Grid`, `Card`, `Divider` |
-| Feedback   | `Alert`, `Badge` (typed SFC), `Timer`, `Avatar`      |
-| Navigation | `Breadcrumb`, `Stepper` (`Menu`, `Tabs` above)       |
-| Chrome     | `StatusBar`, `Header`, `KeyHint`                     |
+| Group      | Components                                                              |
+| ---------- | ----------------------------------------------------------------------- |
+| Layout     | `Card` (typed SFC), `Stack`/`HStack`/`VStack`, `Grid`, `Divider`        |
+| Feedback   | `Alert` (typed SFC), `Badge` (typed SFC), `Avatar` (typed SFC), `Timer` |
+| Navigation | `Breadcrumb` (typed SFC), `Stepper` (`Menu`, `Tabs` above)              |
+| Chrome     | `Header` (typed SFC), `StatusBar`, `KeyHint`                            |
 
 ## Composables
 
@@ -144,8 +144,8 @@ parity but are intentional no-ops (see "Intentional differences"). Fresco adds `
 
 | Capability                              | OpenTUI expectation                                                         | Fresco today                                                                                                                                                                                                                                                                                       | Status      |
 | --------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Renderable lifecycle                    | `add`/`remove`/`destroyRecursively`, `onUpdate`/`onResize`/`onRemove` hooks | Vue vnode lifecycle drives a JS tree; the full node list is resent to Rust every frame; Rust `RenderTree` has dirty flags but no incremental protocol (M1).                                                                                                                                        | Partial     |
-| Stable IDs and lookup                   | `getRenderable(id)`, `findDescendantById`                                   | Renderer-assigned numeric ids; no lookup or registry API (M1).                                                                                                                                                                                                                                     | Partial     |
+| Renderable lifecycle                    | `add`/`remove`/`destroyRecursively`, `onUpdate`/`onResize`/`onRemove` hooks | Vue vnode lifecycle owns a stable JS registry with idempotent recursive disposal and create/update/declared-resize/remove observers. The full node list is still resent to Rust every dirty frame; a native incremental protocol remains (M1).                                                     | Partial     |
+| Stable IDs and lookup                   | `getRenderable(id)`, `findDescendantById`                                   | Renderer-assigned process-unique ids survive keyed moves; `getNode` and subtree-bounded `findDescendantById` expose read-only host views. Native-side lookup remains an M1 target.                                                                                                                 | Partial     |
 | Input routing                           | Per-renderable keyboard/mouse events with bubbling                          | Global `last*Event` refs consumed by composables; no targeting, capture/bubble, or cancellation (M1).                                                                                                                                                                                              | Partial     |
 | Mouse                                   | `onMouseDown`/`Over`/`Scroll`/`Drag`                                        | Native capture preserves action kind and modifiers through the JS protocol; `useMouse` consumes normalized wheel direction. No hit-testing or per-element routing yet (M1).                                                                                                                        | Partial     |
 | Focus model                             | `focus`/`blur`, focus events, `hasFocusedDescendant`                        | Ordered registry, enable/disable, autoFocus, parent IDs, descendant state, and global Tab order; no traps or delegation yet (M1).                                                                                                                                                                  | Partial     |
@@ -154,7 +154,7 @@ parity but are intentional no-ops (see "Intentional differences"). Fresco adds `
 | Custom drawing                          | `renderSelf`, `renderBefore`/`renderAfter`, frame buffers                   | Rust `NodeKind::Raw` line content only; no public typed extension API (M1).                                                                                                                                                                                                                        | Partial     |
 | Diff and paint                          | double-buffered native painting                                             | Double-buffered cell diff, border painting, Unicode-aware width/wrap (grapheme, CJK, emoji) in Rust.                                                                                                                                                                                               | Implemented |
 | Terminal control                        | raw mode, alternate screen                                                  | crossterm backend: raw mode, alternate screen, bracketed paste, mouse capture, cursor shape/visibility, truecolor detection.                                                                                                                                                                       | Implemented |
-| Idle efficiency                         | no frame work when idle                                                     | JS event loop polls (~16 ms) and repaints at the frame interval even when nothing changed; Rust diff limits terminal writes (M1 target: dirty-subtree scheduling).                                                                                                                                 | Partial     |
+| Idle efficiency                         | no frame work when idle                                                     | Host-tree mutations mark the next native frame dirty; an unchanged Vue tree does no layout, paint, or terminal flush work. Input polling remains active while the application is interactive; dirty-subtree rendering remains an M1 target.                                                        | Partial     |
 | IME                                     | —                                                                           | Full pipeline: platform backends (macOS/Windows/Linux), preedit/candidates, composition events, `TextInput` integration.                                                                                                                                                                           | Implemented |
 | Kitty keyboard                          | supported                                                                   | Flag/modifier helpers plus press/repeat/release event types.                                                                                                                                                                                                                                       | Implemented |
 | Streams and stdio                       | —                                                                           | Custom `stdin`/`stdout`/`stderr`, console patching, external writes repaint cleanly, non-interactive/CI plain-text mode with `Static` semantics.                                                                                                                                                   | Implemented |
