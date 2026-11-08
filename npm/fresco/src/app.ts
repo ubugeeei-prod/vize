@@ -30,8 +30,9 @@ import {
 } from "./composables/useStreams.js";
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import type { FrescoDevtools } from "./devtools.js";
-import { updateLastRenderLayouts } from "./layoutMetrics.js";
+import { getLastRenderLayouts, updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
+import { routeMouseInput } from "./mouseRouting.js";
 import { normalizeInputEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
@@ -425,7 +426,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let nonInteractiveOutput = "";
   let staticOutput = "";
   const renderedStaticItems = new Map<number, number>();
-  let lastRenderLayouts: LayoutResultNapi[] = [];
   let cursorPosition: CursorPosition | undefined;
   let hasCursorOverride = false;
   let instance: App;
@@ -445,7 +445,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       needsRender = true;
     },
   });
-  const { createApp: createVueApp } = renderer;
 
   function publishRenderMetrics(
     root: FrescoElement,
@@ -469,7 +468,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     try {
       // Plugins run before terminal initialization so installation failures
       // cannot leave raw mode, IME, or cursor state enabled.
-      const app = createVueApp(componentFromRoot(rootComponent));
+      const app = renderer.createApp(componentFromRoot(rootComponent));
       for (const install of pluginInstallers) install(app);
 
       const n = interactive ? await loadNative() : null;
@@ -575,8 +574,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     mounted = false;
     appContext = null;
     focusManager = null;
-    lastRenderLayouts = [];
-    updateLastRenderLayouts([]);
     cursorPosition = undefined;
     hasCursorOverride = false;
 
@@ -709,11 +706,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
         // Use renderTree which handles layout and painting
         native.renderTree(renderNodes);
-        let layouts: LayoutResultNapi[] = [];
-        if ("getLastRenderLayouts" in native) {
-          layouts = native.getLastRenderLayouts();
-        }
-        lastRenderLayouts = layouts;
+        const layouts: LayoutResultNapi[] =
+          "getLastRenderLayouts" in native ? native.getLastRenderLayouts() : [];
         updateLastRenderLayouts(layouts);
 
         applyCursorOverride();
@@ -749,15 +743,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         lastPasteEvent.value = normalized;
         break;
       case "mouse":
-        if (rootElement) {
-          const target = renderer.hitTest(
-            rootElement,
-            normalized.x,
-            normalized.y,
-            lastRenderLayouts,
-          );
-          if (target) renderer.dispatchInput(target.id, normalized);
-        }
+        if (rootElement) routeMouseInput(renderer, rootElement, normalized, getLastRenderLayouts());
         lastMouseEvent.value = normalized;
         break;
       case "focus":
