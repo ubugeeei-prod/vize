@@ -17,6 +17,7 @@ download_rust_script() (
     : > "$download_partial"
     curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
       --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
+      --retry 5 --retry-all-errors --retry-delay 1 \
       --header 'Accept: application/octet-stream' --header 'X-GitHub-Api-Version: 2022-11-28' \
       --output "$download_partial" "$download_api"
   }
