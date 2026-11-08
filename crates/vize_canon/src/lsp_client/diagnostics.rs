@@ -387,25 +387,40 @@ impl CorsaProjectClient {
         }
 
         let (documents, document_pairs) = self.editor_lsp_diagnostic_documents(uris)?;
+        let requests = document_pairs
+            .iter()
+            .map(|(external_uri, document_uri)| {
+                (external_uri.clone(), self.editor_document_uri(document_uri))
+            })
+            .collect::<Vec<_>>();
+        // One bounded batch owns one immutable query view. Preparing it inside
+        // the loop below would clone and compare the whole retained project for
+        // every requested URI, turning an N-document batch into O(N²) host work.
+        let reports = match self.request_with_editor_lsp_documents_recovery(&documents, |session| {
+            requests
+                .iter()
+                .map(|(external_uri, document_uri)| {
+                    session.diagnostics(document_uri).map_err(|error| {
+                        #[cfg(not(unix))]
+                        if error.as_str() == super::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED {
+                            return error;
+                        }
+                        cstr!("Failed to request LSP diagnostics for {external_uri}: {error}")
+                    })
+                })
+                .collect::<Result<Vec<_>, _>>()
+        }) {
+            Ok(reports) => reports,
+            #[cfg(not(unix))]
+            Err(error) if error.as_str() == super::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED => {
+                return Err(error);
+            }
+            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
+            Err(error) => return Err(error),
+        };
 
         let mut results = Vec::with_capacity(document_pairs.len());
-        for (external_uri, document_uri) in document_pairs {
-            let report = match self.diagnostics_via_editor_lsp(document_uri.as_str(), &documents) {
-                Ok(report) => report,
-                #[cfg(not(unix))]
-                Err(error) if error.as_str() == super::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED => {
-                    return Err(error);
-                }
-                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
-                    return Ok(None);
-                }
-                Err(error) => {
-                    return Err(cstr!(
-                        "Failed to request LSP diagnostics for {external_uri}: {error}"
-                    ));
-                }
-            };
-
+        for ((external_uri, _), report) in document_pairs.into_iter().zip(reports) {
             let diagnostics = self
                 .remap_phased_diagnostics(lsp_report::extract_diagnostics_with_provenance(report));
             self.diagnostics

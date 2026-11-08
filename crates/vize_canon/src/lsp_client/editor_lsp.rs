@@ -266,7 +266,7 @@ impl EditorLspSession {
         .map_err(|error| cstr!("Failed to request editor LSP signature help: {error}"))
     }
 
-    fn diagnostics(
+    pub(in crate::lsp_client) fn diagnostics(
         &mut self,
         document_uri: &str,
     ) -> Result<DocumentDiagnosticReportResult, String> {

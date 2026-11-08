@@ -2,6 +2,7 @@
 //! lazily spawned editor LSP session.
 
 use corsa::runtime::block_on;
+#[cfg(test)]
 use lsp_types::DocumentDiagnosticReportResult;
 use serde_json::Value;
 use std::path::PathBuf;
@@ -218,6 +219,7 @@ impl CorsaProjectClient {
         })
     }
 
+    #[cfg(test)]
     pub(in crate::lsp_client) fn diagnostics_via_editor_lsp(
         &mut self,
         document_uri: &str,
@@ -296,7 +298,7 @@ impl CorsaProjectClient {
         )
     }
 
-    fn request_with_editor_lsp_documents_recovery<T>(
+    pub(in crate::lsp_client) fn request_with_editor_lsp_documents_recovery<T>(
         &mut self,
         documents: &FxHashMap<String, String>,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,

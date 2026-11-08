@@ -162,6 +162,25 @@ pub(super) fn build_materialized_session_document_uri(`,
             }`,
   },
   {
+    // A diagnostic batch owns one editor view across all of its URI queries.
+    // Expose the existing recovery boundary only to its lsp_client sibling.
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before: "    fn request_with_editor_lsp_documents_recovery<T>(",
+    after: "    pub(in crate::lsp_client) fn request_with_editor_lsp_documents_recovery<T>(",
+  },
+  {
+    // The single-document adapter now exists only for native regression tests.
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before: "use corsa::runtime::block_on;\nuse lsp_types::DocumentDiagnosticReportResult;",
+    after:
+      "use corsa::runtime::block_on;\n#[cfg(test)]\nuse lsp_types::DocumentDiagnosticReportResult;",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
+    before: "    pub(in crate::lsp_client) fn diagnostics_via_editor_lsp(\n",
+    after: "    #[cfg(test)]\n    pub(in crate::lsp_client) fn diagnostics_via_editor_lsp(\n",
+  },
+  {
     // Checked access retains the exact open-URI owner selected by binary_search.
     path: "crates/vize_maestro/src/ide/corsa_support/authored_uri.rs",
     before: "            return Some(self.open_uris[index].clone());",
@@ -176,8 +195,8 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
   let headImages: Record<string, unknown> | undefined;
   return (side, path) => {
     const current = read(side, path);
-    const transition = currentSourceTransitions.find((entry) => entry.path === path);
-    if (side !== "head" || !current || !transition) return current;
+    const transitions = currentSourceTransitions.filter((entry) => entry.path === path);
+    if (side !== "head" || !current || transitions.length === 0) return current;
     if (!headImages) {
       const profile = profiles[2]!;
       const archive = bytes(read, "head", profile.path);
@@ -195,18 +214,31 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
     assert.ok(typeof encoded === "string");
     const original = Buffer.from(encoded, "base64");
     const before = original.toString("utf8");
-    assert.equal(before.split(transition.before).length, 2);
-    assert.equal(before.split(transition.after).length, 1);
-    const expected = Buffer.from(before.replace(transition.before, transition.after));
+    let expected = before;
+    for (const transition of transitions) {
+      const start = expected.indexOf(transition.before);
+      assert.notEqual(start, -1, `missing current source transition preimage: ${path}`);
+      assert.equal(
+        expected.indexOf(transition.before, start + transition.before.length),
+        -1,
+        `duplicate current source transition preimage: ${path}`,
+      );
+      expected = `${expected.slice(0, start)}${transition.after}${expected.slice(start + transition.before.length)}`;
+    }
     // Unknown bytes stay actual bytes, so the unchanged source gate refuses them.
-    if (!current.equals(expected)) return current;
-    const after = current.toString("utf8");
-    assert.equal(after.split(transition.after).length, 2);
-    assert.equal(
-      after.split(transition.before).length,
-      transition.after.split(transition.before).length,
-    );
-    assert.deepEqual(Buffer.from(after.replace(transition.after, transition.before)), original);
+    if (!current.equals(Buffer.from(expected))) return current;
+    let recovered = current.toString("utf8");
+    for (const transition of transitions.toReversed()) {
+      const start = recovered.indexOf(transition.after);
+      assert.notEqual(start, -1, `missing current source transition image: ${path}`);
+      assert.equal(
+        recovered.indexOf(transition.after, start + transition.after.length),
+        -1,
+        `duplicate current source transition image: ${path}`,
+      );
+      recovered = `${recovered.slice(0, start)}${transition.before}${recovered.slice(start + transition.after.length)}`;
+    }
+    assert.deepEqual(Buffer.from(recovered), original);
     return original;
   };
 }
