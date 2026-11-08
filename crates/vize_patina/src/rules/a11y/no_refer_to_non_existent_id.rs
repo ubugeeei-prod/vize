@@ -55,6 +55,7 @@ struct IdRefCheck {
 }
 
 #[derive(Default)]
+/// Implements the `a11y/no-refer-to-non-existent-id` lint rule.
 pub struct NoReferToNonExistentId;
 
 impl MarkupRule for NoReferToNonExistentId {

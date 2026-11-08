@@ -9,18 +9,28 @@ use super::NativeTemplateAttributeProfile;
 /// Source syntax only. Dynamic expressions and all values remain opaque.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateAttributeKind<'a> {
+    /// Plain authored attribute syntax with an optional opaque literal value.
     Static {
+        /// Exact authored attribute name.
         name: &'a str,
+        /// Exact authored value content, when a value is present.
         value: Option<&'a str>,
     },
+    /// A fixed, nonempty `v-bind` argument.
     Bind {
+        /// Exact checked binding argument.
         name: &'a str,
+        /// Original argument range.
         argument_range: Span,
     },
+    /// A dynamic `v-bind` argument whose expression remains opaque.
     DynamicBind {
+        /// Original dynamic argument range.
         argument_range: Span,
     },
+    /// A fixed event argument whose handler expression remains opaque.
     On {
+        /// Original event argument range.
         argument_range: Span,
     },
 }
@@ -86,10 +96,12 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
         Ok(Self { checked, kind })
     }
 
+    /// Returns the original attribute observation retained by the checked header.
     #[must_use]
     pub fn original(&self) -> &NativeAttribute<'o, 'a> {
         self.checked.original()
     }
+    /// Returns the complete original attribute range.
     #[must_use]
     pub fn range(&self) -> Span {
         self.checked.range()
@@ -99,10 +111,12 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
     pub fn directive(&self) -> Option<DirectiveName> {
         self.checked.directive()
     }
+    /// Returns the admitted source-syntax category.
     #[must_use]
     pub fn kind(&self) -> NativeTemplateAttributeKind<'a> {
         self.kind
     }
+    /// Returns the original attribute value content, if one was authored.
     #[must_use]
     pub fn value(&self) -> Option<&'a str> {
         self.original()
@@ -166,6 +180,7 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
         self.closed_textarea = true;
     }
 
+    /// Returns a closed-textarea capability after the bounded body was admitted.
     #[must_use]
     pub fn closed_textarea_owner(&self) -> Option<super::NativeTemplateClosedTextarea<'_, 'o, 'a>> {
         self.closed_textarea
@@ -179,10 +194,12 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
             .then_some(super::NativeTemplateClosedSelect { element: self })
     }
 
+    /// Returns the original element observation.
     #[must_use]
     pub fn original(&self) -> &NativeElement<'o, 'a> {
         &self.original
     }
+    /// Returns the ordered checked attributes retained from the original header.
     #[must_use]
     pub fn attributes(&self) -> &[NativeTemplateAttribute<'o, 'a>] {
         &self.attributes

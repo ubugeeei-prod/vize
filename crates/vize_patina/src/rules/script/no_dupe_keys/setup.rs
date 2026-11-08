@@ -21,10 +21,15 @@ use vize_l0::cstr;
 /// Normal-script evidence, borrowed from the existing SFC script pass.
 #[derive(Clone, Copy)]
 pub enum NoDupeKeysModuleScript<'a> {
+    /// The SFC has no normal `<script>` block.
     Absent,
+    /// A normal script exists but could not be parsed safely.
     Unavailable,
+    /// The normal script was parsed and can provide collision evidence.
     Parsed {
+        /// Parsed normal-script program.
         program: &'a Program<'a>,
+        /// Byte offset of the script block within the SFC source.
         offset: usize,
     },
 }

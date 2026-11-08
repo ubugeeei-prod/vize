@@ -33,6 +33,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/valid-v-memo` lint rule.
 pub struct ValidVMemo;
 
 impl Rule for ValidVMemo {

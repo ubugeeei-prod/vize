@@ -13,6 +13,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `type-aware/strict-boolean-expressions` lint rule.
 pub struct StrictBooleanExpressions;
 
 impl Rule for StrictBooleanExpressions {

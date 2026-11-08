@@ -127,6 +127,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ssr/no-hydration-mismatch` lint rule.
 pub struct NoHydrationMismatch;
 
 impl NoHydrationMismatch {
@@ -379,7 +380,6 @@ impl Rule for NoHydrationMismatch {
             return;
         }
 
-        // Check directive expressions
         if let Some(exp) = &directive.exp {
             let content = match exp {
                 ExpressionNode::Simple(s) => s.content,

@@ -23,6 +23,7 @@ pub struct NativeTemplateEventModifier<'s, 'e, 'a> {
 }
 
 impl<'a> NativeTemplateEventModifier<'_, '_, 'a> {
+    /// Returns the exact authored modifier token without its leading dot.
     #[must_use]
     pub fn text(&self) -> &'a str {
         self.text
