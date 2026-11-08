@@ -49,4 +49,20 @@ test("hit testing selects the topmost node within ancestor overflow clips", () =
     "visible overflow keeps out-of-bounds descendants targetable",
   );
   visible.unmount();
+
+  const axisAlias = mountFresco(() =>
+    h("box", { style: { overflowX: "hidden" } }, [h("text", { text: "below" })]),
+  );
+  const axisRoot = firstChild(axisAlias);
+  const below = axisRoot.children[0];
+  assert.ok(below);
+  assert.equal(
+    axisAlias.renderer.hitTest(axisRoot, 0, 1, [
+      { id: axisRoot.id, x: 0, y: 0, width: 2, height: 1 },
+      { id: below.id, x: 0, y: 1, width: 2, height: 1 },
+    ]),
+    undefined,
+    "native overflow aliases clip both paint and input axes",
+  );
+  axisAlias.unmount();
 });
