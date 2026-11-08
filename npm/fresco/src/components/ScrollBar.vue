@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 
 import { useMouse } from "../composables/useMouse.js";
 import { getLastRenderLayout, type DOMElement } from "../layoutMetrics.js";
@@ -25,7 +25,7 @@ const emit = defineEmits<{
   "update:offset": [offset: number];
 }>();
 
-const root = ref<DOMElement | null>(null);
+const root = useTemplateRef<DOMElement>("root");
 const dragGrabOffset = ref<number | null>(null);
 
 watch(
