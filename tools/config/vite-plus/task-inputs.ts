@@ -12,6 +12,7 @@ import type { PackagePath, TaskInput } from "./task-helpers.ts";
  */
 export const checkedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",
@@ -60,6 +61,7 @@ export const checkedPackagesBeforeNativeBuild = checkedPackagesViaVpRun.filter(
 
 export const packedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",
@@ -80,6 +82,7 @@ export const packedPackages = [
 
 export const testedPackages = [
   "./npm/cli",
+  "./npm/create-fresco",
   "./npm/builder/vite",
   "./npm/linter/oxlint",
   "./npm/builder/vite-musea",

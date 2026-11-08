@@ -17,6 +17,11 @@ export interface JsrPackageDescriptor {
 export const jsrPackages = [
   { directory: "npm/cli", jsrName: "@vizejs/vize", npmName: "vize" },
   {
+    directory: "npm/create-fresco",
+    jsrName: "@vizejs/create-fresco",
+    npmName: "@vizejs/create-fresco",
+  },
+  {
     directory: "npm/builder/vite",
     jsrName: "@vizejs/vite-plugin",
     npmName: "@vizejs/vite-plugin",
