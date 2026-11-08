@@ -23,9 +23,9 @@
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
-    "bytes": 1096018,
-    "sha256": "b9fa821c75151efae221bb10552cd548eb2fa95ccee1138b3e797e026b467f10",
-    "gitBlob": "892c00395c3282eb137abefa890a7183537d7069"
+    "bytes": 1089013,
+    "sha256": "0521d12a43d9d7945784a06628c0cf56acc9915713c30e1d9c99b493af352760",
+    "gitBlob": "68c91ac139dec9fc0544e94321ac55f651352a81"
   },
   "finalQualificationPackage": {
     "path": "package.json",
@@ -55,7 +55,7 @@
   ],
   "resolver": {
     "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
-    "fixedPointSha256": "b9fa821c75151efae221bb10552cd548eb2fa95ccee1138b3e797e026b467f10"
+    "fixedPointSha256": "0521d12a43d9d7945784a06628c0cf56acc9915713c30e1d9c99b493af352760"
   },
   "nativeAcceptanceCredit": false,
   "scope": "Move root-only development dependencies to the workspaces that execute them, retain the six root execution entry points, provide shared editor type resolution outside the extension package, and bind the complete generated resolver graph and every affected owner manifest. This record gives source provenance only."
