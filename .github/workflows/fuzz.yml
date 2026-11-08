@@ -246,4 +246,4 @@ jobs:
           FUZZ_EVENT_NAME: ${{ github.event_name }}
           FUZZ_OUTCOME: ${{ steps.fuzz.outcome || 'skipped' }}
           FUZZ_TARGET: ${{ matrix.target }}
-        run: rust-script tools/commands/ci/fuzz/enforce-result.rs "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"
+        run: node tools/commands/ci/fuzz/enforce-result.ts "$FUZZ_EVENT_NAME" "$FUZZ_TARGET" "$FUZZ_OUTCOME"
