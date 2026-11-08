@@ -1,10 +1,15 @@
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
+mod conditional;
 mod members;
 #[cfg(test)]
 use members::strip_comments;
 use members::{Member, parse_members, render_members};
 mod union;
+mod utility;
+
+use conditional::{conditional_checked_type, is_conditional_type, resolve_conditional_type};
+use utility::{is_supported_utility_type, resolve_utility_type};
 
 pub(crate) fn build_interface_type_source(
     source: &str,
@@ -352,220 +357,6 @@ fn resolve_type_to_object_body_inner(
     resolved
 }
 
-/// Return whether `type_expr` has a top-level conditional-type branch.
-fn is_conditional_type(type_expr: &str) -> bool {
-    split_top_level(type_expr, '?').len() == 2
-}
-
-/// Extract the checked type from a top-level `T extends U ? X : Y` expression.
-fn conditional_checked_type(type_expr: &str) -> Option<String> {
-    let condition = split_top_level(type_expr, '?');
-    let condition = condition.first()?;
-    split_top_level_extends(condition).map(|(checked, _)| checked.to_compact_string())
-}
-
-/// Resolve the selected object branch of a supported conditional type.
-fn resolve_conditional_type(
-    type_expr: &str,
-    checked_override: Option<&str>,
-    interfaces: &FxHashMap<String, String>,
-    type_aliases: &FxHashMap<String, String>,
-    stack: &mut FxHashSet<String>,
-    missing: &mut dyn FnMut(&str),
-    collect_missing: bool,
-) -> Option<String> {
-    let condition = split_top_level(type_expr, '?');
-    let (checked, constraint) = split_top_level_extends(condition.first()?)?;
-    let branches = split_top_level(condition.get(1)?, ':');
-    if branches.len() != 2 {
-        return None;
-    }
-
-    let checked = checked_override.unwrap_or(checked);
-    let mut ignored_missing = |_: &str| {};
-    let checked_body = resolve_type_to_object_body_inner(
-        checked,
-        interfaces,
-        type_aliases,
-        stack,
-        &mut ignored_missing,
-        false,
-    )?;
-    let mut inferred = FxHashMap::default();
-    let condition_matches = if constraint.trim() == "object" {
-        true
-    } else {
-        let pattern = constraint.trim().strip_prefix('{')?.strip_suffix('}')?;
-        let actual_members = parse_members(&checked_body);
-        let mut matches = true;
-        for expected in parse_members(pattern) {
-            let Some(actual) = actual_members
-                .iter()
-                .find(|member| member.key == expected.key)
-            else {
-                matches = false;
-                break;
-            };
-            if let Some(name) = expected.ty.trim().strip_prefix("infer ") {
-                if !is_type_reference_name(name) {
-                    return None;
-                }
-                inferred.insert(name.to_compact_string(), actual.ty.clone());
-            } else if expected.ty != actual.ty {
-                return None;
-            }
-        }
-        matches
-    };
-
-    let selected = if condition_matches {
-        branches.first()?
-    } else {
-        branches.get(1)?
-    };
-    let selected = inferred
-        .get(selected.trim())
-        .map_or(selected.as_str(), String::as_str);
-    resolve_type_to_object_body_inner(
-        selected,
-        interfaces,
-        type_aliases,
-        stack,
-        missing,
-        collect_missing,
-    )
-}
-
-/// Split a top-level `extends` condition into its checked and constraint types.
-fn split_top_level_extends(type_expr: &str) -> Option<(&str, &str)> {
-    let constraint = heritage_extends_clause(type_expr)?;
-    let right_offset = constraint.as_ptr() as usize - type_expr.as_ptr() as usize;
-    let left_end = right_offset.checked_sub("extends".len())?;
-    Some((type_expr.get(..left_end)?.trim(), constraint.trim()))
-}
-
-/// Resolve a TS built-in utility type (`Partial`/`Required`/`Readonly`/`Pick`/
-/// `Omit`/`Record`) to an object-literal member body, or `None` when `type_expr`
-/// is not one of those (or its argument can't be resolved structurally).
-fn resolve_utility_type(
-    type_expr: &str,
-    interfaces: &FxHashMap<String, String>,
-    type_aliases: &FxHashMap<String, String>,
-    stack: &mut FxHashSet<String>,
-    missing: &mut dyn FnMut(&str),
-    collect_missing: bool,
-) -> Option<String> {
-    let (name, args) = split_generic_call(type_expr)?;
-    let type_args = split_top_level(args, ',');
-
-    match name {
-        "Partial" | "Required" | "Readonly" => {
-            let inner = type_args.first()?;
-            let body = resolve_type_to_object_body_inner(
-                inner,
-                interfaces,
-                type_aliases,
-                stack,
-                missing,
-                collect_missing,
-            )?;
-            let mut members = parse_members(&body);
-            let (optional, readonly) = match name {
-                "Partial" => (Some(true), false),
-                "Required" => (Some(false), false),
-                _ => (None, true),
-            };
-            for member in &mut members {
-                member.optional = optional.unwrap_or(member.optional);
-                member.readonly |= readonly;
-            }
-            Some(render_members(&members))
-        }
-        "Pick" | "Omit" => {
-            let inner = type_args.first()?;
-            let keys_arg = type_args.get(1)?;
-            let body = resolve_type_to_object_body_inner(
-                inner,
-                interfaces,
-                type_aliases,
-                stack,
-                missing,
-                collect_missing,
-            )?;
-            let keys = parse_string_literal_union(keys_arg);
-            let members: Vec<Member> = parse_members(&body)
-                .into_iter()
-                .filter(|m| {
-                    let contains = keys.iter().any(|k| k == m.key.as_str());
-                    if name == "Pick" { contains } else { !contains }
-                })
-                .collect();
-            Some(render_members(&members))
-        }
-        "Record" => {
-            let keys_arg = type_args.first()?;
-            let value_arg = type_args.get(1)?;
-            let keys = match resolve_record_keys(keys_arg, interfaces, type_aliases, stack) {
-                Ok(keys) => keys,
-                Err(reference) => {
-                    if collect_missing {
-                        missing(&reference);
-                    }
-                    return None;
-                }
-            };
-            if keys.is_empty() {
-                if collect_missing {
-                    missing(strip_generic_params(keys_arg));
-                }
-                return None;
-            }
-            let value = value_arg.trim();
-            let members: Vec<Member> = keys
-                .into_iter()
-                .map(|key| Member {
-                    key,
-                    optional: false,
-                    readonly: false,
-                    ty: value.to_compact_string(),
-                })
-                .collect();
-            Some(render_members(&members))
-        }
-        _ => None,
-    }
-}
-
-fn resolve_record_keys(
-    expression: &str,
-    interfaces: &FxHashMap<String, String>,
-    type_aliases: &FxHashMap<String, String>,
-    stack: &mut FxHashSet<String>,
-) -> Result<Vec<String>, String> {
-    let keys = parse_string_literal_union(expression);
-    if !keys.is_empty() {
-        return Ok(keys);
-    }
-
-    let name = strip_generic_params(expression);
-    if !stack.insert(name.to_compact_string()) {
-        return Err(name.to_compact_string());
-    }
-    let resolved = match resolve_single_type_ref(name, interfaces, type_aliases) {
-        Some(body) => resolve_record_keys(&body, interfaces, type_aliases, stack),
-        None => Err(name.to_compact_string()),
-    };
-    stack.remove(name);
-    resolved
-}
-
-fn is_supported_utility_type(name: &str) -> bool {
-    matches!(
-        name,
-        "Partial" | "Required" | "Readonly" | "Pick" | "Omit" | "Record"
-    )
-}
-
 /// Split a generic type reference `Name<args>` into `("Name", "args")`.
 fn split_generic_call(type_expr: &str) -> Option<(&str, &str)> {
     let (name, rest) = type_expr.split_once('<')?;
@@ -574,24 +365,6 @@ fn split_generic_call(type_expr: &str) -> Option<(&str, &str)> {
     }
     let (args, _) = rest.rsplit_once('>')?;
     Some((name.trim(), args.trim()))
-}
-
-/// Parse a string-literal key argument (`'a'` or `'a' | 'b'`) into the set of
-/// bare key names. Returns empty when the argument isn't a string-literal union.
-fn parse_string_literal_union(arg: &str) -> Vec<String> {
-    let mut keys = Vec::new();
-    for part in split_top_level(arg, '|') {
-        let trimmed = part.trim();
-        let unquoted = trimmed
-            .strip_prefix('\'')
-            .and_then(|s| s.strip_suffix('\''))
-            .or_else(|| trimmed.strip_prefix('"').and_then(|s| s.strip_suffix('"')));
-        match unquoted {
-            Some(key) => keys.push(key.to_compact_string()),
-            None => return Vec::new(),
-        }
-    }
-    keys
 }
 
 fn strip_generic_params(name: &str) -> &str {

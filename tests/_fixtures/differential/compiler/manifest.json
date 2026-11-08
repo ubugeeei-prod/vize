@@ -1118,7 +1118,7 @@
       },
       "reference": {
         "path": "conditional-macro-props/module.expected.txt",
-        "sha256": "b9cc15127336530c741a16533bc2e828bf50d2ddefa815070de0a23e6f220da4",
+        "sha256": "84d1437ffd31bea30a4cedf9796f25e85118b260b73d55fcde0250b2655b2c33",
         "source": "crates/vize_atelier_sfc/src/compile/tests/define_props_regressions/resolved_macro_prop_shapes.rs:imported_conditional_props_remain_owned_by_typescript"
       },
       "adapters": {
