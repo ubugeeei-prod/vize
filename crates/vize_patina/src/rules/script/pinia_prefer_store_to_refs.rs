@@ -23,6 +23,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/pinia-prefer-store-to-refs` lint rule.
 pub struct PiniaPreferStoreToRefs;
 
 impl ScriptRule for PiniaPreferStoreToRefs {

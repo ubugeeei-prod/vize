@@ -1,7 +1,7 @@
 use std::{fs, os::unix::ffi::OsStrExt};
 use vize_l0::cstr;
 
-use super::{DirectoryMarkers, directory_markers, observe_records};
+use super::{ChangeTrackerState, DirectoryMarkers, directory_markers, observe_records};
 use crate::server::state::project_contexts::root_discovery::standard_directory_markers;
 
 fn record(name: &[u8], file_type: u8) -> Vec<u8> {
@@ -68,6 +68,19 @@ fn truncated_and_malformed_records_fail_without_out_of_bounds_reads() {
 }
 
 #[test]
+fn queue_overflow_invalidates_every_directory_generation() {
+    let fixture = tempfile::tempdir().unwrap();
+    let mut tracker = ChangeTrackerState::default();
+    let before = tracker.watch(fixture.path()).unwrap();
+    let mut event = [0_u8; 16];
+    event[..4].copy_from_slice(&(-1_i32).to_ne_bytes());
+    event[4..8].copy_from_slice(&libc::IN_Q_OVERFLOW.to_ne_bytes());
+    assert!(tracker.observe_events(&event));
+    assert_ne!(tracker.watch(fixture.path()).unwrap(), before);
+    assert!(!tracker.observe_events(&event[..15]));
+}
+
+#[test]
 fn native_scans_match_standard_enumeration_across_multiple_kernel_batches() {
     let fixture = tempfile::tempdir().unwrap();
     for index in 0..3000 {
@@ -96,12 +109,12 @@ fn native_scans_match_standard_enumeration_across_multiple_kernel_batches() {
         fs::write(&path, "{}").unwrap();
         assert_eq!(
             directory_markers(fixture.path()).unwrap(),
-            standard_directory_markers(fixture.path())
+            standard_directory_markers(fixture.path()).unwrap()
         );
         fs::remove_file(path).unwrap();
         assert_eq!(
             directory_markers(fixture.path()).unwrap(),
-            standard_directory_markers(fixture.path())
+            standard_directory_markers(fixture.path()).unwrap()
         );
     }
 }
@@ -133,7 +146,7 @@ fn each_lookup_observes_renames_symlinks_and_replaced_directories() {
     );
     assert_eq!(
         directory_markers(&directory).unwrap(),
-        standard_directory_markers(&directory)
+        standard_directory_markers(&directory).unwrap()
     );
     fs::write(directory.join("vite.config."), "{}").unwrap();
     assert!(directory_markers(&alias).unwrap().vite);
@@ -147,8 +160,8 @@ fn missing_and_non_directory_paths_use_the_existing_fallback() {
     for path in [file, fixture.path().join("absent")] {
         assert!(directory_markers(&path).is_err());
         assert_eq!(
-            super::super::directory_markers(&path),
-            standard_directory_markers(&path)
+            super::super::uncached_directory_markers(&path).unwrap_or_default(),
+            standard_directory_markers(&path).unwrap_or_default()
         );
     }
 }

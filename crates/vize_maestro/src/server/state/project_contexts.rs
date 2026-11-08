@@ -115,6 +115,7 @@ pub(super) struct ProjectContexts {
     retry_triggers: AtomicU64,
     unobservable_retries: Mutex<FxHashMap<ProjectContextKey, u64>>,
     routes: DashMap<Url, ProjectContextKey>,
+    marker_cache: Arc<DirectoryMarkerCache>,
     initialization_options: RwLock<Option<serde_json::Value>>,
     client_capabilities: RwLock<ClientCapabilities>,
 }
@@ -265,7 +266,7 @@ impl ServerState {
 
     fn document_context_root(&self, path: &Path) -> Option<PathBuf> {
         let roots = self.workspace_root_paths();
-        paths::document_context_root(path, &roots)
+        paths::cached_document_context_root(path, &roots, &self.project_contexts.marker_cache)
             .or_else(|| self.project_contexts.boundary.read().clone())
     }
 
@@ -279,6 +280,7 @@ impl ServerState {
         let root = &key.root;
         let mut state = ServerState::new();
         state.project_contexts.evaluation_session = self.configuration_evaluation_session();
+        state.project_contexts.marker_cache = Arc::clone(&self.project_contexts.marker_cache);
         state.documents = self.documents.clone();
         *state.project_contexts.owner.write() = Some(Arc::downgrade(self));
         *state.project_contexts.key.write() = Some(key.clone());
@@ -448,7 +450,7 @@ impl ServerState {
 
 mod closed;
 mod root_discovery;
-use root_discovery::{document_root, is_config_marker};
+use root_discovery::{DirectoryMarkerCache, cached_document_root, document_root, is_config_marker};
 
 #[cfg(test)]
 mod async_tests;

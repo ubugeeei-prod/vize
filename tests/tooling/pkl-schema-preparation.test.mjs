@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
   downloadPklPackages,
   needsPklSchemaCache,
   pinnedPklPackages,
+  recoverPklPackage,
   verifyPklRuntime,
 } from "../../tools/support/compat/github/prepare-pkl-schema.mjs";
 import {
@@ -134,4 +138,58 @@ void test("locked downloads retry timeouts within a fixed bound while semantic a
     );
     assert.equal(attempts, 1);
   }
+});
+
+void test("GitHub release failures recover only pinned Pkl assets and revalidate both payloads", () => {
+  const cache = mkdtempSync(join(tmpdir(), "vize-pkl-recovery-test-"));
+  const zip = Buffer.from("verified package zip fixture");
+  const packageUri = "package://pkg.pkl-lang.org/pkl-pantry/example@1.0.0";
+  const metadata = Buffer.from(
+    JSON.stringify({
+      packageUri,
+      packageZipChecksums: { sha256: createHash("sha256").update(zip).digest("hex") },
+    }),
+  );
+  const uri = `${packageUri}::sha256:${createHash("sha256").update(metadata).digest("hex")}`;
+  const assets = new Map([[packageUri, { metadata: 101, zip: 102 }]]);
+  const download = (id, path) => {
+    writeFileSync(path, id === 101 ? metadata : zip);
+    return success;
+  };
+  try {
+    recoverPklPackage(uri, cache, download, assets);
+    const target = join(cache, "package-2/pkg.pkl-lang.org/pkl-pantry/example@1.0.0");
+    assert.deepEqual(readFileSync(join(target, "example@1.0.0.json")), metadata);
+    assert.deepEqual(readFileSync(join(target, "example@1.0.0.zip")), zip);
+    assert.throws(
+      () =>
+        recoverPklPackage(uri, cache, (id, path) => download(id === 102 ? 101 : id, path), assets),
+      /zip checksum mismatch/,
+    );
+    assert.throws(
+      () => recoverPklPackage(uri.replace("example", "unknown"), cache, download, assets),
+      /No pinned Pkl recovery asset/,
+    );
+  } finally {
+    rmSync(cache, { force: true, recursive: true });
+  }
+
+  const packages = pinnedPklPackages(lock);
+  const calls = [];
+  downloadPklPackages(
+    [packages[0]],
+    "/fresh/cache",
+    () => {
+      calls.push("pkl");
+      return calls.length === 1
+        ? {
+            status: 1,
+            stderr:
+              "Received unexpected status code `504` when making request `GET https://github.com/apple/pkl-pantry/releases/download/example/example`.",
+          }
+        : success;
+    },
+    () => calls.push("recovery"),
+  );
+  assert.deepEqual(calls, ["pkl", "recovery", "pkl"]);
 });

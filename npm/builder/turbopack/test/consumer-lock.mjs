@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import path from "node:path";
-import { parseAllDocuments } from "yaml";
+
+const requireFromToolchain = createRequire(import.meta.resolve("vite-plus/package.json"));
+const { parseAllDocuments } = requireFromToolchain("yaml");
 
 /** Verify every native resolution, including pnpm 12's manager/project documents. */
 export function sourceNativeResolutions(text, directory, tarball, integrity) {

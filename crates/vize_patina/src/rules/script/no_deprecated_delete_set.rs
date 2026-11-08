@@ -46,6 +46,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str = "`$set` and `$delete` were removed in Vue 3.";
 
+/// Implements the `script/no-deprecated-delete-set` lint rule.
 pub struct NoDeprecatedDeleteSet;
 
 impl ScriptRule for NoDeprecatedDeleteSet {

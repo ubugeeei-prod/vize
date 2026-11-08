@@ -1,7 +1,24 @@
 //! Select physical project boundaries while retaining authored document URIs.
-use super::{Path, PathBuf, document_root};
+use super::{DirectoryMarkerCache, Path, PathBuf, cached_document_root, document_root};
 
+#[cfg(test)]
 pub(super) fn document_context_root(path: &Path, roots: &[PathBuf]) -> Option<PathBuf> {
+    document_context_root_with_cache(path, roots, None)
+}
+
+pub(super) fn cached_document_context_root(
+    path: &Path,
+    roots: &[PathBuf],
+    markers: &DirectoryMarkerCache,
+) -> Option<PathBuf> {
+    document_context_root_with_cache(path, roots, Some(markers))
+}
+
+fn document_context_root_with_cache(
+    path: &Path,
+    roots: &[PathBuf],
+    markers: Option<&DirectoryMarkerCache>,
+) -> Option<PathBuf> {
     let physical = physical_path(path);
     roots
         .iter()
@@ -20,13 +37,23 @@ pub(super) fn document_context_root(path: &Path, roots: &[PathBuf]) -> Option<Pa
                 })
         })
         .max_by_key(|(_, _, depth)| *depth)
-        .map(|(root, source, _)| document_root(&source, root))
+        .map(|(root, source, _)| {
+            markers.map_or_else(
+                || document_root(&source, root),
+                |markers| cached_document_root(&source, root, markers),
+            )
+        })
         .or_else(|| {
             roots
                 .iter()
                 .filter(|root| path.starts_with(root))
                 .max_by_key(|root| root.components().count())
-                .map(|root| document_root(path, root))
+                .map(|root| {
+                    markers.map_or_else(
+                        || document_root(path, root),
+                        |markers| cached_document_root(path, root, markers),
+                    )
+                })
         })
 }
 
