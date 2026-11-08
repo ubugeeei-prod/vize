@@ -270,6 +270,35 @@ test("a reactive isActive toggles traversal membership from inside the tree", as
   mounted.unmount();
 });
 
+test("a reactive isActive restores an opted-in focus trap", async () => {
+  const active = ref(false);
+  const probes = new Map<string, FocusProbe>();
+  const Boundary = defineComponent({
+    setup() {
+      probes.set("boundary", useFocus({ id: "boundary", isActive: active, trapFocus: true }));
+      return () => h("text", { text: "boundary" });
+    },
+  });
+  const mounted = mountFresco(() => h(Boundary));
+
+  assert.equal(mounted.focusManager.activeTrapId.value, undefined);
+  assert.equal(probes.get("boundary")?.isFocusTrapActive.value, false);
+
+  active.value = true;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, "boundary");
+  assert.equal(probes.get("boundary")?.isFocusTrapActive.value, true);
+
+  active.value = false;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, undefined);
+
+  active.value = true;
+  await nextTick();
+  assert.equal(mounted.focusManager.activeTrapId.value, "boundary");
+  mounted.unmount();
+});
+
 test("mounted focusables expose descendant-focus state", async () => {
   const probes = new Map<string, FocusProbe>();
   const parentId = ref<string | null>("panel");
