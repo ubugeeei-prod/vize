@@ -420,7 +420,7 @@ if (phase !== "before" && process.platform === "win32") {
     config,
     'export default {vue:{linter:{preset:"incremental",rules:{"type/no-floating-promises":"error"}}}};\n',
   );
-  const packet = lint("windows-type-aware-multi-file-12292", [
+  const typed = lint("windows-type-aware-multi-file-12292", [
     "lint",
     "--type-aware",
     "--format",
@@ -430,9 +430,9 @@ if (phase !== "before" && process.platform === "win32") {
     "src/Vize12292A.ts",
     "src/Vize12292B.ts",
   ]);
-  assert.equal(packet.status, 1, packet.stdout + packet.stderr);
-  assert.doesNotMatch(packet.stdout + packet.stderr, /type\/corsa-runtime|source file not found/i);
-  const findings = asArray(parseJson(packet.stdout))
+  assert.equal(typed.status, 1, typed.stdout + typed.stderr);
+  assert.doesNotMatch(typed.stdout + typed.stderr, /type\/corsa-runtime|source file not found/i);
+  const typedFindings = asArray(parseJson(typed.stdout))
     .map((value) => asRecord(value))
     .flatMap((entry) =>
       asArray(entry.messages)
@@ -441,8 +441,43 @@ if (phase !== "before" && process.platform === "win32") {
         .map(() => asString(entry.file)),
     );
   assert.deepEqual(
-    findings.map((file) => file.replaceAll("\\", "/").split("/").at(-1)),
+    typedFindings.map((file) => file.replaceAll("\\", "/").split("/").at(-1)),
     ["Vize12292A.ts", "Vize12292B.ts"],
+  );
+  const root = join(app, "src/vize-12291"),
+    ignored = join(root, "ignored"),
+    trusted = join(root, "trusted");
+  mkdirSync(ignored, { recursive: true });
+  mkdirSync(trusted, { recursive: true });
+  const source = "<template><div v-html=\"'<b>x</b>'\" /></template>\n";
+  writeFileSync(join(root, "App.vue"), source);
+  writeFileSync(join(ignored, "Ignored.vue"), source);
+  writeFileSync(join(trusted, "Trusted.vue"), source);
+  writeFileSync(
+    config,
+    'export default {vue:{ignores:["src/vize-12291/ignored/**"],linter:{preset:"incremental",rules:{"vue/no-v-html":"error"}},entries:[{files:["src/vize-12291/trusted/**/*.vue"],linter:{rules:{"vue/no-v-html":"off"}}}]}};\n',
+  );
+  const scoped = lint("windows-explicit-scopes-12291", [
+    "lint",
+    "--format",
+    "json",
+    "--help-level",
+    "none",
+    "src/vize-12291",
+  ]);
+  assert.equal(scoped.status, 1, scoped.stdout + scoped.stderr);
+  const entries = asArray(parseJson(scoped.stdout)).map((value) => asRecord(value));
+  const findings = entries.flatMap((entry) =>
+    asArray(entry.messages)
+      .map((value) => asRecord(value))
+      .filter((message) => message.ruleId === "vue/no-v-html")
+      .map(() => asString(entry.file).replaceAll("\\", "/")),
+  );
+  assert.equal(findings.length, 1, scoped.stdout);
+  assert.equal(findings[0].endsWith("/src/vize-12291/App.vue"), true, findings[0]);
+  assert.equal(
+    entries.some((entry) => asString(entry.file).startsWith("//?/")),
+    false,
   );
 }
 writeFileSync(config, original);
@@ -460,7 +495,7 @@ record.json("acceptance.json", {
     "off-reloaded",
     "throw",
     ...(phase !== "before" && process.platform === "win32"
-      ? ["windows-type-aware-multi-file-12292"]
+      ? ["windows-type-aware-multi-file-12292", "windows-explicit-scopes-12291"]
       : []),
   ],
   stdin: "untouched by observer; actual config projection and imported graph reload completed",
