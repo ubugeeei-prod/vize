@@ -5,9 +5,9 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::cell::RefCell;
 
-use super::input_size::input_intrinsic_size;
+use super::render_node::create_render_node;
 use super::render_payload::{
-    RenderNodeKindNapi, parse_wrap_mode, unsupported_render_node_kind, validate_render_node_kinds,
+    RenderNodeKindNapi, unsupported_render_node_kind, validate_render_node_kinds,
 };
 use super::render_style::{convert_style, parse_color};
 use super::terminal::with_backend;
@@ -153,13 +153,10 @@ pub fn set_cursor_shape(
 #[napi(js_name = "renderTree")]
 pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
     use crate::layout::{
-        AlignItems, AlignSelf, Dimension, Display, FlexDirection, FlexWrap, JustifyContent,
+        AlignItems, AlignSelf, Display, FlexDirection, FlexWrap, JustifyContent,
         LengthPercentageAuto, Overflow, Position,
     };
-    use crate::render::{
-        Appearance, BorderStyle, InputContent, NodeKind, Painter, RawContent, RenderNode,
-        RenderTree, TextContent,
-    };
+    use crate::render::{Appearance, BorderStyle, Painter, RenderTree};
 
     let node_kinds = validate_render_node_kinds(&nodes).map_err(unsupported_render_node_kind)?;
 
@@ -168,61 +165,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
 
         // Build tree from NAPI nodes
         for (node, node_type) in nodes.iter().zip(&node_kinds) {
-            let text_content = node.text.clone().unwrap_or_default();
-            let kind = match node_type {
-                RenderNodeKindNapi::Text => NodeKind::Text(TextContent {
-                    text: text_content.clone().into(),
-                    wrap: node.wrap.unwrap_or(false),
-                    wrap_mode: parse_wrap_mode(node.wrap_mode.as_deref(), node.wrap),
-                }),
-                RenderNodeKindNapi::Input => NodeKind::Input(InputContent {
-                    value: node.value.clone().unwrap_or_default().into(),
-                    placeholder: node.placeholder.clone().unwrap_or_default().into(),
-                    cursor: node.cursor.unwrap_or(0) as usize,
-                    focused: node.focused.unwrap_or(false),
-                    mask: node.mask.unwrap_or(false),
-                    selection_start: node.selection_start.unwrap_or(0).max(0) as usize,
-                    selection_end: node.selection_end.unwrap_or(0).max(0) as usize,
-                    mask_char: node
-                        .mask_char
-                        .as_deref()
-                        .and_then(|s| s.chars().next())
-                        .unwrap_or('*'),
-                }),
-                RenderNodeKindNapi::Raw => {
-                    NodeKind::Raw(RawContent::new(node.lines.clone().unwrap_or_default()))
-                }
-                RenderNodeKindNapi::Root | RenderNodeKindNapi::Box => NodeKind::Box,
-            };
-
-            let mut render_node = RenderNode::new(node.id as u64, kind);
-
-            // For text nodes, set the size based on text content
-            if *node_type == RenderNodeKindNapi::Text && !text_content.is_empty() {
-                use crate::text::TextWidth;
-                let text_width = TextWidth::width(&text_content) as f32;
-                let text_height = text_content.lines().count().max(1) as f32;
-                render_node.style.width = Dimension::Points(text_width);
-                render_node.style.height = Dimension::Points(text_height);
-            }
-
-            if *node_type == RenderNodeKindNapi::Input {
-                let (input_width, height) = input_intrinsic_size(node);
-                render_node.style.width = Dimension::Points(input_width);
-                render_node.style.height = Dimension::Points(height);
-            }
-
-            if *node_type == RenderNodeKindNapi::Raw {
-                use crate::text::TextWidth;
-                let lines = node.lines.as_deref().unwrap_or_default();
-                let width = lines
-                    .iter()
-                    .map(|line| TextWidth::width(line))
-                    .max()
-                    .unwrap_or_default() as f32;
-                render_node.style.width = Dimension::Points(width);
-                render_node.style.height = Dimension::Points(lines.len().max(1) as f32);
-            }
+            let mut render_node = create_render_node(node, *node_type);
 
             // Set flex style (start from existing style to preserve text/input sizes)
             if let Some(ref style) = node.style {
