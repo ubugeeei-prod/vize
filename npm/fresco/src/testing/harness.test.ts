@@ -25,6 +25,7 @@ test("renderTui records initial and explicit frame snapshots", async () => {
   assert.equal(rendered.lastFrame(), "ready");
   assert.deepEqual(rendered.frameSnapshot(), {
     output: "ready",
+    screenReaderOutput: "ready",
     tree: {
       type: "root",
       children: [
@@ -46,6 +47,24 @@ test("renderTui records initial and explicit frame snapshots", async () => {
   await nextTick();
   assert.equal(rendered.captureFrame().output, "done");
   assert.deepEqual(rendered.frames, ["ready", "done"]);
+  rendered.unmount();
+});
+
+test("frame snapshots record semantic state independently from visual text", () => {
+  const rendered = renderTui(() =>
+    h(
+      "box",
+      {
+        "aria-role": "checkbox",
+        "aria-label": "Publish release",
+        "aria-state": { checked: true },
+      },
+      [h("text", { text: "[x] Publish" })],
+    ),
+  );
+
+  assert.equal(rendered.frameSnapshot().output, "[x] Publish");
+  assert.equal(rendered.frameSnapshot().screenReaderOutput, "checkbox: (checked) Publish release");
   rendered.unmount();
 });
 
