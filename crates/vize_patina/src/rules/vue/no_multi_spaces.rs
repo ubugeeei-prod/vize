@@ -73,7 +73,7 @@ impl MarkupRule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        let is_jsx = ctx.is_jsx();
+        let is_jsx = ctx.is_jsx() || is_jsx_filename(ctx.lint().filename);
         self.check_element(ctx.lint(), element, is_jsx);
     }
 
@@ -364,6 +364,10 @@ fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
         offset += 1;
     }
     offset
+}
+
+fn is_jsx_filename(filename: &str) -> bool {
+    filename.ends_with(".jsx") || filename.ends_with(".tsx")
 }
 
 #[cfg(test)]
