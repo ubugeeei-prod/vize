@@ -87,6 +87,20 @@ export {
   type FrescoProvider,
 } from "./plugins.js";
 export {
+  createFrescoDevtools,
+  formatFrescoDebugOverlay,
+  inspectFrescoTree,
+  type FrescoDebugOverlayOptions,
+  type FrescoDevtools,
+  type FrescoDevtoolsEvent,
+  type FrescoDevtoolsOptions,
+  type FrescoDevtoolsRenderMetrics,
+  type FrescoDevtoolsSnapshot,
+  type FrescoLayoutInspection,
+  type FrescoNodeInspection,
+  type FrescoTreeInspection,
+} from "./devtools.js";
+export {
   defaultFrescoTheme,
   FRESCO_THEME_KEY,
   provideFrescoTheme,

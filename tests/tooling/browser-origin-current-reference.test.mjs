@@ -10,9 +10,15 @@ const directory = path.join(root, "crates/vize/tests/fixtures/issue-7907");
 const source = JSON.parse(fs.readFileSync(path.join(directory, "source.json"), "utf8"));
 const bytes = fs.readFileSync(path.join(directory, "current-reference-7908.json"));
 
-await test("one exact current watch reference preserves historic coordinates and producer laws", () => {
-  const { row } = browserOriginCurrentReference(root, source);
-  assert.deepEqual(row.historicalDoctorLocations, [{ start: 141, end: 141, line: 6, column: 35 }]);
+await test("exact current browser references preserve historic coordinates and producer laws", () => {
+  const { rows } = browserOriginCurrentReference(root, source);
+  assert.deepEqual(rows[0].historicalDoctorLocations, [
+    { start: 141, end: 141, line: 6, column: 35 },
+  ]);
+  assert.deepEqual(rows[1].historicalDoctorLocations, [
+    { start: 69, end: 69, line: 2, column: 37 },
+    { start: 133, end: 133, line: 4, column: 30 },
+  ]);
 });
 
 await test("forged current output and authority expansion fail closed", () => {

@@ -8,6 +8,7 @@ import {
   type VizeLintConfigSettings,
 } from "./vite-plus.js";
 
+/** One composable Oxlint Flat Config fragment understood by the Vize bridge. */
 export interface VizeLintConfigFragment extends Record<string, unknown> {
   extends?: readonly (VizeLintConfigFragment | VizeLintFlatConfig)[];
   ignorePatterns?: readonly string[];
@@ -18,6 +19,7 @@ export interface VizeLintConfigFragment extends Record<string, unknown> {
   settings?: Record<string, unknown> & { vize?: PatinaSettings | Record<string, unknown> };
 }
 
+/** Immutable sequence of Vize-aware Oxlint Flat Config fragments. */
 export type VizeLintFlatConfig = readonly VizeLintConfigFragment[];
 
 /**
@@ -31,6 +33,7 @@ export function createVizeLintFlatConfig(options: VizeLintConfigOptions = {}): V
   return [buildVizeLintConfig(options, { forceIncrementalRuntime: true })];
 }
 
+/** Ready-to-spread Flat Config sequences for every supported bridge preset. */
 export const flatConfigs = {
   all: createVizeLintFlatConfig({ preset: "all" }),
   ecosystem: createVizeLintFlatConfig({ preset: "ecosystem" }),
