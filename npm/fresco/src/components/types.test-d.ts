@@ -46,6 +46,7 @@ import type {
 import type { ScrollBoxItemSlot, ScrollBoxProps } from "./scroll-types.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";
 import { TextInput, type TextInputProps } from "./TextInput.js";
+import { Diff, type DiffProps } from "./Diff.js";
 import { LineNumber, type LineNumberProps } from "./LineNumber.js";
 import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
@@ -165,6 +166,22 @@ export const lineNumberAcceptsDocumentedProps: LineNumberProps = {
 // @ts-expect-error - line numbers are numeric.
 export const lineNumberRejectsStringValue: LineNumberProps = { value: "42" };
 
+export const diffAcceptsDocumentedProps: DiffProps = {
+  oldText: "before",
+  newText: "after",
+  view: "split",
+  context: 3,
+  showLineNumbers: true,
+  viewportStart: 100,
+  viewportSize: 20,
+  overscan: 2,
+  oldLabel: "before.ts",
+  newLabel: "after.ts",
+};
+
+// @ts-expect-error - diff view has only unified and split modes.
+export const diffRejectsUnknownView: DiffProps = { oldText: "a", newText: "b", view: "inline" };
+
 export const staticAcceptsTypedItems: StaticProps<string> = { items: ["done"] };
 export const linkAcceptsDocumentedProps: LinkProps = {
   text: "Docs",
@@ -247,6 +264,7 @@ export function componentsRenderWithTypedProps() {
     h(Text, { content: "hi", wrap: "truncate-middle", bold: true }),
     h(TextInput, { modelValue: "v", focused: true, maskChar: "#" }),
     h(LineNumber, { value: 42, width: 3 }),
+    h(Diff, { oldText: "before", newText: "after", view: "unified" }),
     h(ScrollBox, { itemCount: 100, viewportSize: 10 }),
     h(Spacer),
     h(Newline, { count: 2 }),
