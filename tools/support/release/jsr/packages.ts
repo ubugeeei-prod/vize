@@ -10,17 +10,17 @@ export interface JsrPackageDescriptor {
 }
 
 /**
+ * npm-only launchers whose package-manager integration has no JSR equivalent.
+ */
+export const npmOnlyReleasePackageDirectories = ["npm/create-fresco"] as const;
+
+/**
  * JavaScript packages shipped by the release workflow and mirrored on JSR.
- * Keep this in the same order as RELEASE_JS_PACKAGES: it is a release contract,
- * not a best-effort registry selection.
+ * Keep this in RELEASE_JS_PACKAGES order after its explicit npm-only entries
+ * are removed: this is a release contract, not a best-effort registry selection.
  */
 export const jsrPackages = [
   { directory: "npm/cli", jsrName: "@vizejs/vize", npmName: "vize" },
-  {
-    directory: "npm/create-fresco",
-    jsrName: "@vizejs/create-fresco",
-    npmName: "@vizejs/create-fresco",
-  },
   {
     directory: "npm/builder/vite",
     jsrName: "@vizejs/vite-plugin",
