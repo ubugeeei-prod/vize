@@ -33,7 +33,7 @@ export const testedPackageGroups = [
       "./npm/framework/nuxt",
       "./npm/framework/musea-nuxt",
     ],
-    prebuilt: ["./npm/builder/unplugin", "./npm/linter/oxlint"],
+    prebuilt: ["./npm/linter/oxlint"],
   },
   {
     name: "ui",

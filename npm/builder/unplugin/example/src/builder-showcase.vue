@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 type Capability = {
   id: string;
@@ -27,7 +27,13 @@ const capabilities: Capability[] = [
 
 const enabledCapabilityIds = ref(capabilities.map(({ id }) => id));
 const enabledCount = computed(() => enabledCapabilityIds.value.length);
-const buildTarget = document.querySelector<HTMLMetaElement>('meta[name="vize-builder"]')?.content;
+const buildTarget = ref("Unknown builder");
+
+onMounted(() => {
+  buildTarget.value =
+    document.querySelector<HTMLMetaElement>('meta[name="vize-builder"]')?.content ??
+    buildTarget.value;
+});
 
 function toggleCapability(capabilityId: string): void {
   enabledCapabilityIds.value = enabledCapabilityIds.value.includes(capabilityId)
@@ -39,7 +45,7 @@ function toggleCapability(capabilityId: string): void {
 <template>
   <main class="workspace">
     <p class="eyebrow">Vize builder matrix</p>
-    <h1>{{ buildTarget ?? "Unknown builder" }}</h1>
+    <h1>{{ buildTarget }}</h1>
     <p class="summary">
       One readable Vue SFC, compiled through independent builder adapters. Toggle a capability to
       confirm that the generated application remains interactive.
@@ -144,36 +150,36 @@ h1 {
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
-}
 
-.capabilities label {
-  display: flex;
-  gap: 0.9rem;
-  align-items: flex-start;
-  padding: 1rem;
-  border: 1px solid var(--builder-card-border);
-  border-radius: 0.9rem;
-  cursor: pointer;
-}
+  label {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid var(--builder-card-border);
+    border-radius: 0.9rem;
+    cursor: pointer;
 
-.capabilities label:hover {
-  border-color: var(--builder-border-hover);
-}
+    &:hover {
+      border-color: var(--builder-border-hover);
+    }
+  }
 
-.capabilities input {
-  width: 1.1rem;
-  height: 1.1rem;
-  margin-top: 0.15rem;
-  accent-color: var(--builder-accent);
-}
+  input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.15rem;
+    accent-color: var(--builder-accent);
+  }
 
-.capabilities span {
-  display: grid;
-  gap: 0.25rem;
-}
+  span {
+    display: grid;
+    gap: 0.25rem;
+  }
 
-.capabilities small {
-  color: var(--builder-muted);
-  line-height: 1.5;
+  small {
+    color: var(--builder-muted);
+    line-height: 1.5;
+  }
 }
 </style>
