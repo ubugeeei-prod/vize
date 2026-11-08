@@ -19,7 +19,7 @@ const canonLeftoversUrl = new URL(
   import.meta.url,
 );
 export const canonLeftoversSha256 =
-  "73726e4286da6e7dc43335cc17f0e44db1a77e9b2b0598dcac29a1362a433638";
+  "a52f27fd6c5c714c978a4ba9a61c3bf1698bdb14b3a12d26a5f10480bc3c6d90";
 const before =
   "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;";
 const after =
