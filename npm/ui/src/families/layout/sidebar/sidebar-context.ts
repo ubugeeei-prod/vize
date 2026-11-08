@@ -23,6 +23,7 @@ export interface SidebarContextValue {
   readonly toggle: (event?: Event | null) => boolean;
 }
 
+/** Required context shared by one Sidebar compound component tree. */
 export const sidebarContext = createContext<SidebarContextValue>("Sidebar");
 
 /** Per-group label wiring shared by SidebarGroup and SidebarGroupLabel. */
@@ -30,4 +31,5 @@ export interface SidebarGroupContextValue {
   readonly labelId: ComputedRef<string>;
 }
 
+/** Required context shared by one Sidebar group and its label. */
 export const sidebarGroupContext = createContext<SidebarGroupContextValue>("SidebarGroup");

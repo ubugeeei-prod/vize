@@ -37,6 +37,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str = "The `model` option was removed in Vue 3.";
 
+/// Implements the `script/no-deprecated-model-definition` lint rule.
 pub struct NoDeprecatedModelDefinition;
 
 impl ScriptRule for NoDeprecatedModelDefinition {

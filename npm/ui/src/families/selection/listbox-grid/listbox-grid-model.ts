@@ -37,7 +37,7 @@ export interface GridMoveOptions {
   readonly count: number;
   /** Cells per row (at least 1). */
   readonly columns: number;
-  /** Reading direction; `rtl` mirrors left/right. */
+  /** Reading direction; `rtl` mirrors left/right. @default "ltr" */
   readonly direction?: "ltr" | "rtl";
   /** Rows traversed by PageUp/PageDown. @default 3 */
   readonly pageRows?: number;

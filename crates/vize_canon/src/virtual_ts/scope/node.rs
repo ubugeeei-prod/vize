@@ -2,6 +2,7 @@ use super::children::generate_child_scopes;
 use super::context::ScopeGenContext;
 use super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::event_scope::{EventVifGuards, generate_event_handler_scope};
+use super::nested_indent;
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 use super::slot_scope::generate_v_slot_scope;
 use super::vif_guard::{
@@ -14,7 +15,7 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::types::VizeMapping;
-use vize_carton::{String, append, cstr, profile};
+use vize_carton::{String, append, profile};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler};
 use vize_croquis::{Scope, ScopeData, ScopeKind};
 
@@ -32,7 +33,7 @@ pub(super) fn generate_scope_node(
     };
     let ctx = &scoped_context;
     let scope_id = scope.id.as_u32();
-    let inner_indent = cstr!("{indent}  ");
+    let inner_indent = nested_indent(indent);
 
     match scope.data() {
         ScopeData::VMatch(_) => {
@@ -48,7 +49,7 @@ pub(super) fn generate_scope_node(
                 .and_then(|exprs| common_vif_guard_prefix_outside_v_for_scope(exprs, scope));
             let enclosing_guard = enclosing_guard.as_deref();
             let (loop_indent, vfor_inner_indent) = if enclosing_guard.is_some() {
-                (cstr!("{indent}  "), cstr!("{inner_indent}  "))
+                (nested_indent(indent), nested_indent(&inner_indent))
             } else {
                 (String::from(indent), inner_indent.clone())
             };
@@ -100,7 +101,7 @@ pub(super) fn generate_scope_node(
                             guard,
                             "Narrowing-only guard",
                         );
-                        cstr!("{vfor_inner_indent}  ")
+                        nested_indent(&vfor_inner_indent)
                     } else {
                         vfor_inner_indent.clone()
                     };
@@ -237,7 +238,7 @@ pub(super) fn generate_scope_node(
             } else {
                 String::from(indent)
             };
-            let handler_inner_indent = cstr!("{handler_indent}  ");
+            let handler_inner_indent = nested_indent(&handler_indent);
             generate_event_handler_scope(
                 ts,
                 mappings,

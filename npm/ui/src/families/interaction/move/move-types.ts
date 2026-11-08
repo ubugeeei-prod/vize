@@ -71,13 +71,13 @@ export interface MoveOptions {
    */
   readonly keyboardStep?: MaybeRefOrGetter<number | undefined>;
 
-  /** Called exactly once before the first non-zero delta in an interaction. */
+  /** Called exactly once before the first non-zero delta in an interaction. @default undefined */
   readonly onMoveStart?: (event: MoveStartEvent) => void;
 
-  /** Called for every non-zero pointer or keyboard delta. */
+  /** Called for every non-zero pointer or keyboard delta. @default undefined */
   readonly onMove?: (event: MoveUpdateEvent) => void;
 
-  /** Called after an interaction that emitted at least one move finishes. */
+  /** Called after an interaction that emitted at least one move finishes. @default undefined */
   readonly onMoveEnd?: (event: MoveEndEvent) => void;
 }
 

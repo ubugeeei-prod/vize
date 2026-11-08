@@ -88,7 +88,7 @@ export interface CommandRouterOptions<Id extends string = string> {
    */
   readonly isDisabled?: MaybeRefOrGetter<boolean | undefined>;
 
-  /** Observer called after every dispatch that found its command. */
+  /** Observer called after every dispatch that found its command. @default undefined */
   readonly onDidExecute?: (dispatch: CommandDispatch<Id>) => void;
 }
 

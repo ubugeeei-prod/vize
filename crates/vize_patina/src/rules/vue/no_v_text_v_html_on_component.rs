@@ -39,6 +39,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/no-v-text-v-html-on-component` lint rule.
 pub struct NoVTextVHtmlOnComponent;
 
 impl Rule for NoVTextVHtmlOnComponent {

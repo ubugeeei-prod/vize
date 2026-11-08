@@ -48,12 +48,16 @@ pub enum ComponentCasing {
 
 /// Component name in template casing rule
 pub struct ComponentNameInTemplateCasing {
+    /// Required spelling for custom component tags.
     pub casing: ComponentCasing,
+    /// Whether to check only component names proven to be registered.
     pub registered_components_only: bool,
+    /// Additional globally registered component names.
     pub globals: Vec<vize_l0::String>,
 }
 
 impl ComponentNameInTemplateCasing {
+    /// Create the rule with `casing` and registered-component filtering enabled.
     pub const fn new(casing: ComponentCasing) -> Self {
         Self {
             casing,

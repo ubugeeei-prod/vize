@@ -41,6 +41,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `a11y/no-i-for-icon` lint rule.
 pub struct NoIForIcon;
 
 impl NoIForIcon {

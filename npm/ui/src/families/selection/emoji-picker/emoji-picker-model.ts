@@ -63,7 +63,9 @@ export interface EmojiSectionOptions<T> {
   readonly columns: number;
   readonly search: string;
   readonly filter: EmojiPickerFilter<T>;
+  /** Category partitions to render after recent and search sections. @default [] */
   readonly categories?: readonly EmojiPickerCategory[] | undefined;
+  /** Recently selected items rendered before categories. @default [] */
   readonly recent?: readonly T[] | undefined;
   readonly recentLabel: string;
   readonly searchLabel: string;

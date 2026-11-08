@@ -1,5 +1,6 @@
 import type { AnyStateModelDefinition } from "./types.ts";
 
+/** Stable diagnostic codes emitted when a state model contract is invalid. */
 export const STATE_ERROR = {
   invalidKey: "VIZE_STATE_INVALID_KEY",
   invalidSource: "VIZE_STATE_SOURCE_NOT_VUE",
@@ -7,6 +8,7 @@ export const STATE_ERROR = {
   missingCommand: "VIZE_STATE_UNKNOWN_COMMAND",
 } as const;
 
+/** Validate the stable key, Vue source ownership, and positive model version. */
 export function validateModel(
   model: Pick<AnyStateModelDefinition, "key" | "source" | "version">,
 ): void {

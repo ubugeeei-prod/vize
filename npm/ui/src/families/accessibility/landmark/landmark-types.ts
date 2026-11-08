@@ -118,7 +118,7 @@ export interface LandmarkNavigationOptions {
    */
   readonly previousKey?: MaybeRefOrGetter<LandmarkKeyBinding | null | undefined>;
 
-  /** Called after focus moves to a landmark. */
+  /** Called after focus moves to a landmark. @default undefined */
   readonly onNavigate?: (landmark: LandmarkInfo, event: KeyboardEvent | null) => void;
 }
 

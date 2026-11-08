@@ -167,9 +167,13 @@ const allFamilyCatalogEntries = [
 
 // Lane modules group families thematically, so canonical order is restored
 // here rather than by concatenation order.
+/** Canonically ordered inventory of every published UI family. */
 export const uiFamilyCatalog = [...allFamilyCatalogEntries].sort((a, b) =>
   a.canonicalName < b.canonicalName ? -1 : a.canonicalName > b.canonicalName ? 1 : 0,
 );
 
+/** Exact type of the published UI family catalog. */
 export type UiFamilyCatalog = typeof uiFamilyCatalog;
+
+/** Canonical name accepted by UI family tooling and package subpaths. */
 export type UiFamilyName = UiFamilyCatalog[number]["canonicalName"];

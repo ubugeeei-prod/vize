@@ -20,7 +20,7 @@ export interface SingleCalendarSelectionOptions {
     previous: PlainDate | null,
     event: Event | null,
   ) => void;
-  /** Called for every user activation of a selectable date, even when unchanged. */
+  /** Called for every user activation of a selectable date, even when unchanged. @default undefined */
   readonly onSelect?: (value: PlainDate, event: Event) => void;
 }
 
@@ -105,7 +105,7 @@ export interface MultipleCalendarSelectionOptions {
     previous: readonly PlainDate[],
     event: Event | null,
   ) => void;
-  /** Called for every user toggle with the date and whether it is now selected. */
+  /** Called for every user toggle with the date and whether it is now selected. @default undefined */
   readonly onToggle?: (date: PlainDate, selected: boolean, event: Event) => void;
 }
 

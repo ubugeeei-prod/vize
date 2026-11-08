@@ -48,7 +48,7 @@ export interface InteractionModalityOptions {
    */
   readonly initialModality?: InteractionModality | null;
 
-  /** Called synchronously after each distinct change. */
+  /** Called synchronously after each distinct change. @default undefined */
   readonly onChange?: (change: InteractionModalityChange) => void;
 }
 
