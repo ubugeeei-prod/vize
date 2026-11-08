@@ -27,6 +27,7 @@ type NativeConfigHelpers = {
 
 const require = createRequire(import.meta.url);
 
+/** Supported Vite configuration filenames searched by the CLI. */
 export const CONFIG_FILE_NAMES = VITE_CONFIG_FILE_NAMES;
 const RETIRED_CONFIG = /^vize\.config\.(?:pkl|[cm]?[jt]s|json)$/;
 const CONFIG_MIGRATION =
@@ -39,12 +40,14 @@ const DEFAULT_CONFIG_ENV: ConfigEnv = {
 
 const PACKAGE_ROOT = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 
+/** Absolute path to the legacy JSON configuration schema shipped with the CLI. */
 export const VIZE_CONFIG_JSON_SCHEMA_PATH = path.join(
   PACKAGE_ROOT,
   "schemas",
   "vize.config.schema.json",
 );
 
+/** Absolute path to the legacy Pkl configuration schema shipped with the CLI. */
 export const VIZE_CONFIG_PKL_SCHEMA_PATH = path.join(PACKAGE_ROOT, "pkl", "vize.pkl");
 
 /**
@@ -190,6 +193,7 @@ function loadPklConfig(filePath: string): ResolvedVizeConfig | null {
   return output === null ? null : parseJsonConfig(output, filePath);
 }
 
+/** Normalizes an already loaded Vize configuration export. */
 export async function resolveConfigExport(
   exported: UserConfigExport,
   env?: ConfigEnv,
