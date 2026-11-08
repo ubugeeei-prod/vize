@@ -25,6 +25,7 @@ export type AriaRole =
   | "radio"
   | "radiogroup"
   | "scrollbar"
+  | "slider"
   | "tab"
   | "tablist"
   | "table"

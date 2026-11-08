@@ -4,7 +4,7 @@ import { test } from "vitest";
 
 import { updateLastRenderLayouts } from "../layoutMetrics.js";
 import { dispatchKey, findNodes, firstChild, mountFresco, renderTui } from "../testing/index.js";
-import Slider from "./Slider.vue";
+import Slider from "./FrescoSlider.vue";
 import { normalizeSliderRange, normalizeSliderValue, sliderValueAtRatio } from "./slider-types.js";
 
 test("slider range normalization clamps malformed and fractional values", () => {
