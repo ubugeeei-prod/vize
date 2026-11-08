@@ -138,8 +138,8 @@ try {
   const providers = Object.fromEntries(
     Object.entries({
       eslint: "10.14.0",
-      "vue-eslint-parser": "10.4.1",
-      "eslint-plugin-vue": "10.9.2",
+      "vue-eslint-parser": "10.4.2",
+      "eslint-plugin-vue": "10.12.0",
     }).map(([name, expected]) => {
       const packagePath = realpathSync(oracle.resolve(name + "/package.json"));
       const version = asRecord(parseJson(readFileSync(packagePath, "utf8"))).version;
@@ -155,7 +155,7 @@ try {
   const officialRule = readFileSync(officialRulePath);
   assert.equal(
     hash(officialRule),
-    "b637beea7d7acd891b6fdfa299b7b64e8efc76b07916e8f3e3690e8155700341",
+    "0fbac815426bd666654e8557f44a86f88b2cc113df9181add6820d9d58437f34",
   );
   const custody = {
     source: receipt.source,

@@ -30,7 +30,7 @@ const consumerSuccessorSha256 = "1de5f35741488845e6eab11b38ae07ae3f823e979c0b219
 const attributeEslintOwner = "npm/linter/oxlint/src/attribute-eslint.test.ts";
 const attributeEslintCurrent = {
   bytes: 6_195,
-  sha256: "84be57404c41a72500084386f558dcb9843d6b28e271a3f0336679ed58233e5b",
+  sha256: "835156fadd30dea822f33d4f21079b0cee9e922d340247e6b22333b4d61c986e",
   line: '  const workspace = createRequire(new URL("../package.json", import.meta.url));\n',
 };
 const attributeEslintBeforeDependencies = {
@@ -41,7 +41,7 @@ const attributeEslintBeforeDependencies = {
       "  // The declared Nuxt consumer resolves ESLint 10.13.0 in the current lock.\n",
     ],
     [
-      '  const targetProviders = { eslint: "10.14.0", "vue-eslint-parser": "10.4.1" };\n',
+      '  const targetProviders = { eslint: "10.14.0", "vue-eslint-parser": "10.4.2" };\n',
       '  const targetProviders = { eslint: "10.13.0", "vue-eslint-parser": "10.4.1" };\n',
     ],
   ],

@@ -118,9 +118,9 @@ try {
   const providers = Object.fromEntries(
     Object.entries({
       eslint: "10.14.0",
-      "vue-eslint-parser": "10.4.1",
-      "eslint-plugin-vue": "10.9.2",
-      "@typescript-eslint/parser": "8.65.0",
+      "vue-eslint-parser": "10.4.2",
+      "eslint-plugin-vue": "10.12.0",
+      "@typescript-eslint/parser": "8.72.1",
     }).map(([name, expected]) => {
       const packagePath = realpathSync(workspace.resolve(name + "/package.json"));
       const version = asRecord(parseJson(readFileSync(packagePath, "utf8"))).version;
@@ -135,7 +135,7 @@ try {
   );
   const rulePath = join(officialDirectory, "rules/component-name-in-template-casing.js");
   const ruleBytes = readFileSync(rulePath);
-  assert.equal(hash(ruleBytes), "573aadd95f4235ddfae08e955d86a427f947fba29230a334ff3bbc3d3c38c2e6");
+  assert.equal(hash(ruleBytes), "95c04f5f7203cee279373c9cdfccd174f7ae91e70c48029d0b874d0a8a8d5593");
   const regexpPath = join(officialDirectory, "utils/regexp.js");
   custody = {
     source: receipt.source,
