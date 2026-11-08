@@ -27,7 +27,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::ir::ByteRange;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
 use vize_l0::is_native_tag;
@@ -118,6 +120,10 @@ fn value_fix(source: &str, range: ByteRange, name: &str, value: &str, help: &str
 impl MarkupRule for NoBooleanAttrValue {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

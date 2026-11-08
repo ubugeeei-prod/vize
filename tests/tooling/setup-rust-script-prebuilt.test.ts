@@ -117,6 +117,7 @@ exit 65
     path.join(bin, "bash"),
     `#!/bin/bash
 set -euo pipefail
+if [ "$1" != "$EXTRACTOR" ]; then exec /bin/bash "$@"; fi
 printf '%s\\n' "$@" > "$HELPER_LOG"
 if [ "$FIXTURE_DIGEST" = true ]; then
   exec /bin/bash "$1" "$2" "$3" "$ARCHIVE_DIGEST"
@@ -159,6 +160,7 @@ chmod +x "$CARGO_HOME/bin/rust-script"
       FIXTURE_RUNNER: path.join(root, "fixture-runner"),
       FIXTURE_DIGEST: String(options.fixtureDigest ?? true),
       ARCHIVE_DIGEST: digest(bytes),
+      EXTRACTOR: helper,
       CURL_STATUS: String(options.curlStatus ?? 0),
       CURL_LOG: path.join(root, "curl.log"),
       HELPER_LOG: path.join(root, "helper.log"),

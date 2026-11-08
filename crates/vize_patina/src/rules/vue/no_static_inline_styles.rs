@@ -10,7 +10,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{Expression, ObjectPropertyKind, PropertyKey};
 use oxc_span::GetSpan;
@@ -179,6 +181,10 @@ fn value_is_static(value: &Expression<'_>) -> bool {
 impl MarkupRule for NoStaticInlineStyles {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
     }
 
     fn enter_binding<'a>(
