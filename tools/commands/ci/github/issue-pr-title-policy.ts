@@ -23,7 +23,7 @@ function requiredEnv(name: string): string | undefined {
   return value === undefined || value.length === 0 ? undefined : value;
 }
 
-function readPayload(path: string): unknown | undefined {
+function readPayload(path: string): unknown {
   try {
     return JSON.parse(fs.readFileSync(path, "utf8"));
   } catch {
