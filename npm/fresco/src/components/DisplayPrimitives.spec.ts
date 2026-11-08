@@ -103,3 +103,27 @@ test("Spinner advances, follows a shorter frame set, and clears its timer", asyn
     vi.useRealTimers();
   }
 });
+
+test("Spinner keeps a valid frame when its frame set shrinks", async () => {
+  vi.useFakeTimers();
+  try {
+    const frames = ref(["a", "b", "c"]);
+    const mounted = mountFresco(() => h(Spinner, { frames: frames.value, interval: 20 }));
+
+    await vi.advanceTimersByTimeAsync(40);
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "c");
+
+    frames.value = ["x"];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "x");
+
+    frames.value = [];
+    await nextTick();
+    assert.equal(firstChild(mounted).props.text, "⠹");
+    mounted.unmount();
+  } finally {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  }
+});
