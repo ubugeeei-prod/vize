@@ -23,11 +23,13 @@ export {
 export { Text, type TextProps } from "./Text.js";
 export { default as Newline } from "./FrescoNewline.vue";
 export type { NewlineProps } from "./text-utility-types.js";
-export { Static, type StaticProps } from "./Static.js";
+export { default as Static } from "./FrescoStatic.vue";
+export type { StaticProps } from "./display-primitive-types.js";
 export { default as Transform } from "./FrescoTransform.vue";
 export type { TransformProps } from "./text-utility-types.js";
 export { Code, type CodeProps } from "./Code.js";
-export { Link, type LinkProps } from "./Link.js";
+export { default as Link } from "./FrescoLink.vue";
+export type { LinkProps } from "./display-primitive-types.js";
 
 // Input
 export { TextInput, type TextInputProps } from "./TextInput.js";
@@ -39,10 +41,12 @@ export { Confirm, type ConfirmProps } from "./Confirm.js";
 export { Form, type FormProps, type FormField } from "./Form.js";
 
 // Feedback
-export { Spinner, type SpinnerProps } from "./Spinner.js";
+export { default as Spinner } from "./FrescoSpinner.vue";
+export type { SpinnerProps } from "./display-primitive-types.js";
 export { ProgressBar, type ProgressBarProps } from "./ProgressBar.js";
 export { Alert, type AlertProps, type AlertType } from "./Alert.js";
-export { Badge, type BadgeProps, type BadgeVariant } from "./Badge.js";
+export { default as Badge } from "./FrescoBadge.vue";
+export type { BadgeProps, BadgeVariant } from "./display-primitive-types.js";
 export { Timer, type TimerProps, type TimerMode } from "./Timer.js";
 export { Tooltip, type TooltipProps, type TooltipPosition } from "./Tooltip.js";
 

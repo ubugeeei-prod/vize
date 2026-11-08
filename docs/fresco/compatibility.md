@@ -50,7 +50,7 @@ means the surface has no equivalent.
 | `<Text>`      | `TextRenderable` | `Text`     | `Text`      | Implemented | Styling plus `wrap`/`truncate`/`truncate-start`/`truncate-middle`/`truncate-end` modes. |
 | `<Newline>`   | —                | `Newline`  | `Newline`   | Implemented | Canonical source is a typed `.vue` SFC.                                                 |
 | `<Spacer>`    | —                | —          | `Spacer`    | Implemented | Canonical source is a typed `.vue` SFC.                                                 |
-| `<Static>`    | —                | —          | `Static`    | Implemented | Append-only output above the live area; also used by the non-interactive/CI path.       |
+| `<Static>`    | —                | —          | `Static`    | Implemented | Typed SFC with append-only output above the live area and non-interactive/CI support.   |
 | `<Transform>` | —                | —          | `Transform` | Implemented | Canonical typed SFC; transforms `(children, index)` and supports `accessibilityLabel`.  |
 
 ### Interaction primitives
@@ -75,10 +75,10 @@ app to wire `useInput` (their internal movement/select handlers are not connecte
 
 | Ink ecosystem      | OpenTUI                 | Vue TermUI    | Fresco                      | Status      | Notes                                                                                                                                                                         |
 | ------------------ | ----------------------- | ------------- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ink-spinner`      | —                       | —             | `Spinner`                   | Implemented | Animated via the shared `useAnimation` timer.                                                                                                                                 |
+| `ink-spinner`      | —                       | —             | `Spinner`                   | Implemented | Canonical typed SFC with owned animation lifecycle.                                                                                                                           |
 | `ink-progress-bar` | —                       | `ProgressBar` | `ProgressBar`               | Implemented |                                                                                                                                                                               |
 | `ink-table`        | —                       | —             | `Table`                     | Partial     | Typed rows/columns, alignment; sorting hooks, resize, and virtualization pending (M3).                                                                                        |
-| `ink-link`         | —                       | —             | `Link`                      | Partial     | Styled label with optional URL suffix; no OSC 8 hyperlink escape.                                                                                                             |
+| `ink-link`         | —                       | —             | `Link`                      | Partial     | Typed SFC with styled label and optional URL suffix; no OSC 8 hyperlink escape.                                                                                               |
 | —                  | `CodeRenderable`        | —             | `Code`                      | Partial     | Static block with line numbers, highlight lines, border; no syntax provider, streaming, or selection (M3).                                                                    |
 | —                  | `MarkdownRenderable`    | `Markdown`    | —                           | Planned     | Lightweight CommonMark core with provider extension points (M3).                                                                                                              |
 | —                  | `LineNumberRenderable`  | —             | —                           | Planned     | Standalone gutter primitive (M3); `Code` embeds its own line numbers today.                                                                                                   |
@@ -97,7 +97,7 @@ polish track as the tables above.
 | Group      | Components                                           |
 | ---------- | ---------------------------------------------------- |
 | Layout     | `Stack`/`HStack`/`VStack`, `Grid`, `Card`, `Divider` |
-| Feedback   | `Alert`, `Badge`, `Timer`, `Avatar`                  |
+| Feedback   | `Alert`, `Badge` (typed SFC), `Timer`, `Avatar`      |
 | Navigation | `Breadcrumb`, `Stepper` (`Menu`, `Tabs` above)       |
 | Chrome     | `StatusBar`, `Header`, `KeyHint`                     |
 
