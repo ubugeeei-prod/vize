@@ -84,3 +84,26 @@ test("hit testing selects the topmost node within ancestor overflow clips", () =
   );
   axisAlias.unmount();
 });
+
+test("hit testing follows sibling z-index before source order", () => {
+  const mounted = mountFresco(() =>
+    h("box", [
+      h("text", { text: "front", style: { zIndex: 2 } }),
+      h("text", { text: "back", style: { zIndex: -1 } }),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const front = root.children[0];
+  const back = root.children[1];
+  assert.ok(front && back);
+
+  assert.equal(
+    mounted.renderer.hitTest(root, 0, 0, [
+      { id: root.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: front.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: back.id, x: 0, y: 0, width: 5, height: 1 },
+    ]),
+    front,
+  );
+  mounted.unmount();
+});

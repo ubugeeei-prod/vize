@@ -19,6 +19,10 @@ function clipsDescendants(node: FrescoHostNode): boolean {
   return clipsOverflow(style?.overflow ?? style?.overflowX ?? style?.overflowY);
 }
 
+function zIndex(node: FrescoHostNode): number {
+  return normalizeFrescoStyle(node.props.style)?.zIndex ?? 0;
+}
+
 function containsPoint(layout: LayoutResultNapi, clip: HitRegion, x: number, y: number): boolean {
   return (
     x >= layout.x &&
@@ -63,8 +67,10 @@ export function hitTest(
         }
       : ancestorClip;
 
-    for (let index = node.children.length - 1; index >= 0; index -= 1) {
-      const child = node.children[index];
+    const children = node.children
+      .map((child, index) => ({ child, index, zIndex: zIndex(child) }))
+      .sort((left, right) => right.zIndex - left.zIndex || right.index - left.index);
+    for (const { child } of children) {
       if (!child) continue;
       const target = visit(child, childClip);
       if (target) return target;
