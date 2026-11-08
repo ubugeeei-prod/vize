@@ -117,6 +117,87 @@ test("inserts, reorders, and removes list children through anchors", async () =>
   mounted.unmount();
 });
 
+test("keeps stable ids addressable across keyed moves", async () => {
+  const items = ref(["a", "b"]);
+  const mounted = mountFresco(() =>
+    h(
+      "box",
+      items.value.map((item) => h("text", { key: item, text: item })),
+    ),
+  );
+  const root = firstChild(mounted);
+  const [a, b] = root.children;
+  assert.ok(a && b);
+
+  assert.equal(mounted.renderer.getNode(a.id), a);
+  assert.equal(mounted.renderer.findDescendantById(root, b.id), b);
+  assert.equal(mounted.renderer.findDescendantById(a, b.id), undefined);
+
+  items.value = ["b", "a"];
+  await nextTick();
+  assert.deepEqual(
+    root.children.map((node) => node.id),
+    [b.id, a.id],
+  );
+  assert.equal(mounted.renderer.getNode(a.id), a);
+  assert.equal(mounted.renderer.getNode(b.id), b);
+  mounted.unmount();
+});
+
+test("reports lifecycle updates and recursively destroys lookup entries", async () => {
+  const width = ref(10);
+  const visible = ref(true);
+  const created: number[] = [];
+  const updated: Array<[number, string]> = [];
+  const resized: Array<[number, unknown, unknown]> = [];
+  const removed: number[] = [];
+  const mounted = mountFresco(
+    () =>
+      h("box", { style: { width: width.value } }, [
+        visible.value ? h("box", { key: "branch" }, [h("text", { text: "leaf" })]) : null,
+      ]),
+    {
+      lifecycle: {
+        onCreate: (node) => created.push(node.id),
+        onUpdate: (node, kind) => updated.push([node.id, kind]),
+        onResize: (node, previous, current) =>
+          resized.push([node.id, previous.width, current.width]),
+        onRemove: (node) => removed.push(node.id),
+      },
+    },
+  );
+
+  const root = firstChild(mounted);
+  const branch = root.children[0];
+  const leaf = branch?.children[0];
+  assert.ok(branch && leaf);
+  assert.ok(created.includes(root.id));
+  assert.ok(created.includes(branch.id));
+  assert.ok(created.includes(leaf.id));
+
+  width.value = 20;
+  await nextTick();
+  assert.deepEqual(resized.at(-1), [root.id, 10, 20]);
+  assert.ok(updated.some(([id, kind]) => id === root.id && kind === "props"));
+
+  visible.value = false;
+  await nextTick();
+  assert.equal(mounted.renderer.getNode(branch.id), undefined);
+  assert.equal(mounted.renderer.getNode(leaf.id), undefined);
+  assert.deepEqual(removed.slice(-2), [leaf.id, branch.id]);
+  assert.equal(mounted.renderer.destroyRecursively(branch.id), false, "disposal is idempotent");
+
+  const rootId = root.id;
+  assert.equal(mounted.renderer.destroyRecursively(rootId), true);
+  assert.equal(mounted.renderer.getNode(rootId), undefined);
+  mounted.unmount();
+  assert.equal(
+    removed.filter((id) => id === rootId).length,
+    1,
+    "Vue unmount cannot report an already disposed node twice",
+  );
+});
+
 test("emits all four discriminated render variants with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
