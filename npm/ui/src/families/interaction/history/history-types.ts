@@ -8,12 +8,14 @@ export interface HistoryEntry {
   /** Re-apply the change after it was undone. */
   readonly redo: () => void;
 
-  /** Human-readable label for Undo/Redo menu items. */
+  /** Human-readable label for Undo/Redo menu items. @default undefined */
   readonly label?: string;
 
   /**
    * Adjacent pushes carrying the same key merge into one step while they
    * arrive within the coalescing window and nothing was undone in between.
+   *
+   * @default undefined
    */
   readonly coalesceKey?: string;
 }
@@ -29,10 +31,10 @@ export interface HistorySnapshotOptions<Value> {
   /** Writer invoked with `before` on undo and `after` on redo. */
   readonly apply: (value: Value) => void;
 
-  /** Human-readable label for Undo/Redo menu items. */
+  /** Human-readable label for Undo/Redo menu items. @default undefined */
   readonly label?: string;
 
-  /** Coalescing key; see {@link HistoryEntry.coalesceKey}. */
+  /** Coalescing key; see {@link HistoryEntry.coalesceKey}. @default undefined */
   readonly coalesceKey?: string;
 
   /**
@@ -135,10 +137,10 @@ export interface EditableTransactionOptions<Value> {
   /** Write a value back into the editor. */
   readonly write: (value: Value) => void;
 
-  /** Label recorded on committed steps. */
+  /** Label recorded on committed steps. @default undefined */
   readonly label?: string;
 
-  /** Coalescing key recorded on committed steps. */
+  /** Coalescing key recorded on committed steps. @default undefined */
   readonly coalesceKey?: string;
 
   /**

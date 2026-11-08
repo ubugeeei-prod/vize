@@ -72,13 +72,13 @@ export interface DragAndDropOptions<Data = unknown> {
    */
   readonly announcements?: DragAnnouncements<Data>;
 
-  /** Called exactly once when a session starts. */
+  /** Called exactly once when a session starts. @default undefined */
   readonly onDragStart?: (event: DragStartEvent<Data>) => void;
 
-  /** Called for pointer movement and keyboard target changes inside a session. */
+  /** Called for pointer movement and keyboard target changes inside a session. @default undefined */
   readonly onDragMove?: (event: DragMoveEvent<Data>) => void;
 
-  /** Called exactly once after a session drops or cancels. */
+  /** Called exactly once after a session drops or cancels. @default undefined */
   readonly onDragEnd?: (event: DragEndEvent<Data>) => void;
 }
 
@@ -87,7 +87,7 @@ export interface DragSourceOptions<Data = unknown> {
   /** Stable key unique among this controller's sources. */
   readonly key: string;
 
-  /** Dragged item element used for geometry; the handle receives `sourceProps`. */
+  /** Dragged item element used for geometry; the handle receives `sourceProps`. @default undefined */
   readonly element?: MaybeRefOrGetter<Element | null | undefined>;
 
   /**
@@ -187,16 +187,16 @@ export interface DropTargetOptions<Data = unknown> {
    */
   readonly label?: MaybeRefOrGetter<string | undefined>;
 
-  /** Called when the drag enters this target. */
+  /** Called when the drag enters this target. @default undefined */
   readonly onEnter?: (event: DropTargetEvent<Data>) => void;
 
-  /** Called when the drag moves inside this target or its edge changes. */
+  /** Called when the drag moves inside this target or its edge changes. @default undefined */
   readonly onMove?: (event: DropTargetEvent<Data>) => void;
 
-  /** Called when the drag leaves this target without dropping. */
+  /** Called when the drag leaves this target without dropping. @default undefined */
   readonly onLeave?: (event: DropTargetEvent<Data>) => void;
 
-  /** Called when the session drops on this target. */
+  /** Called when the session drops on this target. @default undefined */
   readonly onDrop?: (event: DropTargetEvent<Data>) => void;
 }
 

@@ -163,7 +163,7 @@ export interface VirtualizerOptions {
    */
   readonly initialScrollOffset?: number;
 
-  /** Called after the visible range changes, including to `null`. */
+  /** Called after the visible range changes, including to `null`. @default undefined */
   readonly onRangeChange?: (range: VirtualRange | null) => void;
 }
 

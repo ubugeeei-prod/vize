@@ -77,7 +77,7 @@ export interface DataGridPinning {
 
 /** Behavior shared by every column kind; `Value` is the resolved cell value. */
 export interface DataGridColumnOptions<Row, Value> {
-  /** Visible header label, also used for the column header's accessible name. */
+  /** Visible header label, also used for the column header's accessible name. @default the column id */
   readonly header?: string;
 
   /** Allow sorting by this column. Display columns are never sortable. @default true */
@@ -117,19 +117,19 @@ export interface DataGridColumnOptions<Row, Value> {
    */
   readonly editable?: boolean | ((row: Row) => boolean);
 
-  /** Order two values; defaults to locale-aware, `null`-last comparison. */
+  /** Order two values. @default locale-aware, numeric, `null`-last comparison */
   compare?(left: Value, right: Value, leftRow: Row, rightRow: Row): number;
 
-  /** Keep a row when this column's filter value is set. */
+  /** Keep a row when this column's filter value is set. @default case-insensitive formatted substring matching */
   filter?(value: Value, filterValue: unknown, row: Row): boolean;
 
-  /** Text used for display fallbacks, the global filter, and the editor draft. */
+  /** Text used for display fallbacks, the global filter, and the editor draft. @default built-in primitive and ISO date formatter */
   format?(value: Value, row: Row): string;
 
   /** Convert editor text back into a value. @default identity for string values */
   parse?(input: string, row: Row): Value;
 
-  /** Return an error message to reject an edited value. */
+  /** Return an error message to reject an edited value. @default no validation error */
   validate?(value: Value, row: Row): string | null;
 }
 
