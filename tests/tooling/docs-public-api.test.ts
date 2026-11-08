@@ -37,6 +37,8 @@ const packages = [
   {
     name: "@vizejs/ui",
     sourceRoot: uiRoot,
+    minimumDeclarations: 3_000,
+    minimumOptionalMembers: 500,
     entrypoints: [
       new URL("src/index.ts", uiRoot),
       ...uiFamilyCatalog.map(({ entryFile }) => new URL(entryFile, uiRoot)),
@@ -47,6 +49,17 @@ const packages = [
       new URL("src/media/media.ts", uiRoot),
       new URL("src/media/pdf.ts", uiRoot),
       new URL("src/media/media-source.ts", uiRoot),
+    ],
+  },
+  {
+    name: "@vizejs/plugin-sdk",
+    sourceRoot: new URL("../../npm/plugin-sdk/", import.meta.url),
+    minimumDeclarations: 100,
+    entrypoints: [
+      new URL("../../npm/plugin-sdk/index.d.ts", import.meta.url),
+      new URL("../../npm/plugin-sdk/fixes.d.ts", import.meta.url),
+      new URL("../../npm/plugin-sdk/sandbox.d.ts", import.meta.url),
+      new URL("../../npm/plugin-sdk/visitor.d.ts", import.meta.url),
     ],
   },
 ] as const;
@@ -61,13 +74,15 @@ for (const packageContract of packages) {
       audit.declarations > 0,
       `${packageContract.name} must expose documented declarations`,
     );
-    if ("entrypoints" in packageContract) {
+    if ("minimumDeclarations" in packageContract) {
       assert.ok(
-        audit.declarations >= 3_000,
+        audit.declarations >= packageContract.minimumDeclarations,
         `${packageContract.name} must retain its public export graph`,
       );
+    }
+    if ("minimumOptionalMembers" in packageContract) {
       assert.ok(
-        audit.optionalMembers >= 500,
+        audit.optionalMembers >= packageContract.minimumOptionalMembers,
         `${packageContract.name} must retain its public option contracts`,
       );
     }
