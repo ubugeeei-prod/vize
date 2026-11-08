@@ -9,8 +9,8 @@
     },
     {
       "path": "tests/_fixtures/tooling/language-project-current-20261105/plugin-source-successor.json",
-      "bytes": 8429,
-      "sha256": "51e4d0f5f567ad381f27d987dbbb64fcff5839ec2603f02d41fc55d371efcab3"
+      "bytes": 8151,
+      "sha256": "60bf82190eaee6b4fe1e97f00194d0a422c19034dafc25ba85311692175a78b4"
     }
   ],
   "currentFiles": [
