@@ -1,7 +1,18 @@
+import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  resolve: {
+    // The external-package fixture must exercise this checkout even when a
+    // shared pnpm store links the workspace name to another clean worktree.
+    alias: [
+      {
+        find: /^@vizejs\/fresco$/u,
+        replacement: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
+      },
+    ],
+  },
   plugins: [vue()],
   test: {
     // SFCs must be compiled to their client render functions because Fresco

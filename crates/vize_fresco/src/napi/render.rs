@@ -9,10 +9,10 @@ use super::input_size::input_intrinsic_size;
 use super::render_payload::{
     RenderNodeKindNapi, parse_wrap_mode, unsupported_render_node_kind, validate_render_node_kinds,
 };
+use super::render_style::{convert_style, parse_color};
 use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
-use crate::terminal::{Color, Style};
 
 thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
@@ -528,88 +528,4 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
             backend.cursor_mut().hide();
         }
     })
-}
-
-/// Convert StyleNapi to Style.
-fn convert_style(style: StyleNapi) -> Style {
-    let mut result = Style::default();
-
-    if let Some(ref fg) = style.fg {
-        result.fg = parse_color(fg);
-    }
-    if let Some(ref bg) = style.bg {
-        result.bg = parse_color(bg);
-    }
-    result.bold = style.bold.unwrap_or(false);
-    result.dim = style.dim.unwrap_or(false);
-    result.italic = style.italic.unwrap_or(false);
-    result.underline = style.underline.unwrap_or(false);
-    result.reverse = style.inverse.unwrap_or(false);
-    result.blink = style.blink.unwrap_or(false);
-    result.hidden = style.hidden.unwrap_or(false);
-    result.strikethrough = style.strikethrough.unwrap_or(false);
-
-    result
-}
-
-/// Parse color string.
-fn parse_color(s: &str) -> Option<Color> {
-    // Try hex color
-    if let Some(color) = Color::from_hex(s) {
-        return Some(color);
-    }
-
-    // Try named color (alloc-free, case-insensitive ASCII match)
-    if s.eq_ignore_ascii_case("black") {
-        return Some(Color::Black);
-    }
-    if s.eq_ignore_ascii_case("red") {
-        return Some(Color::Red);
-    }
-    if s.eq_ignore_ascii_case("green") {
-        return Some(Color::Green);
-    }
-    if s.eq_ignore_ascii_case("yellow") {
-        return Some(Color::Yellow);
-    }
-    if s.eq_ignore_ascii_case("blue") {
-        return Some(Color::Blue);
-    }
-    if s.eq_ignore_ascii_case("magenta") {
-        return Some(Color::Magenta);
-    }
-    if s.eq_ignore_ascii_case("cyan") {
-        return Some(Color::Cyan);
-    }
-    if s.eq_ignore_ascii_case("white") {
-        return Some(Color::White);
-    }
-    if s.eq_ignore_ascii_case("gray") || s.eq_ignore_ascii_case("grey") {
-        return Some(Color::Gray);
-    }
-    if s.eq_ignore_ascii_case("lightred") {
-        return Some(Color::LightRed);
-    }
-    if s.eq_ignore_ascii_case("lightgreen") {
-        return Some(Color::LightGreen);
-    }
-    if s.eq_ignore_ascii_case("lightyellow") {
-        return Some(Color::LightYellow);
-    }
-    if s.eq_ignore_ascii_case("lightblue") {
-        return Some(Color::LightBlue);
-    }
-    if s.eq_ignore_ascii_case("lightmagenta") {
-        return Some(Color::LightMagenta);
-    }
-    if s.eq_ignore_ascii_case("lightcyan") {
-        return Some(Color::LightCyan);
-    }
-    if s.eq_ignore_ascii_case("lightwhite") {
-        return Some(Color::LightWhite);
-    }
-    if s.eq_ignore_ascii_case("reset") {
-        return Some(Color::Reset);
-    }
-    None
 }
