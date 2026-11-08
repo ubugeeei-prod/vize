@@ -92,13 +92,13 @@ test("branch coverage reports every metric before enforcing thresholds", () => {
   const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
   const cleanIndex = command.indexOf("cargo clean --target-dir target/llvm-cov-target");
   const reportIndex = command.indexOf("cargo +nightly llvm-cov -p vize_carton");
-  const enforcementIndex = command.indexOf("tools/commands/ci/source-coverage.rs");
+  const enforcementIndex = command.indexOf("tools/commands/ci/source-coverage.ts");
 
   assert.ok(cleanIndex >= 0);
   assert.match(command, /cargo \+nightly llvm-cov/);
   assert.match(command, /--branch(?:\s|$)/);
   assert.doesNotMatch(command, /--fail-under-/);
-  assert.match(command, /tools\/commands\/ci\/source-coverage\.rs/);
+  assert.match(command, /node tools\/commands\/ci\/source-coverage\.ts/);
   assert.match(command, /(?:^|\s)['"]?--min-lines['"]?\s+['"]?55['"]?(?:\s|$)/);
   assert.match(command, /(?:^|\s)['"]?--min-functions['"]?\s+['"]?70['"]?(?:\s|$)/);
   assert.match(command, /(?:^|\s)['"]?--min-regions['"]?\s+['"]?55['"]?(?:\s|$)/);
