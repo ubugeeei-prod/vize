@@ -63,7 +63,14 @@ export { Select, type SelectProps, type SelectOption } from "./Select.js";
 export { Checkbox, type CheckboxProps } from "./Checkbox.js";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup.js";
 export { Confirm, type ConfirmProps } from "./Confirm.js";
-export { Form, type FormProps, type FormField } from "./Form.js";
+export {
+  Form,
+  type FormErrors,
+  type FormField,
+  type FormProps,
+  type FormSlotProps,
+  type FormValues,
+} from "./Form.js";
 
 // Feedback
 export { default as Spinner } from "./FrescoSpinner.vue";
