@@ -7,6 +7,7 @@ import { format } from "node:util";
 import {
   defineComponent,
   h,
+  nextTick,
   ref,
   shallowRef,
   type App as VueApp,
@@ -411,7 +412,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     writeToStdout,
     writeToStderr,
   });
-
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
   let mounted = false;
@@ -430,7 +430,6 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let hasCursorOverride = false;
   let instance: App;
   const pluginInstallers: Array<(app: VueApp) => void> = [];
-
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
   let rejectExit: ((reason?: unknown) => void) | null = null;
@@ -438,14 +437,12 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     resolveExit = resolve;
     rejectExit = reject;
   });
-
   const renderer = createRenderer({
     lifecycle: options.devtools?.lifecycle,
     onMutation() {
       needsRender = true;
     },
   });
-
   function publishRenderMetrics(
     root: FrescoElement,
     layouts: readonly LayoutResultNapi[],
@@ -592,7 +589,10 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   async function waitUntilRenderFlush(): Promise<void> {
-    return Promise.resolve();
+    await nextTick();
+    if (!needsRender) return;
+    needsRender = false;
+    render();
   }
 
   function clear() {
