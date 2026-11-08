@@ -53,6 +53,7 @@ import Transform from "./FrescoTransform.vue";
 import Tooltip from "./FrescoTooltip.vue";
 import type { MarkdownBlockProvider, MarkdownProps } from "./markdown-types.js";
 import type { ModalProps } from "./modal-types.js";
+import type { TableProps, TableRow } from "./table-types.js";
 
 // --- Public prop interfaces ------------------------------------------------
 
@@ -230,6 +231,28 @@ export const modalAcceptsFocusPolicyProps: ModalProps = {
   trapFocus: true,
   restoreFocus: true,
   closeOnEscape: true,
+};
+
+type ScoreRow = TableRow & { readonly name: string; readonly score: number };
+export const tableAcceptsInteractiveProps: TableProps<ScoreRow> = {
+  columns: [
+    { key: "name", header: "Name", width: 12, sortable: true },
+    { key: "score", header: "Score", align: "right", minWidth: 3, maxWidth: 8 },
+  ],
+  data: [{ name: "Ada", score: 10 }],
+  sortKey: "score",
+  sortDirection: "descending",
+  viewportSize: 20,
+  overscan: 2,
+  focused: true,
+  columnWidths: { score: 6 },
+};
+
+export const tableRejectsUnknownSortDirection: TableProps = {
+  columns: [],
+  data: [],
+  // @ts-expect-error - sort direction is a controlled ascending/descending state.
+  sortDirection: "reverse",
 };
 
 export const scrollBoxAcceptsBoundedViewportProps: ScrollBoxProps = {

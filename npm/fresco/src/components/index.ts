@@ -88,7 +88,16 @@ export type { TooltipPosition, TooltipProps } from "./presentational-primitive-t
 
 // Data Display
 export { List, type ListProps, type ListItem } from "./List.js";
-export { Table, type TableProps, type TableColumn } from "./Table.js";
+export {
+  Table,
+  type TableAlignment,
+  type TableCellSlotProps,
+  type TableColumn,
+  type TableProps,
+  type TableRow,
+  type TableSortDirection,
+  type TableViewportRange,
+} from "./Table.js";
 export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
 
 // Navigation
