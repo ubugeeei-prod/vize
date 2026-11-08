@@ -56,12 +56,12 @@ test("Zed grammar packaging uses the pinned WASI SDK through the verified downlo
     step,
     /download-artifact\.sh" \\\n+\s+"https:\/\/github\.com\/WebAssembly\/wasi-sdk\/releases\/download\/wasi-sdk-25\/wasi-sdk-25\.0-x86_64-linux\.tar\.gz" \\\n+\s+"\$wasi_archive" \\\n+\s+"52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \\\n+\s+"https:\/\/api\.github\.com\/repos\/WebAssembly\/wasi-sdk\/releases\/assets\/212790091"/,
   );
+  assert.match(step, /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/);
+  assert.match(step, /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/);
   assert.match(
     step,
-    /tar -xzf "\$wasi_archive" -C "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/,
+    /"\$\{RUNNER_TEMP\}\/zed-extension" \\\n+\s+--source-dir \. \\\n+\s+--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/,
   );
-  assert.match(step, /test -x "\$\{RUNNER_TEMP\}\/zed-extension-scratch\/wasi-sdk\/bin\/clang"/);
-  assert.match(step, /"\$\{RUNNER_TEMP\}\/zed-extension" \\\n+\s+--source-dir \. \\\n+\s+--scratch-dir "\$\{RUNNER_TEMP\}\/zed-extension-scratch"/);
 });
 
 test(
@@ -153,11 +153,7 @@ test("editor download terminates a stalled body and removes partial files", opti
 
 async function serverFixture(
   t: TestContext,
-  respond: (
-    response: ServerResponse,
-    requestUrl: string,
-    headers: IncomingHttpHeaders,
-  ) => void,
+  respond: (response: ServerResponse, requestUrl: string, headers: IncomingHttpHeaders) => void,
 ) {
   const directory = mkdtempSync(path.join(os.tmpdir(), "vize-editor-download-"));
   const server = createServer((request, response) =>
