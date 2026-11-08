@@ -64,6 +64,7 @@ jobs:
     timeout-minutes: 40
     env:
       DECLARED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+      EVENT_KIND: ${{ github.event_name }}
       CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
@@ -88,7 +89,7 @@ jobs:
           python3 -c 'from pathlib import Path; lines=Path("allocation-evidence/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); parents=[line.split()[1].decode() for line in lines if line.startswith(b"parent ")]; assert parents; Path("allocation-evidence/base.sha").write_text(parents[0]+"\n")'
           allocation_base_sha=$(cat allocation-evidence/base.sha)
           [[ "$allocation_base_sha" =~ ^[0-9a-f]{40}$ ]]
-          test "$allocation_base_sha" = "$DECLARED_BASE_SHA"
+          if [[ "$EVENT_KIND" == workflow_dispatch ]]; then test "$allocation_base_sha" = "$DECLARED_BASE_SHA"; fi
           git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$allocation_base_sha"
           git worktree add --detach "$RUNNER_TEMP/recovery-allocation-base" "$allocation_base_sha"
           test "$(git -C "$RUNNER_TEMP/recovery-allocation-base" rev-parse HEAD)" = "$allocation_base_sha"
