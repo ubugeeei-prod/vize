@@ -182,6 +182,13 @@ export function sourceMapperSdk(project: string, provider: string, executable: s
   assert.equal(fs.realpathSync(modules), fs.realpathSync(path.join(provider, "node_modules")));
   fs.unlinkSync(modules);
   fs.mkdirSync(modules);
+  const sourceSdk = process.env.VIZE_SOURCE_SDK_ROOT?.trim();
+  const sourceSdkEntries = new Set([
+    "content-mapper-helpers.d.cts",
+    "content-mapper-helpers.d.mts",
+    "content-mapper-helpers.d.ts",
+    "generated",
+  ]);
   for (const entry of fs.readdirSync(path.join(provider, "node_modules"))) {
     if (entry === "vize") continue;
     fs.symlinkSync(path.join(provider, "node_modules", entry), path.join(modules, entry), "dir");
@@ -190,8 +197,24 @@ export function sourceMapperSdk(project: string, provider: string, executable: s
   const shadow = path.join(modules, "vize");
   fs.mkdirSync(shadow);
   for (const entry of fs.readdirSync(original)) {
-    if (entry !== "package.json")
+    if (entry !== "package.json" && !(sourceSdk && sourceSdkEntries.has(entry)))
       fs.symlinkSync(path.join(original, entry), path.join(shadow, entry));
+  }
+  const sourceSdkIdentity: Record<string, ReturnType<typeof identify>> = {};
+  if (sourceSdk) {
+    for (const entry of sourceSdkEntries) {
+      const source = path.join(sourceSdk, entry);
+      const target = path.join(shadow, entry);
+      if (entry === "generated") {
+        fs.mkdirSync(target);
+        const declaration = "content-mapper-types.d.ts";
+        fs.copyFileSync(path.join(source, declaration), path.join(target, declaration));
+        sourceSdkIdentity[`generated/${declaration}`] = identify(path.join(source, declaration));
+      } else {
+        fs.copyFileSync(source, target);
+        sourceSdkIdentity[entry] = identify(source);
+      }
+    }
   }
   const manifestFile = path.join(original, "package.json");
   const before = hash(fs.readFileSync(manifestFile)),
@@ -213,6 +236,7 @@ export function sourceMapperSdk(project: string, provider: string, executable: s
     originalExec,
     executable,
     physicalVue: vueFromProject,
+    sourceSdk: sourceSdk ? sourceSdkIdentity : null,
   };
 }
 export function observerLauncher(out: string, binary: string, mode: "rpc" | "stats") {

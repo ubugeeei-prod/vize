@@ -34,6 +34,11 @@ jobs:
         with:
           ref: 1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957
           persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: .workflow-driver
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: "24.14.0"
@@ -143,15 +148,19 @@ jobs:
       - name: Run the proxy byte and classification controls
         run: |
           set -euo pipefail
-          node --test tests/tooling/canon-helper-native-proxy.test.ts
+          node --test .workflow-driver/tests/tooling/canon-helper-native-proxy.test.ts
       - name: Preserve the frozen public repro and independently poison inferred slot payloads
+        env:
+          VIZE_SOURCE_SDK_ROOT: ${{ github.workspace }}/npm/cli
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/canon-helper-slot-triage.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-slot-triage"
+          node .workflow-driver/tools/benchmarks/scripts/canon-helper-slot-triage.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-slot-triage"
       - name: Capture actual CLI and source mapper packets with mutation and repair oracles
+        env:
+          VIZE_SOURCE_SDK_ROOT: ${{ github.workspace }}/npm/cli
         run: |
           set -euo pipefail
-          node tools/benchmarks/scripts/canon-helper-baseline.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-baseline" "${{ matrix.sfcs }}"
+          node .workflow-driver/tools/benchmarks/scripts/canon-helper-baseline.ts "$RUNNER_TEMP/helper-provider" "$RUNNER_TEMP/helper-image/target/ci/vize" "$RUNNER_TEMP/helper-baseline-custody/regeneration.json" "$GITHUB_WORKSPACE/.admission-driver" "$RUNNER_TEMP/helper-baseline" "${{ matrix.sfcs }}"
       - name: Package only bounded authored inputs and raw evidence
         if: always()
         run: |
