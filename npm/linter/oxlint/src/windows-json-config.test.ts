@@ -90,6 +90,43 @@ void test(
       assert.match(plain, /6:8\s+error\s+v-html can lead to XSS attacks\./u);
       assert.doesNotMatch(plain, /oxlint-vize-/u);
     }
+    const writeCorpus = (directory: string, template: string) => {
+      const target = path.join(root, directory);
+      fs.mkdirSync(target);
+      for (let index = 1; index <= 400; index += 1)
+        fs.writeFileSync(
+          path.join(target, `Component${String(index).padStart(3, "0")}.vue`),
+          `<script setup lang="ts">\nconst text = "<b>hello</b>";\n</script>\n\n<template>\n  ${template}\n</template>\n`,
+        );
+    };
+    writeCorpus("large", '<div v-html="text" />');
+    writeCorpus("clean", "<div>{{ text }}</div>");
+    const large = invoke(["-c", ".oxlintrc.json", "-f", "json", "large"]);
+    assert.equal(large.error, undefined);
+    assert.equal(large.signal, null);
+    assert.equal(large.status, 1, large.stdout + large.stderr);
+    assert.equal(large.stderr, "");
+    const largeReport = JSON.parse(large.stdout) as {
+      diagnostics: Array<{ code: string; filename: string }>;
+      number_of_files: number;
+    };
+    assert.equal(largeReport.number_of_files, 400);
+    assert.equal(
+      largeReport.diagnostics.filter(({ code }) => code === "vize(vue/no-v-html)").length,
+      400,
+    );
+    assert.equal(largeReport.diagnostics.every(({ filename }) => filename.includes("large")), true);
+    const clean = invoke(["-c", ".oxlintrc.json", "-f", "json", "clean"]);
+    assert.equal(clean.error, undefined);
+    assert.equal(clean.signal, null);
+    assert.equal(clean.status, 0, clean.stdout + clean.stderr);
+    assert.equal(clean.stderr, "");
+    const cleanReport = JSON.parse(clean.stdout) as {
+      diagnostics: unknown[];
+      number_of_files: number;
+    };
+    assert.equal(cleanReport.number_of_files, 400);
+    assert.deepEqual(cleanReport.diagnostics, []);
     const entries = fs.readdirSync(root).sort();
     assert.deepEqual(
       entries.filter((entry) => entry.startsWith("oxlint-vize-")),
