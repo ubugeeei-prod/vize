@@ -7,8 +7,11 @@ import { fileURLToPath } from "node:url";
 import {
   entrypoints,
   facadeSpecifier,
+  assertPublishedNpmVersion,
   latestPublishedVersion,
   parseChannel,
+  prepareBackfillOnePackage,
+  prepareBackfillPackage,
   preparePackage,
   preparePackageSet,
   preparePreviewPackage,
@@ -126,6 +129,74 @@ await test("the PR preview checks new entry points against one public release wi
     /npm:@vizejs\/babel-plugin@0\.708\.0/,
   );
   assert.throws(() => preparePreviewPackage(output, "latest"), /Invalid JSR version/);
+});
+
+await test("an older release backfill requires exact public npm integrity", async (t) => {
+  const output = temporaryDirectory(t, "vize-jsr-backfill-");
+  const requests: string[] = [];
+  const readMetadata = async (packageName: string, version: string): Promise<unknown> => {
+    requests.push(`${packageName}@${version}`);
+    return {
+      name: packageName,
+      version,
+      dist: { integrity: "sha512-YWJjZA==" },
+    };
+  };
+  assert.equal(await prepareBackfillPackage(output, "0.713.0", { readMetadata }), "0.713.0");
+  assert.deepEqual(
+    requests.sort(),
+    [...new Set(Object.values(entrypoints).map(({ name }) => `${name}@0.713.0`))].sort(),
+  );
+  assert.match(
+    readFileSync(resolve(output, "babel.ts"), "utf8"),
+    /@vizejs\/babel-plugin@0\.713\.0/,
+  );
+
+  const standalone = resolve(temporaryDirectory(t, "vize-jsr-backfill-one-"), "package");
+  assert.equal(
+    await prepareBackfillOnePackage(standalone, "@vizejs/unplugin", "0.713.0", { readMetadata }),
+    "0.713.0",
+  );
+  assert.match(readFileSync(resolve(standalone, "mod.ts"), "utf8"), /@vizejs\/unplugin@0\.713\.0/);
+});
+
+await test("registry backfills reject missing or mismatched npm evidence", async (t) => {
+  const output = temporaryDirectory(t, "vize-jsr-backfill-reject-");
+  assert.throws(
+    () => assertPublishedNpmVersion({}, "@vizejs/unplugin", "0.713.0"),
+    /did not prove/,
+  );
+  assert.throws(
+    () =>
+      assertPublishedNpmVersion(
+        {
+          name: "@vizejs/unplugin",
+          version: "0.712.0",
+          dist: { integrity: "sha512-YWJjZA==" },
+        },
+        "@vizejs/unplugin",
+        "0.713.0",
+      ),
+    /did not prove/,
+  );
+  await assert.rejects(
+    prepareBackfillOnePackage(output, "@vizejs/unplugin", "0.713.0", {
+      readMetadata: async () => ({
+        name: "@vizejs/unplugin",
+        version: "0.713.0",
+        dist: { integrity: "unsigned" },
+      }),
+    }),
+    /did not prove/,
+  );
+  await assert.rejects(
+    prepareBackfillOnePackage(output, "@vizejs/unplugin", "latest", {
+      readMetadata: async () => {
+        throw new Error("must validate before network access");
+      },
+    }),
+    /Invalid JSR version/,
+  );
 });
 
 await test("a facade is never generated over npm packages with different versions", (t) => {
