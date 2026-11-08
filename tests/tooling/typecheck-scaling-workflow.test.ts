@@ -16,6 +16,7 @@ void test("the scaling workflow builds one SHA and measures every size on the 32
   assert.equal(inputs.sha?.required, true);
   assert.equal(inputs.sizes?.default, "1000,5000,20000");
   assert.equal(inputs.runs?.default, "3");
+  assert.equal(inputs.tools?.default, "");
   assert.equal(inputs.monorepo_sfcs?.default, "5000");
   assert.equal(inputs.nuxt_sizes?.default, "");
   const job = workflow.jobs.measure;
@@ -30,5 +31,6 @@ void test("the scaling workflow builds one SHA and measures every size on the 32
   assert.match(script, /vp install --frozen-lockfile/u);
   assert.match(script, /build:native/u);
   assert.match(script, /node tools\/benchmarks\/scripts\/typecheck-scaling\.ts/u);
+  assert.match(script, /--tools "\$SCALING_TOOLS"/u);
   assert.ok(steps.some((step) => step.uses?.startsWith("actions/upload-artifact@")));
 });

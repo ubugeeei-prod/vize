@@ -13,13 +13,13 @@ const recordUrl = new URL(
   "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/strict_extra_keys.rs",
   import.meta.url,
 );
-const recordSha256 = "8a30e43dbde811c229a4bc92cc53863fdaa5f8918eb8daa4caeabb6578869057";
+const recordSha256 = "479c505218ce0adf9efd475433e3ec8f45cfdc341ba6516ec7b98b01d4bd74bc";
 const canonLeftoversUrl = new URL(
   "../../../../crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
   import.meta.url,
 );
 export const canonLeftoversSha256 =
-  "8f87abcf7dfdd6af9dfef500ff3a01616d2756d1439df71f413151b21fb78e36";
+  "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306";
 const before =
   "type $ExtraInputKeys<T, Declared, Authored, Allowed, K extends keyof Authored = Exclude<keyof Authored, keyof Allowed>> = K extends unknown ? $RelaxedDynamicUnionExtra<T, Declared, Authored, K> extends true ? never : K : never;";
 const after =

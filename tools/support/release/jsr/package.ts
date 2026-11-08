@@ -52,6 +52,11 @@ export interface PreparedJsrPackage extends JsrPackageDescriptor {
   readonly version: string;
 }
 
+/** Overrides the npm metadata reader for deterministic release tests. */
+export interface NpmPublicationOptions {
+  readonly readMetadata?: (packageName: string, version: string) => Promise<unknown>;
+}
+
 function readJson(file: string): Record<string, unknown> {
   return JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
 }
@@ -164,6 +169,51 @@ function packageDescriptor(name: string): JsrPackageDescriptor {
   return descriptor;
 }
 
+/** Refuses metadata that does not prove one immutable npm package version. */
+export function assertPublishedNpmVersion(
+  metadata: unknown,
+  packageName: string,
+  version: string,
+): void {
+  if (!versionPattern.test(version)) throw new Error(`Invalid JSR version ${version}`);
+  const value = record(metadata);
+  const dist = record(value?.dist);
+  if (
+    value?.name !== packageName ||
+    value.version !== version ||
+    typeof dist?.integrity !== "string" ||
+    !/^sha512-[A-Za-z0-9+/]+={0,2}$/u.test(dist.integrity)
+  ) {
+    throw new Error(`npm registry did not prove ${packageName}@${version} with integrity`);
+  }
+}
+
+/** Reads one exact, immutable npm package version from the public registry. */
+async function readPublicNpmMetadata(packageName: string, version: string): Promise<unknown> {
+  const response = await fetch(
+    `https://registry.npmjs.org/${encodeURIComponent(packageName)}/${version}`,
+    {
+      headers: { accept: "application/json", "user-agent": "vize-release-jsr/1.0" },
+      signal: AbortSignal.timeout(30_000),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`npm metadata for ${packageName}@${version} returned HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Verifies the registry response for one exact npm package version. */
+async function verifyPublishedNpmVersion(
+  packageName: string,
+  version: string,
+  options: NpmPublicationOptions,
+): Promise<void> {
+  if (!versionPattern.test(version)) throw new Error(`Invalid JSR version ${version}`);
+  const readMetadata = options.readMetadata ?? readPublicNpmMetadata;
+  assertPublishedNpmVersion(await readMetadata(packageName, version), packageName, version);
+}
+
 function writeOnePackage(
   output: string,
   root: string,
@@ -235,6 +285,36 @@ export function prepareOnePackage(
     throw new Error(`JSR version must match the checked-out Vize release (${current})`);
   }
   return writeOnePackage(output, root, version, packageDescriptor(packageName), true);
+}
+
+/**
+ * Stages the compatibility facade for an older npm release after proving every
+ * referenced package and its immutable integrity directly from the registry.
+ */
+export async function prepareBackfillPackage(
+  output: string,
+  version: string,
+  options: Pick<PrepareOptions, "root"> & NpmPublicationOptions = {},
+): Promise<string> {
+  const packageNames = new Set(Object.values(entrypoints).map(({ name }) => name));
+  await Promise.all(
+    [...packageNames].map((packageName) =>
+      verifyPublishedNpmVersion(packageName, version, options),
+    ),
+  );
+  return writePackage(output, options.root ?? repository, version, false);
+}
+
+/** Stages one older release facade only after its exact npm version is public. */
+export async function prepareBackfillOnePackage(
+  output: string,
+  packageName: string,
+  version: string,
+  options: Pick<PrepareOptions, "root"> & NpmPublicationOptions = {},
+): Promise<string> {
+  const descriptor = packageDescriptor(packageName);
+  await verifyPublishedNpmVersion(descriptor.npmName, version, options);
+  return writeOnePackage(output, options.root ?? repository, version, descriptor, false);
 }
 
 export interface Channel {
@@ -353,6 +433,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(JSON.stringify(prepared));
   } else if (command === "prepare-one" && args.length >= 2) {
     console.log(prepareOnePackage(args[0], args[1], { version: args[2]?.replace(/^v/, "") }));
+  } else if (command === "prepare-backfill" && args.length === 2) {
+    console.log(await prepareBackfillPackage(args[0], args[1].replace(/^v/, "")));
+  } else if (command === "prepare-backfill-one" && args.length === 3) {
+    console.log(await prepareBackfillOnePackage(args[0], args[1], args[2].replace(/^v/, "")));
   } else if (command === "prepare-preview" && args.length === 2) {
     console.log(preparePreviewPackage(args[0], args[1].replace(/^v/, "")));
   } else if (command === "prepare-preview-all" && args.length === 2) {
@@ -378,7 +462,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(`published=${await waitForPublishedPackage(packageName, version)}`);
   } else {
     throw new Error(
-      "Usage: package.ts prepare <staging-directory> [version] | prepare-all <staging-directory> [version] | prepare-one <staging-directory> <package-name> [version] | prepare-preview <staging-directory> <published-version> | prepare-preview-all <staging-directory> <published-version> | list | matrix | latest-public | channel | is-public [package-name] <version> | wait-public [package-name] <version>",
+      "Usage: package.ts prepare <staging-directory> [version] | prepare-all <staging-directory> [version] | prepare-one <staging-directory> <package-name> [version] | prepare-backfill <staging-directory> <published-version> | prepare-backfill-one <staging-directory> <package-name> <published-version> | prepare-preview <staging-directory> <published-version> | prepare-preview-all <staging-directory> <published-version> | list | matrix | latest-public | channel | is-public [package-name] <version> | wait-public [package-name] <version>",
     );
   }
 }

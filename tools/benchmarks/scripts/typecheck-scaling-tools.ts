@@ -47,6 +47,7 @@ import {
 
 export type ToolId =
   | "vize-check"
+  | `vize-check-servers-${1 | 2 | 4 | 8}`
   | "tsc-vize-mapper"
   | "tsrs-fast-vize-mapper"
   | "tsrs-fast-parallel-vize-mapper"
@@ -74,6 +75,43 @@ export const TOOLS: readonly ScalingTool[] = [
   { id: "vue-tsc", label: "vue-tsc", vize: false, format: "text" },
   { id: "tsc-vue-mapper", label: "tsc 7.1 + Vue mapper", vize: false, format: "text" },
 ];
+
+const CORSA_SERVER_COUNTS = [1, 2, 4, 8] as const;
+
+/** Focused native topology lanes selected explicitly by benchmark dispatches. */
+export const CORSA_TOPOLOGY_TOOLS: readonly ScalingTool[] = CORSA_SERVER_COUNTS.map(
+  (servers): ScalingTool => ({
+    id: `vize-check-servers-${servers}`,
+    label: `vize check (--servers ${servers}, --checkers 1)`,
+    vize: true,
+    format: "json",
+  }),
+);
+
+/** Every selectable lane; the default scaling surface remains [`TOOLS`]. */
+export const ALL_TOOLS: readonly ScalingTool[] = [...TOOLS, ...CORSA_TOPOLOGY_TOOLS];
+
+type TopologyDiagnostic = {
+  tool: string;
+  fingerprint: string | null;
+  refused: string | null;
+};
+
+/** Require every focused topology lane to preserve the same complete diagnostics. */
+export function topologyDiagnosticRefusal(
+  diagnostics: readonly TopologyDiagnostic[],
+): string | null {
+  const topology = diagnostics.filter((entry) => entry.tool.startsWith("vize-check-servers-"));
+  if (topology.length < 2) return null;
+  const failed = topology.filter((entry) => entry.refused != null || entry.fingerprint == null);
+  if (failed.length > 0) {
+    return `Corsa topology comparison refused: incomplete lanes (${failed.map((entry) => entry.tool).join(", ")})`;
+  }
+  const fingerprints = new Set(topology.map((entry) => entry.fingerprint));
+  return fingerprints.size === 1
+    ? null
+    : "Corsa topology comparison refused: complete diagnostic fingerprints differ";
+}
 /** Timed on Nuxt projects only; gated on a built client entry instead of diagnostics. */
 export const NUXT_BUILD_VIZE: ScalingTool = {
   id: "nuxt-build-vize",
@@ -214,6 +252,28 @@ export function invocation(
     stats: !build,
   });
   if (!vueMapper || !vizeMapper) throw new Error("content mapper table changed");
+  if (tool.id.startsWith("vize-check-servers-")) {
+    const servers = tool.id.slice("vize-check-servers-".length);
+    return {
+      bin: env.node,
+      args: [
+        env.vizeCli,
+        "check",
+        "--format",
+        "json",
+        "--quiet",
+        "--tsconfig",
+        join(cwd, "tsconfig.json"),
+        "--corsa-path",
+        env.corsa,
+        "--servers",
+        servers,
+        "--checkers",
+        "1",
+      ],
+      stats: false,
+    };
+  }
   switch (tool.id) {
     case "vize-check":
       return {
@@ -264,6 +324,7 @@ export function invocation(
       if (kind !== "nuxt") throw new Error("nuxt build runs on Nuxt projects only");
       return { bin: env.node, args: [nuxtCli(env), "build", cwd], stats: false };
   }
+  throw new Error(`unsupported scaling tool: ${tool.id}`);
 }
 
 /** Environment of every Nuxt command: no telemetry, a client build. */

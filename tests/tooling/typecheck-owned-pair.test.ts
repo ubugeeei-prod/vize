@@ -236,6 +236,22 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.deepEqual(selectOwnedWorkloads("giant-2500"), [
     { id: "giant-2500", sfcs: 1, kind: "giant", giantBlocks: 2500 },
   ]);
+  assert.deepEqual(
+    selectOwnedWorkloads(
+      "flat-interpolations-2500,flat-interpolations-10000,flat-interpolations-50000",
+    ).map((row) => row.id),
+    ["flat-interpolations-2500", "flat-interpolations-10000", "flat-interpolations-50000"],
+  );
+  assert.deepEqual(
+    selectOwnedWorkloads(
+      "dynamic-union-listeners-16,dynamic-union-listeners-64,dynamic-union-listeners-256",
+    ).map((row) => [row.id, row.sfcs]),
+    [
+      ["dynamic-union-listeners-16", 33],
+      ["dynamic-union-listeners-64", 129],
+      ["dynamic-union-listeners-256", 513],
+    ],
+  );
   assert.throws(() => selectOwnedWorkloads("giant-2500,giant-2500"));
   assert.throws(() => selectOwnedWorkloads("missing"));
   assert.deepEqual(sampleOrder(0), ["base", "head"]);
@@ -256,6 +272,36 @@ test("one experiment pairs every huge workload and alternates role order with di
   assert.throws(() => selectPairLanes("missing"));
   assert.equal(requiredSamples(false).filter((phase) => phase.startsWith("warm-")).length, 3);
   assert.equal(requiredSamples(true).filter((phase) => phase.startsWith("warm-")).length, 5);
+});
+
+test("flat interpolation workloads retain every expression and one planted diagnostic", async () => {
+  const { generateFlatInterpolationProject } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
+  const project = generateFlatInterpolationProject(2500);
+  const source = project.files.get("src/App.vue") ?? "";
+  assert.equal(source.match(/\{\{ value \+ \d+ \}\}/gu)?.length, 2500);
+  assert.deepEqual(project.plants, [
+    {
+      kind: "script",
+      file: "src/App.vue",
+      line: 2507,
+      codes: ["TS2322"],
+    },
+  ]);
+});
+
+test("dynamic union listener workloads keep distinct constructor unions", async () => {
+  const { generateDynamicUnionListenerProject } =
+    await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
+  const project = generateDynamicUnionListenerProject(16);
+  const source = project.files.get("src/App.vue") ?? "";
+  assert.equal(project.sfcs, 33);
+  assert.equal(source.match(/<component :is="selected\d+" @change="accept" \/>/gu)?.length, 16);
+  assert.equal(source.match(/const selected\d+ =/gu)?.length, 16);
+  assert.equal(project.files.has("src/A15.vue"), true);
+  assert.equal(project.files.has("src/B15.vue"), true);
+  assert.equal(project.plants.length, 1);
+  assert.deepEqual(project.plants[0]?.codes, ["TS2322"]);
 });
 
 test("declared project cache cleanup refuses linked dependency stores", async () => {

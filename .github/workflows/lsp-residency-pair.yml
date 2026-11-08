@@ -1,0 +1,126 @@
+name: LSP exact-parent residency pair
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/lsp-residency-pair.yml"
+      - "crates/vize_canon/src/corsa_bridge/vue_document/build.rs"
+      - "crates/vize_canon/src/corsa_bridge/vue_document/build/**"
+      - "crates/vize_canon/src/lsp_client/immutable_batch.rs"
+      - "crates/vize_canon/src/lsp_client/immutable_batch/**"
+      - "crates/vize_canon/src/lsp_client/tracked_documents.rs"
+      - "crates/vize_canon/src/lsp_client/tracked_documents/**"
+      - "crates/vize_canon/src/lsp_client/editor_lsp.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/**"
+      - "crates/vize_canon/src/lsp_client/retained_text.rs"
+      - "tools/benchmarks/scripts/lsp-residency-pair-report.ts"
+      - "tools/support/compat/davinci/lsp-resources.ts"
+      - "tools/support/compat/davinci/lib/lsp-resource-*.ts"
+      - "tests/tooling/lsp-residency-pair-report.test.ts"
+  workflow_dispatch:
+    inputs:
+      compare_ref:
+        description: Exact parent source SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-residency-pair-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  paired:
+    name: Alternating 2500-SFC process-tree residency
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 240
+    env:
+      CARGO_TERM_COLOR: never
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.compare_ref }}
+      OBSERVATION_ROOT: ${{ github.workspace }}/target/differential/lsp-residency-pair
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Authenticate the exact one-commit parent and immutable inputs
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse "$SOURCE_SHA^")" = "$BASE_SHA"
+          git diff --exit-code "$BASE_SHA" "$SOURCE_SHA" -- Cargo.lock pnpm-lock.yaml package.json rust-toolchain.toml
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install exact JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: "1.99.1"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-residency-pair
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build and receipt the exact parent and candidate
+        run: |
+          set -euo pipefail
+          mkdir -p "$OBSERVATION_ROOT"
+          for role in base head; do
+            if [[ "$role" = base ]]; then sha="$BASE_SHA"; else sha="$SOURCE_SHA"; fi
+            target="${RUNNER_TEMP}/${role}-target"
+            git checkout --detach "$sha"
+            test "$(git rev-parse HEAD)" = "$sha"
+            CARGO_TARGET_DIR="$target" cargo build --locked --profile ci-opt -p vize --features profiling --message-format=json-render-diagnostics > "$OBSERVATION_ROOT/${role}-build.jsonl" 2> "$OBSERVATION_ROOT/${role}-build.stderr"
+            vp exec node tools/support/compat/davinci/lsp-build-identity.ts "$target/ci-opt/vize" ci-opt "$OBSERVATION_ROOT/${role}-build.jsonl" "$OBSERVATION_ROOT/${role}-build-identity.json"
+          done
+          git checkout --detach "$SOURCE_SHA"
+      - name: Discard warmups and collect three fresh alternating pairs
+        run: |
+          set -euo pipefail
+          for round in 0 1 2 3; do
+            if (( round % 2 == 0 )); then order=(base head); else order=(head base); fi
+            if (( round == 0 )); then phase=warmup; else phase="sample-${round}"; fi
+            for role in "${order[@]}"; do
+              if [[ "$role" = base ]]; then sha="$BASE_SHA"; else sha="$SOURCE_SHA"; fi
+              target="${RUNNER_TEMP}/${role}-target"
+              git checkout --detach "$sha"
+              test "$(git rev-parse HEAD)" = "$sha"
+              profile="$OBSERVATION_ROOT/${phase}-${role}-profile"
+              vp exec node tools/support/compat/davinci/lsp-resources.ts \
+                --server "$target/ci-opt/vize" --files 2500 --open-files 2500 \
+                --warm-providers 16 --runs 1 --idle-seconds 10 \
+                --build "ci-opt profiling; exact ${role} ${sha}; 32-vCPU runner" \
+                --profile-json-dir "$profile" \
+                --out "$OBSERVATION_ROOT/${phase}-${role}.json" \
+                > "$OBSERVATION_ROOT/${phase}-${role}.stdout" \
+                2> "$OBSERVATION_ROOT/${phase}-${role}.stderr"
+            done
+          done
+          git checkout --detach "$SOURCE_SHA"
+      - name: Require identical successful workloads and summarize medians
+        run: >-
+          vp exec node tools/benchmarks/scripts/lsp-residency-pair-report.ts
+          --root "$OBSERVATION_ROOT"
+          --base "$BASE_SHA"
+          --head "$SOURCE_SHA"
+          --out "$OBSERVATION_ROOT/summary.json"
+      - name: Preserve complete raw paired evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: lsp-residency-pair-${{ github.run_id }}
+          path: ${{ env.OBSERVATION_ROOT }}
+          retention-days: 30

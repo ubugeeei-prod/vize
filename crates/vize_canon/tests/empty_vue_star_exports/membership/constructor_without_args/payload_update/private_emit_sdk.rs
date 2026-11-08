@@ -24,6 +24,8 @@ fn load() -> Value {
         let current =
             fs::read_to_string(support::repository().join(asset["path"].as_str().unwrap()))
                 .unwrap();
+        let current =
+            super::emit_member_infer::source_before(asset["path"].as_str().unwrap(), current);
         let current = super::generic_event_specialization::source_before(
             asset["path"].as_str().unwrap(),
             current,

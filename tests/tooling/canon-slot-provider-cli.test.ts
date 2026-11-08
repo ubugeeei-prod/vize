@@ -34,6 +34,10 @@ import {
   applyStrictExtraKeysIn,
   beforeStrictExtraKeysIn,
 } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import {
+  applyEmitMemberInferIn,
+  beforeEmitMemberInferIn,
+} from "../../tools/support/compat/content-mapper/emit-member-infer-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -151,14 +155,14 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   }
   const discriminatedSourcePreamble = applyDiscriminatedJsxUnionIn(integratedSourcePreamble);
   const strictSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
-  const currentSourcePreamble = applyCanonLeftoverPreamble(strictSourcePreamble);
+  const emitMemberSourcePreamble = applyEmitMemberInferIn(strictSourcePreamble);
+  const currentSourcePreamble = applyCanonLeftoverPreamble(emitMemberSourcePreamble);
+  const canonPredecessor = [...canonLeftoverPreamblePaths]
+    .reverse()
+    .reduce((current, file) => beforeCanonLeftoversIn(file, current), currentSourcePreamble);
+  assert.equal(canonPredecessor, emitMemberSourcePreamble);
+  assert.equal(beforeEmitMemberInferIn(canonPredecessor), strictSourcePreamble);
   assert.equal(beforeStrictExtraKeysIn(strictSourcePreamble), discriminatedSourcePreamble);
-  assert.equal(
-    [...canonLeftoverPreamblePaths]
-      .reverse()
-      .reduce((current, file) => beforeCanonLeftoversIn(file, current), currentSourcePreamble),
-    strictSourcePreamble,
-  );
   assert.equal(
     beforeDiscriminatedJsxUnionIn(discriminatedSourcePreamble),
     integratedSourcePreamble,

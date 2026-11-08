@@ -7,6 +7,7 @@ import {
   beforeIntegratedStaticListenerSource,
   staticListenerSource,
 } from "../../../../tests/tooling/support/static-listener-prop-source.ts";
+import { beforeEmitMemberInfer } from "../../../../tests/tooling/support/emit-member-infer-source.ts";
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
@@ -368,6 +369,7 @@ export function currentCallbackSourceEdits(
   readSource: CallbackSourceReader = read,
 ): { edits: Edit[]; addedMappings: number[][] } {
   const currentEmit = readSource(emitSource);
+  const memberInferPredecessor = beforeEmitMemberInfer(readSource, emitSource, currentEmit);
   const previousEmit = beforeGenericEventSpecialization(readSource, emitSource, currentEmit);
   const currentGenerator = readSource(staticListenerSource);
   const previousGenerator = beforeIntegratedStaticListenerSource(
@@ -520,23 +522,33 @@ export function currentCallbackSourceEdits(
     edits.push(...componentExport.edits);
     if (componentExport.addedMapping) addedMappings.push(componentExport.addedMapping);
   }
-  const counts = [before, after].map((text) => [
-    text.split(previousEmit).length - 1,
-    text.split(currentEmit).length - 1,
-  ]);
-  if (counts[0]![0] !== counts[1]![0] || counts[0]![1] !== counts[1]![1]) {
-    assert.deepEqual(
-      counts,
-      [
-        [1, 0],
-        [0, 1],
-      ],
-      "only the whole certified emit helper may migrate",
+  const emitVariants = [previousEmit, memberInferPredecessor, currentEmit];
+  assert.equal(new Set(emitVariants).size, emitVariants.length);
+  const counts = [before, after].map((text) =>
+    emitVariants.map((variant) => text.split(variant).length - 1),
+  );
+  if (counts.some((row) => row.some((count, index) => count !== counts[0]![index]))) {
+    const predecessor = counts[0]!.findIndex(
+      (count, index) => index < emitVariants.length - 1 && count === 1,
     );
-    add(before.indexOf(previousEmit), previousEmit.length, currentEmit);
+    assert.notEqual(predecessor, -1, "one certified emit helper predecessor is required");
+    assert.deepEqual(
+      counts[0],
+      emitVariants.map((_, index) => (index === predecessor ? 1 : 0)),
+      "only one whole certified emit helper predecessor may migrate",
+    );
+    assert.deepEqual(
+      counts[1],
+      emitVariants.map((_, index) => (index === emitVariants.length - 1 ? 1 : 0)),
+      "the whole current emit helper is required",
+    );
+    add(before.indexOf(emitVariants[predecessor]!), emitVariants[predecessor]!.length, currentEmit);
   } else {
     assert.ok(
-      counts.every((pair) => pair.every((n) => n <= 1) && pair[0]! + pair[1]! <= 1),
+      counts.every(
+        (row) =>
+          row.every((count) => count <= 1) && row.reduce((sum, count) => sum + count, 0) <= 1,
+      ),
       "canonical emit helper is unique",
     );
   }

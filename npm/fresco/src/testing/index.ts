@@ -30,6 +30,7 @@ import {
   type MountFrescoOptions,
 } from "./mount.js";
 import { treeToRenderNodes } from "../renderer.js";
+import { isStaticItemNode, isStaticNode } from "../staticNodes.js";
 import type { FrescoRenderNode } from "../protocol.js";
 
 export {
@@ -125,10 +126,6 @@ function nodeText(node: FrescoNode): string {
   return "";
 }
 
-function isStaticNode(node: FrescoNode): boolean {
-  return node.props.internal_static === true || node.props.internalStatic === true;
-}
-
 function joinOutput(parts: readonly string[], separator = "\n"): string {
   return parts.filter(Boolean).join(separator);
 }
@@ -165,13 +162,14 @@ function captureStaticOutput(node: FrescoNode, renderedStaticItems: Map<number, 
   const visit = (current: FrescoNode) => {
     if (isStaticNode(current)) {
       const renderedItems = renderedStaticItems.get(current.id) ?? 0;
-      const nextItems = current.children.slice(renderedItems);
+      const staticItems = current.children.filter(isStaticItemNode);
+      const nextItems = staticItems.slice(renderedItems);
       const nextOutput = joinOutput(
         nextItems.map((child) => treeToFrameOutput(child)),
         "\n",
       );
       if (nextOutput) output.push(nextOutput);
-      renderedStaticItems.set(current.id, current.children.length);
+      renderedStaticItems.set(current.id, staticItems.length);
       return;
     }
 

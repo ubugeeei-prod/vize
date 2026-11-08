@@ -1,0 +1,4 @@
+import Generic from './Generic.vue'
+type GenericInstance = InstanceType<typeof Generic>
+declare const instance: GenericInstance
+void instance

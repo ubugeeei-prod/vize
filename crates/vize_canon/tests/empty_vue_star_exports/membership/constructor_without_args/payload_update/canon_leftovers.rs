@@ -3,7 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 
 const RECEIPT_BYTES: &[u8] = include_bytes!("canon_leftovers_11499.json");
-const RECEIPT_SHA: &str = "8f87abcf7dfdd6af9dfef500ff3a01616d2756d1439df71f413151b21fb78e36";
+const RECEIPT_SHA: &str = "35da3b22f2108e76be0b096a27bf2a54e9f40dd999d5e8911a7b1f4b32483306";
 
 fn identity(text: &str, expected: &Value) {
     assert_eq!(json!(text.len()), expected["bytes"]);

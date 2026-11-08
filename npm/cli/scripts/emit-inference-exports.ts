@@ -7,8 +7,26 @@ import ts from "typescript";
 import { format } from "oxfmt";
 
 const names = [
+  "$EmitRequiredKeys",
+  "$EmitRequiredFields",
+  "$EmitFiniteFields",
+  "$EmitFallthrough",
+  "$EmitInput",
+  "$MemberConstructorEmitPropsFactory",
   "$LooseEmitProps",
   "$DeferredEmitProps",
+  "$LooseEmitPropsFactory",
+  "$EmitIsWide",
+  "$UnionEmit",
+  "$NativeEmitPropsFactory",
+  "$EmitPropsRoutes",
+  "$EmitPropsFactory",
+];
+// Input helpers the public entry keeps privately beside its own constructor factory.
+const inputHelpers = names.slice(0, 5);
+// The published five-alias family that predates the private module.
+const legacyFamily = [
+  "$LooseEmitProps",
   "$LooseEmitPropsFactory",
   "$EmitIsWide",
   "$NativeEmitPropsFactory",
@@ -19,9 +37,11 @@ type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any
 export type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: any) => {} : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;
 `;
 const leaf = "npm/cli/virtual-ts-emits.d.ts";
-const previousLeafSha256 = "970d2e01606062f48faed4194df96322c53b57158eee854196afe6f71f117809";
+const previousLeafSha256 = "88aa94a140aff34fa904615d1ca84b3cc70d186ca3209eec3bde3dc34b67c59e";
 const previousNative =
   "type $NativeEmitPropsFactory<C> = C extends new (...args: any[]) => { $emit: any } ? C extends { readonly __vizeComponentMarker: true } ? $ConstructorEmitPropsFactory<C extends { readonly __vizeFallthroughProps?: infer F } ? F : {}, $EmitOwnedKeys<C>> : $EmitIsWide<C> extends true ? $LooseEmitPropsFactory<C> : typeof __vizeConstructorEmitProps : $LooseEmitPropsFactory<C>;";
+const previousFactory =
+  "type $EmitPropsFactory<C> = $IsAny<C> extends true ? (component: C) => (props: {}) => $LooseEmitProps : C extends { __vizeResolveEmitProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : C extends { __vizeResolveProps?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : $NativeEmitPropsFactory<C> : $NativeEmitPropsFactory<C>;";
 const namespaceImport =
   'import type * as __vizeEmitTypes from "./virtual-ts-emits.js" with { "resolution-mode": "import" };';
 const constructorFactory = "$ConstructorEmitPropsFactory";
@@ -115,9 +135,13 @@ export async function emitInferenceExports(
   const old = family(previous, "known previous public emit factory");
   const previousShared = family(
     shared.nodes
-      .filter((node) => node.name.text !== "$DeferredEmitProps")
+      .filter((node) => legacyFamily.includes(node.name.text))
       .map((node) =>
-        node.name.text === "$NativeEmitPropsFactory" ? previousNative : node.getText(shared.source),
+        node.name.text === "$NativeEmitPropsFactory"
+          ? previousNative
+          : node.name.text === "$EmitPropsFactory"
+            ? previousFactory
+            : node.getText(shared.source),
       )
       .join("\n"),
     "known previous shared emit family",
@@ -137,7 +161,11 @@ export async function emitInferenceExports(
   for (const extension of ["ts", "mts", "cts"]) {
     const file = `npm/cli/virtual-ts.d.${extension}`;
     const text = read(file);
-    const actual = family(text, file);
+    const published = family(text, file);
+    const actual = {
+      source: published.source,
+      nodes: published.nodes.filter((node) => !inputHelpers.includes(node.name.text)),
+    };
     const constructorFactories = actual.source.statements.filter(
       (node): node is ts.TypeAliasDeclaration =>
         ts.isTypeAliasDeclaration(node) && node.name.text === constructorFactory,

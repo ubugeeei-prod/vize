@@ -1,5 +1,5 @@
 name: Type-check scaling
-run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
+run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; tools ${{ inputs.tools || 'default' }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
 on:
   workflow_dispatch:
     inputs:
@@ -12,9 +12,13 @@ on:
         type: string
         default: "1000,5000,20000"
       runs:
-        description: Warm timed runs per tool and size (median reported; one cold run is extra)
+        description: Fresh timed runs per tool and size (median and deviation; first cold run is extra)
         type: string
         default: "3"
+      tools:
+        description: Comma-separated tool IDs; blank keeps the standard comparison surface
+        type: string
+        default: ""
       monorepo_sfcs:
         description: SFCs of the project-references monorepo (0 skips it)
         type: string
@@ -29,10 +33,13 @@ on:
         default: ""
   # Registers the dispatch-only workflow from its PR; the job runs only on dispatch.
   pull_request:
-    paths: [.github/workflows/typecheck-scaling.yml]
+    paths:
+      - .github/workflows/typecheck-scaling.yml
+      - tools/benchmarks/scripts/typecheck-scaling*.ts
+      - tests/tooling/typecheck-scaling*.test.ts
 permissions: { contents: read }
 concurrency:
-  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
+  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.tools || 'default' }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -47,6 +54,7 @@ jobs:
       SHA: ${{ inputs.sha }}
       SIZES: ${{ inputs.sizes }}
       RUNS: ${{ inputs.runs }}
+      SCALING_TOOLS: ${{ inputs.tools }}
       MONOREPO_SFCS: ${{ inputs.monorepo_sfcs }}
       GIANT_BLOCKS: ${{ inputs.giant_blocks }}
       NUXT_SIZES: ${{ inputs.nuxt_sizes }}
@@ -57,6 +65,7 @@ jobs:
           [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
           [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          [[ "$SCALING_TOOLS" =~ ^([a-z0-9-]+(,[a-z0-9-]+)*)?$ ]]
           [[ "$MONOREPO_SFCS" =~ ^[0-9]+$ ]]
           [[ "$GIANT_BLOCKS" =~ ^[0-9]+$ ]]
           [[ "$NUXT_SIZES" =~ ^([0-9]+(,[0-9]+)*)?$ ]]
@@ -110,10 +119,14 @@ jobs:
         env:
           VIZE_SCALING_RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
         run: |
+          set -euo pipefail
+          tool_args=()
+          if [[ -n "$SCALING_TOOLS" ]]; then tool_args+=(--tools "$SCALING_TOOLS"); fi
           node tools/benchmarks/scripts/typecheck-scaling.ts \
             --target "$RUNNER_TEMP/scaling-target" --sha "$SHA" \
             --sizes "$SIZES" --runs "$RUNS" --giant-blocks "$GIANT_BLOCKS" \
             --monorepo-sfcs "$MONOREPO_SFCS" --nuxt-sizes "$NUXT_SIZES" \
+            "${tool_args[@]}" \
             --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --work "$RUNNER_TEMP/scaling-work" --out "$RUNNER_TEMP/scaling-out"
       - name: Write job summary

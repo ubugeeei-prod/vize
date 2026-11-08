@@ -72,12 +72,23 @@ const medianOf = (samples: Sample[], key: keyof Sample): number | null => {
 export type Row = {
   cell: Cell;
   wallMs: number | null;
+  wallDeviationMs: number | null;
   cpuMs: number | null;
+  cpuDeviationMs: number | null;
   rssKb: number | null;
+  rssDeviationKb: number | null;
   types: number | null;
   instantiations: number | null;
   checkTimeS: number | null;
 };
+
+export function sampleDeviation(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return Math.sqrt(
+    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1),
+  );
+}
 
 export type PerformanceTarget = {
   kind: ScaleKind;
@@ -97,11 +108,20 @@ export type PerformanceTarget = {
 export function rowOf(cell: Cell): Row {
   const runs = cell.refused ? [] : cell.runs;
   const of = (key: keyof Sample) => (runs.length > 0 ? medianOf(runs, key) : null);
+  const deviationOf = (key: keyof Sample) => {
+    const values = runs.map((sample) => sample[key]).filter((value) => typeof value === "number");
+    return values.length === runs.length && values.length > 0
+      ? sampleDeviation(values as number[])
+      : null;
+  };
   return {
     cell,
     wallMs: of("wallMs"),
+    wallDeviationMs: deviationOf("wallMs"),
     cpuMs: of("cpuMs"),
+    cpuDeviationMs: deviationOf("cpuMs"),
     rssKb: of("maxRssKb"),
+    rssDeviationKb: deviationOf("maxRssKb"),
     types: of("types"),
     instantiations: of("instantiations"),
     checkTimeS: of("checkTimeS"),
@@ -265,9 +285,9 @@ export function renderSummary(results: ScalingResults): string {
   const lines = [
     "# Type-check scaling",
     "",
-    `Commit \`${results.sha}\` on \`${results.runner}\` (${results.machine}), ${results.generatedAt}. Median of ${results.runs} warm run(s); the first (cold) run is listed separately and never enters a median.${results.runUrl ? ` [Run](${results.runUrl}).` : ""}`,
+    `Commit \`${results.sha}\` on \`${results.runner}\` (${results.machine}), ${results.generatedAt}. Median and sample standard deviation (σ) of ${results.runs} fresh-process run(s) after the first (cold) run; the cold run is listed separately and never enters either statistic.${results.runUrl ? ` [Run](${results.runUrl}).` : ""}`,
     "",
-    "CPU is user+sys of the whole process tree (reaped children's cutime+cstime from /proc/self/stat around each spawn). Peak RSS is GNU time `%M`, the largest single process of the tree. Every timed run reported exactly the planted errors; each run starts with an empty cache directory (`XDG_CACHE_HOME`), so no checker replays an earlier run's results, and build-mode runs start from deleted outputs with `--force`.",
+    "CPU is user+sys of the whole process tree (reaped children's cutime+cstime from /proc/self/stat around each spawn). Peak RSS is GNU time `%M`, the largest single process of the tree. Every timed run reported exactly the planted errors; each run starts with an empty cache directory (`XDG_CACHE_HOME`), so no checker replays an earlier run's results, and build-mode runs start from deleted outputs with `--force`. These samples do not represent a persistent-session warm unchanged request; that lifecycle is measured by the LSP residency pair.",
     "",
   ];
   for (const note of PLANT_MULTIPLICITY_NOTES) lines.push(`- ${note}`);
@@ -292,14 +312,14 @@ export function renderSummary(results: ScalingResults): string {
     }
   }
   const header = (kind: string) => [
-    `| Tool | ${kind === "monorepo" ? "Mode" : "SFCs"} | Wall s | CPU s | Peak RSS MiB | Wall ms/SFC | CPU ms/SFC | RSS KiB/SFC | Types | Instantiations | Check s | Cold wall s | Cold CPU s |`,
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    `| Tool | ${kind === "monorepo" ? "Mode" : "SFCs"} | Wall s | Wall σ s | CPU s | CPU σ s | Peak RSS MiB | RSS σ MiB | Wall ms/SFC | CPU ms/SFC | RSS KiB/SFC | Types | Instantiations | Check s | Cold wall s | Cold CPU s |`,
+    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
   ];
   const line = (row: Row) => {
     const { cell } = row;
     const per = (value: number | null, digits: number) =>
       value == null ? "n/a" : (value / cell.sfcs).toFixed(digits);
-    return `| ${cell.label} | ${cell.kind === "monorepo" ? `${cell.mode}, ${cell.sfcs}` : cell.sfcs} | ${fixed(row.wallMs, 2, 1000)} | ${fixed(row.cpuMs, 2, 1000)} | ${fixed(row.rssKb, 0, 1024)} | ${per(row.wallMs, 3)} | ${per(row.cpuMs, 3)} | ${per(row.rssKb, 1)} | ${count(row.types)} | ${count(row.instantiations)} | ${fixed(row.checkTimeS, 2)} | ${cell.refused ? "refused" : fixed(cell.cold?.wallMs ?? null, 2, 1000)} | ${cell.refused ? "refused" : fixed(cell.cold?.cpuMs ?? null, 2, 1000)} |`;
+    return `| ${cell.label} | ${cell.kind === "monorepo" ? `${cell.mode}, ${cell.sfcs}` : cell.sfcs} | ${fixed(row.wallMs, 2, 1000)} | ${fixed(row.wallDeviationMs, 2, 1000)} | ${fixed(row.cpuMs, 2, 1000)} | ${fixed(row.cpuDeviationMs, 2, 1000)} | ${fixed(row.rssKb, 0, 1024)} | ${fixed(row.rssDeviationKb, 0, 1024)} | ${per(row.wallMs, 3)} | ${per(row.cpuMs, 3)} | ${per(row.rssKb, 1)} | ${count(row.types)} | ${count(row.instantiations)} | ${fixed(row.checkTimeS, 2)} | ${cell.refused ? "refused" : fixed(cell.cold?.wallMs ?? null, 2, 1000)} | ${cell.refused ? "refused" : fixed(cell.cold?.cpuMs ?? null, 2, 1000)} |`;
   };
   for (const [kind, title] of [
     ["vue", "Single project"],

@@ -11813,6 +11813,56 @@
       }
     },
     {
+      "id": "typechecker/generic-component-parity-11487",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::generic_component_parity",
+      "inputs": [
+        {
+          "file": "src/Child.vue",
+          "path": "generic-component-parity-11487/Child.vue.txt",
+          "sha256": "7f82b1647b467e793f4dfd37131da750b57f4cce1a690d4e86e363062e2730e5"
+        },
+        {
+          "file": "src/UnshadowedChild.vue",
+          "path": "generic-component-parity-11487/UnshadowedChild.vue.txt",
+          "sha256": "3e457e45882f8206478f9c4169521b583a9d9c1542a17744bb791e8b4f05dca8"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "generic-component-parity-11487/Parent.vue.txt",
+          "sha256": "5f9f166c841dee42999dc246b1246d33f940a8fb37d863979af782dc1ee8496e"
+        },
+        {
+          "file": "src/Generic.vue",
+          "path": "generic-component-parity-11487/Generic.vue.txt",
+          "sha256": "edfeca09611462b6899eaa60ee76c173313978b288ca4ff022b862b7a4e25f8b"
+        },
+        {
+          "file": "src/consumer.ts",
+          "path": "generic-component-parity-11487/consumer.ts.txt",
+          "sha256": "f6d52072cc98aaa8578dc33bae76c7307d53999ee21a15140025d4571538d885"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch::type_checker::tests::recent_issues::generic_component_parity; optional generic model writeback and generic SFC InstanceType rejection are physically consumed native checker regressions"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/generic-component-public-context-11966",
       "state": "active",
       "targets": [

@@ -17,8 +17,16 @@ const packages = [
     source: new URL("../../npm/compose/router/src/", import.meta.url),
   },
   {
+    name: "@vizejs/fresco",
+    source: new URL("../../npm/fresco/src/", import.meta.url),
+  },
+  {
     name: "@vizejs/marquette",
     source: new URL("../../npm/marquette/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/devtools",
+    source: new URL("../../npm/devtools/src/", import.meta.url),
   },
 ] as const;
 

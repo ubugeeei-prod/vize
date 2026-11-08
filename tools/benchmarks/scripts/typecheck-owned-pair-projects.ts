@@ -13,7 +13,7 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CORPORA } from "./typecheck-corpus-pair.ts";
-import { generateScaleProject, type ScaleProject } from "./scale-project-generator.ts";
+import { generateScaleProject, PLANT_CODES, type ScaleProject } from "./scale-project-generator.ts";
 import { prepareMapperPackages, type MapperHosts } from "./typecheck-mapper-hosts.ts";
 import { linkPackage } from "./install-package-files.ts";
 import { snapshotInputs, writeJson } from "./typecheck-owned-pair-evidence.ts";
@@ -34,8 +34,85 @@ export const OWNED_WORKLOADS = [
 ] as const;
 export const FOCUSED_OWNED_WORKLOADS = [
   { id: "giant-2500", sfcs: 1, kind: "giant", giantBlocks: 2500 },
+  {
+    id: "flat-interpolations-2500",
+    sfcs: 1,
+    kind: "giant",
+    flatInterpolations: 2500,
+  },
+  {
+    id: "flat-interpolations-10000",
+    sfcs: 1,
+    kind: "giant",
+    flatInterpolations: 10000,
+  },
+  {
+    id: "flat-interpolations-50000",
+    sfcs: 1,
+    kind: "giant",
+    flatInterpolations: 50000,
+  },
+  { id: "dynamic-union-listeners-16", sfcs: 33, kind: "giant", dynamicUnionPairs: 16 },
+  { id: "dynamic-union-listeners-64", sfcs: 129, kind: "giant", dynamicUnionPairs: 64 },
+  { id: "dynamic-union-listeners-256", sfcs: 513, kind: "giant", dynamicUnionPairs: 256 },
 ] as const;
 const OWNED_WORKLOAD_CATALOG = [...OWNED_WORKLOADS, ...FOCUSED_OWNED_WORKLOADS];
+
+export function generateFlatInterpolationProject(expressions: number): ScaleProject {
+  assert.ok(Number.isInteger(expressions) && expressions > 0, "positive expression count");
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 1 });
+  const marker = 'const planted0: number = "flat-interpolation";';
+  const template = Array.from(
+    { length: expressions },
+    (_, index) => `    {{ value + ${index} }}`,
+  ).join("\n");
+  const source = `<template>\n  <main>\n${template}\n  </main>\n</template>\n\n<script setup lang="ts">\n${marker}\nconst value = 1\n</script>\n`;
+  project.files.set("src/App.vue", source);
+  project.features = expressions;
+  project.plants = [
+    {
+      kind: "script",
+      file: "src/App.vue",
+      line: source.slice(0, source.indexOf(marker)).split("\n").length,
+      codes: PLANT_CODES.script,
+    },
+  ];
+  return project;
+}
+
+export function generateDynamicUnionListenerProject(pairs: number): ScaleProject {
+  assert.ok(Number.isInteger(pairs) && pairs > 0, "positive component-pair count");
+  const project = generateScaleProject({ sfcs: 1, kind: "giant", giantBlocks: 1 });
+  const imports: string[] = [];
+  const selections: string[] = [];
+  const components: string[] = [];
+  for (let index = 0; index < pairs; index++) {
+    for (const member of ["A", "B"] as const) {
+      const name = `${member}${index}`;
+      imports.push(`import ${name} from './${name}.vue'`);
+      project.files.set(
+        `src/${name}.vue`,
+        `<script setup lang="ts">\ndefineProps<{ ${member.toLowerCase()}${index}?: string }>()\ndefineEmits<{ change: [value: ${member === "A" ? "number" : "boolean"}] }>()\n</script>\n<template><div /></template>\n`,
+      );
+    }
+    selections.push(`const selected${index} = Math.random() > 0.5 ? A${index} : B${index}`);
+    components.push(`    <component :is="selected${index}" @change="accept" />`);
+  }
+  const marker = 'const planted0: number = "dynamic-union";';
+  const source = `<template>\n  <main>\n${components.join("\n")}\n  </main>\n</template>\n\n<script setup lang="ts">\n${imports.join("\n")}\n${marker}\n${selections.join("\n")}\nfunction accept(value: number | boolean): void { void value }\n</script>\n`;
+  project.files.set("src/App.vue", source);
+  project.sfcs = pairs * 2 + 1;
+  project.features = pairs;
+  project.plants = [
+    {
+      kind: "script",
+      file: "src/App.vue",
+      line: source.slice(0, source.indexOf(marker)).split("\n").length,
+      codes: PLANT_CODES.script,
+    },
+  ];
+  return project;
+}
 
 export function selectOwnedWorkloads(requested?: string) {
   if (!requested) return [...OWNED_WORKLOADS];
@@ -83,15 +160,20 @@ export function prepareOwnedWorkload(
       cpSync(join(root, real.source, entry), join(directory, entry), { recursive: true });
     writeJson(join(directory, "tsconfig.json"), real.tsconfig);
   } else {
-    generated = generateScaleProject({
-      kind,
-      sfcs: specification.sfcs,
-      seed: 0,
-      plants: true,
-      ...(kind === "giant" && "giantBlocks" in specification
-        ? { giantBlocks: specification.giantBlocks }
-        : {}),
-    });
+    generated =
+      "flatInterpolations" in specification
+        ? generateFlatInterpolationProject(specification.flatInterpolations)
+        : "dynamicUnionPairs" in specification
+          ? generateDynamicUnionListenerProject(specification.dynamicUnionPairs)
+          : generateScaleProject({
+              kind,
+              sfcs: specification.sfcs,
+              seed: 0,
+              plants: true,
+              ...(kind === "giant" && "giantBlocks" in specification
+                ? { giantBlocks: specification.giantBlocks }
+                : {}),
+            });
     assert.equal(generated.sfcs, specification.sfcs);
     for (const [file, contents] of generated.files) {
       mkdirSync(dirname(join(directory, file)), { recursive: true });

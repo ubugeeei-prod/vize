@@ -238,15 +238,15 @@ fn an_import_used_only_as_a_type_is_elided() {
     );
 }
 
-/// Pinned on purpose: a type imported WITHOUT `type` and used only by
-/// `defineProps<Props>()` is elided, as oxc's whole-module transform did.
+/// Pinned on purpose: a type imported WITHOUT `type` and used only as a
+/// resolved prop value type is elided, as oxc's whole-module transform did.
 /// Changing this needs a deliberate decision.
 #[test]
 fn an_untyped_import_used_only_by_define_props_is_elided() {
     assert_imports(
         &sfc(
-            "import { Props } from './types'\nconst props = defineProps<Props>()",
-            "<p>{{ props }}</p>",
+            "import { Props } from './types'\nconst props = defineProps<{ value?: Props }>()",
+            "<p>{{ props.value }}</p>",
         ),
         &[],
     );

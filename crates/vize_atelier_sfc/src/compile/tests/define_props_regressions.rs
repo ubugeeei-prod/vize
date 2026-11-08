@@ -3,6 +3,9 @@
     clippy::string_slice,
     reason = "tests assert by panicking; insta and fixtures use format!"
 )]
+mod resolved_macro_prop_shapes;
+mod unresolved_prop_shapes;
+
 use super::super::compile_sfc;
 use super::temp_compile_project_dir;
 use crate::types::{
