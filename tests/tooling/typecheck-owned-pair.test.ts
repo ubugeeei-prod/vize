@@ -227,7 +227,7 @@ test("projection proof rejects missing, errored and unstable transforms and reta
 test("one experiment pairs every huge workload and alternates role order with distinct cold samples", async () => {
   const { OWNED_WORKLOADS, selectOwnedWorkloads } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
-  const { PAIR_LANES, sampleOrder, requiredSamples } =
+  const { PAIR_LANES, selectPairLanes, sampleOrder, requiredSamples } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair.ts");
   assert.deepEqual(
     OWNED_WORKLOADS.map((row) => row.id),
@@ -244,6 +244,16 @@ test("one experiment pairs every huge workload and alternates role order with di
     PAIR_LANES.map((row) => row.id),
     ["tsc", "tsrs", "batch-8"],
   );
+  assert.deepEqual(
+    selectPairLanes("tsc,tsrs").map((row) => row.id),
+    ["tsc", "tsrs"],
+  );
+  assert.deepEqual(
+    selectPairLanes().map((row) => row.id),
+    PAIR_LANES.map((row) => row.id),
+  );
+  assert.throws(() => selectPairLanes("tsc,tsc"));
+  assert.throws(() => selectPairLanes("missing"));
   assert.equal(requiredSamples(false).filter((phase) => phase.startsWith("warm-")).length, 3);
   assert.equal(requiredSamples(true).filter((phase) => phase.startsWith("warm-")).length, 5);
 });

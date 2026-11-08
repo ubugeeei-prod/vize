@@ -45,6 +45,17 @@ export const PAIR_LANES = [
   { id: "tsrs", format: "text", mapper: "vize", host: "tsrs" },
   { id: "batch-8", format: "json", mapper: "vize", host: "tsc" },
 ] as const;
+export function selectPairLanes(requested?: string) {
+  if (!requested) return [...PAIR_LANES];
+  const ids = requested.split(",").map((id) => id.trim());
+  assert.ok(ids.every(Boolean), "pair lane IDs must be non-empty");
+  assert.equal(new Set(ids).size, ids.length, "pair lane IDs must be unique");
+  return ids.map((id) => {
+    const lane = PAIR_LANES.find((candidate) => candidate.id === id);
+    assert.ok(lane, `unknown pair lane: ${id}`);
+    return lane;
+  });
+}
 export function sampleOrder(index: number) {
   return index % 2 === 0 ? (["base", "head"] as const) : (["head", "base"] as const);
 }
@@ -58,7 +69,7 @@ async function main() {
   requireMeasurementRunner();
   const { values } = parseArgs({
     options: Object.fromEntries(
-      ["base", "head", "base-sha", "head-sha", "work", "out", "workloads"].map((name) => [
+      ["base", "head", "base-sha", "head-sha", "work", "out", "workloads", "lanes"].map((name) => [
         name,
         { type: "string" as const },
       ]),
@@ -72,6 +83,7 @@ async function main() {
   const work = resolve(values.work!),
     out = resolve(values.out!);
   const workloads = selectOwnedWorkloads(values.workloads);
+  const lanes = selectPairLanes(values.lanes);
   mkdirSync(work, { recursive: true });
   mkdirSync(out, { recursive: true });
   assert.deepEqual(readdirSync(work), [], "work directory must be fresh");
@@ -138,6 +150,7 @@ async function main() {
     nativeHook:
       "actual loaded image/token observed in each Node tree; hook overhead included symmetrically",
     workloadIds: workloads,
+    laneIds: lanes.map((lane) => lane.id),
     timing:
       "wall + reaped process-tree CPU + GNU max SINGLE-process RSS; separate 100ms sampled TREE RSS/PSS pass",
     diagnosticLimits:
@@ -354,15 +367,17 @@ async function main() {
     );
     for (const phase of requiredSamples(workload.generated == null)) {
       const index = requiredSamples(workload.generated == null).indexOf(phase);
-      for (const lane of PAIR_LANES) {
+      for (const lane of lanes) {
         for (const role of sampleOrder(index)) await invoke(role, lane.id, phase, false);
         assertSameEvidence(first.get(`base-${lane.id}`)!, first.get(`head-${lane.id}`)!);
       }
     }
     for (const role of ["base", "head"] as const) {
-      const one = await invoke(role, "batch-1", "identity-width-control", false);
-      assertSameEvidence(one, first.get(`${role}-batch-8`)!);
-      for (const lane of PAIR_LANES) await invoke(role, lane.id, "memory", true);
+      if (lanes.some((lane) => lane.id === "batch-8")) {
+        const one = await invoke(role, "batch-1", "identity-width-control", false);
+        assertSameEvidence(one, first.get(`${role}-batch-8`)!);
+      }
+      for (const lane of lanes) await invoke(role, lane.id, "memory", true);
     }
     const result = {
       workload: specification,
