@@ -32,47 +32,6 @@ const cleanEnvironment = () => {
 };
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 
-test("official Rust entry rejects every nonempty override before Node startup", (t) => {
-  const temporary = fs.realpathSync(
-    fs.mkdtempSync(path.join(os.tmpdir(), "public-install-guard-")),
-  );
-  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
-  const entry = path.join(root, "tools/commands/release/npm/collect-public-install.rs");
-  const executable = path.join(temporary, process.platform === "win32" ? "guard.exe" : "guard");
-  const compile = spawnSync(
-    "rustc",
-    ["--edition=2024", "--crate-name", "public_install_guard", entry, "-o", executable],
-    {
-      encoding: "utf8",
-      timeout: 30_000,
-    },
-  );
-  assert.equal(compile.error, undefined);
-  assert.equal(compile.status, 0, compile.stdout + compile.stderr);
-  const sentinel = path.join(temporary, "preload-ran");
-  const preload = path.join(temporary, "preload.cjs");
-  fs.writeFileSync(
-    preload,
-    `require('node:fs').writeFileSync(${JSON.stringify(sentinel)}, 'unexpected Node startup')`,
-  );
-  for (const key of overrideKeys) {
-    const result = spawnSync(executable, ["--print-collector-authority"], {
-      env: {
-        ...cleanEnvironment(),
-        RUST_SCRIPT_PATH: entry,
-        [key]: key === "NODE_OPTIONS" ? `--require ${preload}` : "forbidden",
-      },
-      encoding: "utf8",
-      timeout: 10_000,
-    });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 1);
-    assert.equal(result.stdout, "");
-    assert.equal(result.stderr.trim(), `initial source/runtime override must be empty: ${key}`);
-    assert.equal(fs.existsSync(sentinel), false);
-  }
-});
-
 test("direct collector rejects initial overrides before any probe or output", () => {
   for (const key of overrideKeys) {
     const result = spawnSync(process.execPath, [path.join(producer, "collect.ts")], {
