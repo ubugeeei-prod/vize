@@ -283,8 +283,6 @@ void test("the actual default native producer executes only its unchanged NAPI a
     "tools/commands/release/npm/smoke-release-install.ts",
     "tools/support/release/smoke_release_install/main.ts",
     "tools/support/common.rs",
-    "tools/commands/release/npm/npm_publish.rs",
-    "tools/commands/release/npm/npm_smoke_init.rs",
     ".github/actions/setup-rust-script/action.yml",
     ".github/actions/setup-rust-sticky-cache/action.yml",
     ".github/actions/setup-runtime-package-managers/action.yml",

@@ -8,7 +8,7 @@ import type { Recorder } from "../../config/windows_consumer/common.ts";
 import { fileImage, inside, sha256 } from "../computed_event_custody.ts";
 import { publicUrl, readBytes, sriSha512 } from "../public_install/registry.ts";
 
-/** These are exactly the sections transformed by release/npm/npm_publish.rs. */
+/** These are exactly the sections transformed by prepare_npm_publish_manifest. */
 const dependencySections = new Set([
   "dependencies",
   "devDependencies",
