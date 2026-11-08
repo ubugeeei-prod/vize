@@ -25,6 +25,13 @@ export {
 } from "./app.js";
 export { createRenderer } from "./renderer.js";
 export type {
+  FrescoDeclaredSize,
+  FrescoHostNode,
+  FrescoNodeLifecycleHooks,
+  FrescoNodeUpdateKind,
+  FrescoRendererOptions,
+} from "./renderer.js";
+export type {
   CompositionEvent,
   FocusEvent,
   FrescoAlignContent,

@@ -1,4 +1,4 @@
-use vize_carton::{String, append, cstr, profile};
+use vize_carton::{String, append, profile};
 use vize_croquis::{Scope, ScopeData, ScopeKind};
 
 use crate::virtual_ts::types::VizeMapping;
@@ -6,6 +6,7 @@ use crate::virtual_ts::types::VizeMapping;
 use super::super::context::VForPropsContext;
 use super::super::emit::{append_v_for_comment, emit_v_for_loop_open};
 use super::super::empty_component_props::generate_scope_checks;
+use super::super::nested_indent;
 use super::super::slot_scope::generate_v_slot_props_scope;
 
 pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
@@ -16,7 +17,7 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
     indent: &str,
 ) {
     let scope_id = scope.id.as_u32();
-    let inner_indent = cstr!("{indent}  ");
+    let inner_indent = nested_indent(indent);
     match scope.data() {
         ScopeData::VMatch(_) => {
             super::super::patterns::generate_props_match(ts, mappings, ctx, scope, indent)
@@ -30,7 +31,7 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
             let emitted_guard =
                 enclosing_guard.filter(|guard| !v_for_ancestor_owns_guard(ctx, scope, guard));
             let (loop_indent, vfor_inner_indent) = if emitted_guard.is_some() {
-                (cstr!("{indent}  "), cstr!("{inner_indent}  "))
+                (nested_indent(indent), nested_indent(&inner_indent))
             } else {
                 (String::from(indent), inner_indent.clone())
             };

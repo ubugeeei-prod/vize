@@ -1209,6 +1209,65 @@
       }
     },
     {
+      "id": "compiler/sfc/define-expose-props-destructure-12174",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "define-expose-props-destructure-12174",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "cd3def4b560011cbcead4bffee4264a0008e5f71ee16258281e2018975d9d3f3",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "define-expose-props-destructure-12174/module.expected.txt",
+        "sha256": "8d031657e9e1591c1e0d9c1602410fe8fe9f8962fcbe25621038ffff2fe54714",
+        "source": "crates/vize_atelier_sfc/src/compile_script/define_expose_tests.rs:rewrites_destructured_props_in_define_expose_function_mode"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); this row records the source-built compatibility adapter result only."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ],
+        "scriptLang": "ts"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/12174",
+        "reporter": "Q16solver"
+      }
+    },
+    {
       "id": "compiler/sfc/element-v-once-10875",
       "state": "active",
       "targets": [
