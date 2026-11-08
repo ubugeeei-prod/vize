@@ -230,7 +230,8 @@ fn check_iteration_keys(
         // needs a key. A <slot> repeated by a parent <template v-for> is the
         // iteration body only when it carries fallback VNodes; an empty outlet
         // is still exempt.
-        && (element.tag != "slot" || (inherited_iteration && !element.children.is_empty()))
+        && (element.tag != "slot"
+            || (inherited_iteration && slot_has_unkeyed_fallback(element)))
         && bound_key_directive(element).is_none()
     {
         ctx.error_with_help(
@@ -242,6 +243,25 @@ fn check_iteration_keys(
     if let Some(expression) = v_for_exp {
         check_key_uses_v_for_variables(ctx, element, expression);
     }
+}
+
+fn slot_has_unkeyed_fallback(element: &ElementNode<'_>) -> bool {
+    element.children.iter().any(|child| {
+        let TemplateChildNode::Element(child) = child else {
+            return false;
+        };
+        if bound_key_directive(child).is_some()
+            || child.props.iter().any(
+                |prop| matches!(prop, PropNode::Directive(directive) if directive.name == "for"),
+            )
+        {
+            return false;
+        }
+        if matches!(child.tag, "template" | "slot") {
+            return slot_has_unkeyed_fallback(child);
+        }
+        true
+    })
 }
 
 fn check_key_uses_v_for_variables(

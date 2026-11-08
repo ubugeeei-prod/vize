@@ -207,6 +207,44 @@ const props = defineProps({
 }
 
 #[test]
+fn local_v_model_refs_shadow_same_named_runtime_props() {
+    let sfc = r#"<template><ShareModal v-model:embed-options="embedOptions" /></template>
+<script setup>
+const props = defineProps({ embedOptions: Object })
+const embedOptions = useVModel(props, "embedOptions")
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn local_reactive_and_ref_bindings_shadow_runtime_props() {
+    let sfc = r#"<template>
+  <FormControl v-model="condition[1]" />
+  <FormControl v-model="filter.value" />
+  <input v-model="subject" />
+</template>
+<script setup>
+const props = defineProps({ condition: Array, filter: Object, subject: String })
+const condition = reactive(props.condition)
+const filter = reactive(props.filter)
+const subject = ref(props.subject)
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn template_region_disable_suppresses_authored_fallback_reports() {
+    let sfc = r#"<template>
+<!-- eslint-disable vue/no-mutating-props -->
+<MkSwitch v-model="props.modelValue.detailed" />
+</template>
+<script setup>
+const props = defineProps<{ modelValue: { detailed: boolean } }>()
+</script>"#;
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
 fn shallow_only_reports_direct_template_mutations_but_allows_nested_values() {
     let sfc = r#"<script setup lang="ts">
 const props = defineProps<{ user: { name: string }; count: number }>();

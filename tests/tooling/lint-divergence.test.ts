@@ -5,6 +5,11 @@ import { test } from "node:test";
 
 import { compareLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import {
+  get,
+  list,
+  type Json,
+} from "../../tools/support/fixtures/lint_divergence/value.ts";
 import { compare, cwd, eslintResult, ruleMap, span } from "./_helpers/lint-divergence-fixture.ts";
 
 test("the divergence ledger keys on the full location tuple, not on counts", () => {
@@ -262,11 +267,30 @@ test("opaque component factories retain template binding uncertainty", () => {
         patinaFindings: [],
         eslintResults: baseline,
       }),
-      successor = compareSuccessor("fixture", cwd, map, [], baseline, { files: [file] });
-    for (const result of [compatible, successor]) {
+      successor = compareSuccessor(
+        "fixture",
+        cwd,
+        map as Json,
+        [],
+        baseline as unknown as Json[],
+        { files: [file] },
+      );
+    for (const result of [
+      {
+        falseNegatives: compatible.falseNegatives,
+        intentionalDivergences: compatible.intentionalDivergences,
+      },
+      {
+        falseNegatives: list(successor.falseNegatives),
+        intentionalDivergences: list(successor.intentionalDivergences),
+      },
+    ]) {
       assert.equal(result.falseNegatives.length, 0, JSON.stringify(result, null, 2));
       assert.equal(result.intentionalDivergences.length, 1);
-      assert.match(String(result.intentionalDivergences[0]?.reason), /opaque user factory/u);
+      assert.match(
+        String(get(result.intentionalDivergences[0] as Json, "reason")),
+        /opaque user factory/u,
+      );
     }
   } finally {
     fs.rmSync(filename, { force: true });

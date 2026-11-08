@@ -189,7 +189,7 @@ impl NoUnusedComponents {
             let jsx = ctx
                 .is_rule_enabled("vue/jsx-uses-vars")
                 .then(|| jsx_referenced_names(parsed));
-            vize_croquis::script_parser::parse_script(script.content.as_ref())
+            vize_croquis::script_parser::analyze_script_program(parsed, script.content.as_ref())
                 .component_registrations
                 .into_iter()
                 .filter_map(|registration| {

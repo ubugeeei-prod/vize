@@ -257,13 +257,16 @@ impl NoMutatingProps {
             .analysis()
             .and_then(scope::template_props)
             .unwrap_or_default();
-        if let Some(script_setup) = ctx
-            .sfc_descriptor()
-            .and_then(|descriptor| descriptor.script_setup.as_ref())
+        let mut local_bindings = FxHashSet::default();
+        if let Some(parsed) = ctx
+            .sfc_scripts()
+            .and_then(|scripts| scripts.script_setup())
+            .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
         {
-            prop_names.extend(script_mutations::runtime_prop_names(
-                script_setup.content.as_ref(),
-            ));
+            let (runtime_props, runtime_locals) =
+                script_mutations::runtime_prop_scope(&parsed.program);
+            prop_names.extend(runtime_props);
+            local_bindings.extend(runtime_locals);
         }
         if prop_names.is_empty() && !has_props_object_binding {
             return;
@@ -280,7 +283,7 @@ impl NoMutatingProps {
         let scope = PropScope {
             prop_names: &prop_names_ref,
             has_props_object_binding,
-            shadowed: Vec::new(),
+            shadowed: local_bindings.into_iter().collect(),
         };
         let bytes = template.as_bytes();
         let mut search_from = 0;
@@ -352,7 +355,7 @@ impl NoMutatingProps {
             reports.push((String::new(target), start, end));
         }
         for (target, start, end) in reports {
-            ctx.report_in_sfc(
+            ctx.report_template_in_sfc(
                 crate::diagnostic::LintDiagnostic::error(
                     ctx.current_rule,
                     cstr!("Unexpected mutation of prop '{}' via v-model", target),
@@ -431,9 +434,19 @@ impl Rule for NoMutatingProps {
             else {
                 return;
             };
+            let Some(parsed) = ctx
+                .sfc_scripts()
+                .and_then(|scripts| scripts.script_setup())
+                .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+            else {
+                return;
+            };
             (
                 script_setup.loc.start as u32,
-                script_mutations::find_prop_mutations(script_setup.content.as_ref()),
+                script_mutations::find_prop_mutations(
+                    script_setup.content.as_ref(),
+                    &parsed.program,
+                ),
             )
         };
 

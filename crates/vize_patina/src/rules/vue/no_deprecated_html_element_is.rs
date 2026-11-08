@@ -33,6 +33,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::is_html_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -60,7 +61,7 @@ impl Rule for NoDeprecatedHtmlElementIs {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Skip components (PascalCase / built-ins): `is` on a real component is
         // not the removed native-element substitution.
-        if element.tag_type != ElementType::Element {
+        if element.tag_type != ElementType::Element || !is_html_tag(element.tag) {
             return;
         }
 
@@ -201,7 +202,10 @@ mod tests {
     #[test]
     fn ignores_components() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<MyComponent is="Other" />"#, "App.vue");
+        let result = linter.lint_template(
+            r#"<MyComponent is="Other" /><maybe-v-node :is="content" />"#,
+            "App.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 

@@ -10,8 +10,6 @@ mod depth;
 pub(super) use self::depth::ScriptPropMutationKind;
 use self::depth::{MutationOperation, PropBindingKind, script_mutation_kind};
 
-use crate::rules::script::script_source_type;
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     Argument, AssignmentExpression, BindingPattern, CallExpression, Expression,
     IdentifierReference, ObjectPropertyKind, Program, PropertyKey, SimpleAssignmentTarget,
@@ -24,7 +22,6 @@ use oxc_ast_visit::{
         walk_update_expression,
     },
 };
-use oxc_parser::Parser;
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::UnaryOperator;
@@ -49,20 +46,14 @@ pub(super) struct ScriptPropMutation {
     pub(super) kind: ScriptPropMutationKind,
 }
 
-pub(super) fn find_prop_mutations(source: &str) -> Vec<ScriptPropMutation> {
+pub(super) fn find_prop_mutations(source: &str, program: &Program<'_>) -> Vec<ScriptPropMutation> {
     if memchr::memmem::find(source.as_bytes(), b"defineProps").is_none() {
         return Vec::new();
     }
 
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return Vec::new();
-    }
-
-    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+    let semantic = SemanticBuilder::new().build(program).semantic;
     let scoping = semantic.scoping();
-    let prop_symbols = collect_prop_symbols(&parsed.program, scoping);
+    let prop_symbols = collect_prop_symbols(program, scoping);
     if prop_symbols.is_empty() {
         return Vec::new();
     }
@@ -73,69 +64,68 @@ pub(super) fn find_prop_mutations(source: &str) -> Vec<ScriptPropMutation> {
         prop_symbols: &prop_symbols,
         mutations: Vec::new(),
     };
-    collector.visit_program(&parsed.program);
+    collector.visit_program(program);
     collector
         .mutations
         .sort_unstable_by_key(|mutation| (mutation.span.start, mutation.span.end));
     collector.mutations
 }
 
-/// Collect statically declared runtime prop names for template fallbacks.
+/// Collect statically declared runtime prop names and same-named local
+/// bindings for template fallbacks.
 ///
 /// Croquis intentionally withholds template binding facts when HTML recovery
 /// changes the tree. The authored `v-model` target is still safe to compare
 /// against a clean, statically analyzable `defineProps({ ... })` declaration.
-pub(super) fn runtime_prop_names(source: &str) -> FxHashSet<String> {
-    if memchr::memmem::find(source.as_bytes(), b"defineProps").is_none() {
-        return FxHashSet::default();
-    }
-
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, script_source_type()).parse();
-    if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return FxHashSet::default();
-    }
-
-    let semantic = SemanticBuilder::new().build(&parsed.program).semantic;
+/// A derived ref such as `useVModel(props, "value")` is returned as a local
+/// binding so it can shadow the runtime prop of the same name.
+pub(super) fn runtime_prop_scope(program: &Program<'_>) -> (FxHashSet<String>, FxHashSet<String>) {
+    let semantic = SemanticBuilder::new().build(program).semantic;
     let scoping = semantic.scoping();
-    let mut names = FxHashSet::default();
-    for statement in &parsed.program.body {
+    let mut props = FxHashSet::default();
+    let mut locals = FxHashSet::default();
+    for statement in &program.body {
         let Statement::VariableDeclaration(declaration) = statement else {
             continue;
         };
         for declarator in &declaration.declarations {
-            let Some(initializer) = declarator.init.as_ref() else {
-                continue;
-            };
-            let Some(call) = define_props_call(initializer, scoping) else {
-                continue;
-            };
-            let Some(Expression::ObjectExpression(object)) = call
-                .arguments
-                .first()
-                .and_then(Argument::as_expression)
-                .map(Expression::get_inner_expression)
-            else {
-                continue;
-            };
-            for property in &object.properties {
-                let ObjectPropertyKind::ObjectProperty(property) = property else {
-                    continue;
-                };
-                let name = match &property.key {
-                    PropertyKey::StaticIdentifier(identifier) if !property.computed => {
-                        Some(identifier.name.as_str())
+            if let Some(initializer) = declarator.init.as_ref()
+                && let Some(call) = define_props_call(initializer, scoping)
+                && let Some(Expression::ObjectExpression(object)) = call
+                    .arguments
+                    .first()
+                    .and_then(Argument::as_expression)
+                    .map(Expression::get_inner_expression)
+            {
+                for property in &object.properties {
+                    let ObjectPropertyKind::ObjectProperty(property) = property else {
+                        continue;
+                    };
+                    let name = match &property.key {
+                        PropertyKey::StaticIdentifier(identifier) if !property.computed => {
+                            Some(identifier.name.as_str())
+                        }
+                        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+                        _ => None,
+                    };
+                    if let Some(name) = name {
+                        props.insert(String::from(name));
                     }
-                    PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
-                    _ => None,
-                };
-                if let Some(name) = name {
-                    names.insert(String::from(name));
                 }
+            }
+            if declarator
+                .init
+                .as_ref()
+                .is_some_and(|initializer| is_props_initializer(initializer, scoping))
+            {
+                continue;
+            }
+            for identifier in declarator.id.get_binding_identifiers() {
+                locals.insert(String::from(identifier.name.as_str()));
             }
         }
     }
-    names
+    (props, locals)
 }
 
 fn collect_prop_symbols(
