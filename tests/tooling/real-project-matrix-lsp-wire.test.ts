@@ -284,6 +284,17 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     /'enforced' \|\|[\s\S]*'release-gated'\) \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
   );
   current["run-name"] = original["run-name"];
+  // The current workflow retries the network-only Wild download through the
+  // reviewed local action. Authenticate that exact successor before restoring
+  // the archived direct action for the whole-workflow comparison.
+  const wild = steps.find((step) => step.name === "Setup Wild linker");
+  const oldWild = oldSteps.find((step) => step.name === "Setup Wild linker");
+  assert.ok(wild && oldWild);
+  assert.deepEqual(wild, {
+    ...oldWild,
+    uses: "./.github/actions/setup-wild-http-recovery",
+  });
+  wild.uses = oldWild.uses;
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);
