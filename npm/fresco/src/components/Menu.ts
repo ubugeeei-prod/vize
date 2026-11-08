@@ -2,7 +2,14 @@
  * Menu Component - Command menu/palette
  */
 
-import { defineComponent, h, type PropType, type VNode } from "vue";
+import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { useInput } from "../composables/useInput.js";
+import {
+  adjacentEnabledIndex,
+  firstEnabledIndex,
+  lastEnabledIndex,
+  typeaheadIndex,
+} from "./collection-navigation.js";
 
 export interface MenuItem {
   key: string;
@@ -18,6 +25,8 @@ export interface MenuProps {
   items: MenuItem[];
   /** Focused item index */
   focusedIndex?: number;
+  /** Whether the menu owns keyboard input */
+  focused?: boolean;
   /** Show border */
   border?: "single" | "double" | "rounded" | "none";
   /** Width */
@@ -43,6 +52,10 @@ export const Menu = defineComponent({
       type: Number,
       default: 0,
     },
+    focused: {
+      type: Boolean,
+      default: false,
+    },
     border: {
       type: String as PropType<MenuProps["border"]>,
       default: "single",
@@ -62,8 +75,81 @@ export const Menu = defineComponent({
       default: "gray",
     },
   },
-  emits: ["select"],
-  setup(props, { emit: _emit }) {
+  emits: ["select", "update:focusedIndex"],
+  setup(props, { emit }) {
+    const highlightedIndex = ref(-1);
+    let typeahead = "";
+    let lastTypeaheadAt = 0;
+
+    const syncHighlight = () => {
+      const requested = props.focusedIndex;
+      const requestedItem = props.items[requested];
+      highlightedIndex.value =
+        requestedItem && !requestedItem.disabled && !requestedItem.separator
+          ? requested
+          : firstEnabledIndex(
+              props.items.map((item) => ({ disabled: item.disabled || item.separator })),
+            );
+    };
+
+    watch([() => props.focusedIndex, () => props.items], syncHighlight, {
+      deep: true,
+      immediate: true,
+    });
+
+    const setHighlight = (index: number) => {
+      if (index < 0 || index === highlightedIndex.value) return;
+      highlightedIndex.value = index;
+      emit("update:focusedIndex", index);
+    };
+
+    const activate = () => {
+      const item = props.items[highlightedIndex.value];
+      if (!item || item.disabled || item.separator) return;
+      emit("select", item.key);
+    };
+
+    useInput({
+      isActive: computed(() => props.focused),
+      onArrow: (direction) => {
+        if (direction !== "up" && direction !== "down") return;
+        setHighlight(
+          adjacentEnabledIndex(
+            props.items.map((item) => ({ disabled: item.disabled || item.separator })),
+            highlightedIndex.value,
+            direction === "up" ? -1 : 1,
+          ),
+        );
+      },
+      onKey: (key) => {
+        const navigableItems = props.items.map((item) => ({
+          disabled: item.disabled || item.separator,
+        }));
+        if (key === "home") setHighlight(firstEnabledIndex(navigableItems));
+        if (key === "end") setHighlight(lastEnabledIndex(navigableItems));
+      },
+      onChar: (character) => {
+        const now = Date.now();
+        const normalized = character.toLocaleLowerCase();
+        typeahead =
+          now - lastTypeaheadAt > 700 || typeahead === normalized
+            ? normalized
+            : typeahead + normalized;
+        lastTypeaheadAt = now;
+        setHighlight(
+          typeaheadIndex(
+            props.items.map((item) => ({
+              ...item,
+              disabled: item.disabled || item.separator,
+            })),
+            highlightedIndex.value,
+            typeahead,
+            (item) => item.label,
+          ),
+        );
+      },
+      onSubmit: activate,
+    });
     return () => {
       const children: VNode[] = [];
 
@@ -75,7 +161,7 @@ export const Menu = defineComponent({
           return;
         }
 
-        const isFocused = index === props.focusedIndex;
+        const isFocused = index === highlightedIndex.value;
         const itemContent: VNode[] = [];
 
         // Icon
