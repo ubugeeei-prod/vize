@@ -99,10 +99,6 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
     lock_roots.dedup();
 
     entries.sort_by_key(|(_, modified, _)| *modified);
-    // A full scan window proves that the cache is substantially over its
-    // target. In that state an unlocked mirror is safe to recompute, and the
-    // recency grace must not pin the same directory-order window forever.
-    let saturated = entries.len() == MAX_SCANNED_PROJECT_ENTRIES;
     let excess = entries
         .len()
         .saturating_add(1)
@@ -140,7 +136,10 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
             && now
                 .duration_since(modified)
                 .is_ok_and(|age| age < RECENT_ACCESS_GRACE);
-        let capacity_eviction = summary.evicted < excess && (!recently_accessed || saturated);
+        // Count successful removals, not positions in the scan window. That
+        // lets the scan advance past protected hand-off entries without making
+        // those freshly completed mirrors eligible for capacity eviction.
+        let capacity_eviction = summary.evicted < excess && !recently_accessed;
         if (capacity_eviction || expired)
             && let Some(locks) = lock_unused(&path)
             && fs::remove_dir_all(&path).is_ok()
@@ -295,29 +294,34 @@ mod tests {
     }
 
     #[test]
-    fn maintenance_escapes_a_saturated_recent_window() {
+    fn maintenance_advances_through_a_saturated_window_without_evicting_recent_entries() {
         let cache = tempfile::tempdir().unwrap();
         let projects = cache.path().join("canon/projects");
         fs::create_dir_all(&projects).unwrap();
-        let entry_count = MAX_SCANNED_PROJECT_ENTRIES * 2;
-        for index in 0..entry_count {
+        let mut recent = Vec::new();
+        let stale_count = MIN_EVICTIONS_PER_MAINTENANCE;
+        for index in 0..MAX_SCANNED_PROJECT_ENTRIES {
             let entry = projects.join(format!("{index:064x}"));
             fs::create_dir(&entry).unwrap();
-            record_project_cache_access(&entry);
+            if index >= stale_count {
+                record_project_cache_access(&entry);
+                recent.push(entry);
+            }
         }
-        let current = projects.join(format!("{:064x}", entry_count + 1));
+        let current = projects.join(format!("{:064x}", MAX_SCANNED_PROJECT_ENTRIES + 1));
         fs::create_dir(&current).unwrap();
 
         let summary = maintain_project_cache_with_summary(&current);
 
         assert_eq!(summary.project_entries, MAX_SCANNED_PROJECT_ENTRIES);
-        assert!(summary.evicted >= MIN_EVICTIONS_PER_MAINTENANCE);
+        assert_eq!(summary.evicted, stale_count);
+        assert!(recent.iter().all(|entry| entry.is_dir()));
         let remaining = fs::read_dir(&projects)
             .unwrap()
             .flatten()
             .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
             .count();
-        assert_eq!(remaining, entry_count + 1 - summary.evicted);
+        assert_eq!(remaining, MAX_SCANNED_PROJECT_ENTRIES + 1 - stale_count);
     }
 
     #[test]

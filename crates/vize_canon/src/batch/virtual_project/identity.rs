@@ -86,8 +86,8 @@ fn external_cache_root(project_root: &Path, cache: &Path, temporary: &Path) -> P
 }
 
 fn configured_cache_root(project_root: &Path, cache: &Path, temporary: &Path) -> PathBuf {
-    let cache = vize_carton::path::canonicalize_non_verbatim(cache);
-    let temporary = vize_carton::path::canonicalize_non_verbatim(temporary);
+    let cache = resolved_storage_path(cache);
+    let temporary = resolved_storage_path(temporary);
     if !cache.starts_with(project_root) {
         cache
     } else if !temporary.starts_with(project_root) {
@@ -100,6 +100,22 @@ fn configured_cache_root(project_root: &Path, cache: &Path, temporary: &Path) ->
             .unwrap_or(project_root)
             .join(".vize-canon-cache")
     }
+}
+
+/// Resolve a configured storage path through its deepest existing ancestor.
+///
+/// New relative cache directories must still be compared as absolute physical
+/// paths; otherwise their containment result changes after the directory is
+/// first created.
+fn resolved_storage_path(path: &Path) -> PathBuf {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map(|current| current.join(path))
+            .unwrap_or_else(|_| path.to_path_buf())
+    };
+    vize_carton::path::physical_path(&absolute)
 }
 
 /// Previous project-keyed cache locations, for `vize clean` migration only.
@@ -232,8 +248,9 @@ fn update_path_digest(digest: &mut Sha256, path: &Path) {
 #[cfg(test)]
 mod tests {
     use super::{
-        configured_cache_root, external_cache_root, legacy_project_virtual_roots, project_key,
-        project_virtual_lock_paths, project_virtual_root, project_virtual_root_with_identity,
+        CACHE_ROOT_ENV, configured_cache_root, external_cache_root, legacy_project_virtual_roots,
+        project_key, project_virtual_lock_paths, project_virtual_root,
+        project_virtual_root_with_identity,
     };
     use std::path::Path;
 
@@ -329,6 +346,40 @@ mod tests {
             configured_cache_root(&project, &project.join("cache"), &temporary),
             vize_carton::path::canonicalize_non_verbatim(&temporary),
         );
+    }
+
+    #[test]
+    fn relative_configured_cache_root_stays_outside_project_before_and_after_creation() {
+        const CHILD_PROJECT_ENV: &str = "VIZE_CANON_RELATIVE_CACHE_TEST_PROJECT";
+        if let Some(project) = std::env::var_os(CHILD_PROJECT_ENV) {
+            let project = Path::new(&project);
+            let first = project_virtual_root(project);
+            assert!(!first.starts_with(project));
+
+            std::fs::create_dir(project.join("canon-cache")).unwrap();
+            let second = project_virtual_root(project);
+            assert_eq!(second, first);
+            assert!(!second.starts_with(project));
+            return;
+        }
+
+        let holder = tempfile::tempdir().unwrap();
+        let project = holder.path().join("project");
+        std::fs::create_dir(&project).unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .arg("relative_configured_cache_root_stays_outside_project_before_and_after_creation")
+            .arg("--nocapture")
+            .current_dir(&project)
+            .env(CACHE_ROOT_ENV, "canon-cache")
+            .env(CHILD_PROJECT_ENV, &project)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(String::from_utf8_lossy(&output.stdout).contains("1 passed"));
     }
 
     #[test]
