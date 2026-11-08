@@ -30,7 +30,7 @@ use vize_carton::cstr;
 use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use crate::batch::error::CorsaResult;
-use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
+use crate::batch::import_rewriter::{ModuleSpecifierFactsCache, ModuleSpecifierSpan};
 
 use super::VirtualProject;
 use super::setup_props::RuntimePropResolveCache;
@@ -54,6 +54,32 @@ pub(crate) use resolution::{
 };
 
 type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
+
+enum DependencySpecifierIter<'a> {
+    Parsed(std::slice::Iter<'a, (CompactString, crate::PackageResolutionMode)>),
+    Reused {
+        source: &'a str,
+        spans: std::slice::Iter<'a, ModuleSpecifierSpan>,
+    },
+}
+
+impl<'a> Iterator for DependencySpecifierIter<'a> {
+    type Item = (&'a str, crate::PackageResolutionMode);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::Parsed(occurrences) => occurrences
+                .next()
+                .map(|(specifier, mode)| (specifier.as_str(), *mode)),
+            Self::Reused { source, spans } => loop {
+                let (start, end, mode) = spans.next()?;
+                if let Some(specifier) = source.get(*start as usize..*end as usize) {
+                    return Some((specifier, *mode));
+                }
+            },
+        }
+    }
+}
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
@@ -230,7 +256,30 @@ impl VirtualProject {
             let source_type = super::editor_source_facts::walked_source_type(&virtual_path);
             let parsed_occurrences;
             let occurrences = if let Some(syntax) = reused_syntax.as_ref() {
-                syntax.occurrences.as_ref()
+                let source = if syntax.occurrences.is_empty() {
+                    ""
+                } else {
+                    let Some(content) = self.find_by_original(&importer).map(|file| {
+                        let content = self.walked_source(file);
+                        vize_carton::micro_count!("canon.dependency_scan.content.clone.calls", 1);
+                        vize_carton::micro_count!(
+                            "canon.dependency_scan.content.clone.source_bytes",
+                            content.len()
+                        );
+                        vize_carton::micro_span!(
+                            "canon.dependency_scan.content.clone",
+                            vize_carton::String::from(content.as_ref())
+                        )
+                    }) else {
+                        continue;
+                    };
+                    virtual_content = Some(content);
+                    virtual_content.as_deref().unwrap_or_default()
+                };
+                DependencySpecifierIter::Reused {
+                    source,
+                    spans: syntax.occurrences.iter(),
+                }
             } else {
                 let Some(virtual_content) = virtual_content.as_deref() else {
                     continue;
@@ -268,11 +317,10 @@ impl VirtualProject {
                         )
                     }
                 };
-                parsed_occurrences.as_slice()
+                DependencySpecifierIter::Parsed(parsed_occurrences.iter())
             };
             let specifiers = occurrences
-                .iter()
-                .map(|(specifier, mode)| (specifier.as_str(), *mode, false))
+                .map(|(specifier, mode)| (specifier, mode, false))
                 .chain(references.iter().map(|specifier| {
                     (
                         specifier.as_str(),

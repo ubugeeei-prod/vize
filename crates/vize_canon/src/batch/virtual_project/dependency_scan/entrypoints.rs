@@ -9,7 +9,6 @@ use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 use super::{PackageResolver, VirtualProject};
 
-#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
     /// Register every reachable first-party dependency, to a fixpoint.
     pub fn register_reachable_dependencies(&mut self) -> CorsaResult<()> {
