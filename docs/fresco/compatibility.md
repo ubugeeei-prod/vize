@@ -62,20 +62,20 @@ means the surface has no equivalent.
 ### Interaction primitives
 
 Ink ships these as ecosystem packages (`ink-text-input`, `ink-select-input`, ...); OpenTUI and
-Vue TermUI ship them in core. Only `TextInput` currently owns its keyboard behavior; the other
+Vue TermUI ship them in core. `TextInput` owns its keyboard and editing behavior; the other
 interactive components render selection/focus state from props and `v-model` but expect the host
 app to wire `useInput` (their internal movement/select handlers are not connected yet — M2).
 
-| Ink ecosystem      | OpenTUI               | Vue TermUI  | Fresco                                      | Status  | Notes                                                                                                                   |
-| ------------------ | --------------------- | ----------- | ------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `ink-text-input`   | `InputRenderable`     | `Input`     | `TextInput`                                 | Partial | Owns keyboard via `useInput`: cursor, mask, submit, IME composition. No selection/history/word movement/clipboard (M2). |
-| —                  | `TextareaRenderable`  | `Textarea`  | `TextArea`                                  | Partial | Renders multiline value/cursor state; editing behavior not owned by the component (M2).                                 |
-| `ink-select-input` | `SelectRenderable`    | `Select`    | `Select`                                    | Partial | Display + `v-model`; keyboard navigation handlers exist but are not wired (M2).                                         |
-| —                  | `TabSelectRenderable` | `TabSelect` | `Tabs`                                      | Partial | Display + `v-model`; tab switching keys not owned (M2).                                                                 |
-| —                  | —                     | —           | `Checkbox`, `RadioGroup`, `Confirm`, `Form` | Partial | State rendering + `v-model`/emits; keyboard, validation, and focus semantics pending (M2).                              |
-| —                  | —                     | —           | `List`, `Menu`, `Tree`                      | Partial | Typed items, selection/expansion rendering; navigation, typeahead, and scrolling pending (M2).                          |
-| —                  | —                     | —           | `Modal`, `Tooltip` (typed SFC)              | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                          |
-| —                  | `SliderRenderable`    | —           | —                                           | Planned | Keyboard/mouse slider with range-safe typed model (M2).                                                                 |
+| Ink ecosystem      | OpenTUI               | Vue TermUI  | Fresco                                      | Status  | Notes                                                                                                                                                                                    |
+| ------------------ | --------------------- | ----------- | ------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ink-text-input`   | `InputRenderable`     | `Input`     | `TextInput`                                 | Partial | Grapheme-safe selection, word editing, undo/redo, controlled or default state, validation, bracketed paste, IME, and copy/cut callbacks. System clipboard writes remain host-owned (M2). |
+| —                  | `TextareaRenderable`  | `Textarea`  | `TextArea`                                  | Partial | Renders multiline value/cursor state; editing behavior not owned by the component (M2).                                                                                                  |
+| `ink-select-input` | `SelectRenderable`    | `Select`    | `Select`                                    | Partial | Display + `v-model`; keyboard navigation handlers exist but are not wired (M2).                                                                                                          |
+| —                  | `TabSelectRenderable` | `TabSelect` | `Tabs`                                      | Partial | Display + `v-model`; tab switching keys not owned (M2).                                                                                                                                  |
+| —                  | —                     | —           | `Checkbox`, `RadioGroup`, `Confirm`, `Form` | Partial | State rendering + `v-model`/emits; keyboard, validation, and focus semantics pending (M2).                                                                                               |
+| —                  | —                     | —           | `List`, `Menu`, `Tree`                      | Partial | Typed items, selection/expansion rendering; navigation, typeahead, and scrolling pending (M2).                                                                                           |
+| —                  | —                     | —           | `Modal`, `Tooltip` (typed SFC)              | Partial | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                                                                                           |
+| —                  | `SliderRenderable`    | —           | —                                           | Planned | Keyboard/mouse slider with range-safe typed model (M2).                                                                                                                                  |
 
 ### Display and rich components
 

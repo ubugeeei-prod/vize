@@ -19,6 +19,8 @@ function mountInput(initial = "", props: Record<string, unknown> = {}) {
       },
       onSubmit: (submitted: string) => emitted.push(["submit", submitted]),
       onCancel: () => emitted.push(["cancel", undefined]),
+      onCopy: (copied: string) => emitted.push(["copy", copied]),
+      onCut: (cut: string) => emitted.push(["cut", cut]),
     }),
   );
   return { mounted, value, emitted, node: () => firstChild(mounted) };
@@ -89,6 +91,91 @@ test("backspace and delete edit by grapheme cluster", async () => {
   assert.equal(value.value, "");
   await dispatchKey({ key: "delete" });
   assert.equal(value.value, "", "delete at the end is a no-op");
+  mounted.unmount();
+});
+
+test("shift selection replaces a grapheme range and exposes native selection bounds", async () => {
+  const { mounted, value, node } = mountInput("a👋🏽c");
+
+  await dispatchKey({ key: "left", shift: true });
+  await dispatchKey({ key: "left", shift: true });
+  assert.equal(node().props.selectionStart, 1);
+  assert.equal(node().props.selectionEnd, 3);
+  await typeChars("b");
+
+  assert.equal(value.value, "ab");
+  assert.equal(node().props.cursor, 2);
+  assert.equal(node().props.selectionStart, 2);
+  assert.equal(node().props.selectionEnd, 2);
+  mounted.unmount();
+});
+
+test("word editing, undo, and redo use command chords without inserting command characters", async () => {
+  const { mounted, value } = mountInput("one two");
+
+  await dispatchKey({ key: "backspace", ctrl: true });
+  assert.equal(value.value, "one ");
+  await dispatchKey({ char: "z", ctrl: true });
+  assert.equal(value.value, "one two");
+  await dispatchKey({ char: "z", ctrl: true, shift: true });
+  assert.equal(value.value, "one ");
+  await dispatchKey({ char: "y", ctrl: true });
+  assert.equal(value.value, "one ", "redo at the latest state is a no-op");
+  mounted.unmount();
+});
+
+test("copy and cut emit the selected text", async () => {
+  const { mounted, value, emitted } = mountInput("copy me");
+
+  await dispatchKey({ key: "home" });
+  for (let index = 0; index < 4; index++) {
+    await dispatchKey({ key: "right", shift: true });
+  }
+  await dispatchKey({ char: "c", ctrl: true });
+  await dispatchKey({ char: "x", ctrl: true });
+
+  assert.deepEqual(emitted, [
+    ["copy", "copy"],
+    ["cut", "copy"],
+  ]);
+  assert.equal(value.value, " me");
+  mounted.unmount();
+});
+
+test("defaultValue owns uncontrolled input state", async () => {
+  const mounted = mountFresco(() => h(TextInput, { defaultValue: "a", focused: true }));
+
+  await typeChars("b");
+  assert.equal(firstChild(mounted).props.value, "ab");
+  mounted.unmount();
+});
+
+test("validation exposes state and reports transitions", async () => {
+  const value = ref("");
+  const validation: Array<[boolean, string | undefined]> = [];
+  const mounted = mountFresco(() =>
+    h(TextInput, {
+      modelValue: value.value,
+      focused: true,
+      validate: (candidate: string) => (candidate.length >= 2 ? true : "too short"),
+      "onUpdate:modelValue": (next: string) => {
+        value.value = next;
+      },
+      onValidationChange: (valid: boolean, message?: string) => {
+        validation.push([valid, message]);
+      },
+    }),
+  );
+
+  assert.equal(firstChild(mounted).props.invalid, true);
+  assert.equal(firstChild(mounted).props.validationMessage, "too short");
+  await typeChars("ok");
+  assert.equal(firstChild(mounted).props.invalid, false);
+  assert.deepEqual(validation, [
+    [false, "too short"],
+    [false, "too short"],
+    [true, undefined],
+  ]);
   mounted.unmount();
 });
 

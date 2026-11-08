@@ -128,6 +128,12 @@ pub struct RenderNodeNapi {
     pub focused: Option<bool>,
     /// Cursor position in input
     pub cursor: Option<i64>,
+    /// Inclusive grapheme index at the start of the input selection.
+    #[napi(js_name = "selectionStart")]
+    pub selection_start: Option<i64>,
+    /// Exclusive grapheme index at the end of the input selection.
+    #[napi(js_name = "selectionEnd")]
+    pub selection_end: Option<i64>,
     /// Whether to mask input (password)
     pub mask: Option<bool>,
     /// Mask character

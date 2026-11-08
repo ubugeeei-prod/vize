@@ -185,6 +185,10 @@ export interface FrescoInputRenderNode extends FrescoRenderNodeBase {
   placeholder?: string;
   focused?: boolean;
   cursor?: number;
+  /** Inclusive grapheme index at the start of the active selection. */
+  selectionStart?: number;
+  /** Exclusive grapheme index at the end of the active selection. */
+  selectionEnd?: number;
   mask?: boolean;
   maskChar?: string;
 }
