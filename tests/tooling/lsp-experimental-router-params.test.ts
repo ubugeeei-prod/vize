@@ -119,7 +119,15 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   );
   assert.ok(strictTransition);
   assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
-  if (!assertCanonLeftoversGolden(custody, root, entry, transitionFile, strictTransition, bytes)) {
+  const canonLeftovers = assertCanonLeftoversGolden(
+    custody,
+    root,
+    entry,
+    transitionFile,
+    strictTransition,
+    bytes,
+  );
+  if (!canonLeftovers) {
     assert.equal(strictTransition.currentSha256, entry.sha256);
   }
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
@@ -139,8 +147,11 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     successor.integratedSource.sha256,
   );
   const current = bytes.toString("utf8");
-  assert.equal(current.includes(strictExtra.edit.before), false);
-  assert.equal(current.split(strictExtra.edit.after).length, 2);
+  const strictExtraSource = canonLeftovers
+    ? fs.readFileSync(path.join(custody, transitionFile), "utf8")
+    : current;
+  assert.equal(strictExtraSource.includes(strictExtra.edit.before), false);
+  assert.equal(strictExtraSource.split(strictExtra.edit.after).length, 2);
   assert.equal(current.includes(successor.currentEdit.before), false);
   assert.equal(current.split(successor.currentEdit.after).length, 2);
   return current;
