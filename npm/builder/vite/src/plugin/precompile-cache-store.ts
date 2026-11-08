@@ -35,6 +35,7 @@ import path from "node:path";
 import zlib from "node:zlib";
 
 import type { CompiledModule } from "../types.ts";
+import { normalizeCachePath } from "./cache-path.ts";
 import { PRECOMPILE_CACHE_FORMAT } from "./precompile-cache-key.ts";
 
 /** File extension of the container. Not `.json`: it is a header plus two blobs. */
@@ -341,7 +342,7 @@ export function decodePrecompileManifest(
     const module = decodeRecord(payload.subarray(offset, end));
     offset = end;
     if (module !== null) {
-      entries.set(path.resolve(root, relative), { hash, module });
+      entries.set(normalizeCachePath(path.resolve(root, relative)), { hash, module });
     }
   }
   if (offset !== payload.length) {

@@ -215,6 +215,7 @@ Regenerate with `node tools/commands/ci/workflow-catalog.ts`.
 | Rspack external block ranges             | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)                               |
 | Turbopack consumers                      | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                                       |
 | Vite+ Type Compatibility                 | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                                   |
+| Vite precompile cache identities         | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                                   |
 | Vite relative style origins              | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)                       |
 | Vite+ configuration consumers            | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)                           |
 | Vite+ lint configuration consumers       | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)                               |

@@ -8,7 +8,7 @@ import { compileAll, PrecompileDiagnosticsError } from "./precompile-run.ts";
 import { compileFile, formatCompileErrorMessage, VizeSfcCompileError } from "../compiler.ts";
 import { loadSfcModule } from "../test/sfc-module.ts";
 import { toVirtualId } from "../virtual.ts";
-import { makeState, persistedFiles } from "../test/precompile-cache-project.ts";
+import { makeProject, makeState, persistedFiles } from "../test/precompile-cache-project.ts";
 import {
   linkWorkspaceVue,
   observeConsole,
@@ -127,6 +127,31 @@ void test("failed cold and warm scans evict actual client, SSR, CSS and disk ent
     assert.deepEqual(persistedFiles(project.root), [project.file("src/App.vue"), file]);
   } finally {
     project.cleanup();
+  }
+});
+
+void test("SSR buildStart precompiles into the SSR cache and transform reuses it", async () => {
+  const project = makeProject(
+    `<script setup>const message = "server"</script><template><p>{{ message }}</p></template>`,
+  );
+  const host = await startupHost(project.root, {
+    plugins: vize({ configMode: false, debug: true }),
+    build: { ssr: true },
+  });
+  try {
+    const observed = await observeConsole(async () => {
+      await host.start();
+      return host.load(project.file, true);
+    });
+    assert.equal(observed.error, null);
+    assert.ok(observed.value);
+    assert.equal(
+      observed.calls.log.some((args) => args.join(" ").includes("transform: compiling")),
+      false,
+      "the SSR transform must not compile a second time after startup",
+    );
+  } finally {
+    await host.close();
   }
 });
 

@@ -51,3 +51,14 @@ export function resolveHookSsr(
     options?.ssr ?? (context.environment?.name === "ssr" || context.environment?.name === "server")
   );
 }
+
+/** Build hooks lack an SSR argument in Vite 7; Vite 8 names the environment. */
+export function resolveBuildStartSsr(
+  context: { environment?: { name?: string } },
+  fallback?: { build?: { ssr?: unknown } },
+): boolean {
+  const name = context.environment?.name;
+  if (name === "ssr" || name === "server") return true;
+  if (name === "client" || name === "browser") return false;
+  return !!fallback?.build?.ssr;
+}

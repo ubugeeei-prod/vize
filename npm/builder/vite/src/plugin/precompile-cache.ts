@@ -34,6 +34,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import type { CompiledModule } from "../types.ts";
+import { normalizeCachePath } from "./cache-path.ts";
 import { computePrecompileCacheKey } from "./precompile-cache-key.ts";
 import {
   PRECOMPILE_CACHE_EXTENSION,
@@ -118,10 +119,12 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
   return {
     file,
     get(filePath, sourceHash) {
+      filePath = normalizeCachePath(filePath);
       const entry = entries.get(filePath);
       return entry && entry.hash === sourceHash ? entry.module : undefined;
     },
     set(filePath, sourceHash, module) {
+      filePath = normalizeCachePath(filePath);
       if (!isPersistablePrecompileModule(module)) {
         if (entries.delete(filePath)) {
           dirty = true;
@@ -136,12 +139,13 @@ export function openPrecompileCache(options: OpenPrecompileCacheOptions): Precom
       dirty = true;
     },
     delete(filePath) {
+      filePath = normalizeCachePath(filePath);
       if (entries.delete(filePath)) {
         dirty = true;
       }
     },
     retain(files) {
-      const keep = files instanceof Set ? files : new Set(files);
+      const keep = new Set(Array.from(files, normalizeCachePath));
       // Deleting the entry a Map iterator is currently on is well defined.
       for (const filePath of entries.keys()) {
         if (!keep.has(filePath)) {

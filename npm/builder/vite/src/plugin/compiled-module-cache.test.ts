@@ -82,6 +82,21 @@ function scanOwners(
 }
 
 {
+  // tinyglobby uses forward slashes on Windows while Vite may hand transform
+  // hooks backslashes for the same file. Both must address one cache entry.
+  const cache = new CompiledModuleCache();
+  const forward = "C:/project/src/App.vue";
+  const backward = String.raw`C:\project\src\App.vue`;
+  const module = compiled([]);
+  cache.set(forward, module);
+
+  assert.equal(cache.get(backward), module);
+  assert.equal(cache.has(backward), true);
+  assert.equal(cache.delete(backward), true);
+  assert.equal(cache.has(forward), false);
+}
+
+{
   // Relative dependencies and queries share the same resolved identity.
   const cache = new CompiledModuleCache();
   cache.set("/src/App.vue", compiled(["./relative.css"]));

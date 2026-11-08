@@ -22,6 +22,7 @@
  */
 
 import type { CompiledModule } from "../types.ts";
+import { normalizeCachePath } from "./cache-path.ts";
 import { filesystemPathIdentities } from "./path-identity.ts";
 
 export class CompiledModuleCache extends Map<string, CompiledModule> {
@@ -38,7 +39,16 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
     super();
   }
 
+  override get(file: string): CompiledModule | undefined {
+    return super.get(normalizeCachePath(file));
+  }
+
+  override has(file: string): boolean {
+    return super.has(normalizeCachePath(file));
+  }
+
   override set(file: string, compiled: CompiledModule): this {
+    file = normalizeCachePath(file);
     this.#unindex(file);
     super.set(file, compiled);
     const dependencies = new Set<string>();
@@ -65,6 +75,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   }
 
   override delete(file: string): boolean {
+    file = normalizeCachePath(file);
     this.#unindex(file);
     return super.delete(file);
   }
@@ -83,7 +94,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
    * The next `set` reconciles that retained snapshot with the new compilation.
    */
   evict(file: string): boolean {
-    return super.delete(file);
+    return super.delete(normalizeCachePath(file));
   }
 
   /** The cached SFCs that `src`-import `resolvedDependency`. */
@@ -105,6 +116,7 @@ export class CompiledModuleCache extends Map<string, CompiledModule> {
   }
 
   #unindex(file: string): void {
+    file = normalizeCachePath(file);
     for (const dependency of this.#dependenciesByOwner.get(file) ?? []) {
       const owners = this.#ownersByDependency.get(dependency);
       if (!owners) continue;
