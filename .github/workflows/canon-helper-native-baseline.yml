@@ -137,7 +137,7 @@ jobs:
           set -euo pipefail
           mkdir "$RUNNER_TEMP/helper-provider"
           cd "$RUNNER_TEMP/helper-provider"
-          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.0.2"}}));'
+          node --input-type=module -e 'import fs from "node:fs";fs.writeFileSync("package.json",JSON.stringify({private:true,type:"module",dependencies:{vize:"0.602.0","@vizejs/native":"0.602.0",vue:"3.5.42",typescript:"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}));'
           npm install --ignore-scripts --no-audit --no-fund
           cp package.json package-lock.json "$RUNNER_TEMP/helper-baseline-custody/"
       - name: Run the proxy byte and classification controls
