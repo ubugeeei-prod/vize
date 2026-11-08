@@ -69,7 +69,7 @@ runs:
         git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
 
     - name: Setup Wild linker
-      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      uses: ./.github/actions/setup-wild-http-recovery
       with:
         wild-version: "0.9.0"
 

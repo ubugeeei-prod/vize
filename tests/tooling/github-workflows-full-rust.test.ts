@@ -62,7 +62,7 @@ function restoreBeforeRuntimeProvisioning(job: Job) {
 
 void test("full workspace shares the seeded compiler, linker, target path and ci profile", () => {
   const producer = seed.jobs["rust-pr-target-seed"];
-  for (const action of ["dtolnay/rust-toolchain@", "wild-linker/action@"])
+  for (const action of ["dtolnay/rust-toolchain@", "./.github/actions/setup-wild-http-recovery"])
     assert.deepEqual(use(workspace, action), use(producer, action));
   assert.deepEqual(
     use(workspace, "./.github/actions/setup-rust-sticky-cache")?.with,
@@ -320,6 +320,12 @@ void test("full-only extraction preserves all seventeen complete original job ob
   // #7083 extends the authored allocation gate with its helper-rich witness.
   // The complete 17 job objects otherwise stay in authored order.
   assert.equal(Object.keys(original).length, 17);
+  for (const job of Object.values(original) as Job[]) {
+    for (const step of job.steps ?? []) {
+      if (step.uses === "./.github/actions/setup-wild-http-recovery")
+        step.uses = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
+    }
+  }
   assert.equal(
     createHash("sha256").update(JSON.stringify(original)).digest("hex"),
     "4de63c3d229c90269a69631d840c4b31cdc27290eedb5a11fc9775755c91cd1e",

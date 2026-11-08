@@ -27,6 +27,8 @@ case "$wild_primary_status:$wild_http" in
   0:200) ;;
   22:500|22:502|22:503|22:504)
     curl --fail-with-body --show-error --location \
+         --connect-timeout 10 --max-time 30 --speed-limit 1 --speed-time 5 \
+         --retry 5 --retry-all-errors --retry-delay 1 \
          --header 'Accept: application/octet-stream' \
          --header 'X-GitHub-Api-Version: 2022-11-28' \
          --output "$wild_archive" \

@@ -16,7 +16,7 @@ runs:
   using: "composite"
   steps:
     - if: ${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '0.9.0' || inputs.download-retries != '5' }}
-      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+      uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
       with:
         wild-version: ${{ inputs.wild-version }}
         download-retries: ${{ inputs.download-retries }}

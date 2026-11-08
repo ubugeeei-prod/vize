@@ -166,7 +166,7 @@ jobs:
         # cargo-semver-checks derives the release type from the bumped version.
         run: |
           : > "$RUNNER_TEMP/semver-change-marker.txt"
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -283,7 +283,7 @@ jobs:
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: vue-parity, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
@@ -345,7 +345,7 @@ jobs:
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable, components: llvm-tools-preview }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -409,7 +409,7 @@ jobs:
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
         with: { toolchain: nightly, components: llvm-tools-preview }
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
