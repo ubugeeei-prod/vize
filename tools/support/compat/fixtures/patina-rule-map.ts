@@ -295,9 +295,7 @@ async function main(): Promise<void> {
     validateRuleMap();
     return;
   }
-  throw new Error(
-    "Usage: node tools/support/compat/fixtures/patina-rule-map.ts [--check|--write]",
-  );
+  throw new Error("Usage: node tools/support/compat/fixtures/patina-rule-map.ts [--check|--write]");
 }
 
 await main();

@@ -243,10 +243,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
     { steps: action.runs?.steps },
     "Validate and hydrate planned fixtures",
   );
-  assert.match(
-    hydration.run ?? "",
-    /node tools\/commands\/ci\/github\/app-e2e-plan\.ts --profile/,
-  );
+  assert.match(hydration.run ?? "", /node tools\/commands\/ci\/github\/app-e2e-plan\.ts --profile/);
   assert.match(hydration.run ?? "", /mapfile -t fixture_paths/);
   assert.match(
     hydration.run ?? "",
