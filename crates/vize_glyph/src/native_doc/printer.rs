@@ -14,10 +14,12 @@ pub enum LineEnding {
     CrLf,
 }
 
-/// Layout policy. Width measures Unicode scalars, not UTF-8 byte lengths.
+/// Layout policy. Width measures columns, not UTF-8 byte lengths. Ordinary
+/// Unicode scalars occupy one column; authored tabs advance to the next
+/// eight-column stop.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PrintOptions {
-    /// Preferred maximum line width in Unicode scalar values.
+    /// Preferred maximum line width in columns, with eight-column tab stops.
     pub width: usize,
     /// Number of spaces emitted for one indentation level.
     pub indent_width: usize,

@@ -48,7 +48,7 @@ pub enum NativeTemplateRefusal {
     },
     /// Observing a conditional directive value failed.
     AttributeObservation {
-        /// Authored-file span of the directive value.
+        /// Authored-file span of the directive name.
         span: Span,
         /// Zero-based conditional observation ordinal.
         index: usize,
@@ -92,7 +92,7 @@ pub enum NativeTemplateRefusal {
     },
     /// Observing a binding directive value failed.
     BindingObservation {
-        /// Authored-file span of the binding value.
+        /// Authored-file span of the binding directive name.
         span: Span,
         /// Zero-based binding observation ordinal.
         index: usize,
