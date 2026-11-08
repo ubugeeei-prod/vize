@@ -225,7 +225,7 @@ test("projection proof rejects missing, errored and unstable transforms and reta
 });
 
 test("one experiment pairs every huge workload and alternates role order with distinct cold samples", async () => {
-  const { OWNED_WORKLOADS } =
+  const { OWNED_WORKLOADS, selectOwnedWorkloads } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair-projects.ts");
   const { PAIR_LANES, sampleOrder, requiredSamples } =
     await import("../../tools/benchmarks/scripts/typecheck-owned-pair.ts");
@@ -233,6 +233,11 @@ test("one experiment pairs every huge workload and alternates role order with di
     OWNED_WORKLOADS.map((row) => row.id),
     ["misskey", "n8n", "vue-20000", "nuxt-2500", "nuxt-10000"],
   );
+  assert.deepEqual(selectOwnedWorkloads("giant-2500"), [
+    { id: "giant-2500", sfcs: 1, kind: "giant", giantBlocks: 2500 },
+  ]);
+  assert.throws(() => selectOwnedWorkloads("giant-2500,giant-2500"));
+  assert.throws(() => selectOwnedWorkloads("missing"));
   assert.deepEqual(sampleOrder(0), ["base", "head"]);
   assert.deepEqual(sampleOrder(1), ["head", "base"]);
   assert.deepEqual(

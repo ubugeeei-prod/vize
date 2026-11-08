@@ -19,10 +19,10 @@ import {
   writeJson,
 } from "./typecheck-owned-pair-evidence.ts";
 import {
-  OWNED_WORKLOADS,
   clearProjectCaches,
   installRole,
   prepareOwnedWorkload,
+  selectOwnedWorkloads,
 } from "./typecheck-owned-pair-projects.ts";
 import {
   compareOwnedProjections,
@@ -58,7 +58,7 @@ async function main() {
   requireMeasurementRunner();
   const { values } = parseArgs({
     options: Object.fromEntries(
-      ["base", "head", "base-sha", "head-sha", "work", "out"].map((name) => [
+      ["base", "head", "base-sha", "head-sha", "work", "out", "workloads"].map((name) => [
         name,
         { type: "string" as const },
       ]),
@@ -71,6 +71,7 @@ async function main() {
   assert.notEqual(sources.base, sources.head);
   const work = resolve(values.work!),
     out = resolve(values.out!);
+  const workloads = selectOwnedWorkloads(values.workloads);
   mkdirSync(work, { recursive: true });
   mkdirSync(out, { recursive: true });
   assert.deepEqual(readdirSync(work), [], "work directory must be fresh");
@@ -136,7 +137,7 @@ async function main() {
     pageCache: "uncontrolled OS page cache; warm denotes order, not persistent checker",
     nativeHook:
       "actual loaded image/token observed in each Node tree; hook overhead included symmetrically",
-    workloadIds: OWNED_WORKLOADS,
+    workloadIds: workloads,
     timing:
       "wall + reaped process-tree CPU + GNU max SINGLE-process RSS; separate 100ms sampled TREE RSS/PSS pass",
     diagnosticLimits:
@@ -151,7 +152,7 @@ async function main() {
     qualified: boolean;
     memory: object | null;
   }> = [];
-  for (const specification of OWNED_WORKLOADS) {
+  for (const specification of workloads) {
     const workload = prepareOwnedWorkload(specification.id, work, out, hosts.base);
     for (const mapper of ["vize", "vue"] as const) prepareOwnedProbe(workload.directory, mapper);
     const probeAuthority = ownedProbeAuthority(workload.directory);

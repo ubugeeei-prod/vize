@@ -19,6 +19,10 @@ on:
         description: Lossless source pair including huge Vue/Nuxt, explicit widths and isolated caches
         type: boolean
         default: false
+      workloads:
+        description: Optional comma-separated owned workload IDs
+        type: string
+        default: ""
       batch:
         description: Also diff the head build's vize check against its mapper under tsc
         type: boolean
@@ -42,6 +46,7 @@ jobs:
       RUNS: ${{ inputs.runs }}
       BATCH: ${{ inputs.batch }}
       OWNED_PAIR: ${{ inputs.owned_pair }}
+      OWNED_WORKLOADS: ${{ inputs.workloads }}
     steps:
       - name: Validate inputs
         run: |
@@ -126,10 +131,13 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$OWNED_PAIR" == true ]]; then
+            workload_args=()
+            if [[ -n "$OWNED_WORKLOADS" ]]; then workload_args+=(--workloads "$OWNED_WORKLOADS"); fi
             node tools/benchmarks/scripts/typecheck-owned-pair.ts \
               --base "$RUNNER_TEMP/pair-base" --head "$RUNNER_TEMP/pair-head" \
               --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" \
-              --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out"
+              --work "$RUNNER_TEMP/pair-work" --out "$RUNNER_TEMP/pair-out" \
+              "${workload_args[@]}"
             exit
           fi
           extra=()
