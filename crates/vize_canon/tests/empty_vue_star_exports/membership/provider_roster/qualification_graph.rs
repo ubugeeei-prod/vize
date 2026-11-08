@@ -483,29 +483,7 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
 
     let predecessor_bytes = fs::read(support::corpus().join(dependency_ownership::UPDATE))
         .map_err(|_| "complete create-fresco qualification predecessor")?;
-    let successor = create_fresco_update();
-    let manifest = fs::read(support::repository().join(CREATE_FRESCO_MANIFEST))
-        .map_err(|_| "complete create-fresco manifest")?;
-    let graph = CreateFrescoQualificationGraph {
-        lock,
-        package,
-        workspace: &workspace,
-        manifest: &manifest,
-    };
-    verify_create_fresco_update(&update, &predecessor_bytes, &successor, &graph)?;
-
-    let predecessor_bytes = fs::read(support::corpus().join(create_fresco::UPDATE))
-        .map_err(|_| "complete docs metadata qualification predecessor")?;
-    let update = docs_metadata_update();
-    let manifest = fs::read(support::repository().join(DOCS_METADATA_MANIFEST))
-        .map_err(|_| "complete docs manifest")?;
-    let graph = DocsMetadataQualificationGraph {
-        lock,
-        package,
-        workspace: &workspace,
-        manifest: &manifest,
-    };
-    verify_docs_metadata_update(&successor, &predecessor_bytes, &update, &graph)?;
+    let update = docs_metadata::authorize(&update, &predecessor_bytes, lock, package, &workspace)?;
     Ok(Some(update))
 }
 
