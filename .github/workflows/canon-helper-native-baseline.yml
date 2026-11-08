@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: fb550c424e4256860647dbf96ce32c31cea3774b
+          ref: 1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
@@ -46,8 +46,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/helper-baseline-custody"
-          test "$(git rev-parse HEAD)" = fb550c424e4256860647dbf96ce32c31cea3774b
-          test "$(git rev-parse 'HEAD^{tree}')" = 066589f286ccaf1e271dc9b2e3c87c81d6db9013
+          test "$(git rev-parse HEAD)" = 1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957
+          test "$(git rev-parse 'HEAD^{tree}')" = 9bcbc782b84264d04190281f8acdf386c49baf64
           node tools/benchmarks/scripts/typechecker-cache-source.ts \
             --source-root "$GITHUB_WORKSPACE" \
             --target-dir "$RUNNER_TEMP/helper-source-target" \
@@ -65,8 +65,8 @@ jobs:
           sidecar=root/'helper-image/target/ci/vize.differential-build.json'
           linker=root/'wild-install/wild'
           recipe=['build','--locked','--release','-p','vize','--message-format=json-render-diagnostics','--config','profile.release.opt-level=3','--config','profile.release.lto="fat"','--config','profile.release.codegen-units=1','--config','profile.release.debug=0','--config','profile.release.package.vize.strip="symbols"','--config','profile.release.debug-assertions=false','--config','profile.release.overflow-checks=false','--config','profile.release.incremental=false','--config','profile.release.panic="unwind"']
-          assert build['sourceSha']=='fb550c424e4256860647dbf96ce32c31cea3774b'
-          assert build['sourceTree']=='066589f286ccaf1e271dc9b2e3c87c81d6db9013'
+          assert build['sourceSha']=='1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957'
+          assert build['sourceTree']=='9bcbc782b84264d04190281f8acdf386c49baf64'
           assert build['schema']=='vize.cold-source-build' and build['version']==1
           assert build['targetStartedAbsent'] is True and build['profile']=='release'
           assert build['binaryBytes']==55080984

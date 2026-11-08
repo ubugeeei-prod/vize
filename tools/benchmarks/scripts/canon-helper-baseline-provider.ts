@@ -7,8 +7,8 @@ import { hash, identify, save } from "./canon-instance-directives-io.ts";
 import { isRecord, jsonValue } from "./canon-instance-directives-model.ts";
 import { nativeProxyLauncher } from "./canon-helper-native-proxy.ts";
 
-export const sourceRevision = "fb550c424e4256860647dbf96ce32c31cea3774b";
-export const sourceTree = "066589f286ccaf1e271dc9b2e3c87c81d6db9013";
+export const sourceRevision = "1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957";
+export const sourceTree = "9bcbc782b84264d04190281f8acdf386c49baf64";
 export const historicalBinarySha256 =
   "cdf44149ddfe160339887a256c1bd0253fb34f1f7c774759e6c5382b42ed0cb9";
 export const sourceImageBuildRecipe = [
