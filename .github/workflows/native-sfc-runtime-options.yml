@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/native-sfc-runtime-options.yml
+      - .github/actions/setup-rust-script/**
+      - .github/actions/setup-wild-http-recovery/**
       - crates/vize_vitrine/src/napi/sfc.rs
       - crates/vize_vitrine/src/napi/sfc/**
       - crates/vize_atelier_core/src/codegen/**
@@ -51,6 +53,8 @@ jobs:
           path: qualification
           persist-credentials: false
           sparse-checkout: |
+            .github/actions/setup-rust-script
+            .github/actions/setup-wild-http-recovery
             tests/tooling/native-sfc-runtime-options.test.mjs
             tests/tooling/support/script-setup-default-expose.ts
             tests/tooling/support/setup-component-bracket-reference.ts
@@ -70,7 +74,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: sfc-runtime-options, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: ./qualification/.github/actions/setup-rust-script
       - run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
       - name: Build the actual source-native package
         run: vp run --filter './npm/native' build:ci

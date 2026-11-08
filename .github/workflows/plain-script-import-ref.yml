@@ -70,6 +70,8 @@ jobs:
           path: qualification
           persist-credentials: false
           sparse-checkout: |
+            .github/actions/setup-rust-script
+            .github/actions/setup-wild-http-recovery
             tools/support/compat/plain-script-import-ref.ts
             tests/_fixtures/differential/compiler/plain-script-import-10903
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
@@ -88,7 +90,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           { key: plain-script-import-ref, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
-      - uses: ./.github/actions/setup-rust-script
+      - uses: ./qualification/.github/actions/setup-rust-script
       - name: Build the unchanged baseline native image and real Vite adapter
         run: |
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
