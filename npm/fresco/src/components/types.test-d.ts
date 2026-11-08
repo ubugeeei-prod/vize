@@ -233,7 +233,6 @@ export const modalAcceptsFocusPolicyProps: ModalProps = {
   restoreFocus: true,
   closeOnEscape: true,
 };
-
 export const codeSyntaxProvider: CodeSyntaxProvider = {
   tokenize: (line, { language }) => [{ text: line, fg: language === "ts" ? "cyan" : undefined }],
 };
