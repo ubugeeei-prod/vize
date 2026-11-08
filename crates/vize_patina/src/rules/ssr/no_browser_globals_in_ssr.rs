@@ -162,6 +162,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `ssr/no-browser-globals-in-ssr` lint rule.
 pub struct NoBrowserGlobalsInSsr;
 
 impl NoBrowserGlobalsInSsr {

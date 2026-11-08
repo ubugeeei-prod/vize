@@ -6,6 +6,12 @@ import type {
   UncontrolledStateOptions,
 } from "./types.ts";
 
+/**
+ * Create a state holder that preserves controlled or uncontrolled ownership.
+ *
+ * Controlled callers provide a value reader and receive proposed changes through
+ * `onChange`; uncontrolled callers provide an initial value that this holder owns.
+ */
 export function createControllableState<State>(
   options: ControlledStateOptions<State>,
 ): ControllableState<State, true>;

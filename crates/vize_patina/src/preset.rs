@@ -21,6 +21,7 @@ pub enum LintPreset {
 }
 
 impl LintPreset {
+    /// Every named preset in stable display order.
     pub const ALL: [Self; 6] = [
         Self::HappyPath,
         Self::Opinionated,
@@ -30,6 +31,7 @@ impl LintPreset {
         Self::Nuxt,
     ];
 
+    /// Return the canonical configuration spelling of the preset.
     #[inline]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -42,6 +44,7 @@ impl LintPreset {
         }
     }
 
+    /// Parse a supported preset name or compatibility alias.
     #[inline]
     pub fn parse(value: &str) -> Option<Self> {
         match value {

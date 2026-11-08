@@ -18,6 +18,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+/// Implements the `ecosystem/void-link-require-href` lint rule.
 pub struct VoidLinkRequireHref;
 
 impl Rule for VoidLinkRequireHref {

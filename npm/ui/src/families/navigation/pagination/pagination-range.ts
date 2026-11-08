@@ -15,6 +15,7 @@ export interface PaginationRangeEllipsis {
 /** Item emitted by the Pagination range helper. */
 export type PaginationRangeItem = PaginationRangePage | PaginationRangeEllipsis;
 
+/** Inputs controlling the compact sequence produced by {@link createPaginationRange}. */
 export interface PaginationRangeOptions {
   /** Current page, clamped into `1...pageCount`. */
   readonly page: number;
@@ -22,10 +23,10 @@ export interface PaginationRangeOptions {
   /** Total page count. Values below one resolve to one page. */
   readonly pageCount: number;
 
-  /** Number of pages kept on each side of the current page. */
+  /** Number of pages kept on each side of the current page. @default 1 */
   readonly siblingCount?: number;
 
-  /** Number of pages always kept at each boundary. */
+  /** Number of pages always kept at each boundary. @default 1 */
   readonly boundaryCount?: number;
 }
 

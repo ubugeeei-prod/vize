@@ -97,7 +97,7 @@ impl<'a> LintContext<'a> {
     /// frame — where macro calls and bindings are measured.
     ///
     /// The ranges move into the complete file through
-    /// [`ScriptFrame`](crate::output::frame::ScriptFrame), which validates
+    /// the internal `ScriptFrame`, which validates
     /// them against the L0 frame the Davinci stages key spans on, and are
     /// then reported like any SFC-absolute range. This is FP-1's root fix: a
     /// script-analysis range reported through [`LintContext::report`] was

@@ -38,6 +38,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/no-useless-template-attributes` lint rule.
 pub struct NoUselessTemplateAttributes;
 
 /// Structural directives that are valid on `<template>`

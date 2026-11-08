@@ -82,6 +82,7 @@ pub struct SfcElementOrder {
 }
 
 impl SfcElementOrder {
+    /// Create the rule from an ordered set of SFC block groups.
     pub fn new(options: SfcElementOrderOptions) -> Self {
         Self {
             order: CompiledSfcElementOrder::new(options),

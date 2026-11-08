@@ -38,6 +38,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/order-in-components` lint rule.
 pub struct OrderInComponents;
 
 impl ScriptRule for OrderInComponents {

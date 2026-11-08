@@ -36,9 +36,9 @@
 //! stays the *authored* child list — a template's `v-if` / `v-for` carrier is
 //! the child element, a JSX conditional or list expression one scope node —
 //! so rule bodies that read content see what was written. The Relief backend synthesizes
-//! the same scopes from a raw template parse ([`relief_scopes`]) so every
-//! backend answers identically; the `legacy-differential` lane
-//! ([`differential`]) proves it by comparing full hook traces exactly.
+//! the same scopes from a raw template parse (`relief_scopes`) so every backend
+//! answers identically; the `legacy-differential` lane (`differential`) proves
+//! it by comparing full hook traces exactly.
 //!
 //! # Shape
 //!

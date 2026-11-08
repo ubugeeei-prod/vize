@@ -64,7 +64,7 @@ export interface SpatialNavigationOptions<Key extends CollectionKey, Value> {
    */
   readonly boundaryBehavior?: MaybeRefOrGetter<SpatialNavigationBoundaryBehavior | undefined>;
 
-  /** Suppress keyboard and imperative navigation without discarding active state. */
+  /** Suppress keyboard and imperative navigation without discarding active state. @default false */
   readonly isDisabled?: MaybeRefOrGetter<boolean | undefined>;
 
   /**
@@ -91,18 +91,25 @@ export interface SpatialNavigationOptions<Key extends CollectionKey, Value> {
   /**
    * Resolve transformed viewport geometry for DOM or virtual items.
    * The default reads `element.getBoundingClientRect()` and skips unmounted candidates.
+   *
+   * @default element.getBoundingClientRect
    */
   readonly getRect?: (
     item: CollectionItem<Key, Value>,
   ) => SpatialNavigationRect | DOMRectReadOnly | null | undefined;
 
-  /** Custom visibility policy for virtualized or scroll-managed collections. */
+  /**
+   * Custom visibility policy for virtualized or scroll-managed collections.
+   *
+   * @default browser focus scrolling, or nearest-block and nearest-inline scrolling when focus
+   *   does not scroll
+   */
   readonly scrollIntoView?: (item: CollectionItem<Key, Value>, originalEvent: Event | null) => void;
 
-  /** Called after logical state, DOM focus, and reveal behavior commit. */
+  /** Called after logical state, DOM focus, and reveal behavior commit. @default undefined */
   readonly onNavigate?: (change: SpatialNavigationChange<Key>) => void;
 
-  /** Called when a valid origin has no candidate in the requested direction. */
+  /** Called when a valid origin has no candidate in the requested direction. @default undefined */
   readonly onBoundary?: (boundary: SpatialNavigationBoundary<Key>) => void;
 }
 
