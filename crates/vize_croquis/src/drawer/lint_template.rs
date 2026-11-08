@@ -377,13 +377,18 @@ fn decode_html_attribute_entities(source: &str) -> String {
     let mut decoded = String::with_capacity(source.len());
     let mut rest = source;
     while !rest.is_empty() {
-        if let Some((entity, consumed)) = decode_one(rest.as_bytes(), EntityContext::Attribute) {
+        if let Some((entity, after)) = decode_one(rest.as_bytes(), EntityContext::Attribute)
+            .and_then(|(entity, consumed)| rest.get(consumed..).map(|after| (entity, after)))
+        {
             entity.for_each(|character| decoded.push(character));
-            rest = &rest[consumed..];
+            rest = after;
             continue;
         }
         let mut characters = rest.chars();
-        decoded.push(characters.next().expect("non-empty attribute remainder"));
+        let Some(character) = characters.next() else {
+            break;
+        };
+        decoded.push(character);
         rest = characters.as_str();
     }
     decoded
