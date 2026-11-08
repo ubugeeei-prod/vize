@@ -4,6 +4,7 @@ use super::{Checked, Roots, support};
 use serde_json::{Value, json};
 use std::{fs, path::Path};
 
+mod dependency_update;
 mod qualification_graph;
 
 fn load() -> Value {
@@ -79,8 +80,19 @@ pub(super) fn apply(manifest: &mut Value, members: &mut Vec<Value>) {
     let package = fs::read(support::repository().join("package.json")).unwrap();
     let qualification = qualification_graph::authorize(&record, &lock, &package)
         .expect("the captured graph is never a substitute for the reviewed final graph");
-    *members = successor(members, &record).expect("only the six complete declared paths relocate");
+    let previous =
+        successor(members, &record).expect("only the six complete declared paths relocate");
+    let (dependency_update, current) = dependency_update::successor(
+        &previous,
+        &record,
+        qualification
+            .as_ref()
+            .expect("the dependency provider path requires its qualification graph"),
+    )
+    .expect("only the one complete dependency provider path relocates");
+    *members = current;
     manifest["provenance"]["currentProviderRoster"] = record;
+    manifest["provenance"]["currentProviderDependencyUpdate"] = dependency_update;
     if let Some(qualification) = qualification {
         manifest["provenance"]["currentProviderQualificationGraph"] = qualification;
     }

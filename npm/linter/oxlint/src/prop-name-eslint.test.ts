@@ -137,7 +137,7 @@ try {
   const parser: unknown = oracle("vue-eslint-parser");
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
+      eslint: "10.14.0",
       "vue-eslint-parser": "10.4.1",
       "eslint-plugin-vue": "10.9.2",
     }).map(([name, expected]) => {

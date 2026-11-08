@@ -117,7 +117,7 @@ try {
   const officialPlugin: unknown = workspace("eslint-plugin-vue");
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
+      eslint: "10.14.0",
       "vue-eslint-parser": "10.4.1",
       "eslint-plugin-vue": "10.9.2",
       "@typescript-eslint/parser": "8.65.0",

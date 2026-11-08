@@ -81,7 +81,7 @@ try {
   const officialPlugin: unknown = oracle("eslint-plugin-vue");
   const providers = Object.fromEntries(
     Object.entries({
-      eslint: "10.13.0",
+      eslint: "10.14.0",
       "eslint-plugin-vue": "10.9.2",
       "vue-eslint-parser": "10.4.1",
     }).map(([name, version]) => {
