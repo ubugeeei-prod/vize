@@ -185,9 +185,14 @@ export async function compileAll(
       }
 
       if (owners.some((ownsInput) => ownsInput(file, source))) {
-        targetCache.delete(file);
+        // Ownership is source-wide, not environment-specific. A companion that
+        // claims an input must invalidate stale client and SSR results even
+        // when this scan is compiling only one environment.
+        state.cache.delete(file);
+        state.ssrCache.delete(file);
         state.collectedCss.delete(file);
-        targetMetadata.delete(file);
+        state.precompileMetadata.delete(file);
+        state.ssrPrecompileMetadata?.delete(file);
         cache.delete(file);
         continue;
       }

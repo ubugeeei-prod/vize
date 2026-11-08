@@ -129,6 +129,20 @@ assert.equal(
   "an SSR transform must reuse the SSR precompile result",
 );
 
+await compileAll(environmentState, [() => true]);
+assert.equal(
+  environmentState.cache.has(environmentApp),
+  false,
+  "a claimed input must leave no stale client result",
+);
+assert.equal(
+  environmentState.ssrCache.has(environmentApp),
+  false,
+  "a claimed input must leave no stale SSR result",
+);
+assert.equal(environmentState.precompileMetadata.has(environmentApp), false);
+assert.equal(environmentState.ssrPrecompileMetadata?.has(environmentApp), false);
+
 const workspaceRootForScan = fs.mkdtempSync(path.join(testRoot, "workspace-scan-"));
 const workspaceSourceRoot = path.join(workspaceRootForScan, "src");
 fs.mkdirSync(workspaceSourceRoot, { recursive: true });
