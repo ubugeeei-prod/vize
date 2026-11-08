@@ -9,26 +9,26 @@
   "successor": {
     "path": "successor-canon-leftovers-11499/projection-record.txt",
     "bytes": 2234,
-    "sha256": "04e6fb1b046ca08e39393159b8c448853bfd0d573196ca9d888216771340b159"
+    "sha256": "757b2b000280b11abba437a844436248cd6b8c5491c30e1b539fe5802a97c5d2"
   },
   "delta": {
-    "canonGeneratedTextBytes": 397,
-    "contentMapperGeneratedTextBytes": 397,
-    "maestroGeneratedTextBytes": 397,
+    "canonGeneratedTextBytes": 427,
+    "contentMapperGeneratedTextBytes": 427,
+    "maestroGeneratedTextBytes": 427,
     "contentMapperMappings": 0,
     "contentMapperAuthoredHits": 0
   },
   "qualification": {
-    "head": "b741516fe163ed6c49e89607b5066d417143ffd0",
-    "pullRequestHead": "58aaaac352389b9293baa932b8dec45665869fe3",
-    "run": 42448079460,
+    "head": "5f7f645e5db6ea06066c2643d5588917841f8c83",
+    "pullRequestHead": "8f44626d6d0f52b757e08e64fb316bd7a0747002",
+    "run": 42457886173,
     "artifact": {
-      "id": 13604831136,
-      "name": "projection-import-geometry-default-b741516fe163ed6c49e89607b5066d417143ffd0-1",
-      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
-      "sha256": "b632a0ae33b68f65a44215c8aea785caecf7890eedd6e5b882660f864a495a3f"
+      "id": 13607774965,
+      "name": "projection-import-geometry-default-5f7f645e5db6ea06066c2643d5588917841f8c83-1",
+      "packet": "packets/options-api-slots/canon/text.ts",
+      "sha256": "f6e9a2c5416e8756e8466d033f29800d86341dbd489a15ea55a4f1979c7aee16"
     }
   },
   "nativeAcceptanceCredit": false,
-  "scope": "Authenticated exact GitHub Actions successor for #11499 public-instance helper stabilization. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
+  "scope": "Authenticated exact GitHub Actions packet for #11499 public-instance helper stabilization. The checked-in default snapshot already matched, so the artifact retains the changed generated packet. This advances only generated projection geometry and grants no native TypeScript consumer acceptance credit."
 }

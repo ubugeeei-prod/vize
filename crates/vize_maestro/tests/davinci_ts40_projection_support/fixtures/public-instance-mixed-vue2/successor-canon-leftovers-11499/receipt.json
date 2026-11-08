@@ -9,24 +9,24 @@
   "successor": {
     "path": "successor-canon-leftovers-11499/projection-record.txt",
     "bytes": 2326,
-    "sha256": "5e9b57dcf1a28de6c42fa1bf69fe5f6fdff9893ee13148d1f9db5d11d5173401"
+    "sha256": "b54751aa490f2362c5781424dca5712f80abf56a87b86c8de94f9df0e167a15f"
   },
   "delta": {
     "canonGeneratedTextBytes": 0,
-    "contentMapperGeneratedTextBytes": 397,
-    "maestroGeneratedTextBytes": 397,
+    "contentMapperGeneratedTextBytes": 427,
+    "maestroGeneratedTextBytes": 427,
     "contentMapperMappings": 0,
     "contentMapperAuthoredHits": 0
   },
   "qualification": {
-    "head": "b741516fe163ed6c49e89607b5066d417143ffd0",
-    "pullRequestHead": "58aaaac352389b9293baa932b8dec45665869fe3",
-    "run": 42448079460,
+    "head": "5f7f645e5db6ea06066c2643d5588917841f8c83",
+    "pullRequestHead": "8f44626d6d0f52b757e08e64fb316bd7a0747002",
+    "run": 42457886173,
     "artifact": {
-      "id": 13604467486,
-      "name": "projection-import-geometry-legacy-b741516fe163ed6c49e89607b5066d417143ffd0-1",
+      "id": 13608735650,
+      "name": "projection-import-geometry-legacy-5f7f645e5db6ea06066c2643d5588917841f8c83-1",
       "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
-      "sha256": "4aa12b0b76515998969d5a11c4e7a2c7232d32c4d2197ea7016f9e76df0e1244"
+      "sha256": "430795f2b7b7bad8a83cbaac340d61a879c6d46973ec3a9ebde8a4a4256ea763"
     }
   },
   "nativeAcceptanceCredit": false,
