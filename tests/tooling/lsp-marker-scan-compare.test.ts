@@ -248,13 +248,13 @@ test("paired marker evidence rejects wrong binaries, missing files and changed d
 
     const driftedHead = structuredClone(originalProfile);
     driftedHead.spans[0].count = 3;
-    driftedHead.spans[0].alloc.self_calls = 50;
-    driftedHead.spans[0].alloc.self_bytes = 500;
+    driftedHead.spans[0].alloc.self_calls = 75;
+    driftedHead.spans[0].alloc.self_bytes = 750;
     write("profile-head/run-1.json", driftedHead);
     assert.deepEqual(compareLspMarkerScans(directory).production.totalDrift, {
       invocations: 1,
-      self_calls: 0,
-      self_bytes: 0,
+      self_calls: 25,
+      self_bytes: 250,
     });
 
     const tampered = productionReceipt(false);

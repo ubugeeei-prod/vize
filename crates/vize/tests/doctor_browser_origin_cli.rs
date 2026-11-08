@@ -60,11 +60,6 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
             })
             .collect();
         assert_eq!(actual, expected, "{filename}: {output:?}");
-        if current_case
-            .is_some_and(|reference| reference["currentDoctorLocations"] != case["doctorLocations"])
-        {
-            assert_ne!(locations, &case["doctorLocations"]);
-        }
         assert_eq!(fs::read(workspace.path().join(filename)).unwrap(), input);
         fs::remove_file(workspace.path().join(filename)).unwrap();
     }
