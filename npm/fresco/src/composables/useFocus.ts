@@ -15,6 +15,8 @@ import {
 } from "vue";
 
 export const FOCUS_KEY: InjectionKey<FocusManager> = Symbol("fresco-focus");
+const FOCUS_PARENT_KEY: InjectionKey<string | null | Ref<string | null | undefined>> =
+  Symbol("fresco-focus-parent");
 
 export interface UseFocusOptions {
   /** Enable or disable this focus target while keeping its logical identity */
@@ -319,18 +321,24 @@ export function provideFocusManager(manager: FocusManager) {
   provide(FOCUS_KEY, manager);
 }
 
+/** Make an owning focus target the default parent for nested useFocus calls. */
+export function provideFocusScope(parentId: string | null | Ref<string | null | undefined>) {
+  provide(FOCUS_PARENT_KEY, parentId);
+}
+
 /**
  * Use focus management
  */
 export function useFocus(options: UseFocusOptions = {}) {
+  const inheritedParentId = inject(FOCUS_PARENT_KEY, null);
   const {
     autoFocus = false,
     id = `focus-${Math.random().toString(36).slice(2)}`,
     isActive: isActiveOption = true,
-    parentId: parentIdOption = null,
     delegateFocusTo: delegateFocusToOption = null,
     trapFocus: trapFocusOption = false,
   } = options;
+  const parentIdOption = "parentId" in options ? (options.parentId ?? null) : inheritedParentId;
 
   const manager = inject(FOCUS_KEY, null);
   const localFocused = ref(autoFocus);
