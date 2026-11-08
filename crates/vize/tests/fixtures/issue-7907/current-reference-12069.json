@@ -1,0 +1,100 @@
+{
+  "schema": "vize.browser-origin.current-reference",
+  "version": 1,
+  "pull": "https://github.com/ubugeeei-prod/vize/pull/12069",
+  "historicCorpusSha256": "dad987b8bbfd1d89640a4dc600da57545b038ab7006bede88453b91648439c26",
+  "cases": [
+    {
+      "path": "UnicodeCrlf.vue",
+      "bytes": 166,
+      "sha256": "6d5eb97e98dca00eb371af72d09c8d2b2c7bfa18b020e107426a8aafcf56a070",
+      "historicalExpected": [
+        {
+          "file": "UnicodeCrlf.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 37,
+              "endLine": 2,
+              "endColumn": 38
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 30,
+              "endLine": 4,
+              "endColumn": 31
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "historicalDoctorLocations": [
+        {
+          "start": 69,
+          "end": 69,
+          "line": 2,
+          "column": 37
+        },
+        {
+          "start": 133,
+          "end": 133,
+          "line": 4,
+          "column": 30
+        }
+      ],
+      "currentExpected": [
+        {
+          "file": "UnicodeCrlf.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 38,
+              "endLine": 2,
+              "endColumn": 39
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 31,
+              "endLine": 4,
+              "endColumn": 32
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "currentDoctorLocations": [
+        {
+          "start": 69,
+          "end": 69,
+          "line": 2,
+          "column": 37
+        },
+        {
+          "start": 133,
+          "end": 133,
+          "line": 4,
+          "column": 30
+        }
+      ],
+      "reason": "Public lint JSON uses UTF-16 columns after astral text; authored bytes and Doctor byte spans are unchanged."
+    }
+  ]
+}

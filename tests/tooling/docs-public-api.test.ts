@@ -8,6 +8,7 @@ import {
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 
 const uiRoot = new URL("../../npm/ui/", import.meta.url);
+const npmRoot = new URL("../../npm/", import.meta.url);
 
 const packages = [
   {
@@ -37,6 +38,16 @@ const packages = [
   {
     name: "@vizejs/devtools",
     source: new URL("../../npm/devtools/src/", import.meta.url),
+  },
+  {
+    name: "oxlint-plugin-vize",
+    sourceRoot: npmRoot,
+    minimumDeclarations: 20,
+    minimumOptionalMembers: 10,
+    entrypoints: [
+      new URL("linter/oxlint/src/index.ts", npmRoot),
+      new URL("linter/oxlint/src/eslint.ts", npmRoot),
+    ],
   },
   {
     name: "@vizejs/volar-plugin",
