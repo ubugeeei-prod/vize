@@ -63,6 +63,8 @@ export { Select, type SelectProps, type SelectOption } from "./Select.js";
 export { Checkbox, type CheckboxProps } from "./Checkbox.js";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup.js";
 export { Confirm, type ConfirmProps } from "./Confirm.js";
+export { default as Slider } from "./Slider.vue";
+export { type SliderOrientation, type SliderProps, type SliderRange } from "./slider-types.js";
 export {
   Form,
   type FormErrors,

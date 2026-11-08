@@ -63,8 +63,8 @@ means the surface has no equivalent.
 
 Ink ships these as ecosystem packages (`ink-text-input`, `ink-select-input`, ...); OpenTUI and
 Vue TermUI ship them in core. `TextInput` owns its keyboard and editing behavior. `Select`, `List`,
-`Menu`, and `Tabs` own focus-scoped keyboard input when `focused` is true. The remaining
-interactive components still render state but expect their host to wire `useInput` (M2).
+`Menu`, `Tabs`, and `Slider` own focus-scoped keyboard input when `focused` is true. The remaining
+partial interactive components still retain the gaps listed below (M2).
 
 | Ink ecosystem      | OpenTUI               | Vue TermUI  | Fresco                                      | Status      | Notes                                                                                                                                                                                                             |
 | ------------------ | --------------------- | ----------- | ------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -75,7 +75,7 @@ interactive components still render state but expect their host to wire `useInpu
 | —                  | —                     | —           | `Checkbox`, `RadioGroup`, `Confirm`, `Form` | Partial     | Focus-scoped activation and navigation are implemented. Form adds required/custom validation, first-error focus, typed slot state, and valid/invalid submission. A shared accessible-state contract remains (M2). |
 | —                  | —                     | —           | `List`, `Menu`, `Tree`                      | Partial     | All three own disabled-aware navigation, boundaries, typeahead, and activation; Tree adds controlled expansion and parent/child movement. Generic values and Menu/Tree bounded viewports remain (M2).             |
 | —                  | —                     | —           | `Modal`, `Tooltip` (typed SFC)              | Partial     | Overlay rendering; stacking, focus trap/restore, escape policy, anchor placement pending (M2).                                                                                                                    |
-| —                  | `SliderRenderable`    | —           | —                                           | Planned     | Keyboard/mouse slider with range-safe typed model (M2).                                                                                                                                                           |
+| —                  | `SliderRenderable`    | —           | `Slider`                                    | Implemented | Canonical typed SFC with range-safe `v-model`, Arrow/Page/Home/End input, wheel/click/drag input, horizontal/vertical tracks, and accessible value state.                                                         |
 
 ### Display and rich components
 
