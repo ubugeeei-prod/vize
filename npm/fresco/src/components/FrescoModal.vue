@@ -24,11 +24,12 @@ const {
   accessibilityLabel,
 } = defineProps<ModalProps>();
 
-defineOptions({ name: "FrescoModal" });
-
 const emit = defineEmits<{
   "close": [];
 }>();
+
+defineOptions({ name: "FrescoModal" });
+
 const manager = useFocusManager();
 const wasFocusedBeforeOpen = ref<string>();
 const isVisible = computed(() => visible);
