@@ -21,12 +21,17 @@ import Alert from "./FrescoAlert.vue";
 import Avatar from "./FrescoAvatar.vue";
 import Breadcrumb from "./FrescoBreadcrumb.vue";
 import Card from "./FrescoCard.vue";
+import Divider from "./FrescoDivider.vue";
 import Header from "./FrescoHeader.vue";
+import HStack from "./FrescoHStack.vue";
 import Newline from "./FrescoNewline.vue";
 import ScrollBox from "./ScrollBox.vue";
 import Spacer from "./FrescoSpacer.vue";
 import Spinner from "./FrescoSpinner.vue";
+import Stack from "./FrescoStack.vue";
 import Static from "./FrescoStatic.vue";
+import VStack from "./FrescoVStack.vue";
+import type { DividerProps, StackProps } from "./layout-primitive-types.js";
 import type {
   AlertProps,
   AvatarProps,
@@ -138,6 +143,20 @@ export const spinnerAcceptsDocumentedProps: SpinnerProps = {
   interval: 100,
   label: "Loading",
 };
+export const dividerAcceptsDocumentedProps: DividerProps = {
+  direction: "horizontal",
+  char: "=",
+  title: "Summary",
+  fg: "gray",
+  titleFg: "cyan",
+};
+export const stackAcceptsDocumentedProps: StackProps = {
+  direction: "horizontal",
+  gap: 2,
+  align: "center",
+  justify: "between",
+  wrap: true,
+};
 export const alertAcceptsDocumentedProps: AlertProps = { message: "Saved", type: "success" };
 export const avatarAcceptsDocumentedProps: AvatarProps = { name: "Ada Lovelace", status: "online" };
 export const breadcrumbAcceptsDocumentedProps: BreadcrumbProps = {
@@ -188,6 +207,10 @@ export function componentsRenderWithTypedProps() {
     h(Link, { text: "Docs", showUrl: false }),
     h(Badge, { label: "Ready", variant: "success" }),
     h(Spinner, { type: "line", label: "Loading" }),
+    h(Divider, { title: "Summary", direction: "horizontal" }),
+    h(Stack, { direction: "horizontal", gap: 2, align: "center" }),
+    h(HStack, { gap: 1, justify: "between" }),
+    h(VStack, { gap: 0, align: "stretch" }),
     h(Alert, { message: "Saved", type: "success" }),
     h(Avatar, { name: "Ada Lovelace", status: "online" }),
     h(Breadcrumb, { items: [{ key: "home", label: "Home" }] }),
@@ -219,6 +242,17 @@ export function displayPrimitivesRejectMistypedProps() {
   ];
 }
 
+export function layoutPrimitivesRejectMistypedProps() {
+  return [
+    // @ts-expect-error - diagonal is not a Divider direction.
+    h(Divider, { direction: "diagonal" }),
+    // @ts-expect-error - left is not a Stack alignment.
+    h(Stack, { align: "left" }),
+    // @ts-expect-error - gaps are numeric.
+    h(HStack, { gap: "1" }),
+  ];
+}
+
 export function presentationalPrimitivesRejectMistypedProps() {
   return [
     // @ts-expect-error - critical is not an Alert type.
@@ -243,13 +277,6 @@ export function textRejectsMistypedRenderProps() {
 // --- Emits -----------------------------------------------------------------
 
 type TextInputEmit = InstanceType<typeof TextInput>["$emit"];
-type LinkEmit = InstanceType<typeof Link>["$emit"];
-
-export function linkEmitsDocumentedEvents(emit: LinkEmit) {
-  emit("click");
-  // @ts-expect-error - activate is not a declared event.
-  emit("activate");
-}
 
 export function textInputEmitsDocumentedEvents(emit: TextInputEmit) {
   emit("update:modelValue", "next");

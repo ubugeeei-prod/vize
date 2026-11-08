@@ -10,7 +10,9 @@ use super::{NativeTemplateRefusal, TemplateRefusal};
 /// The first two policies keep their original opaque/strict contracts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateValuePolicy {
+    /// Keep directive values byte-for-byte when no formatter is authorized.
     PreserveOpaque,
+    /// Reject directives with values instead of preserving them opaquely.
     RefuseValuedDirectives,
     /// Observe quoted original conditional expressions at the same header event.
     /// All other valued directives still refuse; this grants no L2 semantics.

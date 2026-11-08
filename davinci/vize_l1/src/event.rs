@@ -281,9 +281,7 @@ impl Callbacks for Recorder<'_, '_> {
     fn on_end(&mut self) {}
 
     fn on_error(&mut self, code: ErrorCode, index: usize) {
-        self.errors.push(SurfaceError {
-            code,
-            offset: index as u32,
-        });
+        self.errors
+            .push(SurfaceError::tokenizer(code, index as u32));
     }
 }
