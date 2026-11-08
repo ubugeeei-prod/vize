@@ -103,6 +103,10 @@ polish track as the tables above.
 
 ## Composables
 
+Fresco also exposes a typed theme contract with frozen zero-generation defaults. Nested
+`provideFrescoTheme()` calls inherit the nearest resolved theme and reactively override only the
+supplied color, spacing, border, or motion tokens; `useFrescoTheme()` consumes the resolved scope.
+
 Fresco implements the full Ink v6 hook list under the same names, as Vue composables.
 
 | Ink                                | OpenTUI                           | Vue TermUI                   | Fresco                             | Status      | Notes                                                                                                                                                         |
