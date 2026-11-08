@@ -5,6 +5,23 @@ import { fileURLToPath } from "node:url";
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
+const wildRecoveryAction = "./.github/actions/setup-wild-http-recovery";
+const pinnedWildAction = "wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203";
+
+/** Reverse the reviewed Wild transport adapter while preserving every caller field. */
+export function restorePinnedWildAction(
+  steps: Array<{ uses?: string; with?: Record<string, unknown> }>,
+): number {
+  let restored = 0;
+  for (const step of steps) {
+    if (step.uses !== wildRecoveryAction) continue;
+    assert.deepEqual(step.with, { "wild-version": "0.9.0" });
+    step.uses = pinnedWildAction;
+    restored += 1;
+  }
+  return restored;
+}
+
 export function normalizeRepoText(content: string): string {
   return content.replace(/\r\n?/g, "\n");
 }
