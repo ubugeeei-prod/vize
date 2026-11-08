@@ -4,7 +4,7 @@
 //! subtrees are excluded structurally. A dynamic `:name` is skipped while
 //! statically named sibling outlets remain checkable.
 
-use super::super::template_surface::{
+use crate::markup::surface_source::{
     DirectiveArgument, directive, element_span, element_verbatim, static_attribute_value,
 };
 use vize_l0::CompactString;

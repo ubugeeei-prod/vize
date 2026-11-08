@@ -1,7 +1,7 @@
 use super::document::TypeAwareDocument;
 use super::{RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING};
 use crate::diagnostic::LintDiagnostic;
-use vize_relief::{ExpressionNode, RootNode};
+use vize_l1::markup::SurfaceTree;
 
 mod calls;
 mod collector;
@@ -141,28 +141,18 @@ impl TemplatePromiseQuery {
 
 pub(super) fn collect_template_query_sets(
     virtual_ts: &TypeAwareDocument,
-    template_ast: &RootNode<'_>,
+    template: &SurfaceTree<'_>,
     template_offset: u32,
     include_template_queries: bool,
     include_template_promise_queries: bool,
 ) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
     collector::collect_template_query_sets(
         virtual_ts,
-        template_ast,
+        template,
         template_offset,
         include_template_queries,
         include_template_promise_queries,
     )
-}
-
-pub(super) fn absolute_expression_range(
-    expression: &ExpressionNode<'_>,
-    template_offset: u32,
-) -> Option<(u32, u32)> {
-    let location = expression.loc();
-    let source_start = template_offset + location.span.start;
-    let source_end = template_offset + location.span.end;
-    (source_end > source_start).then_some((source_start, source_end))
 }
 
 pub(super) fn generated_offset_for_text(
@@ -177,12 +167,8 @@ pub(super) fn generated_offset_for_expression(
     virtual_ts: &TypeAwareDocument,
     source_start: u32,
     source_text: &str,
-    expression: &ExpressionNode<'_>,
+    content: &str,
 ) -> Option<u32> {
-    let content = match expression {
-        ExpressionNode::Simple(simple) => simple.content,
-        ExpressionNode::Compound(_) => source_text,
-    };
     generated_offset_for_content(virtual_ts, source_start, source_text, content)
 }
 

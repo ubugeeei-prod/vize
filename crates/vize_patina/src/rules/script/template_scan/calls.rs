@@ -10,7 +10,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::{SourceType, Span};
 
-use super::super::template_surface::DecodedSource;
+use crate::markup::surface_source::DecodedSource;
 
 /// A call the template performs, with a plain identifier callee.
 pub(in crate::rules::script) struct TemplateCall<'a> {

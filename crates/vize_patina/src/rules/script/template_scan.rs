@@ -39,7 +39,7 @@
 
 mod calls;
 
-use super::template_surface::{DecodedSource, directive, element_verbatim};
+use crate::markup::surface_source::{DecodedSource, directive, element_verbatim};
 use vize_l0::String;
 use vize_l1::markup::{Element, SurfaceChild, SurfaceTree};
 
