@@ -62,6 +62,7 @@ void test(
     }
     const config = {
       jsPlugins: [plugin],
+      ignorePatterns: ["ignored/**"],
       rules: { "vize/vue/no-v-html": "error" },
     };
     fs.writeFileSync(path.join(root, ".oxlintrc.json"), `${JSON.stringify(config)}\n`);
@@ -101,7 +102,8 @@ void test(
     };
     writeCorpus("large", '<div v-html="text" />');
     writeCorpus("clean", "<div>{{ text }}</div>");
-    const large = invoke(["-c", ".oxlintrc.json", "-f", "json", "large"]);
+    writeCorpus("ignored", '<div v-html="text" />');
+    const large = invoke(["-c", ".oxlintrc.json", "-f", "json", "large", "ignored"]);
     assert.equal(large.error, undefined);
     assert.equal(large.signal, null);
     assert.equal(large.status, 1, large.stdout + large.stderr);
