@@ -79,11 +79,7 @@ mod markup_ir_tests {
             self.elements.set(self.elements.get() + 1);
         }
 
-        fn exit_element<'a>(
-            &self,
-            _ctx: &mut MarkupContext<'_, 'a>,
-            _element: &MarkupElement<'a>,
-        ) {
+        fn exit_element<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _element: &MarkupElement<'a>) {
             self.exits.set(self.exits.get() + 1);
         }
 
@@ -125,11 +121,7 @@ mod markup_ir_tests {
             self.unrelated.set(self.unrelated.get() + 1);
         }
 
-        fn enter_list<'a>(
-            &self,
-            _ctx: &mut MarkupContext<'_, 'a>,
-            _list: &MarkupList<'a>,
-        ) {
+        fn enter_list<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _list: &MarkupList<'a>) {
             self.unrelated.set(self.unrelated.get() + 1);
         }
 

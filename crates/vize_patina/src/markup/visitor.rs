@@ -210,9 +210,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
 
         if matches!(
             self.traversal,
-            MarkupTraversal::Full
-                | MarkupTraversal::Elements
-                | MarkupTraversal::ElementsAndText
+            MarkupTraversal::Full | MarkupTraversal::Elements | MarkupTraversal::ElementsAndText
         ) {
             self.set_rule();
             self.rule.enter_element(self.ctx, &element);
