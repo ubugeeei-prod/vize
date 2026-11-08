@@ -170,15 +170,18 @@ process.exit(result.status ?? 126);
 function cleanup(result) {
   fs.rmSync(result.directory, { recursive: true, force: true });
 }
-function atomic(result) {
+function retained(result) {
   assert.equal(result.signal, null);
   assert.equal(result.stdout, "");
-  assert.ok(result.requests.every((request) => request.path === "/primary"));
   assert.ok(result.requests.every((request) => request.published === result.sentinel));
   assert.deepEqual(
     fs.readdirSync(result.directory).filter((file) => file.includes(".partial.")),
     [],
   );
+}
+function atomic(result) {
+  retained(result);
+  assert.ok(result.requests.every((request) => request.path === "/primary"));
   assert.ok(result.calls.every((call) => call.args.at(-1) === primary));
 }
 
@@ -233,13 +236,22 @@ await test("real partial transfer is refused by the frozen downloader and recove
   }
 });
 
-await test("two actual stalled transfers fail within the bound and never replace the owned archive", async () => {
+await test("exhausted actual stalls try the API within the bound and never replace the owned archive", async () => {
   const result = await observed({ alwaysFail: true });
   try {
-    atomic(result);
-    assert.equal(result.status, 28);
-    assert.equal(result.requests.length, 2);
-    assert.ok(result.calls.every((call) => call.status === 28 && call.stdout === "200"));
+    retained(result);
+    assert.equal(result.status, 75);
+    assert.deepEqual(
+      result.requests.map((request) => request.path),
+      ["/primary", "/primary", ...Array(6).fill("/api")],
+    );
+    assert.deepEqual(
+      result.calls.map((call) => call.args.at(-1)),
+      [primary, primary, api],
+    );
+    assert.ok(result.calls.every((call) => call.status === 28));
+    assert.ok(result.calls.slice(0, 2).every((call) => call.stdout === "200"));
+    assert.equal(result.calls[2].stdout, "");
     assert.equal(fs.readFileSync(result.archive, "utf8"), result.sentinel);
     assert.match(result.stderr, /attempt=2 curl=28 HTTP=200/u);
     assert.ok(result.elapsedMs < 65_000, String(result.elapsedMs));
