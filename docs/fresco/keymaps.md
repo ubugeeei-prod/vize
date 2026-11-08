@@ -8,7 +8,13 @@ so a plain `g` binding does not consume `Shift+G`.
 import { defineKeymap, useKeymap } from "@vizejs/fresco";
 
 const keymap = defineKeymap([
-  { command: "save", sequence: [{ key: "x", ctrl: true }, { key: "s", ctrl: true }] },
+  {
+    command: "save",
+    sequence: [
+      { key: "x", ctrl: true },
+      { key: "s", ctrl: true },
+    ],
+  },
   { command: "top", sequence: [{ key: "g" }, { key: "g" }] },
 ] as const);
 
