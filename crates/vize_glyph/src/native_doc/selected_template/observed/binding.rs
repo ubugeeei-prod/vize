@@ -13,23 +13,36 @@ use super::failure::ObservedNativeTemplateRefusal;
 /// Complete selected-template transfer, retaining all three original families.
 /// The selection borrow remains required; this grants no enclosing-SFC admission.
 pub struct ObservedNativeTemplateBindingParts<'p, 'a> {
+    /// Original selected template that authorized the observations.
     pub original: &'p NativeTemplateComponent<'a>,
+    /// Interpolation observations in source order.
     pub operands: Vec<NativeInterpolationOperand<'a>>,
+    /// Conditional directive observations in source order.
     pub attributes: Vec<NativeAttributeExpression<'a>>,
+    /// Binding directive observations in source order.
     pub bindings: Vec<NativeAttributeBindingExpression<'a>>,
+    /// Complete document tree joined from those observations.
     pub document: Doc<'a>,
 }
 
 /// Complete refused transfer of each original prefix and actual observer failure.
 /// No partial Doc or completed-template/SFC authority is exposed.
 pub struct ObservedNativeTemplateBindingFailureParts<'p, 'a> {
+    /// Original selected template that authorized the observations.
     pub original: &'p NativeTemplateComponent<'a>,
+    /// Successfully observed interpolation prefix.
     pub operands: Vec<NativeInterpolationOperand<'a>>,
+    /// Successfully observed conditional directive prefix.
     pub attributes: Vec<NativeAttributeExpression<'a>>,
+    /// Successfully observed binding directive prefix.
     pub bindings: Vec<NativeAttributeBindingExpression<'a>>,
+    /// Typed reason the complete document was refused.
     pub refusal: ObservedNativeTemplateRefusal,
+    /// Original interpolation observer failure, when that caused refusal.
     pub interpolation_failure: Option<NativeInterpolationFailure<'a>>,
+    /// Original conditional observer failure, when that caused refusal.
     pub attribute_failure: Option<NativeAttributeExpressionFailure<'a>>,
+    /// Original binding observer failure, when that caused refusal.
     pub binding_failure: Option<NativeAttributeExpressionFailure<'a>>,
 }
 

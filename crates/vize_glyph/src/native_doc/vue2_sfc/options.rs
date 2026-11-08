@@ -6,7 +6,9 @@ use super::super::PrintOptions;
 /// Dedicated native policies, without legacy option conversion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NativeVue2SfcOptions {
+    /// Vue 2 descriptor parsing and template-surface policy.
     pub descriptor: DescriptorOptions,
+    /// Document layout and generated line-ending policy.
     pub print: PrintOptions,
 }
 

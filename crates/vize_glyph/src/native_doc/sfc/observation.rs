@@ -60,42 +60,54 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
 }
 
 impl<'a> NativeSfcObservation<'a> {
+    /// Return the complete authored SFC source retained by the descriptor.
     pub fn source(&self) -> &'a str {
         self.descriptor.source()
     }
+    /// Return the native descriptor, print and directive policies used.
     pub fn options(&self) -> NativeSfcOptions {
         self.options
     }
+    /// Borrow the original descriptor observation and all of its evidence.
     pub fn descriptor(&self) -> &DescriptorObservation<'a> {
         &self.descriptor
     }
+    /// Borrow the original selected template, if selection succeeded.
     pub fn selected(&self) -> Option<&NativeTemplateComponent<'a>> {
         self.selected.as_ref()
     }
+    /// Borrow interpolation operands observed before completion or refusal.
     pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
         &self.operands
     }
+    /// Borrow conditional directive operands observed before completion or refusal.
     pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
         &self.attributes
     }
+    /// Borrow the conditional directive observation failure, if one occurred.
     pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.attribute_failure.as_ref()
     }
+    /// Borrow binding directive operands observed before completion or refusal.
     pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
         &self.bindings
     }
+    /// Borrow the binding directive observation failure, if one occurred.
     pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.binding_failure.as_ref()
     }
+    /// Borrow the interpolation observation failure, if one occurred.
     pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()
     }
+    /// Return the typed refusal retained for an incomplete observation.
     pub fn refusal(&self) -> Option<NativeSfcRefusal> {
         match &self.outcome {
             Outcome::Document(_) => None,
             Outcome::Refused(refusal) => Some(*refusal),
         }
     }
+    /// Borrow the complete document or return the retained refusal.
     pub fn document(&self) -> Result<&Doc<'a>, NativeSfcRefusal> {
         match &self.outcome {
             Outcome::Document(document) => Ok(document),

@@ -7,16 +7,26 @@ use super::document::{Doc, Kind, Line};
 /// Newline bytes for generated layout. Source text keeps its original bytes.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum LineEnding {
+    /// Emit a line-feed byte for generated line breaks.
     #[default]
     Lf,
+    /// Emit carriage-return followed by line-feed for generated line breaks.
     CrLf,
 }
 
-/// Layout policy. Width measures Unicode scalars, not UTF-8 byte lengths.
+/// Layout policy. Width is a column target, not a UTF-8 byte length.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PrintOptions {
+    /// Preferred maximum line width in columns.
+    ///
+    /// Each non-tab Unicode scalar advances one column. Authored tabs advance
+    /// to the next eight-column stop in broken layout. A group containing a
+    /// tab cannot be flattened: [`Doc::text`] gives it no flat width, so the
+    /// fit check rejects the group without measuring the tab.
     pub width: usize,
+    /// Number of spaces emitted for one indentation level.
     pub indent_width: usize,
+    /// Byte sequence used for generated line breaks.
     pub line_ending: LineEnding,
 }
 
