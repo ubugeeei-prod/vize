@@ -273,6 +273,12 @@ void test("two HTTP-less timeouts use the same-byte API route", () => {
     assert.match(observed.result.stderr, /attempt=2 curl=28 HTTP=000/u);
   });
 });
+void test("two redirect timeouts use the same-byte API route", () => {
+  withRun({ primaryStatus: 28, primaryHttp: "302" }, (observed) => {
+    accepted(observed, 3);
+    assert.match(observed.result.stderr, /attempt=2 curl=28 HTTP=302/u);
+  });
+});
 void test("HTTP authentication, missing asset and rate limiting keep original failure", () => {
   for (const http of ["401", "403", "404", "429"]) {
     withRun({ primaryHttp: http }, (observed) => {

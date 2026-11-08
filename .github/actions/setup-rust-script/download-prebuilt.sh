@@ -40,13 +40,13 @@ download_rust_script() (
     printf 'rust-script primary download failed: attempt=%s curl=%s HTTP=%s URL=%s\n' \
       "$download_attempt" "$download_status" "$download_http" "$download_primary" >&2
     case "$download_status:$download_http" in
-      7:000|18:200|28:000|28:200|52:000|55:000|55:200|56:000|56:200)
+      7:000|18:200|28:000|28:200|28:302|52:000|55:000|55:200|56:000|56:200)
         if [ "$download_attempt" -eq 1 ]; then
           download_attempt=2
           sleep 1
           continue
         fi
-        if [ "$download_status:$download_http" = 28:000 ]; then
+        if [ "$download_status" -eq 28 ]; then
           download_api || exit "$?"
           break
         fi
