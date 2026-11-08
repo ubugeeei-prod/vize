@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { documentationReleaseNote } from "../../../docs/scripts/generate-contract-metadata.ts";
 import {
   coAuthorCredits,
   generateReleaseNotes,
@@ -365,7 +366,7 @@ test("the real command preserves generated notes and evergreen scope and refuses
     );
     assert.equal(
       readFileSync(output, "utf8"),
-      `${scope.trim()}\n\n${generated.trim()}\n\n${thanks}`,
+      `${scope.trim()}\n\n${generated.trim()}\n\n${documentationReleaseNote()}\n\n${thanks}`,
     );
     const requests = readFileSync(join(root, "api.jsonl"), "utf8")
       .trim()
@@ -418,7 +419,7 @@ test("the real command preserves generated notes and evergreen scope and refuses
     );
     assert.equal(
       readFileSync(output, "utf8"),
-      `${scope.trim()}\n\n${generated.trim()}\n\n${thanks}`,
+      `${scope.trim()}\n\n${generated.trim()}\n\n${documentationReleaseNote()}\n\n${thanks}`,
     );
   } finally {
     rmSync(root, { recursive: true, force: true });
