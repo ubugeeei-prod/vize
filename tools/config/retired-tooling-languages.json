@@ -718,7 +718,6 @@
       "tools/support/compat/github/semver-change-marker.mjs",
       "tools/support/compat/github/source-counterpart-snapshot.mjs",
       "tools/support/compat/github/unicode-prop-projection-custody.mjs",
-      "tools/support/compat/github/verify-glibc-symbols.mjs",
       "tools/support/compat/n8n-official-compiler-custody.mjs",
       "tools/support/compat/npm/smoke-release-init-fresh.mjs",
       "tools/support/compat/npm/smoke-release-init-typecheck.mjs",
