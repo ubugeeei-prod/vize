@@ -29,7 +29,7 @@ fn plain_ts_to_vue_to_plain_ts_updates_shared_helpers() {
     );
     assert_eq!(
         std::fs::read_to_string(&helpers).unwrap(),
-        project.shared_helpers_preamble(),
+        crate::virtual_ts::SHARED_PREAMBLE_STRICT_DTS,
     );
     project.register_path(&component).unwrap();
     let unchanged = project.materialize_incremental_delta().unwrap();
