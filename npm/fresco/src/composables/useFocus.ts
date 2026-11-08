@@ -381,6 +381,7 @@ export function useFocus(options: UseFocusOptions = {}) {
       active,
       (enabled) => {
         manager.setActive(id, enabled);
+        if (enabled && trapsFocus.value) manager.trapFocus(id);
         if (enabled && autoFocus && !manager.focusedId.value) manager.focus(id);
       },
       { immediate: false },
