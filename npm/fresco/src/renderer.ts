@@ -75,10 +75,12 @@ export interface FrescoElement extends FrescoNode, RendererElement {}
 
 let nextId = 0;
 
+/** Keep only dimension values accepted by the public style contract. */
 function dimension(value: unknown): string | number | undefined {
   return typeof value === "string" || typeof value === "number" ? value : undefined;
 }
 
+/** Read the dimensions declared directly by a host node before native layout. */
 function declaredSize(node: FrescoNode): FrescoDeclaredSize {
   const style =
     typeof node.props.style === "object" && node.props.style !== null
@@ -90,6 +92,7 @@ function declaredSize(node: FrescoNode): FrescoDeclaredSize {
   };
 }
 
+/** Compare declared dimensions without coercing numeric and string values. */
 function sameSize(left: FrescoDeclaredSize, right: FrescoDeclaredSize): boolean {
   return Object.is(left.width, right.width) && Object.is(left.height, right.height);
 }
@@ -100,6 +103,7 @@ interface HostTree {
   readonly onMutation: () => void;
 }
 
+/** Allocate and register one stable host node before exposing it to Vue. */
 function createNode(tree: HostTree, type: FrescoRenderNodeKind, text?: string): FrescoNode {
   const node: FrescoNode = {
     id: nextId++,
@@ -114,10 +118,12 @@ function createNode(tree: HostTree, type: FrescoRenderNodeKind, text?: string): 
   return node;
 }
 
+/** Publish a committed host-tree update to the optional lifecycle observer. */
 function notifyUpdate(tree: HostTree, node: FrescoNode, kind: FrescoNodeUpdateKind): void {
   tree.lifecycle.onUpdate?.(node, kind);
 }
 
+/** Dispose a registered subtree depth-first, reporting each node once. */
 function disposeNode(tree: HostTree, node: FrescoNode): boolean {
   if (!tree.nodes.has(node.id)) return false;
   for (const child of node.children) disposeNode(tree, child);
@@ -128,6 +134,7 @@ function disposeNode(tree: HostTree, node: FrescoNode): boolean {
   return true;
 }
 
+/** Detach a node only after its parent collection reflects the removal. */
 function detachNode(tree: HostTree, node: FrescoNode): boolean {
   const parent = node.parent;
   if (!parent) return false;
@@ -171,21 +178,19 @@ function rendererOptions(tree: HostTree): RendererOptions<FrescoNode, FrescoElem
         const existing = previousParent.children.indexOf(child);
         if (existing !== -1) previousParent.children.splice(existing, 1);
         child.parent = null;
-        if (previousParent !== parent) notifyUpdate(tree, previousParent, "children");
       }
       child.parent = parent;
-      if (anchor) {
-        const index = parent.children.indexOf(anchor);
-        if (index !== -1) {
-          parent.children.splice(index, 0, child);
-          notifyUpdate(tree, parent, "children");
-          tree.onMutation();
-          return;
+      const index = anchor ? parent.children.indexOf(anchor) : -1;
+      if (index === -1) parent.children.push(child);
+      else parent.children.splice(index, 0, child);
+      try {
+        if (previousParent && previousParent !== parent) {
+          notifyUpdate(tree, previousParent, "children");
         }
+        notifyUpdate(tree, parent, "children");
+      } finally {
+        tree.onMutation();
       }
-      parent.children.push(child);
-      notifyUpdate(tree, parent, "children");
-      tree.onMutation();
     },
 
     remove(child) {

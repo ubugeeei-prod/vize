@@ -117,6 +117,32 @@ test("inserts, reorders, and removes list children through anchors", async () =>
   mounted.unmount();
 });
 
+test("commits insert state and schedules native work before observer failures escape", () => {
+  let mutations = 0;
+  let observations = 0;
+
+  assert.throws(
+    () =>
+      mountFresco(() => h("box", [h("text")]), {
+        onMutation: () => mutations++,
+        lifecycle: {
+          onUpdate(node, kind) {
+            if (kind !== "children") return;
+            observations += 1;
+            const child = node.children.at(-1);
+            assert.ok(child);
+            assert.equal(child.parent, node, "observers see the completed insertion");
+            throw new Error("observer failed");
+          },
+        },
+      }),
+    /observer failed/,
+  );
+
+  assert.equal(observations, 1);
+  assert.equal(mutations, 1, "native work remains scheduled when an observer throws");
+});
+
 test("keeps stable ids addressable across keyed moves", async () => {
   const items = ref(["a", "b"]);
   const mounted = mountFresco(() =>
