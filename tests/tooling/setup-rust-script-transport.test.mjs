@@ -14,7 +14,6 @@ const primary =
 const alternative = "https://api.github.com/repos/fornwall/rust-script/releases/assets/127872817";
 const pin = "0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13";
 const timeLimits = ["--connect-timeout", "10", "--max-time", "30"];
-const stallLimits = ["--speed-limit", "1", "--speed-time", "5"];
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 // Real USTAR/gzip bytes; system tar and SHA256 validate the actual extractor.
@@ -45,7 +44,7 @@ function executable(file, lines) {
 function installScript(original) {
   let body = fs.readFileSync(path.join(actionPath, "action.yml"), "utf8");
   if (original) {
-    const replacement = '          . "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
+    const replacement = '          "$BASH" "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
     assert.equal(body.split(replacement).length, 2);
     body = body.replace(
       replacement,
@@ -55,7 +54,7 @@ function installScript(original) {
         '            "' + primary + '"',
       ].join("\n"),
     );
-    assert.equal(digest(body), "57c321c3ea4604a871184480fe1fd438cf297cd72f787a7563cd3a1a20772d33");
+    assert.equal(digest(body), "f07c60eb9030ac17e58f5a325935433cabdde0d949b3314a6ffd8b0c21d06ec1");
   }
   return parse(body).runs.steps.find((s) => s.name === "Install rust-script").run;
 }
@@ -78,6 +77,7 @@ function run(options = {}) {
     bad = Buffer.from(bytes);
   bad[bad.length - 1] ^= 1;
   fs.writeFileSync(path.join(root, "fixture.tar.gz"), bytes);
+  fs.writeFileSync(path.join(root, "fixture-runner"), runner, { mode: 0o755 });
   fs.writeFileSync(path.join(root, "changed.tar.gz"), bad);
   fs.writeFileSync(path.join(root, "partial.tar.gz"), bytes.subarray(0, 7));
   fs.writeFileSync(path.join(root, "json.tar.gz"), "{}");
@@ -124,7 +124,12 @@ function run(options = {}) {
   executable(path.join(bin, "cargo"), [
     "#!/bin/bash",
     'printf "%s\\n" "$*" >> "$CARGO_LOG"',
-    "exit 73",
+    'if [ "$CARGO_STATUS" -eq 0 ]; then',
+    '  mkdir -p "$CARGO_HOME/bin"',
+    '  cp "$FIXTURE_RUNNER" "$CARGO_HOME/bin/rust-script"',
+    '  chmod 0755 "$CARGO_HOME/bin/rust-script"',
+    "fi",
+    'exit "$CARGO_STATUS"',
   ]);
   executable(path.join(bin, "tar"), [
     "#!/bin/bash",
@@ -170,6 +175,8 @@ function run(options = {}) {
       HELPER_LOG: path.join(root, "helper.log"),
       RUNNER_LOG: path.join(root, "runner.log"),
       CARGO_LOG: path.join(root, "cargo.log"),
+      CARGO_STATUS: String(options.cargoStatus ?? 73),
+      FIXTURE_RUNNER: path.join(root, "fixture-runner"),
       TAR_LOG: path.join(root, "tar.log"),
     },
   });
@@ -188,20 +195,23 @@ function retained(run, count) {
   assert.equal(run.calls.length, count);
   assert.equal(run.read("cargo.log"), "");
   assert.deepEqual(fs.readdirSync(run.temporary), []);
-  assert.equal(run.calls[0].at(-1), primary);
-  assert.deepEqual(run.calls[0].slice(0, 7), [
-    "--fail",
-    "--silent",
-    "--show-error",
-    "--location",
-    "--proto",
-    "=https",
-    "--tlsv1.2",
-  ]);
-  assert.deepEqual(run.calls[0].slice(-3), ["--write-out", "%{http_code}", primary]);
-  if (count === 2) {
+  const primaryCount = count === 3 ? 2 : 1;
+  for (const call of run.calls.slice(0, primaryCount)) {
+    assert.equal(call.at(-1), primary);
+    assert.deepEqual(call.slice(0, 7), [
+      "--fail",
+      "--silent",
+      "--show-error",
+      "--location",
+      "--proto",
+      "=https",
+      "--tlsv1.2",
+    ]);
+    assert.deepEqual(call.slice(-3), ["--write-out", "%{http_code}", primary]);
+  }
+  if (count > primaryCount) {
     const output = run.calls[0][run.calls[0].indexOf("--output") + 1];
-    assert.deepEqual(run.calls[1], [
+    assert.deepEqual(run.calls.at(-1), [
       "--fail",
       "--silent",
       "--show-error",
@@ -210,7 +220,13 @@ function retained(run, count) {
       "=https",
       "--tlsv1.2",
       ...timeLimits,
-      ...stallLimits,
+      "--retry",
+      "5",
+      "--retry-all-errors",
+      "--retry-delay",
+      "1",
+      "--retry-max-time",
+      "30",
       "--header",
       "Accept: application/octet-stream",
       "--header",
@@ -228,6 +244,13 @@ function accepted(run, count) {
   assert.equal(fs.statSync(path.join(run.cargoHome, "bin/rust-script")).mode & 0o777, 0o755);
   assert.equal(run.read("github-path"), run.cargoHome + "/bin\n");
   assert.equal(run.read("helper.log").trimEnd().split("\n").at(-1), pin);
+}
+function sourceFallback(run, expectedStatus) {
+  assert.equal(run.result.error, undefined);
+  assert.equal(run.result.signal, null);
+  assert.equal(run.result.status, expectedStatus, run.result.stderr);
+  assert.equal(run.read("cargo.log"), "install rust-script --version 0.34.0 --locked --force\n");
+  assert.match(run.result.stderr, /deferring to source install/);
 }
 function withRun(options, verify) {
   const observed = run(options);
@@ -277,9 +300,28 @@ void test("HTTP authentication, missing asset and rate limiting keep original fa
     });
   }
 });
-void test("network, timeout and TLS failures never recover even with a 5xx status", () => {
-  for (const status of [7, 28, 35, 60, 77]) {
-    withRun({ primaryStatus: status }, (observed) => {
+void test("two recoverable transport stalls use one same-byte API route", () => {
+  for (const [primaryStatus, primaryHttp] of [
+    [7, "000"],
+    [18, "200"],
+    [28, "000"],
+    [28, "200"],
+    [52, "000"],
+    [55, "000"],
+    [55, "200"],
+    [56, "000"],
+    [56, "200"],
+  ]) {
+    withRun({ primaryStatus, primaryHttp }, (observed) => {
+      accepted(observed, 3);
+      assert.match(observed.result.stderr, /attempt=1/);
+      assert.match(observed.result.stderr, /attempt=2/);
+    });
+  }
+});
+void test("unsupported transport and TLS failures never recover", () => {
+  for (const status of [35, 60, 77]) {
+    withRun({ primaryStatus: status, primaryHttp: "000" }, (observed) => {
       retained(observed, 1);
       assert.equal(observed.result.status, status);
       assert.equal(observed.read("helper.log"), "");
@@ -297,19 +339,30 @@ void test("missing and malformed HTTP status cannot enter recovery", () => {
     });
   }
 });
-void test("API failures never produce a third download or reach extraction", () => {
+void test("API failures defer to the pinned crates.io source install", () => {
   for (const [apiStatus, apiHttp] of [
     [22, "500"],
     [22, "403"],
     [28, "000"],
   ]) {
     withRun({ apiStatus, apiHttp }, (observed) => {
-      retained(observed, 2);
-      assert.equal(observed.result.status, apiStatus);
+      assert.equal(observed.calls.length, 2);
+      sourceFallback(observed, 73);
       assert.equal(observed.read("helper.log"), "");
       assert.equal(observed.read("runner.log"), "");
     });
   }
+});
+void test("a pinned source install completes when both release routes stall", () => {
+  withRun({ apiStatus: 28, apiHttp: "000", cargoStatus: 0 }, (observed) => {
+    assert.equal(observed.calls.length, 2);
+    sourceFallback(observed, 0);
+    assert.equal(
+      fs.readFileSync(path.join(observed.cargoHome, "bin/rust-script"), "utf8"),
+      observed.runner,
+    );
+    assert.equal(observed.read("github-path"), observed.cargoHome + "/bin\n");
+  });
 });
 void test("changed or partial API bodies refuse full SHA before tar or execution", () => {
   for (const options of [
