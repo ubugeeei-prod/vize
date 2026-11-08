@@ -32,7 +32,7 @@ import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composab
 import type { FrescoDevtools } from "./devtools.js";
 import { getLastRenderLayouts, updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
-import { routeMouseInput } from "./mouseRouting.js";
+import { routeAndPublishMouseInput as routeMouseEvent } from "./mouseRouting.js";
 import { normalizeInputEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
@@ -743,8 +743,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         lastPasteEvent.value = normalized;
         break;
       case "mouse":
-        if (rootElement) routeMouseInput(renderer, rootElement, normalized, getLastRenderLayouts());
-        lastMouseEvent.value = normalized;
+        routeMouseEvent(renderer, rootElement, normalized, getLastRenderLayouts(), lastMouseEvent);
         break;
       case "focus":
         lastFocusEvent.value = normalized;

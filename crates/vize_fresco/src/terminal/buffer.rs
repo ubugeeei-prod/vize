@@ -187,7 +187,11 @@ impl Buffer {
 
         let mut column = x;
         let mut written = 0_u16;
+        let skip_ascii_controls = text.is_ascii();
         for grapheme in text.graphemes(true) {
+            if skip_ascii_controls && grapheme.bytes().all(|byte| byte.is_ascii_control()) {
+                continue;
+            }
             let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
                 break;
             };

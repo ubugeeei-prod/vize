@@ -70,6 +70,21 @@ fn nested_clip_preserves_coordinates_and_complete_graphemes() {
 }
 
 #[test]
+fn clipped_ascii_writes_skip_control_graphemes_without_shifting_text() {
+    let mut buffer = Buffer::new(8, 1);
+    let style = Style::new();
+
+    assert_eq!(
+        buffer.set_string_clipped(1, 0, "\r\nab\tc", style, Rect::new(1, 0, 4, 1)),
+        3,
+    );
+    assert_eq!(buffer.get(1, 0).unwrap().symbol, "a");
+    assert_eq!(buffer.get(2, 0).unwrap().symbol, "b");
+    assert_eq!(buffer.get(3, 0).unwrap().symbol, "c");
+    assert_eq!(buffer.get(4, 0).unwrap(), &Cell::EMPTY);
+}
+
+#[test]
 fn narrow_replacements_remove_every_stale_wide_cell() {
     let mut buffer = Buffer::new(4, 1);
     buffer.set_string(0, 0, "界", Style::new());

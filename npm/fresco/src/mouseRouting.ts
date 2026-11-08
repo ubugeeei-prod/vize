@@ -13,6 +13,10 @@ interface MouseInputRenderer {
   dispatchInput(targetId: number, event: MouseEvent): unknown;
 }
 
+interface MouseEventSink {
+  value: MouseEvent | null;
+}
+
 /** Hit-test one normalized mouse packet and route it through the host tree. */
 export function routeMouseInput(
   renderer: MouseInputRenderer,
@@ -22,4 +26,19 @@ export function routeMouseInput(
 ): void {
   const target = renderer.hitTest(root, event.x, event.y, layouts);
   if (target) renderer.dispatchInput(target.id, event);
+}
+
+/** Route first, then publish the packet even when a routed handler throws. */
+export function routeAndPublishMouseInput(
+  renderer: MouseInputRenderer,
+  root: FrescoHostNode | null,
+  event: MouseEvent,
+  layouts: readonly LayoutResultNapi[],
+  sink: MouseEventSink,
+): void {
+  try {
+    if (root) routeMouseInput(renderer, root, event, layouts);
+  } finally {
+    sink.value = event;
+  }
 }
