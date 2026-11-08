@@ -11,6 +11,11 @@ use create_fresco::{
     CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
     update as create_fresco_update, verify as verify_create_fresco_update,
 };
+mod docs_metadata;
+use docs_metadata::{
+    DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
+    update as docs_metadata_update, verify as verify_docs_metadata_update,
+};
 mod fresco;
 use fresco::{
     FRESCO_MANIFEST, FRESCO_UPDATE, FRESCO_UPDATE_HASH, FrescoQualificationGraph, TOOLING_UPDATE,
@@ -488,7 +493,20 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
         manifest: &manifest,
     };
     verify_create_fresco_update(&update, &predecessor_bytes, &successor, &graph)?;
-    Ok(Some(successor))
+
+    let predecessor_bytes = fs::read(support::corpus().join(create_fresco::UPDATE))
+        .map_err(|_| "complete docs metadata qualification predecessor")?;
+    let update = docs_metadata_update();
+    let manifest = fs::read(support::repository().join(DOCS_METADATA_MANIFEST))
+        .map_err(|_| "complete docs manifest")?;
+    let graph = DocsMetadataQualificationGraph {
+        lock,
+        package,
+        workspace: &workspace,
+        manifest: &manifest,
+    };
+    verify_docs_metadata_update(&successor, &predecessor_bytes, &update, &graph)?;
+    Ok(Some(update))
 }
 
 #[cfg(test)]

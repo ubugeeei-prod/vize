@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-docs-metadata-successor",
+  "sourceRevision": "a7d692c410087ded477bd8d6f71facf68d8224b8",
+  "sourceTree": "32778a3d618a81a6e68ffb1ca910d6fb78581d71",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-create-fresco-update-12233.json",
+    "bytes": 2365,
+    "sha256": "3dafd04f6e306e5a5edde93b95e77c8ecb2ddf08e6525a3fe9fa3a9f356bb802",
+    "gitBlob": "dd75232d483a136f936ce05068e87b46afe1749c"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1170285,
+    "sha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4",
+    "gitBlob": "c51e52f5c872511a93e794fb91cb6ed07c7f8b0d"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1170285,
+    "sha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4",
+    "gitBlob": "c51e52f5c872511a93e794fb91cb6ed07c7f8b0d"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9501,
+    "sha256": "5560a48e7c354af330e2d856db1394ee041d7d1d2b99862a8d9770d5c2432aa2",
+    "gitBlob": "24c28c3b03164b735d7b2caf9a4ffe4de228c8ae"
+  },
+  "docsManifest": {
+    "path": "docs/package.json",
+    "bytes": 1356,
+    "sha256": "3a14dd57a3115b73c5ac1c32fb79250b8bfd2da8ae87066e058b8fc252c164c6",
+    "gitBlob": "a17f43519b5eeb4e6009048763ff7d7a8fc7ee7c"
+  },
+  "resolver": {
+    "command": "vp install --lockfile-only --no-frozen-lockfile --ignore-scripts",
+    "fixedPointSha256": "91573fb166468ad64cfb3343835f9613722d00a92b8ffb3507e30e9b22bb45a4"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Bind the executable documentation metadata generator to the complete docs manifest while preserving the exact generated dependency graph. This record gives source provenance only."
+}
