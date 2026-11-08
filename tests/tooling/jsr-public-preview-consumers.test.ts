@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, test } from "node:test";
+import { parse } from "yaml";
 
 import {
   bunPreviewCommands,
@@ -90,4 +91,12 @@ test("the staged Deno preview copies the shared policy and imports a directory U
     prepared.consumer,
   ]);
   assert.match(arguments_[7] ?? "", /^file:\/\/.+\/packages\/vize\/$/);
+});
+
+test("the hosted package workflow keeps orchestration out of YAML", () => {
+  const file = resolve(import.meta.dirname, "../../.github/workflows/jsr-package.yml");
+  const workflow = parse(readFileSync(file, "utf8")) as {
+    jobs: { package: { steps: readonly { run?: string }[] } };
+  };
+  assert.ok(workflow.jobs.package.steps.every((step) => !step.run?.includes("\n")));
 });

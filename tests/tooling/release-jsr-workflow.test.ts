@@ -128,11 +128,6 @@ await test("the hosted package check delegates staged Deno setup to typed Node",
   assert.ok(steps.every((step) => !runs(step, /--minimum-dependency-age/)));
 });
 
-await test("the hosted package workflow keeps orchestration out of YAML", () => {
-  const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
-  assert.ok(steps.every((step) => !step.run?.includes("\n")));
-});
-
 await test("the hosted package check installs frozen tooling before importing yaml", () => {
   const steps = workflow("jsr-package.yml").jobs.package?.steps ?? [];
   const setup = steps.findIndex((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
