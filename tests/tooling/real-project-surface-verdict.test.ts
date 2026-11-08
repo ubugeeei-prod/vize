@@ -12,7 +12,7 @@ const toolPath = path.join(
   "tools",
   "commands",
   "fixtures",
-  "real-project-surface-verdict.rs",
+  "real-project-surface-verdict.ts",
 );
 const realProjectSurfaceNames = [
   "waiver-audit",
@@ -34,7 +34,7 @@ function runVerdict(
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-surface-verdict-"));
   const output = path.join(outputDir, "surface-verdict.json");
   const result = spawnSync(
-    "rust-script",
+    process.execPath,
     [
       toolPath,
       "--output",
@@ -51,11 +51,15 @@ function runVerdict(
 function runWorkflowVerdict(env: NodeJS.ProcessEnv) {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-surface-verdict-"));
   const output = path.join(outputDir, "surface-verdict.json");
-  const result = spawnSync("rust-script", [toolPath, "--from-workflow-env", "--output", output], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, ...env },
-  });
+  const result = spawnSync(
+    process.execPath,
+    [toolPath, "--from-workflow-env", "--output", output],
+    {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, ...env },
+    },
+  );
   const verdict = fs.existsSync(output) ? JSON.parse(fs.readFileSync(output, "utf8")) : null;
   fs.rmSync(outputDir, { recursive: true, force: true });
   return { result, verdict };

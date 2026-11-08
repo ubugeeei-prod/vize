@@ -359,7 +359,7 @@ jobs:
           VIZE_SYNTAX_HIGHLIGHTER_OUTCOME: ${{ steps.syntax_highlighter.outcome }}
           VIZE_GLYPH_OUTCOME: ${{ steps.glyph.outcome }}
           VIZE_TYPECHECK_DIVERGENCE_OUTCOME: ${{ steps.typecheck_divergence.outcome }}
-        run: rust-script tools/commands/fixtures/real-project-surface-verdict.rs --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json"
+        run: node tools/commands/fixtures/real-project-surface-verdict.ts --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json"
 
       - name: Publish shard summary
         if: ${{ always() }}
