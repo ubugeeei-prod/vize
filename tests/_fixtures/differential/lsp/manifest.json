@@ -1314,6 +1314,54 @@
       }
     },
     {
+      "id": "lsp/regression/canon-public-instance-11499",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "canon-public-instance-11499",
+        "files": [
+          {
+            "path": "Page.vue.txt",
+            "sha256": "115748af9ca14f6012a6b230644cb89464d43ace8c5946ed469ec9176ee0c899"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "88fd4f1d6d986627d8f757cb5f7f191467d42d082c01e5425ba9fbf7a3298dbd"
+          }
+        ]
+      },
+      "case": {
+        "path": "canon-public-instance-11499/case.json",
+        "sha256": "d84ba3ccce5fca19bf0ad646a774ccdad037c8717798d04b643ff15dfe1c63d5"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "completion": true,
+        "editor": true,
+        "ecosystem": true,
+        "hover": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/component-alias-hover-10787",
       "state": "active",
       "targets": [
