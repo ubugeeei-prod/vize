@@ -51,29 +51,7 @@ const { type, title, speakers } = defineProps<TimetableCell>()
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains("type: { type: String, required: true }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("title: { type: String, required: true }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("speakers: { type: Array, required: false }"),
-        "{}",
-        result.code
-    );
-    assert!(result.code.contains("__props.title"), "{}", result.code);
-    assert!(result.code.contains("__props.speakers"), "{}", result.code);
+    insta::assert_snapshot!(result.code.as_str());
 
     let _ = fs::remove_dir_all(project);
 }
@@ -118,7 +96,6 @@ const props = defineProps<Props>()
     )
     .expect("conditional props stay valid TypeScript");
 
-    assert!(result.code.contains("props.title"), "{}", result.code);
-    assert!(result.code.contains("props.count"), "{}", result.code);
+    insta::assert_snapshot!(result.code.as_str());
     let _ = fs::remove_dir_all(project);
 }
