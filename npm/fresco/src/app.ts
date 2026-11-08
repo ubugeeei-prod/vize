@@ -11,6 +11,7 @@ import {
   shallowRef,
   type App as VueApp,
   type Component,
+  type Plugin,
   type Ref,
   type VNode,
 } from "vue";
@@ -143,6 +144,8 @@ export interface RenderMetrics {
  * Fresco App instance
  */
 export interface App {
+  /** Install a Vue plugin before the first mount. */
+  use<Options extends unknown[]>(plugin: Plugin<Options>, ...options: Options): App;
   /** Mount the app */
   mount(): Promise<void>;
   /** Unmount the app */
@@ -419,6 +422,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
   let mounted = false;
+  let mounting = false;
+  let hasMountedOnce = false;
   let running = false;
   let needsRender = true;
   let appContext: UseAppReturn | null = null;
@@ -430,6 +435,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   const renderedStaticItems = new Map<number, number>();
   let cursorPosition: CursorPosition | undefined;
   let hasCursorOverride = false;
+  let instance: App;
+  const pluginInstallers: Array<(app: VueApp) => void> = [];
 
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
@@ -444,81 +451,98 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   });
 
   async function mount() {
-    if (mounted) return;
+    if (mounted || mounting) return;
+    mounting = true;
 
-    const n = interactive ? await loadNative() : null;
+    try {
+      const n = interactive ? await loadNative() : null;
 
-    if (n) {
-      if (typeof n.initTerminalWithOptions === "function") {
-        n.initTerminalWithOptions({
-          alternateScreen: options.alternateScreen === true,
-          bracketedPaste: true,
-          hideCursor: true,
-          mouse,
-          rawMode: true,
-        });
-      } else if (mouse) {
-        n.initTerminalWithMouse();
-      } else {
-        n.initTerminal();
+      if (n) {
+        if (typeof n.initTerminalWithOptions === "function") {
+          n.initTerminalWithOptions({
+            alternateScreen: options.alternateScreen === true,
+            bracketedPaste: true,
+            hideCursor: true,
+            mouse,
+            rawMode: true,
+          });
+        } else if (mouse) {
+          n.initTerminalWithMouse();
+        } else {
+          n.initTerminal();
+        }
+
+        n.enableIme?.();
+
+        // Initialize layout engine
+        n.initLayout();
       }
 
-      n.enableIme?.();
+      // Create Vue app with custom renderer
+      const app = createVueApp(componentFromRoot(rootComponent));
+      for (const install of pluginInstallers) install(app);
 
-      // Initialize layout engine
-      n.initLayout();
+      const info = n?.getTerminalInfo() ?? {
+        width: streamsContext.stdout.columns ?? 80,
+        height: streamsContext.stdout.rows ?? 24,
+      };
+      appContext = createAppContext({
+        width: info.width,
+        height: info.height,
+        exit: (value) => {
+          void unmount(value);
+        },
+        render,
+        clear,
+        waitUntilRenderFlush,
+        stdout: streamsContext.stdout,
+      });
+      focusManager = createFocusManager();
+      app.provide(APP_KEY, appContext);
+      app.provide(FOCUS_KEY, focusManager);
+      app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+      app.provide(STREAMS_KEY, streamsContext);
+      app.provide(
+        CURSOR_KEY,
+        createCursorContext((position) => {
+          hasCursorOverride = true;
+          cursorPosition = position;
+          needsRender = true;
+        }),
+      );
+
+      // Create a root element for mounting
+      rootElement = createRootElement();
+
+      patchConsoleMethods();
+      try {
+        app.mount(rootElement);
+      } catch (error) {
+        restoreConsoleMethods();
+        throw error;
+      }
+      vueApp = app;
+
+      mounted = true;
+      hasMountedOnce = true;
+      running = true;
+      needsRender = true;
+
+      // Start event loop
+      void eventLoop();
+    } finally {
+      mounting = false;
     }
+  }
 
-    // Create Vue app with custom renderer
-    const app = createVueApp(componentFromRoot(rootComponent));
-
-    const info = n?.getTerminalInfo() ?? {
-      width: streamsContext.stdout.columns ?? 80,
-      height: streamsContext.stdout.rows ?? 24,
-    };
-    appContext = createAppContext({
-      width: info.width,
-      height: info.height,
-      exit: (value) => {
-        void unmount(value);
-      },
-      render,
-      clear,
-      waitUntilRenderFlush,
-      stdout: streamsContext.stdout,
+  function use<Options extends unknown[]>(plugin: Plugin<Options>, ...pluginOptions: Options): App {
+    if (mounting || hasMountedOnce) {
+      throw new Error("Fresco plugins must be installed before the first mount");
+    }
+    pluginInstallers.push((app) => {
+      app.use(plugin, ...pluginOptions);
     });
-    focusManager = createFocusManager();
-    app.provide(APP_KEY, appContext);
-    app.provide(FOCUS_KEY, focusManager);
-    app.provide(SCREEN_READER_KEY, screenReaderEnabled);
-    app.provide(STREAMS_KEY, streamsContext);
-    app.provide(
-      CURSOR_KEY,
-      createCursorContext((position) => {
-        hasCursorOverride = true;
-        cursorPosition = position;
-        needsRender = true;
-      }),
-    );
-
-    // Create a root element for mounting
-    rootElement = createRootElement();
-
-    patchConsoleMethods();
-    try {
-      app.mount(rootElement);
-    } catch (error) {
-      restoreConsoleMethods();
-      throw error;
-    }
-    vueApp = app;
-
-    mounted = true;
-    running = true;
-    needsRender = true;
-
-    // Start event loop
-    void eventLoop();
+    return instance;
   }
 
   async function unmount(errorOrResult?: unknown) {
@@ -833,7 +857,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     }
   }
 
-  return {
+  instance = {
+    use,
     mount,
     unmount,
     waitUntilExit,
@@ -842,6 +867,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     clear,
     getTerminalInfo,
   };
+  return instance;
 }
 
 /**

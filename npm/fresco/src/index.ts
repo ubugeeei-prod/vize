@@ -81,6 +81,12 @@ export {
 } from "./kittyKeyboard.js";
 export { measureElement, type DOMElement } from "./measureElement.js";
 export {
+  defineFrescoPlugin,
+  defineFrescoProvider,
+  type FrescoPluginDefinition,
+  type FrescoProvider,
+} from "./plugins.js";
+export {
   defaultFrescoTheme,
   FRESCO_THEME_KEY,
   provideFrescoTheme,
