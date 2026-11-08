@@ -8,7 +8,8 @@ export { default as Spacer } from "./FrescoSpacer.vue";
 export { Divider, type DividerProps } from "./Divider.js";
 export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
 export { Grid, type GridProps } from "./Grid.js";
-export { Card, type CardProps } from "./Card.js";
+export { default as Card } from "./FrescoCard.vue";
+export type { CardProps } from "./presentational-primitive-types.js";
 export { default as ScrollBox } from "./ScrollBox.vue";
 export { default as ScrollBar } from "./ScrollBar.vue";
 export {
@@ -46,11 +47,13 @@ export { Form, type FormProps, type FormField } from "./Form.js";
 export { default as Spinner } from "./FrescoSpinner.vue";
 export type { SpinnerProps } from "./display-primitive-types.js";
 export { ProgressBar, type ProgressBarProps } from "./ProgressBar.js";
-export { Alert, type AlertProps, type AlertType } from "./Alert.js";
+export { default as Alert } from "./FrescoAlert.vue";
+export type { AlertProps, AlertType } from "./presentational-primitive-types.js";
 export { default as Badge } from "./FrescoBadge.vue";
 export type { BadgeProps, BadgeVariant } from "./display-primitive-types.js";
 export { Timer, type TimerProps, type TimerMode } from "./Timer.js";
-export { Tooltip, type TooltipProps, type TooltipPosition } from "./Tooltip.js";
+export { default as Tooltip } from "./FrescoTooltip.vue";
+export type { TooltipPosition, TooltipProps } from "./presentational-primitive-types.js";
 
 // Data Display
 export { List, type ListProps, type ListItem } from "./List.js";
@@ -60,7 +63,8 @@ export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
 // Navigation
 export { Menu, type MenuProps, type MenuItem } from "./Menu.js";
 export { Tabs, type TabsProps, type Tab } from "./Tabs.js";
-export { Breadcrumb, type BreadcrumbProps, type BreadcrumbItem } from "./Breadcrumb.js";
+export { default as Breadcrumb } from "./FrescoBreadcrumb.vue";
+export type { BreadcrumbItem, BreadcrumbProps } from "./presentational-primitive-types.js";
 export { Stepper, type StepperProps, type Step, type StepStatus } from "./Stepper.js";
 
 // Overlay
@@ -68,6 +72,8 @@ export { Modal, type ModalProps } from "./Modal.js";
 
 // Status
 export { StatusBar, type StatusBarProps, type StatusBarItem } from "./StatusBar.js";
-export { Header, type HeaderProps } from "./Header.js";
+export { default as Header } from "./FrescoHeader.vue";
+export type { HeaderProps } from "./presentational-primitive-types.js";
 export { KeyHint, type KeyHintProps, type KeyBinding } from "./KeyHint.js";
-export { Avatar, type AvatarProps } from "./Avatar.js";
+export { default as Avatar } from "./FrescoAvatar.vue";
+export type { AvatarProps } from "./presentational-primitive-types.js";

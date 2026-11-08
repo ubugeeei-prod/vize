@@ -47,6 +47,7 @@ use registry::OPT_IN_SCRIPT_RULE_NAMES;
 pub(crate) const VAPOR_ONLY_SCRIPT_RULES: &[&str] =
     &[RULE_NO_GET_CURRENT_INSTANCE, RULE_NO_NEXT_TICK];
 
+/// Return metadata for all built-in script rules in canonical registry order.
 pub fn builtin_script_rules() -> Vec<BuiltinScriptRuleMeta> {
     BUILTIN_SCRIPT_RULES
         .iter()

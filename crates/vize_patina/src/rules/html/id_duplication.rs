@@ -42,6 +42,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/id-duplication` lint rule.
 pub struct IdDuplication;
 
 struct IdEntry {

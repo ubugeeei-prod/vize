@@ -50,6 +50,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `opinionated/a11y/landmark-roles` lint rule.
 pub struct LandmarkRoles;
 
 struct LandmarkInfo {

@@ -76,12 +76,16 @@ pub struct CssRuleMeta {
 /// Result of linting a style block
 #[derive(Debug, Default)]
 pub struct CssLintResult {
+    /// Diagnostics emitted while checking the style block.
     pub diagnostics: Vec<LintDiagnostic>,
+    /// Number of error-severity diagnostics.
     pub error_count: usize,
+    /// Number of warning-severity diagnostics.
     pub warning_count: usize,
 }
 
 impl CssLintResult {
+    /// Append a diagnostic and update the severity totals.
     pub fn add_diagnostic(&mut self, diagnostic: LintDiagnostic) {
         match diagnostic.severity {
             Severity::Error => self.error_count += 1,

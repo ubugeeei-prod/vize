@@ -34,6 +34,7 @@ export type IconStrokeWidth =
   | "3"
   | "4";
 
+/** Rendered element exposed by Icon. */
 export type IconElement = PrimitiveElement;
 
 /** Shared structural props for Icon. */
@@ -247,6 +248,7 @@ export type IconButtonVariant = "outline" | "plain" | "soft" | "solid";
 /** Availability state mirrored to `data-state`. */
 export type IconButtonState = "disabled" | "idle" | "loading";
 
+/** Rendered element exposed by IconButton. */
 export type IconButtonElement = PrimitiveElement;
 
 /** Shared structural props for IconButton. */

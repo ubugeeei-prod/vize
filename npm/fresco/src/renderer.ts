@@ -79,7 +79,6 @@ export interface FrescoInputDispatchResult {
   /** Whether any callback stopped route traversal. */
   readonly propagationStopped: boolean;
 }
-
 /** Optional lifecycle observers for nodes owned by a Fresco renderer. */
 export interface FrescoNodeLifecycleHooks {
   /** Observe allocation of a stable host node. @default No-op. */

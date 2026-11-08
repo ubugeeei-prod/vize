@@ -47,6 +47,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/no-duplicate-dt` lint rule.
 pub struct NoDuplicateDt;
 
 impl NoDuplicateDt {

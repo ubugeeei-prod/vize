@@ -7,9 +7,20 @@ use vize_l1::markup::{Element, NativeComponent};
 /// Raw authored attribute syntax. `Absent` does not establish a text value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateOptionValue<'a> {
+    /// No `value` attribute was authored on the option.
     Absent,
-    Static { value: Option<&'a str>, range: Span },
-    Bound { range: Span },
+    /// A plain static `value` attribute with opaque authored content.
+    Static {
+        /// Exact authored value content, when present.
+        value: Option<&'a str>,
+        /// Complete original attribute range.
+        range: Span,
+    },
+    /// A bound value whose expression remains opaque.
+    Bound {
+        /// Complete original binding range.
+        range: Span,
+    },
 }
 
 /// A header candidate becomes observable only inside the completed select.

@@ -22,6 +22,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
+/// Implements the `script/vue-router-prefer-named-push` lint rule.
 pub struct VueRouterPreferNamedPush;
 
 impl ScriptRule for VueRouterPreferNamedPush {

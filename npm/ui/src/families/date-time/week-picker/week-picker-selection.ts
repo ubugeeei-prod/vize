@@ -34,6 +34,7 @@ export interface WeekSelectionOptions {
     previous: DateRange | null,
     event: Event | null,
   ) => void;
+  /** Called after a user selects a week. @default undefined */
   readonly onSelect?: (value: DateRange, event: Event) => void;
 }
 
