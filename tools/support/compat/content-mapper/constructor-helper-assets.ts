@@ -60,8 +60,8 @@ export function readAssets(baseRoot: string, headRoot: string, sources?: SourceP
     [...bytes.toString().matchAll(/\btype\s+((?:__|\$)\w+)/gu)].map((match) => match[1]);
   const baseNames = aliases(embedded);
   const names = aliases(headEmbedded);
-  assert.equal(names.length, 54);
-  assert.equal(new Set(names).size, 54);
+  assert.equal(names.length, 55);
+  assert.equal(new Set(names).size, 55);
   assert.equal(new Set(baseNames).size, baseNames.length);
   const imports = (selected: string[]) =>
     [

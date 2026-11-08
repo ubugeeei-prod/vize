@@ -19,15 +19,31 @@ const sources = [
 const contents = sources.map((source) => readFileSync(path.join(root, source), "utf8"));
 const componentPublicBaseIgnore =
   "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade component public extras to unchecked, never error.";
+const componentCustomPropertiesIgnore =
+  "// @ts-ignore TS2694/TS2307: a `vue` without `ComponentCustomProperties` must degrade component public extras to unchecked, never error.";
 const componentPublicBaseDeclaration = "type $ComponentPublicBase<";
+const componentCustomPropertiesDefault = "C = import('vue').ComponentCustomProperties";
 const rawDeclarations = contents.join("\n").replaceAll("\r\n", "\n");
 assert.ok(
   rawDeclarations.includes(`${componentPublicBaseIgnore}\n${componentPublicBaseDeclaration}`),
   "component public fallback suppression must remain attached to its declaration",
 );
-const declarations = rawDeclarations.replace(
-  `${componentPublicBaseIgnore}\n${componentPublicBaseDeclaration}`,
-  `${componentPublicBaseDeclaration}\n${componentPublicBaseIgnore}\n`,
+assert.ok(
+  rawDeclarations.includes(componentCustomPropertiesDefault),
+  "component custom properties fallback must remain part of the public base",
+);
+const declarations = rawDeclarations
+  .replace(
+    `${componentPublicBaseIgnore}\n${componentPublicBaseDeclaration}`,
+    `${componentPublicBaseDeclaration}\n${componentPublicBaseIgnore}\n`,
+  )
+  .replace(
+    `, ${componentCustomPropertiesDefault}>`,
+    `,\n${componentCustomPropertiesIgnore}\n${componentCustomPropertiesDefault}>`,
+  );
+assert.ok(
+  declarations.includes(`${componentCustomPropertiesIgnore}\n${componentCustomPropertiesDefault}`),
+  "component custom properties fallback suppression must remain attached to its default",
 );
 const names = [...declarations.matchAll(/\btype\s+((?:__|\$)\w+)\b/gu)].map((match) => match[1]);
 assert.equal(new Set(names).size, names.length, "shared helper aliases must be unique");

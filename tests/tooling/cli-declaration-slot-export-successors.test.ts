@@ -83,8 +83,8 @@ const identity = (bytes: Buffer): Identity => ({
 });
 const encoded = (text: string): string => JSON.stringify(text).slice(1, -1);
 const currentConstructorSource: Identity = {
-  bytes: 10645,
-  sha256: "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
+  bytes: 10729,
+  sha256: "87339d14141883c2a602afc9268cc29e0e2573c6c5577d005c77806c379f1505",
 };
 const constructorSourceEdit = {
   before:
@@ -115,8 +115,36 @@ const constructorSourceEdit = {
       "        // check; TSX binds `$JsxProps` and stays exact (#11629).",
       "        append!(",
       "            *ts,",
-      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
+      '            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {own}, {base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>;\\n"',
       "        );",
+    ].join("\n") + "\n",
+};
+const constructorBaseSplitEdit = {
+  before:
+    [
+      '    ts.push_str(" & ");',
+      "    instance_base(",
+      "        ts,",
+      "        legacy_vue2,",
+      "        dialect,",
+      "        aliases.has_exposed_type,",
+      "        (aliases.has_root_el, aliases.has_refs),",
+      "    );",
+      '    ts.push_str(";\\n");',
+    ].join("\n") + "\n",
+  after:
+    [
+      "    let mut base = String::default();",
+      "    instance_base(",
+      "        &mut base,",
+      "        legacy_vue2,",
+      "        dialect,",
+      "        aliases.has_exposed_type,",
+      "        (aliases.has_root_el, aliases.has_refs),",
+      "    );",
+      '    ts.push_str(" & ");',
+      "    ts.push_str(&base);",
+      '    ts.push_str(";\\n");',
     ].join("\n") + "\n",
 };
 
@@ -125,28 +153,35 @@ function constructorSourceTransition(
   direction: "forward" | "inverse",
   historical: Identity,
 ): Buffer {
-  const [fromIdentity, toIdentity, from, to] =
+  const [fromIdentity, toIdentity, edits] =
     direction === "inverse"
       ? ([
           currentConstructorSource,
           historical,
-          constructorSourceEdit.after,
-          constructorSourceEdit.before,
+          [
+            [constructorSourceEdit.after, constructorSourceEdit.before],
+            [constructorBaseSplitEdit.after, constructorBaseSplitEdit.before],
+          ],
         ] as const)
       : ([
           historical,
           currentConstructorSource,
-          constructorSourceEdit.before,
-          constructorSourceEdit.after,
+          [
+            [constructorBaseSplitEdit.before, constructorBaseSplitEdit.after],
+            [constructorSourceEdit.before, constructorSourceEdit.after],
+          ],
         ] as const);
   assert.deepEqual(identity(current), {
     bytes: fromIdentity.bytes,
     sha256: fromIdentity.sha256,
   });
-  const text = current.toString("utf8");
-  assert.equal(text.split(from).length - 1, 1);
-  assert.equal(text.split(to).length - 1, 0);
-  const changed = Buffer.from(text.replace(from, to));
+  let text = current.toString("utf8");
+  for (const [from, to] of edits) {
+    assert.equal(text.split(from).length - 1, 1);
+    assert.equal(text.split(to).length - 1, 0);
+    text = text.replace(from, to);
+  }
+  const changed = Buffer.from(text);
   assert.deepEqual(identity(changed), { bytes: toIdentity.bytes, sha256: toIdentity.sha256 });
   return changed;
 }
@@ -246,7 +281,7 @@ const overloadSource = fs.readFileSync(
 );
 assert.equal(
   createHash("sha256").update(overloadSource).digest("hex"),
-  "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+  "62d8b5eec112d39005a234ac4c819a8c9de4668e1d94149d16fdfc5b010d6e95",
 );
 const overloadAsset = (name: string): string => {
   const match = new RegExp(
@@ -377,6 +412,8 @@ const historicalRecursive =
   "type $OverloadUnionRecursive<TOverload, TPartialOverload = unknown, TDepth extends unknown[] = []> = TDepth['length'] extends 32 ? never : TOverload extends (...args: infer TArgs) => infer TReturn ? TPartialOverload extends TOverload ? never : $OverloadUnionRecursive<TPartialOverload & TOverload, TPartialOverload & ((...args: TArgs) => TReturn) & $OverloadProps<TOverload>, [...TDepth, unknown]> | ((...args: TArgs) => TReturn) : never;";
 
 // #11445 later key-remapped the public instance base; invert it first.
+const currentSharedPublicBase =
+  "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance, C = import('vue').ComponentCustomProperties> = $PatternSafeOmit<I, '$props' | '$emit' | '$slots', C, '$' | '$data' | '$attrs' | '$refs' | '$root' | '$parent' | '$host' | '$el' | '$options' | '$forceUpdate' | '$nextTick' | '$watch'>;";
 const currentPublicBase =
   "type $ComponentPublicBase<I = import('vue').ComponentPublicInstance> = Omit<I, '$props' | '$emit' | '$slots'> & Pick<I, Exclude<$LiteralKeys<I>, '$props' | '$emit' | '$slots'>>;";
 const historicalPublicBase =
@@ -387,7 +424,7 @@ assert.equal(
       path.join(repoRoot, "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"),
       "utf8",
     )
-    .split(currentPublicBase).length - 1,
+    .split(currentSharedPublicBase).length - 1,
   1,
 );
 // #11453 then guarded the camelized emit handler key against a declared twin.

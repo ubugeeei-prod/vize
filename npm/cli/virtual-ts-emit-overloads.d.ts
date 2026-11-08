@@ -65,24 +65,58 @@ declare global {
   >;
   type $OverloadParameters<T extends (...args: any[]) => any> = Parameters<$OverloadUnion<T>>;
   type $IsStringLiteral<T> = T extends string ? (string extends T ? false : true) : false;
-  type $ParametersToFns<T extends any[]> = string extends T[0]
-    ? { [K in string]: (...args: T extends [e: any, ...args: infer P] ? P : any[]) => any }
-    : {
-        [K in T[0]]: $IsStringLiteral<K> extends true
-          ? (
-              ...args: T extends [e: infer E, ...args: infer P] ? (K extends E ? P : never) : never
-            ) => any
-          : never;
-      };
+  type $LiteralParameterKeys<T extends any[]> = T extends unknown
+    ? $IsStringLiteral<T[0]> extends true
+      ? T[0]
+      : never
+    : never;
+  type $ParametersForKey<T extends any[], K> = T extends [e: infer E, ...args: infer P]
+    ? $IsStringLiteral<E> extends true
+      ? K extends E
+        ? P
+        : never
+      : never
+    : never;
+  type $LiteralParametersToFns<T extends any[]> = {
+    [K in $LiteralParameterKeys<T>]: (...args: $ParametersForKey<T, K>) => any;
+  };
+  type $ParametersToFns<T extends any[]> = $LiteralParametersToFns<T> &
+    (string extends T[0]
+      ? {
+          [K in string]: (
+            ...args: T extends [e: infer E, ...args: infer P]
+              ? string extends E
+                ? P
+                : never
+              : never
+          ) => any;
+        }
+      : {});
   type __EmitOptions<T, S = __EmitShape<T>> = {
     [K in keyof S as K extends string ? K : never]: (...args: __EmitArgs<S, K>) => any;
   } & (__EmitShape<T> extends (...args: any[]) => any
     ? $ParametersToFns<$OverloadParameters<__EmitShape<T>>>
     : {});
+  type $LiteralEmitOptions<T, S = __EmitShape<T>> = S extends (...args: any[]) => any
+    ? $LiteralParametersToFns<$OverloadParameters<S>>
+    : {};
   type $Camelize<S extends string> = S extends `${infer Head}-${infer Tail}`
     ? `${Head}${Capitalize<$Camelize<Tail>>}`
     : S;
   type $HandlerKey<K extends string> = `on${Capitalize<$Camelize<K>>}`;
+  type $EmitPropsFromOptions<T> = {
+    [
+      K in keyof T & string as
+        | ($Camelize<K> extends keyof T
+            ? string extends keyof T
+              ? $HandlerKey<K>
+              : never
+            : $HandlerKey<K>)
+        | `on${Capitalize<K>}`
+    ]?: T[K];
+  };
+  type $ResolvedEmitProps<T, O = __EmitOptions<T>> = $EmitPropsFromOptions<O> &
+    (string extends keyof O ? $EmitPropsFromOptions<$LiteralEmitOptions<T>> : {});
 }
 
 export {};

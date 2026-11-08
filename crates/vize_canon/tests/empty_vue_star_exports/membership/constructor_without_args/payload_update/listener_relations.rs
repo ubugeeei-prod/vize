@@ -112,6 +112,7 @@ fn inverse(current: String, transition: &Transition) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::canon_leftovers::source_before(path, current);
     let current = super::dependency_ownership::source_before(path, current);
     let current = super::strict_extra_keys::source_before(path, current);
     TRANSITIONS
@@ -121,6 +122,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::canon_leftovers::preamble_before(current);
     let current = &super::strict_extra_keys::preamble_before(current);
     authenticate(
         current,

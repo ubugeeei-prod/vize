@@ -461,11 +461,11 @@ void test("a successor refuses unknown producer bytes and altered historical con
   ]) {
     assert.throws(
       () => emitGateOracle((selected) => read(selected) + (selected === path ? " " : "")),
-      /oracle context|selected emit gate producer/u,
+      /oracle context|selected emit gate producer|canon leftovers source identity/u,
     );
     assert.throws(
       () => emitGateOracle((selected) => (selected === path ? "" : read(selected))),
-      /oracle context|selected emit gate producer/u,
+      /oracle context|selected emit gate producer|canon leftovers source identity/u,
     );
   }
 });

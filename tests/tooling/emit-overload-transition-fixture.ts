@@ -8,6 +8,7 @@ import {
   canonicalPaths,
   nativeAttributesPath,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import { beforeCanonLeftovers } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 
 export const root = fileURLToPath(new URL("../..", import.meta.url));
 export const emitPath =
@@ -28,6 +29,8 @@ export function sourcePair() {
     path.join(root, "tests/tooling/fixtures/emit-overload-transition/before.d.ts.txt"),
   );
   const after = readFileSync(path.join(root, emitPath));
+  const afterOwner = readFileSync(path.join(root, ownerPath));
+  const beforeOwner = Buffer.from(beforeCanonLeftovers(ownerPath, afterOwner.toString()));
   for (const destination of [base, head]) {
     for (const file of [
       ...canonicalPaths,
@@ -41,6 +44,7 @@ export function sourcePair() {
       writeFileSync(path.join(destination, file), readFileSync(path.join(root, file)));
     }
     writeFileSync(path.join(destination, emitPath), before);
+    writeFileSync(path.join(destination, ownerPath), beforeOwner);
   }
   const currentPreamble = readFileSync(path.join(root, preamblePath));
   const listenerInclude = '    include_str!("declarations/shared-listener-args.d.ts.txt"),\n';
@@ -73,6 +77,7 @@ export function sourcePair() {
   git("commit", "--quiet", "-m", "test: retain the original helper image");
   const baseSha = git("rev-parse", "HEAD");
   writeFileSync(path.join(head, emitPath), after);
+  writeFileSync(path.join(head, ownerPath), afterOwner);
   writeFileSync(path.join(head, preamblePath), currentPreamble);
   git("add", ".");
   git("commit", "--quiet", "-m", "test: retain the current helper image");
@@ -83,7 +88,8 @@ export function sourcePair() {
     head,
     before,
     after,
-    owner: readFileSync(path.join(root, ownerPath)),
+    beforeOwner,
+    afterOwner,
     sources: { repository: head, base: baseSha, head: git("rev-parse", "HEAD") },
   };
 }
@@ -93,10 +99,11 @@ export function virtualPair(pair: ReturnType<typeof sourcePair>) {
     const prefix = "// 日本 🧭\n";
     const body = "const value = '日本 🧭';\n";
     const tail = "const result = value;\n";
-    const start = Buffer.byteLength(prefix) + asset.length + pair.owner.length;
+    const owner = asset === pair.before ? pair.beforeOwner : pair.afterOwner;
+    const start = Buffer.byteLength(prefix) + asset.length + owner.length;
     const end = start + Buffer.byteLength(body);
     return {
-      virtual_ts: prefix + asset.toString() + pair.owner.toString() + body + tail,
+      virtual_ts: prefix + asset.toString() + owner.toString() + body + tail,
       virtual_ts_mappings: [
         {
           authored: { start: 0, end: Buffer.byteLength(source) },

@@ -72,6 +72,7 @@ fn invert(
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::canon_leftovers::source_before(path, current);
     let Some(file) = FILES.iter().find(|file| file.path == path) else {
         return current;
     };
@@ -86,8 +87,9 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 }
 
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = super::canon_leftovers::preamble_before(current);
     invert(
-        current,
+        &current,
         CANONICAL_BEFORE,
         CANONICAL_AFTER,
         PREAMBLE_BEFORE_BYTES,
@@ -124,7 +126,8 @@ mod tests {
     use serde_json::json;
 
     fn current(path: &str) -> String {
-        std::fs::read_to_string(super::support::repository().join(path)).unwrap()
+        let current = std::fs::read_to_string(super::support::repository().join(path)).unwrap();
+        super::super::canon_leftovers::source_before(path, current)
     }
 
     #[test]
@@ -134,9 +137,11 @@ mod tests {
             let previous = source_before(file.path, body.clone());
             assert_eq!(previous.replacen(file.before, file.after, 1), body);
         }
-        let preamble = vize_canon::virtual_ts::SHARED_PREAMBLE_DTS;
+        let preamble = super::super::canon_leftovers::preamble_before(
+            vize_canon::virtual_ts::SHARED_PREAMBLE_DTS,
+        );
         assert_eq!(
-            preamble_before(preamble).replacen(super::CANONICAL_BEFORE, super::CANONICAL_AFTER, 1),
+            preamble_before(&preamble).replacen(super::CANONICAL_BEFORE, super::CANONICAL_AFTER, 1),
             preamble
         );
         let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";

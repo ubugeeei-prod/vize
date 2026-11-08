@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod canon_leftovers;
 mod checker_augmentations;
 mod constructor_emit_export;
 mod current_loose_emit;
@@ -163,6 +164,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
         support::hash(current.as_bytes())
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
+    canon_leftovers::retain_provenance(manifest);
     public_instance::retain_provenance(manifest);
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);

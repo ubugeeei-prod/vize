@@ -10,7 +10,7 @@ import {
 import { certifyComponentConstructorTransition } from "./component-constructor-transition.ts";
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
-import { beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
+import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -455,7 +455,7 @@ export function currentCallbackSourceEdits(
   const overloadTransition = readSource(emitOverloadTransitionSource);
   assert.equal(
     digest(overloadTransition),
-    "d34d9c30d9c270ac5a9f515b40378556c7a2d9b5a231cd8413c0440bcbd4d557",
+    "62d8b5eec112d39005a234ac4c819a8c9de4668e1d94149d16fdfc5b010d6e95",
     "certified emit-overload window transition",
   );
   const overloadAsset = (name: string): string => {
@@ -476,7 +476,10 @@ export function currentCallbackSourceEdits(
     digest(currentOverloads),
     "bbd7d2f184d1f9c5aff57d781ae6ccd393985a0ac4f01981282eb715cfc81ee0",
   );
-  const currentOverloadAsset = readSource(emitOverloadsSource);
+  const currentOverloadAsset = beforeCanonLeftovers(
+    emitOverloadsSource,
+    readSource(emitOverloadsSource),
+  );
   assert.equal(Buffer.byteLength(currentOverloadAsset), 2535);
   assert.equal(
     digest(currentOverloadAsset),

@@ -3,7 +3,10 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
 import { beforeDiscriminatedJsxUnionIn } from "../../tools/support/compat/content-mapper/discriminated-jsx-union-transition.ts";
-import { beforeStrictExtraKeysIn } from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
+import {
+  beforeCanonLeftovers,
+  beforeStrictExtraKeysIn,
+} from "../../tools/support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { beforeSharedListenerRelationSource } from "./support/listener-relation-source-transition.ts";
 
 const root = new URL("../../", import.meta.url);
@@ -102,13 +105,14 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
   );
   // This finite expansion is admitted only for the exact macro producer above.
   // Its compiled constant is checked independently by the native tests.
+  const predecessorRead = (path: string) => beforeCanonLeftovers(path, read(path));
   const current = [
-    read(decl + "shared-header.d.ts.txt"),
-    read(decl + "core-types.d.ts.txt"),
-    read(decl + "vue3-types.d.ts.txt"),
-    read(decl + "prop-keys.d.ts.txt"),
+    predecessorRead(decl + "shared-header.d.ts.txt"),
+    predecessorRead(decl + "core-types.d.ts.txt"),
+    predecessorRead(decl + "vue3-types.d.ts.txt"),
+    predecessorRead(decl + "prop-keys.d.ts.txt"),
     "\n",
-    read(base + "../component_prop_helpers.txt"),
+    predecessorRead("crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"),
     ...[
       "native-elements",
       "component-global-attributes",
@@ -122,8 +126,8 @@ void test("the complete source preamble reconstructs the unchanged runtime and h
       "shared-emit-inference",
       "component-checks",
       "shared-macros",
-    ].map((name) => read(decl + name + ".d.ts.txt")),
-    read(base + "pattern_matching.d.ts"),
+    ].map((name) => predecessorRead(decl + name + ".d.ts.txt")),
+    predecessorRead(base + "pattern_matching.d.ts"),
   ].join("");
   assert.deepEqual(identity(current), {
     bytes: 46426,

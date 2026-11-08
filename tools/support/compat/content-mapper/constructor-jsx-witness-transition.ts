@@ -9,7 +9,9 @@ import {
   discriminatedJsxUnionPath,
 } from "./discriminated-jsx-union-transition.ts";
 import {
+  beforeCanonLeftovers,
   beforeStrictExtraKeys,
+  canonLeftoversSha256,
   certifyStrictExtraKeysTransition,
   strictExtraKeysAfterSha256,
   strictExtraKeysPath,
@@ -44,6 +46,26 @@ export function certifyJsxWitnessChange(
   before: Buffer,
   after: Buffer,
 ): JsxWitnessChangeProof {
+  if (
+    file === strictExtraKeysPath &&
+    after.length === 5996 &&
+    digest(after) === "5925942220f43800ee52f81973df33a429af4b77060990f7b03b435e617a40b8"
+  ) {
+    const predecessor = Buffer.from(beforeCanonLeftovers(file, after.toString("utf8")));
+    if (!predecessor.equals(after)) {
+      const historical = certifyJsxWitnessChange(file, before, predecessor);
+      const predecessorSuccessors =
+        historical.successorRecordSha256s ??
+        (historical.successorRecordSha256 ? [historical.successorRecordSha256] : []);
+      return {
+        ...historical,
+        afterSha256: digest(after),
+        successorRecordSha256: canonLeftoversSha256,
+        successorRecordSha256s: [...predecessorSuccessors, canonLeftoversSha256],
+        comparatorSha256: digest(readFileSync(new URL(import.meta.url))),
+      };
+    }
+  }
   const strict = certifyStrictExtraKeysTransition(file, before, after);
   if (strict)
     return {
