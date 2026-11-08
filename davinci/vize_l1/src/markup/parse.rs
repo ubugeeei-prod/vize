@@ -296,13 +296,13 @@ fn construct_with_lint_and_diagnostics<'a, const RAW: bool, const LINT: bool>(
     // complete parser/template vector explicitly.
     let (tree, repaired) = if LINT || !structural_diagnostics {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, LINT>(allocator, source, &events, &mut ignored, true)
+        build::<RAW, LINT, false>(allocator, source, &events, &mut ignored, true)
     } else {
-        build::<RAW, LINT>(allocator, source, &events, &mut errors, true)
+        build::<RAW, LINT, true>(allocator, source, &events, &mut errors, true)
     };
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, LINT>(allocator, source, &events, &mut ignored, false).0
+        build::<RAW, LINT, false>(allocator, source, &events, &mut ignored, false).0
     });
     errors.sort_by_key(|error| error.encounter);
     debug_assert!(

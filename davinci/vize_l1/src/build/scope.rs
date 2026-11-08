@@ -111,8 +111,26 @@ impl<'a> Recovery<'a> {
     /// Matching an ancestor also ends descendants; stray and redundant
     /// implicitly closed tags leave the caller's live scope intact.
     pub(crate) fn close<F: Frame<'a>>(&mut self, stack: &[F], tag: &str) -> Option<usize> {
-        self.consumed_implicit_close = false;
         let matched = authored_close(stack, tag);
+        if self.closed.last().is_some_and(|closed| {
+            closed.tag.eq_ignore_ascii_case(tag) && matched.is_none_or(|depth| depth < closed.depth)
+        }) {
+            self.closed.pop();
+            return None;
+        }
+        if let Some(depth) = matched {
+            self.truncate(depth);
+        }
+        matched
+    }
+
+    pub(crate) fn close_with_diagnostics<F: Frame<'a>>(
+        &mut self,
+        stack: &[F],
+        tag: &str,
+    ) -> Option<usize> {
+        self.consumed_implicit_close = false;
+        let matched = authored_close_with_ignored_starts(stack, tag);
         if self.closed.last().is_some_and(|closed| {
             closed.tag.eq_ignore_ascii_case(tag) && matched.is_none_or(|depth| depth < closed.depth)
         }) {
@@ -138,7 +156,7 @@ impl<'a> Recovery<'a> {
         if !is_formatting_tag(tag) {
             return None;
         }
-        let depth = authored_close(stack, tag)?;
+        let depth = authored_close_with_ignored_starts(stack, tag)?;
         if depth + 1 == stack.len() {
             return None;
         }
@@ -349,6 +367,12 @@ fn is_formatting_tag(tag: &str) -> bool {
 }
 
 pub(crate) fn authored_close<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Option<usize> {
+    stack
+        .iter()
+        .rposition(|frame| frame.tag().eq_ignore_ascii_case(tag))
+}
+
+fn authored_close_with_ignored_starts<'a, F: Frame<'a>>(stack: &[F], tag: &str) -> Option<usize> {
     stack
         .iter()
         .rposition(|frame| !frame.ignored_start() && frame.tag().eq_ignore_ascii_case(tag))

@@ -8,7 +8,9 @@ use crate::markup::surface::{
     Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token,
 };
 
-impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
+impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+{
     pub(super) fn element(&mut self, ev: Event) {
         let (name_s, name_e) = (ev.start as usize, ev.end as usize);
         self.i += 1;
@@ -75,40 +77,46 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             }
         }
         let self_closing = slash.is_some();
-        let inherited_v_pre = self.stack.last().is_some_and(|frame| frame.in_v_pre);
-        let in_v_pre = inherited_v_pre || attrs.iter().any(|attr| attr.name.text == "v-pre");
-        for (index, attr) in attrs.iter().enumerate() {
-            if (!is_directive(attr.name.text) || inherited_v_pre)
-                && attrs
-                    .get(..index)
-                    .unwrap_or_default()
-                    .iter()
-                    .any(|existing| {
-                        (!is_directive(existing.name.text) || inherited_v_pre)
-                            && existing.name.text.eq_ignore_ascii_case(attr.name.text)
-                    })
-            {
-                let start = self.source_offset(attr.name.text);
-                self.errors
-                    .push(crate::markup::SurfaceError::duplicate_attribute(
-                        vize_l0::Span::new(
-                            start,
-                            start.saturating_add(attr.name.text.len() as u32),
-                        ),
-                    ));
+        let inherited_v_pre =
+            STRUCTURAL_DIAGNOSTICS && self.stack.last().is_some_and(|frame| frame.in_v_pre);
+        let in_v_pre = STRUCTURAL_DIAGNOSTICS
+            && (inherited_v_pre || attrs.iter().any(|attr| attr.name.text == "v-pre"));
+        if STRUCTURAL_DIAGNOSTICS {
+            for (index, attr) in attrs.iter().enumerate() {
+                if (!is_directive(attr.name.text) || inherited_v_pre)
+                    && attrs
+                        .get(..index)
+                        .unwrap_or_default()
+                        .iter()
+                        .any(|existing| {
+                            (!is_directive(existing.name.text) || inherited_v_pre)
+                                && existing.name.text.eq_ignore_ascii_case(attr.name.text)
+                        })
+                {
+                    let start = self.source_offset(attr.name.text);
+                    self.errors
+                        .push(crate::markup::SurfaceError::duplicate_attribute(
+                            vize_l0::Span::new(
+                                start,
+                                start.saturating_add(attr.name.text.len() as u32),
+                            ),
+                        ));
+                }
             }
         }
         // The lint-header provider already records unsupported directive heads
         // in its typed `unsupported` channel. Keep that selected-owner contract
         // separate; the ordinary surface path owns parser/template diagnostics.
-        if !LINT && !inherited_v_pre {
+        if STRUCTURAL_DIAGNOSTICS && !LINT && !inherited_v_pre {
             for attr in &attrs {
                 self.directive_errors(attr.name.text);
             }
         }
-        let ignored_start = self.recovery.is_repeated_form(&self.stack, tag);
+        let ignored_start =
+            STRUCTURAL_DIAGNOSTICS && self.recovery.is_repeated_form(&self.stack, tag);
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
-        let table_tree_element = is_table_tree_element(tag, in_v_pre, &attrs);
+        let table_tree_element =
+            !STRUCTURAL_DIAGNOSTICS || is_table_tree_element(tag, in_v_pre, &attrs);
         let open = OpenTag {
             lt_name,
             attrs,
@@ -120,7 +128,8 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             self.errors
                 .push(crate::markup::SurfaceError::ignored_repeated_form(span));
         }
-        if !self_closing
+        if STRUCTURAL_DIAGNOSTICS
+            && !self_closing
             && !is_void_tag(tag)
             && self
                 .recovery
@@ -130,7 +139,12 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
             self.errors
                 .push(crate::markup::SurfaceError::foster_parenting(span));
         }
-        if !ignored_start && !self_closing && !is_void_tag(tag) && self.stack.len() == 4096 {
+        if STRUCTURAL_DIAGNOSTICS
+            && !ignored_start
+            && !self_closing
+            && !is_void_tag(tag)
+            && self.stack.len() == 4096
+        {
             let span = self.open_span(&open);
             self.errors
                 .push(crate::markup::SurfaceError::nesting_too_deep(span));
@@ -186,15 +200,22 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
         let gt_pos = self.find_byte(b'>', e, self.src.len());
         let name = crate::slice::range(self.src, s, e);
         self.flush_gap(lt_start);
-        let adoption_depth = self.recovery.adoption(&self.stack, name);
-        let Some(depth) = self.recovery.close(&self.stack, name) else {
-            if self.recovery.take_consumed_implicit_close() {
+        let adoption_depth = STRUCTURAL_DIAGNOSTICS
+            .then(|| self.recovery.adoption(&self.stack, name))
+            .flatten();
+        let matched = if STRUCTURAL_DIAGNOSTICS {
+            self.recovery.close_with_diagnostics(&self.stack, name)
+        } else {
+            self.recovery.close(&self.stack, name)
+        };
+        let Some(depth) = matched else {
+            if STRUCTURAL_DIAGNOSTICS && self.recovery.take_consumed_implicit_close() {
                 let end = gt_pos.map_or(self.src.len(), |g| g + 1);
                 let token = self.token_at(lt_start, end);
                 self.push_child(SurfaceChild::Unexpected(token));
                 return;
             }
-            if self.recovery.consume_reopened_formatting(name) {
+            if STRUCTURAL_DIAGNOSTICS && self.recovery.consume_reopened_formatting(name) {
                 let end = gt_pos.map_or(self.src.len(), |g| g + 1);
                 let token = self.token_at(lt_start, end);
                 self.push_child(SurfaceChild::Unexpected(token));
@@ -270,11 +291,13 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
 
     fn unexpected_close_tag(&mut self, lt_start: usize, gt_pos: Option<usize>) {
         let end = gt_pos.map_or(self.src.len(), |g| g + 1);
-        self.errors.push(crate::markup::SurfaceError::at_encounter(
-            vize_l0::ErrorCode::InvalidEndTag,
-            vize_l0::Span::new(lt_start as u32, end as u32),
-            end as u32,
-        ));
+        if STRUCTURAL_DIAGNOSTICS {
+            self.errors.push(crate::markup::SurfaceError::at_encounter(
+                vize_l0::ErrorCode::InvalidEndTag,
+                vize_l0::Span::new(lt_start as u32, end as u32),
+                end as u32,
+            ));
+        }
         let token = self.token_at(lt_start, end);
         self.push_child(SurfaceChild::Unexpected(token));
     }

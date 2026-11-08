@@ -59,14 +59,14 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     }
 }
 
-pub(crate) fn build<'a, const RAW: bool, const LINT: bool>(
+pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
     errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
 ) -> (SurfaceTree<'a>, bool) {
-    let mut b = Builder::<RAW, LINT> {
+    let mut b = Builder::<RAW, LINT, STRUCTURAL_DIAGNOSTICS> {
         src,
         allocator,
         events,
@@ -102,7 +102,7 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool>(
     )
 }
 
-struct Builder<'a, 'e, const RAW: bool, const LINT: bool> {
+struct Builder<'a, 'e, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
@@ -115,7 +115,9 @@ struct Builder<'a, 'e, const RAW: bool, const LINT: bool> {
     repaired: bool,
 }
 
-impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
+impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+{
     fn run(&mut self) {
         while let Some(ev) = self.events.get(self.i).copied() {
             match ev.kind {
@@ -193,7 +195,7 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     }
 
     fn missing_end_tag(&mut self, frame: &Frame<'_>) {
-        if frame.ignored_start {
+        if !STRUCTURAL_DIAGNOSTICS || frame.ignored_start {
             return;
         }
         let text = frame.open.lt_name.text;
@@ -272,7 +274,8 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     /// and the closer (if present in the source) is probed after it. One
     /// verbatim token covers the whole construct.
     fn raw_node(&mut self, ev: Event, kind: RawKind) {
-        if matches!(kind, RawKind::Cdata)
+        if STRUCTURAL_DIAGNOSTICS
+            && matches!(kind, RawKind::Cdata)
             && self
                 .stack
                 .last()
