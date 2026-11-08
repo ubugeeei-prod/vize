@@ -12,7 +12,11 @@ import { test } from "node:test";
 import { parse } from "yaml";
 
 import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.ts";
-import { readRepoFile, root as repoRoot } from "./support/github-workflows.ts";
+import {
+  readRepoFile,
+  restorePinnedWildAction,
+  root as repoRoot,
+} from "./support/github-workflows.ts";
 
 const tool = path.join(repoRoot, "tools/commands/davinci/resource-budgets.rs");
 const budgetsText = readRepoFile("docs/davinci", "plan", "budgets.toml");
@@ -133,18 +137,23 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
   const workflow = parse(
     readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
   ) as any;
-  const wild = (steps: Array<{ uses?: string; if?: string }>) =>
-    steps.filter((step) => step.uses?.startsWith("wild-linker/action@"));
+  const wildSetup = (steps: Array<{ uses?: string; if?: string }>) =>
+    steps.filter(
+      (step) =>
+        step.uses === "./.github/actions/setup-wild-http-recovery" ||
+        step.uses?.startsWith("wild-linker/action@"),
+    );
   for (const job of ["resource", "production-lsp-resource"]) {
-    assert.deepEqual(wild(workflow.jobs[job].steps), [], job);
+    assert.deepEqual(wildSetup(workflow.jobs[job].steps), [], job);
   }
   const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
   assert.deepEqual(
-    wild(cli.runs.steps).map((step) => step.if),
+    wildSetup(cli.runs.steps).map((step) => step.if),
     [
       "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
     ],
   );
+  assert.equal(restorePinnedWildAction(cli.runs.steps), 1);
 });
 
 test("the CLI build script asks only rust-lld release links to fold and pack", () => {

@@ -3,7 +3,11 @@ import { spawnSync } from "node:child_process";
 import { runInNewContext } from "node:vm";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  readRepoFile,
+  restorePinnedWildAction,
+} from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; run?: string; if?: string; env?: object };
 type Job = {
@@ -117,7 +121,9 @@ test("parallel Rust jobs preserve every original step, command byte and runtime 
   const tasks: Step[] = [];
   for (const id of producers) {
     assert.deepEqual(jobs[id].env, original.env, `${id} changed runtime settings`);
-    assert.deepEqual(jobs[id].steps.slice(0, firstCommand), setup, `${id} changed setup`);
+    const currentSetup = structuredClone(jobs[id].steps.slice(0, firstCommand));
+    assert.equal(restorePinnedWildAction(currentSetup), 1, `${id} recovery adapter`);
+    assert.deepEqual(currentSetup, setup, `${id} changed setup`);
     tasks.push(...jobs[id].steps.slice(firstCommand));
   }
   assert.deepEqual(tasks, original.steps.slice(firstCommand));
