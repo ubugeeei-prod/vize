@@ -60,7 +60,7 @@ void test("the pinned package manager selects private transitive dependencies fo
     write(".", { name: "fixture-root", private: true, packageManager: manager });
     writeFileSync(
       join(fixture, "pnpm-workspace.yaml"),
-      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n  - 'tools'\n",
+      "packages:\n  - 'npm/*'\n  - 'npm/builder/*'\n  - 'npm/builder/unplugin/example'\n  - 'npm/linter/*'\n  - 'npm/builder/vite/example'\n  - 'npm/framework/*'\n  - 'npm/compose/*'\n  - 'packages/*'\n  - 'tools'\n",
     );
     for (const [path, name] of names) {
       write(path, { name, devDependencies: { "fixture-shared": "workspace:*" } });

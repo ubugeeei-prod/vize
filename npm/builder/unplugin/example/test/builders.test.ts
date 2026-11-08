@@ -52,7 +52,7 @@ void test(
   () => {
     const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-builder-bun-"));
     try {
-      const script = fileURLToPath(new URL("../build/bun.mjs", import.meta.url));
+      const script = fileURLToPath(new URL("../build/bun.ts", import.meta.url));
       const result = spawnSync("bun", ["run", script, outputRoot], {
         encoding: "utf8",
         maxBuffer: 16 * 1024 * 1024,
