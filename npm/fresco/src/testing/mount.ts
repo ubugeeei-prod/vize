@@ -26,7 +26,12 @@ import { APP_KEY, createAppContext, type UseAppReturn } from "../composables/use
 import { createCursorContext, CURSOR_KEY } from "../composables/useCursor.js";
 import { createFocusManager, FOCUS_KEY, type FocusManager } from "../composables/useFocus.js";
 import { createStreamsContext, STREAMS_KEY } from "../composables/useStreams.js";
-import { createRenderer, type FrescoElement, type FrescoNode } from "../renderer.js";
+import {
+  createRenderer,
+  type FrescoElement,
+  type FrescoNode,
+  type FrescoNodeLifecycleHooks,
+} from "../renderer.js";
 
 /** Options for {@link mountFresco}. */
 export interface MountFrescoOptions {
@@ -38,6 +43,8 @@ export interface MountFrescoOptions {
   screenReader?: boolean;
   /** Observe host-tree mutations that require a native frame. */
   onMutation?: () => void;
+  /** Observe host-node lifecycle transitions. */
+  lifecycle?: FrescoNodeLifecycleHooks;
 }
 
 /** A mounted Fresco component tree under test. */
@@ -52,6 +59,8 @@ export interface MountedFresco {
   focusManager: FocusManager;
   /** Screen reader flag provided to the tree; writable to flip modes. */
   screenReaderEnabled: Ref<boolean>;
+  /** Renderer controls for stable lookup and recursive disposal. */
+  renderer: ReturnType<typeof createRenderer>;
   /** Unmount the tree and dispose all component watchers. */
   unmount(): void;
 }
@@ -66,7 +75,11 @@ export function mountFresco(
   root: Component | (() => VNodeChild),
   options: MountFrescoOptions = {},
 ): MountedFresco {
-  const { createApp } = createRenderer(options.onMutation);
+  const renderer = createRenderer({
+    onMutation: options.onMutation,
+    lifecycle: options.lifecycle,
+  });
+  const { createApp } = renderer;
   const component: Component = typeof root === "function" ? { setup: () => root } : root;
   const app = createApp(component);
 
@@ -113,6 +126,7 @@ export function mountFresco(
     appContext,
     focusManager,
     screenReaderEnabled,
+    renderer,
     unmount: () => app.unmount(),
   };
 }
