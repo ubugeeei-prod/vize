@@ -13,7 +13,7 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-test("playground components use kebab-case file names", () => {
+void test("playground components use kebab-case file names", () => {
   const invalidNames = sourceFiles(sourceRoot)
     .filter((file) => file.endsWith(".vue"))
     .filter((file) => !/^[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u.test(path.basename(file)));
@@ -21,7 +21,7 @@ test("playground components use kebab-case file names", () => {
   assert.deepEqual(invalidNames, []);
 });
 
-test("component styles stay co-located in their SFCs", () => {
+void test("component styles stay co-located in their SFCs", () => {
   const externalStyles = sourceFiles(sourceRoot).filter((file) => file.endsWith(".css"));
 
   assert.deepEqual(externalStyles, []);
