@@ -162,7 +162,7 @@ test("named Typeof-v1 successors preserve exact two old rows, SHA pins and whole
     conditionalSuccessors.beforeRuleSha256,
     "9804044031a7975b732af2e1853388313bad635b69b5fd8332d4e4c8f8e87819",
   );
-  assert.equal(hash(current), "02b4c57bcfc7f931b1e5dff6051abbb27a192bce5e14676699da317b4199cae9");
+  assert.equal(hash(current), "8a9caf93f54ea79f24b1ec7266a4bdbf175697a7b0c0f10c1cdc93af9f5ac00f");
   for (const ownedBoundary of [
     "fn slot_function_origin(&self, expression: &Expression<'_>) -> Option<Span>",
     "if self.vue2_render_depth > 0",
