@@ -653,7 +653,7 @@ if (!nativeBinding || forceWasi) {
     }
     return null
   }
-  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === 'wasm32-wasi')) {
+  if (!wasiBindingLoaded) {
     let candidateError = null
     let candidateFailed = false
     try {
@@ -674,7 +674,7 @@ if (!nativeBinding || forceWasi) {
       loadErrors.push(candidateError)
     }
   }
-  if (!wasiBindingLoaded && (!__napiWasiFlavorRequested || __napiWasiFlavor === 'wasm32-wasi')) {
+  if (!wasiBindingLoaded) {
     let candidateError = null
     let candidateFailed = false
     try {
