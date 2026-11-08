@@ -96,13 +96,11 @@ import { spawnSync } from "node:child_process";
 const args = process.argv.slice(2), url = args.at(-1);
 assert.ok([${JSON.stringify(primary)}, ${JSON.stringify(api)}].includes(url));
 assert.deepEqual(args.slice(0, 7), ["--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--tlsv1.2"]);
-const deadlines = url === ${JSON.stringify(primary)}
-  ? ["--connect-timeout", "10", "--max-time", "30", "--speed-limit", "1", "--speed-time", "5"]
-  : ["--connect-timeout", "10", "--max-time", "30"];
+const deadlines = ["--connect-timeout", "10", "--max-time", "30", "--speed-limit", "1", "--speed-time", "5"];
 if (!${original}) assert.deepEqual(args.slice(7, 7 + deadlines.length), deadlines);
 if (!${original} && url === ${JSON.stringify(api)}) {
   const retryStart = 7 + deadlines.length;
-  assert.deepEqual(args.slice(retryStart, retryStart + 7), ["--retry", "5", "--retry-all-errors", "--retry-delay", "1", "--retry-max-time", "30"]);
+  assert.deepEqual(args.slice(retryStart, retryStart + 5), ["--retry", "5", "--retry-all-errors", "--retry-delay", "1"]);
 }
 const forwarded = [...args.slice(0, -1), "--cacert", ${JSON.stringify(cert)}, ${JSON.stringify(local)} + (url === ${JSON.stringify(primary)} ? "/primary" : "/api")];
 const result = spawnSync("/usr/bin/curl", forwarded, { encoding: "utf8" });

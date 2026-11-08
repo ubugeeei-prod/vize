@@ -22,23 +22,38 @@ use super::super::NativeTemplateRefusal;
 /// authored coordinates; interpolation offsets are selected-block relative.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObservedNativeTemplateRefusal {
+    /// Document construction refused after the observed prefix.
     Document {
+        /// Next interpolation ordinal at the point of refusal.
         index: usize,
+        /// Typed refusal returned by native template construction.
         refusal: NativeTemplateRefusal,
     },
+    /// Observing a conditional directive expression failed.
     Attribute {
+        /// Authored-file span of the directive name or value.
         span: Span,
+        /// Zero-based conditional observation ordinal.
         index: usize,
+        /// Typed operand error reported by the observer.
         kind: NativeAttributeOperandError,
     },
+    /// Observing a binding directive expression failed.
     Binding {
+        /// Authored-file span of the directive name or value.
         span: Span,
+        /// Zero-based binding observation ordinal.
         index: usize,
+        /// Typed operand error reported by the observer.
         kind: NativeAttributeOperandError,
     },
+    /// Observing an interpolation expression failed.
     Interpolation {
+        /// Template-relative byte offset of the interpolation.
         offset: usize,
+        /// Zero-based interpolation observation ordinal.
         index: usize,
+        /// Typed interpolation error reported by the observer.
         kind: NativeInterpolationError,
     },
 }
@@ -101,26 +116,32 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
             ),
         }
     }
+    /// Borrow the original selected template component.
     pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
         self.original
     }
+    /// Borrow the successfully observed interpolation prefix.
     pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
         &self.operands
     }
+    /// Borrow the successfully observed conditional directive prefix.
     pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
         &self.attributes
     }
+    /// Borrow the conditional observer failure, if one caused refusal.
     pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.attribute_failure
             .as_deref()
             .map(|(_, _, failure)| failure)
     }
+    /// Borrow the successfully observed binding directive prefix.
     pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
         self.binding_custody
             .as_deref()
             .map(|custody| custody.bindings.as_slice())
             .unwrap_or(&[])
     }
+    /// Borrow the binding observer failure, if one caused refusal.
     pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.binding_custody
             .as_deref()
@@ -143,9 +164,11 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
             self.refusal,
         )
     }
+    /// Return the typed refusal for the incomplete document.
     pub fn refusal(&self) -> ObservedNativeTemplateRefusal {
         self.refusal
     }
+    /// Borrow the interpolation observer failure, if one caused refusal.
     pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()
     }

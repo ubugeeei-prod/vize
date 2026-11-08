@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { test } from "vitest";
 
@@ -9,16 +9,22 @@ const canonicalSfcComponents = [
   { name: "Badge", file: "FrescoBadge" },
   { name: "Breadcrumb", file: "FrescoBreadcrumb" },
   { name: "Card", file: "FrescoCard" },
+  { name: "Divider", file: "FrescoDivider" },
+  { name: "FrameBuffer", file: "FrescoFrameBuffer" },
   { name: "Header", file: "FrescoHeader" },
+  { name: "HStack", file: "FrescoHStack" },
   { name: "Link", file: "FrescoLink" },
+  { name: "Markdown", file: "FrescoMarkdown" },
   { name: "Newline", file: "FrescoNewline" },
   { name: "ScrollBar", file: "ScrollBar" },
   { name: "ScrollBox", file: "ScrollBox" },
   { name: "Spacer", file: "FrescoSpacer" },
   { name: "Spinner", file: "FrescoSpinner" },
+  { name: "Stack", file: "FrescoStack" },
   { name: "Static", file: "FrescoStatic" },
   { name: "Transform", file: "FrescoTransform" },
   { name: "Tooltip", file: "FrescoTooltip" },
+  { name: "VStack", file: "FrescoVStack" },
 ];
 const packageRoot = existsSync(path.join(process.cwd(), "src", "components"))
   ? process.cwd()
@@ -32,9 +38,7 @@ for (const component of canonicalSfcComponents) {
     assert.match(source, /<script setup(?=[^>]*\blang="ts")[^>]*>/u);
     assert.match(source, /<template>/u);
     assert.doesNotMatch(source, /\b(?:h|createVNode|createElementVNode)\s*\(/u);
-    assert.equal(
-      existsSync(path.join(packageRoot, "src", "components", `${component.name}.ts`)),
-      false,
-    );
+    const siblingNames = readdirSync(path.join(packageRoot, "src", "components"));
+    assert.equal(siblingNames.includes(`${component.name}.ts`), false);
   });
 }

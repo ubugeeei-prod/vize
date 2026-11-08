@@ -62,7 +62,9 @@ void test(
     }
     const config = {
       jsPlugins: [plugin],
+      ignorePatterns: ["ignored/**"],
       rules: { "vize/vue/no-v-html": "error" },
+      overrides: [{ files: ["large/Component1*.vue"], rules: { "vize/vue/no-v-html": "off" } }],
     };
     fs.writeFileSync(path.join(root, ".oxlintrc.json"), `${JSON.stringify(config)}\n`);
     fs.writeFileSync(
@@ -101,7 +103,8 @@ void test(
     };
     writeCorpus("large", '<div v-html="text" />');
     writeCorpus("clean", "<div>{{ text }}</div>");
-    const large = invoke(["-c", ".oxlintrc.json", "-f", "json", "large"]);
+    writeCorpus("ignored", '<div v-html="text" />');
+    const large = invoke(["-c", ".oxlintrc.json", "-f", "json", "large", "ignored"]);
     assert.equal(large.error, undefined);
     assert.equal(large.signal, null);
     assert.equal(large.status, 1, large.stdout + large.stderr);
@@ -113,11 +116,15 @@ void test(
     assert.equal(largeReport.number_of_files, 400);
     assert.equal(
       largeReport.diagnostics.filter(({ code }) => code === "vize(vue/no-v-html)").length,
-      400,
+      300,
     );
     assert.equal(
       largeReport.diagnostics.every(({ filename }) => filename.includes("large")),
       true,
+    );
+    assert.equal(
+      largeReport.diagnostics.some(({ filename }) => /Component1\d\d\.vue$/u.test(filename)),
+      false,
     );
     const clean = invoke(["-c", ".oxlintrc.json", "-f", "json", "clean"]);
     assert.equal(clean.error, undefined);
@@ -130,6 +137,38 @@ void test(
     };
     assert.equal(cleanReport.number_of_files, 400);
     assert.deepEqual(cleanReport.diagnostics, []);
+    const configDir = path.join(root, "cfg");
+    const outsideDir = path.join(root, "outside");
+    fs.mkdirSync(configDir);
+    fs.mkdirSync(outsideDir);
+    fs.writeFileSync(
+      path.join(outsideDir, "Absolute.vue"),
+      fs.readFileSync(path.join(root, "App.vue")),
+    );
+    fs.writeFileSync(
+      path.join(configDir, "absolute.json"),
+      `${JSON.stringify({
+        jsPlugins: [plugin],
+        rules: { "vize/vue/no-v-html": "error" },
+        overrides: [
+          {
+            files: [path.join(outsideDir, "**/*.vue").replaceAll("\\", "/")],
+            rules: { "vize/vue/no-v-html": "off" },
+          },
+        ],
+      })}\n`,
+    );
+    const absolute = invoke(["-c", "cfg/absolute.json", "-f", "json", "outside"]);
+    assert.equal(absolute.error, undefined);
+    assert.equal(absolute.signal, null);
+    assert.equal(absolute.status, 0, absolute.stdout + absolute.stderr);
+    assert.equal(absolute.stderr, "");
+    const absoluteReport = JSON.parse(absolute.stdout) as {
+      diagnostics: unknown[];
+      number_of_files: number;
+    };
+    assert.equal(absoluteReport.number_of_files, 1);
+    assert.deepEqual(absoluteReport.diagnostics, []);
     const entries = fs.readdirSync(root).sort();
     assert.deepEqual(
       entries.filter((entry) => entry.startsWith("oxlint-vize-")),

@@ -55,15 +55,19 @@ impl core::fmt::Debug for ObservedNativeTemplateDocument<'_, '_> {
 }
 
 impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
+    /// Borrow the original selected template component.
     pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
         self.original
     }
+    /// Borrow interpolation operands in their observed source order.
     pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
         &self.operands
     }
+    /// Borrow conditional directive operands in their observed source order.
     pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
         &self.attributes
     }
+    /// Borrow binding directive operands in their observed source order.
     pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
         &self.bindings
     }
@@ -80,6 +84,7 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
             self.document,
         )
     }
+    /// Borrow the complete document tree produced by the observations.
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }

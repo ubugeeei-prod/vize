@@ -58,6 +58,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
     pub allocator: &'a Allocator,
     pub root: &'a RootNode<'a>,
+    pub l2: &'a crate::markup::L2Template<'a>,
     pub descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
     pub analysis: TemplateAnalysis<'a>,
     pub template_syntax: Option<&'a vize_armature::parser::TemplateSyntaxFacts<'a>>,
@@ -416,23 +417,31 @@ impl Linter {
         gate_semantic_on_fatal_parse: bool,
         env: TemplateRuleEnv<'_>,
     ) -> LintResult {
-        // Parse the template
+        let l2 = profile!(
+            "patina.template.l1_parse_lower",
+            crate::markup::L2Template::lower(allocator, source)
+        );
+        // Keep the legacy tree only for rules not yet migrated by #6848.
         let parser = Parser::new(allocator, source);
-        let (root, parse_errors) = profile!("patina.template.parse", parser.parse());
-        let has_fatal_parse_errors = Self::has_fatal_template_parse_errors(&parse_errors);
+        let (root, _legacy_parse_errors) = profile!("patina.template.parse", parser.parse());
+        let parse_errors = l2.surface_errors();
+        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
 
-        let parse_result = Self::template_parse_lint_result(filename, source.len(), &parse_errors);
+        let parse_result = Self::l1_template_parse_lint_result(filename, source, parse_errors);
         let lint_result = self.lint_template_root(
-            allocator,
-            source,
-            filename,
-            &root,
+            template::TemplateExecution {
+                allocator,
+                source,
+                filename,
+                root: &root,
+                l2: &l2,
+                env,
+            },
             if gate_semantic_on_fatal_parse && has_fatal_parse_errors {
                 TemplateAnalysis::Disabled
             } else {
                 TemplateAnalysis::Lazy
             },
-            env,
         );
 
         if report_parse_errors {

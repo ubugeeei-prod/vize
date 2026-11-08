@@ -200,7 +200,8 @@ impl<'a> L2Template<'a> {
     /// Parse `source` into L1 and lower it into L2, keeping authored comments
     /// as `ui.comment` ops (the child list the lint parser sees).
     pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {
-        let (tree, authored, errors) = vize_l1::markup::parse_with_authored(allocator, source);
+        let (tree, authored, errors) =
+            vize_l1::markup::parse_with_authored_diagnostics(allocator, source);
         let lowered = lower_preserving_comments(allocator, &tree, &errors);
         Self {
             tree,

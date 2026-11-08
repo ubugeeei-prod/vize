@@ -1,10 +1,11 @@
 //! Painter for rendering nodes to buffer.
 
 use compact_str::{CompactString, ToCompactString};
+use unicode_segmentation::UnicodeSegmentation;
 
 use crate::layout::Rect;
 use crate::terminal::{Buffer, Style};
-use crate::text::{TextWrap, WrapMode};
+use crate::text::{TextWidth, TextWrap, WrapMode};
 
 use super::{BorderStyle, NodeKind, RenderNode, RenderTree};
 
@@ -89,6 +90,8 @@ impl<'a> Painter<'a> {
                     input.focused,
                     input.mask,
                     input.mask_char,
+                    input.selection_start,
+                    input.selection_end,
                     content_area,
                     style,
                 );
@@ -170,6 +173,8 @@ impl<'a> Painter<'a> {
         focused: bool,
         mask: bool,
         mask_char: char,
+        selection_start: usize,
+        selection_end: usize,
         area: Rect,
         style: Style,
     ) {
@@ -180,7 +185,7 @@ impl<'a> Painter<'a> {
         let display_text: CompactString = if value.is_empty() && !focused {
             placeholder.to_compact_string()
         } else if mask {
-            std::iter::repeat_n(mask_char, value.chars().count()).collect()
+            std::iter::repeat_n(mask_char, value.graphemes(true).count()).collect()
         } else {
             value.to_compact_string()
         };
@@ -203,7 +208,55 @@ impl<'a> Painter<'a> {
                 .set_string(area.x, area.y + i as u16, line, style);
         }
 
+        if focused && selection_start < selection_end {
+            self.paint_input_selection(&display_text, selection_start, selection_end, area, style);
+        }
+
         // Terminal cursor is positioned by render_tree in render.rs
+    }
+
+    fn paint_input_selection(
+        &mut self,
+        value: &str,
+        selection_start: usize,
+        selection_end: usize,
+        area: Rect,
+        style: Style,
+    ) {
+        let mut column = 0_u16;
+        let mut row = 0_u16;
+        let mut selected_style = style;
+        selected_style.reverse = !selected_style.reverse;
+
+        for (index, grapheme) in value.graphemes(true).enumerate() {
+            if grapheme == "\n" {
+                column = 0;
+                row = row.saturating_add(1);
+                continue;
+            }
+            let Ok(width) = u16::try_from(TextWidth::width(grapheme)) else {
+                break;
+            };
+            if width == 0 {
+                continue;
+            }
+            if width > area.width.saturating_sub(column) {
+                column = 0;
+                row = row.saturating_add(1);
+            }
+            if row >= area.height {
+                break;
+            }
+            if (selection_start..selection_end).contains(&index) {
+                self.buffer.set_string(
+                    area.x.saturating_add(column),
+                    area.y.saturating_add(row),
+                    grapheme,
+                    selected_style,
+                );
+            }
+            column = column.saturating_add(width);
+        }
     }
 
     /// Paint raw content.
@@ -225,6 +278,64 @@ impl<'a> Painter<'a> {
     /// Fill an area with a character.
     pub fn fill(&mut self, area: Rect, ch: char, style: Style) {
         self.buffer.fill(area, ch, style);
+    }
+}
+
+#[cfg(test)]
+mod input_tests {
+    use super::Painter;
+    use crate::{
+        layout::Rect,
+        terminal::{Buffer, Style},
+    };
+
+    #[test]
+    fn input_selection_reverses_complete_wide_graphemes() {
+        let mut buffer = Buffer::new(4, 1);
+        {
+            let mut painter = Painter::new(&mut buffer);
+            painter.paint_input(
+                "a👋b",
+                "",
+                2,
+                true,
+                false,
+                '*',
+                1,
+                2,
+                Rect::new(0, 0, 4, 1),
+                Style::new(),
+            );
+        }
+
+        assert!(!buffer.get(0, 0).unwrap().style.reverse);
+        assert!(buffer.get(1, 0).unwrap().style.reverse);
+        assert!(buffer.get(2, 0).unwrap().style.reverse);
+        assert!(!buffer.get(3, 0).unwrap().style.reverse);
+    }
+
+    #[test]
+    fn password_masking_counts_graphemes_instead_of_scalar_values() {
+        let mut buffer = Buffer::new(3, 1);
+        {
+            let mut painter = Painter::new(&mut buffer);
+            painter.paint_input(
+                "👋🏽a",
+                "",
+                2,
+                true,
+                true,
+                '*',
+                0,
+                0,
+                Rect::new(0, 0, 3, 1),
+                Style::new(),
+            );
+        }
+
+        assert_eq!(buffer.get(0, 0).unwrap().symbol.as_str(), "*");
+        assert_eq!(buffer.get(1, 0).unwrap().symbol.as_str(), "*");
+        assert_eq!(buffer.get(2, 0).unwrap().symbol.as_str(), " ");
     }
 }
 

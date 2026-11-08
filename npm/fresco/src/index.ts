@@ -27,9 +27,13 @@ export { createRenderer } from "./renderer.js";
 export type {
   FrescoDeclaredSize,
   FrescoHostNode,
+  FrescoInputDispatchResult,
+  FrescoInputEventHandler,
+  FrescoInputEventPhase,
   FrescoNodeLifecycleHooks,
   FrescoNodeUpdateKind,
   FrescoRendererOptions,
+  FrescoRoutedInputEvent,
 } from "./renderer.js";
 export type {
   CompositionEvent,
@@ -52,6 +56,7 @@ export type {
   FrescoMouseEventKind,
   FrescoOverflow,
   FrescoPosition,
+  FrescoRawRenderNode,
   FrescoRenderNode,
   FrescoRenderNodeKind,
   FrescoRenderStyle,
@@ -75,6 +80,25 @@ export {
   type KittyKeyboardOptions,
 } from "./kittyKeyboard.js";
 export { measureElement, type DOMElement } from "./measureElement.js";
+export {
+  defineFrescoPlugin,
+  defineFrescoProvider,
+  type FrescoPluginDefinition,
+  type FrescoProvider,
+} from "./plugins.js";
+export {
+  defaultFrescoTheme,
+  FRESCO_THEME_KEY,
+  provideFrescoTheme,
+  resolveFrescoTheme,
+  useFrescoTheme,
+  type FrescoTheme,
+  type FrescoThemeBorders,
+  type FrescoThemeColors,
+  type FrescoThemeMotion,
+  type FrescoThemeOverride,
+  type FrescoThemeSpacing,
+} from "./theme.js";
 
 // Components
 export * from "./components/index.js";

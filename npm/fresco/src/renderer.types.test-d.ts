@@ -8,7 +8,9 @@ import {
   type FrescoDeclaredSize,
   type FrescoHostNode,
   type FrescoInputEvent,
+  type FrescoInputEventHandler,
   type FrescoNodeUpdateKind,
+  type FrescoRawRenderNode,
   type FrescoRenderNode,
   type FrescoRenderNodeKind,
   type FrescoRenderStyle,
@@ -25,7 +27,9 @@ type Equal<Left, Right> =
     : false;
 type Expect<Condition extends true> = Condition;
 
-type _FrescoKindIsClosed = Expect<Equal<FrescoRenderNodeKind, "root" | "box" | "text" | "input">>;
+type _FrescoKindIsClosed = Expect<
+  Equal<FrescoRenderNodeKind, "root" | "box" | "text" | "input" | "raw">
+>;
 type _NativeKindMatchesThePublicProtocol = Expect<
   Equal<RenderNodeNapi["nodeType"], FrescoRenderNodeKind>
 >;
@@ -103,8 +107,15 @@ export const inputNode: FrescoRenderNode = {
   placeholder: "type...",
   focused: true,
   cursor: 5,
+  selectionStart: 1,
+  selectionEnd: 5,
   mask: true,
   maskChar: "#",
+};
+export const rawNode: FrescoRawRenderNode = {
+  id: 4,
+  nodeType: "raw",
+  lines: ["first", "second"],
 };
 
 // @ts-expect-error - unknown node kinds are outside the closed protocol.
@@ -115,6 +126,9 @@ export const mismatchedBoxNode: FrescoRenderNode = { id: 5, nodeType: "box", tex
 
 // @ts-expect-error - input-only fields cannot cross onto a text variant.
 export const mismatchedTextNode: FrescoRenderNode = { id: 6, nodeType: "text", value: "no" };
+
+// @ts-expect-error - raw lines must remain strings across the native boundary.
+export const mismatchedRawNode: FrescoRenderNode = { id: 7, nodeType: "raw", lines: [1] };
 
 // @ts-expect-error - style enums reject values the renderer does not understand.
 export const invalidStyle: FrescoStyle = { flexDirection: "grid" };
@@ -139,6 +153,8 @@ export function exhaustivelyNarrowRenderNode(node: FrescoRenderNode): string {
       return `text:${node.text ?? ""}`;
     case "input":
       return `input:${node.value ?? ""}`;
+    case "raw":
+      return `raw:${node.lines?.length ?? 0}`;
     default: {
       const exhaustive: never = node;
       return exhaustive;
@@ -159,6 +175,12 @@ export const keyEvent: FrescoInputEvent = {
   numLock: false,
   eventType: "press",
 };
+export const routedKeyHandler: FrescoInputEventHandler<typeof keyEvent> = (event) => {
+  void [event.input.key, event.target.id, event.currentTarget.id];
+  event.preventDefault();
+  event.stopPropagation();
+};
+export const routedKeyResult = hostRenderer.dispatchInput(1, keyEvent);
 export const pasteEvent: FrescoInputEvent = { type: "paste", text: "pasted" };
 export const resizeEvent: FrescoInputEvent = { type: "resize", width: 80, height: 24 };
 export const mouseEvent: FrescoInputEvent = {

@@ -53,7 +53,6 @@ crates/vize_atelier_sfc/src/bundler/tests.rs	14
 crates/vize_atelier_sfc/src/compile/tests.rs	119
 crates/vize_atelier_sfc/src/compile/tests/custom_elements.rs	7
 crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs	17
-crates/vize_atelier_sfc/src/compile/tests/define_props_regressions/resolved_macro_prop_shapes.rs	5
 crates/vize_atelier_sfc/src/compile/tests/options_api_events.rs	5
 crates/vize_atelier_sfc/src/compile/tests/page_meta.rs	9
 crates/vize_atelier_sfc/src/compile/tests/props_rest.rs	5

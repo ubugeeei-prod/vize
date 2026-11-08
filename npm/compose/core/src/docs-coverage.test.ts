@@ -80,7 +80,7 @@ void test("public source graphs follow relative re-exports once", () => {
     fixtureRoot,
   );
 
-  assert.equal(audit.declarations, 3);
+  assert.equal(audit.declarations, 4);
   assert.equal(audit.optionalMembers, 1);
   assert.deepEqual(audit.problems, []);
 });

@@ -5,8 +5,11 @@
 // Layout
 export { Box, type BoxProps } from "./Box.js";
 export { default as Spacer } from "./FrescoSpacer.vue";
-export { Divider, type DividerProps } from "./Divider.js";
-export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
+export { default as Divider } from "./FrescoDivider.vue";
+export { default as Stack } from "./FrescoStack.vue";
+export { default as HStack } from "./FrescoHStack.vue";
+export { default as VStack } from "./FrescoVStack.vue";
+export type { DividerProps, StackProps } from "./layout-primitive-types.js";
 export { Grid, type GridProps } from "./Grid.js";
 export { default as Card } from "./FrescoCard.vue";
 export type { CardProps } from "./presentational-primitive-types.js";
@@ -29,6 +32,26 @@ export type { StaticProps } from "./display-primitive-types.js";
 export { default as Transform } from "./FrescoTransform.vue";
 export type { TransformProps } from "./text-utility-types.js";
 export { Code, type CodeProps } from "./Code.js";
+export { default as Markdown } from "./FrescoMarkdown.vue";
+export { defaultMarkdownRenderer, parseMarkdown, renderMarkdown } from "./markdown.js";
+export type {
+  MarkdownBlock,
+  MarkdownBlockProvider,
+  MarkdownCodeBlock,
+  MarkdownHeadingBlock,
+  MarkdownListBlock,
+  MarkdownListItem,
+  MarkdownParagraphBlock,
+  MarkdownProps,
+  MarkdownQuoteBlock,
+  MarkdownRenderer,
+  MarkdownRenderLine,
+  MarkdownRenderOptions,
+  MarkdownSpan,
+  MarkdownThematicBreakBlock,
+} from "./markdown-types.js";
+export { default as FrameBuffer } from "./FrescoFrameBuffer.vue";
+export type { FrameBufferProps } from "./frame-buffer-types.js";
 export { default as Link } from "./FrescoLink.vue";
 export type { LinkProps } from "./display-primitive-types.js";
 

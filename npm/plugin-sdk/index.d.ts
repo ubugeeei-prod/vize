@@ -1,6 +1,8 @@
 import type { FactGroups } from "./facts.js";
 
+/** Schema version accepted by rule-plugin batch payloads. */
 export declare const BATCH_SCHEMA: 1;
+/** Host-owned syntax node exposed to deterministic rule plugins. */
 export interface PluginNode {
   readonly id: number;
   readonly parent?: number;
@@ -14,10 +16,12 @@ export interface PluginNode {
     readonly index: string | null;
   };
 }
+/** Template binding visible at a node and the role that introduced it. */
 export interface ScopeEntry {
   readonly name: string;
   readonly position: "value" | "key" | "index" | "slot";
 }
+/** Read-only host facts and reporting operations available to one rule. */
 export interface RuleContext {
   readonly nodes: readonly PluginNode[];
   facts(name: "templateScopes"): ReadonlyMap<number, readonly ScopeEntry[]>;
@@ -27,6 +31,7 @@ export interface RuleContext {
   /** Replace the whole reported node span; ranges are assigned by the host. */
   report(node: PluginNode, message: string, fix?: string): void;
 }
+/** Authored rule-plugin definition before normalization and fingerprinting. */
 export interface PluginDefinition {
   name: string;
   version: string;
@@ -44,6 +49,7 @@ export interface Plugin extends Omit<PluginDefinition, "visit" | "demands" | "ca
   readonly fingerprint: string;
   run(batchJson: string): string;
 }
+/** Serializable syntax and fact payload delivered to a rule plugin. */
 export interface VisitBatch {
   schema: 1;
   plugin?: string;
@@ -52,12 +58,15 @@ export interface VisitBatch {
   nodes: PluginNode[];
   facts: Record<string, Array<[string | number, unknown]>>;
 }
+/** Validate, freeze, and fingerprint an authored rule-plugin definition. */
 export declare function definePlugin(definition: PluginDefinition): Plugin;
+/** Run a normalized plugin against a serialized visit batch. */
 export declare function runBatch(
   plugin: Plugin,
   batch: VisitBatch,
 ): Array<{ rule: string; node: number; message: string; fix?: string }>;
 
+/** Run every rule against an already decoded host source. */
 export declare function runRules(
   plugin: Plugin,
   source: {

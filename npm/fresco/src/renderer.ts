@@ -8,7 +8,7 @@ import {
   type RendererNode,
   type RendererElement,
 } from "vue";
-import type { FrescoRenderNode, FrescoRenderNodeKind } from "./protocol.js";
+import type { FrescoInputEvent, FrescoRenderNode, FrescoRenderNodeKind } from "./protocol.js";
 import { frescoNodeToRenderNode } from "./renderPayload.js";
 
 export type { FrescoRenderNodeKind } from "./protocol.js";
@@ -40,6 +40,45 @@ export interface FrescoDeclaredSize {
 /** Host-tree update category passed to lifecycle observers. */
 export type FrescoNodeUpdateKind = "children" | "props" | "text";
 
+/** Position of a routed input event within its stable host-node path. */
+export type FrescoInputEventPhase = "capture" | "target" | "bubble";
+
+/** Input event plus the stable host-node routing context. */
+export interface FrescoRoutedInputEvent<Event extends FrescoInputEvent = FrescoInputEvent> {
+  /** Normalized terminal input supplied by the caller. */
+  readonly input: Event;
+  /** Original live host node selected for this dispatch. */
+  readonly target: FrescoHostNode;
+  /** Node whose handlers are currently running. */
+  readonly currentTarget: FrescoHostNode;
+  /** Capture, target, or bubble portion of the route. */
+  readonly phase: FrescoInputEventPhase;
+  /** Whether a handler has prevented the associated default action. */
+  readonly defaultPrevented: boolean;
+  /** Whether traversal beyond the current node has been stopped. */
+  readonly propagationStopped: boolean;
+  /** Prevent the caller from performing the input event default action. */
+  preventDefault(): void;
+  /** Stop traversal after every handler on the current node has run. */
+  stopPropagation(): void;
+}
+
+/** Public host prop callback accepted by routed input dispatch. */
+export type FrescoInputEventHandler<Event extends FrescoInputEvent = FrescoInputEvent> = (
+  event: FrescoRoutedInputEvent<Event>,
+) => void;
+
+/** Immutable receipt returned after one routed input dispatch. */
+export interface FrescoInputDispatchResult {
+  /** Stable target that owned the dispatch route. */
+  readonly target: FrescoHostNode;
+  /** Number of generic and event-specific callbacks invoked. */
+  readonly handled: number;
+  /** Whether any callback prevented the default action. */
+  readonly defaultPrevented: boolean;
+  /** Whether any callback stopped route traversal. */
+  readonly propagationStopped: boolean;
+}
 /** Optional lifecycle observers for nodes owned by a Fresco renderer. */
 export interface FrescoNodeLifecycleHooks {
   /** Observe allocation of a stable host node. @default No-op. */
@@ -144,6 +183,51 @@ function detachNode(tree: HostTree, node: FrescoNode): boolean {
   parent.children.splice(index, 1);
   notifyUpdate(tree, parent, "children");
   return true;
+}
+
+interface MutableRoutedInputEvent<
+  Event extends FrescoInputEvent,
+> extends FrescoRoutedInputEvent<Event> {
+  currentTarget: FrescoHostNode;
+  phase: FrescoInputEventPhase;
+  defaultPrevented: boolean;
+  propagationStopped: boolean;
+}
+
+function routedInputEventName(event: FrescoInputEvent): string {
+  switch (event.type) {
+    case "compositionstart":
+      return "CompositionStart";
+    case "compositionupdate":
+      return "CompositionUpdate";
+    case "compositionend":
+      return "CompositionEnd";
+    default:
+      return `${event.type[0]?.toUpperCase() ?? ""}${event.type.slice(1)}`;
+  }
+}
+
+function callInputHandlers(value: unknown, event: FrescoRoutedInputEvent): number {
+  if (typeof value === "function") {
+    (value as FrescoInputEventHandler)(event);
+    return 1;
+  }
+  if (!Array.isArray(value)) return 0;
+  let handled = 0;
+  for (const handler of value) handled += callInputHandlers(handler, event);
+  return handled;
+}
+
+function dispatchAtNode(
+  node: FrescoNode,
+  event: MutableRoutedInputEvent<FrescoInputEvent>,
+  capture: boolean,
+  eventName: string,
+): number {
+  const suffix = capture ? "Capture" : "";
+  let handled = callInputHandlers(node.props[`onFrescoInput${suffix}`], event);
+  handled += callInputHandlers(node.props[`on${eventName}${suffix}`], event);
+  return handled;
 }
 
 /**
@@ -256,6 +340,10 @@ function mapElementType(type: string): FrescoRenderNodeKind {
     case "input":
     case "textinput":
       return "input";
+    case "raw":
+    case "framebuffer":
+    case "frame-buffer":
+      return "raw";
     default:
       return "box";
   }
@@ -296,6 +384,67 @@ export function createRenderer(options: FrescoRendererOptions | (() => void) = {
       disposeNode(tree, node);
       tree.onMutation();
       return true;
+    },
+    /** Route normalized input through capture, target, and bubble handlers. */
+    dispatchInput<Event extends FrescoInputEvent>(
+      targetId: number,
+      input: Event,
+    ): FrescoInputDispatchResult | undefined {
+      const target = tree.nodes.get(targetId);
+      if (!target) return undefined;
+
+      const path: FrescoNode[] = [];
+      for (let node: FrescoNode | null = target; node; node = node.parent) path.push(node);
+      const routed: MutableRoutedInputEvent<Event> = {
+        input,
+        target,
+        currentTarget: target,
+        phase: "target",
+        defaultPrevented: false,
+        propagationStopped: false,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+        stopPropagation() {
+          this.propagationStopped = true;
+        },
+      };
+      const eventName = routedInputEventName(input);
+      let handled = 0;
+
+      for (let index = path.length - 1; index > 0; index -= 1) {
+        const node = path[index];
+        if (!node) continue;
+        routed.currentTarget = node;
+        routed.phase = "capture";
+        handled += dispatchAtNode(node, routed, true, eventName);
+        if (routed.propagationStopped) break;
+      }
+
+      if (!routed.propagationStopped) {
+        routed.currentTarget = target;
+        routed.phase = "target";
+        handled += dispatchAtNode(target, routed, true, eventName);
+        handled += dispatchAtNode(target, routed, false, eventName);
+      }
+
+      if (!routed.propagationStopped) {
+        for (let index = 1; index < path.length; index += 1) {
+          const node = path[index];
+          if (!node) continue;
+          routed.currentTarget = node;
+          routed.phase = "bubble";
+          handled += dispatchAtNode(node, routed, false, eventName);
+          if (routed.propagationStopped) break;
+        }
+      }
+
+      return {
+        target,
+        handled,
+        defaultPrevented: routed.defaultPrevented,
+        propagationStopped: routed.propagationStopped,
+      };
     },
   });
 }

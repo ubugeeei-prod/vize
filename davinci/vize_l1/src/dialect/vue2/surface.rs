@@ -117,7 +117,7 @@ fn projection<'a>(
             Lexer::<Component, _>::new(source, sink, LexOptions::default()).run();
         });
     for error in &mut errors {
-        error.offset += block.start();
+        *error = error.rebased(block.start());
     }
     ComponentParse {
         block,
