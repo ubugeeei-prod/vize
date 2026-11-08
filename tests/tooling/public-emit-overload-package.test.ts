@@ -185,10 +185,7 @@ test("packed public emit props retain complete diagnostics and require every dec
             // Literal overload recovery remains exact even when the primary option alias is
             // corrupted, while the physical package closure still rejects the foreign bytes.
             assert.deepEqual(diagnostics(wrong), wrongPacket);
-            assert.throws(
-              () => assert.deepEqual(diagnostics(wrong), []),
-              assert.AssertionError,
-            );
+            assert.throws(() => assert.deepEqual(diagnostics(wrong), []), assert.AssertionError);
             assert.throws(admit, /package declaration changed/);
           } finally {
             fs.writeFileSync(modulePath, original);
