@@ -41,7 +41,7 @@ export const packageVersions = {
   vize: "0.602.0",
   vue: "3.5.42",
   typescript: "6.0.3",
-  "typescript-native": "7.1.0-beta",
+  "typescript-native": "7.0.2",
 };
 function readJson(file: string): Record<string, unknown> {
   const value = jsonValue(fs.readFileSync(file, "utf8"));
