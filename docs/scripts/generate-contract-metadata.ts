@@ -117,7 +117,7 @@ export function documentationContractMetadata() {
         },
         completionItems: uiFamilyCatalog.map((family) => ({
           label: family.title,
-          detail: `@vizejs/ui${family.packageSubpath === "." ? "" : family.packageSubpath.slice(1)}`,
+          detail: `@vizejs/ui${family.packageSubpath.slice(1)}`,
           documentation: `/guide/ui/${family.canonicalName}.html`,
           aliases: family.aliases,
           maturity: family.maturity,
