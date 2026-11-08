@@ -15,12 +15,7 @@ import {
   type Ref,
   type VNode,
 } from "vue";
-import type {
-  InputEventNapi,
-  LayoutResultNapi,
-  ModifiersNapi,
-  TerminalInfoNapi,
-} from "@vizejs/fresco-native";
+import type { InputEventNapi, LayoutResultNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,
   isScreenReaderEnabledByDefault,
@@ -37,7 +32,7 @@ import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composab
 import type { FrescoDevtools } from "./devtools.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
-import { normalizeKeyEventType, normalizeMouseEvent } from "./nativeInput.js";
+import { normalizeInputEvent } from "./nativeInput.js";
 import type {
   CompositionEvent,
   FocusEvent,
@@ -737,79 +732,31 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   function dispatchEvent(event: InputEventNapi) {
-    if (event.eventType === "resize") {
-      const resizeEvent = {
-        type: "resize" as const,
-        width: event.width ?? 0,
-        height: event.height ?? 0,
-      };
-      lastResizeEvent.value = resizeEvent;
-      options.devtools?.recordInput(resizeEvent);
-      updateAppSize(appContext, resizeEvent.width, resizeEvent.height);
-      return;
-    }
-
-    if (event.eventType === "paste") {
-      const pasteEvent: PasteEvent = {
-        type: "paste",
-        text: event.text ?? "",
-      };
-      lastPasteEvent.value = pasteEvent;
-      options.devtools?.recordInput(pasteEvent);
-      return;
-    }
-
-    if (event.eventType === "mouse") {
-      const mouseEvent = normalizeMouseEvent(event);
-      lastMouseEvent.value = mouseEvent;
-      options.devtools?.recordInput(mouseEvent);
-      return;
-    }
-
-    if (event.eventType === "focus") {
-      const focusEvent: FocusEvent = {
-        type: "focus",
-        focused: event.key === "gained",
-      };
-      lastFocusEvent.value = focusEvent;
-      options.devtools?.recordInput(focusEvent);
-      return;
-    }
-
-    if (
-      event.eventType === "compositionstart" ||
-      event.eventType === "compositionupdate" ||
-      event.eventType === "compositionend"
-    ) {
-      const type = event.eventType as CompositionEvent["type"];
-      const compositionEvent: CompositionEvent = {
-        type,
-        text: event.text ?? "",
-        cursor: event.cursor ?? 0,
-      };
-      lastCompositionEvent.value = compositionEvent;
-      options.devtools?.recordInput(compositionEvent);
-      return;
-    }
-
-    if (event.eventType === "key") {
-      const modifiers: Partial<ModifiersNapi> = event.modifiers ?? {};
-      const keyEvent: KeyEvent = {
-        type: "key",
-        key: event.key ?? undefined,
-        char: event.char ?? undefined,
-        ctrl: modifiers.ctrl ?? false,
-        alt: modifiers.alt ?? false,
-        shift: modifiers.shift ?? false,
-        meta: modifiers.meta ?? false,
-        super: modifiers.super ?? false,
-        hyper: modifiers.hyper ?? false,
-        capsLock: modifiers.capsLock ?? false,
-        numLock: modifiers.numLock ?? false,
-        eventType: normalizeKeyEventType(event.keyEventType),
-      };
-      lastKeyEvent.value = keyEvent;
-      options.devtools?.recordInput(keyEvent);
+    const normalized = normalizeInputEvent(event);
+    if (!normalized) return;
+    options.devtools?.recordInput(normalized);
+    switch (normalized.type) {
+      case "resize":
+        lastResizeEvent.value = normalized;
+        updateAppSize(appContext, normalized.width, normalized.height);
+        break;
+      case "paste":
+        lastPasteEvent.value = normalized;
+        break;
+      case "mouse":
+        lastMouseEvent.value = normalized;
+        break;
+      case "focus":
+        lastFocusEvent.value = normalized;
+        break;
+      case "compositionstart":
+      case "compositionupdate":
+      case "compositionend":
+        lastCompositionEvent.value = normalized;
+        break;
+      case "key":
+        lastKeyEvent.value = normalized;
+        break;
     }
   }
 
