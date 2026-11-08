@@ -65,12 +65,22 @@ void test("the pinned package manager selects private transitive dependencies fo
     for (const [path, name] of names) {
       write(path, { name, devDependencies: { "fixture-shared": "workspace:*" } });
     }
+    write(tools, {
+      name: names.get(tools),
+      devDependencies: { "fixture-tooling": "workspace:*" },
+    });
     write("packages/shared", {
       name: "fixture-shared",
       private: true,
       dependencies: { "fixture-leaf": "workspace:*" },
       optionalDependencies: { "fixture-optional": "workspace:*" },
     });
+    write("packages/tooling", {
+      name: "fixture-tooling",
+      private: true,
+      dependencies: { "fixture-tooling-leaf": "workspace:*" },
+    });
+    write("packages/tooling-leaf", { name: "fixture-tooling-leaf", private: true });
     write("packages/共有 leaf", { name: "fixture-leaf", private: true });
     write("packages/optional", { name: "fixture-optional", private: true });
     write("packages/unrelated", { name: "fixture-unrelated", private: true });
@@ -100,6 +110,8 @@ void test("the pinned package manager selects private transitive dependencies fo
             "fixture-shared",
             "fixture-leaf",
             "fixture-optional",
+            "fixture-tooling",
+            "fixture-tooling-leaf",
           ]),
         ].sort(compareNames),
         group,

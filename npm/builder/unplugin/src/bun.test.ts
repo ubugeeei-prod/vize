@@ -11,7 +11,7 @@ const enabled = bun.status === 0;
 
 void test(
   "the actual Bun bundler compiles an imported Vue SFC and emits its scoped CSS",
-  { skip: enabled ? false : "Bun is not installed in this host" },
+  { skip: enabled || process.env.CI ? false : "Bun is not installed in this host" },
   () => {
     const root = prepareOutputDir("bun-basic");
     const report = path.join(root, "report.json");
