@@ -46,7 +46,12 @@ import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
 import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
 import { resetTypeProjectWatches } from "./type-project-watches.ts";
-import { aliasSortKey, resolveHookSsr, shouldExtractCssForBuild } from "./index-helpers.ts";
+import {
+  aliasSortKey,
+  resolveBuildStartSsr,
+  resolveHookSsr,
+  shouldExtractCssForBuild,
+} from "./index-helpers.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -70,6 +75,7 @@ export function vize(
     ssrCache: new CompiledModuleCache(),
     collectedCss: new Map(),
     precompileMetadata: new Map(),
+    ssrPrecompileMetadata: new Map(),
     pendingHmrUpdateTypes: new Map(),
     viteResolveCache: new Map(),
     isProduction: false,
@@ -294,6 +300,7 @@ export function vize(
           precompileInputOwners(this, precompileConfig),
           (request, importer) => this.resolve(request, importer, { skipSelf: true }),
           this.addWatchFile.bind(this),
+          resolveBuildStartSsr(this, precompileConfig),
         );
       } catch (error) {
         if (!(error instanceof PrecompileDiagnosticsError)) throw error;

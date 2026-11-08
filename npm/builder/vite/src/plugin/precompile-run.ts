@@ -26,6 +26,7 @@ import {
 } from "./precompile-cache.ts";
 import {
   getCompileOptionsForRequest,
+  getEnvironmentCache,
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
@@ -47,8 +48,8 @@ export class PrecompileDiagnosticsError extends Error {
  * Also the input to the cache key, so the two can never drift: a new option
  * that reaches the native compiler reaches the key with it.
  */
-function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOptions {
-  return getCompileOptionsForRequest(state, false);
+function resolvePrecompileBatchOptions(state: VizePluginState, ssr: boolean): CompileBatchOptions {
+  return getCompileOptionsForRequest(state, ssr);
 }
 
 function openCacheForRun(
@@ -81,6 +82,7 @@ export async function compileAll(
   owners: readonly PrecompileInputOwner[] = [],
   resolve?: HostResolve,
   addWatchFile?: (path: string) => void,
+  ssr = false,
 ): Promise<void> {
   const startTime = performance.now();
   const files = await glob(state.scanPatterns!, {
@@ -104,10 +106,14 @@ export async function compileAll(
     }
   }
 
+  const targetCache = getEnvironmentCache(state, ssr);
+  const targetMetadata = ssr
+    ? (state.ssrPrecompileMetadata ??= new Map())
+    : state.precompileMetadata;
   const { changedFiles: changed, deletedFiles } = diffPrecompileFiles(
     sfcFiles,
     currentMetadata,
-    state.precompileMetadata,
+    targetMetadata,
   );
   // A newly active companion must not be hidden by unchanged in-memory metadata.
   // Re-read its candidates before either in-memory or persistent cache reuse.
@@ -121,6 +127,7 @@ export async function compileAll(
       state.collectedCss.delete(file);
     }
     state.precompileMetadata.delete(file);
+    state.ssrPrecompileMetadata?.delete(file);
     state.pendingHmrUpdateTypes.delete(file);
   }
 
@@ -141,7 +148,7 @@ export async function compileAll(
     state.pendingHmrUpdateTypes.delete(file);
   }
 
-  const batchOptions = resolvePrecompileBatchOptions(state);
+  const batchOptions = resolvePrecompileBatchOptions(state, ssr);
   const cache = openCacheForRun(state, batchOptions);
   // A disabled cache must not pay for hashing it will never consult.
   const cacheEnabled = cache.file !== null;
@@ -170,6 +177,7 @@ export async function compileAll(
         state.ssrCache.delete(file);
         state.collectedCss.delete(file);
         state.precompileMetadata.delete(file);
+        state.ssrPrecompileMetadata?.delete(file);
         cache.delete(file);
         precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
         state.logger.error(`Failed to read ${file}:`, e);
@@ -177,10 +185,14 @@ export async function compileAll(
       }
 
       if (owners.some((ownsInput) => ownsInput(file, source))) {
+        // Ownership is source-wide, not environment-specific. A companion that
+        // claims an input must invalidate stale client and SSR results even
+        // when this scan is compiling only one environment.
         state.cache.delete(file);
         state.ssrCache.delete(file);
         state.collectedCss.delete(file);
         state.precompileMetadata.delete(file);
+        state.ssrPrecompileMetadata?.delete(file);
         cache.delete(file);
         continue;
       }
@@ -191,10 +203,10 @@ export async function compileAll(
       const stored = sourceHash === undefined ? undefined : cache.get(file, sourceHash);
       if (stored) {
         const restored = { ...stored, source };
-        state.cache.set(file, restored);
+        targetCache.set(file, restored);
         const metadata = currentMetadata.get(file);
         if (metadata) {
-          state.precompileMetadata.set(file, metadata);
+          targetMetadata.set(file, metadata);
         }
         syncCollectedCssForFile(
           {
@@ -223,7 +235,7 @@ export async function compileAll(
         await prepareSfcSrcRequests(state, resolve, file.path, file.source);
       }
     }
-    const result = compileScopedBatch(fileContents, state);
+    const result = compileScopedBatch(fileContents, state, ssr);
 
     const chunkFailedCount = result.results.filter(
       (fileResult) => fileResult.errors.length > 0,
@@ -243,17 +255,18 @@ export async function compileAll(
         state.ssrCache.delete(fileResult.path);
         state.collectedCss.delete(fileResult.path);
         state.precompileMetadata.delete(fileResult.path);
+        state.ssrPrecompileMetadata?.delete(fileResult.path);
         cache.delete(fileResult.path);
         precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
         continue;
       }
 
       if (metadata) {
-        state.precompileMetadata.set(fileResult.path, metadata);
+        targetMetadata.set(fileResult.path, metadata);
       }
 
-      const compiled = state.cache.get(fileResult.path);
-      watchTypeProject(state.cache, fileResult.typeProject, addWatchFile);
+      const compiled = targetCache.get(fileResult.path);
+      watchTypeProject(targetCache, fileResult.typeProject, addWatchFile);
       const sourceHash = sourceHashes.get(fileResult.path);
       if (fileResult.warnings.length > 0) {
         // The disk entry does not carry diagnostics. Recompile warned sources
