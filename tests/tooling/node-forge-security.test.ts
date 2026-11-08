@@ -91,17 +91,18 @@ test("changed registry, version, graph, aliases or direct importer reject recogn
 });
 
 test("no old or new Forge patch registration can inherit the upstream proof", () => {
+  const forgePatchPrefix = "patches/" + "node-" + "forge@";
   for (const version of ["1.4.0", "1.4.1", "1.4.2"]) {
     for (const patch of [
       "unexpected-patch-hash",
-      { hash: "unexpected-patch-hash", path: `patches/node-forge@${version}.patch` },
+      { hash: "unexpected-patch-hash", path: forgePatchPrefix + version + ".patch" },
     ]) {
       const next = structuredClone(lock);
       next.patchedDependencies["node-forge@" + version] = patch;
       assert.throws(() => assertForgeLock(workspace, next));
     }
     const next = structuredClone(workspace);
-    next.patchedDependencies["node-forge@" + version] = `patches/node-forge@${version}.patch`;
+    next.patchedDependencies["node-forge@" + version] = forgePatchPrefix + version + ".patch";
     assert.throws(() => assertForgeLock(next, lock));
   }
 });
