@@ -126,7 +126,7 @@ impl MarkupRule for NoBareStringsInTemplate {
     }
 
     fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Full
+        MarkupTraversal::ElementsAndText
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {

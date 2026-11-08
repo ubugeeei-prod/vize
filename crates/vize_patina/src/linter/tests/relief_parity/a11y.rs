@@ -98,6 +98,7 @@ fn remaining_facade_family() -> Vec<Box<dyn Rule>> {
 }
 
 const REMAINING_FACADE_TEMPLATES: &[&str] = &[
+    r#"Root-level text<div>Nested text</div>"#,
     r#"<h1>Title</h1><h3>Skipped</h3><p>- Item</p>"#,
     r#"<div class="btn btn" style="color:red;color:blue">Visible text</div>"#,
     r#"<button  disabled="disabled">Submit</button><a rel="friend">Link</a>"#,
@@ -108,6 +109,7 @@ const REMAINING_FACADE_TEMPLATES: &[&str] = &[
 ];
 
 const REMAINING_FACADE_JSX: &[&str] = &[
+    r#"const A = () => <>{'Expression text'}<div>Nested text</div></>;"#,
     r#"const A = () => <><h1>Title</h1><h3>Skipped</h3><p>- Item</p></>;"#,
     r#"const A = () => <div className="btn btn" style="color:red;color:blue">Visible text</div>;"#,
     r#"const A = () => <><button disabled="disabled">Submit</button><a rel="friend">Link</a></>;"#,
