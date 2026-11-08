@@ -4,6 +4,7 @@ import sources from "webpack-sources";
 import { MappedModule, parseSourceMap } from "@vizejs/builder-shared/mapped-module";
 import type { LoaderContext } from "./types.ts";
 
+/** Applies SFC scoping and CSS-variable rewrites inside Turbopack's style pipeline. */
 export default function vizeScopeLoader(
   this: LoaderContext<{ root?: string; sourceMap?: boolean }>,
   source: string,

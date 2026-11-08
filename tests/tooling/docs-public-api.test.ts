@@ -55,6 +55,34 @@ const packages = [
     ],
   },
   {
+    name: "eslint-plugin-vize",
+    source: new URL("../../npm/linter/eslint/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/nuxt-lint-config",
+    source: new URL("../../npm/framework/nuxt-lint-config/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/parcel-transformer",
+    source: new URL("../../npm/builder/parcel/src/", import.meta.url),
+  },
+  {
+    name: "prettier-plugin-vize",
+    source: new URL("../../npm/formatter/prettier/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/turbopack-loader",
+    source: new URL("../../npm/builder/turbopack/src/", import.meta.url),
+  },
+  {
+    name: "vize",
+    source: new URL("../../npm/cli/src/", import.meta.url),
+  },
+  {
+    name: "@vizejs/babel-plugin",
+    source: new URL("../../npm/builder/babel/src/", import.meta.url),
+  },
+  {
     name: "oxlint-plugin-vize",
     sourceRoot: npmRoot,
     minimumDeclarations: 20,
