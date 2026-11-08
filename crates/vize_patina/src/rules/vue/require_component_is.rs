@@ -33,6 +33,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `vue/require-component-is` lint rule.
 pub struct RequireComponentIs;
 
 impl RequireComponentIs {

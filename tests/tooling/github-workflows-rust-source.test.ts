@@ -121,16 +121,14 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     /cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports/,
   );
   assert.match(validation, /cargo test @packages@ --profile ci --doc/);
-  const patinaDocs = parallel.steps?.find(
-    (step) => step.name === "Document Patina native APIs",
-  );
+  const patinaDocs = parallel.steps?.find((step) => step.name === "Document Patina public APIs");
   assert.equal(
     patinaDocs?.if,
     "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
   );
   assert.match(
     patinaDocs?.run ?? "",
-    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib/,
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
   );
   assert.doesNotMatch(validation, /nextest archive/);
   assert.equal(Object.hasOwn(products.jobs, "merge-rust-source"), false);
@@ -292,14 +290,14 @@ function restoreRustCaseReporting(job: RustJob, contracts: number) {
   job.steps.splice(named("Record native navigation case").index, 1);
   for (const name of ["Require Rust source test cases", "Upload Rust source test cases"])
     job.steps.splice(named(name).index, 1);
-  const patinaDocs = named("Document Patina native APIs");
+  const patinaDocs = named("Document Patina public APIs");
   assert.equal(
     patinaDocs.step.if,
     "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
   );
   assert.match(
     patinaDocs.step.run ?? "",
-    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib/,
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
   );
   job.steps.splice(patinaDocs.index, 1);
 }

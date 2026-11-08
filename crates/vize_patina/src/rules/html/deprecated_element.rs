@@ -39,6 +39,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/deprecated-element` lint rule.
 pub struct DeprecatedElement;
 
 /// Markup-IR entry point for `html/deprecated-element`.

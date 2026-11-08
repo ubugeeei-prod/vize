@@ -40,6 +40,7 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 
 const MESSAGE: &str = "Expected to return a value in render function.";
 
+/// Implements the `script/require-render-return` lint rule.
 pub struct RequireRenderReturn;
 
 impl ScriptRule for RequireRenderReturn {

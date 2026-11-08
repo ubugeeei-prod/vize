@@ -36,7 +36,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
-/// Disallow key attribute on <template>
+/// Disallow a `key` attribute on `<template>`.
 pub struct NoTemplateKey;
 
 impl Rule for NoTemplateKey {

@@ -50,6 +50,7 @@ const REL_VALUES: &[(&str, &[&str])] = &[
     ("tag", &["a", "area"]),
 ];
 
+/// Implements the `vue/no-invalid-html-attribute` lint rule.
 pub struct NoInvalidHtmlAttribute;
 
 impl MarkupRule for NoInvalidHtmlAttribute {

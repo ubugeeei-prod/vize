@@ -19,6 +19,7 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+/// Implements the `ecosystem/router-link-require-to` lint rule.
 pub struct RouterLinkRequireTo;
 
 impl Rule for RouterLinkRequireTo {
