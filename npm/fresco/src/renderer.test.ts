@@ -198,6 +198,105 @@ test("reports lifecycle updates and recursively destroys lookup entries", async 
   );
 });
 
+test("routes typed input through capture, target, and bubble handlers", () => {
+  const calls: string[] = [];
+  const observe = (label: string) => (event: { phase: string; currentTarget: { id: number } }) => {
+    calls.push(`${label}:${event.phase}:${event.currentTarget.id}`);
+  };
+  const mounted = mountFresco(() =>
+    h(
+      "box",
+      {
+        onFrescoInputCapture: observe("root-input-capture"),
+        onKeyCapture: observe("root-key-capture"),
+        onFrescoInput: observe("root-input-bubble"),
+        onKey: observe("root-key-bubble"),
+      },
+      [
+        h("box", { onKeyCapture: observe("parent-key-capture"), onKey: observe("parent-key") }, [
+          h("input", {
+            onFrescoInputCapture: observe("target-input-capture"),
+            onKeyCapture: observe("target-key-capture"),
+            onFrescoInput: observe("target-input"),
+            onKey: observe("target-key"),
+          }),
+        ]),
+      ],
+    ),
+  );
+  const root = firstChild(mounted);
+  const parent = root.children[0];
+  const target = parent?.children[0];
+  assert.ok(parent && target);
+
+  const result = mounted.renderer.dispatchInput(target.id, {
+    type: "key",
+    key: "enter",
+    ctrl: false,
+    alt: false,
+    shift: false,
+    meta: false,
+    super: false,
+    hyper: false,
+    capsLock: false,
+    numLock: false,
+  });
+
+  assert.deepEqual(calls, [
+    `root-input-capture:capture:${root.id}`,
+    `root-key-capture:capture:${root.id}`,
+    `parent-key-capture:capture:${parent.id}`,
+    `target-input-capture:target:${target.id}`,
+    `target-key-capture:target:${target.id}`,
+    `target-input:target:${target.id}`,
+    `target-key:target:${target.id}`,
+    `parent-key:bubble:${parent.id}`,
+    `root-input-bubble:bubble:${root.id}`,
+    `root-key-bubble:bubble:${root.id}`,
+  ]);
+  assert.equal(result?.target, target);
+  assert.equal(result?.handled, calls.length);
+  assert.equal(result?.defaultPrevented, false);
+  assert.equal(result?.propagationStopped, false);
+  mounted.unmount();
+});
+
+test("stops after the current node and reports prevented routed input", () => {
+  const calls: string[] = [];
+  const mounted = mountFresco(() =>
+    h("box", { onPaste: () => calls.push("root") }, [
+      h(
+        "box",
+        {
+          onFrescoInputCapture: (event: { preventDefault(): void; stopPropagation(): void }) => {
+            calls.push("generic");
+            event.preventDefault();
+            event.stopPropagation();
+          },
+          onPasteCapture: () => calls.push("specific"),
+        },
+        [h("text")],
+      ),
+    ]),
+  );
+  const parent = firstChild(mounted).children[0];
+  const target = parent?.children[0];
+  assert.ok(parent && target);
+
+  const result = mounted.renderer.dispatchInput(target.id, { type: "paste", text: "hello" });
+  assert.deepEqual(calls, ["generic", "specific"]);
+  assert.equal(result?.handled, 2);
+  assert.equal(result?.defaultPrevented, true);
+  assert.equal(result?.propagationStopped, true);
+
+  mounted.renderer.destroyRecursively(target.id);
+  assert.equal(
+    mounted.renderer.dispatchInput(target.id, { type: "paste", text: "gone" }),
+    undefined,
+  );
+  mounted.unmount();
+});
+
 test("emits all four discriminated render variants with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
