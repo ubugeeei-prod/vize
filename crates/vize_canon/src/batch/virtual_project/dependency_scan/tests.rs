@@ -21,11 +21,8 @@ fn identity_script_reuses_initial_dependency_syntax_once() {
     let entry = src.join("entry.ts");
     let dependency = src.join("dependency.ts");
     let reference = src.join("types.d.ts");
-    fs::write(
-        &entry,
-        "/// <reference path=\"./types.d.ts\" />\nimport { value } from './dependency';\nexport { value };\n",
-    )
-    .unwrap();
+    let entry_source = "/// <reference path=\"./types.d.ts\" />\nimport { value } from './dependency';\nexport { value };\n";
+    fs::write(&entry, entry_source).unwrap();
     fs::write(&dependency, "export const value = 1;\n").unwrap();
     fs::write(&reference, "declare const named: string;\n").unwrap();
 
@@ -35,13 +32,11 @@ fn identity_script_reuses_initial_dependency_syntax_once() {
         .dependency_syntax_facts
         .as_ref()
         .expect("identity script keeps the initial parse facts until reachability");
-    assert_eq!(
-        syntax.occurrences.as_ref(),
-        [(
-            CompactString::from("./dependency"),
-            crate::PackageResolutionMode::Contextual
-        )]
-    );
+    assert_eq!(syntax.occurrences.len(), 1);
+    assert!(syntax.occurrences.iter().any(|(start, end, mode)| {
+        *mode == crate::PackageResolutionMode::Contextual
+            && entry_source.get(*start as usize..*end as usize) == Some("./dependency")
+    }));
     assert_eq!(
         syntax.references.as_ref(),
         [CompactString::from("./types.d.ts")]

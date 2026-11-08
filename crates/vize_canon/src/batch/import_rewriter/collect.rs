@@ -40,30 +40,39 @@ pub(super) fn deduplicate_specifier_occurrences(
     occurrences
 }
 
-pub(super) fn into_deduplicated_specifier_occurrences(
+pub(super) fn into_deduplicated_specifier_spans(
+    source: &str,
     spans: Vec<SpanOccurrence>,
-) -> Vec<(String, crate::PackageResolutionMode)> {
+) -> Vec<(u32, u32, crate::PackageResolutionMode)> {
     let mut occurrences = Vec::with_capacity(spans.len());
     if spans.len() <= 8 {
-        for (_, _, path, mode) in spans {
+        for (start, end, path, mode) in spans {
             if !occurrences
                 .iter()
-                .any(|(known, known_mode)| known == path && *known_mode == mode)
+                .any(|(known_start, known_end, known_mode)| {
+                    *known_mode == mode
+                        && source.get(*known_start as usize..*known_end as usize)
+                            == Some(path.as_str())
+                })
             {
-                occurrences.push((path, mode));
+                occurrences.push((start, end, mode));
             }
         }
         return occurrences;
     }
     let mut seen = FxHashSet::default();
-    for (_, _, path, mode) in spans {
+    for (start, end, path, mode) in spans {
         let fingerprint = (xxhash_rust::xxh3::xxh3_128(path.as_bytes()), mode);
         if seen.insert(fingerprint)
             || !occurrences
                 .iter()
-                .any(|(known, known_mode)| known == path && *known_mode == mode)
+                .any(|(known_start, known_end, known_mode)| {
+                    *known_mode == mode
+                        && source.get(*known_start as usize..*known_end as usize)
+                            == Some(path.as_str())
+                })
         {
-            occurrences.push((path, mode));
+            occurrences.push((start, end, mode));
         }
     }
     occurrences

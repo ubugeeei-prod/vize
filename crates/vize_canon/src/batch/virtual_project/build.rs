@@ -74,7 +74,7 @@ pub(super) struct RegisteredFile {
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct DependencySyntaxFacts {
     pub(super) source_bytes: usize,
-    pub(super) occurrences: Box<[(CompactString, crate::PackageResolutionMode)]>,
+    pub(super) occurrences: Box<[crate::batch::import_rewriter::ModuleSpecifierSpan]>,
     pub(super) references: Box<[CompactString]>,
 }
 
