@@ -1,0 +1,67 @@
+{
+  "name": "@vizejs/create-fresco",
+  "version": "0.474.0",
+  "description": "Create a Vue-native Fresco terminal application",
+  "keywords": [
+    "create",
+    "fresco",
+    "scaffold",
+    "terminal",
+    "tui",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
+    "directory": "npm/create-fresco"
+  },
+  "bin": {
+    "create-fresco": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check README.md package.json tsconfig.json src vite.config.ts && tsc --noEmit -p tsconfig.json",
+    "check:fix": "vp check --fix README.md package.json tsconfig.json src vite.config.ts",
+    "check:types": "tsc --noEmit -p tsconfig.json",
+    "fmt": "vp fmt --write README.md package.json tsconfig.json src vite.config.ts",
+    "test": "vp exec tsx --test src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "tsx": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

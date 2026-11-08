@@ -1105,6 +1105,21 @@ importers:
         specifier: catalog:vite-stack
         version: 0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
 
+  npm/create-fresco:
+    devDependencies:
+      '@types/node':
+        specifier: catalog:typescript
+        version: 25.9.2
+      tsx:
+        specifier: catalog:typescript
+        version: 4.23.12
+      typescript:
+        specifier: catalog:typescript
+        version: 6.0.3
+      vite-plus:
+        specifier: catalog:vite-stack
+        version: 0.1.24(@types/node@25.9.2)(@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(happy-dom@21.0.4)(jiti@2.7.0)(sass@1.93.2)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
+
   npm/devtools:
     devDependencies:
       '@types/node':
