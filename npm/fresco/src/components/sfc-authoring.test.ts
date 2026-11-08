@@ -15,6 +15,7 @@ const canonicalSfcComponents = [
   { name: "HStack", file: "FrescoHStack" },
   { name: "Link", file: "FrescoLink" },
   { name: "Markdown", file: "FrescoMarkdown" },
+  { name: "Modal", file: "FrescoModal" },
   { name: "Newline", file: "FrescoNewline" },
   { name: "ScrollBar", file: "ScrollBar" },
   { name: "ScrollBox", file: "ScrollBox" },

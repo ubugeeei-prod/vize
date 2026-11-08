@@ -15,6 +15,7 @@ export type AriaRole =
   | "button"
   | "checkbox"
   | "combobox"
+  | "dialog"
   | "list"
   | "listbox"
   | "listitem"

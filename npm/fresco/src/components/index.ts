@@ -99,7 +99,8 @@ export type { BreadcrumbItem, BreadcrumbProps } from "./presentational-primitive
 export { Stepper, type StepperProps, type Step, type StepStatus } from "./Stepper.js";
 
 // Overlay
-export { Modal, type ModalProps } from "./Modal.js";
+export { default as Modal } from "./FrescoModal.vue";
+export type { ModalProps } from "./modal-types.js";
 
 // Status
 export { StatusBar, type StatusBarProps, type StatusBarItem } from "./StatusBar.js";
