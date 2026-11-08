@@ -101,6 +101,18 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         (cstr!("MissingAlias"), String::from("MissingKeys")),
         (cstr!("CycleA"), String::from("CycleB")),
         (cstr!("CycleB"), String::from("CycleA")),
+        (
+            cstr!("Conditional"),
+            String::from("T extends { __output: infer R } ? R : never"),
+        ),
+        (
+            cstr!("InferProps"),
+            String::from("T extends { __output: infer R } ? R : never"),
+        ),
+        (
+            cstr!("ResolvedConditional"),
+            String::from("InferProps<{ __output: { title: string; count: number } }>"),
+        ),
     ]);
     for expression in [
         "{ value?: Missing }",
@@ -108,6 +120,10 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Record<'value', Missing>",
         "Record<Keys, Missing>",
         "Record<ChainedKeys, Missing>",
+        "InferProps<typeof loader>",
+        "ResolvedConditional",
+        "Partial<{ title: string }> extends object ? { title: string } : never",
+        "{ kind: 'a' } extends object ? { first: string } | { second: number } : never",
     ] {
         assert_eq!(
             unresolved_property_shape_references(expression, &FxHashMap::default(), &aliases),
@@ -123,6 +139,8 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         "Record<CycleA, string>",
         "Unknown | Missing",
         "{ value?: string } | Missing",
+        "Conditional",
+        "T extends object ? U extends object ? { value: string } : never : never",
     ] {
         let expected = if expression == "Unknown | Missing" {
             vec![cstr!("Unknown"), cstr!("Missing")]
@@ -135,6 +153,10 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
             vec![cstr!("MissingKeys")]
         } else if expression == "Record<CycleA, string>" {
             vec![cstr!("CycleA")]
+        } else if expression == "Conditional" {
+            vec![String::from("T extends { __output: infer R } ? R : never")]
+        } else if expression.starts_with("T extends object") {
+            vec![expression.to_compact_string()]
         } else {
             vec![cstr!("Missing")]
         };
@@ -152,5 +174,19 @@ fn unresolved_property_shapes_preserve_value_type_boundaries() {
         )
         .as_deref(),
         Some("first: string; second: string")
+    );
+    assert_eq!(
+        resolve_type_to_object_body("ResolvedConditional", &FxHashMap::default(), &aliases,)
+            .as_deref(),
+        Some("title: string; count: number")
+    );
+    assert_eq!(
+        resolve_type_to_object_body(
+            "Partial<{ title: string }> extends object ? { title: string } : never",
+            &FxHashMap::default(),
+            &aliases,
+        )
+        .as_deref(),
+        Some("title: string")
     );
 }

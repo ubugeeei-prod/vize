@@ -11,6 +11,7 @@ import type {
   FrescoJustifyContent,
   FrescoOverflow,
   FrescoPosition,
+  FrescoRawRenderNode,
   FrescoRenderNode,
   FrescoRenderStyle,
   FrescoRootRenderNode,
@@ -108,6 +109,12 @@ function numberValue(value: unknown): number | undefined {
 
 function booleanValue(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
+}
+
+function stringLines(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const lines = value.filter((line): line is string => typeof line === "string");
+  return lines.length > 0 ? lines : undefined;
 }
 
 function enabledValue(value: unknown): true | undefined {
@@ -241,17 +248,28 @@ export function frescoNodeToRenderNode(node: FrescoNode): FrescoRenderNode {
     return renderNode;
   }
 
+  if (node.type === "raw") {
+    const renderNode: FrescoRawRenderNode = { ...common, nodeType: "raw" };
+    const lines = stringLines(node.props.lines);
+    if (lines) renderNode.lines = lines;
+    return renderNode;
+  }
+
   const renderNode: FrescoInputRenderNode = { ...common, nodeType: "input" };
   const value = stringValue(node.props.value);
   const placeholder = stringValue(node.props.placeholder);
   const focused = booleanValue(firstValue(node.props, "focused", "focus"));
   const cursor = numberValue(node.props.cursor);
+  const selectionStart = numberValue(firstValue(node.props, "selectionStart", "selection_start"));
+  const selectionEnd = numberValue(firstValue(node.props, "selectionEnd", "selection_end"));
   const mask = booleanValue(node.props.mask);
   const maskChar = stringValue(firstValue(node.props, "maskChar", "mask_char", "mask-char"));
   if (value !== undefined) renderNode.value = value;
   if (placeholder !== undefined) renderNode.placeholder = placeholder;
   if (focused !== undefined) renderNode.focused = focused;
   if (cursor !== undefined) renderNode.cursor = cursor;
+  if (selectionStart !== undefined) renderNode.selectionStart = selectionStart;
+  if (selectionEnd !== undefined) renderNode.selectionEnd = selectionEnd;
   if (mask !== undefined) renderNode.mask = mask;
   if (maskChar !== undefined) renderNode.maskChar = maskChar;
   return renderNode;

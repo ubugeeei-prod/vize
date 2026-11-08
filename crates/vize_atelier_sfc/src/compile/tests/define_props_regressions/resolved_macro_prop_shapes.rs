@@ -51,29 +51,51 @@ const { type, title, speakers } = defineProps<TimetableCell>()
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains("type: { type: String, required: true }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("title: { type: String, required: true }"),
-        "{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("speakers: { type: Array, required: false }"),
-        "{}",
-        result.code
-    );
-    assert!(result.code.contains("__props.title"), "{}", result.code);
-    assert!(result.code.contains("__props.speakers"), "{}", result.code);
+    insta::assert_snapshot!(result.code.as_str());
 
+    let _ = fs::remove_dir_all(project);
+}
+
+#[test]
+fn imported_conditional_props_remain_owned_by_typescript() {
+    let project = temp_compile_project_dir("imported-conditional-props");
+    fs::create_dir_all(&project).unwrap();
+    fs::write(
+        project.join("handler.ts"),
+        r#"type InferProps<T> = T extends { __output: infer R } ? R : never;
+export type Props = InferProps<{ __output: { title: string; count: number } }>;
+"#,
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import type { Props } from "./handler"
+const props = defineProps<Props>()
+</script>
+<template>{{ props.title }} {{ props.count }}</template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            script: ScriptCompileOptions {
+                id: Some(
+                    project
+                        .join("Page.vue")
+                        .to_string_lossy()
+                        .as_ref()
+                        .to_compact_string(),
+                ),
+                is_ts: true,
+                ..Default::default()
+            },
+            template: TemplateCompileOptions {
+                is_ts: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("conditional props stay valid TypeScript");
+
+    insta::assert_snapshot!(result.code.as_str());
     let _ = fs::remove_dir_all(project);
 }

@@ -284,6 +284,18 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     /'enforced' \|\|[\s\S]*'release-gated'\) \|\| 'observational' \}\} @ \$\{\{ github\.sha \}\}$/,
   );
   current["run-name"] = original["run-name"];
+  // The release asset recovery moved the pinned Wild download behind a local
+  // action. Authenticate that single ownership change before restoring the
+  // archived third-party action for the whole-workflow comparison.
+  const wildStepName = "Setup Wild linker";
+  const oldWild = oldSteps.find((step) => step.name === wildStepName);
+  const wild = steps.find((step) => step.name === wildStepName);
+  assert.ok(oldWild && wild);
+  assert.deepEqual(wild, {
+    ...oldWild,
+    uses: "./.github/actions/setup-wild-http-recovery",
+  });
+  wild.uses = oldWild.uses;
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);

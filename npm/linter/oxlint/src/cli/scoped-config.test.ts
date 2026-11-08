@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
   createScopedMirror,
+  projectAbsoluteOverridePattern,
   readScopedConfig,
   validateScopedConfig,
   validateSelectionPaths,
@@ -97,15 +98,34 @@ void test("path-sensitive import/project and non-POSIX envelopes refuse before t
       message: "Scoped Vue transport cannot preserve non-POSIX filesystem roots.",
     },
   );
-  for (const value of [{ rules: {} }, { ignorePatterns: [] }])
+  for (const value of [
+    { rules: {} },
+    { ignorePatterns: [] },
+    { ignorePatterns: ["dist/**"] },
+    { overrides: [] },
+    { overrides: [{ files: ["src/**"], rules: {} }] },
+  ])
     validateScopedConfig({ file: "C:\\project\\config.json", bytes: "", value }, [], "win32");
-  for (const value of [{ ignorePatterns: ["dist/**"] }, { overrides: [] }]) {
-    assert.throws(
-      () =>
-        validateScopedConfig({ file: "C:\\project\\config.json", bytes: "", value }, [], "win32"),
-      { message: "Scoped Vue transport cannot preserve non-POSIX filesystem roots." },
-    );
-  }
+});
+
+void test("Windows absolute override globs preserve the outside mirror root", () => {
+  assert.deepEqual(
+    projectAbsoluteOverridePattern(
+      String.raw`C:\Users\runner\AppData\Local\Temp\oxlint-vize-1\outside`,
+      "C:/project/src/**/*.vue",
+      "C:\\",
+      "win32",
+    ),
+    ["C:/Users/runner/AppData/Local/Temp/oxlint-vize-1/outside/project/src/**/*.vue"],
+  );
+  assert.deepEqual(
+    projectAbsoluteOverridePattern("C:/temp/outside", "c:/project/src/**/*.vue", "C:\\", "win32"),
+    [],
+  );
+  assert.equal(
+    projectAbsoluteOverridePattern("C:/temp/outside", "src/**/*.vue", "C:\\", "win32"),
+    undefined,
+  );
 });
 
 void test("Windows separators remain distinct from ambiguous filename bytes", () => {

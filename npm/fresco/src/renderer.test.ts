@@ -322,7 +322,7 @@ test("stops after the current node and reports prevented routed input", () => {
   );
   mounted.unmount();
 });
-test("emits all four discriminated render variants with canonical payload fields", () => {
+test("emits every discriminated render variant with canonical payload fields", () => {
   const mounted = mountFresco(() =>
     h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
       h("text", {
@@ -341,14 +341,15 @@ test("emits all four discriminated render variants with canonical payload fields
         mask_char: "#",
         style: { min_width: 10, overflowX: "hidden" },
       }),
+      h("raw", { lines: ["ab", "cd", 42] }),
     ]),
   );
 
   const box = firstChild(mounted);
   const nodes = treeToRenderNodes(mounted.root);
 
-  assert.equal(nodes.length, 4);
-  const [rootNode, boxNode, textNode, inputNode] = nodes;
+  assert.equal(nodes.length, 5);
+  const [rootNode, boxNode, textNode, inputNode, rawNode] = nodes;
   assert.deepEqual(rootNode, {
     id: mounted.root.id,
     nodeType: "root",
@@ -359,7 +360,7 @@ test("emits all four discriminated render variants with canonical payload fields
     nodeType: "box",
     style: { flexDirection: "row", width: "40", paddingLeft: 1 },
     border: "rounded",
-    children: [textNode?.id, inputNode?.id],
+    children: [textNode?.id, inputNode?.id, rawNode?.id],
   });
   assert.deepEqual(textNode, {
     id: box.children[0]?.id,
@@ -379,6 +380,11 @@ test("emits all four discriminated render variants with canonical payload fields
     mask: true,
     maskChar: "#",
     style: { overflowX: "hidden", minWidth: "10" },
+  });
+  assert.deepEqual(rawNode, {
+    id: box.children[2]?.id,
+    nodeType: "raw",
+    lines: ["ab", "cd"],
   });
   mounted.unmount();
 });
