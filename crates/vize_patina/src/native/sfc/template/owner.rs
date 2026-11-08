@@ -65,16 +65,19 @@ impl<'a> NativeSfcTemplateOwner<'a> {
         })
     }
 
+    /// Returns the complete original SFC source.
     #[must_use]
     pub fn source(&self) -> &'a str {
         self.descriptor.source()
     }
 
+    /// Returns the original descriptor observation.
     #[must_use]
     pub fn descriptor(&self) -> &DescriptorObservation<'a> {
         &self.descriptor
     }
 
+    /// Returns the original selected template component.
     #[must_use]
     pub fn template(&self) -> &NativeTemplateComponent<'a> {
         &self.template

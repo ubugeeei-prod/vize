@@ -3,7 +3,7 @@
 //! Require form controls to have associated labels.
 //!
 //! Form controls (input, select, textarea) must have associated labels
-//! for screen reader users. This can be via <label>, aria-label, or
+//! for screen reader users. This can be via `<label>`, `aria-label`, or
 //! aria-labelledby. A control with the `hidden` attribute is not rendered or
 //! exposed to assistive technology, so it needs no label.
 //!

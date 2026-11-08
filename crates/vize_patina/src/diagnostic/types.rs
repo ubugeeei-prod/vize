@@ -18,7 +18,9 @@ use super::formatting::{HelpRenderTarget, render_help};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
+    /// A finding that makes the lint run unsuccessful.
     Error,
+    /// A finding reported without making the lint run unsuccessful.
     Warning,
 }
 
@@ -285,12 +287,16 @@ impl LintDiagnostic {
 /// Summary of lint results.
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct LintSummary {
+    /// Number of error diagnostics collected across the run.
     pub error_count: usize,
+    /// Number of warning diagnostics collected across the run.
     pub warning_count: usize,
+    /// Number of source files inspected by the run.
     pub file_count: usize,
 }
 
 impl LintSummary {
+    /// Add one diagnostic to the severity totals.
     #[inline]
     pub fn add(&mut self, diagnostic: &LintDiagnostic) {
         match diagnostic.severity {
@@ -299,6 +305,7 @@ impl LintSummary {
         }
     }
 
+    /// Return whether at least one error diagnostic was collected.
     #[inline]
     pub fn has_errors(&self) -> bool {
         self.error_count > 0

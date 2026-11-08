@@ -12,8 +12,14 @@ use crate::rules::a11y::{
 use crate::rules::html::{
     DeprecatedAttr, DeprecatedElement, NoConsecutiveBr, NoDuplicateDt, RequireDatetime,
 };
-use crate::rules::opinionated::a11y::PlaceholderLabelOption;
+use crate::rules::opinionated::a11y::{HeadingLevels, PlaceholderLabelOption, UseList};
+use crate::rules::opinionated::html::{NoDupeStyleProperties, NoDuplicateClass};
+use crate::rules::opinionated::vue::{HtmlButtonHasType, NoBooleanAttrValue, NoInlineStyle};
 use crate::rules::vapor::{NoVueLifecycleEvents, PreferStaticClass};
+use crate::rules::vue::{
+    NoBareStringsInTemplate, NoInvalidHtmlAttribute, NoMultiSpaces, NoStaticInlineStyles,
+    NoTemplateTargetBlank, NoTextareaMustache, NoUnsandboxedIframe, PermittedContents,
+};
 
 fn family() -> Vec<Box<dyn Rule>> {
     vec![
@@ -68,6 +74,44 @@ fn html_family() -> Vec<Box<dyn Rule>> {
 fn vapor_family() -> Vec<Box<dyn Rule>> {
     vec![Box::new(NoVueLifecycleEvents), Box::new(PreferStaticClass)]
 }
+
+fn remaining_facade_family() -> Vec<Box<dyn Rule>> {
+    vec![
+        Box::new(HeadingLevels),
+        Box::new(UseList),
+        Box::new(NoDupeStyleProperties),
+        Box::new(NoDuplicateClass),
+        Box::new(HtmlButtonHasType),
+        Box::new(NoBooleanAttrValue),
+        Box::new(NoInlineStyle),
+        Box::new(NoBareStringsInTemplate),
+        Box::new(NoInvalidHtmlAttribute),
+        Box::new(NoMultiSpaces::default()),
+        Box::new(NoStaticInlineStyles),
+        Box::new(NoTemplateTargetBlank),
+        Box::new(NoTextareaMustache),
+        Box::new(NoUnsandboxedIframe),
+        Box::new(PermittedContents),
+    ]
+}
+
+const REMAINING_FACADE_TEMPLATES: &[&str] = &[
+    r#"<h1>Title</h1><h3>Skipped</h3><p>- Item</p>"#,
+    r#"<div class="btn btn" style="color:red;color:blue">Visible text</div>"#,
+    r#"<button  disabled="disabled">Submit</button><a rel="friend">Link</a>"#,
+    r#"<a href="https://example.com" target="_blank">External</a>"#,
+    r#"<textarea>{{ message }}</textarea><iframe src="/embed"></iframe>"#,
+    r#"<p><div>browser repair</div></p>"#,
+];
+
+const REMAINING_FACADE_JSX: &[&str] = &[
+    r#"const A = () => <><h1>Title</h1><h3>Skipped</h3><p>- Item</p></>;"#,
+    r#"const A = () => <div className="btn btn" style="color:red;color:blue">Visible text</div>;"#,
+    r#"const A = () => <><button disabled="disabled">Submit</button><a rel="friend">Link</a></>;"#,
+    r#"const A = () => <a href="https://example.com" target="_blank">External</a>;"#,
+    r#"const A = () => <><textarea>{message}</textarea><iframe src="/embed" /></>;"#,
+    r#"const A = () => <p><div>nested block</div></p>;"#,
+];
 
 const TEMPLATES: &[&str] = &[
     r#"<button role="button">Redundant</button><button>Native</button><div role="button">Explicit</div>"#,
@@ -208,6 +252,15 @@ fn existing_html_traversals_preserve_complete_diagnostics() {
 #[test]
 fn existing_vapor_traversals_preserve_complete_diagnostics() {
     super::assert_traversal_parity(vapor_family, TEMPLATES, JSX);
+}
+
+#[test]
+fn remaining_facade_traversals_preserve_complete_diagnostics() {
+    super::assert_traversal_parity(
+        remaining_facade_family,
+        REMAINING_FACADE_TEMPLATES,
+        REMAINING_FACADE_JSX,
+    );
 }
 
 /// An ignored nested form and a self-closing nested a keep their v-pre

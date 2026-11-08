@@ -130,6 +130,15 @@ void test("Clippy and doctests start beside affected cohort execution and stay r
     glyphDocs?.run ?? "",
     /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs/,
   );
+  const patinaDocs = parallel.steps?.find((step) => step.name === "Document Patina public APIs");
+  assert.equal(
+    patinaDocs?.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
+  );
+  assert.match(
+    patinaDocs?.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
+  );
   assert.doesNotMatch(validation, /nextest archive/);
   assert.equal(Object.hasOwn(products.jobs, "merge-rust-source"), false);
   for (const [report, names] of [
@@ -300,6 +309,16 @@ function restoreRustCaseReporting(job: RustJob, contracts: number) {
     /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs/,
   );
   job.steps.splice(glyphDocs.index, 1);
+  const patinaDocs = named("Document Patina public APIs");
+  assert.equal(
+    patinaDocs.step.if,
+    "${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}",
+  );
+  assert.match(
+    patinaDocs.step.run ?? "",
+    /rust-test-cases\.ts capture[\s\S]*cargo rustdoc --locked -p vize_patina --lib -- -D warnings/,
+  );
+  job.steps.splice(patinaDocs.index, 1);
 }
 
 function requireSplitRustRecipes(

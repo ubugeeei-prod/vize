@@ -24,7 +24,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
-use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
 use vize_relief::ElementNode;
@@ -77,6 +79,10 @@ impl NoDuplicateClass {
 impl MarkupRule for NoDuplicateClass {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Bindings
     }
 
     fn enter_binding<'a>(

@@ -40,6 +40,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 #[derive(Default)]
+/// Implements the `html/require-datetime` lint rule.
 pub struct RequireDatetime;
 
 impl RequireDatetime {

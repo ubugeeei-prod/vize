@@ -159,6 +159,12 @@ jobs:
           node tools/support/compat/github/rust-test-cases.ts capture
           --label "Glyph public API documentation" --package vize_glyph --
           cargo rustdoc --locked -p vize_glyph --lib -- -D missing-docs
+      - name: Document Patina public APIs
+        if: ${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}
+        run: >-
+          node tools/support/compat/github/rust-test-cases.ts capture
+          --label "Patina public API documentation" --package vize_patina --
+          cargo rustdoc --locked -p vize_patina --lib -- -D warnings
       - name: Run affected Rust doctests
         if: ${{ matrix.lane == 'clippy' }}
         env: { VIZE_RUST_CASE_LABEL: "Affected Rust doctests" }
