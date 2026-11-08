@@ -180,7 +180,12 @@ async fn discover_in_background(root: PathBuf) -> DiscoveryResult {
 }
 
 fn collect_workspace_declarations(root: &Path) -> Vec<PathBuf> {
-    let mut builder = WalkBuilder::new(root);
+    vize_l0::micro_count!("lsp.global_components.canonicalize.calls", 1);
+    let (root, regular_paths_are_physical) = match root.canonicalize() {
+        Ok(root) => (root, true),
+        Err(_) => (root.to_path_buf(), false),
+    };
+    let mut builder = WalkBuilder::new(&root);
     builder
         .hidden(false)
         .ignore(false)
@@ -201,7 +206,15 @@ fn collect_workspace_declarations(root: &Path) -> Vec<PathBuf> {
             continue;
         };
         if metadata.is_file() && metadata.len() <= 4 * 1024 * 1024 {
-            paths.push(std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf()));
+            let path = if regular_paths_are_physical
+                && entry.file_type().is_some_and(|kind| kind.is_file())
+            {
+                path.to_path_buf()
+            } else {
+                vize_l0::micro_count!("lsp.global_components.canonicalize.calls", 1);
+                std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+            };
+            paths.push(path);
         }
     }
     paths.sort();
@@ -294,6 +307,25 @@ mod tests {
             paths
                 .iter()
                 .all(|path| !path.starts_with(root.path().join("node_modules")))
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn resolves_workspace_and_declaration_symlinks_to_one_physical_path() {
+        let container = tempfile::tempdir().unwrap();
+        let workspace = container.path().join("workspace");
+        let alias = container.path().join("workspace-alias");
+        std::fs::create_dir(&workspace).unwrap();
+        let declaration = workspace.join("components.d.ts");
+        let declaration_alias = workspace.join("components-alias.d.ts");
+        std::fs::write(&declaration, DECLARATION).unwrap();
+        std::os::unix::fs::symlink(&declaration, &declaration_alias).unwrap();
+        std::os::unix::fs::symlink(&workspace, &alias).unwrap();
+
+        assert_eq!(
+            collect_workspace_declarations(&alias),
+            vec![declaration.canonicalize().unwrap()]
         );
     }
 
