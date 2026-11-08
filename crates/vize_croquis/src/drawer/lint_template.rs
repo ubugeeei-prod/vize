@@ -47,13 +47,24 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
     pub const fn source(self) -> &'a str {
         self.surface.source
     }
+
+    /// Borrow the compatibility template view used by consumers that have not
+    /// yet moved their emission APIs from Relief to the Davinci artifact.
+    ///
+    /// The view is projected from the resident L1/L2 pair; this never runs the
+    /// template parser again. Keeping the root inside the callback also makes
+    /// its intentionally short lifetime explicit.
+    #[doc(hidden)]
+    pub fn with_compatibility_root<R>(self, use_root: impl FnOnce(&RootNode<'a>) -> R) -> R {
+        let root = CompatibilityRoot::new(self).build();
+        use_root(&root)
+    }
 }
 
 impl Drawer {
     /// Draw lint facts from L1/L2 without a second template parse.
     pub fn draw_lint_template(&mut self, template: LintTemplate<'_, '_>) -> &mut Self {
-        let root = CompatibilityRoot::new(template).build();
-        self.draw_template(&root);
+        template.with_compatibility_root(|root| self.draw_template(root));
         self
     }
 }

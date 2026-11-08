@@ -312,12 +312,15 @@ fn original_if_projections_keep_the_complete_authored_probe_owner() {
         let template = descriptor.template.as_ref().expect("template");
         let script = descriptor.script_setup.as_ref().expect("setup");
         let allocator = vize_l0::Allocator::new();
-        let (root, errors) = vize_armature::parse(&allocator, template.content.as_ref());
-        assert!(errors.is_empty(), "{errors:?}");
+        let l2 = crate::markup::L2Template::lower(&allocator, template.content.as_ref());
+        assert!(l2.surface_errors().is_empty());
         let document = super::super::document::project_type_aware(
             &descriptor,
             script.content.as_ref(),
-            Some(&root),
+            Some(vize_croquis::drawer::LintTemplate::new(
+                l2.surface(),
+                l2.lowered(),
+            )),
             script.loc.start as u32,
             template.loc.start as u32,
             "OriginalCondition.vue",
@@ -328,7 +331,7 @@ fn original_if_projections_keep_the_complete_authored_probe_owner() {
             .expect("complete actual Canon condition owns its inferred probe");
         let (queries, _) = super::super::template_queries::collect_template_query_sets(
             &document,
-            &root,
+            l2.surface(),
             template.loc.start as u32,
             true,
             false,
@@ -340,7 +343,7 @@ fn original_if_projections_keep_the_complete_authored_probe_owner() {
                     && query.source_start as usize == start
                     && query.source_end as usize == end
             })
-            .expect("whole authored condition query");
+            .unwrap_or_else(|| panic!("whole authored condition query: {queries:#?}"));
         assert_eq!(query.generated_offset, offset);
     }
 }
