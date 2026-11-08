@@ -1,0 +1,76 @@
+import assert from "node:assert/strict";
+import { test } from "vitest";
+import { h, ref } from "vue";
+
+import { dispatchKey, findNodes, mountFresco, typeChars } from "../testing/mount.js";
+import { Menu } from "./Menu.js";
+import { Tabs } from "./Tabs.js";
+
+function textLines(mounted: ReturnType<typeof mountFresco>): string[] {
+  return findNodes(mounted.root, (node) => node.type === "text")
+    .map((node) => node.text)
+    .filter((text): text is string => text !== undefined);
+}
+
+test("Tabs navigates enabled labels and activates with Enter or Space", async () => {
+  const value = ref("overview");
+  const changes: string[] = [];
+  const mounted = mountFresco(() =>
+    h(Tabs, {
+      tabs: [
+        { key: "overview", label: "Overview" },
+        { key: "logs", label: "Logs", disabled: true },
+        { key: "settings", label: "Settings" },
+      ],
+      modelValue: value.value,
+      focused: true,
+      "onUpdate:modelValue": (next: string) => {
+        value.value = next;
+      },
+      onChange: (next: string) => changes.push(next),
+    }),
+  );
+
+  await dispatchKey({ key: "right" });
+  assert.equal(textLines(mounted).at(4), "Settings");
+  await dispatchKey({ key: "enter" });
+  assert.equal(value.value, "settings");
+
+  await dispatchKey({ key: "home" });
+  await dispatchKey({ char: " " });
+  assert.equal(value.value, "overview");
+  assert.deepEqual(changes, ["settings", "overview"]);
+  mounted.unmount();
+});
+
+test("Menu skips separators and disabled commands during navigation and typeahead", async () => {
+  const focusedIndex = ref(0);
+  const selected: string[] = [];
+  const mounted = mountFresco(() =>
+    h(Menu, {
+      items: [
+        { key: "open", label: "Open" },
+        { key: "separator", label: "", separator: true },
+        { key: "delete", label: "Delete", disabled: true },
+        { key: "save", label: "Save" },
+      ],
+      focused: true,
+      focusedIndex: focusedIndex.value,
+      "onUpdate:focusedIndex": (next: number) => {
+        focusedIndex.value = next;
+      },
+      onSelect: (key: string) => selected.push(key),
+    }),
+  );
+
+  await dispatchKey({ key: "down" });
+  assert.equal(focusedIndex.value, 3);
+  await dispatchKey({ key: "enter" });
+  assert.deepEqual(selected, ["save"]);
+
+  await typeChars("o");
+  assert.equal(focusedIndex.value, 0);
+  await dispatchKey({ key: "enter" });
+  assert.deepEqual(selected, ["save", "open"]);
+  mounted.unmount();
+});

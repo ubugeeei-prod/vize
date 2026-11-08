@@ -2,7 +2,14 @@
  * Tabs Component - Tab navigation
  */
 
-import { defineComponent, h, type PropType, type VNode } from "vue";
+import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { useInput } from "../composables/useInput.js";
+import {
+  adjacentEnabledIndex,
+  firstEnabledIndex,
+  lastEnabledIndex,
+  typeaheadIndex,
+} from "./collection-navigation.js";
 
 export interface Tab {
   key: string;
@@ -15,6 +22,8 @@ export interface TabsProps {
   tabs: Tab[];
   /** Currently active tab key */
   modelValue?: string;
+  /** Whether the tab list owns keyboard input */
+  focused?: boolean;
   /** Tab bar position */
   position?: "top" | "bottom";
   /** Separator between tabs */
@@ -37,6 +46,10 @@ export const Tabs = defineComponent({
       required: true,
     },
     modelValue: String,
+    focused: {
+      type: Boolean,
+      default: false,
+    },
     position: {
       type: String as PropType<"top" | "bottom">,
       default: "top",
@@ -57,9 +70,73 @@ export const Tabs = defineComponent({
     },
   },
   emits: ["update:modelValue", "change"],
-  setup(props, { slots, emit: _emit }) {
-    // Note: selectTab is designed for keyboard event handlers
-    // It is currently not wired up but kept for future use
+  setup(props, { slots, emit }) {
+    const highlightedIndex = ref(-1);
+    let typeahead = "";
+    let lastTypeaheadAt = 0;
+
+    const syncHighlight = () => {
+      const activeIndex = props.tabs.findIndex(
+        (tab) => tab.key === props.modelValue && !tab.disabled,
+      );
+      if (activeIndex >= 0) {
+        highlightedIndex.value = activeIndex;
+      } else if (
+        highlightedIndex.value < 0 ||
+        highlightedIndex.value >= props.tabs.length ||
+        props.tabs[highlightedIndex.value]?.disabled
+      ) {
+        highlightedIndex.value = firstEnabledIndex(props.tabs);
+      }
+    };
+
+    watch([() => props.modelValue, () => props.tabs], syncHighlight, {
+      deep: true,
+      immediate: true,
+    });
+
+    const activate = () => {
+      const tab = props.tabs[highlightedIndex.value];
+      if (!tab || tab.disabled) return;
+      emit("update:modelValue", tab.key);
+      emit("change", tab.key);
+    };
+
+    useInput({
+      isActive: computed(() => props.focused),
+      onArrow: (direction) => {
+        if (direction !== "left" && direction !== "right") return;
+        highlightedIndex.value = adjacentEnabledIndex(
+          props.tabs,
+          highlightedIndex.value,
+          direction === "left" ? -1 : 1,
+        );
+      },
+      onKey: (key) => {
+        if (key === "home") highlightedIndex.value = firstEnabledIndex(props.tabs);
+        if (key === "end") highlightedIndex.value = lastEnabledIndex(props.tabs);
+      },
+      onChar: (character) => {
+        if (character === " ") {
+          activate();
+          return;
+        }
+        const now = Date.now();
+        const normalized = character.toLocaleLowerCase();
+        typeahead =
+          now - lastTypeaheadAt > 700 || typeahead === normalized
+            ? normalized
+            : typeahead + normalized;
+        lastTypeaheadAt = now;
+        highlightedIndex.value = typeaheadIndex(
+          props.tabs,
+          highlightedIndex.value,
+          typeahead,
+          (tab) => tab.label,
+        );
+      },
+      onSubmit: activate,
+    });
 
     return () => {
       // Tab bar
@@ -71,16 +148,17 @@ export const Tabs = defineComponent({
         }
 
         const isActive = tab.key === props.modelValue;
+        const isHighlighted = index === highlightedIndex.value;
 
         tabItems.push(
           h(
             "text",
             {
               key: tab.key,
-              fg: isActive ? props.activeFg : props.inactiveFg,
-              bg: isActive ? props.activeBg : undefined,
+              fg: isActive || isHighlighted ? props.activeFg : props.inactiveFg,
+              bg: isActive || isHighlighted ? props.activeBg : undefined,
               bold: isActive,
-              underline: isActive && props.underline,
+              underline: (isActive && props.underline) || (props.focused && isHighlighted),
               dim: tab.disabled,
             },
             tab.label,
