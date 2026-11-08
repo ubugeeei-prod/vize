@@ -34,16 +34,7 @@ defineExpose({
   object: () => ({ localFoo }),
 })
 "#;
-    let output = compile_inline(content);
-
-    assert!(
-        output.contains("arrow: (value) => __props.foo + value"),
-        "{output}"
-    );
-    assert!(output.contains("return __props.foo"), "{output}");
-    assert!(output.contains("plain: __props.foo"), "{output}");
-    assert!(output.contains("localFoo: __props.foo"), "{output}");
-    assert!(!output.contains("=> localFoo"), "{output}");
+    insta::assert_snapshot!(compile_inline(content));
 }
 
 #[test]
@@ -55,10 +46,7 @@ defineExpose({ bar: () => foo })
 "#,
     );
 
-    assert!(
-        output.contains("__expose({ bar: () => __props.foo })"),
-        "{output}"
-    );
+    insta::assert_snapshot!(output);
 }
 
 #[test]
@@ -69,11 +57,5 @@ defineExpose({ bar: () => foo })
 "#;
     let result = compile_script_setup(content, "Test", false, true, None).unwrap();
 
-    assert!(
-        result
-            .code
-            .contains("__expose({ bar: () => __props.foo });"),
-        "{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code);
 }
