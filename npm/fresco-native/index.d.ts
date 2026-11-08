@@ -46,6 +46,8 @@ export declare function fillRect(x: number, y: number, width: number, height: nu
 export interface FlexStyleNapi {
   display?: string
   position?: string
+  /** Paint and pointer-target order among siblings. Defaults to zero. */
+  zIndex?: number
   top?: string
   right?: string
   bottom?: string

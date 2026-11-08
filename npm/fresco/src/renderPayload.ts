@@ -107,6 +107,15 @@ function numberValue(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function integerValue(value: unknown): number | undefined {
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= -2_147_483_648 &&
+    value <= 2_147_483_647
+    ? value
+    : undefined;
+}
+
 function booleanValue(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
@@ -133,6 +142,7 @@ export function normalizeFrescoStyle(value: unknown): FrescoRenderStyle | undefi
 
   style.display = enumValue(source.display, displays);
   style.position = enumValue(source.position, positions);
+  style.zIndex = integerValue(firstValue(source, "zIndex", "z_index"));
   style.top = stringValue(source.top);
   style.right = stringValue(source.right);
   style.bottom = stringValue(source.bottom);

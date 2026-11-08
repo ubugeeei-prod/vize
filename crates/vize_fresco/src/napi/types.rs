@@ -40,6 +40,9 @@ pub struct StyleNapi {
 pub struct FlexStyleNapi {
     pub display: Option<String>,
     pub position: Option<String>,
+    /// Paint and pointer-target order among siblings. Defaults to zero.
+    #[napi(js_name = "zIndex")]
+    pub z_index: Option<i32>,
     pub top: Option<String>,
     pub right: Option<String>,
     pub bottom: Option<String>,

@@ -22,6 +22,8 @@ pub struct RenderNode {
     pub style: FlexStyle,
     /// Visual style
     pub appearance: Appearance,
+    /// Paint order among siblings. Higher values are painted later.
+    pub z_index: i32,
     /// Child node IDs
     pub children: SmallVec<[NodeId; 4]>,
     /// Computed layout (set after layout calculation)
@@ -38,6 +40,7 @@ impl RenderNode {
             kind,
             style: FlexStyle::default(),
             appearance: Appearance::default(),
+            z_index: 0,
             children: SmallVec::new(),
             layout: None,
             dirty: true,

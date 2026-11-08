@@ -325,25 +325,32 @@ test("stops after the current node and reports prevented routed input", () => {
 
 test("emits every discriminated render variant with canonical payload fields", () => {
   const mounted = mountFresco(() =>
-    h("box", { border: "rounded", style: { flex_direction: "row", width: 40, padding_left: 1 } }, [
-      h("text", {
-        content: "hi",
-        wrap: "end",
-        color: "cyan",
-        background_color: "blue",
-        dim_color: true,
-      }),
-      h("input", {
-        value: 123,
-        placeholder: 456,
-        focus: true,
-        cursor: 3,
-        mask: true,
-        mask_char: "#",
-        style: { min_width: 10, overflowX: "hidden" },
-      }),
-      h("raw", { lines: ["ab", "cd", 42] }),
-    ]),
+    h(
+      "box",
+      {
+        border: "rounded",
+        style: { flex_direction: "row", z_index: 2, width: 40, padding_left: 1 },
+      },
+      [
+        h("text", {
+          content: "hi",
+          wrap: "end",
+          color: "cyan",
+          background_color: "blue",
+          dim_color: true,
+        }),
+        h("input", {
+          value: 123,
+          placeholder: 456,
+          focus: true,
+          cursor: 3,
+          mask: true,
+          mask_char: "#",
+          style: { min_width: 10, overflowX: "hidden" },
+        }),
+        h("raw", { lines: ["ab", "cd", 42] }),
+      ],
+    ),
   );
 
   const box = firstChild(mounted);
@@ -359,7 +366,7 @@ test("emits every discriminated render variant with canonical payload fields", (
   assert.deepEqual(boxNode, {
     id: box.id,
     nodeType: "box",
-    style: { flexDirection: "row", width: "40", paddingLeft: 1 },
+    style: { flexDirection: "row", zIndex: 2, width: "40", paddingLeft: 1 },
     border: "rounded",
     children: [textNode?.id, inputNode?.id, rawNode?.id],
   });
@@ -431,6 +438,14 @@ test("keeps appearance aliases and drops empty style objects", () => {
     appearance: { fg: "red", bg: "blue", dim: true, blink: true, hidden: true },
   });
   mounted.unmount();
+});
+
+test("drops z-index values outside the native signed integer contract", () => {
+  for (const zIndex of [Number.NaN, Number.POSITIVE_INFINITY, 1.5, 2_147_483_648]) {
+    const mounted = mountFresco(() => h("box", { style: { zIndex } }));
+    assert.equal(treeToRenderNodes(firstChild(mounted))[0]?.style, undefined);
+    mounted.unmount();
+  }
 });
 
 test("renderToString renders column and row layouts deterministically", () => {
