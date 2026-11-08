@@ -226,10 +226,13 @@ void test("actual matrix planner and workflow producers cannot introduce new dyn
     assert.throws(() => verifyDocsWasmConsumers(directory), /matrix producer changed/);
   }
   const directory = fixture(t);
-  const file = join(directory, "tools/commands/ci/github/app-e2e-plan.rs");
+  const file = join(directory, "tools/support/compat/github/app-e2e-plan.ts");
   writeFileSync(
     file,
-    readFileSync(file, "utf8").replace('format!("app-e2e-{prefix}")', 'format!("docs-wasm")'),
+    readFileSync(file, "utf8").replace(
+      "cacheKey: `app-e2e-${profile}-${suite}-${shard}`",
+      'cacheKey: "docs-wasm"',
+    ),
   );
   assert.throws(() => verifyDocsWasmConsumers(directory), /command producer changed/);
 });

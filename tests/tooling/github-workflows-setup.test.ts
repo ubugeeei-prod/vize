@@ -181,7 +181,10 @@ test("native smoke workflow covers host platforms before release tags", () => {
   }
   assert.match(job, /cargo build --profile ci -p vize/);
   assert.match(job, /vp run --filter '\.\/npm\/native' build:ci/);
-  assert.match(job, /verify-glibc-symbols\.rs --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/);
+  assert.match(
+    job,
+    /node tools\/commands\/ci\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
+  );
   assert.match(job, /require\('\.\/npm\/native'\)/);
   assert.match(job, /smoke-release-install\.rs --prepare-manifests npm\/native/);
 });

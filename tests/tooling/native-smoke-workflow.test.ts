@@ -279,7 +279,7 @@ void test("the actual default native producer executes only its unchanged NAPI a
   for (const file of [
     "crates/vize_vitrine/build.rs",
     "crates/vize_fresco/build.rs",
-    "tools/commands/ci/github/verify-glibc-symbols.rs",
+    "tools/commands/ci/github/verify-glibc-symbols.ts",
     "tools/commands/release/npm/smoke-release-install.ts",
     "tools/support/release/smoke_release_install/main.ts",
     "tools/support/common.rs",
