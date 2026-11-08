@@ -18,7 +18,7 @@ export function assertCanonLeftoversGolden(
   const receiptBytes = fs.readFileSync(path.join(custody, "canon-leftovers-20261108.json"));
   assert.equal(
     createHash("sha256").update(receiptBytes).digest("hex"),
-    "5c66161ef05392a924e083980cec1dcb9b0de8f0d8bac4fd17b6402b0c05f43f",
+    "5180d89a7d09abe6e7b2187c706503864cc49fa2b9ebd623bae7557d1059cdf2",
   );
   const receipt = JSON.parse(receiptBytes.toString("utf8"));
   assert.equal(receipt.schema, "vize.experimental-router-canon-leftovers-transition.v1");

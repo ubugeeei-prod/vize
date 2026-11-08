@@ -8,8 +8,8 @@
     "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
   },
   "observation": {
-    "run": 42458808867,
-    "artifact": 13608721926
+    "run": 42492156662,
+    "artifact": 13623390603
   },
   "entries": [
     {
@@ -66,6 +66,34 @@
         "file": "crlf.invalid.canon-leftovers.virtual.ts.txt",
         "sha256": "fa17dbdf6a81bd06da87d8728b59437b53b06c20f464b78f9676f1b408b01756",
         "bytes": 15101
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "valid",
+      "previous": {
+        "file": "explicit.valid.virtual.ts.txt",
+        "sha256": "7ff0d27eec12c2161595916a37b286012c77b29dc5b80cdb161455e09a80259e",
+        "bytes": 14598
+      },
+      "current": {
+        "file": "explicit.valid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
+      }
+    },
+    {
+      "variant": "explicit",
+      "kind": "invalid",
+      "previous": {
+        "file": "explicit.invalid.virtual.ts.txt",
+        "sha256": "7ff0d27eec12c2161595916a37b286012c77b29dc5b80cdb161455e09a80259e",
+        "bytes": 14598
+      },
+      "current": {
+        "file": "explicit.invalid.canon-leftovers.virtual.ts.txt",
+        "sha256": "39eb7940d79964f200a5e62588ad13f2fe3efbdc1eba053ef93329c85bef5d9b",
+        "bytes": 15025
       }
     }
   ]
