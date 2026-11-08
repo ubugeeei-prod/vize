@@ -10,6 +10,7 @@ import type {
   VizeBabelSfcMetadata,
 } from "./types.ts";
 
+/** Native SFC compilation output installed into a Babel file. */
 export interface CompiledSfc {
   ast: FileAst;
   code: string;
@@ -17,10 +18,12 @@ export interface CompiledSfc {
   metadata: VizeBabelSfcMetadata;
 }
 
+/** Reports whether a source filename denotes a Vue SFC. */
 export function isVueSfc(filename: string): boolean {
   return /\.vue$/iu.test(filename);
 }
 
+/** Compiles one Vue SFC into the structurally typed Babel AST contract. */
 export function compileSfcForBabel(
   source: string,
   filename: string,
@@ -63,6 +66,7 @@ export function compileSfcForBabel(
   };
 }
 
+/** Replaces a Babel file's source, map, metadata, and warnings with compiled SFC output. */
 export function installSfcFileState(file: BabelFile, compiled: CompiledSfc): void {
   file.code = compiled.code;
   if (file.opts.sourceMaps) {

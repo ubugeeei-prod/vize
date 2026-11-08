@@ -1,5 +1,6 @@
 import type { VizeBabelOptions } from "./types.ts";
 
+/** Validates Babel adapter options and materializes every default. */
 export function normalizeOptions(value: VizeBabelOptions): Required<VizeBabelOptions> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new TypeError("Vize Babel options must be an object");

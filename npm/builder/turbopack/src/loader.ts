@@ -22,6 +22,7 @@ function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex").slice(0, 16);
 }
 
+/** Compiles one Vue SFC into a Turbopack module and source map. */
 export function compileTurbopackSfc(filename: string, source: string, options: SfcLoaderOptions) {
   const root = options.root ?? process.cwd();
   const scopeId = generateSfcScopeId(filename, root, options.isProduction, source);
@@ -219,6 +220,7 @@ export function compileTurbopackSfc(filename: string, source: string, options: S
   };
 }
 
+/** Turbopack loader entry point for Vue SFC modules. */
 export default function vizeLoader(this: LoaderContext<SfcLoaderOptions>, source: string): void {
   const callback = this.async();
   try {

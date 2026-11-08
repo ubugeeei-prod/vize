@@ -25,6 +25,7 @@ export function captureReservations(file: BabelFile): Reservations | undefined {
   return { names, authoredBindings };
 }
 
+/** Restores identifiers reserved by earlier Babel hooks after native recompilation. */
 export function restoreReservations(file: BabelFile, reserved: Reservations | undefined): void {
   if (!reserved) return;
   const names = new Set(reserved.names);
