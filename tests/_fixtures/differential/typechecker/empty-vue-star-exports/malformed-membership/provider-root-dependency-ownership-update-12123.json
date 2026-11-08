@@ -35,9 +35,9 @@
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",
-    "bytes": 9501,
-    "sha256": "5560a48e7c354af330e2d856db1394ee041d7d1d2b99862a8d9770d5c2432aa2",
-    "gitBlob": "24c28c3b03164b735d7b2caf9a4ffe4de228c8ae"
+    "bytes": 9536,
+    "sha256": "9e497e6996dd041121cf8af5896f8a86767ed1b9acc343a5e4282336e162e0ea",
+    "gitBlob": "59d6ce4f4e497afd40d42ee33cc109418a319c25"
   },
   "ownerManifests": [
     { "path": "docs/package.json", "bytes": 1231, "sha256": "327a565c5dc08e0891337c683002bf23efe7d7137b93b8ef6b123fa0535d3806", "gitBlob": "1a36c8ed8b28b14ed392c92b6ab2e29ea056c9e1" },
