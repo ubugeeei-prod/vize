@@ -8,7 +8,7 @@ use super::{
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
 use crate::markup::L2Template;
-use vize_armature::Parser;
+use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 
@@ -20,35 +20,38 @@ impl Linter {
     ) -> (LintResult, LintResult) {
         let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
-        let lint = self.lint_template_root_with_finish(
-            super::template::TemplateExecution {
-                allocator: input.allocator,
-                source: &input.template.content,
-                filename: input.filename,
-                root: input.root,
-                l2: input.l2,
-                env: TemplateRuleEnv {
-                    sfc_descriptor: Some(input.descriptor),
-                    sfc_scripts: Some(scripts),
-                    art_script_analysis: None,
-                    petite_document: None,
-                    defer_exact_suppressions: true,
-                    dialect: VueDialect::Vue,
-                    facade_rules: facade::RULES,
-                },
-            },
-            input.analysis,
-            |ctx| {
-                super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
-                    self,
-                    input.descriptor,
-                    scripts,
-                    &mut script_result,
-                    valid_template.then_some((input.l2, input.template.loc.start as u32)),
-                    Some(ctx),
-                );
-            },
-        );
+        let lint = LintTemplate::new(input.l2.surface(), input.l2.lowered())
+            .with_compatibility_root(|root| {
+                self.lint_template_root_with_finish(
+                    super::template::TemplateExecution {
+                        allocator: input.allocator,
+                        source: &input.template.content,
+                        filename: input.filename,
+                        root,
+                        l2: input.l2,
+                        env: TemplateRuleEnv {
+                            sfc_descriptor: Some(input.descriptor),
+                            sfc_scripts: Some(scripts),
+                            art_script_analysis: None,
+                            petite_document: None,
+                            defer_exact_suppressions: true,
+                            dialect: VueDialect::Vue,
+                            facade_rules: facade::RULES,
+                        },
+                    },
+                    input.analysis,
+                    |ctx| {
+                        super::super::script_rules::append_builtin_script_diagnostics_with_template_context(
+                            self,
+                            input.descriptor,
+                            scripts,
+                            &mut script_result,
+                            valid_template.then_some((input.l2, input.template.loc.start as u32)),
+                            Some(ctx),
+                        );
+                    },
+                )
+            });
         (lint, script_result)
     }
 
@@ -88,10 +91,6 @@ impl Linter {
         let l2 = profile!(
             "patina.sfc.descriptor.template_l1_parse_lower",
             L2Template::lower(&allocator, &template.content)
-        );
-        let (root, _legacy_parse_errors) = profile!(
-            "patina.sfc.descriptor.template_parse",
-            Parser::new(&allocator, &template.content).parse()
         );
         let parse_errors = l2.surface_errors();
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
@@ -137,7 +136,6 @@ impl Linter {
                 filename,
                 template,
                 allocator: &allocator,
-                root: &root,
                 l2: &l2,
                 descriptor,
                 analysis: if has_fatal_parse_errors {

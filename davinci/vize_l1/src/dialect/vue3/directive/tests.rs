@@ -14,6 +14,16 @@ fn directive_argument_boundaries_match_vue_tokenizer_states() {
         (":[a[b]].camel", Some((false, "a[b]")), ".camel"),
         (":title.camel", Some((true, "title")), ".camel"),
         (":[title].camel", Some((false, "title")), ".camel"),
+        (
+            "#[(slot=>slot)(outside)]",
+            Some((false, "(slot=>slot)(outside)")),
+            "",
+        ),
+        (
+            "#[(other=>slot)(outside)].once",
+            Some((false, "(other=>slot)(outside)")),
+            ".once",
+        ),
     ] {
         let offset = 17;
         let decomposed = VueDirectives.decompose(authored, offset).unwrap().unwrap();

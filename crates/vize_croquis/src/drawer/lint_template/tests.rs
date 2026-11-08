@@ -1,5 +1,6 @@
 use super::{CompatibilityRoot, LintTemplate};
 use crate::Drawer;
+use oxc_span::GetSpan;
 use vize_armature::Parser;
 use vize_l0::Allocator;
 use vize_l1_to_l2::lower_preserving_comments;
@@ -18,6 +19,10 @@ const CASES: &[&str] = &[
     "<section v-pre><div :title=\"ignored\"><span v-if=\"never\">{{ raw }}</span></div></section><p :id=\"live\">{{ live }}</p>",
     "<div v-if=\"first\"></div><span v-else-if=\"second\"></span><p v-else></p>",
     "<svg viewBox=\"0 0 10 10\"><g :[classKey]=\"group\"><circle :cx=\"x\"/></g></svg><Comp @[eventName].once=\"handle\"/>",
+    "<svg><my-card></my-card></svg>",
+    "<div v-pre.foo v-html='own'><Foo :innerHTML='child' /></div>",
+    "<FancyPanel><template #[(slot=>slot)(outside)]=\"slot\">ready</template></FancyPanel>",
+    "<Comp :column-id :number-of-months />",
 ];
 
 #[test]
@@ -107,5 +112,55 @@ fn l1_l2_slot_props_retain_decoded_authored_text() {
             .map(|name| name.as_str())
             .collect::<Vec<_>>(),
         ["value", "rest"]
+    );
+}
+
+#[test]
+fn l1_l2_compatibility_retains_whitespace_wrapped_expression() {
+    let source = r#"<div v-if="  !ok "/>"#;
+    let allocator = Allocator::default();
+    let (surface, errors) = vize_l1::markup::parse(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    let projection = CompatibilityRoot::new(LintTemplate::new(&surface, &lowered));
+    let indexed = projection
+        .expressions
+        .iter()
+        .map(|(span, expression)| (*span, expression.source()))
+        .collect::<Vec<_>>();
+    let root = projection.build();
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("element root")
+    };
+    let Some(PropNode::Directive(directive)) = element.props.first() else {
+        panic!("v-if directive")
+    };
+    let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+        panic!("v-if expression")
+    };
+    assert!(
+        expression.js_ast.is_some(),
+        "indexed expressions: {indexed:?}"
+    );
+    let retained = expression.js_ast.unwrap().as_expression().unwrap();
+    assert_eq!(expression.content, "  !ok ");
+    assert_eq!(retained.ast.span(), oxc_span::Span::new(2, 5));
+}
+
+#[test]
+fn l1_l2_projection_omits_tree_construction_ignored_start_tags() {
+    let source = "<form><form v-html='x'><span>kept</span></form></form>";
+    let allocator = Allocator::default();
+    let (legacy, _) = Parser::new(&allocator, source).parse();
+    let (surface, _, errors) = vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
+    assert!(surface.children.iter().any(|child| matches!(child, vize_l1::markup::SurfaceChild::Element(element) if element.children.iter().any(|child| matches!(child, vize_l1::markup::SurfaceChild::Element(element) if element.open.is_ignored_start())))));
+
+    let mut expected = Drawer::for_lint();
+    expected.draw_template(&legacy);
+    let mut actual = Drawer::for_lint();
+    actual.draw_lint_template(LintTemplate::new(&surface, &lowered));
+    assert_eq!(
+        actual.finish().semantic_snapshot(),
+        expected.finish().semantic_snapshot()
     );
 }
