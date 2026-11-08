@@ -4,6 +4,9 @@ import { packedSmokeTimingSuccessor } from "./native-smoke-timing-successor.ts";
 
 const muslJob = "\n  fresh-install-musl-smoke:\n";
 const selectedProducer = "\n  selected-host-native-producer:\n";
+const recoveryAction = "      - uses: ./.github/actions/setup-wild-http-recovery\n";
+const upstreamAction =
+  "      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0\n";
 const currentMatrixStart = '        node-version: ["22", "24"]\n' + "        platform:\n";
 const predecessorMatrixStart =
   '        node-version: ["22", "24"]\n' +
@@ -29,6 +32,8 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     assert.equal(sealed.split(packagePath).length, 2, `one admitted ${packagePath} package path`);
     sealed = sealed.replace(` ${packagePath}`, "");
   }
+  assert.equal(sealed.split(recoveryAction).length - 1, 2, "two recovered Linux Wild setups");
+  sealed = sealed.replaceAll(recoveryAction, upstreamAction);
   assert.equal(
     createHash("sha256").update(sealed).digest("hex"),
     "d38f2a343f8c0bda93ef60b9e4b2318697e4f12925b79857feb1bab5143bd3aa",
