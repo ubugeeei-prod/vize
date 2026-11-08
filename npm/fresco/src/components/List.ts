@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, type VNode, watch } f
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -71,8 +72,7 @@ export const List = defineComponent({
   setup(props, { emit }) {
     const scrollOffset = ref(0);
     const highlightedIndex = ref(-1);
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     const syncHighlight = () => {
       const selectedIndex = props.items.findIndex(
@@ -107,11 +107,12 @@ export const List = defineComponent({
       { immediate: true },
     );
 
-    const moveBy = (direction: -1 | 1, distance = 1) => {
+    const moveBy = (direction: -1 | 1, distance = 1, wrap = true) => {
       let next = highlightedIndex.value;
       for (let step = 0; step < distance; step++) {
         const candidate = adjacentEnabledIndex(props.items, next, direction);
         if (candidate === next) break;
+        if (!wrap && (direction > 0 ? candidate < next : candidate > next)) break;
         next = candidate;
       }
       highlightedIndex.value = next;
@@ -133,21 +134,14 @@ export const List = defineComponent({
       onKey: (key) => {
         if (key === "home") highlightedIndex.value = firstEnabledIndex(props.items);
         if (key === "end") highlightedIndex.value = lastEnabledIndex(props.items);
-        if (key === "pageup" || key === "pageUp") moveBy(-1, props.maxHeight ?? 5);
-        if (key === "pagedown" || key === "pageDown") moveBy(1, props.maxHeight ?? 5);
+        if (key === "pageup" || key === "pageUp") moveBy(-1, props.maxHeight ?? 5, false);
+        if (key === "pagedown" || key === "pageDown") moveBy(1, props.maxHeight ?? 5, false);
       },
       onChar: (character) => {
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         highlightedIndex.value = typeaheadIndex(
           props.items,
           highlightedIndex.value,
-          typeahead,
+          typeahead.push(character),
           (item) => item.label,
         );
       },

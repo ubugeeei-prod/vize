@@ -6,6 +6,7 @@ import { computed, defineComponent, h, ref, type PropType, type VNode, watch } f
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
+  createTypeaheadBuffer,
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
@@ -72,8 +73,7 @@ export const Tabs = defineComponent({
   emits: ["update:modelValue", "change"],
   setup(props, { slots, emit }) {
     const highlightedIndex = ref(-1);
-    let typeahead = "";
-    let lastTypeaheadAt = 0;
+    const typeahead = createTypeaheadBuffer();
 
     const syncHighlight = () => {
       const activeIndex = props.tabs.findIndex(
@@ -121,17 +121,10 @@ export const Tabs = defineComponent({
           activate();
           return;
         }
-        const now = Date.now();
-        const normalized = character.toLocaleLowerCase();
-        typeahead =
-          now - lastTypeaheadAt > 700 || typeahead === normalized
-            ? normalized
-            : typeahead + normalized;
-        lastTypeaheadAt = now;
         highlightedIndex.value = typeaheadIndex(
           props.tabs,
           highlightedIndex.value,
-          typeahead,
+          typeahead.push(character),
           (tab) => tab.label,
         );
       },
@@ -155,8 +148,8 @@ export const Tabs = defineComponent({
             "text",
             {
               key: tab.key,
-              fg: isActive || isHighlighted ? props.activeFg : props.inactiveFg,
-              bg: isActive || isHighlighted ? props.activeBg : undefined,
+              fg: isActive || (props.focused && isHighlighted) ? props.activeFg : props.inactiveFg,
+              bg: isActive || (props.focused && isHighlighted) ? props.activeBg : undefined,
               bold: isActive,
               underline: (isActive && props.underline) || (props.focused && isHighlighted),
               dim: tab.disabled,

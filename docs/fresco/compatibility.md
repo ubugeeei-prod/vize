@@ -62,9 +62,9 @@ means the surface has no equivalent.
 ### Interaction primitives
 
 Ink ships these as ecosystem packages (`ink-text-input`, `ink-select-input`, ...); OpenTUI and
-Vue TermUI ship them in core. `TextInput` owns its keyboard and editing behavior; the other
-interactive components render selection/focus state from props and `v-model` but expect the host
-app to wire `useInput` (their internal movement/select handlers are not connected yet — M2).
+Vue TermUI ship them in core. `TextInput` owns its keyboard and editing behavior. `Select`, `List`,
+`Menu`, and `Tabs` own focus-scoped keyboard input when `focused` is true. The remaining
+interactive components still render state but expect their host to wire `useInput` (M2).
 
 | Ink ecosystem      | OpenTUI               | Vue TermUI  | Fresco                                      | Status      | Notes                                                                                                                                                                                                 |
 | ------------------ | --------------------- | ----------- | ------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
