@@ -2,7 +2,7 @@
 
 use std::fs::{self, File, OpenOptions, TryLockError};
 use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 const ACCESS_SUFFIX: &str = ".access";
 const ACTIVE_LOCK_SUFFIX: &str = ".active.lock";
@@ -16,8 +16,9 @@ const CACHE_ENTRY_SUFFIXES: [&str; 4] = [
 const MAX_PROJECT_ENTRIES: usize = 24;
 const MAX_SCANNED_PROJECT_ENTRIES: usize = 256;
 const MAX_SCANNED_CACHE_ENTRIES: usize = MAX_SCANNED_PROJECT_ENTRIES * 4;
-const MAX_EVICTIONS_PER_MAINTENANCE: usize = 8;
+const MIN_EVICTIONS_PER_MAINTENANCE: usize = 8;
 const MAX_ORPHAN_LOCK_CLEANUPS_PER_MAINTENANCE: usize = 8;
+const MAINTENANCE_TIME_BUDGET: Duration = Duration::from_millis(100);
 const RECENT_ACCESS_GRACE: Duration = Duration::from_secs(60);
 const MAX_UNUSED_AGE: Duration = Duration::from_secs(14 * 24 * 60 * 60);
 
@@ -43,6 +44,7 @@ pub(super) fn record_project_cache_access(current: &Path) {
 }
 
 fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummary {
+    let started = Instant::now();
     let mut summary = CacheMaintenanceSummary::default();
     let Some(projects) = current.parent() else {
         return summary;
@@ -97,6 +99,10 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
     lock_roots.dedup();
 
     entries.sort_by_key(|(_, modified, _)| *modified);
+    // A full scan window proves that the cache is substantially over its
+    // target. In that state an unlocked mirror is safe to recompute, and the
+    // recency grace must not pin the same directory-order window forever.
+    let saturated = entries.len() == MAX_SCANNED_PROJECT_ENTRIES;
     let excess = entries
         .len()
         .saturating_add(1)
@@ -119,8 +125,12 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
             summary.orphan_lock_groups_cleaned += 1;
         }
     }
-    for (index, (path, modified, has_access_receipt)) in entries.into_iter().enumerate() {
-        if summary.evicted == MAX_EVICTIONS_PER_MAINTENANCE {
+    for (path, modified, has_access_receipt) in entries {
+        // Always retain the former minimum progress, then spend only a bounded
+        // amount of wall time catching up with the measured overflow.
+        if summary.evicted >= MIN_EVICTIONS_PER_MAINTENANCE
+            && started.elapsed() >= MAINTENANCE_TIME_BUDGET
+        {
             break;
         }
         let expired = now
@@ -130,7 +140,8 @@ fn maintain_project_cache_with_summary(current: &Path) -> CacheMaintenanceSummar
             && now
                 .duration_since(modified)
                 .is_ok_and(|age| age < RECENT_ACCESS_GRACE);
-        if ((index < excess && !recently_accessed) || expired)
+        let capacity_eviction = summary.evicted < excess && (!recently_accessed || saturated);
+        if (capacity_eviction || expired)
             && let Some(locks) = lock_unused(&path)
             && fs::remove_dir_all(&path).is_ok()
         {
@@ -273,13 +284,40 @@ mod tests {
         let summary = maintain_project_cache_with_summary(&current);
 
         assert_eq!(summary.project_entries, MAX_SCANNED_PROJECT_ENTRIES);
-        assert_eq!(summary.evicted, MAX_EVICTIONS_PER_MAINTENANCE);
+        assert!(summary.evicted >= MIN_EVICTIONS_PER_MAINTENANCE);
+        assert!(summary.evicted <= MAX_SCANNED_PROJECT_ENTRIES - MAX_PROJECT_ENTRIES + 1);
         let remaining = fs::read_dir(&projects)
             .unwrap()
             .flatten()
             .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
             .count();
-        assert_eq!(remaining, entry_count - MAX_EVICTIONS_PER_MAINTENANCE);
+        assert_eq!(remaining, entry_count - summary.evicted);
+    }
+
+    #[test]
+    fn maintenance_escapes_a_saturated_recent_window() {
+        let cache = tempfile::tempdir().unwrap();
+        let projects = cache.path().join("canon/projects");
+        fs::create_dir_all(&projects).unwrap();
+        let entry_count = MAX_SCANNED_PROJECT_ENTRIES * 2;
+        for index in 0..entry_count {
+            let entry = projects.join(format!("{index:064x}"));
+            fs::create_dir(&entry).unwrap();
+            record_project_cache_access(&entry);
+        }
+        let current = projects.join(format!("{:064x}", entry_count + 1));
+        fs::create_dir(&current).unwrap();
+
+        let summary = maintain_project_cache_with_summary(&current);
+
+        assert_eq!(summary.project_entries, MAX_SCANNED_PROJECT_ENTRIES);
+        assert!(summary.evicted >= MIN_EVICTIONS_PER_MAINTENANCE);
+        let remaining = fs::read_dir(&projects)
+            .unwrap()
+            .flatten()
+            .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_dir()))
+            .count();
+        assert_eq!(remaining, entry_count + 1 - summary.evicted);
     }
 
     #[test]
@@ -288,7 +326,7 @@ mod tests {
         let projects = cache.path().join("canon/projects");
         fs::create_dir_all(&projects).unwrap();
         let mut recent = Vec::new();
-        for index in 0..(MAX_PROJECT_ENTRIES + MAX_EVICTIONS_PER_MAINTENANCE) {
+        for index in 0..(MAX_PROJECT_ENTRIES + MIN_EVICTIONS_PER_MAINTENANCE) {
             let entry = projects.join(key(index as u8));
             fs::create_dir(&entry).unwrap();
             record_project_cache_access(&entry);
@@ -309,7 +347,7 @@ mod tests {
         let projects = cache.path().join("canon/projects");
         fs::create_dir_all(&projects).unwrap();
         let mut candidates = Vec::new();
-        for index in 0..(MAX_PROJECT_ENTRIES + MAX_EVICTIONS_PER_MAINTENANCE) {
+        for index in 0..(MAX_PROJECT_ENTRIES + MIN_EVICTIONS_PER_MAINTENANCE) {
             let entry = projects.join(key(index as u8));
             fs::create_dir(&entry).unwrap();
             for suffix in LOCK_SUFFIXES {
@@ -322,12 +360,12 @@ mod tests {
 
         let summary = maintain_project_cache_with_summary(&current);
 
-        assert_eq!(summary.evicted, MAX_EVICTIONS_PER_MAINTENANCE);
+        assert!(summary.evicted >= MIN_EVICTIONS_PER_MAINTENANCE);
         let evicted = candidates
             .iter()
             .filter(|entry| !entry.exists())
             .collect::<Vec<_>>();
-        assert_eq!(evicted.len(), MAX_EVICTIONS_PER_MAINTENANCE);
+        assert_eq!(evicted.len(), summary.evicted);
         for entry in evicted {
             for suffix in LOCK_SUFFIXES {
                 assert!(!sibling_path(entry, suffix).exists());
