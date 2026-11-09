@@ -1,0 +1,289 @@
+name: Type-check cold pair
+run-name: "Type-check cold pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.projects }})"
+# Two commits check the same generated projects cold on Linux, WSL2 (ext4 and
+# the Windows mount) and native Windows, alternating builds per run.
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Full 40-hex commit measured first (the "before")
+        type: string
+        required: true
+      head:
+        description: Full 40-hex commit compared against it
+        type: string
+        required: true
+      projects:
+        description: Comma-separated generated projects (vue:<sfcs> or monorepo:<sfcs>)
+        type: string
+        default: "vue:1000,vue:5000,monorepo:5000"
+      runs:
+        description: Alternating recorded cold runs per build
+        type: string
+        default: "5"
+      strace:
+        description: Attribute filesystem calls per process, syscall and path on Linux
+        type: boolean
+        default: true
+      platforms:
+        description: Comma-separated measured cells (linux, wsl2, windows)
+        type: string
+        default: "linux,wsl2,windows"
+      allow_output_change:
+        description: Publish timing even when the builds report different diagnostics
+        type: boolean
+        default: false
+  # Registers the dispatch-only workflow from its PR; only the tests run there.
+  pull_request:
+    paths:
+      - .github/workflows/typecheck-cold-pair.yml
+      - tools/benchmarks/scripts/typecheck-cold-pair*.ts
+      - tests/tooling/typecheck-cold-pair.test.ts
+permissions: { contents: read }
+concurrency:
+  group: typecheck-cold-pair-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}-${{ inputs.projects }}-${{ inputs.platforms }}
+  cancel-in-progress: true
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+jobs:
+  test:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - run: node --test tests/tooling/typecheck-cold-pair.test.ts
+
+  build-linux:
+    # Each platform builds on its own, so Linux results do not wait for Windows.
+    if: github.event_name == 'workflow_dispatch' && (contains(format(',{0},', inputs.platforms), ',linux,') || contains(format(',{0},', inputs.platforms), ',wsl2,'))
+    needs: test
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      # The faster linker is optional: a failed release download falls back
+      # to the default linker instead of failing the pair.
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        id: wild
+        continue-on-error: true
+        with: { wild-version: "0.9.0" }
+      - name: Drop a partial wild configuration
+        if: steps.wild.outcome == 'failure'
+        run: sed -i '/# Added by wild GitHub Action/,/^rustflags/d' "$HOME/.cargo/config.toml" || true
+      - name: Build both commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/pair-target"
+          for side in base head; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            # One target directory: the second build recompiles only what differs.
+            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
+            mkdir -p "pair-bin/$side"
+            cp "$target/ci-opt/vize" "pair-bin/$side/"
+          done
+          ls -l pair-bin/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cold-pair-bin-linux
+          path: pair-bin/
+          retention-days: 7
+
+  build-windows:
+    # Each platform builds on its own, so Linux results do not wait for Windows.
+    if: github.event_name == 'workflow_dispatch' && contains(format(',{0},', inputs.platforms), ',windows,')
+    needs: test
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 90
+    env:
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - name: Setup MSVC toolchain
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with: { arch: amd64 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - name: Build both commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/pair-target"
+          for side in base head; do
+            sha=$BASE; [[ $side == head ]] && sha=$HEAD
+            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
+            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            # One target directory: the second build recompiles only what differs.
+            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
+            mkdir -p "pair-bin/$side"
+            cp "$target/ci-opt/vize.exe" "pair-bin/$side/"
+          done
+          ls -l pair-bin/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cold-pair-bin-windows
+          path: pair-bin/
+          retention-days: 7
+
+  linux:
+    needs: build-linux
+    if: contains(format(',{0},', inputs.platforms), ',linux,')
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: cold-pair-bin-linux, path: pair-bin }
+      - name: Measure
+        env:
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          STRACE: ${{ inputs.strace && '--strace' || '' }}
+        run: |
+          set -euo pipefail
+          [[ "$PROJECTS" =~ ^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends time strace
+          chmod +x pair-bin/*/vize
+          node tools/benchmarks/scripts/typecheck-cold-pair.ts \
+            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize \
+            --root "$RUNNER_TEMP/pair" --projects "$PROJECTS" --runs "$RUNS" $ALLOW $STRACE \
+            --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
+          cat "$RUNNER_TEMP/pair-out/cold-pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          { name: cold-pair-linux, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
+
+  wsl2:
+    needs: build-linux
+    if: contains(format(',{0},', inputs.platforms), ',wsl2,')
+    # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+    runs-on: windows-2025
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl time xz-utils
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: cold-pair-bin-linux, path: pair-bin }
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: |
+          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
+          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
+          $tail = $windowsPath.Substring(2).Replace('\', '/')
+          $mount = "/mnt/$drive$tail"
+          wsl.exe test -d $mount
+          if ($LASTEXITCODE -ne 0) { throw "WSL mount is unavailable: $mount" }
+          "WSL_MOUNT_ROOT=$mount/vize-cold-pair" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install Node 24 in WSL2
+        shell: wsl-bash {0}
+        run: |
+          set -euo pipefail
+          version=24.14.0
+          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
+          curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
+          grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
+          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
+          node --version
+          uname -a
+      - name: Measure ext4 and the Windows mount
+        shell: wsl-bash {0}
+        env:
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+          WSLENV: PROJECTS/u:RUNS/u:ALLOW/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
+        run: |
+          set -euo pipefail
+          [[ "$PROJECTS" =~ ^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
+          # Binaries and the cache root stay on ext4 in both cells; only the project location differs.
+          bin="$HOME/pair-bin"
+          mkdir -p "$bin/base" "$bin/head" "$WSL_MOUNT_ROOT"
+          cp pair-bin/base/vize "$bin/base/vize" && cp pair-bin/head/vize "$bin/head/vize"
+          chmod +x "$bin"/*/vize
+          summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
+          for entry in "wsl2-ext4=$HOME/vize-cold-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/projects"; do
+            label=${entry%%=*}
+            node tools/benchmarks/scripts/typecheck-cold-pair.ts \
+              --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" \
+              --root "${entry#*=}" --cache-root "$HOME/vize-cold-pair-cache" \
+              --projects "$PROJECTS" --runs "$RUNS" $ALLOW \
+              --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
+            cat "$WSL_MOUNT_ROOT/out/cold-pair-$label.md" >> "$summary_path"
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          {
+            name: cold-pair-wsl2,
+            path: "${{ runner.temp }}/vize-cold-pair/out/",
+            if-no-files-found: warn,
+          }
+
+  windows:
+    needs: build-windows
+    if: contains(format(',{0},', inputs.platforms), ',windows,')
+    runs-on: blacksmith-32vcpu-windows-2025
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: cold-pair-bin-windows, path: pair-bin }
+      - name: Measure
+        shell: pwsh
+        env:
+          PROJECTS: ${{ inputs.projects }}
+          RUNS: ${{ inputs.runs }}
+          ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
+        run: |
+          if ($env:PROJECTS -notmatch '^(vue|monorepo):[0-9]+(,(vue|monorepo):[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$') { throw "invalid inputs" }
+          $out = Join-Path $env:RUNNER_TEMP 'pair-out'
+          $extra = @(); if ($env:ALLOW) { $extra += $env:ALLOW }
+          node tools/benchmarks/scripts/typecheck-cold-pair.ts `
+            --bin "base=$PWD\pair-bin\base\vize.exe" --bin "head=$PWD\pair-bin\head\vize.exe" `
+            --root (Join-Path $env:RUNNER_TEMP 'pair') --projects $env:PROJECTS --runs $env:RUNS @extra `
+            --label windows-ntfs --out $out | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "pair failed" }
+          Get-Content (Join-Path $out 'cold-pair-windows-ntfs.md') | Add-Content $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          { name: cold-pair-windows, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
