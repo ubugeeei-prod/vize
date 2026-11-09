@@ -59,8 +59,10 @@ impl SetupPropsDeclaration<'_> {
 
 pub(crate) fn collect_setup_props_with_types<'a>(
     program: &'a Program<'a>,
+    source: &str,
     offset: usize,
     sibling: Option<(&'a Program<'a>, usize)>,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
 ) -> Vec<SetupPropsDeclaration<'a>> {
     if compiler_macro_is_shadowed(program, "defineProps") {
         return Vec::new();
@@ -76,8 +78,10 @@ pub(crate) fn collect_setup_props_with_types<'a>(
                     };
                     if let Some(declaration) = declaration_from_expression(
                         program,
+                        source,
                         offset,
                         sibling,
+                        resolved_type_world,
                         init,
                         Some(&declarator.id),
                     ) {
@@ -88,8 +92,10 @@ pub(crate) fn collect_setup_props_with_types<'a>(
             Statement::ExpressionStatement(statement) => {
                 if let Some(declaration) = declaration_from_expression(
                     program,
+                    source,
                     offset,
                     sibling,
+                    resolved_type_world,
                     &statement.expression,
                     None,
                 ) {
@@ -104,8 +110,10 @@ pub(crate) fn collect_setup_props_with_types<'a>(
 
 fn declaration_from_expression<'a>(
     program: &'a Program<'a>,
+    source: &str,
     offset: usize,
     sibling: Option<(&'a Program<'a>, usize)>,
+    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
     expression: &'a Expression<'a>,
     binding: Option<&'a BindingPattern<'a>>,
 ) -> Option<SetupPropsDeclaration<'a>> {
@@ -149,6 +157,26 @@ fn declaration_from_expression<'a>(
             &mut FxHashSet::default(),
             &mut typed,
         );
+        if let Some(world) = resolved_type_world
+            && let Some(type_source) = source.get(ty.span().start as usize..ty.span().end as usize)
+        {
+            typed.extend(
+                world
+                    .resolve_properties(type_source)
+                    .properties
+                    .into_iter()
+                    .map(|property| TypedProp {
+                        name: property.name,
+                        span: ty.span(),
+                        key_span: ty.span(),
+                        required: !property.optional,
+                        boolean: property.prop_type.as_deref().is_some_and(|ty| {
+                            matches!(ty.trim(), "boolean" | "Boolean" | "true" | "false")
+                        }),
+                        offset,
+                    }),
+            );
+        }
         let mut names = FxHashSet::default();
         typed.retain(|prop| names.insert(prop.name.clone()));
     }

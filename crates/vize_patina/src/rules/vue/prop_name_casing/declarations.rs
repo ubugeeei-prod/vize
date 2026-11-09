@@ -72,16 +72,42 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
     let Some(analysis) = ctx.analysis() else {
         return declarations;
     };
-    let Some(_) = analysis.macros.define_props() else {
+    let Some(call) = analysis.macros.define_props() else {
         return declarations;
     };
-    declarations.extend(analysis.macros.props().iter().filter_map(|prop| {
-        let (start, end) = analysis.macros.prop_declaration(prop.name.as_str())?;
-        Some(Declaration {
+    let type_argument_span =
+        macro_type_argument_span(declaring_block.content.as_ref(), call, setup_shift);
+    declarations.extend(analysis.macros.props().iter().map(|prop| {
+        let (start, end) = analysis
+            .macros
+            .prop_declaration(prop.name.as_str())
+            .or(type_argument_span)
+            .unwrap_or((call.start, call.end));
+        Declaration {
             name: prop.name.clone(),
             start: declaring_offset + start.saturating_sub(setup_shift),
             end: declaring_offset + end.saturating_sub(setup_shift),
-        })
+        }
     }));
     declarations
+}
+
+fn macro_type_argument_span(
+    source: &str,
+    call: &vize_croquis::macros::MacroCall,
+    setup_shift: u32,
+) -> Option<(u32, u32)> {
+    let type_args = call.type_args.as_deref()?;
+    let authored_start = call.start.saturating_sub(setup_shift) as usize;
+    let authored_end = call.end.saturating_sub(setup_shift) as usize;
+    let authored_call = source.get(authored_start..authored_end)?;
+    let inner = type_args
+        .strip_prefix('<')
+        .and_then(|value| value.strip_suffix('>'))
+        .unwrap_or(type_args);
+    let relative = authored_call.find(inner)? as u32;
+    Some((
+        call.start + relative,
+        call.start + relative + inner.len() as u32,
+    ))
 }

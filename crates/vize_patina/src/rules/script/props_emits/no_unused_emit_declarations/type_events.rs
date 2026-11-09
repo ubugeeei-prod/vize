@@ -1,6 +1,7 @@
 /// Resolve local type literals the same way vue-eslint-parser's merged SFC
-/// program does. Imported types stay unknown, but a type/interface declared in
-/// either script block retains the authored member span for the diagnostic.
+/// program does. A type/interface declared in either script block retains the
+/// authored member span; the caller adds cross-file members at the macro type
+/// argument after this local pass.
 struct TypeEventResolver<'a, 'b> {
     own: &'a Program<'a>,
     sibling: Option<&'b Program<'b>>,

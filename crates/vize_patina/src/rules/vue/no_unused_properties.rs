@@ -174,6 +174,7 @@ impl Rule for NoUnusedProperties {
                 return;
             };
             let call_span = unshift_span((call.start, call.end), setup_shift);
+            let type_argument_span = macro_type_argument_span(declaring_script, call, setup_shift);
             let props = analysis.macros.props();
             if props.is_empty() {
                 return;
@@ -239,6 +240,7 @@ impl Rule for NoUnusedProperties {
                     let (start, end) = analysis
                         .macros
                         .prop_declaration(prop.name.as_str())
+                        .or(type_argument_span)
                         .unwrap_or((call.start, call.end));
                     let (start, end) = unshift_span((start, end), setup_shift);
                     (
@@ -266,4 +268,24 @@ impl Rule for NoUnusedProperties {
 
 fn unshift_span((start, end): (u32, u32), delta: u32) -> (u32, u32) {
     (start.saturating_sub(delta), end.saturating_sub(delta))
+}
+
+fn macro_type_argument_span(
+    source: &str,
+    call: &vize_croquis::macros::MacroCall,
+    setup_shift: u32,
+) -> Option<(u32, u32)> {
+    let type_args = call.type_args.as_deref()?;
+    let authored_start = call.start.saturating_sub(setup_shift) as usize;
+    let authored_end = call.end.saturating_sub(setup_shift) as usize;
+    let authored_call = source.get(authored_start..authored_end)?;
+    let inner = type_args
+        .strip_prefix('<')
+        .and_then(|value| value.strip_suffix('>'))
+        .unwrap_or(type_args);
+    let relative = authored_call.find(inner)? as u32;
+    Some((
+        call.start + relative,
+        call.start + relative + inner.len() as u32,
+    ))
 }

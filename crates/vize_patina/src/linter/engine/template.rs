@@ -115,8 +115,8 @@ impl Linter {
         let owned_analysis;
         let analysis = match analysis {
             TemplateAnalysis::Disabled => None,
-            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Precomputed(analysis) => Some(analysis),
+            _ if !self.has_active_semantic_template_rules() => None,
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();

@@ -217,6 +217,20 @@ impl Linter {
             .any(|rule_name| self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name))
     }
 
+    pub(crate) fn has_resolved_macro_type_demand(&self) -> bool {
+        const TEMPLATE_RULES: &[&str] = &[
+            "vue/no-unused-properties",
+            "vue/prop-name-casing",
+            "vue/no-mutating-props",
+            "vue/no-undefined-refs",
+            "vue/no-template-shadow",
+        ];
+        super::script_rules::has_resolved_macro_type_demand(self)
+            || TEMPLATE_RULES.iter().copied().any(|rule_name| {
+                self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name)
+            })
+    }
+
     fn has_active_shared_sfc_descriptor_rules(&self) -> bool {
         SHARED_SFC_DESCRIPTOR_RULES
             .iter()
