@@ -41,6 +41,7 @@ export function createServerDiscovery(
     config: ReturnType<typeof workspace.getConfiguration>,
     generation: number,
     workspaceFailure?: string,
+    probeRelease = false,
   ): Promise<string | undefined> {
     const exeName = process.platform === "win32" ? "vize.exe" : "vize";
     const expectedVersion = getExtensionVersion(context);
@@ -117,6 +118,7 @@ export function createServerDiscovery(
         exeName,
         expectedVersion,
         generation,
+        probeRelease,
       );
       if (generation !== state.configurationSyncGeneration) return undefined;
       if (releaseCandidate) {
@@ -280,6 +282,7 @@ export function createServerDiscovery(
     exeName: string,
     expectedVersion: string,
     generation: number,
+    probe = false,
   ): Promise<InspectedServerCandidate | undefined> {
     const target = getReleaseServerTarget();
     if (!target) {
@@ -296,7 +299,7 @@ export function createServerDiscovery(
       target.targetName,
     );
     const serverPath = path.join(installDir, exeName);
-    const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion);
+    const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion, probe);
     if (generation !== state.configurationSyncGeneration) return undefined;
     if (cachedCandidate) {
       pruneStaleReleaseServers(context, expectedVersion);
@@ -373,9 +376,20 @@ export function createServerDiscovery(
   async function inspectCachedReleaseServer(
     serverPath: string,
     expectedVersion: string,
+    probe: boolean,
   ): Promise<InspectedServerCandidate | undefined> {
     if (!fs.existsSync(serverPath)) {
       return undefined;
+    }
+    if (!probe) {
+      // The cache directory is keyed by version. The started server's initialize
+      // result confirms it, so activation spawns no separate --version process.
+      return {
+        path: serverPath,
+        source: "release",
+        version: expectedVersion,
+        versionUnconfirmed: true,
+      };
     }
 
     const candidate = await inspectServerCandidate({

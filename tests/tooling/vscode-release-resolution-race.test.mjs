@@ -112,3 +112,52 @@ for (const stage of ["cached", "mkdir", "archive", "checksum", "verify", "extrac
     assert.equal(current.operations.at(-1), "disabled");
   });
 }
+
+await test("a cached release starts unprobed; only a refresh spawns its --version probe", async () => {
+  const operations = [];
+  const context = vm.createContext({
+    path,
+    process: { env: {} },
+    Date,
+    promisify: () => () => {},
+    execFile: () => {},
+    fs: { existsSync: (file) => file === "/storage/vize" },
+    operations,
+  });
+  const hooks = `
+    inspectServerCandidate = async (candidate) => {
+      operations.push(["probe", candidate.path]);
+      return { ...candidate, version: "1.2.3" };
+    };
+    return { inspect: (file, probe) => inspectCachedReleaseServer(file, "1.2.3", probe) };
+  `;
+  const control = new vm.Script(`${body.replace(/return\s*\{\s*findServerPath\s*\};/u, hooks)}\n
+    createServerDiscovery(
+      { configurationSyncGeneration: 1, outputChannel: { appendLine: () => {} } },
+      () => {}, () => {},
+    );
+  `).runInContext(context);
+  assert.deepEqual(
+    { ...(await control.inspect("/storage/vize", false)) },
+    {
+      path: "/storage/vize",
+      source: "release",
+      version: "1.2.3",
+      versionUnconfirmed: true,
+    },
+  );
+  assert.deepEqual(operations, []);
+  assert.deepEqual(
+    { ...(await control.inspect("/storage/vize", true)) },
+    {
+      path: "/storage/vize",
+      source: "release",
+      version: "1.2.3",
+    },
+  );
+  assert.deepEqual(
+    operations.map((row) => [...row]),
+    [["probe", "/storage/vize"]],
+  );
+  assert.equal(await control.inspect("/storage/missing", false), undefined);
+});

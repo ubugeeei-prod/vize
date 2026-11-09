@@ -73,6 +73,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
     output,
     activeClient,
     policyConfiguration: policy.configuration,
+    policyRelease: Boolean(policy.reported),
     startup,
     getInitializationOptions: () => ({ lint: true }),
     resolveCorsaServerEnv: async () => ({ PATH: "/usr/bin" }),
@@ -82,6 +83,8 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
     LanguageClient: class {
       constructor(_id, _name, _server, options) {
         initializations.push(structuredClone(options.initializationOptions));
+        if (policy.reported)
+          this.initializeResult = { serverInfo: { version: policy.reported.shift() } };
       }
       async start() {
         operations.push(["real-start"]);
@@ -113,7 +116,14 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
     if (client) activeInitializationOptions = getInitializationOptions(
       policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig });
     updateStatusBar = (...args) => operations.push(["status", ...args]);
-    if (startup) {
+    if (startup && policyRelease) {
+      findServerPath = async (_context, _config, _generation, _failure, probe) => {
+        operations.push(["find", probe]);
+        selectedServerCandidate = { path: "/test/vize", source: "release", version: "1.2.3",
+          ...(probe ? {} : { versionUnconfirmed: true }) };
+        return "/test/vize";
+      };
+    } else if (startup) {
       findServerPath = async () => "/test/vize";
     } else {
       startClient = async (_context, _config, generation) => {
@@ -130,6 +140,7 @@ function createSync(refresh, activeClient, refuseLogging = false, startup, polic
          policyConfiguration, { hasWorkspaceLspConfig: workspaceLspConfig.hasConfig }); },
        setHasConfig: (value) => { workspaceLspConfig.hasConfig = value; },
        getClient: () => client,
+       getCandidate: () => selectedServerCandidate && { ...selectedServerCandidate },
        state: () => ({ generation: configurationSyncGeneration, hasClient: Boolean(client), starting: startingClientGeneration }) });
   `).runInContext(context);
   return { control, operations, logs, timers, started, retained, initializations };
@@ -458,4 +469,42 @@ await test("real changed discovery options supersede unpublished initialization 
   await replacement;
   assert.equal(current.control.state().hasClient, true);
   assert.equal(current.operations.filter(([kind]) => kind === "real-stop").length, 1);
+});
+
+await test("a cached release is confirmed by its initialize result without a probe", async () => {
+  const ready = deferred();
+  ready.resolve();
+  const current = createSync(async () => {}, undefined, false, ready, { reported: ["1.2.3"] });
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  assert.deepEqual(
+    current.operations.filter(([kind]) => kind === "find").map((row) => [...row]),
+    [["find", false]],
+  );
+  assert.deepEqual(
+    { ...current.control.getCandidate() },
+    {
+      path: "/test/vize",
+      source: "release",
+      version: "1.2.3",
+    },
+  );
+  assert.equal(current.control.state().hasClient, true);
+});
+
+await test("a cached release reporting another version restarts through the probed refresh", async () => {
+  const ready = deferred();
+  ready.resolve();
+  const current = createSync(async () => {}, undefined, false, ready, {
+    reported: ["0.9.0", "1.2.3"],
+  });
+  await current.control.syncClientToConfiguration({}, "initial activation");
+  assert.deepEqual(
+    current.operations
+      .filter(([kind]) => kind === "find" || kind.startsWith("real-"))
+      .map((row) => [...row]),
+    [["find", false], ["real-start"], ["real-stop"], ["find", true], ["real-start"]],
+  );
+  assert.ok(current.logs.some((line) => line.includes("reported 0.9.0, not 1.2.3")));
+  assert.equal(current.control.getCandidate().versionUnconfirmed, undefined);
+  assert.equal(current.control.state().hasClient, true);
 });

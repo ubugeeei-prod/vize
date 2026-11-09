@@ -306,6 +306,7 @@ async function startClient(
   config: ReturnType<typeof workspace.getConfiguration>,
   generation: number,
   workspaceFailure?: string,
+  probeRelease = false,
 ): Promise<void> {
   traceConfig(`start enter generation=${generation}`);
   const initializationOptions = getInitializationOptions(config, {
@@ -321,7 +322,13 @@ async function startClient(
       void maybeOfferCapabilitySetup(context, config);
     }
   }
-  const serverPath = await findServerPath(context, config, generation, workspaceFailure);
+  const serverPath = await findServerPath(
+    context,
+    config,
+    generation,
+    workspaceFailure,
+    probeRelease,
+  );
   traceConfig(`start path-return generation=${generation} current=${configurationSyncGeneration}`);
   if (generation !== configurationSyncGeneration) {
     traceConfig(`start refused generation=${generation} stage=server-path`);
@@ -355,6 +362,20 @@ async function startClient(
       traceConfig(`unpublished client stop finish generation=${generation}`);
       return;
     }
+    const cached = selectedServerCandidate;
+    if (cached?.versionUnconfirmed) {
+      const reported = nextClient.initializeResult?.serverInfo?.version;
+      if (reported !== cached.version) {
+        outputChannel.appendLine(
+          `Cached Vize language server reported ${reported ?? "no version"}, not ${cached.version}. Refreshing cache.`,
+        );
+        await nextClient.stop();
+        if (generation !== configurationSyncGeneration) return;
+        return startClient(context, config, generation, workspaceFailure, true);
+      }
+      const { versionUnconfirmed, ...confirmed } = cached;
+      selectedServerCandidate = versionUnconfirmed ? confirmed : cached;
+    }
     client = nextClient;
     outputChannel.appendLine("Vize language server started successfully");
     updateStatusBar("ready", `Ready with ${capabilityDescription}`);
@@ -368,6 +389,12 @@ async function startClient(
       await nextClient.dispose();
       if (generation !== configurationSyncGeneration) return;
       return startClient(context, config, generation, reason);
+    }
+    if (!probeRelease && selectedServerCandidate?.versionUnconfirmed) {
+      outputChannel.appendLine("Probing the cached Vize language server before refreshing it.");
+      await nextClient.dispose();
+      if (generation !== configurationSyncGeneration) return;
+      return startClient(context, config, generation, workspaceFailure, true);
     }
     updateStatusBar("failed", "Failed to start language server");
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
