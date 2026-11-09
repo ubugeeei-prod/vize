@@ -8,7 +8,6 @@ use super::{
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
 use crate::markup::L2Template;
-use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
 
@@ -20,8 +19,7 @@ impl Linter {
     ) -> (LintResult, LintResult) {
         let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
-        let lint = LintTemplate::new(input.l2.surface(), input.l2.lowered())
-            .with_compatibility_root(|root| {
+        let lint = input.l2.lint_template().with_compatibility_root(|root| {
                 self.lint_template_root_with_finish(
                     super::template::TemplateExecution {
                         allocator: input.allocator,
