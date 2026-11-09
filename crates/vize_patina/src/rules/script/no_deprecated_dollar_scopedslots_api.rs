@@ -82,7 +82,7 @@ impl ScriptRule for NoDeprecatedDollarScopedSlotsApi {
     ) {
         check_script(program, offset, result);
         if (sfc.sole_script_block || !sfc.is_script_setup)
-            && sfc.template_root.is_none()
+            && sfc.template_surface.is_none()
             && let Some(template) = sfc.template_source
             && let Some(template_offset) = sfc.template_offset
         {

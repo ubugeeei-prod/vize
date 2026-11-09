@@ -107,7 +107,6 @@ test("generated zero-Vue ownership records physical scripts and preserves comple
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
-
 test("generated script ownership rejects missing roots, foreign programs and altered custody", () => {
   const directory = fixture();
   try {
@@ -338,13 +337,4 @@ test("actual native zero-Vue matrix checks both broken physical roots under its 
     fs.rmSync(directory, { recursive: true, force: true });
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
-});
-
-test("canonical Rust observer executes physical script ownership laws", () => {
-  const result = spawnSync(
-    "rust-script",
-    ["--test", path.join(root, "tools/commands/fixtures/tool-matrix-report.rs")],
-    { encoding: "utf8" },
-  );
-  assert.equal(result.status, 0, result.stderr + result.stdout);
 });

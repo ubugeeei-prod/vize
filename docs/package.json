@@ -4,14 +4,15 @@
   "type": "module",
   "scripts": {
     "generate:i18n": "node ./scripts/i18n/generate.ts --accept-machine-translation",
+    "generate:metadata": "node ./scripts/generate-contract-metadata.ts",
     "generate:rules": "node ./scripts/generate-patina-rules-page.ts",
     "generate:reference": "node ../npm/ui/scripts/generate-reference-docs.ts",
     "generate:ui-previews": "node ./scripts/build-ui-previews.ts",
     "check:ui-docs": "node ./previews/ui/check-site.ts",
     "check:heading-links": "node ./scripts/check-heading-hash.ts",
     "generate:og-images": "node ./scripts/generate-og-images.ts",
-    "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm generate:og-images && vp preview",
-    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && node ./scripts/finish-build.ts",
+    "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && pnpm generate:og-images && vp preview",
+    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && node ./scripts/finish-build.ts",
     "preview": "vp preview"
   },
   "devDependencies": {

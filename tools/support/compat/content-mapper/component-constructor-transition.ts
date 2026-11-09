@@ -7,8 +7,8 @@ import { certifiedTransition } from "./canonical-helper-transition.ts";
 const constructorSources = [
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
-    10645,
-    "94e915b4968a2d7d4b0d1b4292b74aa24cbc7434e4b7d8f191213b59cfdbb853",
+    10946,
+    "70ea8375a7bc7b9617866eefadb0d83aa074240a1c6b603d06af46ed230a2489",
   ],
   [
     "../../../../crates/vize_canon/src/virtual_ts/generator/component_constructors/emission.rs",
@@ -150,6 +150,75 @@ type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>
 type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
 `,
   },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase & $ShallowUnwrapRef<Exposed>;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase & $ShallowUnwrapRef<Exposed>, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+  },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, {}, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, {}, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, {}, $AuthoredProps, $JsxProps>;
+`,
+  },
+  {
+    previous: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+    current: `type $ComponentInstance = {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+} & $ComponentPublicBase;
+type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<Props, __EmitProps<Emits>, $AuthoredProps>, ...args: any[]) => $ComponentInstanceFor<$ComponentInstance, {
+  $props: Props & __EmitProps<Emits>;
+  readonly __vizeRawProps?: Props;
+  $emit: $PublicEmit<Emits>;
+  $slots: $PublicSlots<$Slots>;
+}, $ComponentPublicBase, Props, __EmitProps<Emits>, $AuthoredProps, $JsxProps>;
+`,
+  },
 ] as const;
 
 export function certifyComponentConstructorTransition(before: Buffer, after: Buffer) {
@@ -184,8 +253,8 @@ export function certifyComponentConstructorTransition(before: Buffer, after: Buf
     assert.equal(occurrences(old, previous), 0, "only one previous constructor variant is present");
     assert.equal(
       occurrences(next, previous),
-      0,
-      "only one previous constructor variant is present",
+      previous === candidate.current ? 1 : 0,
+      "only the authenticated successor may also be a known predecessor",
     );
   }
   return certifiedTransition(

@@ -1,0 +1,24 @@
+{
+  "name": "@vizejs/example-builder-matrix",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vp run --filter @vizejs/unplugin build && node build/build-all.ts",
+    "build:bun": "vp run --filter @vizejs/unplugin build && bun run build/bun.ts",
+    "check": "vp check src build test",
+    "check:fix": "vp check --fix src build test",
+    "fmt": "vp fmt --write src build test",
+    "test": "vp run --filter @vizejs/unplugin build && node --test test/builders.test.ts"
+  },
+  "dependencies": {
+    "vue": "catalog:vue-production"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "@vizejs/unplugin": "workspace:*",
+    "esbuild": "catalog:bundlers",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "webpack": "catalog:bundlers"
+  }
+}

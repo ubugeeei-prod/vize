@@ -18,7 +18,7 @@ use oxc_ast::{
     },
 };
 use oxc_semantic::Semantic;
-use oxc_span::Span;
+use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::{CompactString, ToCompactString};
 
@@ -35,6 +35,8 @@ pub(super) struct Resolver<'s, 'a, 'c> {
     pub(super) semantic: &'s Semantic<'a>,
     pub(super) program: &'a Program<'a>,
     pub(super) sibling: Option<&'c Program<'c>>,
+    pub(super) source: &'s str,
+    pub(super) resolved_type_world: Option<&'s vize_croquis::types::ResolvedTypeWorld>,
 }
 
 impl Resolver<'_, '_, '_> {
@@ -94,7 +96,28 @@ impl Resolver<'_, '_, '_> {
     pub(super) fn type_emits(&self, ty: &TSType<'_>) -> Emits {
         let mut collect = Collect::default();
         self.collect_type(ty, Block::Own, &mut collect, &mut Vec::new());
-        collect.finish()
+        let local = collect.finish();
+        if matches!(local, Emits::Unknown)
+            && let Some(world) = self.resolved_type_world
+            && let Some(type_source) = self
+                .source
+                .get(ty.span().start as usize..ty.span().end as usize)
+        {
+            let resolved = world.resolve_properties(type_source);
+            // An imported call-signature-only type is not represented by the
+            // property resolver. Keep that shape unknown rather than treating
+            // it as an empty declaration and creating false positives.
+            if resolved.complete && !resolved.properties.is_empty() {
+                return Emits::Known(
+                    resolved
+                        .properties
+                        .into_iter()
+                        .map(|property| property.name)
+                        .collect(),
+                );
+            }
+        }
+        local
     }
 
     fn collect_type(

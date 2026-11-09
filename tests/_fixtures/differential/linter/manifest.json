@@ -3196,6 +3196,38 @@
       }
     },
     {
+      "id": "linter/lint-template-projection-facts-12316",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "lint-template-projection-facts-12316",
+        "files": [
+          {
+            "path": "ProjectionFacts.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "65dcf290820099cb1cce56a2cb6b467814a6884edeb8a378dfaec23cf620eaf7"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/macro-order-config-6097",
       "state": "active",
       "targets": [
@@ -5051,6 +5083,47 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/type-aware-windows-drive-multi-file-12292",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "type-aware-windows-drive-multi-file-12292",
+        "files": [
+          {
+            "path": "src/a.ts.txt",
+            "role": "issue-authored-first-session-file",
+            "sha256": "daa7a5fa7563a8d2eb0ca547472f4992aa2f01ac7e2239c3aeef8d042a459af7"
+          },
+          {
+            "path": "src/b.ts.txt",
+            "role": "issue-authored-late-created-file",
+            "sha256": "daa7a5fa7563a8d2eb0ca547472f4992aa2f01ac7e2239c3aeef8d042a459af7"
+          },
+          {
+            "path": "vite.config.mjs.txt",
+            "role": "issue-authored-type-aware-lint-config",
+            "sha256": "f5bd31eda5dbfd585923f9ea0fe795d137913c67d48a78bc80e3ef2aa02100ab"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

@@ -13,6 +13,7 @@ packages:
   - "!editors/vscode"
   - "npm/builder/vite/example"
   - "npm/builder/rspack/example"
+  - "npm/builder/unplugin/example"
   - "npm/fresco/examples/*"
   - "examples/vite-musea"
   - "examples/oxlint-vize"

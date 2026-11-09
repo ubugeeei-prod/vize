@@ -25,7 +25,7 @@ await test("product, compiled documentation and cache changes retain app checks"
     "upstream/forks/lightningcss/src/lib.rs",
     "npm/builder/vite/src/index.ts",
     "npm/cli/schemas/vize.config.schema.json",
-    "playground/src/App.vue",
+    "playground/src/app.vue",
     "npm/compose/core/src/virtual-list.ts",
     "npm/ui/scripts/reference-docs/composable-examples.ts",
     "docs/theme/components/Guide.vue",

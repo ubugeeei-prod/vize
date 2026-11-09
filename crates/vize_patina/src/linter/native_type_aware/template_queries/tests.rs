@@ -45,19 +45,19 @@ fn real_shorthand_projection_queries_camelized_expression_values() {
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
-    assert!(errors.is_empty());
+    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(&root),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "CamelizedShorthand.vue",
     );
     let (queries, _) = super::collect_template_query_sets(
         &document,
-        &root,
+        l2.surface(),
         template.loc.start as u32,
         true,
         false,
@@ -97,19 +97,19 @@ function pick(index: number): string[] { return pages[index] ?? [] }
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
-    assert!(errors.is_empty());
+    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(&root),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "MultilineForSources.vue",
     );
     let (queries, _) = super::collect_template_query_sets(
         &document,
-        &root,
+        l2.surface(),
         template.loc.start as u32,
         true,
         false,
@@ -214,19 +214,19 @@ const ids: number[] = [1]
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
-    assert!(errors.is_empty(), "{errors:?}");
+    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(&root),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "UnicodeCommentBinding.vue",
     );
     let (queries, _) = super::collect_template_query_sets(
         &document,
-        &root,
+        l2.surface(),
         template.loc.start as u32,
         true,
         false,
@@ -282,19 +282,19 @@ const selected: number[] = [1]
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
-    assert!(errors.is_empty(), "{errors:?}");
+    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(&root),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "CommentedBinding.vue",
     );
     let (queries, _) = super::collect_template_query_sets(
         &document,
-        &root,
+        l2.surface(),
         template.loc.start as u32,
         true,
         false,
@@ -331,19 +331,19 @@ const cardProps = { topConfig: { distance: 1 } }
     let template = descriptor.template.as_ref().unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = vize_l0::Allocator::default();
-    let (root, errors) = vize_armature::Parser::new(&allocator, &template.content).parse();
-    assert!(errors.is_empty(), "{errors:?}");
+    let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+    assert!(l2.surface_errors().is_empty());
     let document = super::super::document::project_type_aware(
         &descriptor,
         &script.content,
-        Some(&root),
+        Some(l2.lint_template()),
         script.loc.start as u32,
         template.loc.start as u32,
         "ComponentSpread.vue",
     );
     let (queries, _) = super::collect_template_query_sets(
         &document,
-        &root,
+        l2.surface(),
         template.loc.start as u32,
         true,
         false,

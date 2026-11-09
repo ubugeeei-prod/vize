@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vite-plus/test";
 import { createApp, nextTick } from "vue";
-import CodeHighlight from "../src/shared/CodeHighlight.vue";
-import CodeHighlightHarness from "./fixtures/CodeHighlightHarness.vue";
+import CodeHighlight from "../src/shared/code-highlight.vue";
+import CodeHighlightHarness from "./fixtures/code-highlight-harness.vue";
 
 function sourceText(host: HTMLElement) {
   return Array.from(host.querySelectorAll(".code-line"), (line) =>

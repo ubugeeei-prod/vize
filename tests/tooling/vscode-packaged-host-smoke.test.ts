@@ -174,7 +174,7 @@ test("packaged host strips Node-only options from the VS Code app environment", 
 test("real host task packages and statically validates the same VSIX that it runs", () => {
   const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
 
-  const packageAt = command.indexOf("../../tools/commands/editors/vscode/run-package-bin.rs");
+  const packageAt = command.indexOf("../../tools/commands/editors/vscode/run-package-bin.ts");
   const vsceAt = command.indexOf("@vscode/vsce");
   const packageArgsAt = command.indexOf("package --no-dependencies --out dist/vize.vsix");
   const staticAssertAt = command.indexOf(

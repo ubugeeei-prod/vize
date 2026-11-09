@@ -7,9 +7,9 @@ use vize_l0::{Allocator, String};
 use vize_l2::expr::{ExprRef, VueFilterApp, VueFilterExpr};
 use vize_l2::op::{BindingOp, DynamicName, Op};
 
-use crate::emit::js::asset_ident;
 use crate::lower::TextParts;
 use crate::pass::walk::PageWalk;
+use vize_l2::op::vue::asset_identifier;
 
 use super::LegacyFacts;
 
@@ -302,7 +302,7 @@ fn wrap_source(filter: &VueFilterExpr<'_>) -> String {
 }
 
 fn wrap_one(exp: &str, app: &VueFilterApp<'_>) -> String {
-    let id = asset_ident("filter", app.name);
+    let id = asset_identifier("filter", app.name);
     match app.raw.split_once('(') {
         None => {
             let mut out = String::with_capacity(id.len() + exp.len() + 2);

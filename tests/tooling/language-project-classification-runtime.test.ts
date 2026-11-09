@@ -159,10 +159,18 @@ test("new helper and input paths select the existing jobs and cannot be removed 
     if (workflow !== ".github/workflows/language-project-fixtures.yml") {
       const transition = metadata.transitions.find((row: any) => row.after.path === workflow);
       const before = gunzipSync(read("head", transition.gzip.path)!).toString();
+      const originalJobs = before.slice(before.indexOf("\njobs:"));
+      const expectedJobs =
+        workflow === ".github/workflows/typescript-provider-vsix.yml"
+          ? originalJobs.replaceAll(
+              "rust-script tools/commands/editors/vscode/package-typescript-provider.rs",
+              "node tools/support/editors/typescript-provider/package.ts",
+            )
+          : originalJobs;
       assert.equal(
         current.slice(current.indexOf("\njobs:")),
-        before.slice(before.indexOf("\njobs:")),
-        "packed and installed job bodies remain unchanged",
+        expectedJobs,
+        "job bodies only replace the retired provider packager",
       );
     }
   }

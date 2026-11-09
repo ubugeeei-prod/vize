@@ -32,7 +32,7 @@ Focused gates:
 RUST_BACKTRACE=1 cargo test -p vize_atelier_dom -p vize_s1_to_s2 -p vize_s2 --tests
 cargo test -p vize_s2 --test folio_deep_stack -- --nocapture
 rust-script tools/commands/davinci/assertion-lint.rs
-rust-script tools/commands/ci/source-file-lengths.rs --check --base-ref origin/main
+node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 cargo fmt --all -- --check
 git diff --check
 node --test tests/tooling/davinci-traversal-budgets.test.ts tests/tooling/davinci-storage-policy.test.ts

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -70,7 +70,7 @@ async function prepareProjectDependencies({ args, commitSha, project }) {
     );
   }
 
-  const installArgs = installArguments(manager);
+  const installArgs = installArguments(manager, fixtureRoot);
   const startedAt = Date.now();
   const install = await runPackageManager(managerRunner, installArgs, {
     cwd: fixtureRoot,
@@ -209,6 +209,7 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
   if (prepared.status !== 0) {
     throw new Error(`baseline prepare exited with status ${prepared.status}`);
   }
+  if (project.id === "misskey") validateMisskeyDeclarations(fixtureRoot);
   return {
     command,
     durationMs,
@@ -232,7 +233,22 @@ async function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner
   return runTypecheckCommand(command[0], command.slice(1), commandOptions(options));
 }
 
-export function installArguments(manager) {
+function validateMisskeyDeclarations(fixtureRoot) {
+  for (const packageName of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
+    const declaration = join(fixtureRoot, "packages", packageName, "built", "index.d.ts");
+    if (!existsSync(declaration)) {
+      throw new Error(`${packageName} declaration output is missing`);
+    }
+    const metadata = statSync(declaration);
+    if (!metadata.isFile() || metadata.size === 0) {
+      throw new Error(`${packageName} declaration output must be a nonempty regular file`);
+    }
+  }
+}
+
+export function installArguments(manager, fixtureRoot) {
+  const ignoreParentWorkspace =
+    manager === "pnpm" && !existsSync(join(fixtureRoot, "pnpm-workspace.yaml"));
   return {
     npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
     pnpm: [
@@ -240,7 +256,7 @@ export function installArguments(manager) {
       "--frozen-lockfile",
       "--ignore-scripts",
       "--prefer-offline",
-      "--ignore-workspace",
+      ...(ignoreParentWorkspace ? ["--ignore-workspace"] : []),
     ],
     yarn: ["install", "--immutable", "--mode=skip-build"],
   }[manager];

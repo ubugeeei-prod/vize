@@ -329,6 +329,12 @@ mod tests {
                 .find(vize_l0::cstr!("/* __vize_model_event */ \"update:{name}\"").as_str())
                 .unwrap()
                 + "/* __vize_model_event */ \"update:".len();
+            let model_argument = result
+                .code
+                .find(vize_l0::cstr!("defineModel<string>({literal}").as_str())
+                .unwrap()
+                + "defineModel<string>(".len()
+                + quote.len();
             let (line, character) = crate::ide::offset_to_position(&result.code, prop);
             let (end_line, end_character) =
                 crate::ide::offset_to_position(&result.code, prop + name.len() + 2);
@@ -341,6 +347,8 @@ mod tests {
             };
             let expected_prop = crate::ide::offset_to_position(&result.code, prop + 1);
             let expected_event = crate::ide::offset_to_position(&result.code, event);
+            let expected_model_argument =
+                crate::ide::offset_to_position(&result.code, model_argument);
             let prefix_position =
                 crate::ide::offset_to_position(&result.code, event - "update:".len());
             let generic = super::super::mapping::source_range_to_virtual_positions(
@@ -349,11 +357,11 @@ mod tests {
                 &declaration,
             );
             // Short names round-trip through the synthesized `update:` prefix.
-            let mut expected_generic = vec![(105, 3), (131, 44)];
+            let mut expected_generic = vec![expected_prop, expected_model_argument];
             if name.len() < "update:".len() {
                 expected_generic.push(prefix_position);
             }
-            expected_generic.extend([(171, 35), binding_position]);
+            expected_generic.extend([expected_event, binding_position]);
             expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(
@@ -417,11 +425,11 @@ mod tests {
                 &declaration,
             );
             // The broad row round-trips after the native rows.
-            let mut expected_generic = vec![(105, 3), (131, 44)];
+            let mut expected_generic = vec![expected_prop, expected_model_argument];
             if name.len() < "update:".len() {
-                expected_generic.push((171, 28));
+                expected_generic.push(prefix_position);
             }
-            expected_generic.extend([(171, 35), binding_position, script_position]);
+            expected_generic.extend([expected_event, binding_position, script_position]);
             expected_generic.sort_unstable();
             assert_eq!(generic, expected_generic, "{name}");
             assert!(!direct_model_position(

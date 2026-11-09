@@ -1,0 +1,8 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "type/no-floating-promises": "error" },
+    },
+  },
+};

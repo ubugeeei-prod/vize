@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
-import PassTimeline from "./PassTimeline.vue";
+import PassTimeline from "./pass-timeline.vue";
 import { describeWalk, parseFusionPlan, planWalks, type TimelineWalk } from "./fusion";
 import type { TimelineStep } from "./ladder";
 

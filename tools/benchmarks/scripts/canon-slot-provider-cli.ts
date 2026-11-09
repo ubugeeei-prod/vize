@@ -12,8 +12,25 @@ import {
 } from "./canon-slot-provider-preamble.ts";
 import { applyCurrentSlotPreamble } from "./canon-slot-provider-current-preamble.ts";
 import { applyDiscriminatedJsxUnionIn } from "../../support/compat/content-mapper/discriminated-jsx-union-transition.ts";
-import { applyStrictExtraKeysIn } from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
+import {
+  applyCanonLeftoversIn,
+  applyStrictExtraKeysIn,
+  beforeCanonLeftovers,
+} from "../../support/compat/content-mapper/strict-extra-keys-transition.ts";
 import { applyEmitMemberInferIn } from "../../support/compat/content-mapper/emit-member-infer-transition.ts";
+
+export const canonLeftoverPreamblePaths = [
+  "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
+  "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-emit-props.d.ts.txt",
+] as const;
+
+export function applyCanonLeftoverPreamble(previous: string) {
+  return canonLeftoverPreamblePaths.reduce(
+    (current, file) => applyCanonLeftoversIn(file, current),
+    previous,
+  );
+}
 
 export function slotCliPacket(
   process: { stdout: Buffer; stderr: Buffer; status: number | null },
@@ -37,14 +54,13 @@ export function slotCliPacket(
   // through the authenticated source-owned helper transitions.
   const prefix = "type $OverloadUnionRecursive<";
   const historical = text.split("\n").filter((line) => line.startsWith(prefix));
-  const declarations = fs
-    .readFileSync(
-      "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt",
-      "utf8",
-    )
+  const emitOverloadsPath =
+    "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-overloads.d.ts.txt";
+  const emitOverloads = fs.readFileSync(emitOverloadsPath, "utf8");
+  const declarations = beforeCanonLeftovers(emitOverloadsPath, emitOverloads)
     .split("\n")
     .filter(Boolean);
-  const current = declarations.filter((line) => line.startsWith(prefix));
+  const current = emitOverloads.split("\n").filter((line) => line.startsWith(prefix));
   assert.equal(historical.length, 1);
   assert.equal(current.length, 1);
   const previous = historical[0],
@@ -56,10 +72,12 @@ export function slotCliPacket(
   const certifiedPreamble = applyCurrentSlotPreamble(
     applySourceOwnedPreambleTransitions(applyPreviousOverloadPreamble(text)),
   );
-  const currentPreamble = applyEmitMemberInferIn(
-    applyStrictExtraKeysIn(
-      applyDiscriminatedJsxUnionIn(
-        applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+  const currentPreamble = applyCanonLeftoverPreamble(
+    applyEmitMemberInferIn(
+      applyStrictExtraKeysIn(
+        applyDiscriminatedJsxUnionIn(
+          applyIntegratedSourcePreambleTransitions(applyCurrentOverloadPreamble(certifiedPreamble)),
+        ),
       ),
     ),
   );

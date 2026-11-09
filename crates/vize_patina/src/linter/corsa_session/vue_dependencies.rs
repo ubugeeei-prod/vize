@@ -239,15 +239,19 @@ fn generate(path: &Path, source: &str) -> Option<CachedDocument> {
         .any(|block| matches!(block.lang.as_deref(), Some("tsx" | "jsx")));
     let allocator = vize_l0::Allocator::new();
     let template = if let Some(template) = &descriptor.template {
-        let (root, errors) = vize_armature::parse(&allocator, &template.content);
-        if crate::Linter::has_fatal_template_parse_errors(&errors) {
+        let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
+        if crate::Linter::has_fatal_l1_template_parse_errors(l2.surface_errors()) {
             return None;
         }
-        Some(root)
+        Some(l2)
     } else {
         None
     };
-    let generated = project_component(&descriptor, template.as_ref(), &path.to_string_lossy());
+    let generated = project_component(
+        &descriptor,
+        template.as_ref().map(|template| template.lint_template()),
+        &path.to_string_lossy(),
+    );
     Some(CachedDocument {
         source: source.into(),
         generated,

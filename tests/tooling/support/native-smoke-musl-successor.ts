@@ -35,10 +35,28 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     assert.equal(sealed.split(relocated).length, 2, `one relocated ${relocated} package path`);
     sealed = sealed.replace(relocated, historicalPath);
   }
-  for (const packagePath of ["npm/compose/router", "npm/compose/data"] as const) {
+  for (const packagePath of [
+    "npm/create-fresco",
+    "npm/compose/router",
+    "npm/compose/data",
+  ] as const) {
     assert.equal(sealed.split(packagePath).length, 2, `one admitted ${packagePath} package path`);
     sealed = sealed.replace(` ${packagePath}`, "");
   }
+  const nodeCommand = "node tools/commands/release/npm/smoke-release-install.ts";
+  const rustCommand = "rust-script tools/commands/release/npm/smoke-release-install.rs";
+  const forcedRustCommand =
+    "rust-script --force tools/commands/release/npm/smoke-release-install.rs";
+  assert.equal(sealed.split(`${nodeCommand} --prepare-manifests npm/native`).length, 2);
+  sealed = sealed.replace(
+    `${nodeCommand} --prepare-manifests npm/native`,
+    `${rustCommand} --prepare-manifests npm/native`,
+  );
+  assert.equal(sealed.split(`${nodeCommand} --prepare-manifests --runtime-checks`).length, 3);
+  sealed = sealed.replaceAll(
+    `${nodeCommand} --prepare-manifests --runtime-checks`,
+    `${forcedRustCommand} --prepare-manifests --runtime-checks`,
+  );
   assert.equal(
     createHash("sha256").update(sealed).digest("hex"),
     "d38f2a343f8c0bda93ef60b9e4b2318697e4f12925b79857feb1bab5143bd3aa",

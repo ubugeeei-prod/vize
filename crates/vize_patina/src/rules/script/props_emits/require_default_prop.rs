@@ -103,7 +103,13 @@ impl ScriptRule for RequireDefaultProp {
         }
 
         let sibling = sfc.sibling_program.zip(sfc.sibling_offset);
-        for declaration in collect_setup_props_with_types(program, offset, sibling) {
+        for declaration in collect_setup_props_with_types(
+            program,
+            source,
+            offset,
+            sibling,
+            sfc.resolved_type_world,
+        ) {
             if let Some(runtime) = declaration.runtime {
                 let source = PropsSource::Object(runtime);
                 for prop in source.object_props() {

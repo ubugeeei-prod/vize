@@ -14,6 +14,7 @@ import {
 } from "./support/router-experimental-transport.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
@@ -63,7 +64,11 @@ function normalize(
 
 function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const entry = expected.generated[kind];
-  assert.match(entry.file, /^(?:lf|crlf|explicit)\.(?:valid|invalid)\.virtual\.ts\.txt$/u);
+  const transitionFile = entry.file.replace(".canon-leftovers", "");
+  assert.match(
+    entry.file,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers)?\.virtual\.ts\.txt$/u,
+  );
   const bytes = fs.readFileSync(path.join(custody, entry.file));
   assert.equal(createHash("sha256").update(bytes).digest("hex"), entry.sha256);
   const historicalReceipt = fs.readFileSync(path.join(custody, "integrated-current-11964.json"));
@@ -74,7 +79,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const successor = JSON.parse(historicalReceipt.toString("utf8"));
   assert.equal(successor.schema, "vize.experimental-router-generated-transition.v1");
   assert.equal(successor.qualificationCredit, false);
-  const transition = successor.entries.find((row: { file: string }) => row.file === entry.file);
+  const transition = successor.entries.find((row: { file: string }) => row.file === transitionFile);
   assert.ok(transition);
   const sharedHelperReceipt = fs.readFileSync(
     path.join(custody, "shared-helper-preamble-20261106.json"),
@@ -92,7 +97,7 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     createHash("sha256").update(historicalReceipt).digest("hex"),
   );
   const currentTransition = sharedHelper.entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(currentTransition);
   assert.equal(currentTransition.previousSha256, transition.currentSha256);
@@ -110,18 +115,28 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     createHash("sha256").update(sharedHelperReceipt).digest("hex"),
   );
   const strictTransition = strictExtra.entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(strictTransition);
   assert.equal(strictTransition.previousSha256, currentTransition.currentSha256);
-  assert.equal(strictTransition.currentSha256, entry.sha256);
+  const canonLeftovers = assertCanonLeftoversGolden(
+    custody,
+    root,
+    entry,
+    transitionFile,
+    strictTransition,
+    bytes,
+  );
+  if (!canonLeftovers) {
+    assert.equal(strictTransition.currentSha256, entry.sha256);
+  }
   const ownedReceipt = fs.readFileSync(path.join(custody, successor.ownedConstructor.path));
   assert.equal(
     createHash("sha256").update(ownedReceipt).digest("hex"),
     successor.ownedConstructor.sha256,
   );
   const owned = JSON.parse(ownedReceipt.toString("utf8")).entries.find(
-    (row: { file: string }) => row.file === entry.file,
+    (row: { file: string }) => row.file === transitionFile,
   );
   assert.ok(owned);
   assert.equal(owned.beforeSha256, transition.baselineSha256);
@@ -132,10 +147,13 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
     successor.integratedSource.sha256,
   );
   const current = bytes.toString("utf8");
-  assert.equal(current.includes(strictExtra.edit.before), false);
-  assert.equal(current.split(strictExtra.edit.after).length, 2);
-  assert.equal(current.includes(successor.currentEdit.before), false);
-  assert.equal(current.split(successor.currentEdit.after).length, 2);
+  const strictExtraSource = canonLeftovers
+    ? fs.readFileSync(path.join(custody, transitionFile), "utf8")
+    : current;
+  assert.equal(strictExtraSource.includes(strictExtra.edit.before), false);
+  assert.equal(strictExtraSource.split(strictExtra.edit.after).length, 2);
+  assert.equal(strictExtraSource.includes(successor.currentEdit.before), false);
+  assert.equal(strictExtraSource.split(successor.currentEdit.after).length, 2);
   return current;
 }
 

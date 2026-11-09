@@ -131,12 +131,13 @@ test("malformed native hint severity, location, code and message remain fatal", 
   }
 });
 
-test("canonical Rust validators execute the same native hint contracts", () => {
-  for (const name of ["tool-matrix-report", "typecheck-divergence-report"]) {
-    const tool = new URL(`../../tools/commands/fixtures/${name}.rs`, import.meta.url);
-    const result = spawnSync("rust-script", ["--test", fileURLToPath(tool)], {
-      encoding: "utf8",
-    });
-    assert.equal(result.status, 0, result.stderr + result.stdout);
-  }
+test("the remaining Rust divergence validator executes the native hint contract", () => {
+  const tool = new URL(
+    "../../tools/commands/fixtures/typecheck-divergence-report.rs",
+    import.meta.url,
+  );
+  const result = spawnSync("rust-script", ["--test", fileURLToPath(tool)], {
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr + result.stdout);
 });
