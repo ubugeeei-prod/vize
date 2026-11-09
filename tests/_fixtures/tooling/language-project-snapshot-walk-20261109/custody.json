@@ -1,0 +1,105 @@
+{
+  "schema": "vize.languageProjectSnapshotWalkSources.v1",
+  "qualificationCredit": false,
+  "predecessors": [
+    {
+      "path": "tests/_fixtures/tooling/language-project-demanded-sfc-20261105/custody.json",
+      "bytes": 15087,
+      "sha256": "bbde8603220e9129436c2999eff4f184034663a652b59a2d950cfd5b066a8a6a"
+    }
+  ],
+  "transitions": [
+    {
+      "path": "npm/typescript-plugin/source-documents.cjs",
+      "before": {
+        "bytes": 6660,
+        "sha256": "db1a5492e86be4ed594025a30b1cbc8c1d28b7f1090ad3d69019af5d15d1deed"
+      },
+      "after": {
+        "bytes": 7484,
+        "sha256": "a8ae69116d28c76893fd25da478b7bd2bd979768f18ffe4569494be3a3eaaf68"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-snapshot-walk-20261109/0.source-documents.before.cjs.gz",
+        "bytes": 2195,
+        "sha256": "e2354dabf0c42e94565ee61b41c6216226f06619ba0ad0560ee35ce140b58a9d"
+      },
+      "edits": [
+        {
+          "before": "  changed,\n  openFiles,\n",
+          "after": "  changed,\n  projectVersion,\n  scriptVersion,\n  openFiles,\n"
+        },
+        {
+          "before": "  let updating = false;\n  const configuration = () => {\n",
+          "after": "  let updating = false;\n  // One walk per project snapshot: it promoted every SFC its files reach.\n  // Script versions also cover hosts that keep one project version across edits.\n  let walked;\n  const configuration = () => {\n"
+        },
+        {
+          "before": "      if (typeof fileName !== \"string\" || updating) return;\n      updating = true;\n",
+          "after": "      if (typeof fileName !== \"string\" || updating) return;\n      const version = projectVersion?.();\n      const roots = [fileName, ...openFiles()];\n      if (\n        version !== undefined &&\n        walked?.version === version &&\n        roots.every((name) => {\n          const key = path.normalize(name);\n          return walked.files.has(key) && walked.files.get(key) === scriptVersion?.(name);\n        })\n      )\n        return;\n      updating = true;\n"
+        },
+        {
+          "before": "        // open entrypoints. Unrequested external SFC roots remain excluded.\n        const pending = [fileName, ...openFiles()],\n          seen = new Set();\n        let promoted = false,\n",
+          "after": "        // open entrypoints. Unrequested external SFC roots remain excluded.\n        const pending = [...roots],\n          seen = new Set(),\n          files = new Map();\n        let promoted = false,\n"
+        },
+        {
+          "before": "          seen.add(key);\n          let source;\n",
+          "after": "          seen.add(key);\n          files.set(key, scriptVersion?.(name));\n          let source;\n"
+        },
+        {
+          "before": "        if (stale) project?.updateGraph?.();\n      } finally {\n",
+          "after": "        if (stale) project?.updateGraph?.();\n        for (const name of roots) files.set(path.normalize(name), scriptVersion?.(name));\n        walked = version === undefined ? undefined : { version: projectVersion(), files };\n      } finally {\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/typescript-plugin/virtual-modules.cjs",
+      "before": {
+        "bytes": 17247,
+        "sha256": "310a0a2dd0722953aa93fdd9645125b4a86e9af393aecd98c98d13df550c0fe1"
+      },
+      "after": {
+        "bytes": 18195,
+        "sha256": "9f497680a9c93895b286658d1690e00daa5add2ff95d9d85a31533788dea7d9b"
+      },
+      "gzip": {
+        "path": "tests/_fixtures/tooling/language-project-snapshot-walk-20261109/1.virtual-modules.before.cjs.gz",
+        "bytes": 4941,
+        "sha256": "676e57c83540df9b6aafff0b2aece58502a3054fa6b5248fd7c955fa1e3be735"
+      },
+      "edits": [
+        {
+          "before": "  }\n  function resolve(name, containingFile, redirectedReference, resolutionMode) {\n",
+          "after": "  }\n  // A host project version is one snapshot of sources, files and options, so\n  // its lookups and package scopes are shared until the version changes.\n  let resolution;\n  const resolutionCache = (settings) => {\n    if (!originalProjectVersion || typeof ts.createModuleResolutionCache !== \"function\")\n      return undefined;\n    if (resolution?.settings !== settings) {\n      const caseSensitive =\n        serverHost.useCaseSensitiveFileNames ?? ts.sys.useCaseSensitiveFileNames;\n      resolution = {\n        settings,\n        cache: ts.createModuleResolutionCache(\n          resolverHost.getCurrentDirectory?.() ?? \"\",\n          caseSensitive ? (name) => name : (name) => name.toLowerCase(),\n          settings,\n        ),\n      };\n    }\n    return resolution.cache;\n  };\n  function resolve(name, containingFile, redirectedReference, resolutionMode) {\n"
+        },
+        {
+          "before": "    if (typeof name !== \"string\") return undefined;\n    const result = ts.resolveModuleName(\n",
+          "after": "    if (typeof name !== \"string\") return undefined;\n    const settings = options();\n    const result = ts.resolveModuleName(\n"
+        },
+        {
+          "before": "      containingFile,\n      options(),\n      resolverHost,\n",
+          "after": "      containingFile,\n      settings,\n      resolverHost,\n"
+        },
+        {
+          "before": "      resolverHost,\n      undefined,\n      redirectedReference,\n",
+          "after": "      resolverHost,\n      resolutionCache(settings),\n      redirectedReference,\n"
+        },
+        {
+          "before": "      sourceFile.fileName,\n      undefined,\n      resolverHost,\n",
+          "after": "      sourceFile.fileName,\n      resolutionCache(settings)?.getPackageJsonInfoCache(),\n      resolverHost,\n"
+        },
+        {
+          "before": "  };\n  const lazy = createLazySfcScripts({\n",
+          "after": "  };\n  function projectVersion() {\n    options();\n    return `${originalProjectVersion()}:${sourceEpoch}:${settingsState.project.configuration}`;\n  }\n  const lazy = createLazySfcScripts({\n"
+        },
+        {
+          "before": "    },\n    openFiles: () =>\n",
+          "after": "    },\n    projectVersion: originalProjectVersion && projectVersion,\n    scriptVersion: previousVersion,\n    openFiles: () =>\n"
+        },
+        {
+          "before": "      isSfc(name) ? (lazy.version(name) ?? \"0\") : (previousVersion?.(name) ?? \"0\"),\n    ...(originalProjectVersion\n      ? {\n          getProjectVersion() {\n            options();\n            return `${originalProjectVersion()}:${sourceEpoch}:${settingsState.project.configuration}`;\n          },\n        }\n      : {}),\n    resolveModuleNameLiterals(...args) {\n",
+          "after": "      isSfc(name) ? (lazy.version(name) ?? \"0\") : (previousVersion?.(name) ?? \"0\"),\n    ...(originalProjectVersion ? { getProjectVersion: projectVersion } : {}),\n    resolveModuleNameLiterals(...args) {\n"
+        }
+      ]
+    }
+  ]
+}

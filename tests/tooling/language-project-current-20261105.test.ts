@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { gunzipSync } from "node:zlib";
 import { DEMANDED_SFC_CUSTODY } from "../../tools/support/compat/github/language-project-demanded-sfc-20261105.ts";
+import { SNAPSHOT_WALK_CUSTODY } from "../../tools/support/compat/github/language-project-snapshot-walk-20261109.ts";
 import { newLanguageProjectCases } from "../../tools/support/compat/github/language-project-fixtures.ts";
 import {
   CURRENT_LANGUAGE_PROJECT_ROOT,
@@ -232,6 +233,50 @@ test("demanded SFC producer mutations and arbitrary manifest repins cannot acqui
       assert(producer);
       producer.sha256 = createHash("sha256").update(body).digest("hex");
       assert.throws(() => newLanguageProjectCases(undefined, repinned, altered));
+    }
+  }
+});
+
+test("snapshot walk sources compose the demanded SFC producers without replacing their custody", () => {
+  const successor = JSON.parse(read("head", SNAPSHOT_WALK_CUSTODY)!.toString());
+  const demanded = JSON.parse(read("head", DEMANDED_SFC_CUSTODY)!.toString());
+  assert.equal(successor.qualificationCredit, false);
+  for (const entry of successor.transitions) {
+    const before = gunzipSync(read("head", entry.gzip.path)!);
+    const previous = demanded.transitions.find((row: any) => row.path === entry.path).after;
+    assert.deepEqual(entry.before, previous);
+    assert.equal(createHash("sha256").update(before).digest("hex"), previous.sha256);
+    const staged = historicalCurrentLanguageProjectSources((side, source) =>
+      side === "head" && source === entry.path ? before : read(side, source),
+    );
+    const replay = historicalCurrentLanguageProjectSources(read);
+    assert.deepEqual(replay("head", entry.path), staged("head", entry.path));
+    assert.deepEqual(replay("base", entry.path), read("base", entry.path));
+  }
+});
+
+test("snapshot walk replay rejects every missing or modified record, archive and predecessor", () => {
+  const successor = JSON.parse(read("head", SNAPSHOT_WALK_CUSTODY)!.toString());
+  const assets = [
+    SNAPSHOT_WALK_CUSTODY,
+    ...successor.predecessors.map((entry: any) => entry.path),
+    ...successor.transitions.map((entry: any) => entry.gzip.path),
+  ];
+  for (const asset of assets) {
+    for (const missing of [false, true]) {
+      const altered = (side: "base" | "head", source: string) =>
+        side === "head" && source === asset
+          ? missing
+            ? null
+            : Buffer.concat([read(side, source)!, Buffer.from("\n")])
+          : read(side, source);
+      assert.throws(
+        () => {
+          const replay = historicalCurrentLanguageProjectSources(altered);
+          for (const entry of successor.transitions) replay("head", entry.path);
+        },
+        { message: "invalid classification successor: current source custody differs" },
+      );
     }
   }
 });
