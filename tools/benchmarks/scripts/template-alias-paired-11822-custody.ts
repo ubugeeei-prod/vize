@@ -34,6 +34,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { sixElementTuples } from "../../support/compat/content-mapper/wire-tuples.ts";
 import { installMapperCapture } from "./template-alias-paired-11822-capture.ts";
 import { copyPublishedPackage } from "./template-alias-paired-11822-packages.ts";
 
@@ -172,8 +173,10 @@ export function decodeFrames(bytes: Buffer): ProtocolMessage[] {
       "truncated protocol body",
     );
     result.push(
-      JSON.parse(
-        new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(start, start + length)),
+      sixElementTuples(
+        JSON.parse(
+          new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(start, start + length)),
+        ),
       ),
     );
     offset = start + length;

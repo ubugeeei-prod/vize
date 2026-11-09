@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { sixElementTuples } from "./wire-tuples.ts";
 import { FrameDecoder } from "../../../../tests/tooling/support/lsp/installed-alias-replay/frames.ts";
 import { verifyRawAriaContext } from "./aria-component-raw-context.ts";
 import {
@@ -293,6 +294,7 @@ for (const project of ariaComponentProjects()) {
       const decoder = new FrameDecoder(),
         packets: Record<string, unknown>[] = [];
       decoder.push(Buffer.from(protocol.stdout), (packet) => {
+        sixElementTuples(packet);
         assert.equal(packet.error, undefined);
         if (packet.id === 3 || packet.id === 4)
           packets.push(packet.result as Record<string, unknown>);
