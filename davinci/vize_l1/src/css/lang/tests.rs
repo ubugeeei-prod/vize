@@ -213,3 +213,34 @@ fn indented_completeness_tracks_constructs_that_add_unseen_rules() {
         assert!(!complete(Stylus, source), "{source}");
     }
 }
+
+#[test]
+fn urls_comments_in_parentheses_and_string_interpolation_read_as_written() {
+    // An unquoted URL payload is not a comment opener.
+    assert_eq!(
+        names(
+            Css,
+            "@import url(https://e.test/a/*/reset.css);\n/* note */\n.asset{color:red}"
+        ),
+        ["asset"]
+    );
+    // `//` inside a map is a comment, so its quote opens no string.
+    assert_eq!(
+        names(Scss, "$m: (\n  // 'a': f('b),\n  c: d,\n);\n.x {}"),
+        ["x"]
+    );
+    // Interpolation inside an attribute string leaves the selector known.
+    for language in [Scss, Sass] {
+        let source = match language {
+            Scss => "[data-x=\"#{$a}\"] { .b {} }",
+            _ => "[data-x=\"#{$a}\"]\n  .b\n    c: d\n",
+        };
+        assert_eq!(names(language, source), ["b"], "{language:?}");
+        assert!(complete(language, source), "{language:?}");
+    }
+    // Sass comments that start a line cover the deeper lines after them.
+    assert_eq!(
+        names(Sass, "/* open\n   .hidden\n.shown\n  a: b\n"),
+        ["shown"]
+    );
+}

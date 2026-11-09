@@ -61,12 +61,13 @@ impl StyleLanguage {
     /// unterminated string or comment). Imports are not followed.
     #[must_use]
     pub fn authored_classes(self, source: &str) -> Option<AuthoredClasses> {
+        let sheet = self.structure(source, 0);
         match self {
-            Self::Css => css::authored_classes(source),
-            Self::Scss => nested::authored_classes(source, nested::Dialect::Scss),
-            Self::Less => nested::authored_classes(source, nested::Dialect::Less),
-            Self::Sass => indented::authored_classes(source, indented::Syntax::Sass),
-            Self::Stylus => indented::authored_classes(source, indented::Syntax::Stylus),
+            Self::Css => css::authored_classes(&sheet),
+            Self::Scss => nested::authored_classes(&sheet, nested::Dialect::Scss),
+            Self::Less => nested::authored_classes(&sheet, nested::Dialect::Less),
+            Self::Sass => indented::authored_classes(&sheet, indented::Syntax::Sass),
+            Self::Stylus => indented::authored_classes(&sheet, indented::Syntax::Stylus),
         }
     }
 
