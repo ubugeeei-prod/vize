@@ -71,3 +71,8 @@ exported name maps to the SFC's start. The content-mapper projection grows by
 instance key set is listed without per-DOM-key `Exclude` chains. The content
 mapper and Maestro grow by the 168-byte helper edit; canon is byte-identical;
 mapping, diagnostic and authored-hit counts are unchanged.
+
+`successor-unowned-owned-keys-11654` records #12467 (issue #11654):
+`$UnownedComponentAttrs` computes its owned key set once, as a defaulted type
+argument. The content mapper and Maestro grow by the 11-byte helper edit; canon
+is byte-identical; mapping, diagnostic and authored-hit counts are unchanged.

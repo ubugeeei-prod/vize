@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 12467,
+  "predecessor": {
+    "path": "successor-instance-input-keys-11654/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "f04110150222566f9a11abdebb75b477add133bae135ef0d2ce148081c7a6632"
+  },
+  "successor": {
+    "path": "successor-unowned-owned-keys-11654/projection-record.txt",
+    "bytes": 2234,
+    "sha256": "bffbf709612432711b4ef36d45b1b3a27ff78e322c7f7ddccaa670844c5e8d20"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 11,
+    "contentMapperGeneratedTextBytes": 11,
+    "maestroGeneratedTextBytes": 11,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Local exact record for #11654: `$UnownedComponentAttrs` computes its owned key set once, as a defaulted type argument, instead of per fallthrough key. Every projection grows by the 11-byte helper edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed coordinate hashes are derived relocation. No native TypeScript consumer acceptance credit."
+}

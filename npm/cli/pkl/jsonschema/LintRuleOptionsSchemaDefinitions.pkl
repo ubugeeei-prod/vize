@@ -61,6 +61,11 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       }
       additionalProperties = false
     }
+    ["vue/slot-name-casing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "camelCase"; "kebab-case"; "singleword" }
+      default = "camelCase"
+    }
     ["vue/no-mutating-props"] = ConfigArtifactDefinitions.noMutatingPropsOptionsDef
     ["vue/warn-custom-directive"] = new JsonSchema {
       type = "object"

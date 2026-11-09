@@ -212,7 +212,7 @@ fn lint_preserves_single_empty_pattern_message() {
         .args(["lint", "--no-config", "src/**/*.{vue,ts}"])
         .output()
         .unwrap();
-    assert!(output.status.success(), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(2), "{}", output_details(&output));
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);

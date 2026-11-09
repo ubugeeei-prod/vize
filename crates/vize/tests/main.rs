@@ -250,6 +250,7 @@ mod lint_rpc_profile_cli;
 mod lint_rule_execution_cli;
 mod lint_rule_options_casing_cli;
 mod lint_rule_options_real_project_cli;
+mod lint_rule_options_slot_name_casing_cli;
 mod lint_rule_severity_cli;
 mod lint_scoped_slots_template_cli;
 mod lint_sibling_script_imports_cli;

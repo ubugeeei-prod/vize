@@ -171,6 +171,37 @@ import PrimaryButton from "./PrimaryButton.vue";
 </template>
 ```
 
+<span id="vue-slot-name-casing"></span>
+
+## `vue/slot-name-casing`：slot outlet の命名規則
+
+描画される `<slot>` outlet の静的な名前に `"camelCase"`、`"kebab-case"`、
+`"singleword"` のいずれかを指定します。既定値は `"camelCase"` です。
+動的な `:name`、提供側の `v-slot` と `#name` 構文は対象外です。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({}).withVue({
+  linter: {
+    rules: { "vue/slot-name-casing": "warn" },
+    ruleOptions: { "vue/slot-name-casing": "kebab-case" },
+  },
+});
+```
+
+この設定で報告される例：
+
+```vue
+<slot name="itemContent" />
+```
+
+設定に沿った例：
+
+```vue
+<slot name="item-content" />
+```
+
 <span id="vue-no-mutating-props"></span>
 
 ## `vue/no-mutating-props`：props の変更を許す範囲

@@ -443,6 +443,7 @@ export function auditCallbackOwners(directory: string) {
       "./callback-owner-reference.ts",
       "./callback-owner-packet-parity.ts",
       "./callback-owner-current-source.ts",
+      "./callback-owner-landed-contracts.ts",
       "./component-constructor-transition.ts",
       "./component-export-transition.ts",
       "./producer-unmapped-ignores.ts",

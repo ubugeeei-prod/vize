@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 269
 expression: "format!(\"=== legacy ===\\n{legacy}\\n=== Vue2 dialect ===\\n{vue2}\\n=== standard ===\\n{standard}\")"
 ---
 === legacy ===
@@ -440,7 +439,7 @@ type $FallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K
 type $PublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
 type $ComponentMetadataKeys<T> = $IsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
 type $ComponentOwnKeys<P = {}, E = {}> = keyof $PublicComponentInputProps | $ComponentMetadataKeys<P> | $ComponentMetadataKeys<E>;
-type $UnownedComponentAttrs<F, P = {}, E = {}> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] } : never;
+type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __O ? never : K]: F[K] } : never;
 type $Prettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type $ComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type $ComponentFallthroughProps<C> = { [K in keyof $ComponentFallthroughSurface<C>]: $ComponentFallthroughSurface<C>[K] };
@@ -515,7 +514,7 @@ function __setup() {
 
   // User setup code
   
-  // @vize-map: 15980:15983 -> 0:0
+  // @vize-map: 15991:15994 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

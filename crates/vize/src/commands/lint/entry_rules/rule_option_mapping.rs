@@ -42,6 +42,22 @@ pub(super) fn prop_name_casing(
     }
 }
 
+pub(super) fn slot_name_casing(
+    style: vize_l0::config::SlotNameCasingStyle,
+) -> vize_patina::rules::vue::SlotNameCasingStyle {
+    match style {
+        vize_l0::config::SlotNameCasingStyle::CamelCase => {
+            vize_patina::rules::vue::SlotNameCasingStyle::CamelCase
+        }
+        vize_l0::config::SlotNameCasingStyle::KebabCase => {
+            vize_patina::rules::vue::SlotNameCasingStyle::KebabCase
+        }
+        vize_l0::config::SlotNameCasingStyle::Singleword => {
+            vize_patina::rules::vue::SlotNameCasingStyle::Singleword
+        }
+    }
+}
+
 pub(super) fn sfc_element_order_options(
     options: vize_l0::config::SfcElementOrderOptions,
 ) -> vize_patina::rules::SfcElementOrderOptions {

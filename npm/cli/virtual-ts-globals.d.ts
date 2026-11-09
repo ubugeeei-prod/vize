@@ -140,7 +140,7 @@ declare global {
     | keyof $PublicComponentInputProps
     | $ComponentMetadataKeys<P>
     | $ComponentMetadataKeys<E>;
-  type $UnownedComponentAttrs<F, P = {}, E = {}> =
+  type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> =
     $IsAny<F> extends true
       ? F
       : unknown extends F
@@ -148,7 +148,7 @@ declare global {
         : F extends unknown
           ? F extends null | undefined
             ? F
-            : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] }
+            : { [K in keyof F as K extends __O ? never : K]: F[K] }
           : never;
   type $Prettify<T> = (T extends any
     ? { [K in keyof T]: T[K] }

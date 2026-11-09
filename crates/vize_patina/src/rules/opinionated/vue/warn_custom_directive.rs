@@ -31,8 +31,13 @@
 //! ```
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{BindingPattern, Declaration, ImportDeclarationSpecifier, Program, Statement};
+use oxc_ast::ast::{
+    BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, Statement,
+};
+use oxc_ast_visit::{Visit, walk::walk_object_expression};
 use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 
 use crate::context::LintContext;
@@ -101,7 +106,7 @@ impl Rule for WarnCustomDirective {
                 .ignored_directives
                 .iter()
                 .any(|ignored| ignored.as_str() == name)
-            && !script_setup_registers_directive(ctx, name)
+            && !scripts_register_directive(ctx, name)
         {
             ctx.warn_with_help(
                 cstr!(
@@ -130,19 +135,35 @@ fn directive_setup_binding(name: &str) -> CompactString {
     binding
 }
 
-fn script_setup_registers_directive(ctx: &LintContext<'_>, directive: &str) -> bool {
+fn scripts_register_directive(ctx: &LintContext<'_>, directive: &str) -> bool {
     let binding = directive_setup_binding(directive);
-    let Some(setup) = ctx
-        .sfc_descriptor()
-        .and_then(|descriptor| descriptor.script_setup.as_ref())
-    else {
+    let Some(descriptor) = ctx.sfc_descriptor() else {
         return false;
     };
-    let source = setup.content.as_ref();
-    if !contains_identifier(source, binding.as_str()) {
-        return false;
-    }
-    let source_type = match setup.lang.as_deref() {
+    descriptor.script_setup.as_ref().is_some_and(|block| {
+        script_block_registers(
+            block.content.as_ref(),
+            block.lang.as_deref(),
+            binding.as_str(),
+            None,
+        )
+    }) || descriptor.script.as_ref().is_some_and(|block| {
+        script_block_registers(
+            block.content.as_ref(),
+            block.lang.as_deref(),
+            binding.as_str(),
+            Some(directive),
+        )
+    })
+}
+
+fn script_block_registers(
+    source: &str,
+    lang: Option<&str>,
+    binding: &str,
+    options_name: Option<&str>,
+) -> bool {
+    let source_type = match lang {
         Some("tsx") => SourceType::tsx(),
         Some("jsx") => SourceType::jsx(),
         _ => SourceType::ts(),
@@ -152,20 +173,9 @@ fn script_setup_registers_directive(ctx: &LintContext<'_>, directive: &str) -> b
     if parsed.panicked {
         return false;
     }
-    top_level_value_binding(&parsed.program, binding.as_str())
-}
-
-fn contains_identifier(source: &str, name: &str) -> bool {
-    let bytes = source.as_bytes();
-    source.match_indices(name).any(|(index, _)| {
-        let before = index.checked_sub(1).and_then(|at| bytes.get(at)).copied();
-        let after = bytes.get(index + name.len()).copied();
-        !is_ident_byte(before) && !is_ident_byte(after)
-    })
-}
-
-fn is_ident_byte(byte: Option<u8>) -> bool {
-    byte.is_some_and(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$')
+    top_level_value_binding(&parsed.program, binding)
+        || options_name
+            .is_some_and(|name| options_register_directive(&parsed.program, source, name))
 }
 
 fn top_level_value_binding(program: &Program<'_>, name: &str) -> bool {
@@ -211,25 +221,24 @@ fn top_level_value_binding(program: &Program<'_>, name: &str) -> bool {
                     return true;
                 }
             }
-            Statement::ExportNamedDeclaration(export) if !export.export_kind.is_type() => {
-                match &export.declaration {
-                    Some(Declaration::VariableDeclaration(declaration)) => {
-                        for declarator in &declaration.declarations {
-                            if binding_declares(&declarator.id, name) {
-                                return true;
-                            }
-                        }
-                    }
-                    Some(Declaration::FunctionDeclaration(function))
-                        if function
-                            .id
-                            .as_ref()
-                            .is_some_and(|id| id.name.as_str() == name) =>
-                    {
-                        return true;
-                    }
-                    _ => {}
+            Statement::ClassDeclaration(class) if !class.declare => {
+                if class.id.as_ref().is_some_and(|id| id.name.as_str() == name) {
+                    return true;
                 }
+            }
+            Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+                if enumeration.id.name.as_str() == name {
+                    return true;
+                }
+            }
+            Statement::ExportNamedDeclaration(export)
+                if !export.export_kind.is_type()
+                    && export
+                        .declaration
+                        .as_ref()
+                        .is_some_and(|declaration| declaration_declares(declaration, name)) =>
+            {
+                return true;
             }
             _ => {}
         }
@@ -238,10 +247,78 @@ fn top_level_value_binding(program: &Program<'_>, name: &str) -> bool {
 }
 
 fn binding_declares(pattern: &BindingPattern<'_>, name: &str) -> bool {
-    match pattern {
-        BindingPattern::BindingIdentifier(identifier) => identifier.name.as_str() == name,
-        BindingPattern::AssignmentPattern(assignment) => binding_declares(&assignment.left, name),
+    pattern
+        .get_binding_identifiers()
+        .into_iter()
+        .any(|identifier| identifier.name.as_str() == name)
+}
+
+fn declaration_declares(declaration: &Declaration<'_>, name: &str) -> bool {
+    match declaration {
+        Declaration::VariableDeclaration(declaration) if !declaration.declare => declaration
+            .declarations
+            .iter()
+            .any(|declarator| binding_declares(&declarator.id, name)),
+        Declaration::FunctionDeclaration(function) if !function.declare => function
+            .id
+            .as_ref()
+            .is_some_and(|id| id.name.as_str() == name),
+        Declaration::ClassDeclaration(class) if !class.declare => {
+            class.id.as_ref().is_some_and(|id| id.name.as_str() == name)
+        }
+        Declaration::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+            enumeration.id.name.as_str() == name
+        }
         _ => false,
+    }
+}
+
+fn options_register_directive(program: &Program<'_>, source: &str, name: &str) -> bool {
+    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+    let objects = crate::rules::script::vue_object::VueObjects::collect(
+        program,
+        source,
+        &built.semantic,
+        true,
+    );
+    let mut finder = DirectiveOptionFinder {
+        objects: &objects,
+        name,
+        found: false,
+    };
+    finder.visit_program(program);
+    finder.found
+}
+
+struct DirectiveOptionFinder<'o, 'n> {
+    objects: &'o crate::rules::script::vue_object::VueObjects,
+    name: &'n str,
+    found: bool,
+}
+
+impl<'a> Visit<'a> for DirectiveOptionFinder<'_, '_> {
+    fn visit_object_expression(&mut self, object: &ObjectExpression<'a>) {
+        if self.objects.contains(object) {
+            self.found |= object.properties.iter().any(|property| {
+                let ObjectPropertyKind::ObjectProperty(property) = property else {
+                    return false;
+                };
+                !property.computed
+                    && property_key_name(&property.key) == Some("directives")
+                    && matches!(property.value.without_parentheses(), Expression::ObjectExpression(directives) if directives.properties.iter().any(|entry| {
+                        matches!(entry, ObjectPropertyKind::ObjectProperty(entry) if !entry.computed && property_key_name(&entry.key) == Some(self.name))
+                    }))
+            });
+        }
+        walk_object_expression(self, object);
+    }
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        _ => None,
     }
 }
 
@@ -304,11 +381,8 @@ mod tests {
     }
 
     fn lint_sfc(source: &str) -> crate::linter::LintResult {
-        // `vue/no-unused-properties` is what makes the SFC path attach the
-        // descriptor. This rule reads `<script setup>` from that descriptor.
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(WarnCustomDirective));
-        registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
         Linter::with_registry(registry).lint_sfc(source, "directive.vue")
     }
 
@@ -360,5 +434,25 @@ const focus = {};
 </template>
 "#;
         assert_eq!(custom_directive_warnings(source), 1);
+    }
+
+    #[test]
+    fn accepts_all_compiler_visible_directive_bindings() {
+        for source in [
+            r#"<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({ directives: { focus: {} } });
+</script>
+<template><input v-focus /></template>"#,
+            r#"<script lang="ts">import { vFocus } from "./focus";</script>
+<script setup lang="ts">const label = "Name";</script>
+<template><input v-focus :aria-label="label" /></template>"#,
+            r#"<script setup lang="ts">const { vFocus } = useDirectives();</script>
+<template><input v-focus /></template>"#,
+            r#"<script setup lang="ts">class vFocus {}; enum vTip { mounted = "mounted" }</script>
+<template><input v-focus /><b v-tip /></template>"#,
+        ] {
+            assert_eq!(custom_directive_warnings(source), 0, "{source}");
+        }
     }
 }

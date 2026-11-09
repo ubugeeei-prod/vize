@@ -29,6 +29,7 @@ const configurableRuleOptions = [
   "vue/prop-name-casing",
   "vue/require-component-registration",
   "vue/sfc-element-order",
+  "vue/slot-name-casing",
   "vue/v-on-event-hyphenation",
   "vue/v-slot-style",
 ];
@@ -182,6 +183,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/component-name-in-template-casing",
     "script/custom-event-name-casing",
     "vue/prop-name-casing",
+    "vue/slot-name-casing",
     "script/define-props-destructuring",
     "vue/no-mutating-props",
     "vue/warn-custom-directive",

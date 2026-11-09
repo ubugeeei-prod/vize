@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "f4e6f068b5c7c47af804dad479aea858d236c21598ea8ea682805c764337a5a1"
+        "sha256": "d333944d98d9aeb0396ddeecd4b82c7a33fcfd0151ad8165b91998084bdd84f3"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "bc6f8cfd038a0443eb6fb9080eb9a8fc7e90af9462cad45d0d4c86ff0acd192c"
+    "sha256": "9e0b76753d7db6bb77e572ef0d5e0f45d2f35216e612aa70714890c37b3ea893"
   },
   "cases": [
     {
@@ -157,7 +157,7 @@
           {
             "path": "cases.json",
             "role": "whole-packet-host-controls",
-            "sha256": "32d2271b3a748f1eeb06adc3755c791bf625a2b10202fde6bad9ae4528d20e73"
+            "sha256": "259c740cf69f55db8f0764a3c3d803a7fb3056b6b82ff3de9482ef7a00a1f986"
           },
           {
             "path": "empty-listbox.vue.txt",
@@ -2921,17 +2921,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "93031d8450ef896dde48b54b512fe7b60bd7d8bfbd6f321eabeddd462f953383"
+            "sha256": "2ea1aac6634c3e403f6bf95a1a2881fa2c804bb1b6497828d8db8c331215bd01"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "781350e1452de862389893441c083249ba54633aa14f9b07f44588d66ee6d2a2"
+            "sha256": "bd9ca9702790a2de40317918359382e76f6c59ba4fcd3ed89b7d1bad0a11a23c"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "436f98395dd7a2b4966c0180ef2e6414e7693939fb81aa58bbc6dc239a07ed3f"
+            "sha256": "6f270200c9497cae8d19fad9db3d540f42b042c2446533d5f1eeb9cde0a5c1dc"
           }
         ]
       },
@@ -3074,6 +3074,87 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/external-compat-12447-12452",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "external-compat-12447-12452",
+        "files": [
+          {
+            "path": "ExternalCompatibility.vue.txt",
+            "role": "issue-authored-regression-reproductions",
+            "sha256": "55eb44d94391220dadd95043a5dbabbc036bd79f48808c9d2cfd338d6eb4d80c"
+          },
+          {
+            "path": "types.ts.txt",
+            "role": "imported-slot-type",
+            "sha256": "5795a04b0f0bf9b77a9428416a44dc88badb2562535a97d45c8dd54c2aae3a39"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "3d9d5a92a51a8366a66a6e544704979f5a9bc6ca70136938f108cd7e5e916347"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/external-compat-12462-12468",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "external-compat-12462-12468",
+        "files": [
+          {
+            "path": "ExternalCompatibility.vue.txt",
+            "role": "issue-authored-regression-reproductions",
+            "sha256": "c2e19a103e087230c21a2f4cad1189706e5ee779d81512ed9451d6e7209dc4f9"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "0aafe80bfc2d6bbfd3e2f9fa2634e5a555c018dca7852ccfb0b4c964b5708c52"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

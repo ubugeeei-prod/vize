@@ -24,6 +24,7 @@ typealias LintPreset =
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
 typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
 typealias PropNameCasingStyle = "camelCase" | "snake_case"
+typealias SlotNameCasingStyle = "camelCase" | "kebab-case" | "singleword"
 typealias HtmlSelfClosingStyle = "always" | "never" | "any"
 typealias HtmlQuoteStyle = "double" | "single"
 typealias MustacheInterpolationSpacingStyle = "always" | "never"
@@ -216,6 +217,7 @@ class LintRuleOptions {
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/prop-name-casing`: PropNameCasingOptions? = null
+  `vue/slot-name-casing`: SlotNameCasingStyle? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
   `vue/warn-custom-directive`: WarnCustomDirectiveOptions? = null
   `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null

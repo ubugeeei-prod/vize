@@ -75,3 +75,9 @@ lists the TSX instance key set without per-DOM-key `Exclude` chains (issue
 #11654). Canon, the content mapper and Maestro each grow by the 168-byte helper
 edit; mapping, diagnostic and authored-hit counts are unchanged, so the changed
 coordinate hashes are derived relocation.
+
+`successor-unowned-owned-keys-11654` records #12467: `$UnownedComponentAttrs`
+computes its owned key set once, as a defaulted type argument (issue #11654).
+Canon, the content mapper and Maestro each grow by the 11-byte helper edit;
+mapping, diagnostic and authored-hit counts are unchanged, so the changed
+coordinate hashes are derived relocation.

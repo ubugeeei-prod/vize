@@ -23,7 +23,9 @@ import { runOrder, summarizeProbe } from "./typecheck-corpus-pair-parse.ts";
 import {
   type PairResults,
   type ReferenceResult,
+  type SingleCheckerResult,
   renderPairSummary,
+  singleCheckerResult,
   summarizePair,
 } from "./typecheck-corpus-pair-report.ts";
 import { GNU_TIME, type HostRun, hostArgs, hostRun } from "./typecheck-corpus-pair-host.ts";
@@ -152,7 +154,7 @@ function writeProbePackage(project: string, mapper: Mapper): void {
 }
 
 /** Corpus sources and pinned packages as real files; mappers as typecheck-mapper-hosts installs them. */
-function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
+export function prepareProject(dir: string, corpus: Corpus, hosts: MapperHosts): void {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   for (const entry of corpus.copy) {
@@ -179,7 +181,7 @@ function packageVersion(dir: string, name: string): string {
 }
 
 /** vue-tsc and the TypeScript it resolves; a missing install is an error. */
-function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
+export function resolveVueTsc(): { bin: string; vueTsc: string; typescript: string } {
   const dir = realpathSync(VUE_TSC_DIR);
   const manifest = JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as {
     version: string;
@@ -345,6 +347,25 @@ function main(): void {
     }
   }
 
+  // Untimed: one checker splits no files, so its counts move only with the text's meaning.
+  const tsc = MAPPER_HOSTS.find((host) => host.id === "tsc")!;
+  const singleChecker = CORPORA.flatMap((corpus) =>
+    VARIANTS.filter((variant) => variant.mapper === "vize").map((variant): SingleCheckerResult => {
+      const lane = { corpus, host: tsc, variant };
+      const key = laneKey(lane);
+      const tsconfig = mapperTsconfigName(mapperOf(variant));
+      const run = hostRun(
+        [bin(tsc), ...hostArgs(tsc, cwd(lane), tsconfig, ["--checkers", "1"])],
+        cwd(lane),
+        tsconfig,
+        join(work, "time", `${key}.single.time`),
+      );
+      const result = singleCheckerResult(corpus.id, tsc.id, variant.id, run);
+      console.log(`${key}: one checker, ${result.types} types, ${result.instantiations} inst`);
+      return result;
+    }),
+  );
+
   // One untimed vue-tsc run per corpus on the tsconfig both mapper configs extend.
   const references: ReferenceResult[] = CORPORA.map((corpus) => {
     const dir = projects(corpus, "base");
@@ -404,6 +425,7 @@ function main(): void {
       },
     },
     references,
+    singleChecker,
     lanes: lanes.map((lane) => {
       const key = laneKey(lane);
       const runsOf = timed.get(key) ?? [];

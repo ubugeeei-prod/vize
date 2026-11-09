@@ -9,6 +9,7 @@ use std::ops::Range;
 
 mod expectations;
 use expectations::expect_interval;
+mod semantic_diagnostics;
 
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::String as CompactString;

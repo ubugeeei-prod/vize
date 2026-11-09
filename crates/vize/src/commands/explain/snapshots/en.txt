@@ -5730,7 +5730,7 @@ autofix: no
 docs: docs/content/rules/reference/vue-single-style-block.md
 === vue/slot-name-casing
 vue/slot-name-casing · lint rule
-Enforce camelCase for rendered slot names
+Enforce configured casing for rendered slot names
 
 tier: exact
 domain: the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand
@@ -5748,7 +5748,7 @@ valid:
   <slot name="default" />
 
 help:
-  Rename the slot to kebab-case, e.g. '#my-slot' instead of '#mySlot' or '#my_slot'.
+  Rename the rendered slot outlet to {casing}.
 === vue/this-in-template
 vue/this-in-template · lint rule
 Disallow `this.` in template expressions

@@ -1,0 +1,87 @@
+{
+  "schema": "vize.unownedOwnedKeysSource.v1",
+  "issue": 11654,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt",
+      "before": {
+        "bytes": 6194,
+        "sha256": "f5c64fa32e5781b4db723f00a7a4832339c83da755b47016fa58fe62eeda76cd"
+      },
+      "after": {
+        "bytes": 6205,
+        "sha256": "61dc8766da6a30cb3c76f1607109884fc330b62d0c1c5dad2e0bb71d96f4b48b"
+      },
+      "hunks": [
+        {
+          "before": "type $UnownedComponentAttrs<F, P = {}, E = {}> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] } : never;\n",
+          "after": "type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __O ? never : K]: F[K] } : never;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 12853,
+        "sha256": "3b7b803952199611e63b6f2a200d49bc0e9fb21cd826b4cefc217798c94bc790"
+      },
+      "after": {
+        "bytes": 12864,
+        "sha256": "6ca30ff161868951fce4151a1ff072646a98c11b45667b09f00fab3c2dce081b"
+      },
+      "hunks": [
+        {
+          "before": "type $UnownedComponentAttrs<F, P = {}, E = {}> =\n",
+          "after": "type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> =\n"
+        },
+        {
+          "before": "          : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] }\n",
+          "after": "          : { [K in keyof F as K extends __O ? never : K]: F[K] }\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 17941,
+        "sha256": "88442da38f5ecece9486a765b343d4f3ba92213ded2fc804da89e23179a52749"
+      },
+      "after": {
+        "bytes": 17952,
+        "sha256": "2a5c1fa16a59f9f27e360ca70a7fbdbd301911dd390f9e21aa62b636bb6b7fc7"
+      },
+      "hunks": [
+        {
+          "before": "  type $UnownedComponentAttrs<F, P = {}, E = {}> =\n",
+          "after": "  type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> =\n"
+        },
+        {
+          "before": "            : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] }\n",
+          "after": "            : { [K in keyof F as K extends __O ? never : K]: F[K] }\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "path": "vize_canon::virtual_ts::SHARED_PREAMBLE_DTS",
+    "before": {
+      "bytes": 48933,
+      "sha256": "4ac5a2792ccf21f8bf82a1548e6cf2386814ab41fcf3f62c2f173ac2bfe08c25"
+    },
+    "after": {
+      "bytes": 48944,
+      "sha256": "297cee4b2bb2bfecfeeb9aad61b60c8ebd5e26d6a73cbcd3678a430b4462a191"
+    },
+    "hunks": [
+      {
+        "before": "type $UnownedComponentAttrs<F, P = {}, E = {}> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] } : never;\n",
+        "after": "type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __O ? never : K]: F[K] } : never;\n"
+      }
+    ]
+  }
+}

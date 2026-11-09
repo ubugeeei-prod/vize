@@ -23,10 +23,10 @@ pub use model::{
     NoRestrictedMembersOptions, ParseVueVersionError, PropNameCasingOptions, PropNameCasingStyle,
     PropsDestructureMode, QuoteProps, ResolvedLinterConfig,
     ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
-    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig,
-    VBindStyle, VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle,
-    VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion,
-    WarnCustomDirectiveOptions,
+    SfcElementOrderGroup, SfcElementOrderOptions, SlotNameCasingStyle, SortImportsConfig,
+    SortImportsSetting, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
+    TrailingComma, TypeCheckerConfig, VBindStyle, VOnEventHyphenationConfig,
+    VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
+    VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion, WarnCustomDirectiveOptions,
 };
 pub use normalize::normalize_public_config_value;

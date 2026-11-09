@@ -26,7 +26,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Mapped-rule parity regressions add nine distinct literal fixtures.
         + 9
         // Promise-chain ownership adds one complete script-rule fixture.
-        + 1,
+        + 1
+        + 3
+        + 7,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -125,6 +127,12 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     // Per-entry regex isolation adds three literal fixtures over four calls;
     // the variable-driven invalid-pattern observation remains a scanner skip
     // already counted above, while the retained traces add twelve lines.
+    // External linter compatibility adds three literal fixtures over five
+    // calls. Two helper-driven observations remain explicit scanner skips,
+    // while the retained facade traces add thirty-two complete lines.
+    // Third-party directive, label, anchor and bare-string regressions add
+    // seven literal fixtures over nine calls. Two loop-driven observations
+    // remain explicit scanner skips, and complete traces add fifty-nine lines.
     rule_fixture_calls: 1057 + 4 + 3 + 43 + 2 + 1 + 11 + 5 + 1 + 2 - 5
         + 3
         + 2
@@ -161,6 +169,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Mapped-rule parity regressions add thirteen fixture calls.
         + 13
         // Promise-chain ownership adds one complete script-rule call.
+        + 1
+        + 5
+        + 9
+        // Merged ownership coverage adds one helper-driven observation.
         + 1,
     rule_fixture_skipped: 87
         + 4
@@ -197,7 +209,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 3
         + 3
         // Four helper-driven mapped-rule inputs remain explicit scanner skips.
-        + 4,
+        + 4
+        + 2
+        + 2
+        // The merged helper-driven observation remains an explicit skip.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -220,7 +236,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Complete mapped-rule parity traces add eighty-four retained lines.
         + 84
         // Promise-chain ownership retains seven complete trace lines.
-        + 7,
+        + 7
+        + 32
+        + 59
+        // The merged ownership observation retains nine trace lines.
+        + 9,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

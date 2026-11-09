@@ -1,4 +1,4 @@
-//! Pin standard-tsgo parser diagnostics and script diagnostics after repair.
+//! Pin standard-tsgo parser diagnostics beside the retained script diagnostics.
 
 use std::path::PathBuf;
 use std::process::Output;
@@ -46,9 +46,8 @@ fn expected_diagnostics(
                 diagnostic["message"].as_str().unwrap()
             ));
         }
-    } else {
-        diagnostics.push(script.clone());
     }
+    diagnostics.push(script.clone());
     diagnostics.sort();
     diagnostics
 }
@@ -122,10 +121,9 @@ fn standard_tsgo_pins_unfinished_template_diagnostics_and_restored_script_errors
                 );
                 assert_eq!(actual, expected, "{state}: {}", output_text(&output));
                 if state == "unfinished-tag" {
-                    // Official tsgo treats mapper diagnostics as syntactic errors
-                    // and skips semantic diagnostics project-wide. Pin that
-                    // provider limit without dropping the authored parser errors.
-                    assert_eq!(expected.len(), 2);
+                    // Parser errors travel on the semantic pass (#12522), so the
+                    // retained script error stays beside them.
+                    assert_eq!(expected.len(), 3);
                 } else {
                     assert_eq!(expected, vec![script_diagnostic.clone()]);
                 }

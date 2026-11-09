@@ -1,0 +1,22 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  directives: { focus: {} },
+});
+</script>
+
+<script setup lang="ts">
+const { vTip } = useDirectives();
+const label = "Save";
+</script>
+
+<template>
+  <input v-focus type="text" />
+  <b v-tip>Tip</b>
+  <label>Level <meter value="0.5" /></label>
+  <label>Upload <progress value="0.5" /></label>
+  <a href="/save"><span v-text="label" /></a>
+  <p>Ctrl+K</p>
+  <p>&#xFEFF;</p>
+</template>

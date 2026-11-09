@@ -45,6 +45,7 @@ mod reported_generic_components;
 mod reported_model_events_11390_11391;
 mod reported_model_props_11359;
 mod runtime_null_prop;
+mod semantic_compile_errors_12522;
 mod setup_local_public_types;
 mod support;
 mod surplus_defaults;

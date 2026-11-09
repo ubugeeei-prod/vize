@@ -25,8 +25,9 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{
-    get_static_attribute_value, has_interactive_role, is_aria_hidden_true,
-    is_component_like_element, is_interactive_element, is_interactive_role, is_presentation_role,
+    INTERACTIVE_HANDLER_EVENTS, get_static_attribute_value, has_any_event_handler,
+    has_interactive_role, is_aria_hidden_true, is_component_like_element, is_interactive_element,
+    is_interactive_role, is_presentation_role,
 };
 use super::markup_helpers::{
     get_static_markup_attribute_value, has_static_markup_event, is_aria_hidden_true_markup,
@@ -44,30 +45,6 @@ static META: RuleMeta = RuleMeta {
 /// Disallow event handlers on static elements
 #[derive(Default)]
 pub struct NoStaticElementInteractions;
-
-const INTERACTIVE_EVENTS: &[&str] = &[
-    "click",
-    "dblclick",
-    "mousedown",
-    "mouseup",
-    "keydown",
-    "keyup",
-    "keypress",
-];
-
-fn has_interactive_event(element: &ElementNode) -> bool {
-    for prop in &element.props {
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "on"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-            && arg.is_static
-            && INTERACTIVE_EVENTS.contains(&arg.content)
-        {
-            return true;
-        }
-    }
-    false
-}
 
 fn has_static_role_bind(element: &MarkupElement<'_>) -> bool {
     let mut found = false;
@@ -92,7 +69,7 @@ impl MarkupRule for NoStaticElementInteractions {
         if is_component_like_markup_element(element)
             || element.is_unqualified_tag_exact("dialog")
             || is_interactive_element(element.tag())
-            || !has_static_markup_event(element, INTERACTIVE_EVENTS)
+            || !has_static_markup_event(element, INTERACTIVE_HANDLER_EVENTS)
             || has_static_role_bind(element)
             || is_aria_hidden_true_markup(element)
             || is_presentation_markup_role(element)
@@ -165,7 +142,7 @@ impl Rule for NoStaticElementInteractions {
         }
 
         // Check if element has interactive event handlers
-        if has_interactive_event(element) {
+        if has_any_event_handler(element, INTERACTIVE_HANDLER_EVENTS) {
             ctx.warn_with_help(
                 ctx.t_fmt(
                     "a11y/no-static-element-interactions.message",
@@ -308,6 +285,22 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @keydown="handle">Content</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn modifier_only_listeners_are_not_interactive_handlers() {
+        let result = create_linter().lint_template(
+            r#"<span @click.stop><button>Action</button></span><span @mousedown.prevent><button>End</button></span>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn composite_roles_are_not_static_but_tooltip_is() {
+        let source = r#"<div role="tree" @keydown="onKey" /><div role="tablist" @keydown="onKey" /><div role="menu" @keydown="onKey" /><div role="row" @keydown="onKey" /><div role="columnheader" @keydown="onKey" /><div role="tooltip" @keydown="onKey" />"#;
+        let result = create_linter().lint_template(source, "test.vue");
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     }
 
     #[test]

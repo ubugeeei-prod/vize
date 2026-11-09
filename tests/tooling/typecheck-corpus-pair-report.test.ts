@@ -134,3 +134,50 @@ void test("the summary tables medians per lane and reports diagnostic identity",
   assert.equal(percentDelta(0, 0), "0.0%");
   assert.equal(percentDelta(2, 3), "+50.0%");
 });
+
+void test("single-checker counts sit beside the default-checker medians", () => {
+  const results: PairResults = {
+    schemaVersion: 1,
+    base: { sha: "a".repeat(40) },
+    head: { sha: "b".repeat(40) },
+    runs: 1,
+    measurement: { runner: "local", packages: {} },
+    references: [],
+    lanes: [
+      lane("tsc", "vize-base", [1], []),
+      lane("tsc", "vize-head", [1], []),
+      lane("tsc", "vue", [1], []),
+    ],
+    singleChecker: [
+      {
+        corpus: "misskey",
+        host: "tsc",
+        variant: "vize-base",
+        types: 80,
+        instantiations: 800,
+        fingerprint: "tsc-0",
+      },
+      {
+        corpus: "misskey",
+        host: "tsc",
+        variant: "vize-head",
+        types: 76,
+        instantiations: 800,
+        fingerprint: "other",
+      },
+    ],
+  };
+  const markdown = renderPairSummary(results, summarizePair(results));
+  assert.match(markdown, /### Partition-free counts \(`tsc --checkers 1`\)/u);
+  assert.match(markdown, /\| misskey \| Types \| 100 \| 100 \| 0\.0% \| 80 \| 76 \| −5\.0% \|/u);
+  assert.match(
+    markdown,
+    /\| misskey \| Instantiations \| 1,000 \| 1,000 \| 0\.0% \| 800 \| 800 \| 0\.0% \|/u,
+  );
+  assert.match(markdown, /- misskey \/ vize-head: diagnostics differ at one checker/u);
+  assert.doesNotMatch(markdown, /vize-base: diagnostics differ/u);
+  assert.doesNotMatch(
+    renderPairSummary({ ...results, singleChecker: undefined }, summarizePair(results)),
+    /Partition-free/u,
+  );
+});
