@@ -3,11 +3,15 @@ use crate::corsa_bridge::CorsaMaterializedMappingKind;
 use crate::corsa_bridge::vue_document::CorsaNativeDocumentBatch;
 
 fn source(root: &Path, name: &str, text: &str) -> CorsaMaterializedSource {
+    let materialized_path = root.join("native").join(name);
     CorsaMaterializedSource {
-        materialized_path: root.join("native").join(name),
+        code: crate::corsa_bridge::vue_document::MaterializedCode::new(
+            &materialized_path,
+            text.into(),
+        ),
+        materialized_path,
         source_path: root.join(name),
         source: text.into(),
-        code: text.into(),
         mapping: Default::default(),
         import_source_map: Default::default(),
         mapping_kind: CorsaMaterializedMappingKind::AuthoredIdentity,
@@ -83,11 +87,31 @@ fn repeated_native_batches_share_only_unchanged_payloads_and_keep_complete_old_b
     let live = FxHashSet::from_iter([root.join("native/A.ts")]);
     let retired = capture_members(edited.retaining_live_files(&live, &FxHashSet::default()));
     assert_eq!(batch(&retired, root).to_vec(), vec![expected[0].clone()]);
-    assert_eq!(recover_lock(&retired.native_payloads).0.len(), 1);
-    // A frozen old query cannot grow the latest catalog's memo again.
+    assert!(Arc::ptr_eq(
+        &first.shared_additions_for_test()[0],
+        &batch(&retired, root).shared_additions_for_test()[0]
+    ));
+    // A frozen old query keeps its own complete revision.
     assert_eq!(batch(&catalog, root).to_vec(), expected);
-    assert_eq!(recover_lock(&retired.native_payloads).0.len(), 1);
     assert_eq!(first.to_vec(), expected);
+}
+
+#[test]
+fn a_native_payload_is_the_leaf_code_allocation() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    let text = "export const label = '雪😀';\r\n";
+    let catalog =
+        capture_members(CorsaSourceCatalog::default().include(vec![source(root, "A.ts", text)]));
+    let leaf = catalog.get(&root.join("native/A.ts")).unwrap();
+    let documents = batch(&catalog, root);
+    assert!(Arc::ptr_eq(
+        &documents.shared_additions_for_test()[0],
+        leaf.code.native_document()
+    ));
+    let shared = catalog.share(vec![source(root, "A.ts", text), source(root, "B.ts", text)]);
+    assert!(Arc::ptr_eq(&shared[0], &leaf));
+    assert!(!Arc::ptr_eq(&shared[1], &leaf));
 }
 
 #[test]

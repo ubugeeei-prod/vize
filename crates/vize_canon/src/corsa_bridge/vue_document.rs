@@ -16,6 +16,7 @@ use crate::file_uri::path_to_file_uri;
 use crate::virtual_ts::VirtualTsOptions;
 
 pub(in crate::corsa_bridge) mod build;
+mod materialized_code;
 pub(super) mod materialized_documents;
 use build::build_vue_virtual_workspace_project;
 mod hover_document;
@@ -24,6 +25,7 @@ mod model;
 pub use hover_document::CorsaVueHoverDocument;
 pub use initial_project::{CorsaInitialVueDocument, CorsaInitialVueProject};
 mod prepare;
+pub use materialized_code::MaterializedCode;
 pub(super) use model::GeneratedVueDocument;
 pub use model::{
     CorsaMaterializedMappingKind, CorsaMaterializedSource, CorsaVueVirtualDependency,

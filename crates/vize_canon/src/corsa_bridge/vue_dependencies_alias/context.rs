@@ -32,6 +32,16 @@ pub(in crate::corsa_bridge) struct PreparedAliasContext {
     pub(in crate::corsa_bridge) source_catalog: crate::corsa_bridge::CorsaSourceCatalog,
 }
 
+impl PreparedAliasContext {
+    /// This revision's leaves, each the catalog's own allocation when equal.
+    #[expect(clippy::disallowed_types, reason = "catalog leaves are shared")]
+    pub(in crate::corsa_bridge) fn shared_materialized_sources(
+        &self,
+    ) -> Vec<std::sync::Arc<super::super::vue_document::CorsaMaterializedSource>> {
+        self.source_catalog.share(self.materialized_sources())
+    }
+}
+
 impl std::ops::Deref for PreparedAliasContext {
     type Target = AliasContext;
 
@@ -281,10 +291,13 @@ fn materialized_source_from_document(
     document: crate::batch::virtual_project::MaterializedSourceDocument,
 ) -> super::super::vue_document::CorsaMaterializedSource {
     super::super::vue_document::CorsaMaterializedSource {
+        code: super::super::vue_document::MaterializedCode::new(
+            &document.materialized_path,
+            document.code,
+        ),
         materialized_path: document.materialized_path,
         source_path: document.source_path,
         source: document.source,
-        code: document.code,
         mapping: {
             let mut mapping = crate::virtual_ts::ProjectionMapping::from_parts(
                 document.mappings,
