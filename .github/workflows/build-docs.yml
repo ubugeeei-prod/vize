@@ -43,6 +43,7 @@ jobs:
   build-docs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     env:
+      NODE_OPTIONS: "--max-old-space-size=8192"
       VIZE_DOCS_LINKS_ONLY: ${{ inputs.links-only && '1' || '0' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
