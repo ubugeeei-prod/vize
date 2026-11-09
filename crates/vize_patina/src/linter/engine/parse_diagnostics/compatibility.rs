@@ -130,7 +130,7 @@ fn is_quoted_style_expression(style: &SfcStyleBlock<'_>, span: Span) -> bool {
 }
 
 impl Linter {
-    pub(super) fn compatibility_template_parse_enabled(&self) -> bool {
+    pub(in crate::linter::engine) fn compatibility_template_parse_enabled(&self) -> bool {
         self.is_rule_enabled(TEMPLATE_PARSE_RULE)
     }
 
