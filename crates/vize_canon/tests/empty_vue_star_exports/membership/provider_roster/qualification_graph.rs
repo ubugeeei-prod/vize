@@ -486,16 +486,7 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     }
     let predecessor_bytes = fs::read(support::corpus().join(strict_checker::UPDATE))
         .map_err(|_| "complete create-fresco qualification predecessor")?;
-    if let Ok(update) = docs_metadata::authorize(
-        &strict_update,
-        &predecessor_bytes,
-        lock,
-        package,
-        &workspace,
-    ) {
-        return Ok(Some(update));
-    }
-    let update = integrated_graph::authorize(
+    let update = integrated_graph::authorize_after_strict(
         &strict_update,
         &predecessor_bytes,
         lock,

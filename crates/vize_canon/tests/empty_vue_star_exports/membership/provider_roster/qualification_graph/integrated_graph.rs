@@ -21,6 +21,21 @@ fn update() -> Value {
     )
 }
 
+pub(super) fn authorize_after_strict(
+    predecessor: &Value,
+    predecessor_bytes: &[u8],
+    lock: &[u8],
+    package: &[u8],
+    workspace: &[u8],
+) -> Checked<Value> {
+    if let Ok(update) =
+        super::docs_metadata::authorize(predecessor, predecessor_bytes, lock, package, workspace)
+    {
+        return Ok(update);
+    }
+    authorize(predecessor, predecessor_bytes, lock, package, workspace)
+}
+
 pub(super) fn authorize(
     predecessor: &Value,
     predecessor_bytes: &[u8],

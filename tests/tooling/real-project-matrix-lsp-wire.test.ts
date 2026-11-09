@@ -328,6 +328,31 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     assert.deepEqual(step, { ...oldStep, run });
     step.run = oldStep.run;
   }
+  for (const [name, rustCommand, nodeCommand] of [
+    [
+      "Select and hydrate fixture shard",
+      "rust-script tools/commands/fixtures/tool-matrix-report.rs",
+      "node tools/support/compat/fixtures/tool-matrix-report.ts",
+    ],
+    [
+      "Exercise real projects with every core tool",
+      "rust-script tools/commands/fixtures/tool-matrix-report.rs",
+      "node tools/support/compat/fixtures/tool-matrix-report.ts",
+    ],
+    [
+      "Enforce all real-project surface verdicts",
+      "rust-script tools/commands/fixtures/real-project-surface-verdict.rs",
+      "node tools/commands/fixtures/real-project-surface-verdict.ts",
+    ],
+  ] as const) {
+    const oldStep = oldSteps.find((step) => step.name === name);
+    const step = steps.find((candidate) => candidate.name === name);
+    assert.ok(oldStep && step);
+    const run = oldStep.run.replace(rustCommand, nodeCommand);
+    assert.notEqual(run, oldStep.run);
+    assert.deepEqual(step, { ...oldStep, run });
+    step.run = oldStep.run;
+  }
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.
   const moon = "./.github/actions/setup-moonbit";
   const moonIndex = oldSteps.findIndex((step) => step.uses === moon);
