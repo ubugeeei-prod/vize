@@ -37,6 +37,22 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_shared_helpers_re
     let shared_output = check_with_extended_diagnostics(&tsgo, shared.path());
     assert_success(&inline_output);
     assert_success(&shared_output);
+    // Instantiation counts only compare sharing when the shared project
+    // actually loads the qualified helper SDK.
+    assert_eq!(
+        loaded_sdk_files(inline.path(), &inline_output),
+        Vec::<&str>::new(),
+        "the inline project must not load the helper SDK"
+    );
+    assert_eq!(
+        loaded_sdk_files(shared.path(), &shared_output),
+        [
+            "content-mapper-helpers.d.mts",
+            "generated/content-mapper-types.d.ts"
+        ],
+        "the shared project must load the qualified helper SDK: {}",
+        output_text(&shared_output)
+    );
 
     let inline_instantiations = metric(&inline_output, "Instantiations");
     let shared_instantiations = metric(&shared_output, "Instantiations");
@@ -58,33 +74,57 @@ fn standard_tsgo_reports_each_component_prop_problem_once_with_shared_helpers_re
     );
 }
 
+/// Program files TypeScript loaded from the project's installed `vize` SDK.
+fn loaded_sdk_files<'a>(project: &Path, output: &'a Output) -> Vec<&'a str> {
+    let sdk = std::fs::canonicalize(project.join("node_modules/vize")).unwrap();
+    let mut files = std::str::from_utf8(&output.stdout)
+        .unwrap()
+        .lines()
+        .filter_map(|line| Path::new(line).strip_prefix(&sdk).ok()?.to_str())
+        .collect::<Vec<_>>();
+    files.sort_unstable();
+    files
+}
+
 fn install_shared_helper_package(project: &Path) {
     let package_root = project.join("node_modules/vize");
     let manifest_path = package_root.join("package.json");
     let mut manifest: serde_json::Value =
         serde_json::from_slice(&std::fs::read(&manifest_path).unwrap()).unwrap();
+    // The mapper shares helpers only with an SDK whose conditional entries and
+    // declarations all match its helper ABI (#11874); any other SDK silently
+    // keeps the inline helpers. Install the subpath exactly as published.
+    let published: serde_json::Value =
+        serde_json::from_str(include_str!("../../../../npm/cli/package.json")).unwrap();
     manifest["exports"] = json!({
-        "./content-mapper-helpers": {
-            "types": "./content-mapper-helpers.d.ts"
-        }
+        "./content-mapper-helpers": published["exports"]["./content-mapper-helpers"].clone(),
     });
     std::fs::write(manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
-    std::fs::write(
-        package_root.join("content-mapper-helpers.d.ts"),
-        include_str!("../../../../npm/cli/content-mapper-helpers.d.ts"),
-    )
-    .unwrap();
-    // The helper's type-only `.js` specifier resolves to this declaration
-    // under the fixture's Bundler module resolution, as in the package.
-    let generated_root = package_root.join("generated");
-    std::fs::create_dir_all(&generated_root).unwrap();
-    let shared_types = include_str!("../../../../npm/cli/generated/content-mapper-types.d.ts");
-    let installed_types = generated_root.join("content-mapper-types.d.ts");
-    std::fs::write(&installed_types, shared_types).unwrap();
-    assert_eq!(
-        std::fs::read_to_string(installed_types).unwrap(),
-        shared_types
-    );
+    // The helper's type-only `.js` specifier resolves to the generated
+    // declaration under the fixture's Bundler module resolution, as in the package.
+    for (name, contents) in [
+        (
+            "content-mapper-helpers.d.ts",
+            include_str!("../../../../npm/cli/content-mapper-helpers.d.ts"),
+        ),
+        (
+            "content-mapper-helpers.d.mts",
+            include_str!("../../../../npm/cli/content-mapper-helpers.d.mts"),
+        ),
+        (
+            "content-mapper-helpers.d.cts",
+            include_str!("../../../../npm/cli/content-mapper-helpers.d.cts"),
+        ),
+        (
+            "generated/content-mapper-types.d.ts",
+            include_str!("../../../../npm/cli/generated/content-mapper-types.d.ts"),
+        ),
+    ] {
+        let path = package_root.join(name);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, contents).unwrap();
+        assert_eq!(std::fs::read_to_string(path).unwrap(), contents);
+    }
 }
 
 fn prepare_mapper_project(project: &Path, shared_helpers: bool) {
@@ -151,6 +191,7 @@ fn check_with_extended_diagnostics(tsgo: &Path, project: &Path) -> Output {
             "--noEmit",
             "--extendedDiagnostics",
             "--singleThreaded",
+            "--listFiles",
             "-p",
             "tsconfig.json",
             "--pretty",
