@@ -81,6 +81,12 @@ impl fmt::Debug for MaterializedCode {
     }
 }
 
+impl serde::Serialize for MaterializedCode {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
 impl fmt::Display for MaterializedCode {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(self.as_str())
