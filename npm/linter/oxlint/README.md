@@ -267,7 +267,7 @@ Oxlint's own type-aware rules (`typescript/no-floating-promises`, `typescript/no
 
 ## Limitations
 
-- The type-aware pass for Vue script blocks uses your root configuration's resolved rules; per-file `overrides` and nested configs do not change which type-aware rules run on Vue files. Your `tsconfig.json` must include the `.vue` files' directories with a `**/*.ts` pattern, because each SFC is checked through a temporary `Component.vue.ts` sibling that is removed after the run.
+- The type-aware pass for Vue script blocks applies root `overrides` and `excludeFiles` to the original `.vue` path before checking its temporary script shim. Nested configs still do not change which type-aware rules run on Vue files. Your `tsconfig.json` must include the `.vue` files' directories with a `**/*.ts` pattern, because each SFC is checked through a temporary `Component.vue.ts` sibling that is removed after the run.
 - Raw `oxlint` still misses files without `<script>` or `<script setup>`. It also anchors template diagnostics to an extracted script instead of the original template location. Use `oxlint-vize` when linting Vue and HTML files.
 - The wrapper's temporary files are not copied back when Oxlint fix flags are used; it warns when `--fix` or `--fix-suggestions` is passed.
 - With Oxlint 1.78, complete explicit/discovered JSON configs containing `ignorePatterns` or `overrides`, and root TS/MTS configs with object `extends`, the wrapper retains original file selection and ordered Vue overrides. This mode supports POSIX paths; inherited JSON configs, import/type-aware project resolution, suppression state, ambiguous filenames, unsupported outside-root patterns and unknown option forms produce actionable errors.
