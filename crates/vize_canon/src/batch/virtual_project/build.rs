@@ -367,11 +367,20 @@ pub(super) fn mirrored_virtual_path(
     path: &Path,
 ) -> CorsaResult<PathBuf> {
     let canonical = vize_carton::path::canonicalize_non_verbatim(path);
+    mirrored_canonical_virtual_path(project_root, virtual_root, &canonical)
+}
+
+/// [`mirrored_virtual_path`] of a path the caller has already canonicalized.
+pub(super) fn mirrored_canonical_virtual_path(
+    project_root: &Path,
+    virtual_root: &Path,
+    canonical: &Path,
+) -> CorsaResult<PathBuf> {
     if let Ok(relative) = canonical.strip_prefix(project_root) {
         return Ok(virtual_root.join(relative));
     }
     // Out-of-root files land in the external escape subtree (#3887).
-    super::external_mirror::external_mirror_path(virtual_root, &canonical)
+    super::external_mirror::external_mirror_path(virtual_root, canonical)
 }
 
 pub(super) fn build_tsx_vue_import_shim(
