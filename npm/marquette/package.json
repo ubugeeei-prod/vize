@@ -51,6 +51,11 @@
       "import": "./dist/native-build-validate.mjs",
       "default": "./dist/native-build-validate.mjs"
     },
+    "./navigation": {
+      "types": "./dist/navigation.d.mts",
+      "import": "./dist/navigation.mjs",
+      "default": "./dist/navigation.mjs"
+    },
     "./test-run": {
       "types": "./dist/test-run.d.mts",
       "import": "./dist/test-run.mjs",
