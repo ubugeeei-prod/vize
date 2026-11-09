@@ -30,6 +30,9 @@ pub enum UnsupportedReason {
     ForAliasNotEmittable,
     ForItemShape,
     ForSourceNotJs,
+    /// A host-syntax loop (retained head, optional `@empty` region) has no
+    /// DOM emission yet.
+    HostForLoop,
     /// A props surface the shipped `has_static_props` hoists but the L2
     /// hoist pass's narrower constant rule does not (P3-17).
     HoistConstantGap,
@@ -100,6 +103,7 @@ impl UnsupportedReason {
         Self::ForAliasNotEmittable,
         Self::ForItemShape,
         Self::ForSourceNotJs,
+        Self::HostForLoop,
         Self::HoistConstantGap,
         Self::HtmlExpressionNotJs,
         Self::IfBranchShape,
@@ -158,6 +162,7 @@ impl UnsupportedReason {
             Self::ForAliasNotEmittable => "for_alias_not_emittable",
             Self::ForItemShape => "for_item_shape",
             Self::ForSourceNotJs => "for_source_not_js",
+            Self::HostForLoop => "host_for_loop",
             Self::HoistConstantGap => "hoist_constant_gap",
             Self::HtmlExpressionNotJs => "html_expression_not_js",
             Self::IfBranchShape => "if_branch_shape",

@@ -77,6 +77,14 @@ fn shift_op(op: &mut DumpOp, shift: &mut Shift<'_>) {
             shift(&mut for_op.span);
             shift_for_binding(&mut for_op.binding, shift);
             shift_ops(&mut for_op.ops, shift);
+            if let Some(host) = &mut for_op.host {
+                if let Some(key) = &mut host.key {
+                    shift_expr(key, shift);
+                }
+                if let Some(empty) = &mut host.empty {
+                    shift_ops(empty, shift);
+                }
+            }
         }
         DumpOp::OriginalFor(for_op) => {
             shift(&mut for_op.span);

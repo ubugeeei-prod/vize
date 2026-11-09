@@ -28,7 +28,10 @@ mod builder;
 mod check;
 mod features;
 pub(crate) use builder::ElementAllocation;
-pub use builder::{BranchBuilder, Builder, ComponentBody, ComponentFactory, RegionBuilder};
+pub use builder::{
+    BranchBuilder, Builder, ComponentBody, ComponentFactory, HostForBuilder, HostForHead,
+    RegionBuilder,
+};
 pub use features::{LoweringFeatures, OpFamily};
 #[cfg(test)]
 mod tests;
@@ -165,6 +168,8 @@ pub enum ArtifactError {
     InvalidHandlerReference { node: NodeId, handler: NodeId },
     /// A whole original head names a different introducing node.
     InvalidOriginalForReference { node: NodeId, original: NodeId },
+    /// A host loop's binding is not the collection plus the authored left side.
+    InvalidHostFor { node: NodeId },
     /// An authored span is inverted, outside source, or cuts UTF-8.
     InvalidSpan { node: Option<NodeId>, span: Span },
     /// A node or payload span escapes its immediate source owner.

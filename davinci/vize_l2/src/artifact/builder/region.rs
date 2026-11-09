@@ -120,6 +120,16 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.builder.child_value(expression, span)
     }
+    /// Create one host-syntax `ui.for`; the callback builds its body, then
+    /// optionally its `@empty` region.
+    pub fn host_for(
+        &mut self,
+        head: super::HostForHead<'a>,
+        span: Span,
+        regions: impl FnOnce(&mut super::HostForBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.host_for(head, span, regions)
+    }
     /// Create one `ui.if`; the callback adds its branches in authored order.
     pub fn conditional(
         &mut self,

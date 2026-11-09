@@ -158,10 +158,27 @@ pub struct Branch {
 pub struct For {
     /// The iteration binding.
     pub binding: ForBinding,
+    /// The host-language head, for a host loop.
+    pub host: Option<HostFor>,
     /// The repeated region.
     pub ops: Vec<Op>,
     /// Source range.
     pub span: Span,
+}
+
+/// Diagnostic mirror of [`crate::op::HostFor`]: the authored head as text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HostFor {
+    /// The authored per-iteration declaration.
+    pub left: String,
+    /// The authored `index` name.
+    pub index: Option<String>,
+    /// The `key` expression.
+    pub key: Option<Expr>,
+    /// `for await`.
+    pub r#await: bool,
+    /// The `@empty` region.
+    pub empty: Option<Vec<Op>>,
 }
 
 /// Diagnostic mirror of [`crate::op::OriginalForOp`].
@@ -276,6 +293,13 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
                 key: for_op.binding.key.as_ref().map(own_expr),
                 index: for_op.binding.index.as_ref().map(own_expr),
             },
+            host: for_op.host.as_ref().map(|host| HostFor {
+                left: String::from(host.left_text),
+                index: host.index.map(|index| String::from(index.name.as_str())),
+                key: host.key.as_ref().map(own_expr),
+                r#await: host.r#await,
+                empty: host.empty.as_ref().map(own_region),
+            }),
             ops: own_region(&for_op.region),
             span: for_op.span,
         }),
@@ -331,7 +355,13 @@ fn count_op_guarded(op: &Op) -> u64 {
                 .map(count_op)
                 .sum::<u64>()
         }
-        Op::For(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
+        Op::For(for_op) => {
+            let empty = for_op
+                .host
+                .iter()
+                .flat_map(|host| host.empty.iter().flatten());
+            1 + for_op.ops.iter().chain(empty).map(count_op).sum::<u64>()
+        }
         Op::OriginalFor(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
         Op::Slot(slot) => {
             1 + slot.bindings.len() as u64 + slot.fallback.iter().map(count_op).sum::<u64>()

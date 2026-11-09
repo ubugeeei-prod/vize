@@ -143,7 +143,12 @@ fn visit_ops_guarded<'a>(
                     visit_ops(walk, &mut branch.region.ops, visit);
                 }
             }
-            Op::For(for_op) => visit_ops(walk, &mut for_op.region.ops, visit),
+            Op::For(for_op) => {
+                visit_ops(walk, &mut for_op.region.ops, visit);
+                if let Some(empty) = for_op.host.as_mut().and_then(|host| host.empty.as_mut()) {
+                    visit_ops(walk, &mut empty.ops, visit);
+                }
+            }
             Op::OriginalFor(for_op) => visit_ops(walk, &mut for_op.region.ops, visit),
             Op::Slot(slot) => {
                 walk.skip(slot.bindings.len());
