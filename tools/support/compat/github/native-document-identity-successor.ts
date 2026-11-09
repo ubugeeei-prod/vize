@@ -132,6 +132,22 @@ const currentSourceTransitions = [
 pub(super) fn build_materialized_session_document_uri(`,
   },
   {
+    // Batch namespace resolution (#12346) resolves each parent once; the
+    // per-path oracle stays for tests.
+    path: "crates/vize_canon/src/lsp_client/session_paths.rs",
+    before:
+      "    }\n    let path = file_uri_to_path(&path_to_file_uri(path));\n    let root = file_uri_to_path(&path_to_file_uri(root));\n    matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))",
+    after:
+      "    }\n    let path = logical_namespace_path(path);\n    let root = logical_namespace_path(root);\n    matches!((path, root), (Some(path), Some(root)) if path.starts_with(&root))",
+  },
+  {
+    path: "crates/vize_canon/src/lsp_client/session_paths.rs",
+    before:
+      "\npub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {",
+    after:
+      "\nfn logical_namespace_path(path: &Path) -> Option<PathBuf> {\n    file_uri_to_path(&path_to_file_uri(path))\n}\n\nmod physical_namespace;\npub(super) use physical_namespace::PhysicalNamespace;\n\n/// The per-path oracle for [`PhysicalNamespace::contains_physical`].\n#[cfg(test)]\npub(super) fn is_within_physical_project_namespace(path: &Path, root: &Path) -> bool {",
+  },
+  {
     // The tracked logical delta replaced the full document mirror after the
     // project-import image. Materialized identities still use the full mirror.
     path: "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
@@ -176,8 +192,9 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
   let headImages: Record<string, unknown> | undefined;
   return (side, path) => {
     const current = read(side, path);
-    const transition = currentSourceTransitions.find((entry) => entry.path === path);
-    if (side !== "head" || !current || !transition) return current;
+    // Later reviewed edits of one source extend its first transition in order.
+    const transitions = currentSourceTransitions.filter((entry) => entry.path === path);
+    if (side !== "head" || !current || transitions.length === 0) return current;
     if (!headImages) {
       const profile = profiles[2]!;
       const archive = bytes(read, "head", profile.path);
@@ -194,19 +211,24 @@ export function historicalNativeIdentityCurrentSources(read: Read): Read {
     const encoded = headImages[path];
     assert.ok(typeof encoded === "string");
     const original = Buffer.from(encoded, "base64");
-    const before = original.toString("utf8");
-    assert.equal(before.split(transition.before).length, 2);
-    assert.equal(before.split(transition.after).length, 1);
-    const expected = Buffer.from(before.replace(transition.before, transition.after));
+    let expected = original.toString("utf8");
+    for (const transition of transitions) {
+      assert.equal(expected.split(transition.before).length, 2);
+      assert.equal(expected.split(transition.after).length, 1);
+      expected = expected.replace(transition.before, () => transition.after);
+    }
     // Unknown bytes stay actual bytes, so the unchanged source gate refuses them.
-    if (!current.equals(expected)) return current;
-    const after = current.toString("utf8");
-    assert.equal(after.split(transition.after).length, 2);
-    assert.equal(
-      after.split(transition.before).length,
-      transition.after.split(transition.before).length,
-    );
-    assert.deepEqual(Buffer.from(after.replace(transition.after, transition.before)), original);
+    if (!current.equals(Buffer.from(expected))) return current;
+    let after = current.toString("utf8");
+    for (const transition of [...transitions].reverse()) {
+      assert.equal(after.split(transition.after).length, 2);
+      assert.equal(
+        after.split(transition.before).length,
+        transition.after.split(transition.before).length,
+      );
+      after = after.replace(transition.after, () => transition.before);
+    }
+    assert.deepEqual(Buffer.from(after), original);
     return original;
   };
 }
