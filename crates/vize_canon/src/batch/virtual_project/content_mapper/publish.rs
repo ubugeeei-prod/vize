@@ -11,7 +11,7 @@ use super::super::vue_codegen::generic_attribute::GenericCopies;
 
 const PRIVATE_MODULE: &str = "vize:virtual-ts";
 const PUBLISHED_MODULE: &str = "vize/virtual-ts";
-const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
+pub(super) const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
 const REFERENCE_TYPES_DIRECTIVE: &str = "/// <reference types=";
 const PUBLIC_DIAGNOSTIC_HELPERS: [(&str, &str); 2] = [
     ("$ComponentCheckProps", "ComponentPropsForTemplate"),
