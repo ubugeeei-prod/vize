@@ -26,6 +26,35 @@ struct NativePayload {
 }
 
 impl NativePayloads {
+    /// The payload already built for this exact leaf. Its URI is the one
+    /// `path_to_file_uri` gives its materialized path, the payload key.
+    fn current(&self, source: &Arc<CorsaMaterializedSource>) -> Option<Arc<(String, String)>> {
+        self.0
+            .get(&source.materialized_path)
+            .filter(|payload| payload.source.ptr_eq(&Arc::downgrade(source)))
+            .map(|payload| Arc::clone(&payload.document))
+    }
+
+    /// Push `source`'s payload unless its URI is already `opened`; only a
+    /// leaf without a current payload builds its URI.
+    fn push_unopened(
+        &mut self,
+        source: &Arc<CorsaMaterializedSource>,
+        opened: &mut FxHashSet<String>,
+        documents: &mut super::vue_document::CorsaNativeDocumentBatch,
+    ) {
+        if let Some(document) = self.current(source) {
+            if opened.insert(document.0.clone()) {
+                documents.push_shared(document);
+            }
+            return;
+        }
+        let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
+        if opened.insert(uri.clone()) {
+            documents.push_shared(self.document(source, uri));
+        }
+    }
+
     fn document(
         &mut self,
         source: &Arc<CorsaMaterializedSource>,
@@ -146,10 +175,7 @@ impl CorsaSourceCatalog {
             source.materialized_path.starts_with(project_root)
                 && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
         }) {
-            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
-            if opened.insert(uri.clone()) {
-                documents.push_shared(payloads.document(source, uri));
-            }
+            payloads.push_unopened(source, &mut opened, documents);
         }
     }
 
@@ -171,10 +197,7 @@ impl CorsaSourceCatalog {
                 && overlays.contains_key(&source.source_path)
                 && source.mapping_kind != super::CorsaMaterializedMappingKind::Synthetic
         }) {
-            let uri = crate::file_uri::path_to_file_uri(&source.materialized_path);
-            if opened.insert(uri.clone()) {
-                documents.push_shared(payloads.document(source, uri));
-            }
+            payloads.push_unopened(source, &mut opened, documents);
         }
     }
 

@@ -54,7 +54,16 @@ impl<'a> PhysicalNamespace<'a> {
     /// The answers of `is_within_project_namespace`, `Path::is_file` and
     /// `is_within_physical_project_namespace` for `path`.
     pub(super) fn observe(&mut self, path: &Path) -> DocumentObservation {
-        let logical = self.is_logical(path);
+        self.observe_with(path, None)
+    }
+
+    /// [`Self::observe`] reusing an already known lexical-namespace answer.
+    pub(super) fn observe_with(
+        &mut self,
+        path: &Path,
+        logical: Option<bool>,
+    ) -> DocumentObservation {
+        let logical = logical.unwrap_or_else(|| self.is_logical(path));
         if let Some(metadata) = self.unlinked_leaf(path) {
             return DocumentObservation {
                 logical,
