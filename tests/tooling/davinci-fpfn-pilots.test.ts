@@ -22,10 +22,14 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const fixtures = path.join(root, "tests/_fixtures/davinci-fpfn");
 const expectedDir = path.join(fixtures, "expected");
 const seedTool = path.join(root, "tools/commands/davinci/seed-defects.rs");
-const suppressionTool = path.join(root, "tools/commands/davinci/suppression-telemetry.rs");
+const suppressionTool = path.join(root, "tools/commands/davinci/suppression-telemetry.ts");
 
 function runTool(tool: string, args: string[]) {
-  const result = spawnSync("rust-script", [tool, ...args], { cwd: root, encoding: "utf8" });
+  const stableNode = tool.endsWith(".ts");
+  const result = spawnSync(stableNode ? process.execPath : "rust-script", [tool, ...args], {
+    cwd: root,
+    encoding: "utf8",
+  });
   if (result.error) throw result.error;
   return result;
 }

@@ -69,8 +69,8 @@ function runVimPackageGuard(omit: string[] = []): { status: number; output: stri
     });
 
     const guard = spawnSync(
-      "rust-script",
-      [path.join(root, "tools", "commands", "editors", "vim", "assert-vim-package.rs"), archive],
+      process.execPath,
+      [path.join(root, "tools", "commands", "editors", "vim", "assert-vim-package.ts"), archive],
       { encoding: "utf8" },
     );
     return { status: guard.status ?? 1, output: `${guard.stdout ?? ""}${guard.stderr ?? ""}` };
@@ -306,13 +306,13 @@ test("the packaged Neovim archive ships the real-server scenario", () => {
     "commands",
     "editors",
     "neovim",
-    "assert-nvim-package.rs",
+    "assert-nvim-package.ts",
   );
 
   assert.match(assertion, /"nvim\/test\/vize_e2e_expected\.lua"/);
   assert.match(assertion, /"nvim\/test\/vize_e2e_spec\.lua"/);
   assert.match(assertion, /"nvim\/test\/ref_surface_hover\.lua"/);
-  assert.match(assertion, /assert_allowed/);
+  assert.match(assertion, /allowed: \[/);
   assert.match(assertion, /"nvim\/test\/component_contract_hover\.lua"/);
 });
 

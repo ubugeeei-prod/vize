@@ -1,5 +1,5 @@
 // Shared plumbing for the Davinci P0-13 FP/FN pilot tools
-// (seed-defects.rs, suppression-telemetry.rs): repository locations, the
+// (seed-defects.rs, suppression-telemetry.ts): repository locations, the
 // corpus-shard definition, `vize lint` invocation, and the text-coordinate
 // utilities both tools need to talk about diagnostic locations exactly.
 //
