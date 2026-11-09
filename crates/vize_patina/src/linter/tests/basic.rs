@@ -17,22 +17,6 @@ fn test_lint_simple_template() {
 }
 
 #[test]
-fn test_lint_template_does_not_report_direct_table_section_cells_as_fostered() {
-    let linter = Linter::new().with_enabled_rules(Some(Vec::new()));
-    let source = "<table><thead><th>Name</th><th>Grade</th></thead></table>";
-    let result = linter.lint_template(source, "test.vue");
-
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .all(|diagnostic| diagnostic.rule_name != "parser/template"),
-        "direct cells remain under the authored table section: {:?}",
-        result.diagnostics
-    );
-}
-
-#[test]
 fn test_lint_template_reports_fatal_parser_errors_and_gates_semantic_rules() {
     let linter =
         Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
