@@ -9,6 +9,37 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::{String, ToCompactString};
 
+/// The local class names one style block's rules declare.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuthoredClasses {
+    names: BTreeSet<String>,
+    complete: bool,
+}
+
+impl AuthoredClasses {
+    pub(super) const fn new(names: BTreeSet<String>, complete: bool) -> Self {
+        Self { names, complete }
+    }
+
+    #[must_use]
+    pub const fn names(&self) -> &BTreeSet<String> {
+        &self.names
+    }
+
+    #[must_use]
+    pub fn into_names(self) -> BTreeSet<String> {
+        self.names
+    }
+
+    /// Whether the names are all the block can declare: every rule's selector
+    /// is known, and no preprocessor construct (include, import, mixin call,
+    /// control flow, interpolated selector) can add rules this scan cannot see.
+    #[must_use]
+    pub const fn is_complete(&self) -> bool {
+        self.complete
+    }
+}
+
 pub(super) fn collect_classes_from_selector_prelude(
     prelude: &[u8],
     classes: &mut BTreeSet<String>,
