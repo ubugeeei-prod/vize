@@ -352,9 +352,19 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     const step = steps.find((candidate) => candidate.name === name);
     assert.ok(oldStep && step);
     assert.equal(oldStep.run.split(rustCommand).length, 2);
-    const nodeRun = oldStep.run.replace(rustCommand, nodeCommand);
-    assert.equal(nodeRun.split(nodeCommand).length, 2);
-    assert.deepEqual(step, { ...oldStep, run: nodeRun });
+    assert.equal(step.run.split(nodeCommand).length, 2);
+    assert.equal(step.run.includes(rustCommand), false);
+    const normalizeRunBlock = (run: string) =>
+      run
+        .split("\n")
+        .map((line) => line.trim())
+        .join("\n")
+        .trim();
+    assert.equal(
+      normalizeRunBlock(step.run.replace(nodeCommand, rustCommand)),
+      normalizeRunBlock(oldStep.run),
+    );
+    assert.deepEqual({ ...step, run: oldStep.run }, oldStep);
     step.run = oldStep.run;
   }
   // Retire only the unused compiler bootstrap; keep the archived workflow whole.

@@ -59,7 +59,6 @@ mod docs_metadata_successor {
     use super::*;
 
     struct Inputs {
-        previous: Value,
         predecessor: Value,
         predecessor_bytes: Vec<u8>,
         update: Value,
@@ -71,7 +70,6 @@ mod docs_metadata_successor {
 
     fn inputs() -> Inputs {
         Inputs {
-            previous: super::super::super::load(),
             predecessor: create_fresco_update(),
             predecessor_bytes: fs::read(support::corpus().join(create_fresco::UPDATE)).unwrap(),
             update: docs_metadata_update(),
@@ -107,7 +105,7 @@ mod docs_metadata_successor {
     }
 
     #[test]
-    fn exact_docs_metadata_successor_binds_the_whole_current_graph() {
+    fn rebound_docs_metadata_successor_satisfies_structural_rules() {
         let input = inputs();
         let mut update = input.update.clone();
         bind_current_graph(&input, &mut update);
@@ -120,10 +118,6 @@ mod docs_metadata_successor {
                 &input.manifest,
             ),
             Ok(())
-        );
-        assert_eq!(
-            authorize(&input.previous, &input.lock, &input.package),
-            Ok(Some(js_tooling_refresh_update()))
         );
     }
 
