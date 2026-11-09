@@ -58,7 +58,7 @@ impl<'a> Parser<'a> {
         let current = self.stack.last().map(|entry| entry.element.tag);
         match current {
             Some(current) if Self::tag_in(current, &["tbody", "thead", "tfoot"]) => {
-                Self::tag_in(tag, &["tr", "script", "style", "template"])
+                Self::tag_in(tag, &["tr", "td", "th", "script", "style", "template"])
             }
             Some(current) if current.eq_ignore_ascii_case("tr") => {
                 Self::tag_in(tag, &["td", "th", "script", "style", "template"])
@@ -112,7 +112,13 @@ impl<'a> Parser<'a> {
                 self.close_stack_element_at(last, false);
             }
             self.ensure_table_section(offset);
-            self.ensure_table_row(offset);
+            let authored_section_parent = !self.document
+                && self.stack.last().is_some_and(|entry| {
+                    !entry.implicit && Self::tag_in(entry.element.tag, &["tbody", "thead", "tfoot"])
+                });
+            if !authored_section_parent {
+                self.ensure_table_row(offset);
+            }
         }
     }
 

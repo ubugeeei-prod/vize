@@ -1,4 +1,4 @@
-//! Focused DOM parity pins for implicit HTML table tree construction.
+//! Focused DOM parity pins for component table structure.
 
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 #![expect(
@@ -35,7 +35,7 @@ fn emitted(source: &str) -> String {
 }
 
 fn assert_shipped_parity(source: &str) {
-    assert_transformed_sound(source, "implicit table normalization");
+    assert_transformed_sound(source, "component table normalization");
     assert_eq!(emitted(source), shipped(source), "{source}");
 }
 
@@ -47,7 +47,7 @@ fn direct_table_rows_gain_implicit_tbody() {
 }
 
 #[test]
-fn row_group_cells_gain_implicit_tr() {
+fn row_group_cells_remain_direct_authored_children() {
     assert_shipped_parity(
         r#"<table><thead><th>Token</th><th>Usage</th></thead><tbody><td>A</td><td>B</td></tbody></table>"#,
     );
