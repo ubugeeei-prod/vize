@@ -158,7 +158,7 @@ impl TemplatePropsModel {
     /// Emit the setup-scope capture an opaque `withDefaults` argument is typed
     /// from. Must precede the template scope that reads the resolved contract.
     pub(crate) fn emit_defaults_capture(
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         summary: &Croquis,
         generic_parameters: Option<&GenericParameters>,
     ) {
@@ -222,7 +222,7 @@ impl<'a> TemplatePropsScope<'a> {
 /// analyzer never bound them, yet each one is now a template local whose
 /// `satisfies keyof` key reports a name the props do not declare.
 pub(crate) fn generate_props_variables(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
@@ -361,7 +361,7 @@ pub(crate) fn generate_props_variables(
 }
 
 fn emit_keyed_template_prop_binding(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     binding_mappings: &mut PropBindingMappings<'_>,
     props_type_ref: &str,
     prop_name: &str,
@@ -389,7 +389,7 @@ fn emit_keyed_template_prop_binding(
 }
 
 fn emit_unchecked_template_prop_binding(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     props_object_binding: &str,
     prop_name: &str,
 ) {

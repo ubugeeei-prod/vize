@@ -128,7 +128,7 @@ impl AmbientProjection {
         &self,
         start: usize,
         script: &str,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         source_offset: impl Fn(usize) -> usize,
     ) {
@@ -161,7 +161,7 @@ impl AmbientProjection {
 
     pub(in crate::virtual_ts::generator) fn emit_return(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         fields: &[String],
         mappings: &mut Vec<VizeMapping>,
     ) {

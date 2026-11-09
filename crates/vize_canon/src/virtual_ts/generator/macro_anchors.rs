@@ -1,9 +1,12 @@
 //! Bindings consumed by the component's public compiler-macro signature.
 
 use super::setup_helpers::SetupHelperPlan;
-use vize_carton::{String, append};
+use vize_carton::append;
 
-pub(super) fn emit_setup_scope_macro_anchors(ts: &mut String, plan: &SetupHelperPlan) {
+pub(super) fn emit_setup_scope_macro_anchors(
+    ts: &mut crate::virtual_ts::TextBuf,
+    plan: &SetupHelperPlan,
+) {
     if !plan.macro_results.is_empty() {
         ts.push_str("\n  // Compiler-macro results contribute to the component signature\n  ");
         for (index, name) in plan.macro_results.iter().enumerate() {

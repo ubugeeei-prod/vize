@@ -80,7 +80,7 @@ impl SlotOutletChecks {
         }
     }
 
-    pub(super) fn emit_helpers(&self, ts: &mut String) {
+    pub(super) fn emit_helpers(&self, ts: &mut crate::virtual_ts::TextBuf) {
         emit::emit_slot_outlet_helpers(ts, &self.by_scope);
         if self.infers_slots() && self.merge_payloads {
             inference::emit_inferred_slot_helpers(ts);

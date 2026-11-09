@@ -120,7 +120,7 @@ pub(super) fn template_ref_registry(
         // string literals: a raw `\` in `ref="path\name"` would otherwise open
         // an escape sequence and silently key the registry under a different
         // name, and a trailing one would invalidate the whole virtual file.
-        let mut name_literal = String::default();
+        let mut name_literal = crate::virtual_ts::TextBuf::default();
         push_ts_string_literal(&mut name_literal, name);
         append!(body, " {name_literal}: ");
         append!(dollar_body, " {name_literal}: ");
@@ -133,7 +133,7 @@ pub(super) fn template_ref_registry(
             let nullable = match &entry.kind {
                 RegisteredRefKind::Element { tag, is_svg } => {
                     includes_dom_element = true;
-                    let mut tag_literal = String::default();
+                    let mut tag_literal = crate::virtual_ts::TextBuf::default();
                     push_ts_string_literal(&mut tag_literal, tag.as_str());
                     let svg_argument = if *is_svg { ", true" } else { "" };
                     append!(target, "$DomElement<{tag_literal}{svg_argument}>");
@@ -382,9 +382,9 @@ fn dynamic_component_target_type(expression: &Expression<'_>) -> Option<String> 
             Some(vize_carton::cstr!("typeof {}", identifier.name))
         }
         Expression::StringLiteral(literal) => {
-            let mut reference = String::new("");
+            let mut reference = crate::virtual_ts::TextBuf::default();
             push_ts_string_literal(&mut reference, literal.value.as_str());
-            Some(reference)
+            Some(reference.into_compact())
         }
         Expression::ConditionalExpression(conditional) => {
             let consequent = dynamic_component_target_type(&conditional.consequent)?;

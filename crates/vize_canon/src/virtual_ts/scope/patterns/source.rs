@@ -33,7 +33,7 @@ impl<'a, 'b> PatternEmitter<'a, 'b> {
 
     pub fn expression(
         &self,
-        ts: &mut String,
+        ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         text: &str,
         start: u32,

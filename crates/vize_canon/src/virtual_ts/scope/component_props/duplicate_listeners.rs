@@ -17,7 +17,7 @@ use crate::virtual_ts::types::VizeMapping;
 /// colliding group maps to its own authored event name so the duplicate-key
 /// error lands on the binding that repeats it.
 pub(super) fn append_duplicate_listener_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &ComponentPropsContext<'_, '_>,
     usage: &ComponentUsage,

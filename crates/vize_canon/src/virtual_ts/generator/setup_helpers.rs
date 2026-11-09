@@ -38,7 +38,7 @@ pub(super) fn define_emits_runtime_args(summary: &Croquis) -> Option<&String> {
 }
 
 pub(super) fn emit_return_artifacts(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     summary: &Croquis,
     fields: &mut Vec<String>,
     preserve_authored_component: bool,
@@ -104,7 +104,7 @@ pub(super) fn emit_return_artifacts(
 }
 
 pub(super) fn emit_setup_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     component_context: SetupHelperComponentContext<'_>,
     script_content: Option<&str>,
     generic_param: Option<&crate::virtual_ts::generic_parameters::GenericParameters>,
@@ -189,7 +189,10 @@ pub(super) fn emit_setup_helpers(
     template_refs.is_some()
 }
 
-fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefinePropsBooleanKeys) {
+fn emit_define_props_boolean_keys_type(
+    ts: &mut crate::virtual_ts::TextBuf,
+    collection: &DefinePropsBooleanKeys,
+) {
     if collection.keys.is_empty() && !collection.has_unresolved_references {
         ts.push_str("  type $DefinePropsBooleanKeys<_T> = never;\n");
         return;
@@ -205,7 +208,7 @@ fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefineProps
         } else {
             "  | "
         };
-        let mut key_literal = String::default();
+        let mut key_literal = crate::virtual_ts::TextBuf::default();
         push_ts_string_literal(&mut key_literal, key.as_str());
         append!(
             *ts,
@@ -215,7 +218,7 @@ fn emit_define_props_boolean_keys_type(ts: &mut String, collection: &DefineProps
     ts.push_str("  ;\n");
 }
 
-fn push_ts_string_literal(out: &mut String, value: &str) {
+fn push_ts_string_literal(out: &mut impl crate::virtual_ts::TsText, value: &str) {
     out.push('"');
     for ch in value.chars() {
         match ch {

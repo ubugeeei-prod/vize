@@ -6,7 +6,7 @@ mod descriptor;
 mod source;
 
 use vize_armature::patterns::{MatchPattern, PatternKind};
-use vize_carton::{FxHashMap, FxHashSet, String, append, cstr};
+use vize_carton::{FxHashMap, FxHashSet, cstr};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeId};
 
 use crate::virtual_ts::types::VizeMapping;
@@ -14,7 +14,7 @@ use descriptor::{emit_bindings, emit_descriptor};
 use source::{PatternEmitter, map_range};
 
 pub(super) fn generate_expression_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     ctx: &super::context::ScopeGenContext<'_, '_>,
     scope: &Scope,
@@ -55,7 +55,7 @@ pub(super) fn generate_expression_match(
 }
 
 pub(super) fn generate_props_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &super::context::VForPropsContext<'_, '_>,
     scope: &Scope,
@@ -104,12 +104,12 @@ pub(super) struct PatternContext<'a> {
 
 /// Replay exactly the same arm environment for both code-generation passes.
 pub(super) fn emit_match(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     ctx: &PatternContext<'_>,
     scope: &Scope,
     indent: &str,
-    mut body: impl FnMut(&mut String, &mut Vec<VizeMapping>, &Scope, &str),
+    mut body: impl FnMut(&mut crate::virtual_ts::TextBuf, &mut Vec<VizeMapping>, &Scope, &str),
 ) {
     let ScopeData::VMatch(subject) = scope.data() else {
         return;
@@ -141,7 +141,7 @@ pub(super) fn emit_match(
             "Enclosing pattern guard",
         );
     }
-    append!(*ts, "{indent}{{\n{inner}const {local} = (");
+    vize_l0::emit_ts!(ts, "{indent}{{\n{inner}const {local} = (");
     let subject_text =
         emitter.expression(ts, mappings, &subject.subject, subject.start, subject.end);
     ts.push_str(");\n");
@@ -149,7 +149,7 @@ pub(super) fn emit_match(
     // Capture before a predicate narrows `local`: the second predicate must
     // still accept the unrefined authored subject.
     let subject_type = emitter.name();
-    append!(*ts, "{inner}type {subject_type} = typeof {local};\n");
+    vize_l0::emit_ts!(ts, "{inner}type {subject_type} = typeof {local};\n");
     let mut remaining = subject_type.clone();
     if let Some(children) = ctx.children.get(&scope.id.as_u32()) {
         for id in children {
@@ -164,13 +164,13 @@ pub(super) fn emit_match(
                 emit_descriptor(&mut emitter, ts, mappings, &when.arm.pattern, when.offset);
             let pattern_type = emitter.name();
             let narrowed = emitter.name();
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{inner}type {pattern_type} = {descriptor};\n{inner}type {narrowed} = $Patterns.Match<{remaining}, {pattern_type}>;\n"
             );
             if ctx.verification {
                 let marker = cstr!("{}unreachable", emitter.name());
-                append!(*ts, "{inner}const ");
+                vize_l0::emit_ts!(ts, "{inner}const ");
                 let start = ts.len();
                 ts.push_str(&marker);
                 map_range(
@@ -179,21 +179,21 @@ pub(super) fn emit_match(
                     (ctx.template_offset + when.offset + when.arm.pattern.span.start) as usize
                         ..(ctx.template_offset + when.offset + when.arm.pattern.span.end) as usize,
                 );
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     ": $Patterns.Reachable<{narrowed}> = true;\n{inner}void {marker};\n"
                 );
             }
             let condition = cstr!(
                 "((value: {subject_type}): value is {subject_type} & {narrowed} => (void value, true))"
             );
-            append!(
-                *ts,
+            vize_l0::emit_ts!(
+                ts,
                 "{inner}if ({condition}({local}) && {condition}(({subject_text}))) {{\n"
             );
             let arm_indent = cstr!("{inner}  ");
             let value = emitter.name();
-            append!(*ts, "{arm_indent}const {value} = {local} as {narrowed};\n");
+            vize_l0::emit_ts!(ts, "{arm_indent}const {value} = {local} as {narrowed};\n");
             emit_bindings(
                 &mut emitter,
                 ts,
@@ -204,7 +204,7 @@ pub(super) fn emit_match(
                 &arm_indent,
             );
             if let Some(guard) = &when.arm.guard {
-                append!(*ts, "{arm_indent}if (");
+                vize_l0::emit_ts!(ts, "{arm_indent}if (");
                 emitter.expression(
                     ts,
                     mappings,
@@ -214,15 +214,15 @@ pub(super) fn emit_match(
                 );
                 ts.push_str(") {\n");
                 body(ts, mappings, arm_scope, &cstr!("{arm_indent}  "));
-                append!(*ts, "{arm_indent}}}\n");
+                vize_l0::emit_ts!(ts, "{arm_indent}}}\n");
             } else {
                 body(ts, mappings, arm_scope, &arm_indent);
             }
-            append!(*ts, "{inner}}}\n");
+            vize_l0::emit_ts!(ts, "{inner}}}\n");
             if when.arm.guard.is_none() {
                 let next = emitter.name();
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{inner}type {next} = $Patterns.Subtract<{remaining}, {pattern_type}>;\n"
                 );
                 remaining = next;
@@ -231,7 +231,7 @@ pub(super) fn emit_match(
     }
     if ctx.verification {
         let check = emitter.name();
-        append!(*ts, "{inner}const ");
+        vize_l0::emit_ts!(ts, "{inner}const ");
         let start = ts.len();
         ts.push_str(&check);
         map_range(
@@ -240,14 +240,14 @@ pub(super) fn emit_match(
             (ctx.template_offset + subject.start) as usize
                 ..(ctx.template_offset + subject.end) as usize,
         );
-        append!(
-            *ts,
+        vize_l0::emit_ts!(
+            ts,
             ": $Patterns.Exhaustiveness<{remaining}> = true;\n{inner}void {check};\n"
         );
     }
-    append!(*ts, "{indent}}}\n");
+    vize_l0::emit_ts!(ts, "{indent}}}\n");
     if guard.is_some() {
-        append!(*ts, "{indent}}}\n");
+        vize_l0::emit_ts!(ts, "{indent}}}\n");
     }
 }
 

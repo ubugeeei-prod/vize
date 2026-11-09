@@ -27,7 +27,7 @@ struct PayloadType {
 /// dynamic payload resolvers, and the spread helper, each only when an outlet
 /// needs it.
 pub(super) fn emit_slot_outlet_helpers(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
 ) {
     let mut has_outlet = false;
@@ -110,7 +110,7 @@ pub(super) fn emit_slot_outlet_helpers(
 }
 
 pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     scope_id: u32,
     ctx: &ScopeGenContext<'_, '_>,
@@ -142,7 +142,7 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
 /// component declares no slots, or the checked outlet calls against the
 /// declared slots type otherwise.
 fn generate_slot_outlet_checks(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     scope_id: u32,
     ctx: SlotOutletCheckContext<'_>,
@@ -253,10 +253,12 @@ fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> PayloadType
         };
     }
 
-    let mut text = String::from("$SlotOutletPayload<");
+    let mut text = crate::virtual_ts::TextBuf::from_text("$SlotOutletPayload<");
     text.push_str(slots_type_ref);
     text.push_str(", ");
     crate::virtual_ts::helpers::push_ts_string_literal(&mut text, outlet.name.as_str());
     text.push('>');
-    PayloadType { text }
+    PayloadType {
+        text: text.into_compact(),
+    }
 }

@@ -7,11 +7,11 @@ use super::{
 use crate::virtual_ts::scope::{append_chained_vif_condition_open, append_chained_vif_guard_close};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{VizeMapping, helpers::generated_text_range};
-use vize_carton::{String, append, profile};
+use vize_carton::{append, profile};
 use vize_croquis::TemplateExpression;
 
 pub(super) fn generate_vif_guard_expression(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     guard: &str,

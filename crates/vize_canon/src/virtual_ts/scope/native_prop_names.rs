@@ -6,11 +6,11 @@ use crate::{
     template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives},
     virtual_ts::VizeMapping,
 };
-use vize_carton::{FxHashSet, String, append, is_native_tag};
+use vize_carton::{FxHashSet, append, is_native_tag};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 pub(super) fn emit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     root: &RootNode<'_>,
     offset: u32,
@@ -45,7 +45,7 @@ pub(super) fn emit(
 }
 
 fn visit(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     child: &TemplateChildNode<'_>,
     offset: u32,
@@ -142,7 +142,7 @@ fn visit(
 /// attributes, so an unknown name is an excess property (TS2353) on the
 /// authored attribute name; a real `<template>` attribute passes.
 fn emit_fragment_prop_names(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     element: &vize_relief::ElementNode<'_>,
     offset: u32,

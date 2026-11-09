@@ -6,7 +6,7 @@ use crate::virtual_ts::expressions::{
     statements::{ExpressionListEmitContext, generate_expression_statement},
 };
 use crate::virtual_ts::{VizeMapping, template_binding_access::TemplateBindingAccess};
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 use vize_croquis::TemplateExpression;
 
 struct BranchContext<'a, 'b> {
@@ -16,7 +16,7 @@ struct BranchContext<'a, 'b> {
 }
 
 pub(in crate::virtual_ts::expressions) fn emit_vif_control_flow_chain(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     exprs: &[&TemplateExpression],
     chain: &VifControlFlowChain<'_>,
@@ -76,7 +76,7 @@ pub(in crate::virtual_ts::expressions) fn emit_vif_control_flow_chain(
 }
 
 fn emit_vif_branch_open(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     branch: &VifBranch<'_>,
     first: bool,
@@ -116,7 +116,7 @@ fn emit_vif_branch_open(
 }
 
 fn append_guard_condition(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     condition: &str,
     mappings: &mut Vec<VizeMapping>,
     branch: &VifBranch<'_>,
@@ -149,7 +149,7 @@ fn append_guard_condition(
 }
 
 fn append_guard_prefix(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     prefix: &[GuardTerm<'_>],
     bindings: &TemplateBindingAccess,
 ) {
@@ -161,7 +161,11 @@ fn append_guard_prefix(
     }
 }
 
-fn append_binding_expression(ts: &mut String, expression: &str, bindings: &TemplateBindingAccess) {
+fn append_binding_expression(
+    ts: &mut crate::virtual_ts::TextBuf,
+    expression: &str,
+    bindings: &TemplateBindingAccess,
+) {
     let rewritten = rewrite_reserved_template_binding(expression, bindings);
     ts.push_str(rewritten.as_deref().unwrap_or(expression));
 }

@@ -17,7 +17,7 @@ use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 /// Emit one type query per template use of a `shadowed` binding.
 pub(super) fn emit_navigation(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     shadowed: &[&str],
@@ -50,7 +50,7 @@ pub(super) fn emit_navigation(
 /// content-mapper's whole-symbol projection.
 #[expect(clippy::too_many_arguments, reason = "independent projection inputs")]
 pub(super) fn emit_options_api_navigation(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     semantic_links: &mut Vec<VizeSemanticLink>,
     summary: &Croquis,
@@ -104,7 +104,7 @@ pub(super) fn emit_options_api_navigation(
 
 /// Emit a const declaration with the template-visible type for every use.
 pub(super) fn emit_hover(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     shadowed: &[&str],

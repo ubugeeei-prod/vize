@@ -2,10 +2,10 @@
 
 use crate::virtual_ts::VizeMapping;
 use crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector;
-use vize_carton::{String, append, cstr};
+use vize_carton::{append, cstr};
 
 pub(super) fn emit_strict_template_context_ref(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     (receiver, name): (&str, &str),
     src_start: usize,

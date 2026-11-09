@@ -158,7 +158,7 @@ impl<B: TsBuf> EmitHole<B> for ExportHead {
 }
 
 /// Re-export a renamed public declaration under its public name.
-pub(crate) fn reexport(ts: &mut String, public: &'static str) {
+pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str) {
     let local = declared(public);
     if local != public {
         append!(*ts, "export type {{ {local} as {public} }};\n");
@@ -254,7 +254,7 @@ pub(crate) const TEMPLATE_USE_PREFIX: &str = "/* __vize_template_use */ typeof "
 pub(crate) const TEMPLATE_HOVER_PREFIX: &str = "/* __vize_template_hover */ const ";
 
 /// Declare the helper aliases requested so far, outside every generic scope.
-pub(crate) fn emit_forwarded_helpers(ts: &mut String) {
+pub(crate) fn emit_forwarded_helpers(ts: &mut crate::virtual_ts::TextBuf) {
     CURRENT.with_borrow(|projection| {
         for (local, helper, constraints) in &projection.forwarded {
             if constraints.is_empty() {
@@ -291,7 +291,7 @@ mod tests {
         );
         assert_eq!(lib("Record"), "Record");
         assert_eq!(helper("$PublicEmit", &[""]), "$PublicEmit");
-        let mut ts = String::default();
+        let mut ts = crate::virtual_ts::TextBuf::default();
         reexport(&mut ts, "Props");
         emit_forwarded_helpers(&mut ts);
         assert_eq!(ts, "");
@@ -310,7 +310,7 @@ mod tests {
             helper("$NativeElement", &["PropertyKey"]),
             "$NativeElement_1"
         );
-        let mut ts = String::default();
+        let mut ts = crate::virtual_ts::TextBuf::default();
         reexport(&mut ts, "Props");
         emit_forwarded_helpers(&mut ts);
         assert_eq!(

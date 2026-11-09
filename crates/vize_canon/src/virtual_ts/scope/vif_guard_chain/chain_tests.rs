@@ -5,13 +5,13 @@ use super::{
 use vize_carton::{String, append};
 
 fn emit(guards: &[&str]) -> String {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     for (index, guard) in guards.iter().enumerate() {
         append_chained_vif_guard_open(&mut ts, "  ", guard, "Inference-only guard");
         append!(ts, "    void check{index};\n");
         append_chained_vif_guard_close(&mut ts, "  ");
     }
-    ts
+    ts.into_compact()
 }
 
 #[test]
@@ -87,7 +87,7 @@ fn quoted_delimiters_do_not_split_an_authored_condition() {
 
 #[test]
 fn reopening_nested_branches_preserves_every_prior_body_offset() {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     let mut mappings = Vec::new();
     for guard in [
         "!(hidden) && (ready && enabled) && (a)",
@@ -166,7 +166,7 @@ fn unrelated_guards_open_separate_blocks() {
 
 #[test]
 fn comment_lines_between_blocks_do_not_stop_folding() {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     for guard in ["(a)", "(a)", "!(a) && (b)"] {
         ts.push_str("  // @vize-map: prop -> 1:2\n");
         append_chained_vif_guard_open(&mut ts, "  ", guard, "Inference-only guard");
@@ -181,7 +181,7 @@ fn comment_lines_between_blocks_do_not_stop_folding() {
 
 #[test]
 fn a_block_after_other_output_is_not_folded() {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     append_chained_vif_guard_open(&mut ts, "  ", "(a)", "Inference-only guard");
     append_chained_vif_guard_close(&mut ts, "  ");
     ts.push_str("  const between = 1;\n");
@@ -193,7 +193,7 @@ fn a_block_after_other_output_is_not_folded() {
 #[test]
 fn an_active_prefix_drops_covered_terms_and_keeps_the_remainder() {
     let prefix = ActiveGuardPrefix::push("(ready) && (open)");
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     append_chained_vif_guard_open(&mut ts, "  ", "(ready) && (open)", "Inference-only guard");
     append!(ts, "    void covered;\n");
     append_chained_vif_guard_close(&mut ts, "  ");
@@ -220,7 +220,7 @@ fn an_active_prefix_drops_covered_terms_and_keeps_the_remainder() {
 
 #[test]
 fn a_bare_chain_omits_the_ignore_comment() {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     for guard in ["(a)", "!(a) && (b)"] {
         append_bare_chained_vif_guard_open(&mut ts, "  ", guard);
         append!(ts, "    void check;\n");
@@ -241,7 +241,7 @@ fn a_bare_chain_omits_the_ignore_comment() {
 
 #[test]
 fn a_suspended_body_does_not_steal_the_outer_chain() {
-    let mut ts = String::from("");
+    let mut ts = crate::virtual_ts::TextBuf::from_text("");
     append_chained_vif_guard_open(&mut ts, "  ", "(a)", "Inference-only guard");
     let suspended = SuspendedChain::suspend();
     append_chained_vif_guard_open(&mut ts, "    ", "(inner)", "Inference-only guard");

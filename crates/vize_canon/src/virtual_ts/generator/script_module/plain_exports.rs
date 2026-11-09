@@ -83,7 +83,7 @@ pub(crate) fn push_setup_return_fields(
 
 #[cfg(test)]
 pub(crate) fn emit_setup_invocation_and_exports(
-    ts: &mut VizeString,
+    ts: &mut crate::virtual_ts::TextBuf,
     exports: &[PlainScriptExport],
 ) {
     if exports.iter().any(|export| export.bridged_value) {
@@ -112,7 +112,7 @@ pub(crate) fn emit_setup_invocation_and_exports(
 }
 
 pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
-    ts: &mut VizeString,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
     exports: &[PlainScriptExport],
     script_offset: u32,

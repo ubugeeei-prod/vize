@@ -18,7 +18,7 @@ use super::vif_guard::callback_vif_guard;
 
 /// Generate event handler expressions inside a closure.
 pub(super) fn generate_event_handler_expressions(
-    ts: &mut String,
+    ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut ScopeMappings<'_>,
     scope_id: u32,
     ctx: &EventHandlerExprContext<'_>,
@@ -152,7 +152,7 @@ pub(super) fn generate_event_handler_expressions(
                 let name_start = ts.len();
                 ts.push_str(handler_name.as_str());
                 let name_end = ts.len();
-                append!(*ts, ": {handler_type} | null | undefined = (");
+                vize_l0::emit_ts!(ts, ": {handler_type} | null | undefined = (");
                 let mapped_start = ts.len();
                 ts.push_str(content);
                 let mapped_end = ts.len();
@@ -173,7 +173,7 @@ pub(super) fn generate_event_handler_expressions(
                 let name_start = ts.len();
                 ts.push_str(handler_name.as_str());
                 let name_end = ts.len();
-                append!(*ts, ": {listener_type} | null | undefined = (");
+                vize_l0::emit_ts!(ts, ": {listener_type} | null | undefined = (");
                 let mapped_start = ts.len();
                 ts.push_str(content);
                 let mapped_end = ts.len();
@@ -284,8 +284,8 @@ pub(super) fn generate_event_handler_expressions(
             for capture in callback_reads {
                 let rewritten = rewrite_reserved_template_binding(capture.as_str(), &scoped_access);
                 let capture = rewritten.as_deref().unwrap_or(capture.as_str());
-                append!(
-                    *ts,
+                vize_l0::emit_ts!(
+                    ts,
                     "{handler_indent}void ({capture}); // Listener capture liveness\n"
                 );
             }
