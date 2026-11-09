@@ -149,14 +149,35 @@ function installVueVirtualModules(ts, info) {
     const method = bind(name);
     if (method) resolverHost[name] = method;
   }
+  // A host project version is one snapshot of sources, files and options, so
+  // its lookups and package scopes are shared until the version changes.
+  let resolution;
+  const resolutionCache = (settings) => {
+    if (!originalProjectVersion || typeof ts.createModuleResolutionCache !== "function")
+      return undefined;
+    if (resolution?.settings !== settings) {
+      const caseSensitive =
+        serverHost.useCaseSensitiveFileNames ?? ts.sys.useCaseSensitiveFileNames;
+      resolution = {
+        settings,
+        cache: ts.createModuleResolutionCache(
+          resolverHost.getCurrentDirectory?.() ?? "",
+          caseSensitive ? (name) => name : (name) => name.toLowerCase(),
+          settings,
+        ),
+      };
+    }
+    return resolution.cache;
+  };
   function resolve(name, containingFile, redirectedReference, resolutionMode) {
     if (typeof name !== "string") return undefined;
+    const settings = options();
     const result = ts.resolveModuleName(
       name,
       containingFile,
-      options(),
+      settings,
       resolverHost,
-      undefined,
+      resolutionCache(settings),
       redirectedReference,
       resolutionMode,
     ).resolvedModule;
@@ -177,7 +198,7 @@ function installVueVirtualModules(ts, info) {
     const settings = options();
     sourceFile.impliedNodeFormat = ts.getImpliedNodeFormatForFile(
       sourceFile.fileName,
-      undefined,
+      resolutionCache(settings)?.getPackageJsonInfoCache(),
       resolverHost,
       settings,
     );
@@ -197,6 +218,10 @@ function installVueVirtualModules(ts, info) {
       resolve(imported.fileName, sourceFile.fileName)
     );
   };
+  function projectVersion() {
+    options();
+    return `${originalProjectVersion()}:${sourceEpoch}:${settingsState.project.configuration}`;
+  }
   const lazy = createLazySfcScripts({
     ts,
     get,
@@ -211,6 +236,8 @@ function installVueVirtualModules(ts, info) {
     changed: () => {
       sourceEpoch++;
     },
+    projectVersion: originalProjectVersion && projectVersion,
+    scriptVersion: previousVersion,
     openFiles: () =>
       (host.getScriptFileNames?.() || []).filter(
         (name) =>
@@ -226,14 +253,7 @@ function installVueVirtualModules(ts, info) {
       isSfc(name) ? ts.ScriptKind.TSX : (previousKind?.(name) ?? ts.ScriptKind.Unknown),
     getScriptVersion: (name) =>
       isSfc(name) ? (lazy.version(name) ?? "0") : (previousVersion?.(name) ?? "0"),
-    ...(originalProjectVersion
-      ? {
-          getProjectVersion() {
-            options();
-            return `${originalProjectVersion()}:${sourceEpoch}:${settingsState.project.configuration}`;
-          },
-        }
-      : {}),
+    ...(originalProjectVersion ? { getProjectVersion: projectVersion } : {}),
     resolveModuleNameLiterals(...args) {
       const [literals, containingFile, redirectedReference, compilerOptions, sourceFile] = args;
       const prior = previousLiterals?.(...args) || [];

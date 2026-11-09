@@ -13,12 +13,18 @@ fn runtime_substitution_retains_exact_tracking_history_without_history_on_the_fa
     std::fs::write(&runtime, "export const value = 'runtime';").unwrap();
     std::fs::write(&typed, "export const value: number = 1;").unwrap();
     assert_eq!(
-        probe_candidates_inner::<true>(&runtime),
+        probe_candidates_inner::<true>(&runtime, None),
         (Some(typed.clone()), vec![runtime.clone(), typed.clone()])
     );
     assert_eq!(
-        probe_candidates_inner::<false>(&runtime),
-        (Some(typed), Vec::new())
+        probe_candidates_inner::<false>(&runtime, None),
+        (Some(typed.clone()), Vec::new())
+    );
+    // Listing-backed probes resolve the same candidate.
+    let probes = crate::batch::virtual_project::passthrough::PassthroughProbes::default();
+    assert_eq!(
+        super::probe_candidates_listed(&runtime, &probes),
+        Some(typed)
     );
 }
 
@@ -48,8 +54,14 @@ fn missing_module_keeps_every_ordered_candidate_only_for_tracking() {
     ] {
         expected.push(base.join(name));
     }
-    assert_eq!(probe_candidates_inner::<true>(&base), (None, expected));
-    assert_eq!(probe_candidates_inner::<false>(&base), (None, Vec::new()));
+    assert_eq!(
+        probe_candidates_inner::<true>(&base, None),
+        (None, expected)
+    );
+    assert_eq!(
+        probe_candidates_inner::<false>(&base, None),
+        (None, Vec::new())
+    );
 }
 
 #[test]
@@ -77,7 +89,7 @@ fn alias_fallback_and_vue_fold_preserve_resolution_and_tracking_order() {
         (Some(target.clone()), expected_inputs)
     );
     assert_eq!(
-        resolve_dependency_inner::<false, true>("@/Component.vue.ts", root, root, &aliases),
+        resolve_dependency_inner::<false, true>("@/Component.vue.ts", root, root, &aliases, None),
         (Some(target), Vec::new())
     );
 }
