@@ -235,3 +235,56 @@ impl CorsaProjectClient {
         Ok(client)
     }
 }
+
+#[test]
+fn mirrored_documents_change_close_and_reopen_with_protocol_versions() {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return;
+    }
+    let Some(corsa_path) = resolve_tsgo_binary() else {
+        return;
+    };
+    let project = tempfile::TempDir::new().expect("temp project");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"strict":true,"noEmit":true},"include":["src/**/*"]}"#,
+    )
+    .expect("tsconfig");
+    let src = project.path().join("src");
+    std::fs::create_dir_all(&src).expect("src");
+    let path = src.join("versioned.ts");
+    std::fs::write(&path, "export const value: number = 1;\n").expect("source");
+    let uri = format!("file://{}", path.display());
+    let mut session = EditorLspSession::spawn(
+        corsa_path.to_str().expect("utf8 path"),
+        project.path(),
+        project.path(),
+    )
+    .expect("editor LSP session");
+    let errors = |session: &mut EditorLspSession, text: Option<&str>| {
+        let mut documents = DocumentTexts::default();
+        if let Some(text) = text {
+            documents.insert(uri.as_str().into(), text.into());
+        }
+        session.synchronize(&documents).expect("synchronize");
+        text?;
+        let report =
+            serde_json::to_value(session.diagnostics(&uri).expect("diagnostics")).expect("report");
+        Some(report["items"].as_array().map_or(0, Vec::len))
+    };
+    // Open (version 1), change (version 2), close, reopen (version 1 again).
+    assert_eq!(
+        errors(&mut session, Some("export const value: number = 'a';\n")),
+        Some(1)
+    );
+    assert_eq!(
+        errors(&mut session, Some("export const value: number = 2;\n")),
+        Some(0)
+    );
+    assert_eq!(errors(&mut session, None), None);
+    assert_eq!(
+        errors(&mut session, Some("export const value: number = 'b';\n")),
+        Some(1)
+    );
+    session.shutdown().expect("shutdown");
+}

@@ -1,6 +1,7 @@
 //! Bounded editor-overlay synchronization for large project surfaces.
 
-use lsp_types::Uri;
+use lsp_types::notification::DidCloseTextDocument;
+use lsp_types::{DidCloseTextDocumentParams, TextDocumentIdentifier, Uri};
 use std::str::FromStr;
 use vize_l0::{FxHashSet, String, cstr};
 
@@ -84,9 +85,15 @@ impl EditorLspSession {
     fn close_mirrored_document(&mut self, document_uri: &str) -> Result<(), String> {
         let uri = parse_document_uri(document_uri)?;
         self.tracked_documents = None;
-        self.overlay.close(&uri).map_err(|error| {
-            cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
-        })?;
+        if self.versions.remove(document_uri).is_some() {
+            self.client
+                .notify::<DidCloseTextDocument>(DidCloseTextDocumentParams {
+                    text_document: TextDocumentIdentifier::new(uri),
+                })
+                .map_err(|error| {
+                    cstr!("Failed to close editor LSP overlay for {document_uri}: {error}")
+                })?;
+        }
         self.documents.remove(document_uri);
         self.dirty_documents.remove(document_uri);
         self.query_barrier_required = true;
