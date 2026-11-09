@@ -25,7 +25,11 @@ const {
 } = defineProps<ModalProps>();
 
 const emit = defineEmits<{
-  "close": [];
+  close: [];
+}>();
+
+defineSlots<{
+  default?: () => unknown;
 }>();
 
 defineOptions({ name: "FrescoModal" });
@@ -97,6 +101,7 @@ const accessibilityProps = computed(() => ({
     align-items="center"
     width="100%"
     height="100%"
+    :focus-id="modalFocus.id"
     v-bind="accessibilityProps"
   >
     <Box

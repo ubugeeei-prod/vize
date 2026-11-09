@@ -2,7 +2,7 @@
  * Select Component - Dropdown/menu selection
  */
 
-import { computed, defineComponent, h, ref, type PropType, watch } from "vue";
+import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -10,6 +10,7 @@ import {
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
+  visibleCollectionOffset,
 } from "./collection-navigation.js";
 
 export interface SelectOption {
@@ -25,6 +26,8 @@ export interface SelectProps {
   modelValue?: string;
   /** Placeholder text */
   placeholder?: string;
+  /** Maximum visible options before the selection window scrolls */
+  maxHeight?: number;
   /** Whether the select is focused */
   focused?: boolean;
   /** Indicator for selected item */
@@ -53,6 +56,7 @@ export const Select = defineComponent({
       type: String,
       default: "Select an option",
     },
+    maxHeight: Number,
     focused: {
       type: Boolean,
       default: false,
@@ -75,8 +79,13 @@ export const Select = defineComponent({
   },
   emits: ["update:modelValue", "select"],
   setup(props, { emit }) {
+    const scrollOffset = ref(0);
     const highlightedIndex = ref(-1);
     const typeahead = createTypeaheadBuffer();
+    const viewportSize = computed(() => {
+      if (props.maxHeight === undefined || !Number.isFinite(props.maxHeight)) return undefined;
+      return props.maxHeight > 0 ? Math.max(1, Math.floor(props.maxHeight)) : undefined;
+    });
 
     // Find initial index based on modelValue
     watch(
@@ -103,6 +112,19 @@ export const Select = defineComponent({
         }
       },
       { deep: true },
+    );
+
+    watch(
+      [highlightedIndex, viewportSize, () => props.options.length],
+      ([index, windowSize]) => {
+        scrollOffset.value = visibleCollectionOffset(
+          index,
+          scrollOffset.value,
+          windowSize,
+          props.options.length,
+        );
+      },
+      { immediate: true },
     );
 
     const activate = () => {
@@ -137,31 +159,63 @@ export const Select = defineComponent({
       onSubmit: activate,
     });
 
+    const visibleOptions = computed(() => {
+      const windowSize = viewportSize.value;
+      const start = windowSize === undefined ? 0 : scrollOffset.value;
+      const end = windowSize === undefined ? props.options.length : start + windowSize;
+      return props.options.slice(start, end).map((option, visibleIndex) => ({
+        option,
+        index: start + visibleIndex,
+      }));
+    });
+
+    const scrollIndicator = computed(() => {
+      const windowSize = viewportSize.value;
+      if (windowSize === undefined || props.options.length <= windowSize) {
+        return { showUp: false, showDown: false };
+      }
+      return {
+        showUp: scrollOffset.value > 0,
+        showDown: scrollOffset.value + windowSize < props.options.length,
+      };
+    });
+
     return () => {
-      const children = props.options.map((option, index) => {
+      const children: VNode[] = [];
+      if (scrollIndicator.value.showUp) {
+        children.push(h("text", { key: "scroll-up", dim: true }, "  ..."));
+      }
+
+      for (const { option, index } of visibleOptions.value) {
         const isHighlighted = index === highlightedIndex.value;
         const isSelected = option.value === props.modelValue;
         const indicator = isHighlighted ? props.indicator : props.indicatorEmpty;
 
-        return h(
-          "box",
-          {
-            key: option.value,
-            style: { flex_direction: "row" },
-          },
-          [
-            h(
-              "text",
-              {
-                fg: isHighlighted ? props.selectedFg : props.fg,
-                bg: isHighlighted ? props.selectedBg : props.bg,
-                dim: option.disabled,
-              },
-              `${indicator}${option.label}${isSelected ? " (selected)" : ""}`,
-            ),
-          ],
+        children.push(
+          h(
+            "box",
+            {
+              key: option.value,
+              style: { flex_direction: "row" },
+            },
+            [
+              h(
+                "text",
+                {
+                  fg: isHighlighted ? props.selectedFg : props.fg,
+                  bg: isHighlighted ? props.selectedBg : props.bg,
+                  dim: option.disabled,
+                },
+                `${indicator}${option.label}${isSelected ? " (selected)" : ""}`,
+              ),
+            ],
+          ),
         );
-      });
+      }
+
+      if (scrollIndicator.value.showDown) {
+        children.push(h("text", { key: "scroll-down", dim: true }, "  ..."));
+      }
 
       return h(
         "box",

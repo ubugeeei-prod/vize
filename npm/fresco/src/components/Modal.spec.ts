@@ -58,6 +58,7 @@ test("Modal traps nested focus, selects an initial target, and restores ownershi
   const dialog = findNodes(mounted.root, (node) => node.props["aria-role"] === "dialog").at(0);
   assert.equal(dialog?.props["aria-label"], "Settings");
   assert.deepEqual(dialog?.props["aria-state"], { expanded: true });
+  assert.equal(dialog?.props.focusId, "dialog");
 
   await dispatchKey({ key: "escape" });
   await nextTick();

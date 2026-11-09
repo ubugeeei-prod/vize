@@ -122,6 +122,8 @@ export { Stepper, type StepperProps, type Step, type StepStatus } from "./Steppe
 // Overlay
 export { default as Modal } from "./FrescoModal.vue";
 export type { ModalProps } from "./modal-types.js";
+export { default as Popover } from "./FrescoPopover.vue";
+export type { PopoverPlacement, PopoverProps } from "./popover-types.js";
 
 // Status
 export { StatusBar, type StatusBarProps, type StatusBarItem } from "./StatusBar.js";
