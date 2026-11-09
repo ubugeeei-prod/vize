@@ -17,6 +17,7 @@ interface FormatFlag {
   value: string;
 }
 
+/** The last `-f`/`--format` flag before `--`, in either spelling. */
 function findFormatFlag(args: readonly string[]): FormatFlag | undefined {
   let found: FormatFlag | undefined;
   for (let index = 0; index < args.length && args[index] !== "--"; index += 1) {
@@ -31,6 +32,7 @@ function findFormatFlag(args: readonly string[]): FormatFlag | undefined {
   return found;
 }
 
+/** The converted format requested in `args`, if any. */
 export function requestedConvertedFormat(
   args: readonly string[],
 ): ConvertedReportFormat | undefined {
@@ -50,6 +52,7 @@ export function withJsonFormat(args: readonly string[]): string[] {
   return next;
 }
 
+/** The fields of an Oxlint JSON diagnostic this module reads. */
 interface JsonDiagnostic {
   message?: unknown;
   code?: unknown;
@@ -58,11 +61,13 @@ interface JsonDiagnostic {
   labels?: unknown;
 }
 
+/** A 1-based line and column. */
 interface Position {
   line: number;
   column: number;
 }
 
+/** The diagnostics of a complete Oxlint JSON report; throws when there is no array. */
 function diagnosticsOf(report: string): JsonDiagnostic[] {
   const parsed: unknown = JSON.parse(report);
   const diagnostics = (parsed as { diagnostics?: unknown } | null)?.diagnostics;
@@ -71,28 +76,32 @@ function diagnosticsOf(report: string): JsonDiagnostic[] {
   return diagnostics as JsonDiagnostic[];
 }
 
+/** Start of the first label, or 1:1 when the diagnostic carries no label. */
 function startOf(diagnostic: JsonDiagnostic): Position {
   const labels = Array.isArray(diagnostic.labels) ? diagnostic.labels : [];
   const span = (labels[0] as { span?: Partial<Position> } | undefined)?.span;
   return { line: span?.line ?? 1, column: span?.column ?? 1 };
 }
 
+/** `value` when it is a string, otherwise `fallback`. */
 function text(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
+/** Maps an Oxlint severity to a GitLab code quality severity. */
 function gitlabSeverity(severity: string): string {
   return severity === "error" ? "critical" : severity === "warning" ? "major" : "minor";
 }
 
+/** Renders an Oxlint JSON report as a GitLab code quality report. */
 export function renderGitlab(report: string): string {
   const entries = diagnosticsOf(report).map((diagnostic) => {
     const path = text(diagnostic.filename);
     const check = text(diagnostic.code);
     const message = text(diagnostic.message).split("\n")[0];
-    const { line } = startOf(diagnostic);
+    const { line, column } = startOf(diagnostic);
     const fingerprint = createHash("sha256")
-      .update([path, check, message, line].join("\0"))
+      .update([path, check, message, line, column].join("\0"))
       .digest("hex")
       .slice(0, 16);
     return {
@@ -106,6 +115,7 @@ export function renderGitlab(report: string): string {
   return `${JSON.stringify(entries, null, 2)}\n`;
 }
 
+/** Escapes a GitHub workflow command property value. */
 function escapeProperty(value: string): string {
   return value
     .replace(/%/gu, "%25")
@@ -115,10 +125,12 @@ function escapeProperty(value: string): string {
     .replace(/,/gu, "%2C");
 }
 
+/** Escapes a GitHub workflow command message. */
 function escapeData(value: string): string {
   return value.replace(/%/gu, "%25").replace(/\r/gu, "%0D").replace(/\n/gu, "%0A");
 }
 
+/** Renders an Oxlint JSON report as GitHub workflow command annotations. */
 export function renderGithub(report: string): string {
   const lines = diagnosticsOf(report).map((diagnostic) => {
     const path = text(diagnostic.filename);
@@ -131,6 +143,7 @@ export function renderGithub(report: string): string {
   return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
 }
 
+/** Renders a complete JSON report in the requested converted format. */
 export function renderConvertedReport(report: string, format: ConvertedReportFormat): string {
   return format === "gitlab" ? renderGitlab(report) : renderGithub(report);
 }
