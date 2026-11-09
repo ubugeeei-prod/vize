@@ -57,7 +57,12 @@ export interface EditorEnvironment {
 /** What VS Code advertises for the features measured here; pull diagnostics stay off. */
 export function clientCapabilities() {
   return {
-    workspace: { workspaceFolders: true, configuration: true, applyEdit: true },
+    workspace: {
+      workspaceFolders: true,
+      configuration: true,
+      applyEdit: true,
+      didChangeWatchedFiles: { dynamicRegistration: true, relativePatternSupport: true },
+    },
     textDocument: {
       synchronization: { didSave: true, dynamicRegistration: false },
       publishDiagnostics: { relatedInformation: true, versionSupport: true },
