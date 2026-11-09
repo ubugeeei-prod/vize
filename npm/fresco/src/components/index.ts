@@ -112,7 +112,8 @@ export {
   type TableSortDirection,
   type TableViewportRange,
 } from "./Table.js";
-export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
+export { default as Tree } from "./FrescoTree.vue";
+export type { TreeBy, TreeNode, TreeProps, TreeValueKey } from "./Tree.js";
 
 // Navigation
 export { default as Menu } from "./FrescoMenu.vue";
