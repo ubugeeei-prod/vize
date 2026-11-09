@@ -1,13 +1,13 @@
 name: Canonical corpus divergence
-# Called by the Real Project Matrix once per canonical observer (dom, ssr) on
-# schedule and dispatch runs: reduce the first legacy-vs-native difference to
-# a minimized witness, promote it to a draft fixture PR, and file the pickup
-# issue. Every job reads only the caller run's observer evidence.
+# Called by the Real Project Matrix once per canonical observer (dom, ssr,
+# reach) on schedule and dispatch runs: reduce the first legacy-vs-native
+# difference to a minimized witness, promote it to a draft fixture PR, and file
+# the pickup issue. Every job reads only the caller run's observer evidence.
 on:
   workflow_call:
     inputs:
       observer:
-        description: "Divergence observer (dom or ssr)"
+        description: "Divergence observer (dom, ssr or reach)"
         type: string
         required: true
       evidence:
@@ -61,11 +61,14 @@ jobs:
       - name: Build source reducer
         if: ${{ steps.reduction.outputs.required == 'true' }}
         run: cargo build --locked --profile ci -p vize
-      # The SSR oracle is the corpus's own production comparison, run by the
-      # reducer as a `--script` predicate beside target/ci/vize.
+      # The SSR and production-reach oracles are the corpora's own comparisons,
+      # run by the reducer as `--script` predicates beside target/ci/vize.
       - name: Build SSR divergence predicate
         if: ${{ steps.reduction.outputs.required == 'true' && inputs.observer == 'ssr' }}
         run: cargo build --locked --profile ci -p vize_atelier_ssr --features legacy-differential --example ssr_lane_divergence
+      - name: Build production DOM divergence predicate
+        if: ${{ steps.reduction.outputs.required == 'true' && inputs.observer == 'reach' }}
+        run: cargo build --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --example dom_production_divergence
       - name: Reduce the first divergence witness
         if: ${{ steps.reduction.outputs.required == 'true' }}
         run: >-

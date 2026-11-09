@@ -143,5 +143,10 @@ required-features = ["native"]
 name = "n8n_compiler_custody"
 required-features = ["legacy-dom-differential"]
 
+# `vize reduce --script` predicate for real-project production DOM divergences.
+[[example]]
+name = "dom_production_divergence"
+required-features = ["legacy-dom-differential"]
+
 [lints]
 workspace = true

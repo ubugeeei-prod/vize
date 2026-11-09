@@ -15,9 +15,13 @@ export type DomSample = {
   newWindow: string;
 };
 export type SsrSample = { sourcePath: string; lanes: string[]; selectedFailed: boolean };
+export type ReachSample = { sourcePath: string; name: string; shape: string; kind: string };
+/** Reducer inputs beyond the source path, carried from plan to provenance. */
+export type Oracle = Record<string, string>;
+export type ReductionTarget = { sourcePath: string; oracle?: Oracle };
 export type Divergences<Sample> = { divergenceCount: number; samples: Sample[] };
 export type DivergenceObserver = {
-  readonly id: "dom" | "ssr";
+  readonly id: "dom" | "ssr" | "reach";
   readonly label: string;
   /** Observer log inside the evidence artifact. */
   readonly log: string;
@@ -25,7 +29,8 @@ export type DivergenceObserver = {
   readonly evidenceArtifact: string;
   readonly parse: (log: string) => Divergences<{ sourcePath: string }>;
   readonly describe: (sample: never) => string;
-  readonly reducerArguments: (sourcePath: string, vizeBin: string) => string[];
+  readonly oracle: (sample: never) => Oracle;
+  readonly reducerArguments: (target: ReductionTarget, vizeBin: string) => string[];
   readonly fixtureRoot: string;
   /** The merge-queue test that runs every promoted witness. */
   readonly promotedTest: string;
@@ -159,6 +164,106 @@ export function parseSsrDivergences(log: string): Divergences<SsrSample> {
   return { divergenceCount, samples: samples.slice(0, sampleLimit) };
 }
 
+const reachShardHeader =
+  /^canonical observer process: test=davinci_production_reach role=shard index=(\d+) count=(\d+) /;
+const reachShardExit =
+  /^canonical observer process exit: test=davinci_production_reach role=shard /;
+const reachCanonical = /^davinci production reach: scope=canonical /;
+const reachCounter =
+  /^davinci production reach: shape=(dom_inline|dom_module) [^\r\n]* divergences=(\d+)$/;
+// `{name} [{shape}]: {divergence}`, the name relative to the corpus root;
+// only the first line of each divergence, never its code windows, is read.
+const reachSample =
+  /^([^\s/"'`][^\s"'`]*\/.+?\.vue) \[(dom_inline|dom_module)\]: (code differs|css differs|errors differ|warnings differ|legacy lane failed|compile errors differ|selected lane failed but legacy lane compiled)\b/;
+const reachSamplesPerShape = 10;
+
+type ReachShard = {
+  index: number;
+  total: number;
+  canonical: boolean;
+  counters: Map<string, number[]>;
+  samples: ReachSample[];
+};
+
+// The reach observer prints a committed and then a canonical block per shard.
+// Only canonical DOM shapes reach the corpus; each prints its counter and the
+// first ten divergences, so a shard missing either counter is incomplete.
+export function parseReachDivergences(log: string): Divergences<ReachSample> {
+  const shards = new Map<number, ReachShard>();
+  let shard: ReachShard | null = null;
+  for (const line of stripAnsi(log).split(/\r?\n/)) {
+    const header = reachShardHeader.exec(line);
+    if (header) {
+      const index = Number(header[1]);
+      assert(!shards.has(index), `Duplicate canonical reach shard ${index}`);
+      shard = {
+        index,
+        total: Number(header[2]),
+        canonical: false,
+        counters: new Map(),
+        samples: [],
+      };
+      shards.set(index, shard);
+      continue;
+    }
+    if (shard === null) continue;
+    if (reachShardExit.test(line)) {
+      shard = null;
+      continue;
+    }
+    if (reachCanonical.test(line)) {
+      shard.canonical = true;
+      continue;
+    }
+    if (!shard.canonical) continue;
+    const counter = reachCounter.exec(line);
+    if (counter) {
+      const found = shard.counters.get(counter[1]) ?? [];
+      found.push(count(counter[2], "canonical reach"));
+      shard.counters.set(counter[1], found);
+      continue;
+    }
+    const sample = reachSample.exec(line);
+    if (sample) {
+      shard.samples.push({
+        sourcePath: `${corpusPrefix}${sample[1]}`,
+        name: sample[1],
+        shape: sample[2],
+        kind: sample[3],
+      });
+    }
+  }
+  assert(shards.size > 0, "Expected canonical reach shard evidence");
+  const totals = new Set([...shards.values()].map(({ total }) => total));
+  assert.equal(totals.size, 1, "Canonical reach shards disagree on their count");
+  assert.equal(shards.size, [...totals][0], "Canonical reach shard evidence is incomplete");
+  let divergenceCount = 0;
+  const samples: ReachSample[] = [];
+  for (const { index, counters, samples: found } of shards.values()) {
+    for (const shape of ["dom_inline", "dom_module"]) {
+      const shapeCounters = counters.get(shape) ?? [];
+      assert.equal(
+        shapeCounters.length,
+        1,
+        `Expected one canonical reach ${shape} counter in shard ${index}`,
+      );
+      assert.equal(
+        found.filter((sample) => sample.shape === shape).length,
+        Math.min(shapeCounters[0], reachSamplesPerShape),
+        `Canonical reach ${shape} divergence samples are incomplete in shard ${index}`,
+      );
+      divergenceCount += shapeCounters[0];
+    }
+    samples.push(...found);
+  }
+  samples.sort(
+    (left, right) =>
+      compareCodepoints(left.sourcePath, right.sourcePath) ||
+      compareCodepoints(left.shape, right.shape),
+  );
+  return { divergenceCount, samples: samples.slice(0, sampleLimit) };
+}
+
 const dom: DivergenceObserver = {
   id: "dom",
   label: "DOM",
@@ -167,6 +272,7 @@ const dom: DivergenceObserver = {
   parse: parseDomDivergences,
   describe: (sample: DomSample) =>
     `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Davinci=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Davinci window=${code(sample.newWindow)}`,
+  oracle: () => ({}),
   reducerArguments: () => ["--dom-divergence"],
   fixtureRoot: "tests/_fixtures/differential/compiler/real-project-dom-reductions",
   promotedTest: "davinci_dom_corpus::promoted_real_project_dom_fixtures_agree",
@@ -182,7 +288,8 @@ const ssr: DivergenceObserver = {
     `- ${code(sample.sourcePath)}: production lanes=${code(sample.lanes.join(", ") || "none")}${sample.selectedFailed ? "; the selected lane failed to compile" : ""}`,
   // The `vize_atelier_ssr` example built beside the reducer compiles each
   // candidate under the original corpus path as its bundler id.
-  reducerArguments: (sourcePath, vizeBin) => [
+  oracle: () => ({}),
+  reducerArguments: ({ sourcePath }, vizeBin) => [
     "--script",
     `${shellQuote(join(dirname(vizeBin), "examples", "ssr_lane_divergence"))} --name ${shellQuote(sourcePath)}`,
   ],
@@ -190,8 +297,30 @@ const ssr: DivergenceObserver = {
   promotedTest: "davinci_ssr_corpus::promoted_real_project_ssr_fixtures_agree",
 };
 
+const reach: DivergenceObserver = {
+  id: "reach",
+  label: "production DOM",
+  log: "reach.log",
+  evidenceArtifact: "canonical-corpus-reach",
+  parse: parseReachDivergences,
+  describe: (sample: ReachSample) =>
+    `- ${code(sample.sourcePath)} [${sample.shape}]: ${sample.kind}`,
+  oracle: (sample: ReachSample) => ({ shape: sample.shape, name: sample.name }),
+  // The `vize_atelier_sfc` example built beside the reducer compiles each
+  // candidate on the recorded shape under the gate's corpus-relative name.
+  reducerArguments: ({ oracle }, vizeBin) => {
+    assert(oracle?.shape && oracle.name, "A reach reduction needs its shape and name");
+    return [
+      "--script",
+      `${shellQuote(join(dirname(vizeBin), "examples", "dom_production_divergence"))} --shape ${shellQuote(oracle.shape)} --name ${shellQuote(oracle.name)}`,
+    ];
+  },
+  fixtureRoot: "tests/_fixtures/differential/compiler/real-project-reach-reductions",
+  promotedTest: "davinci_production_reach::fixtures::promoted_real_project_reach_fixtures_agree",
+};
+
 export const divergenceObservers: Readonly<Record<DivergenceObserver["id"], DivergenceObserver>> =
-  Object.freeze({ dom, ssr });
+  Object.freeze({ dom, ssr, reach });
 
 export function divergenceObserver(id: string): DivergenceObserver {
   assert(Object.hasOwn(divergenceObservers, id), `Unknown divergence observer: ${id}`);
