@@ -17,7 +17,7 @@ Listez les noms exacts des directives enregistrées globalement, sans le préfix
 
 ## Mauvais
 
-`v-focus`, `v-mask` et `v-click-outside` nécessitent des implémentations de directives propres au projet, signalées par cette convention facultative.
+`v-focus` nécessite une implémentation de directive propre au projet, cette convention facultative la signale donc.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ Listez les noms exacts des directives enregistrées globalement, sans le préfix
 
 ## Bon
 
-L’exemple utilise les directives intégrées `v-if`, `v-model` et `v-on`. Une directive personnalisée correctement enregistrée peut rester valide en Vue lorsque cette politique est désactivée.
+La liste ignore configurée accepte la directive de projet `v-hover-tooltip`.
 
 ```vue annotate="add:2"
 <template>

@@ -17,7 +17,7 @@ Quando presente, allowlist substitui os padrões de pontuação do eslint-plugin
 
 ## Incorreto
 
-O texto visível e os atributos de identificação incorporam strings sem tradução diretamente no template.
+O texto visível incorpora uma string sem tradução diretamente no template.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ O texto visível e os atributos de identificação incorporam strings sem tradu�
 
 ## Correto
 
-O conteúdo traduzível chama $t; os exemplos com pontuação e apenas números são exceções permitidas.
+A allowlist configurada aceita o rótulo de tecla único `W`.
 
 ```vue annotate="add:2"
 <template>

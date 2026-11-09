@@ -17,7 +17,7 @@ List exact globally registered directive names without the v- prefix. Local scri
 
 ## Bad
 
-`v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.
+`v-focus` requires a project-specific directive implementation, so this optional convention reports it.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ List exact globally registered directive names without the v- prefix. Local scri
 
 ## Good
 
-The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.
+The configured ignore list accepts the project’s `v-hover-tooltip` directive.
 
 ```vue annotate="add:2"
 <template>

@@ -17,7 +17,7 @@ Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. B
 
 ## Incorreto
 
-`v-focus`, `v-mask` e `v-click-outside` exigem implementações de diretivas específicas do projeto, que esta convenção opcional sinaliza.
+`v-focus` exige uma implementação de diretiva específica do projeto, por isso esta convenção opcional a sinaliza.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. B
 
 ## Correto
 
-O exemplo usa as diretivas nativas `v-if`, `v-model` e `v-on`. Uma diretiva personalizada registrada corretamente ainda pode ser válida no Vue quando esta política estiver desativada.
+A lista ignore configurada aceita a diretiva de projeto `v-hover-tooltip`.
 
 ```vue annotate="add:2"
 <template>

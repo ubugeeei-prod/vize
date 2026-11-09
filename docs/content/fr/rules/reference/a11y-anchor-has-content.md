@@ -17,7 +17,7 @@ Listez les composants dont le sous-arbre rendu fournit toujours un contenu de li
 
 ## Mauvais
 
-Le lien `/settings` n’a ni texte ni autre contenu servant à le nommer ; sa destination n’a donc aucune description accessible.
+Le lien `/app` n’a ni texte ni autre contenu servant à le nommer ; sa destination n’a donc aucune description accessible.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ Le lien `/settings` n’a ni texte ni autre contenu servant à le nommer ; sa de
 
 ## Bon
 
-Le texte visible `Settings` fournit le contenu du lien vers la même destination.
+`RetryImage` fournit un contenu accessible grâce à son texte `alt` pour le lien vers la même destination.
 
 ```vue annotate="add:2"
 <template>

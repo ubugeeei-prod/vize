@@ -17,7 +17,7 @@ description: "リンクに支援技術で読める内容を用意します。"
 
 ## 悪い例
 
-`/settings` へのリンクが空で、移動先を説明する内容がありません。
+`/app` へのリンクが空で、移動先を説明する内容がありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ description: "リンクに支援技術で読める内容を用意します。"
 
 ## 良い例
 
-同じリンクに `Settings` の文字を入れ、移動先を示します。
+`RetryImage` の `alt` テキストが、同じ移動先へのリンクにアクセシブルな内容を提供します。
 
 ```vue annotate="add:2"
 <template>

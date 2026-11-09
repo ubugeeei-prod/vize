@@ -17,7 +17,7 @@ description: "要求锚点元素具有可访问的内容。"
 
 ## 错误示例
 
-`/settings` 链接没有文本或其他命名内容，因此其目标没有可访问的描述。
+`/app` 链接没有文本或其他命名内容，因此其目标没有可访问的描述。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ description: "要求锚点元素具有可访问的内容。"
 
 ## 正确示例
 
-可见的 `Settings` 文本为同一目标链接提供内容。
+`RetryImage` 通过 `alt` 文本为同一目标链接提供可访问内容。
 
 ```vue annotate="add:2"
 <template>

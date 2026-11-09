@@ -17,7 +17,7 @@ description: "登録が必要なカスタムディレクティブを検出しま
 
 ## 悪い例
 
-`v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有のディレクティブの実装を必要とし、この任意の規約で警告されます。
+`v-focus` はプロジェクト固有のディレクティブ実装を必要とするため、この任意の規約で警告されます。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ description: "登録が必要なカスタムディレクティブを検出しま
 
 ## 良い例
 
-組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録したカスタムディレクティブは有効な Vue として使えます。
+設定した ignore リストにより、プロジェクトの `v-hover-tooltip` ディレクティブを許可します。
 
 ```vue annotate="add:2"
 <template>

@@ -17,7 +17,7 @@ The allowlist replaces eslint-plugin-vue's punctuation defaults when present. En
 
 ## Bad
 
-Visible text and naming attributes embed untranslated strings directly in the template.
+Visible text embeds an untranslated string directly in the template.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ Visible text and naming attributes embed untranslated strings directly in the te
 
 ## Good
 
-Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
+The configured allowlist accepts the single keyboard label `W`.
 
 ```vue annotate="add:2"
 <template>

@@ -17,7 +17,7 @@ description: "警告需要注册的自定义指令。"
 
 ## 错误示例
 
-`v-focus`、`v-mask` 和 `v-click-outside` 需要项目特定的指令实现，因此被此可选规范标记。
+`v-focus` 需要项目特定的指令实现，因此被此可选规范标记。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ description: "警告需要注册的自定义指令。"
 
 ## 正确示例
 
-示例使用内置的 `v-if`、`v-model` 和 `v-on`。禁用此策略时，正确注册的自定义指令仍可作为有效的 Vue 使用。
+配置的 ignore 列表接受项目的 `v-hover-tooltip` 指令。
 
 ```vue annotate="add:2"
 <template>

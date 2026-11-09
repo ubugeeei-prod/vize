@@ -17,7 +17,7 @@ Liste os componentes cuja subárvore renderizada sempre fornece conteúdo acess�
 
 ## Incorreto
 
-O link `/settings` não tem texto nem outro conteúdo que lhe dê um nome, então seu destino não tem uma descrição acessível.
+O link `/app` não tem texto nem outro conteúdo que lhe dê um nome, então seu destino não tem uma descrição acessível.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ O link `/settings` não tem texto nem outro conteúdo que lhe dê um nome, entã
 
 ## Correto
 
-O texto visível `Settings` fornece conteúdo para o link com o mesmo destino.
+`RetryImage` fornece conteúdo acessível por meio do texto `alt` para o link com o mesmo destino.
 
 ```vue annotate="add:2"
 <template>

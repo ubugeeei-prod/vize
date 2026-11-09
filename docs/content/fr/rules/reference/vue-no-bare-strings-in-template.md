@@ -17,7 +17,7 @@ Lorsqu'elle est présente, allowlist remplace les valeurs de ponctuation par dé
 
 ## Mauvais
 
-Le texte visible et les attributs de nommage contiennent des chaînes non traduites directement dans le template.
+Le texte visible contient une chaîne non traduite directement dans le template.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ Le texte visible et les attributs de nommage contiennent des chaînes non tradui
 
 ## Bon
 
-Le contenu traduisible appelle $t ; les exemples de ponctuation et de valeurs uniquement numériques sont des exceptions autorisées.
+L’allowlist configurée accepte l’étiquette de clavier unique `W`.
 
 ```vue annotate="add:2"
 <template>

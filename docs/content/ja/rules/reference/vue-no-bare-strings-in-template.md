@@ -17,7 +17,7 @@ allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置�
 
 ## 悪い例
 
-表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。
+表示するテキストに、翻訳されない文字列を直接書いています。
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置�
 
 ## 良い例
 
-翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
+設定した allowlist により、1 文字のキーラベル `W` を許可します。
 
 ```vue annotate="add:2"
 <template>

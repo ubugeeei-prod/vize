@@ -17,7 +17,7 @@ List component names whose rendered subtree always supplies accessible anchor co
 
 ## Bad
 
-The `/settings` link has no text or other naming content, so its destination has no accessible description.
+The `/app` link has no text or other naming content, so its destination has no accessible description.
 
 ```vue annotate="remove:2"
 <template>
@@ -27,7 +27,7 @@ The `/settings` link has no text or other naming content, so its destination has
 
 ## Good
 
-The visible `Settings` text supplies content for the same destination link.
+`RetryImage` supplies accessible content through its `alt` text for the same destination link.
 
 ```vue annotate="add:2"
 <template>
