@@ -33,6 +33,8 @@ pub struct LintTemplate<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
     allocator: &'a Allocator,
     root: &'t Region<'a>,
+    consumed_expressions: &'t [ExprRef<'a>],
+    legacy_slot_bindings: bool,
 }
 
 impl<'t, 'a> LintTemplate<'t, 'a> {
@@ -47,7 +49,27 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
             surface,
             allocator,
             root,
+            consumed_expressions: &[],
+            legacy_slot_bindings: false,
         }
+    }
+
+    /// Attach lowering facts that are not owned by neutral L2.
+    ///
+    /// Keeping these borrowed facts separate preserves Croquis's parse-only
+    /// dependency boundary while allowing the compatibility projection to
+    /// retain consumed expressions and dialect-specific slot syntax.
+    #[doc(hidden)]
+    #[must_use]
+    #[inline]
+    pub const fn with_lowering_facts(
+        mut self,
+        consumed_expressions: &'t [ExprRef<'a>],
+        legacy_slot_bindings: bool,
+    ) -> Self {
+        self.consumed_expressions = consumed_expressions;
+        self.legacy_slot_bindings = legacy_slot_bindings;
+        self
     }
 
     /// Original template source shared by both stages.
@@ -63,6 +85,7 @@ impl<'t, 'a> LintTemplate<'t, 'a> {
     /// template parser again. Keeping the root inside the callback also makes
     /// its intentionally short lifetime explicit.
     #[doc(hidden)]
+    #[inline]
     pub fn with_compatibility_root<R>(self, use_root: impl FnOnce(&RootNode<'a>) -> R) -> R {
         let root = CompatibilityRoot::new(self).build();
         use_root(&root)
@@ -113,7 +136,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .entry((span.start, span.end))
                 .or_insert(expression);
         }
-        for expression in &template.lowered.consumed_expressions {
+        for expression in template.consumed_expressions {
             let expression = *expression;
             let span = expression.span();
             expression_index
@@ -130,7 +153,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             surface: template.surface,
             expressions: expression_index,
             elements: element_index,
-            legacy_slot_bindings: template.lowered.caps.scoped_slot_attrs,
+            legacy_slot_bindings: template.legacy_slot_bindings,
         }
     }
 
@@ -434,5 +457,4 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             cursor = end.saturating_add(1);
         }
     }
-
 }

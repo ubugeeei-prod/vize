@@ -1,11 +1,4 @@
-use super::{
-    Checked, Value, bound,
-    create_fresco::{
-        self, CreateFrescoQualificationGraph, MANIFEST as CREATE_FRESCO_MANIFEST,
-        update as create_fresco_update, verify as verify_create_fresco_update,
-    },
-    fs, load, support,
-};
+use super::{Checked, Value, bound, load};
 use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-docs-metadata-update-12236.json";
@@ -20,39 +13,6 @@ pub(super) fn update() -> Value {
         UPDATE_HASH,
         "exact-provider-qualification-docs-metadata-successor",
     )
-}
-
-pub(super) fn authorize(
-    predecessor: &Value,
-    predecessor_bytes: &[u8],
-    lock: &[u8],
-    package: &[u8],
-    workspace: &[u8],
-) -> Checked<Value> {
-    let successor = create_fresco_update();
-    let manifest = fs::read(support::repository().join(CREATE_FRESCO_MANIFEST))
-        .map_err(|_| "complete create-fresco manifest")?;
-    let graph = CreateFrescoQualificationGraph {
-        lock,
-        package,
-        workspace,
-        manifest: &manifest,
-    };
-    verify_create_fresco_update(predecessor, predecessor_bytes, &successor, &graph)?;
-
-    let predecessor_bytes = fs::read(support::corpus().join(create_fresco::UPDATE))
-        .map_err(|_| "complete docs metadata qualification predecessor")?;
-    let update = update();
-    let manifest =
-        fs::read(support::repository().join(MANIFEST)).map_err(|_| "complete docs manifest")?;
-    let graph = DocsMetadataQualificationGraph {
-        lock,
-        package,
-        workspace,
-        manifest: &manifest,
-    };
-    verify(&successor, &predecessor_bytes, &update, &graph)?;
-    Ok(update)
 }
 
 pub(super) struct DocsMetadataQualificationGraph<'a> {
