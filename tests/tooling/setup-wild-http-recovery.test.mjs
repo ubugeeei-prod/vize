@@ -17,6 +17,13 @@ import {
   assertBeforeExtraction,
 } from "./fixtures/setup-wild-recipe.mjs";
 
+/** Return the names of jobs that invoke one exact action reference. */
+function jobsUsingAction(jobs, actionReference) {
+  return Object.entries(jobs).flatMap(([name, job]) =>
+    (job.steps ?? []).filter((step) => step.uses === actionReference).map(() => name),
+  );
+}
+
 void test("Wild adapter reverse expansion retains the whole pinned original action", () => {
   assert.equal(
     digest(original),
@@ -91,21 +98,17 @@ void test("Core PR and merge gates use the recovery adapter", () => {
   const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
-  const uses = (jobs, action) =>
-    Object.entries(jobs).flatMap(([name, job]) =>
-      (job.steps ?? []).filter((s) => s.uses === action).map(() => name),
-    );
   assert.deepEqual(
-    new Set(uses(pr.jobs, local)),
+    new Set(jobsUsingAction(pr.jobs, local)),
     new Set(["pr-native-runtime", "pr-playground-test"]),
   );
-  assert.deepEqual(uses(pr.jobs, upstream), []);
+  assert.deepEqual(jobsUsingAction(pr.jobs, upstream), []);
   const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(
-    uses(js.jobs, local),
+    jobsUsingAction(js.jobs, local),
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
-  assert.deepEqual(uses(js.jobs, upstream), []);
+  assert.deepEqual(jobsUsingAction(js.jobs, upstream), []);
   const canonical = parse(
     fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );
@@ -125,8 +128,61 @@ void test("Core PR and merge gates use the recovery adapter", () => {
   const instructions = parse(
     fs.readFileSync(".github/workflows/level-instruction-counts.yml", "utf8"),
   );
-  assert.deepEqual(uses(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
-  assert.deepEqual(uses(instructions.jobs, upstream), []);
+  assert.deepEqual(jobsUsingAction(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
+  assert.deepEqual(jobsUsingAction(instructions.jobs, upstream), []);
+});
+void test("Release-blocking observers and Fresco use the recovery adapter", () => {
+  const local = "./.github/actions/setup-wild-http-recovery";
+  const qualification = "./qualification/.github/actions/setup-wild-http-recovery";
+  const asyncAncestry = parse(
+    fs.readFileSync(".github/workflows/async-component-ancestry.yml", "utf8"),
+  );
+  const asyncSteps = asyncAncestry.jobs["whole-project"].steps;
+  const qualificationCheckout = asyncSteps.find(
+    (step) => step.uses?.startsWith("actions/checkout@") && step.with?.path === "qualification",
+  );
+  assert.ok(qualificationCheckout, "qualification checkout must remain in whole-project");
+  assert.equal(
+    qualificationCheckout.with["sparse-checkout"],
+    ".github/actions/setup-wild-http-recovery\n" +
+      "tests/tooling/async-component-ancestry-workflow.test.ts\n" +
+      "tools/support/cross_file/async_component\n",
+  );
+  assert.equal(asyncSteps.filter((step) => step.uses === qualification).length, 1);
+  assert.ok(
+    asyncAncestry.on.pull_request.paths.includes(".github/actions/setup-wild-http-recovery/**"),
+  );
+  const workflows = [
+    [".github/workflows/async-component-ancestry.yml", qualification, ["whole-project"]],
+    [
+      ".github/workflows/component-input-diagnostic-ownership.yml",
+      local,
+      ["published-sdk-packets", "unchanged-projection-packets"],
+    ],
+    [
+      ".github/workflows/corsa-package-refresh.yml",
+      local,
+      ["attribution", "import-literal-geometry", "projection-import-geometry"],
+    ],
+    [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
+    [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
+    [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],
+    [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
+    [".github/workflows/patina-native-boolean-protocol.yml", local, ["live-native"]],
+    [
+      ".github/workflows/unicode-prop-projection.yml",
+      local,
+      ["native-host", "unaffected-projections"],
+    ],
+    [".github/workflows/windows-config-consumer.yml", local, ["source-sdk"]],
+    [".github/workflows/build-docs.yml", local, ["build-docs", "build-playground"]],
+    [".github/workflows/fresco.yml", local, ["fresco-rust"]],
+  ];
+  for (const [relativePath, actionReference, expectedJobs] of workflows) {
+    const workflow = parse(fs.readFileSync(relativePath, "utf8"));
+    assert.deepEqual(jobsUsingAction(workflow.jobs, actionReference), expectedJobs, relativePath);
+    assert.deepEqual(jobsUsingAction(workflow.jobs, upstream), [], relativePath);
+  }
 });
 void test("Expanded primary success equals original stdout/stderr/files/config and removes archive", () =>
   fixture(({ run }) => {
