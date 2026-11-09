@@ -114,6 +114,44 @@ export function buildScriptShim(source: string): ScriptShim | null {
   return { text: chars.join(""), extension };
 }
 
+/** The shim path of a `.vue` glob: `Foo.vue` is linted as `Foo.vue.ts` (or .tsx/.js/.jsx). */
+function shimGlobs(files: unknown): string[] {
+  if (!Array.isArray(files)) return [];
+  const globs: string[] = [];
+  for (const glob of files) {
+    if (typeof glob !== "string") continue;
+    globs.push(glob);
+    if (glob.endsWith(".vue"))
+      for (const ext of [".ts", ".tsx", ".js", ".jsx"]) globs.push(glob + ext);
+  }
+  return globs;
+}
+
+/**
+ * Per-file overrides of the user's config, reduced to the type-aware rules they
+ * set. Unlike the root rules, `off`/`allow` entries are kept: they are exactly
+ * the carve-outs (for example "no floating promises in tests") that must still
+ * apply to the shim of a matching `.vue` file.
+ */
+function typeAwareOverrides(
+  overrides: unknown,
+  typeAwareRules: ReadonlySet<string>,
+): Record<string, unknown>[] {
+  if (!Array.isArray(overrides)) return [];
+  const kept: Record<string, unknown>[] = [];
+  for (const override of overrides as Record<string, unknown>[]) {
+    const rules = Object.fromEntries(
+      Object.entries((override.rules ?? {}) as Record<string, unknown>).filter(([name]) =>
+        typeAwareRules.has(name),
+      ),
+    );
+    const files = shimGlobs(override.files);
+    if (Object.keys(rules).length === 0 || files.length === 0) continue;
+    kept.push({ files, rules });
+  }
+  return kept;
+}
+
 /** The user's resolved config, reduced to its enabled type-aware rules. */
 export function typeAwareOnlyConfig(
   printed: Record<string, unknown>,
@@ -126,11 +164,20 @@ export function typeAwareOnlyConfig(
       continue;
     rules[name] = value;
   }
-  if (Object.keys(rules).length === 0) return null;
+  const overrides = typeAwareOverrides(printed.overrides, typeAwareRules);
+  // Overrides may switch rules on for some files only, so they count as well.
+  const overridesEnable = overrides.some((override) =>
+    Object.values(override.rules as Record<string, unknown>).some((value) => {
+      const severity = Array.isArray(value) ? value[0] : value;
+      return severity !== "off" && severity !== "allow" && severity !== 0;
+    }),
+  );
+  if (Object.keys(rules).length === 0 && !overridesEnable) return null;
   return {
     plugins: printed.plugins ?? [],
     categories: Object.fromEntries(CATEGORIES.map((category) => [category, "off"])),
     rules,
+    ...(overrides.length > 0 ? { overrides } : {}),
     settings: printed.settings ?? {},
     env: printed.env ?? {},
     globals: printed.globals ?? {},

@@ -164,3 +164,66 @@ function findTsgolint(): string | undefined {
     )
     .find((candidate) => fs.existsSync(candidate));
 }
+
+void test("per-file overrides of type-aware rules follow the shim of a matching .vue file", () => {
+  const typeAware = new Set(["typescript/no-floating-promises", "typescript/await-thenable"]);
+  const config = typeAwareOnlyConfig(
+    {
+      rules: { "typescript/no-floating-promises": "deny", "no-debugger": "deny" },
+      overrides: [
+        {
+          files: ["**/legacy/**/*.vue", "**/*.spec.ts"],
+          rules: { "typescript/no-floating-promises": "allow", "no-debugger": "allow" },
+        },
+        { files: ["**/strict/*.vue"], rules: { "typescript/await-thenable": "deny" } },
+        { files: ["**/x.ts"], rules: { "no-debugger": "allow" } },
+      ],
+    },
+    typeAware,
+  );
+  assert.deepEqual(config?.overrides, [
+    {
+      files: [
+        "**/legacy/**/*.vue",
+        "**/legacy/**/*.vue.ts",
+        "**/legacy/**/*.vue.tsx",
+        "**/legacy/**/*.vue.js",
+        "**/legacy/**/*.vue.jsx",
+        "**/*.spec.ts",
+      ],
+      rules: { "typescript/no-floating-promises": "allow" },
+    },
+    {
+      files: [
+        "**/strict/*.vue",
+        "**/strict/*.vue.ts",
+        "**/strict/*.vue.tsx",
+        "**/strict/*.vue.js",
+        "**/strict/*.vue.jsx",
+      ],
+      rules: { "typescript/await-thenable": "deny" },
+    },
+  ]);
+});
+
+void test("a rule enabled only by an override still produces a pass configuration", () => {
+  const typeAware = new Set(["typescript/await-thenable"]);
+  const config = typeAwareOnlyConfig(
+    {
+      rules: {},
+      overrides: [{ files: ["**/*.vue"], rules: { "typescript/await-thenable": "deny" } }],
+    },
+    typeAware,
+  );
+  assert.ok(config);
+  assert.equal(
+    typeAwareOnlyConfig(
+      {
+        rules: {},
+        overrides: [{ files: ["**/*.vue"], rules: { "typescript/await-thenable": "allow" } }],
+      },
+      typeAware,
+    ),
+    null,
+  );
+});
