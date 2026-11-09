@@ -8,7 +8,7 @@ function statementEnd(lines: string[], start: number): number {
   for (let i = start; i < lines.length; i++) {
     const line = lines[i].replace(/(["'`])(?:\\.|(?!\1).)*\1/g, '""');
     for (const ch of line) { if ("([{".includes(ch)) depth++; else if (")]}".includes(ch)) depth--; }
-    if (depth <= 0 && /[;}]\s*(\/\/.*)?$/.test(lines[i])) return i;
+    if (depth <= 0 && /;\s*(\/\/.*)?$/.test(lines[i])) return i;
   }
   return start;
 }
