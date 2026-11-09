@@ -99,7 +99,9 @@ export function createServerDiscovery(
       }
     }
 
-    const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
+    const candidates = await inspectServerCandidates(
+      await collectServerCandidates(context, exeName),
+    );
     if (generation !== state.configurationSyncGeneration) return undefined;
 
     if (expectedVersion) {
@@ -135,7 +137,10 @@ export function createServerDiscovery(
     return undefined;
   }
 
-  function collectServerCandidates(context: ExtensionContext, exeName: string): ServerCandidate[] {
+  async function collectServerCandidates(
+    context: ExtensionContext,
+    exeName: string,
+  ): Promise<ServerCandidate[]> {
     const candidates: ServerCandidate[] = [];
 
     const bundledPaths = [
@@ -172,7 +177,18 @@ export function createServerDiscovery(
       }
     }
 
-    return dedupeCandidates(candidates).filter((candidate) => fs.existsSync(candidate.path));
+    // Probe every location at once: on a WSL2 remote, PATH carries the Windows
+    // directories, and each serial existence check is a 9P round trip.
+    const unique = dedupeCandidates(candidates);
+    const present = await Promise.all(
+      unique.map((candidate) =>
+        fs.promises.access(candidate.path).then(
+          () => true,
+          () => false,
+        ),
+      ),
+    );
+    return unique.filter((_, index) => present[index]);
   }
 
   function dedupeCandidates(candidates: ServerCandidate[]): ServerCandidate[] {
