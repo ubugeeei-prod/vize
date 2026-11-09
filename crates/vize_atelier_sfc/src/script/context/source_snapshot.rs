@@ -5,6 +5,7 @@
     reason = "immutable editor snapshots share Arc source text without copying open documents"
 )]
 
+mod canonical_walk;
 mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
@@ -19,7 +20,7 @@ mod tests;
 
 use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
-use vize_carton::{FxHashMap, String};
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::external_types::FileTypeSummary;
 use super::type_world::ResolvedDependency;
@@ -54,6 +55,8 @@ pub struct TypeSourceSnapshot {
         expect(dead_code, reason = "Unix keys directories by inode")
     )]
     physical_directories: Mutex<FxHashMap<(u64, u64), PhysicalDirectoryCell>>,
+    /// Directory paths known to be their own `realpath` in this snapshot.
+    canonical_directories: Mutex<FxHashSet<PathBuf>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
     /// resolved against it, plus the modules a world walk follows from them.
