@@ -10,7 +10,7 @@ mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
 mod held;
-#[cfg(all(test, unix))]
+#[cfg(test)]
 mod probe_tests;
 mod public_identity;
 mod realpath;

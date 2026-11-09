@@ -13,10 +13,17 @@
 //! snapshots (an editor revision) hold nothing: a held directory could keep
 //! a Windows program from removing it.
 
-/// Handles one snapshot may hold: a transform needs a few, and a host burst
-/// sharing one snapshot must stay far below the descriptor limit.
+/// Handles one snapshot may hold: a transform needs a few.
 #[cfg(target_os = "linux")]
 const MAX_HELD: usize = 64;
+
+/// Handles all snapshots may hold at once, far below the usual soft limit of
+/// 1024 descriptors, so holding never starves a read of one.
+#[cfg(target_os = "linux")]
+const MAX_HELD_IN_PROCESS: usize = 256;
+
+#[cfg(target_os = "linux")]
+static HELD_IN_PROCESS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 #[derive(Debug, Default)]
 pub(super) struct HeldHandles {
@@ -41,13 +48,33 @@ impl HeldHandles {
         self.handles.is_some()
     }
 
+    /// Keep `file` open until the snapshot drops, within both limits;
+    /// otherwise it closes now.
     pub(super) fn hold(&self, file: std::fs::File) {
-        if let Some(handles) = &self.handles
-            && let Ok(mut handles) = handles.lock()
-            && handles.len() < MAX_HELD
-        {
-            handles.push(file);
+        use std::sync::atomic::Ordering;
+        let Some(Ok(mut handles)) = self.handles.as_ref().map(|handles| handles.lock()) else {
+            return;
+        };
+        if handles.len() >= MAX_HELD {
+            return;
         }
+        if HELD_IN_PROCESS.fetch_add(1, Ordering::Relaxed) >= MAX_HELD_IN_PROCESS {
+            HELD_IN_PROCESS.fetch_sub(1, Ordering::Relaxed);
+            return;
+        }
+        handles.push(file);
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl Drop for HeldHandles {
+    fn drop(&mut self) {
+        let held = self
+            .handles
+            .as_mut()
+            .and_then(|handles| handles.get_mut().ok().map(|handles| handles.len()))
+            .unwrap_or(0);
+        HELD_IN_PROCESS.fetch_sub(held, std::sync::atomic::Ordering::Relaxed);
     }
 }
 

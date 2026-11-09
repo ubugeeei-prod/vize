@@ -1,7 +1,10 @@
+#![cfg(unix)]
+
 use std::fs;
 use std::path::Path;
 
 use super::TypeSourceSnapshot;
+#[cfg(target_os = "linux")]
 use super::directory_index::Probe;
 
 #[test]
