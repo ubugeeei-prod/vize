@@ -1,0 +1,22 @@
+<script lang="ts">
+import type { Shape as Plain } from './shapes'
+export function measure(plain: Plain, scale: number): number {
+  return plain.area() * scale
+}
+</script>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { Shape } from './shapes'
+import { Circle } from './shapes'
+const shape: Shape = new Circle(1)
+const count = ref(1)
+</script>
+
+<template>
+  <p :title="String(measure(shape, 2))">{{ count }}</p>
+</template>
+
+<style>
+.card { width: v-bind('measure(shape, 3) + "px"'); }
+</style>

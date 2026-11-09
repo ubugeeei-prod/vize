@@ -42,6 +42,10 @@ import {
   applyInstanceInputKeysIn,
   beforeInstanceInputKeysIn,
 } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
+import {
+  applyUnownedOwnedKeysIn,
+  beforeUnownedOwnedKeysIn,
+} from "../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -161,8 +165,10 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const strictSourcePreamble = applyStrictExtraKeysIn(discriminatedSourcePreamble);
   const emitMemberSourcePreamble = applyEmitMemberInferIn(strictSourcePreamble);
   const canonSourcePreamble = applyCanonLeftoverPreamble(emitMemberSourcePreamble);
-  const currentSourcePreamble = applyInstanceInputKeysIn(canonSourcePreamble);
-  assert.equal(beforeInstanceInputKeysIn(currentSourcePreamble), canonSourcePreamble);
+  const keysSourcePreamble = applyInstanceInputKeysIn(canonSourcePreamble);
+  assert.equal(beforeInstanceInputKeysIn(keysSourcePreamble), canonSourcePreamble);
+  const currentSourcePreamble = applyUnownedOwnedKeysIn(keysSourcePreamble);
+  assert.equal(beforeUnownedOwnedKeysIn(currentSourcePreamble), keysSourcePreamble);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

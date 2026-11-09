@@ -175,6 +175,13 @@ pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 /// Shared ambient helpers materialized once per program; generated `.vue.ts`
 /// modules are emitted with their preamble hoisted into this file.
 pub(super) const SHARED_HELPERS_FILE: &str = crate::virtual_ts::SHARED_PREAMBLE_FILE_NAME;
+/// Ambient declarations a Canon root may own beside its documents.
+pub(crate) const ROOT_DECLARATION_FILES: [&str; 4] = [
+    AUTO_IMPORT_STUBS_FILE,
+    MODULE_AUGMENTATION_STUBS_FILE,
+    VUE_MODULE_STUBS_FILE,
+    SHARED_HELPERS_FILE,
+];
 /// CLI `--incremental` state; survives the materialize prune so the next run
 /// can reuse it.
 const CLI_BUILD_INFO_DIR: &str = ".vize-buildinfo";

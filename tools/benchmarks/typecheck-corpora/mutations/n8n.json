@@ -225,10 +225,6 @@
         "column": 26,
         "code": "TS2339",
         "message": "'rowId'"
-      },
-      "known": {
-        "issue": 12479,
-        "count": 2
       }
     },
     {
@@ -320,10 +316,6 @@
         "column": 43,
         "code": "TS2339",
         "message": "'groupe'"
-      },
-      "known": {
-        "issue": 12520,
-        "count": 2
       }
     },
     {

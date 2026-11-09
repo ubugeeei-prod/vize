@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { instanceInputKeysHelperEdit } from "../../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
+import { unownedOwnedKeysHelperEdit } from "../../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 import { repoRoot } from "../_helpers/tool-commands.ts";
 
 type CanonLeftoversReceipt = {
@@ -80,7 +81,11 @@ function outputTransition(
   let text = current.toString("utf8");
   // #11654 rewrote one helper line after these layers; undo it first, redo it last.
   const keys = instanceInputKeysHelperEdit();
+  // The later #11654 owned-key hoist sits on top of that; it unwinds first too.
+  const owned = unownedOwnedKeysHelperEdit();
   if (direction === "inverse") {
+    assert.equal(text.split(encoded(owned.after)).length - 1, 1);
+    text = text.replace(encoded(owned.after), () => encoded(owned.before));
     assert.equal(text.split(encoded(keys.after)).length - 1, 1);
     text = text.replace(encoded(keys.after), () => encoded(keys.before));
   }
@@ -115,6 +120,8 @@ function outputTransition(
     text = text.replaceAll(from, () => to);
     assert.equal(text.split(encoded(keys.before)).length - 1, 1);
     text = text.replace(encoded(keys.before), () => encoded(keys.after));
+    assert.equal(text.split(encoded(owned.before)).length - 1, 1);
+    text = text.replace(encoded(owned.before), () => encoded(owned.after));
   }
   return Buffer.from(text);
 }

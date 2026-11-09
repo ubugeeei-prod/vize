@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeUnownedOwnedKeys } from "./unowned-owned-keys-transition.ts";
 
 export const instanceInputKeysRecord = "tests/_fixtures/tooling/instance-input-keys-11654.json";
 export const instanceInputKeysRecordSha256 =
@@ -50,6 +51,7 @@ function load(): Transition {
  * images pass through; the layers below authenticate them.
  */
 export function beforeInstanceInputKeys(path: string, current: string): string {
+  current = beforeUnownedOwnedKeys(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(Buffer.byteLength(current), file.after.bytes, `instance input-key helper: ${path}`);

@@ -7,6 +7,7 @@ import {
   withLandedEdits,
 } from "../../tools/support/compat/content-mapper/callback-owner-landed-contracts.ts";
 import { beforeInstanceInputKeys } from "../../tools/support/compat/content-mapper/instance-input-keys-transition.ts";
+import { beforeUnownedOwnedKeys } from "../../tools/support/compat/content-mapper/unowned-owned-keys-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 const VT = 'import("vize/virtual-ts").';
@@ -60,15 +61,21 @@ test("a gated line never overlaps another certified edit", () => {
   assert.throws(() => withLandedEdits(before, after, overlapping), /disjoint/u);
 });
 
-test("the #12446 helper predecessor is certified once, before the current image", () => {
+test("each landed helper predecessor is certified once, before the current image", () => {
   const path = "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt";
   const current = readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
-  const predecessor = beforeInstanceInputKeys(path, current);
-  assert.notEqual(predecessor, current);
+  const inputKeys = beforeInstanceInputKeys(path, current);
+  const ownedKeys = beforeUnownedOwnedKeys(path, current);
+  assert.equal(new Set([inputKeys, ownedKeys, current]).size, 3);
   assert.deepEqual(certifiedHelperImages(path, current, ["older"]), [
     "older",
-    predecessor,
+    inputKeys,
+    ownedKeys,
     current,
   ]);
-  assert.deepEqual(certifiedHelperImages(path, current, [predecessor]), [predecessor, current]);
+  assert.deepEqual(certifiedHelperImages(path, current, [inputKeys]), [
+    inputKeys,
+    ownedKeys,
+    current,
+  ]);
 });

@@ -54,7 +54,7 @@ type $FallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & { [K
 type $PublicComponentInputProps = import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;
 type $ComponentMetadataKeys<T> = $IsAny<T> extends true ? never : T extends unknown ? keyof NonNullable<T> : never;
 type $ComponentOwnKeys<P = {}, E = {}> = keyof $PublicComponentInputProps | $ComponentMetadataKeys<P> | $ComponentMetadataKeys<E>;
-type $UnownedComponentAttrs<F, P = {}, E = {}> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends $ComponentOwnKeys<P, E> ? never : K]: F[K] } : never;
+type $UnownedComponentAttrs<F, P = {}, E = {}, __O = $ComponentOwnKeys<P, E>> = $IsAny<F> extends true ? F : unknown extends F ? F : F extends unknown ? F extends null | undefined ? F : { [K in keyof F as K extends __O ? never : K]: F[K] } : never;
 type $Prettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type $ComponentFallthroughSurface<C> = (C extends { new (...args: any[]): { $props: infer __P } } ? __P : C extends (props: infer __P, ...args: any[]) => any ? __P : Record<string, unknown>) & (C extends { readonly __vizeFallthroughProps?: infer __F } ? $IsAny<__F> extends true ? {} : NonNullable<__F> : {});
 type $ComponentFallthroughProps<C> = { [K in keyof $ComponentFallthroughSurface<C>]: $ComponentFallthroughSurface<C>[K] };
@@ -165,7 +165,7 @@ function __setup() {
   
   const items = ref(['a', 'b', 'c'])
   
-  // @vize-map: 21241:21287 -> 0:97
+  // @vize-map: 21252:21298 -> 0:97
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -285,17 +285,6 @@ function __setup() {
   type $SlotContract_0 = $StructuralSlots<typeof MyList>;
   const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, { readonly "default": true; readonly "header": true; }> = {};
   void __vize_required_slots_0;
-
-  // Component props in v-slot scope: #default
-  void function _slot_props_default_8({ item, index }: $SlotPayload<typeof __vize_slot_host_8, "default", typeof MyList>) {
-    void item;
-    void index;
-  };
-
-  // Component props in v-slot scope: #header
-  void function _slot_props_header_9({ title }: $SlotPayload<typeof __vize_slot_host_9, "header", typeof MyList>) {
-    void title;
-  };
 
   // Mark used components as referenced
   void MyList;

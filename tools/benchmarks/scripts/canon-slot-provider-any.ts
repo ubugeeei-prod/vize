@@ -124,7 +124,8 @@ async function main() {
     const types = slotProviderTypes(path.join(project, "src/Tiny.vue.ts"), vts);
     const bindings = types.rows.filter((row) => row.role === "slot-binding");
     const reports = types.rows.filter((row) => row.role === "slot-report");
-    assert.equal(bindings.length, 2, "both actual slot scopes must be queried");
+    // An unchecked slot is emitted once, by the template pass (#12479).
+    assert.equal(bindings.length, 1, "the actual slot scope must be queried");
     assert.equal(reports.length, 1, "the complete authored witness must be queried");
     assert.deepEqual(
       bindings.map((row) => row.intrinsicName),

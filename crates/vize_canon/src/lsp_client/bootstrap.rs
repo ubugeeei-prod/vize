@@ -1,6 +1,8 @@
 use super::{
     CorsaProjectClient,
-    lifecycle_setup::{workspace_config_path, write_materialized_project_tsconfig},
+    lifecycle_setup::{
+        link_canon_dependencies, workspace_config_path, write_materialized_project_tsconfig,
+    },
     session::{ProjectSessionSpawnError, materialize_session_document, spawn_project_session},
     session_paths::{build_materialized_session_document_uri, preferred_materialized_document},
 };
@@ -140,6 +142,7 @@ impl CorsaProjectClient {
 
         self.retire_original_diagnosing_session()?;
 
+        link_canon_dependencies(&self.project_root, self.overlay_storage.root())?;
         let config_path = write_materialized_project_tsconfig(
             &self.project_root,
             self.overlay_storage.root(),

@@ -43,9 +43,10 @@ impl SetupPropsPlan {
             } else {
                 names::export_type("Props")
             };
+            let setup = names::setup_return("");
             append!(
                 *ts,
-                "{head} = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>"
+                "{head} = $OptionsPropShape<{setup}[\"__vize_options_props\"]>"
             );
             append_default_props(ts, source);
             ts.push_str(";\n");

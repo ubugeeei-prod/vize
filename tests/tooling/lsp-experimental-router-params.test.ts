@@ -16,6 +16,7 @@ import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import { assertCanonLeftoversGolden } from "./support/lsp/experimental-router-canon-leftovers.ts";
 import { instanceInputKeysPredecessor } from "./support/lsp/experimental-router-instance-input-keys.ts";
+import { unownedOwnedKeysPredecessor } from "./support/lsp/experimental-router-unowned-owned-keys.ts";
 import { resolveTypecheckRuntime } from "./support/typecheck-dependency.ts";
 import { writeVueConfigFixture } from "./support/vue-config-fixture.ts";
 
@@ -67,11 +68,17 @@ function generatedGolden(expected: Golden, kind: "valid" | "invalid"): string {
   const golden = expected.generated[kind];
   assert.match(
     golden.file,
-    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys)?\.virtual\.ts\.txt$/u,
+    /^(?:lf|crlf|explicit)\.(?:valid|invalid)(?:\.canon-leftovers|\.instance-input-keys|\.unowned-owned-keys)?\.virtual\.ts\.txt$/u,
   );
   const goldenBytes = fs.readFileSync(path.join(custody, golden.file));
   assert.equal(createHash("sha256").update(goldenBytes).digest("hex"), golden.sha256);
-  const predecessor = instanceInputKeysPredecessor(custody, root, golden, goldenBytes);
+  const ownedKeys = unownedOwnedKeysPredecessor(custody, root, golden, goldenBytes);
+  const predecessor = instanceInputKeysPredecessor(
+    custody,
+    root,
+    ownedKeys?.entry ?? golden,
+    ownedKeys?.bytes ?? goldenBytes,
+  );
   const entry = predecessor?.entry ?? golden;
   const bytes = predecessor?.bytes ?? goldenBytes;
   const transitionFile = entry.file.replace(".canon-leftovers", "");

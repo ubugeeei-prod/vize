@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { packedSmokeTimingSuccessor } from "./native-smoke-timing-successor.ts";
+import { restoreNativeSmokeStaging } from "./native-staging-inverse.ts";
 
 const muslJob = "\n  fresh-install-musl-smoke:\n";
 const selectedProducer = "\n  selected-host-native-producer:\n";
@@ -24,7 +25,7 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
   const upstream =
     "      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0\n";
   assert.equal(current.split(recovery).length, 3, "two reviewed Wild recovery adapters");
-  let sealed = current.replaceAll(recovery, upstream);
+  let sealed = restoreNativeSmokeStaging(current).replaceAll(recovery, upstream);
   const nodeGlibc =
     "node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.36 npm/native/*.linux-*-gnu.node";
   const rustGlibc =

@@ -1,0 +1,17 @@
+<script setup lang="ts" generic="T extends string | number">
+const props = withDefaults(defineProps<{
+  items: T[]
+  modelValue: T
+  label?: string
+}>(), { label: 'none' })
+const emit = defineEmits<{ pick: [item: T, index: number]; 'update:modelValue': [value: T] }>()
+defineSlots<{ row(props: { item: T; index: number }): any }>()
+</script>
+
+<template>
+  <ul :aria-label="props.label">
+    <li v-for="(item, index) in props.items" :key="index" @click="emit('pick', item, index); emit('update:modelValue', item)">
+      <slot name="row" :item="item" :index="index" />
+    </li>
+  </ul>
+</template>

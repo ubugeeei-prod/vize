@@ -13,6 +13,7 @@ use vize_l0::ts;
 use vize_relief::RootNode;
 
 use crate::virtual_ts::expressions::ComponentPropCheckContext;
+use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
 use self::strict_children::generate_strict_slot_child_checks;
@@ -38,7 +39,8 @@ pub(super) fn append_component_slot_check_helpers(
     // `$slots` declarations in third-party component libraries frequently
     // describe callable slot names, not whether the parent must provide them.
     // Required-slot checks therefore trust only Vize's own explicit marker.
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $StructuralSlots<C> = C extends { readonly __vizeSlots?: infer __S } ? NonNullable<__S> : any;\n",
     );
     // Navigation checks a known external constructor's actual slots. This does
@@ -46,29 +48,37 @@ pub(super) fn append_component_slot_check_helpers(
     // continue to use only the explicit structural marker above.
     // Vue's declared options retain their slots parameter even when `data: any`
     // collapses the public instance. Unknown constructors carry no such contract.
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $EmptyVueNavigationSlots<C> = ('__isFragment' | '__isTeleport' | '__isSuspense' | 'slots') extends keyof C ? $IsAny<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]> extends true ? any : [NonNullable<C[Extract<'__isFragment' | '__isTeleport' | '__isSuspense', keyof C>]>] extends [never] ? C extends { slots?: infer __S } ? $IsAny<__S> extends true ? any : unknown extends __S ? any : [keyof NonNullable<__S>] extends [never] ? C extends { setup?: (props: infer __P, ...args: any[]) => any } ? string extends keyof __P ? any : {} : {} : any : any : any : any;\n",
     );
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $NativeNavigationSlots<C> = C extends new (...args: any[]) => { $slots: any } ? $IsAny<InstanceType<C>> extends true ? $EmptyVueNavigationSlots<C> : $IsAny<InstanceType<C>['$slots']> extends true ? any : unknown extends InstanceType<C>['$slots'] ? any : InstanceType<C>['$slots'] : any;\n",
     );
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $NavigationSlots<C> = $IsAny<C> extends true ? any : C extends { readonly __vizeSlots?: infer __S } ? $IsAny<__S> extends true ? __S : unknown extends __S ? [keyof NonNullable<__S>] extends [never] ? $NativeNavigationSlots<C> : NonNullable<__S> : NonNullable<__S> : $NativeNavigationSlots<C>;\n",
     );
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $RequiredSlotKeys<__S> = { [__K in keyof __S]-?: undefined extends __S[__K] ? never : __K }[keyof __S];\n",
     );
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $MissingRequiredSlots<__S, __P> = Exclude<$RequiredSlotKeys<__S>, keyof __P>;\n",
     );
-    ts.push_str(
+    push_lib_text(
+        ts,
         "  type $RequiredSlots<__S, __P> = $IsAny<__S> extends true ? {} : string extends keyof __S ? {} : [keyof __S] extends [never] ? {} : [$MissingRequiredSlots<__S, __P>] extends [never] ? {} : { readonly __vizeMissingSlots: $MissingRequiredSlots<__S, __P> };\n",
     );
     if strict_children {
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $SlotChildren<__S, __K extends PropertyKey> = $IsAny<__S> extends true ? any : string extends keyof __S ? any : __K extends keyof __S ? ReturnType<Extract<NonNullable<__S[__K]>, (...args: any[]) => any>> : any;\n",
         );
-        ts.push_str(
+        push_lib_text(
+            ts,
             "  type $ProvidedSlotChildren<__T extends unknown[]> = __T extends [infer __Only] ? __Only | __T : __T;\n",
         );
     }

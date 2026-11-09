@@ -106,14 +106,13 @@ async function main() {
         state === "invalid" ? [false, true] : [false, false],
       );
       const bindings = types.rows.filter((row) => row.role === "slot-binding");
-      assert.equal(bindings.length, 4, "both emitted slot scopes for each distinct provider");
+      // An unchecked slot is emitted once, by the template pass (#12479).
+      assert.equal(bindings.length, 2, "the emitted slot scope of each distinct provider");
       assert.deepEqual(
         bindings
           .map((row) => row.intrinsicName)
           .sort((left, right) => String(left).localeCompare(String(right))),
-        state === "invalid"
-          ? ["any", "any", "number", "number"]
-          : ["number", "number", "number", "number"],
+        state === "invalid" ? ["any", "number"] : ["number", "number"],
       );
       // Full authored diagnostics below prove which tag owns each any; these
       // retained intrinsic queries additionally reject fabricated error-any.

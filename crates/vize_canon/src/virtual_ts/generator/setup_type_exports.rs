@@ -192,13 +192,11 @@ impl SetupTypeExportsPlan {
     }
 
     pub(super) fn emit_module_exports(&self, ts: &mut crate::virtual_ts::TextBuf) {
+        let setup = crate::virtual_ts::generated_names::setup_return("");
         for exported in &self.exports {
             let name = &exported.name;
             let artifact = &exported.artifact;
-            append!(
-                *ts,
-                "export type {name} = Awaited<ReturnType<typeof __setup>>[\"{artifact}\"];\n"
-            );
+            append!(*ts, "export type {name} = {setup}[\"{artifact}\"];\n");
         }
         if !self.exports.is_empty() {
             ts.push('\n');

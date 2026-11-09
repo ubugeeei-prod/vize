@@ -169,6 +169,9 @@ pub(super) fn emit_v_for_loop_open<M>(
     mappings: &mut M,
     template_offset: u32,
     source_offset: Option<u32>,
+    // A replay of a loop the template pass already maps leaves its aliases
+    // unmapped, so their diagnostics are reported once.
+    map_aliases: bool,
     indent: &str,
     scope: &Scope,
     template_binding_access: &TemplateBindingAccess,
@@ -241,7 +244,7 @@ pub(super) fn emit_v_for_loop_open<M>(
                     // only at use sites (#3894).
                     let pattern_gen_start = ts.len();
                     ts.push_str(data.value_alias.as_str());
-                    for name in &data.value_bindings {
+                    for name in data.value_bindings.iter().filter(|_| map_aliases) {
                         if let Some(relative) =
                             pattern_identifier_offset(data.value_alias.as_str(), name)
                         {
@@ -256,7 +259,9 @@ pub(super) fn emit_v_for_loop_open<M>(
                     }
                     if let Some(key) = data.key_alias.as_deref() {
                         ts.push_str(", ");
-                        map_alias(mappings.as_mappings(), scope, template_offset, key, ts.len());
+                        if map_aliases {
+                            map_alias(mappings.as_mappings(), scope, template_offset, key, ts.len());
+                        }
                         ts.push_str(key);
                     } else if data.index_alias.is_some() {
                         // Keep the index in the third tuple slot even when no key alias is bound.
@@ -264,7 +269,9 @@ pub(super) fn emit_v_for_loop_open<M>(
                     }
                     if let Some(index) = data.index_alias.as_deref() {
                         ts.push_str(", ");
-                        map_alias(mappings.as_mappings(), scope, template_offset, index, ts.len());
+                        if map_aliases {
+                            map_alias(mappings.as_mappings(), scope, template_offset, index, ts.len());
+                        }
                         ts.push_str(index);
                     }
                     append!(*ts, "] of {source_name})");

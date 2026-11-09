@@ -5,6 +5,7 @@ import path from "node:path";
 import { test, type TestContext } from "node:test";
 
 import { runToolCommand } from "./_helpers/tool-commands.ts";
+import { selectBuiltTargets } from "../../tools/support/github/stage-built-native-packages.ts";
 
 const collect = "tools/support/github/collect-native-artifacts.ts";
 const site = "tools/support/github/create-site-structure.ts";
@@ -151,4 +152,41 @@ void test("the Pages tree copies nested artifacts and requires every input", (t)
   assert.equal(fs.readFileSync(path.join(root, "site/guide/a/b.html"), "utf8"), "b");
   assert.equal(fs.readFileSync(path.join(root, "site/play/assets/app.js"), "utf8"), "app");
   assert.equal(fs.existsSync(path.join(root, "site/CNAME")), false);
+});
+
+void test("only built native binaries select their configured napi targets", () => {
+  const targets = ["x86_64-apple-darwin", "aarch64-apple-darwin", "x86_64-unknown-linux-musl"];
+  const platformOf = (triple: string) =>
+    ({
+      "x86_64-apple-darwin": "darwin-x64",
+      "aarch64-apple-darwin": "darwin-arm64",
+      "x86_64-unknown-linux-musl": "linux-x64-musl",
+    })[triple] ?? triple;
+  const files = ["index.js", "vize-vitrine.linux-x64-musl.node", "vize-vitrine.darwin-arm64.node"];
+  assert.deepEqual(selectBuiltTargets("vize-vitrine", targets, files, platformOf), [
+    {
+      triple: "aarch64-apple-darwin",
+      platform: "darwin-arm64",
+      binary: "vize-vitrine.darwin-arm64.node",
+    },
+    {
+      triple: "x86_64-unknown-linux-musl",
+      platform: "linux-x64-musl",
+      binary: "vize-vitrine.linux-x64-musl.node",
+    },
+  ]);
+  assert.throws(
+    () => selectBuiltTargets("vize-vitrine", targets, ["index.js"], platformOf),
+    /No vize-vitrine\.<platform>\.node binary was built/u,
+  );
+  assert.throws(
+    () =>
+      selectBuiltTargets(
+        "vize-vitrine",
+        targets,
+        [...files, "vize-vitrine.darwin-universal.node"],
+        platformOf,
+      ),
+    /No configured napi target for vize-vitrine\.darwin-universal\.node/u,
+  );
 });

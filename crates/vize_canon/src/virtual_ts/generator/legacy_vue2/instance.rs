@@ -73,7 +73,7 @@ pub(in crate::virtual_ts::generator) fn instance_base(
     (has_root_el, has_refs): (bool, bool),
 ) {
     if (has_root_el || has_refs) && !needs_legacy_vue2_helpers(legacy_vue2, dialect) {
-        let setup = "Awaited<ReturnType<typeof __setup>>";
+        let setup = crate::virtual_ts::generated_names::setup_return("");
         ts.push_str("$MappedOmit<$ComponentPublicBase, ");
         match (has_root_el, has_refs) {
             (true, false) => append!(*ts, "'$el'> & {{ $el: {setup}['__vize_root_el'] }}"),
