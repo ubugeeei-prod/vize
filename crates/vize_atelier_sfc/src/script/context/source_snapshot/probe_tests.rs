@@ -144,3 +144,26 @@ fn linked_roots_keep_their_target_identity_and_directory() {
         Some(root.join("real/api.ts"))
     );
 }
+
+#[cfg(target_os = "linux")]
+#[test]
+fn request_probes_stamp_found_modules_for_their_reads() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::write(root.join("App.vue"), "").unwrap();
+    fs::write(root.join("api.ts"), "export type Api = 1").unwrap();
+    let request = TypeSourceSnapshot::for_request();
+    let editor = TypeSourceSnapshot::default();
+    for sources in [&request, &editor] {
+        assert_eq!(
+            sources.resolve_import(&root.join("App.vue"), "./api"),
+            Some(root.join("api.ts"))
+        );
+        assert_eq!(
+            sources.read_identity(root.join("api.ts")).as_deref(),
+            Some("export type Api = 1")
+        );
+    }
+    assert!(request.held.stamp_of(&root.join("api.ts")).is_some());
+    assert!(editor.held.stamp_of(&root.join("api.ts")).is_none());
+}

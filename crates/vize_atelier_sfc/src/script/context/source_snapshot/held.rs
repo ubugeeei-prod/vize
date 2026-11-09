@@ -20,6 +20,10 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};
 
+use vize_carton::FxHashMap;
+
+use super::content_stamp::Stamp;
+
 /// Handles one snapshot may hold: a transform needs a few.
 const MAX_HELD: usize = 64;
 
@@ -35,6 +39,9 @@ pub(super) struct HeldHandles {
     handles: Option<Mutex<Vec<std::fs::File>>>,
     first_root: OnceLock<PathBuf>,
     shared: AtomicBool,
+    /// What each found file's probe `fstat` saw, which validates text an
+    /// earlier request read.
+    stamps: Mutex<FxHashMap<PathBuf, Stamp>>,
 }
 
 impl HeldHandles {
@@ -43,6 +50,7 @@ impl HeldHandles {
             handles: Some(Mutex::default()),
             first_root: OnceLock::new(),
             shared: AtomicBool::new(false),
+            stamps: Mutex::default(),
         }
     }
 
@@ -67,6 +75,19 @@ impl HeldHandles {
             self.shared.store(true, Ordering::Relaxed);
         }
         first
+    }
+
+    /// Record what a found file's probe saw.
+    pub(super) fn stamp(&self, path: &Path, metadata: &std::fs::Metadata) {
+        if self.enabled()
+            && let Ok(mut stamps) = self.stamps.lock()
+        {
+            stamps.insert(path.to_path_buf(), Stamp::of(metadata));
+        }
+    }
+
+    pub(super) fn stamp_of(&self, path: &Path) -> Option<Stamp> {
+        self.stamps.lock().ok()?.get(path).copied()
     }
 
     /// Keep `file` open until the snapshot drops, within both limits;
