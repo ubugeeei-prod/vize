@@ -13,6 +13,7 @@ import {
 import {
   levelInstructionSuites,
   formatterInstructionSuites,
+  instructionSuiteSource,
 } from "./instruction-counts-suites.mjs";
 import {
   baselineToml,
@@ -150,13 +151,7 @@ function collect(out, registry, formatter, sfc) {
         row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
     );
   const binaries = selectedSuites.map(([pkg, bench]) => {
-    const directory =
-      pkg === "davinci_harness"
-        ? "tools/benchmarks/crates"
-        : fs.existsSync(path.join(root, "davinci", pkg))
-          ? "davinci"
-          : "crates";
-    const source = path.join(root, directory, pkg, "benches", `${bench}.rs`);
+    const source = instructionSuiteSource(root, [pkg, bench]);
     const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);
     assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);
     const artifact = matches[0];

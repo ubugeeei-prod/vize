@@ -1,7 +1,7 @@
 //! Root callbacks and suppression registration in registry order.
 
 use super::{LintVisitor, element_has_directive};
-use crate::context::{CallbackSite, LintContext};
+use crate::context::CallbackSite;
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::{CompactString, profile};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
@@ -15,17 +15,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Visit the root node and traverse the AST
     #[inline]
     pub fn visit_root(&mut self, root: &RootNode<'a>) {
-        self.visit_root_with_template_hook(root, &mut |_, _| false);
-    }
-
-    /// Replace a template-level callback at its original registry position.
-    /// A migrated document hook shares the suppression pre-scan and preserves
-    /// ordering relative to template checks that still use the Relief visitor.
-    pub(crate) fn visit_root_with_template_hook(
-        &mut self,
-        root: &RootNode<'a>,
-        hook: &mut impl FnMut(usize, &mut LintContext<'a>) -> bool,
-    ) {
         // Pre-scan suppression directives so they can suppress diagnostics
         // produced by `run_on_template` rules (which fire before per-element
         // traversal would register them). Without this pass, directives are
@@ -44,18 +33,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // cheaper than creating a span for every individual rule callback.
         let keep_mask = self.keep_mask;
         profile!("patina.rules.run_on_template", {
-            Self::callback_rules::<true>(
+            Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
                 keep_mask,
                 CallbackSite::Template,
-                |index, rule, ctx| {
-                    if hook(index, ctx) || !Self::rule_active(keep_mask, index) {
-                        return;
-                    }
-                    rule.run_on_template(ctx, root);
-                },
+                |_, rule, ctx| rule.run_on_template(ctx, root),
             );
         });
 

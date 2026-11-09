@@ -31,12 +31,48 @@ pub enum MarkupTraversal {
     Elements,
     /// Call element entries, text nodes and element exits, preserving ancestry.
     ElementsAndText,
+    /// Call element entries and interpolation / expression nodes.
+    ElementsAndInterpolations,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
     /// Visit authored attributes and list scopes without unrelated callbacks.
     AttributesAndLists,
     /// All work happens in `enter_document`; no tree walk is needed.
     Document,
+}
+
+// One definition of each traversal's callbacks, shared by the single-rule
+// visitor and the multi-rule batch.
+impl MarkupTraversal {
+    pub(crate) const fn enters_elements(self) -> bool {
+        matches!(
+            self,
+            Self::Full | Self::Elements | Self::ElementsAndText | Self::ElementsAndInterpolations
+        )
+    }
+
+    /// `exit_element`, and `enter_text` for text nodes.
+    pub(crate) const fn keeps_text_and_exits(self) -> bool {
+        matches!(self, Self::Full | Self::ElementsAndText)
+    }
+
+    /// `enter_attributes` and `enter_list`.
+    pub(crate) const fn keeps_attributes_and_lists(self) -> bool {
+        matches!(self, Self::Full | Self::AttributesAndLists)
+    }
+
+    pub(crate) const fn enters_bindings(self) -> bool {
+        matches!(self, Self::Full | Self::Bindings)
+    }
+
+    pub(crate) const fn enters_interpolations(self) -> bool {
+        matches!(self, Self::Full | Self::ElementsAndInterpolations)
+    }
+
+    /// `enter_directive` and `enter_conditional`.
+    pub(crate) const fn is_full(self) -> bool {
+        matches!(self, Self::Full)
+    }
 }
 
 /// A lint rule expressed against the zero-copy markup IR.

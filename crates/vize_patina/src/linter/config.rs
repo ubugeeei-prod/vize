@@ -274,6 +274,29 @@ impl Linter {
         self.registry.rule_names()
     }
 
+    /// The enabled markup rules among the first `count` registry rules that
+    /// `keep` admits, at their registry ranks: one [`MarkupRules`] walk's input.
+    ///
+    /// [`MarkupRules`]: crate::markup::MarkupRules
+    pub(crate) fn markup_rules(
+        &self,
+        count: usize,
+        keep: impl Fn(&'static str, &dyn crate::rule::Rule) -> bool,
+    ) -> Vec<crate::markup::RankedMarkupRule<'_>> {
+        self.registry
+            .rules()
+            .iter()
+            .zip(self.rule_names().iter().copied())
+            .take(count)
+            .enumerate()
+            .filter(|(_, (rule, name))| self.is_rule_enabled(name) && keep(name, rule.as_ref()))
+            .filter_map(|(rank, (rule, _))| {
+                rule.as_markup_rule()
+                    .map(|rule| crate::markup::RankedMarkupRule::new(rank, rule))
+            })
+            .collect()
+    }
+
     /// Close type-aware sessions and delete this process's session directories.
     ///
     /// `vize lint` exits with `process::exit` when diagnostics fail, which skips

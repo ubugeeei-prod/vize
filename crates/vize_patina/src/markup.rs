@@ -60,6 +60,8 @@
 //! visitor threads a [`MarkupContext`] wrapping the existing
 //! [`LintContext`](crate::context::LintContext), so rules keep using the same
 //! diagnostic/fix APIs and all source ranges map back to the original syntax.
+//! Lint lanes run their rules together through [`MarkupRules`]: one walk per
+//! document, whatever the input.
 
 use crate::ir::{ByteRange, TemplateSyntax};
 use oxc_ast::ast::Program;
@@ -69,6 +71,7 @@ use vize_relief::{RootNode, SourceLocation};
 
 mod attribute;
 mod authored;
+mod batch;
 mod binding;
 mod context;
 #[cfg(any(test, feature = "legacy-differential"))]
@@ -93,6 +96,7 @@ mod tests;
 mod visitor;
 
 pub use attribute::MarkupAttribute;
+pub use batch::{MarkupRules, RankedMarkupRule};
 pub use binding::{MarkupBinding, MarkupBindingKind};
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;

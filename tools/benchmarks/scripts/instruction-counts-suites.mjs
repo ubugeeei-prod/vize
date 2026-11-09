@@ -33,3 +33,14 @@ export function levelInstructionSuites(root) {
 export function formatterInstructionSuites() {
   return [["vize_glyph", "formatter_instructions"]];
 }
+
+/** The committed bench source a suite builds; its bytes pin synthetic inputs. */
+export function instructionSuiteSource(root, [pkg, bench]) {
+  const directory =
+    pkg === "davinci_harness"
+      ? "tools/benchmarks/crates"
+      : fs.existsSync(path.join(root, "davinci", pkg))
+        ? "davinci"
+        : "crates";
+  return path.join(root, directory, pkg, "benches", `${bench}.rs`);
+}
