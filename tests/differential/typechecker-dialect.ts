@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { readPinnedArtifact } from "./harness.mjs";
+import { styleDialects } from "./source-dialect-coverage.ts";
 
 export type DialectCoverage = {
   state: "unknown" | "source-inspected" | "verified";
@@ -36,7 +37,19 @@ type VerifiedCapture = {
   }>;
 };
 
-const dialectOrder = ["vue3-sfc", "pug-template", "html-template", "js", "ts", "jsx", "tsx"];
+const dialectOrder = [
+  "vue3-sfc",
+  "pug-template",
+  "html-template",
+  "scss-style",
+  "sass-style",
+  "less-style",
+  "stylus-style",
+  "js",
+  "ts",
+  "jsx",
+  "tsx",
+];
 
 function inspectSource(dialects: Set<string>, authoredFile: string, source: string) {
   const file = authoredFile.toLowerCase();
@@ -49,6 +62,7 @@ function inspectSource(dialects: Set<string>, authoredFile: string, source: stri
     ) {
       dialects.add("pug-template");
     } else if (/<template(?:\s|>)/i.test(source)) dialects.add("html-template");
+    for (const dialect of styleDialects(source)) dialects.add(dialect);
     for (const match of source.matchAll(/<script\b([^>]*)>/gi)) {
       const attributes = match[1];
       if (/\blang\s*=\s*["']tsx["']/i.test(attributes)) dialects.add("tsx");
