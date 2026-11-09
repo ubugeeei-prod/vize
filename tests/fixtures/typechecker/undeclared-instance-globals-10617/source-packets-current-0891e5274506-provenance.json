@@ -1,0 +1,90 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12457,
+  "producer": {
+    "sourceRevision": "0891e52745065d99aa4dfbdb03caf4af55a5caf0",
+    "sourceTree": "2f09624e4ee186ee4e40b53b78fd3a1f252f621e",
+    "pullRequestHead": "8827c3de910036ad616a4ebbf441a2b4f14a7684",
+    "binarySha256": "4df6662fb29e990ac5306cb06485601c552f6a50db6a51be773649e618b36ddc",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 42646667936,
+    "artifactId": 13690100504,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 42646667936,
+    "job": 129264778908,
+    "id": 13690100504,
+    "name": "instance-globals-10617-8827c3de910036ad616a4ebbf441a2b4f14a7684-1",
+    "digest": "sha256:e350807b134e8c1b2a4d440170e6b29ab969cb83d58bb7f548adaf9d1c333cbf",
+    "bytes": 18676246
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-d48ea4e08e0e.json",
+    "bytes": 406334,
+    "sha256": "975c4ce1e683f3e305d7fbb3668e756bc05b60c81fb91f159e40abdfef686c01"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-0891e5274506.json",
+    "bytes": 407451,
+    "sha256": "346738906b7fd32d3de2361876972edf1ba49a3d3823f75fd737a65a80dfdc72"
+  },
+  "sourceReceipt": {
+    "path": "crates/vize_canon/tests/empty_vue_star_exports/membership/constructor_without_args/payload_update/canon_leftovers_11499.json",
+    "sha256": "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "dfe167d49e627219790c9e7c9ea6ffc40602f24b3af1008c6d346412aac73c3d"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "e4b313125edbc4e13359ec1cf5ed49d8db64ccc51e08cce5587931327e06af21"
+    },
+    "source-protocol.json": {
+      "bytes": 469007,
+      "sha256": "0d114640bc94b6b91e77f0b08204d93a4cc5e8cd15029bec622211582f06c1dc"
+    },
+    "outcomes.json": {
+      "bytes": 115167,
+      "sha256": "7bd70f875f8b94fa4721620bef493ea8cdd7250bcd7d6aa39b596843c0865ba9"
+    },
+    "qualification.json": {
+      "bytes": 119316,
+      "sha256": "405934f21f2230f90953e36339e140befffe9ff7b644f3d5d6ac57c19cb49ba6"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "bd99c4003c541f28dd7cb2238d6479d8594b328b4291077c72ff2c831b2ed183"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 495,
+    "gapCount": 4,
+    "gapIds": [
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/mixed-slot-scope",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/mixed-slot-scope"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "The component contract now passes never as the required-key set when every fallthrough member admits {}, so the four slot-shadow and mixed-slot-scope packets carry the gated $RequiredFallthroughProps reference on their one __Child_CheckProps_0 line and every later generated coordinate moved by that growth while all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

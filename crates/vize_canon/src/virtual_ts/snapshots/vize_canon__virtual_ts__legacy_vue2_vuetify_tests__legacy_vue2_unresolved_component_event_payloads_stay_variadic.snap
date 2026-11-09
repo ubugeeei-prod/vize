@@ -189,7 +189,7 @@ function __setup() {
   // @vize-map: component -> 0:67
   type __CalendarRange_Props_0 = typeof CalendarRange extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof CalendarRange> : Record<string, unknown>) : $ComponentRawProps<typeof CalendarRange>;
   type __CalendarRange_Component_0 = typeof CalendarRange;
-  type __CalendarRange_CheckProps_0 = __CalendarRange_Props_0 & $EmitListeners<__CalendarRange_Component_0> & $RequiredFallthroughProps<__CalendarRange_Component_0>;
+  type __CalendarRange_CheckProps_0 = __CalendarRange_Props_0 & $EmitListeners<__CalendarRange_Component_0> & ($FallthroughProps<__CalendarRange_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__CalendarRange_Component_0, __F, never> : $RequiredFallthroughProps<__CalendarRange_Component_0, __F> : never);
   type __CalendarRange_CheckTail_0 = $ComponentCheckTail<__CalendarRange_Component_0>;
   type __CalendarRange_Check_0 = $PropChecker<__CalendarRange_Component_0, __CalendarRange_CheckProps_0, __CalendarRange_CheckTail_0>;
 

@@ -216,7 +216,7 @@ function __setup() {
   // @vize-map: component -> 0:35
   type __VDatePicker_Props_0 = typeof VDatePicker extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof VDatePicker> : Record<string, unknown>) : $ComponentRawProps<typeof VDatePicker>;
   type __VDatePicker_Component_0 = typeof VDatePicker;
-  type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $RequiredFallthroughProps<__VDatePicker_Component_0>;
+  type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & ($FallthroughProps<__VDatePicker_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VDatePicker_Component_0, __F, never> : $RequiredFallthroughProps<__VDatePicker_Component_0, __F> : never);
   type __VDatePicker_CheckTail_0 = $ComponentCheckTail<__VDatePicker_Component_0>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
 
@@ -490,7 +490,7 @@ function __setup() {
   // @vize-map: component -> 0:35
   type __VDatePicker_Props_0 = typeof VDatePicker extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof VDatePicker> : Record<string, unknown>) : $ComponentRawProps<typeof VDatePicker>;
   type __VDatePicker_Component_0 = typeof VDatePicker;
-  type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & $RequiredFallthroughProps<__VDatePicker_Component_0>;
+  type __VDatePicker_CheckProps_0 = __VDatePicker_Props_0 & $EmitListeners<__VDatePicker_Component_0> & ($FallthroughProps<__VDatePicker_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__VDatePicker_Component_0, __F, never> : $RequiredFallthroughProps<__VDatePicker_Component_0, __F> : never);
   type __VDatePicker_CheckTail_0 = $ComponentCheckTail<__VDatePicker_Component_0>;
   type __VDatePicker_Check_0 = $PropChecker<__VDatePicker_Component_0, __VDatePicker_CheckProps_0, __VDatePicker_CheckTail_0>;
 

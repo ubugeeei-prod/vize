@@ -362,31 +362,31 @@ function __setup() {
   // @vize-map: component -> 0:47
   type __target_Props_0 = typeof target extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof target> : Record<string, unknown>) : $ComponentRawProps<typeof target>;
   type __target_Component_0 = typeof target;
-  type __target_CheckProps_0 = __target_Props_0 & $EmitListeners<__target_Component_0> & $RequiredFallthroughProps<__target_Component_0>;
+  type __target_CheckProps_0 = __target_Props_0 & $EmitListeners<__target_Component_0> & ($FallthroughProps<__target_Component_0> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__target_Component_0, __F, never> : $RequiredFallthroughProps<__target_Component_0, __F> : never);
   type __target_CheckTail_0 = $ComponentCheckTail<__target_Component_0>;
   type __target_Check_0 = $PropChecker<__target_Component_0, __target_CheckProps_0, __target_CheckTail_0>;
   // @vize-map: component -> 59:104
   type __node_Props_1 = typeof node extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof node> : Record<string, unknown>) : $ComponentRawProps<typeof node>;
   type __node_Component_1 = typeof node;
-  type __node_CheckProps_1 = __node_Props_1 & $EmitListeners<__node_Component_1> & $RequiredFallthroughProps<__node_Component_1>;
+  type __node_CheckProps_1 = __node_Props_1 & $EmitListeners<__node_Component_1> & ($FallthroughProps<__node_Component_1> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__node_Component_1, __F, never> : $RequiredFallthroughProps<__node_Component_1, __F> : never);
   type __node_CheckTail_1 = $ComponentCheckTail<__node_Component_1>;
   type __node_Check_1 = $PropChecker<__node_Component_1, __node_CheckProps_1, __node_CheckTail_1>;
   // @vize-map: component -> 116:162
   type __loose_Props_2 = typeof loose extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof loose> : Record<string, unknown>) : $ComponentRawProps<typeof loose>;
   type __loose_Component_2 = typeof loose;
-  type __loose_CheckProps_2 = __loose_Props_2 & $EmitListeners<__loose_Component_2> & $RequiredFallthroughProps<__loose_Component_2>;
+  type __loose_CheckProps_2 = __loose_Props_2 & $EmitListeners<__loose_Component_2> & ($FallthroughProps<__loose_Component_2> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__loose_Component_2, __F, never> : $RequiredFallthroughProps<__loose_Component_2, __F> : never);
   type __loose_CheckTail_2 = $ComponentCheckTail<__loose_Component_2>;
   type __loose_Check_2 = $PropChecker<__loose_Component_2, __loose_CheckProps_2, __loose_CheckTail_2>;
   // @vize-map: component -> 174:218
   type __tag_Props_3 = typeof tag extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof tag> : Record<string, unknown>) : $ComponentRawProps<typeof tag>;
   type __tag_Component_3 = typeof tag;
-  type __tag_CheckProps_3 = __tag_Props_3 & $EmitListeners<__tag_Component_3> & $RequiredFallthroughProps<__tag_Component_3>;
+  type __tag_CheckProps_3 = __tag_Props_3 & $EmitListeners<__tag_Component_3> & ($FallthroughProps<__tag_Component_3> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<__tag_Component_3, __F, never> : $RequiredFallthroughProps<__tag_Component_3, __F> : never);
   type __tag_CheckTail_3 = $ComponentCheckTail<__tag_Component_3>;
   type __tag_Check_3 = $PropChecker<__tag_Component_3, __tag_CheckProps_3, __tag_CheckTail_3>;
   // @vize-map: component -> 230:277
   type ____vize_dynamic_is_230_Props_4 = typeof __vize_dynamic_is_230 extends { __vizeCheck: infer __F } ? ($IsAny<__F> extends true ? $ComponentRawProps<typeof __vize_dynamic_is_230> : Record<string, unknown>) : $ComponentRawProps<typeof __vize_dynamic_is_230>;
   type ____vize_dynamic_is_230_Component_4 = typeof __vize_dynamic_is_230;
-  type ____vize_dynamic_is_230_CheckProps_4 = ____vize_dynamic_is_230_Props_4 & $EmitListeners<____vize_dynamic_is_230_Component_4> & $RequiredFallthroughProps<____vize_dynamic_is_230_Component_4>;
+  type ____vize_dynamic_is_230_CheckProps_4 = ____vize_dynamic_is_230_Props_4 & $EmitListeners<____vize_dynamic_is_230_Component_4> & ($FallthroughProps<____vize_dynamic_is_230_Component_4> extends infer __F ? [__F extends unknown ? {} extends __F ? never : __F : never] extends [never] ? $RequiredFallthroughProps<____vize_dynamic_is_230_Component_4, __F, never> : $RequiredFallthroughProps<____vize_dynamic_is_230_Component_4, __F> : never);
   type ____vize_dynamic_is_230_CheckTail_4 = $ComponentCheckTail<____vize_dynamic_is_230_Component_4>;
   type ____vize_dynamic_is_230_Check_4 = $PropChecker<____vize_dynamic_is_230_Component_4, ____vize_dynamic_is_230_CheckProps_4, ____vize_dynamic_is_230_CheckTail_4>;
 
