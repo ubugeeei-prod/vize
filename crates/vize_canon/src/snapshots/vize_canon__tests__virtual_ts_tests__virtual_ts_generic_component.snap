@@ -129,20 +129,20 @@ function __setup<T extends string | number>() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const props = defineProps<{
-    items: T[]
-    selected?: T
-  }>()
-  
-  const emit = defineEmits<{
-    (e: 'select', item: T): void
-  }>()
-  
-  const activeItem = ref<T | null>(null)
-  
-  // @vize-map: 16076:16270 -> 0:193
+
+
+const props = defineProps<{
+  items: T[]
+  selected?: T
+}>()
+
+const emit = defineEmits<{
+  (e: 'select', item: T): void
+}>()
+
+const activeItem = ref<T | null>(null)
+
+  // @vize-map: 16076:16244 -> 0:193
 
 
   // Setup-scoped props type artifact

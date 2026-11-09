@@ -133,11 +133,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const model = defineModel<string>({ required: true })
-  const count = defineModel<number>('count', { default: 0 })
-  
-  // @vize-map: 16140:16263 -> 0:114
+
+const model = defineModel<string>({ required: true })
+const count = defineModel<number>('count', { default: 0 })
+
+  // @vize-map: 16140:16255 -> 0:114
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

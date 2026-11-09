@@ -130,11 +130,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function updateDate(newDate: string) {
-    void newDate
-  }
-  
-  // @vize-map: 16035:16100 -> 0:100
+function updateDate(newDate: string) {
+  void newDate
+}
+
+  // @vize-map: 16035:16092 -> 0:100
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -399,11 +399,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function updateDate(newDate: string) {
-    void newDate
-  }
-  
-  // @vize-map: 6544:6609 -> 0:100
+function updateDate(newDate: string) {
+  void newDate
+}
+
+  // @vize-map: 6544:6601 -> 0:100
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

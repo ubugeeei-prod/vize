@@ -129,14 +129,14 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const Events = { UP: 'up' } as const
-  const keys = Events
-  const getKey = (name: string) => name
-  const vnodeMounted = 'save'
-  const enter = 'enter'
-  let pressed = false
-  
-  // @vize-map: 16023:16203 -> 0:197
+const Events = { UP: 'up' } as const
+const keys = Events
+const getKey = (name: string) => name
+const vnodeMounted = 'save'
+const enter = 'enter'
+let pressed = false
+
+  // @vize-map: 16023:16189 -> 0:197
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

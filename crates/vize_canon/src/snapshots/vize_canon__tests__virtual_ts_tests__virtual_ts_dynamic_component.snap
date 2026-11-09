@@ -131,15 +131,15 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const currentComponent = ref(markRaw(CompA))
-  
-  function switchComponent() {
-    currentComponent.value = currentComponent.value === CompA ? markRaw(CompB) : markRaw(CompA)
-  }
-  
-  // @vize-map: 16090:16280 -> 0:272
+
+
+const currentComponent = ref(markRaw(CompA))
+
+function switchComponent() {
+  currentComponent.value = currentComponent.value === CompA ? markRaw(CompB) : markRaw(CompA)
+}
+
+  // @vize-map: 16090:16264 -> 0:272
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

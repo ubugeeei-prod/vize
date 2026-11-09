@@ -435,10 +435,10 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const result = {} as Result<number>;
-  
-  // @vize-map: 27960:28005 -> 0:110
+
+const result = {} as Result<number>;
+
+  // @vize-map: 27960:27999 -> 0:110
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

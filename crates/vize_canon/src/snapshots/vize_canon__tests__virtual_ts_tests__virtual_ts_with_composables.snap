@@ -129,11 +129,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const { x, y } = useMouse()
-  
-  // @vize-map: 16031:16070 -> 0:70
+
+
+const { x, y } = useMouse()
+
+  // @vize-map: 16031:16062 -> 0:70
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

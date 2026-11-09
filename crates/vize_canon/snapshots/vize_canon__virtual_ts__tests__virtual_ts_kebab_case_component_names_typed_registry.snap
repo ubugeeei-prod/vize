@@ -133,12 +133,12 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const value = 'hello'
-  function handleUpdate(value: string) {
-    void value
-  }
-  
-  // @vize-map: 16578:16665 -> 0:76
+const value = 'hello'
+function handleUpdate(value: string) {
+  void value
+}
+
+  // @vize-map: 16578:16655 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

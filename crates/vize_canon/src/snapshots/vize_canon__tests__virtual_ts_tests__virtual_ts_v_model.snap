@@ -129,13 +129,13 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const text = ref('')
-  const checked = ref(false)
-  const selected = ref('option1')
-  
-  // @vize-map: 16017:16112 -> 0:108
+
+
+const text = ref('')
+const checked = ref(false)
+const selected = ref('option1')
+
+  // @vize-map: 16017:16100 -> 0:108
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

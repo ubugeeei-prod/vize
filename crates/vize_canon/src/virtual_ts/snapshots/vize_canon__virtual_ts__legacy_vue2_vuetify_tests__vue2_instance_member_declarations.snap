@@ -74,8 +74,8 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  // @vize-map: 6500:6503 -> 0:0
+
+  // @vize-map: 6500:6501 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -266,8 +266,8 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  // @vize-map: 6500:6503 -> 0:0
+
+  // @vize-map: 6500:6501 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -513,8 +513,8 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  // @vize-map: 15991:15994 -> 0:0
+
+  // @vize-map: 15991:15992 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

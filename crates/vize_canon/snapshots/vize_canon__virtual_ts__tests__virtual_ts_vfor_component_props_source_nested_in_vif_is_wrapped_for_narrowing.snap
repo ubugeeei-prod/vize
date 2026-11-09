@@ -129,9 +129,9 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const elems = { a: [1], b: ["a"] } as const;
-  const key = "a" as "a" | "b";
-  // @vize-map: 16022:16101 -> 0:105
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+  // @vize-map: 16022:16097 -> 0:105
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
