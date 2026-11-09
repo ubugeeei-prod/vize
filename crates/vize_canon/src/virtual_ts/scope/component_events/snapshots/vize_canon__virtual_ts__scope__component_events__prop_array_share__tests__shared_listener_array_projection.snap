@@ -130,12 +130,12 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const onSelect = (value: number) => value
-  const onClose = () => undefined
-  const onSave = (value: string) => value
-  const onOpen = () => undefined
-  
-  // @vize-map: 16055:16211 -> 0:209
+const onSelect = (value: number) => value
+const onClose = () => undefined
+const onSave = (value: string) => value
+const onOpen = () => undefined
+
+  // @vize-map: 16055:16201 -> 0:209
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

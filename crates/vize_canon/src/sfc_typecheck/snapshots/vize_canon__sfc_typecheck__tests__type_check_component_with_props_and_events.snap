@@ -135,11 +135,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const props = defineProps<Props>()
-  const emit = defineEmits<Emits>()
-  
-  // @vize-map: 16109:16188 -> 0:212
+
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+  // @vize-map: 16109:16180 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`

@@ -133,12 +133,12 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults;
 
   // User setup code
-  
-  
-  const inputRef = ref<HTMLInputElement | null>(null)
-void (null! as $TemplateRefs["btn"]);   const buttonEl = __vizeInferRef('btn')
-  
-  // @vize-map: 16519:16661 -> 0:135
+
+
+const inputRef = ref<HTMLInputElement | null>(null)
+void (null! as $TemplateRefs["btn"]); const buttonEl = __vizeInferRef('btn')
+
+  // @vize-map: 16519:16651 -> 0:135
 
   // Runtime reads for static template refs
   void (() => inputRef!);

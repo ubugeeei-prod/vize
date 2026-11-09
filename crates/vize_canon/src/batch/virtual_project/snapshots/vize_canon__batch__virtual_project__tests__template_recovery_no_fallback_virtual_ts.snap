@@ -32,9 +32,9 @@ function __setup() {
 
   // User setup code
 
-  const count = 1
+const count = 1
 
-  // @vize-map: 1081:1105 -> 0:17
+  // @vize-map: 1081:1099 -> 0:17
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
