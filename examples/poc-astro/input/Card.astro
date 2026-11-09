@@ -1,0 +1,15 @@
+---
+import { formatTitle } from "./format.js";
+
+const { title, items } = Astro.props;
+const count = items.length;
+const tone = count > 2 ? "busy" : "calm";
+---
+
+<section class="card">
+  <h1 class={tone}>{formatTitle(title)}</h1>
+  {count > 0 && <p>{count} items</p>}
+  <ul>
+    {items.map((item) => <li>{item}</li>)}
+  </ul>
+</section>
