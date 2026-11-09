@@ -5,11 +5,11 @@ description: "Imposer la casse configurée aux noms statiques des points d’ins
 
 # `vue/slot-name-casing`
 
-Imposer la casse configurée aux noms statiques des points d’insertion de slot rendus. La valeur par défaut est `camelCase`.
+Imposer la casse configurée aux noms statiques des points d’insertion de slot rendus.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Non | `camelCase`, `kebab-case`, `singleword` |
+| `warning` | `nuxt`, `opinionated` | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
@@ -47,7 +47,7 @@ export default defineConfig({}).withVue({
       "vue/slot-name-casing": "warn"
     },
     "ruleOptions": {
-      "vue/slot-name-casing": "kebab-case"
+      "vue/slot-name-casing": "camelCase"
     }
   },
 });
@@ -55,10 +55,9 @@ export default defineConfig({}).withVue({
 
 Lancez ensuite `vp run lint`.
 
-Omettez `ruleOptions` pour utiliser la valeur par défaut `camelCase`.
-
 ## Voir aussi
 
 - [Règles Vue](../vue.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L28)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L29)
