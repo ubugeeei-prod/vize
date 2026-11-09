@@ -1,0 +1,61 @@
+name: WSL 9P probe
+on:
+  push:
+    branches: [bench/wsl-9p-probe]
+  workflow_dispatch:
+    inputs:
+      bin_run:
+        description: Pair run whose pair-bin-linux head binary is traced
+        type: string
+        default: "42575396630"
+permissions: { contents: read, actions: read }
+jobs:
+  wsl2:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          wsl-version: "2"
+          wsl-shell-user: root
+          additional-packages: ca-certificates curl time xz-utils strace
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pair-bin-linux
+          path: pair-bin
+          run-id: ${{ inputs.bin_run || '42575396630' }}
+          github-token: ${{ github.token }}
+      - name: Resolve the Windows mount
+        shell: pwsh
+        run: |
+          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
+          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
+          $tail = $windowsPath.Substring(2).Replace('\', '/')
+          "WSL_MOUNT_ROOT=/mnt/$drive$tail/vize-pair" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Probe
+        shell: wsl-bash {0}
+        env:
+          WSLENV: WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
+        run: |
+          set -euo pipefail
+          version=24.14.0
+          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
+          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
+          uname -a
+          summary=$(wslpath "$GITHUB_STEP_SUMMARY")
+          export PROBE_OUT="$WSL_MOUNT_ROOT/probe.md"
+          mkdir -p "$WSL_MOUNT_ROOT" "$HOME/probe"
+          { echo '```'; uname -a; mount | grep -E ' /mnt/[a-z] ' || true; echo '```'; echo; } > "$PROBE_OUT"
+          cp pair-bin/head/vize "$HOME/vize" && chmod +x "$HOME/vize"
+          node tools/benchmarks/scripts/wsl-fs-probe.ts "$HOME/probe/fs" wsl2-ext4
+          node tools/benchmarks/scripts/wsl-fs-probe.ts "$WSL_MOUNT_ROOT/fs" wsl2-windows-mount
+          UV_THREADPOOL_SIZE=16 PROBE_N=50 node tools/benchmarks/scripts/wsl-fs-probe.ts "$WSL_MOUNT_ROOT/fs16" wsl2-windows-mount-pool16
+          node tools/benchmarks/scripts/wsl-strace-serial.ts "$HOME/vize" "$HOME/probe/projects" wsl2-ext4 100
+          node tools/benchmarks/scripts/wsl-strace-serial.ts "$HOME/vize" "$WSL_MOUNT_ROOT/projects" wsl2-windows-mount 100
+          cat "$PROBE_OUT" >> "$summary"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: wsl-probe, path: "${{ runner.temp }}/vize-pair/probe.md", if-no-files-found: warn }
