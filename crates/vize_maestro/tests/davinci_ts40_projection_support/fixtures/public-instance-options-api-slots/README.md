@@ -81,3 +81,9 @@ computes its owned key set once, as a defaulted type argument (issue #11654).
 Canon, the content mapper and Maestro each grow by the 11-byte helper edit;
 mapping, diagnostic and authored-hit counts are unchanged, so the changed
 coordinate hashes are derived relocation.
+
+`successor-setup-verbatim-12481` records #12550: authored setup lines are copied
+verbatim instead of being indented by two spaces (issue #12481). Canon, the
+content mapper and Maestro each shrink by the 10 removed indentation bytes;
+mapping, diagnostic and authored-hit counts are unchanged, so the changed
+coordinate hashes are derived relocation.

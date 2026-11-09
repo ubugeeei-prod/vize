@@ -49,6 +49,7 @@ mod reported_model_props_11359;
 mod runtime_null_prop;
 mod semantic_compile_errors_12522;
 mod setup_local_public_types;
+mod setup_verbatim_lines_12481;
 mod support;
 mod surplus_defaults;
 mod template_callback_event_navigation;

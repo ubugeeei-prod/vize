@@ -348,9 +348,18 @@ fn multiline_page_macro_keeps_generated_body_and_exact_diagnostic_anchors() {
     enabled
         .register_vue_file(&enabled_path, &mismatched_header)
         .unwrap();
+    // Setup lines are copied verbatim, so a tab-indented header matches too.
     assert_eq!(
-        enabled.find_by_original(&enabled_path).unwrap().content,
-        disabled.find_by_original(&disabled_path).unwrap().content,
-        "mismatching authored and generated header prefixes remain unsupported",
+        enabled
+            .find_by_original(&enabled_path)
+            .unwrap()
+            .content
+            .as_str(),
+        disabled
+            .find_by_original(&disabled_path)
+            .unwrap()
+            .content
+            .replacen("definePage(", header.as_str(), 1),
+        "a tab-indented multiline header keeps every generated argument byte",
     );
 }
