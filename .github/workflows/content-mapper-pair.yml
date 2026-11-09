@@ -282,18 +282,13 @@ jobs:
             Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
               -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -Wait
           }
-          function Cmd([string]$target) {
-            Push-Location $project; cmd.exe /d /c "`"$exe`" content-mapper < `"$stream`" > $target"; Pop-Location
-          }
           $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| launch | stdout | wall ms |', '|---|---|---|')
           $rows += "| Start-Process redirect | file | $(Median { StartProcess $out }) |"
           $rows += "| Start-Process redirect | NUL | $(Median { StartProcess 'NUL' }) |"
-          $rows += "| cmd.exe handles | file | $(Median { Cmd "`"$out`"" }) |"
-          $rows += "| cmd.exe handles | NUL | $(Median { Cmd 'NUL' }) |"
           if ($defender) {
             Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
             Start-Sleep -Seconds 2
-            $rows += "| cmd.exe handles, Defender exclusion | file | $(Median { Cmd "`"$out`"" }) |"
+            $rows += "| Start-Process redirect, Defender exclusion | file | $(Median { StartProcess $out }) |"
           }
           $rows | Write-Output
           $rows + '' | Add-Content $env:GITHUB_STEP_SUMMARY

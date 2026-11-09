@@ -142,6 +142,31 @@ function burst(build: Build, project: string, stream: string, scratch: string): 
   };
 }
 
+/**
+ * Burst through a pipe, as the TypeScript host reads the mapper. On Windows a
+ * redirected output file dominated the wall time (Start-Process to a file
+ * 3.3 s, to NUL 0.33 s, for 5,000 SFCs), which no host pays.
+ */
+async function burstPipe(build: Build, project: string, stream: string): Promise<BurstSample> {
+  const input = openSync(stream, "r");
+  const start = performance.now();
+  const child = spawn(build.bin, ["content-mapper"], {
+    cwd: project,
+    stdio: [input, "pipe", "inherit"],
+  });
+  const hash = createHash("sha256");
+  let outputBytes = 0;
+  child.stdout.on("data", (chunk: Buffer) => {
+    hash.update(chunk);
+    outputBytes += chunk.length;
+  });
+  const code = await new Promise<number | null>((done) => child.on("close", done));
+  const wallMs = performance.now() - start;
+  closeSync(input);
+  if (code !== 0) throw new Error(`${build.id} burst exited with ${code}`);
+  return { wallMs, outputBytes, outputSha: hash.digest("hex") };
+}
+
 /** Drive one transform at a time and time each reply. */
 async function serial(build: Build, project: string, messages: Message[]): Promise<SerialSample> {
   const child = spawn(build.bin, ["content-mapper"], {
@@ -224,11 +249,15 @@ async function main(): Promise<void> {
     const bursts = new Map<string, BurstSample[]>(builds.map((b) => [b.id, []]));
     const serials = new Map<string, SerialSample[]>(builds.map((b) => [b.id, []]));
     // One unrecorded warm-up per build fills the page cache for every build.
-    for (const build of builds) burst(build, project, stream, scratch);
+    const measure = (build: Build) =>
+      process.platform === "win32"
+        ? burstPipe(build, project, stream)
+        : Promise.resolve(burst(build, project, stream, scratch));
+    for (const build of builds) await measure(build);
     const serialMessages = messages.slice(0, 2 + Math.min(serialFiles, files.length));
     for (let run = 0; run < runs; run++) {
       const order = run % 2 === 0 ? builds : [...builds].reverse();
-      for (const build of order) bursts.get(build.id)?.push(burst(build, project, stream, scratch));
+      for (const build of order) bursts.get(build.id)?.push(await measure(build));
       for (const build of order)
         serials.get(build.id)?.push(await serial(build, project, serialMessages));
     }
