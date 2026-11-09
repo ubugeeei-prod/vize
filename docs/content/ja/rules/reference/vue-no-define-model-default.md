@@ -17,7 +17,7 @@ defineModel に既定値を指定する箇所を検出します。
 
 子の model が親と同期しない既定値を宣言しています。
 
-```vue annotate="remove:2"
+```vue annotate="remove:1,2"
 <script setup>
 const model = defineModel({ default: "draft" })
 </script>
@@ -28,8 +28,8 @@ const model = defineModel({ default: "draft" })
 
 初期値は親から model に渡します。
 
-```vue annotate="add:2"
-<script setup>
+```vue annotate="add:1,2"
+<script setup lang="ts">
 const model = defineModel<string>()
 </script>
 <template />

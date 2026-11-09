@@ -211,6 +211,15 @@ severity: error
 
 help:
   close the interpolation with }}
+=== compiler/missing-semicolon-after-character-reference
+compiler/missing-semicolon-after-character-reference · compiler error
+Missing semicolon after character reference.
+
+stage: surface
+severity: error
+
+help:
+  terminate the character reference with ;, for example &amp;
 === compiler/missing-whitespace-between-attributes
 compiler/missing-whitespace-between-attributes · compiler error
 Whitespace expected between attributes.
@@ -319,6 +328,15 @@ severity: error
 
 help:
   this is a compiler bug; please report it with the template that triggers it
+=== compiler/unknown-named-character-reference
+compiler/unknown-named-character-reference · compiler error
+Unknown named character reference.
+
+stage: surface
+severity: error
+
+help:
+  use a defined HTML character reference, or escape the leading & as &amp;
 === compiler/v-bind-no-expression
 compiler/v-bind-no-expression · compiler error
 v-bind is missing expression.

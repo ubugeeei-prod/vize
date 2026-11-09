@@ -240,7 +240,7 @@ fn generate(path: &Path, source: &str) -> Option<CachedDocument> {
     let allocator = vize_l0::Allocator::new();
     let template = if let Some(template) = &descriptor.template {
         let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
-        if crate::Linter::has_fatal_l1_template_parse_errors(l2.surface_errors()) {
+        if crate::Linter::has_fatal_l1_template_parse_errors(&l2) {
             return None;
         }
         Some(l2)

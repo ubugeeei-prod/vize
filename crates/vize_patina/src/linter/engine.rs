@@ -432,10 +432,9 @@ impl Linter {
             "patina.template.l1_parse_lower",
             crate::markup::L2Template::lower(allocator, source)
         );
-        let parse_errors = l2.surface_errors();
-        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
+        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(&l2);
 
-        let parse_result = Self::l1_template_parse_lint_result(filename, source, parse_errors);
+        let parse_result = Self::l1_template_parse_lint_result(filename, source, &l2);
         let lint_result = l2.lint_template().with_compatibility_root(|root| {
             self.lint_template_root(
                 template::TemplateExecution {

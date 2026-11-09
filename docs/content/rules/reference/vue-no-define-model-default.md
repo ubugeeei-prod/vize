@@ -17,7 +17,7 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 
 The child model declares a default that can desynchronize the parent.
 
-```vue annotate="remove:2"
+```vue annotate="remove:1,2"
 <script setup>
 const model = defineModel({ default: "draft" })
 </script>
@@ -28,8 +28,8 @@ const model = defineModel({ default: "draft" })
 
 The parent supplies the initial model value instead.
 
-```vue annotate="add:2"
-<script setup>
+```vue annotate="add:1,2"
+<script setup lang="ts">
 const model = defineModel<string>()
 </script>
 <template />

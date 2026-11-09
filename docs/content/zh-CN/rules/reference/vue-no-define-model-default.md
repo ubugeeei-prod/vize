@@ -17,7 +17,7 @@ description: "禁止 defineModel 中的默认值。"
 
 子 model 声明了可能与父级不同步的默认值。
 
-```vue annotate="remove:2"
+```vue annotate="remove:1,2"
 <script setup>
 const model = defineModel({ default: "draft" })
 </script>
@@ -28,8 +28,8 @@ const model = defineModel({ default: "draft" })
 
 初始 model 值由父级提供。
 
-```vue annotate="add:2"
-<script setup>
+```vue annotate="add:1,2"
+<script setup lang="ts">
 const model = defineModel<string>()
 </script>
 <template />

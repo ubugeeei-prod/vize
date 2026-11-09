@@ -4,6 +4,7 @@
 //! structural, and framework-specific conventions.
 
 pub(crate) mod a11y;
+pub(crate) mod class_values;
 pub(crate) mod html;
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod type_aware;

@@ -90,8 +90,7 @@ impl Linter {
             "patina.sfc.descriptor.template_l1_parse_lower",
             L2Template::lower(&allocator, &template.content)
         );
-        let parse_errors = l2.surface_errors();
-        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
+        let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(&l2);
         let analysis = if !has_fatal_parse_errors
             && (self.has_active_semantic_template_rules() || self.has_resolved_macro_type_demand())
         {
@@ -131,8 +130,9 @@ impl Linter {
         };
 
         let mut parse_result =
-            Self::l1_template_parse_lint_result(filename, &template.content, parse_errors);
+            Self::l1_template_parse_lint_result(filename, &template.content, &l2);
         offset_result(&mut parse_result, template.loc.start as u32);
+        Self::append_style_parse_diagnostics(&mut parse_result, &allocator, &descriptor.styles);
         let (lint_result, scripts) = self.lint_sfc_template_root(
             SfcTemplateLintInput {
                 filename,

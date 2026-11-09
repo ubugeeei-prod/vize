@@ -23,8 +23,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, Severity, TextEdit};
+use crate::ir::ByteRange;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::opinionated::class_values::unconditional_static_parts;
+use vize_armature::patterns::attribute_source_span;
 use vize_l0::String;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
@@ -74,9 +77,6 @@ impl MarkupRule for PreferStaticClass {
         let Some(expression) = binding.expression() else {
             return;
         };
-        if !is_string_literal(expression.trim()) {
-            return;
-        }
         // If a static `class` attribute is already present, the dynamic one is
         // redundant but cannot simply be folded in; just flag it.
         let mut has_static_class = false;
@@ -87,10 +87,10 @@ impl MarkupRule for PreferStaticClass {
         });
 
         let message = ctx.lint().t("vapor/prefer-static-class.message");
-        if has_static_class {
+        if is_string_literal(expression.trim()) && has_static_class {
             let help = ctx.lint().t("vapor/prefer-static-class.help");
             ctx.lint().warn_at_with_help(message, binding.range(), help);
-        } else if ctx.is_template() {
+        } else if is_string_literal(expression.trim()) && ctx.is_template() {
             let Some(argument) = binding.argument_range() else {
                 return;
             };
@@ -103,8 +103,21 @@ impl MarkupRule for PreferStaticClass {
                 range.start,
                 range.end,
             );
-        } else {
+        } else if is_string_literal(expression.trim()) {
             ctx.lint().warn_at(message, binding.range());
+        } else if let Some(retained) = binding.retained_expression() {
+            let mut parts = Vec::new();
+            unconditional_static_parts(retained.ast, &mut parts);
+            for part in parts
+                .into_iter()
+                .filter(|part| !part.text.trim().is_empty())
+            {
+                let range = retained
+                    .authored_range(part.span)
+                    .unwrap_or(binding.range());
+                let help = ctx.lint().t("vapor/prefer-static-class.help");
+                ctx.lint().warn_at_with_help(message.clone(), range, help);
+            }
         }
     }
 }
@@ -139,13 +152,13 @@ impl Rule for PreferStaticClass {
             return;
         };
 
-        let exp_content = match exp {
-            ExpressionNode::Simple(s) => s.content,
+        let simple = match exp {
+            ExpressionNode::Simple(simple) => simple,
             _ => return,
         };
 
         // Check if it's a simple string literal like "'foo'" or "`foo`" or "\"foo\""
-        let trimmed = exp_content.trim();
+        let trimmed = simple.content.trim();
         if is_string_literal(trimmed) {
             // Check if element already has a static class attribute
             let has_static_class = element.props.iter().any(|p| {
@@ -168,6 +181,28 @@ impl Rule for PreferStaticClass {
                 ctx.warn_with_help(
                     message,
                     &directive.loc,
+                    ctx.t("vapor/prefer-static-class.help"),
+                );
+            }
+        } else if let Some(parsed) = simple.js_ast.and_then(|ast| ast.as_expression()) {
+            let mut parts = Vec::new();
+            unconditional_static_parts(parsed.ast, &mut parts);
+            let start = simple.loc.span.start as usize;
+            let end = simple.loc.span.end as usize;
+            let authored = ctx.source.get(start..end).unwrap_or_default();
+            for part in parts
+                .into_iter()
+                .filter(|part| !part.text.trim().is_empty())
+            {
+                let Some(span) = attribute_source_span(authored, simple.content, part.span) else {
+                    continue;
+                };
+                ctx.warn_at_with_help(
+                    ctx.t("vapor/prefer-static-class.message"),
+                    ByteRange::new(
+                        simple.loc.span.start + span.start,
+                        simple.loc.span.start + span.end,
+                    ),
                     ctx.t("vapor/prefer-static-class.help"),
                 );
             }
@@ -262,6 +297,16 @@ mod tests {
     fn test_valid_template_literal_with_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div :class="`prefix-${suffix}`"></div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_reports_static_array_items_and_true_object_keys() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :class="['f', { g: true, conditional: active }]" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
     }
 }

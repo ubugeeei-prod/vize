@@ -211,6 +211,15 @@ compiler/missing-interpolation-end · コンパイラーエラー
 
 ヒント:
   }} で補間を閉じてください
+=== compiler/missing-semicolon-after-character-reference
+compiler/missing-semicolon-after-character-reference · コンパイラーエラー
+文字参照の末尾にセミコロンがありません。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  &amp; のように、文字参照を ; で終えてください
 === compiler/missing-whitespace-between-attributes
 compiler/missing-whitespace-between-attributes · コンパイラーエラー
 属性の間に空白が必要です。
@@ -319,6 +328,15 @@ compiler/unhandled-code-path · コンパイラーエラー
 
 ヒント:
   コンパイラーの不具合です。発生したテンプレートを添えて報告してください
+=== compiler/unknown-named-character-reference
+compiler/unknown-named-character-reference · コンパイラーエラー
+不明な名前付き文字参照です。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  定義済みの HTML 文字参照を使うか、先頭の & を &amp; としてエスケープしてください
 === compiler/v-bind-no-expression
 compiler/v-bind-no-expression · コンパイラーエラー
 v-bind に式がありません。
@@ -4278,7 +4296,7 @@ Disallow constant conditions in template expressions
 ドキュメント: docs/content/rules/reference/vue-no-constant-condition.md
 === vue/no-content-outside-block
 vue/no-content-outside-block · lint ルール
-Disallow content outside SFC top-level blocks
+SFC のトップレベルブロック外の内容を禁止する
 
 精度: exact
 対象: the SFC's top-level blocks, their order and their attributes
@@ -4897,7 +4915,7 @@ CSS プリプロセッサーを非推奨とし、モダンな CSS を推奨す�
 ドキュメント: docs/content/rules/reference/vue-no-preprocessor-lang.md
 === vue/no-props-shadow
 vue/no-props-shadow · lint ルール
-Disallow setup declarations that shadow props
+props を隠す setup 宣言を禁止する
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -4940,7 +4958,7 @@ vue/no-reserved-component-names · lint ルール
   予約名を避けるためにコンポーネント名を変更してください
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint ルール
-Disallow configured syntax in template expressions
+テンプレート式で設定された構文を禁止する
 
 精度: complete
 対象: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5005,7 +5023,7 @@ vue/no-setup-props-reactivity-loss · lint ルール
 ドキュメント: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-shadow-native-events
 vue/no-shadow-native-events · lint ルール
-Disallow component events that shadow native events
+ネイティブイベントを隠すコンポーネントイベントを禁止する
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -5906,7 +5924,7 @@ v-slotで使用する名前付きスロットにケバブケースを強制す�
   スロット名をケバブケースに変更してください。例: '#mySlot' や '#my_slot' ではなく '#my-slot'。
 === vue/sort-keys
 vue/sort-keys · lint ルール
-Require sorted keys in component option objects
+コンポーネントオプションオブジェクトのキーを並べ替える
 
 精度: complete
 対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside

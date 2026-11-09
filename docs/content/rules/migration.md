@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 177 mapped, 3 intentional divergences, and 76 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 181 mapped, 3 intentional divergences, and 72 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -122,7 +122,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-dupe-v-else-if` | [`vue/no-dupe-v-else-if`](./reference/vue-no-dupe-v-else-if.md) | mapped |
 | `vue/no-duplicate-attr-inheritance` | [`script/no-duplicate-attr-inheritance`](./reference/script-no-duplicate-attr-inheritance.md) | mapped |
 | `vue/no-duplicate-attributes` | [`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | mapped |
-| `vue/no-duplicate-class-names` | — | unimplemented |
+| `vue/no-duplicate-class-names` | [`html/no-duplicate-class`](./reference/html-no-duplicate-class.md) | mapped |
 | `vue/no-empty-component-block` | [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | mapped |
 | `vue/no-empty-pattern` | [`vue/no-empty-pattern`](./reference/vue-no-empty-pattern.md) | mapped |
 | `vue/no-export-in-script-setup` | [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | mapped |
@@ -142,7 +142,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-mutating-props` | [`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | mapped |
 | `vue/no-negated-condition` | [`vue/no-negated-condition`](./reference/vue-no-negated-condition.md) | mapped |
 | `vue/no-negated-v-if-condition` | [`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | mapped |
-| `vue/no-parsing-error` | — | unimplemented |
+| `vue/no-parsing-error` | [`parser/template`](./reference/parser-template.md) | mapped |
 | `vue/no-potential-component-option-typo` | [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | mapped |
 | `vue/no-props-shadow` | [`vue/no-props-shadow`](./reference/vue-no-props-shadow.md) | mapped |
 | `vue/no-ref-as-operand` | [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | mapped |
@@ -176,7 +176,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/no-template-target-blank` | [`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | mapped |
 | `vue/no-textarea-mustache` | [`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | mapped |
 | `vue/no-this-in-before-route-enter` | [`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | mapped |
-| `vue/no-undef-components` | — | unimplemented |
+| `vue/no-undef-components` | [`vue/require-component-registration`](./reference/vue-require-component-registration.md) | mapped |
 | `vue/no-undef-directives` | — | unimplemented |
 | `vue/no-undef-properties` | — | unimplemented |
 | `vue/no-unsupported-features` | — | unimplemented |
@@ -212,7 +212,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/prefer-define-options` | [`script/prefer-define-options`](./reference/script-prefer-define-options.md) | mapped |
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | mapped |
 | `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | mapped |
-| `vue/prefer-separate-static-class` | — | unimplemented |
+| `vue/prefer-separate-static-class` | [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | mapped |
 | `vue/prefer-single-event-payload` | — | unimplemented |
 | `vue/prefer-template` | [`vue/prefer-template`](./reference/vue-prefer-template.md) | mapped |
 | `vue/prefer-true-attribute-shorthand` | [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | mapped |

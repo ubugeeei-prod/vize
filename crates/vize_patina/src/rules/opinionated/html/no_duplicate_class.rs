@@ -1,9 +1,7 @@
 //! html/no-duplicate-class
 //!
-//! Disallow duplicate class names inside a static `class` attribute.
-//!
-//! Only the static `class="..."` attribute is inspected. Dynamic `:class`
-//! bindings are ignored because their effective value is not known statically.
+//! Disallow duplicate statically spelled class names across `class` and
+//! dynamic `:class` bindings.
 //!
 //! ## Examples
 //!
@@ -23,12 +21,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::ir::ByteRange;
-use crate::markup::{
-    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
-};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::FxHashSet;
+use crate::rules::opinionated::class_values::possible_static_parts;
+use oxc_span::Span;
+use vize_l0::{FxHashMap, FxHashSet};
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -43,36 +40,125 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDuplicateClass;
 
 impl NoDuplicateClass {
-    fn check_class_value(ctx: &mut LintContext<'_>, class_value: &str, range: ByteRange) {
-        let mut classes = class_value.split_ascii_whitespace();
-        let Some(first) = classes.next() else { return };
-        let Some(second) = classes.next() else { return };
-        let mut seen: FxHashSet<&str> = FxHashSet::default();
-        let mut reported: FxHashSet<&str> = FxHashSet::default();
-        seen.insert(first);
-
-        for class_name in std::iter::once(second).chain(classes) {
-            if !seen.insert(class_name) && reported.insert(class_name) {
-                let message = ctx.t_fmt("html/no-duplicate-class.message", &[("name", class_name)]);
+    fn report_duplicates(
+        ctx: &mut LintContext<'_>,
+        candidates: impl IntoIterator<Item = (String, crate::ir::ByteRange)>,
+        mut seen: FxHashSet<String>,
+    ) {
+        let mut reported = FxHashSet::default();
+        for (class_name, range) in candidates {
+            if !seen.insert(class_name.clone()) && reported.insert(class_name.clone()) {
+                let message =
+                    ctx.t_fmt("html/no-duplicate-class.message", &[("name", &class_name)]);
                 let help = ctx.t("html/no-duplicate-class.help");
                 ctx.warn_at_with_help(message, range, help);
             }
         }
     }
 
-    fn check_binding(ctx: &mut LintContext<'_>, binding: &MarkupBinding<'_>) {
-        if binding.kind() == MarkupBindingKind::Attribute
-            && binding.is_unqualified_arg_exact("class")
-            && let Some(class_value) = binding.static_value()
-        {
-            Self::check_class_value(ctx, class_value, binding.range());
+    fn report_dynamic_duplicates(
+        ctx: &mut LintContext<'_>,
+        candidates: impl IntoIterator<Item = (String, crate::ir::ByteRange, bool, Option<Span>)>,
+        static_classes: &FxHashSet<String>,
+    ) {
+        let mut collected = FxHashMap::<String, (bool, Option<Span>)>::default();
+        let mut reported = FxHashSet::default();
+        let mut current_part = None;
+        let mut within_part = FxHashSet::default();
+        for (class_name, range, unconditional, shared_group) in candidates {
+            let part = (range, unconditional, shared_group);
+            if current_part != Some(part) {
+                current_part = Some(part);
+                within_part.clear();
+            }
+            let duplicate_within_part = !within_part.insert(class_name.clone());
+            let duplicate_with_static = static_classes.contains(&class_name);
+            let duplicate_across_parts = collected.get(&class_name).is_some_and(
+                |(existing_unconditional, existing_group)| {
+                    unconditional
+                        || *existing_unconditional
+                        || shared_group.is_some_and(|group| Some(group) == *existing_group)
+                },
+            );
+            collected
+                .entry(class_name.clone())
+                .or_insert((unconditional, shared_group));
+            if (duplicate_within_part || duplicate_with_static || duplicate_across_parts)
+                && reported.insert(class_name.clone())
+            {
+                let message =
+                    ctx.t_fmt("html/no-duplicate-class.message", &[("name", &class_name)]);
+                let help = ctx.t("html/no-duplicate-class.help");
+                ctx.warn_at_with_help(message, range, help);
+            }
         }
     }
 
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    fn check_element(
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        inspect_dynamic: bool,
+    ) {
+        let mut static_baseline = None;
+        let mut static_groups = Vec::new();
+        let mut dynamic_groups = Vec::new();
         element.walk_bindings(&mut |binding| {
-            Self::check_binding(ctx, &binding);
+            if !binding.is_unqualified_arg_exact("class") {
+                return;
+            }
+            match binding.kind() {
+                MarkupBindingKind::Attribute => {
+                    if let Some(value) = binding.static_value() {
+                        let candidates = value
+                            .split_ascii_whitespace()
+                            .map(|name| (name.to_owned(), binding.range()))
+                            .collect::<Vec<_>>();
+                        if static_baseline.is_none() {
+                            static_baseline = Some(
+                                candidates
+                                    .iter()
+                                    .map(|(name, _)| name.clone())
+                                    .collect::<FxHashSet<_>>(),
+                            );
+                        }
+                        static_groups.push(candidates);
+                    }
+                }
+                MarkupBindingKind::Bind if inspect_dynamic => {
+                    let Some(expression) = binding.retained_expression() else {
+                        return;
+                    };
+                    let mut parts = Vec::new();
+                    possible_static_parts(expression.ast, &mut parts);
+                    let mut candidates = Vec::new();
+                    for part in parts {
+                        let range = expression
+                            .authored_range(part.span)
+                            .unwrap_or(binding.range());
+                        candidates.extend(part.text.split_ascii_whitespace().map(|name| {
+                            (
+                                name.to_owned(),
+                                range,
+                                part.unconditional,
+                                part.shared_group,
+                            )
+                        }));
+                    }
+                    dynamic_groups.push(candidates);
+                }
+                _ => {}
+            }
         });
+
+        for candidates in static_groups {
+            Self::report_duplicates(ctx, candidates, FxHashSet::default());
+        }
+        if inspect_dynamic {
+            let static_classes = static_baseline.unwrap_or_default();
+            for candidates in dynamic_groups {
+                Self::report_dynamic_duplicates(ctx, candidates, &static_classes);
+            }
+        }
     }
 }
 
@@ -82,16 +168,12 @@ impl MarkupRule for NoDuplicateClass {
     }
 
     fn traversal(&self) -> MarkupTraversal {
-        MarkupTraversal::Bindings
+        MarkupTraversal::Elements
     }
 
-    fn enter_binding<'a>(
-        &self,
-        ctx: &mut MarkupContext<'_, 'a>,
-        _element: &MarkupElement<'a>,
-        binding: &MarkupBinding<'a>,
-    ) {
-        Self::check_binding(ctx.lint(), binding);
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        let inspect_dynamic = ctx.is_template();
+        Self::check_element(ctx.lint(), element, inspect_dynamic);
     }
 }
 
@@ -105,7 +187,7 @@ impl Rule for NoDuplicateClass {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+        Self::check_element(ctx, &MarkupElement::new(element), true);
     }
 }
 #[cfg(test)]
@@ -142,10 +224,26 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_dynamic_class_ignored() {
+    fn test_invalid_dynamic_and_cross_binding_duplicates() {
         let linter = create_linter();
-        let result = linter.lint_template(r#"<div :class="['btn', 'btn']">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
+        let result = linter.lint_template(
+            r#"<div class="a" :class="active ? 'a' : 'b'" />
+<div :class="['c c', { 'd d': active }]" />
+<div :class="`e e ${active ? 'f' : ''}`" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 4, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_conditional_object_and_ternary_branches_do_not_collide() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div :class="{ 'same': top, 'same': bottom }" />
+<div :class="side ? 'same' : 'same'" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
     }
 
     #[test]

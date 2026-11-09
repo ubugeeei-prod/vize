@@ -157,6 +157,9 @@ impl<C: Callbacks> Sink for CompatSink<C> {
             }
             LexErrorCode::MissingEndTagName => ErrorCode::MissingEndTagName,
             LexErrorCode::MissingInterpolationEnd => ErrorCode::MissingInterpolationEnd,
+            LexErrorCode::MissingSemicolonAfterCharacterReference => {
+                ErrorCode::MissingSemicolonAfterCharacterReference
+            }
             LexErrorCode::MissingWhitespaceBetweenAttributes => {
                 ErrorCode::MissingWhitespaceBetweenAttributes
             }
@@ -174,6 +177,9 @@ impl<C: Callbacks> Sink for CompatSink<C> {
                 ErrorCode::UnexpectedQuestionMarkInsteadOfTagName
             }
             LexErrorCode::UnexpectedSolidusInTag => ErrorCode::UnexpectedSolidusInTag,
+            LexErrorCode::UnknownNamedCharacterReference => {
+                ErrorCode::UnknownNamedCharacterReference
+            }
         };
         self.callbacks.on_error(code, index);
     }

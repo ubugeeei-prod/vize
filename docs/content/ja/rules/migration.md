@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 177 件、意図的な差異 3 件、未実装 76 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 181 件、意図的な差異 3 件、未実装 72 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -122,7 +122,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-dupe-v-else-if` | [`vue/no-dupe-v-else-if`](./reference/vue-no-dupe-v-else-if.md) | 対応付け |
 | `vue/no-duplicate-attr-inheritance` | [`script/no-duplicate-attr-inheritance`](./reference/script-no-duplicate-attr-inheritance.md) | 対応付け |
 | `vue/no-duplicate-attributes` | [`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | 対応付け |
-| `vue/no-duplicate-class-names` | — | 未実装 |
+| `vue/no-duplicate-class-names` | [`html/no-duplicate-class`](./reference/html-no-duplicate-class.md) | 対応付け |
 | `vue/no-empty-component-block` | [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 対応付け |
 | `vue/no-empty-pattern` | [`vue/no-empty-pattern`](./reference/vue-no-empty-pattern.md) | 対応付け |
 | `vue/no-export-in-script-setup` | [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | 対応付け |
@@ -142,7 +142,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-mutating-props` | [`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | 対応付け |
 | `vue/no-negated-condition` | [`vue/no-negated-condition`](./reference/vue-no-negated-condition.md) | 対応付け |
 | `vue/no-negated-v-if-condition` | [`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | 対応付け |
-| `vue/no-parsing-error` | — | 未実装 |
+| `vue/no-parsing-error` | [`parser/template`](./reference/parser-template.md) | 対応付け |
 | `vue/no-potential-component-option-typo` | [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | 対応付け |
 | `vue/no-props-shadow` | [`vue/no-props-shadow`](./reference/vue-no-props-shadow.md) | 対応付け |
 | `vue/no-ref-as-operand` | [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | 対応付け |
@@ -176,7 +176,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/no-template-target-blank` | [`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | 対応付け |
 | `vue/no-textarea-mustache` | [`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | 対応付け |
 | `vue/no-this-in-before-route-enter` | [`vue/no-this-in-before-route-enter`](./reference/vue-no-this-in-before-route-enter.md) | 対応付け |
-| `vue/no-undef-components` | — | 未実装 |
+| `vue/no-undef-components` | [`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 対応付け |
 | `vue/no-undef-directives` | — | 未実装 |
 | `vue/no-undef-properties` | — | 未実装 |
 | `vue/no-unsupported-features` | — | 未実装 |
@@ -212,7 +212,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/prefer-define-options` | [`script/prefer-define-options`](./reference/script-prefer-define-options.md) | 対応付け |
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | 対応付け |
 | `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 対応付け |
-| `vue/prefer-separate-static-class` | — | 未実装 |
+| `vue/prefer-separate-static-class` | [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | 対応付け |
 | `vue/prefer-single-event-payload` | — | 未実装 |
 | `vue/prefer-template` | [`vue/prefer-template`](./reference/vue-prefer-template.md) | 対応付け |
 | `vue/prefer-true-attribute-shorthand` | [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 対応付け |

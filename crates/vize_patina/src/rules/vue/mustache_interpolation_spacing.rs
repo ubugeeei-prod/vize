@@ -205,6 +205,7 @@ mod tests {
             .lint_template(source, "test.vue")
             .diagnostics
             .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/mustache-interpolation-spacing")
             .map(|diagnostic| {
                 (
                     diagnostic.severity,

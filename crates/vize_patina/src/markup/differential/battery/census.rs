@@ -22,7 +22,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         + 2
         + 5
-        + 3,
+        + 3
+        // Dynamic class counterpart coverage adds one literal fixture.
+        + 1
+        // Conditional class branches add one non-colliding control fixture.
+        + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -155,6 +159,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 4
         + 3
         // The 28-rule compatibility wave adds one loop-driven call.
+        + 1
+        // Dynamic class counterpart coverage adds one literal call.
+        + 1
+        // Conditional class branches add one non-colliding control call.
         + 1,
     rule_fixture_skipped: 87
         + 4
@@ -210,7 +218,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 27
         + 29
         - 4
-        + 12,
+        + 12
+        // The dynamic class fixture contributes thirteen retained trace lines.
+        + 13
+        // The conditional branch control contributes nine retained trace lines.
+        + 9,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

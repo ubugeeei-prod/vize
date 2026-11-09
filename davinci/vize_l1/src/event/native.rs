@@ -123,6 +123,9 @@ fn surface_error_code(code: LexErrorCode) -> ErrorCode {
         }
         LexErrorCode::MissingEndTagName => ErrorCode::MissingEndTagName,
         LexErrorCode::MissingInterpolationEnd => ErrorCode::MissingInterpolationEnd,
+        LexErrorCode::MissingSemicolonAfterCharacterReference => {
+            ErrorCode::MissingSemicolonAfterCharacterReference
+        }
         LexErrorCode::MissingWhitespaceBetweenAttributes => {
             ErrorCode::MissingWhitespaceBetweenAttributes
         }
@@ -140,5 +143,6 @@ fn surface_error_code(code: LexErrorCode) -> ErrorCode {
             ErrorCode::UnexpectedQuestionMarkInsteadOfTagName
         }
         LexErrorCode::UnexpectedSolidusInTag => ErrorCode::UnexpectedSolidusInTag,
+        LexErrorCode::UnknownNamedCharacterReference => ErrorCode::UnknownNamedCharacterReference,
     }
 }

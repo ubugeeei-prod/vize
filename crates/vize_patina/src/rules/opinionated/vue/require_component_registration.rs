@@ -52,7 +52,7 @@ use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_l0::String;
 use vize_l0::ToCompactString;
 use vize_relief::BindingType;
-use vize_relief::{ElementNode, RootNode};
+use vize_relief::{ElementNode, PropNode, RootNode};
 
 use super::component_registration::options_api_registers;
 
@@ -172,7 +172,7 @@ impl RequireComponentRegistration {
                 matches!(
                     binding.binding_type,
                     BindingType::SetupConst | BindingType::SetupMaybeRef
-                ) && component_name_matches(tag, name)
+                ) && template_binding_matches(tag, name)
             })
     }
 
@@ -254,7 +254,7 @@ impl Rule for RequireComponentRegistration {
                         .any(|name| component_name_matches(&tag, name))
                     || setup_bindings
                         .iter()
-                        .any(|name| component_name_matches(&tag, name))
+                        .any(|name| template_binding_matches(&tag, name))
                 {
                     continue;
                 }
@@ -288,6 +288,31 @@ fn collect_components<'a>(root: &RootNode<'a>, result: &mut Vec<(String, u32, u3
             start,
             start + tag_str.len() as u32,
         ));
+
+        for prop in element.props.iter() {
+            let PropNode::Attribute(attribute) = prop else {
+                continue;
+            };
+            if !attribute.name.eq_ignore_ascii_case("is") {
+                continue;
+            }
+            let Some(value) = attribute
+                .value
+                .as_ref()
+                .and_then(|value| value.content.strip_prefix("vue:"))
+            else {
+                continue;
+            };
+            let value_start = attribute
+                .value
+                .as_ref()
+                .map_or(attribute.loc.span.start, |text| text.loc.span.start);
+            result.push((
+                value.to_compact_string(),
+                value_start,
+                value_start + value.len() as u32,
+            ));
+        }
 
         for child in element.children.iter() {
             if let vize_relief::TemplateChildNode::Element(el) = child {
@@ -323,6 +348,13 @@ fn component_name_matches(used: &str, registered: &str) -> bool {
     used == registered
         || names_match(used, registered)
         || to_pascal_case(used).as_str() == registered
+}
+
+fn template_binding_matches(tag: &str, binding: &str) -> bool {
+    component_name_matches(tag, binding)
+        || tag
+            .split_once('.')
+            .is_some_and(|(namespace, _)| component_name_matches(namespace, binding))
 }
 
 mod art;

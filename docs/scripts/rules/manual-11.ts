@@ -97,7 +97,7 @@ export const manual11: Record<string, RuleExample> = {
   ),
   "vue/no-define-model-default": sfc(
     '<script setup>\nconst model = defineModel({ default: "draft" })\n</script>\n<template />',
-    "<script setup>\nconst model = defineModel<string>()\n</script>\n<template />",
+    '<script setup lang="ts">\nconst model = defineModel<string>()\n</script>\n<template />',
   ),
   "vue/no-props-shadow": sfc(
     '<script setup>\ndefineProps({ value: String })\nconst value = "local"\n</script>\n<template />',

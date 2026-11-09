@@ -1,9 +1,12 @@
 //! Translation of parser errors (template and SFC) into lint diagnostics.
 
 use crate::diagnostic::LintDiagnostic;
-use vize_atelier_sfc::SfcError;
-use vize_l0::ToCompactString;
-use vize_l1::markup::SurfaceError;
+use crate::markup::L2Template;
+use vize_atelier_sfc::{SfcError, SfcStyleBlock};
+use vize_l0::{Allocator, ErrorCode, FxHashSet, ToCompactString};
+use vize_l1_to_l2::lower_style_block;
+use vize_l2::expr::{ExprRef, OpaqueReason};
+use vize_l2::op::{BindingOp, Op};
 
 use super::super::config::{LintResult, Linter};
 
@@ -34,8 +37,9 @@ impl Linter {
     pub(crate) fn l1_template_parse_lint_result(
         filename: &str,
         source: &str,
-        parse_errors: &[SurfaceError],
+        template: &L2Template<'_>,
     ) -> LintResult {
+        let parse_errors = template.surface_errors();
         let mut diagnostics = Vec::with_capacity(parse_errors.len());
         let mut error_count = 0;
         let mut warning_count = 0;
@@ -62,6 +66,19 @@ impl Linter {
             diagnostics.push(diagnostic);
         }
 
+        let mut invalid_expressions = FxHashSet::default();
+        template.for_each_invalid_expression(|span| {
+            if invalid_expressions.insert((span.start, span.end)) {
+                error_count += 1;
+                diagnostics.push(LintDiagnostic::error(
+                    TEMPLATE_PARSE_RULE,
+                    ErrorCode::InvalidExpression.message(),
+                    span.start,
+                    span.end,
+                ));
+            }
+        });
+
         LintResult {
             filename: filename.to_compact_string(),
             diagnostics,
@@ -70,10 +87,57 @@ impl Linter {
         }
     }
 
-    pub(crate) fn has_fatal_l1_template_parse_errors(parse_errors: &[SurfaceError]) -> bool {
-        parse_errors
+    pub(crate) fn has_fatal_l1_template_parse_errors(template: &L2Template<'_>) -> bool {
+        if template
+            .surface_errors()
             .iter()
             .any(|error| !error.has_documented_recovery())
+        {
+            return true;
+        }
+        let mut invalid = false;
+        template.for_each_invalid_expression(|_| invalid = true);
+        invalid
+    }
+
+    pub(crate) fn append_style_parse_diagnostics(
+        result: &mut LintResult,
+        allocator: &Allocator,
+        styles: &[SfcStyleBlock<'_>],
+    ) {
+        let mut seen: FxHashSet<(u32, u32)> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect();
+        for style in styles {
+            let op = lower_style_block(allocator, style.content.as_ref(), style.loc.start as u32);
+            let Op::Element(element) = op else {
+                continue;
+            };
+            for binding in &element.bindings {
+                let BindingOp::VueCssBind(binding) = binding else {
+                    continue;
+                };
+                let ExprRef::Opaque(opaque) = binding.value else {
+                    continue;
+                };
+                if !matches!(
+                    opaque.reason,
+                    OpaqueReason::ParseRejected | OpaqueReason::NestingRefused
+                ) || !seen.insert((opaque.span.start, opaque.span.end))
+                {
+                    continue;
+                }
+                result.error_count += 1;
+                result.diagnostics.push(LintDiagnostic::error(
+                    TEMPLATE_PARSE_RULE,
+                    ErrorCode::InvalidExpression.message(),
+                    opaque.span.start,
+                    opaque.span.end,
+                ));
+            }
+        }
     }
 
     pub(super) fn sfc_parse_lint_result(
@@ -150,11 +214,7 @@ mod tests {
     fn l1(source: &str) -> Vec<Observed> {
         let allocator = Allocator::new();
         let parsed = crate::markup::L2Template::lower(&allocator, source);
-        let result = Linter::l1_template_parse_lint_result(
-            "diagnostics.vue",
-            source,
-            parsed.surface_errors(),
-        );
+        let result = Linter::l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
         result
             .diagnostics
             .into_iter()
@@ -249,5 +309,47 @@ mod tests {
             })
             .collect::<std::vec::Vec<_>>();
         assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
+    }
+
+    #[test]
+    fn reports_retained_expression_and_character_reference_errors() {
+        let source = r#"<p :title="a +">x</p><p>{{ a b }}</p><p>Tom &amp Jerry &unknown;</p>"#;
+        let actual = l1(source);
+        assert_eq!(actual.len(), 4, "{actual:?}");
+        assert_eq!(
+            actual
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            vec![
+                "Missing semicolon after character reference.",
+                "Unknown named character reference.",
+                "Error parsing JavaScript expression.",
+                "Error parsing JavaScript expression.",
+            ]
+        );
+        assert!(
+            actual
+                .iter()
+                .all(|diagnostic| diagnostic.severity == Severity::Error)
+        );
+    }
+
+    #[test]
+    fn reports_invalid_style_v_bind_expression() {
+        let source = r#"<template><div /></template>
+<style>.box { color: v-bind(theme +); }</style>"#;
+        let result = Linter::default().lint_sfc(source, "StyleBind.vue");
+        let parser = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == TEMPLATE_PARSE_RULE)
+            .collect::<Vec<_>>();
+        assert_eq!(parser.len(), 1, "{:?}", result.diagnostics);
+        assert_eq!(parser[0].message, "Error parsing JavaScript expression.");
+        assert_eq!(
+            source.get(parser[0].start as usize..parser[0].end as usize),
+            Some("theme +")
+        );
     }
 }

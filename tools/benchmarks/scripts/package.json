@@ -24,6 +24,7 @@
     "ajv": "catalog:repo-tooling",
     "eslint": "10.4.1",
     "eslint-plugin-vue": "10.9.2",
+    "eslint-plugin-vue-scorecard": "npm:eslint-plugin-vue@10.12.0",
     "golar": "0.1.11",
     "oxfmt": "catalog:linting",
     "prettier": "catalog:repo-tooling",

@@ -211,6 +211,15 @@ compiler/missing-interpolation-end · 编译器错误
 
 帮助:
   请用 }} 结束插值
+=== compiler/missing-semicolon-after-character-reference
+compiler/missing-semicolon-after-character-reference · 编译器错误
+字符引用后缺少分号。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请用 ; 结束字符引用，例如 &amp;
 === compiler/missing-whitespace-between-attributes
 compiler/missing-whitespace-between-attributes · 编译器错误
 属性之间需要空白。
@@ -319,6 +328,15 @@ compiler/unhandled-code-path · 编译器错误
 
 帮助:
   这是编译器的缺陷；请附上触发该问题的模板进行报告
+=== compiler/unknown-named-character-reference
+compiler/unknown-named-character-reference · 编译器错误
+未知的命名字符引用。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请使用已定义的 HTML 字符引用，或将开头的 & 转义为 &amp;
 === compiler/v-bind-no-expression
 compiler/v-bind-no-expression · 编译器错误
 v-bind 缺少表达式。
@@ -4448,7 +4466,7 @@ Disallow constant conditions in template expressions
 文档: docs/content/rules/reference/vue-no-constant-condition.md
 === vue/no-content-outside-block
 vue/no-content-outside-block · lint 规则
-Disallow content outside SFC top-level blocks
+禁止在 SFC 顶层块之外放置内容
 
 精度层级: exact
 适用范围: the SFC's top-level blocks, their order and their attributes
@@ -5096,7 +5114,7 @@ vue/no-preprocessor-lang · lint 规则
 文档: docs/content/rules/reference/vue-no-preprocessor-lang.md
 === vue/no-props-shadow
 vue/no-props-shadow · lint 规则
-Disallow setup declarations that shadow props
+禁止 setup 声明遮蔽 props
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -5149,7 +5167,7 @@ vue/no-reserved-component-names · lint 规则
     </script>
 === vue/no-restricted-syntax
 vue/no-restricted-syntax · lint 规则
-Disallow configured syntax in template expressions
+禁止在模板表达式中使用配置的语法
 
 精度层级: complete
 适用范围: simple interpolation and directive expressions with a retained JavaScript AST, using default rule behavior or the typed options Patina exposes; compound expressions and unsupported selector syntax are outside
@@ -5214,7 +5232,7 @@ vue/no-setup-props-reactivity-loss · lint 规则
 文档: docs/content/rules/reference/vue-no-setup-props-reactivity-loss.md
 === vue/no-shadow-native-events
 vue/no-shadow-native-events · lint 规则
-Disallow component events that shadow native events
+禁止组件事件遮蔽原生事件
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
@@ -6180,7 +6198,7 @@ vue/slot-name-casing · lint 规则
   请将插槽名称改为短横线命名，例如使用 '#my-slot' 而非 '#mySlot' 或 '#my_slot'。
 === vue/sort-keys
 vue/sort-keys · lint 规则
-Require sorted keys in component option objects
+要求组件选项对象中的键保持排序
 
 精度层级: complete
 适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside

@@ -5,13 +5,15 @@ description: "Understand and repair template parser diagnostics reported by the 
 
 # `parser/template`
 
-The linter reports this diagnostic when the template parser finds malformed template syntax.
+The linter reports this diagnostic when the template parser finds malformed template syntax,
+an invalid directive or interpolation expression, or an invalid `v-bind()` expression in style.
 It is an operational diagnostic outside the preset rule catalogue. There is no automatic fix.
 
 ## When it is reported
 
 The diagnostic keeps the parser's message and source location. In a Vue SFC, the location points
 into the original `.vue` file, rather than starting again at the template's first character.
+This includes malformed named character references such as `&amp` and `&unknown;`.
 Parser errors classified as recoverable produce a warning; other parser errors produce an error.
 Standard-mode compatibility notices for rewritten HTML self-closing syntax are omitted from lint reports.
 
@@ -40,7 +42,8 @@ Close the nested element before its parent.
 ## How to repair it
 
 Read the message at the reported location, then check the surrounding tags, attribute names,
-quotes, and interpolation delimiters. Repair the source and run lint again. Fixing the earliest
+quotes, character references, interpolation delimiters, and JavaScript expressions. Repair the
+source and run lint again. Fixing the earliest
 syntax problem can also remove later diagnostics caused by parser recovery.
 
 Changing a lint preset does not repair the malformed template. If the message concerns the

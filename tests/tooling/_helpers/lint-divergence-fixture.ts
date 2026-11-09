@@ -47,6 +47,15 @@ export function eslintResult(file: string, messages: unknown[]) {
   return { filePath: path.join(cwd, file), messages };
 }
 
+/** Select the same mapped rules and measured files for the successor reporter. */
+export function currentContext(ruleMap: unknown, files: string[]) {
+  const entries = (ruleMap as { entries?: Record<string, unknown> }).entries ?? {};
+  return {
+    files,
+    rules: Object.fromEntries(Object.keys(entries).map((rule) => [rule, "warn"])),
+  };
+}
+
 export function compare(patinaFindings: unknown[], eslintResults: unknown[], ledger?: unknown[]) {
   return compareLintFindings({
     projectId: "fixture",

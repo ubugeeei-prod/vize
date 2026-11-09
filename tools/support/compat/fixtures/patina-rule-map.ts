@@ -49,6 +49,7 @@ export const ruleMapPath = path.join(
 );
 
 const upstreamPackage = "eslint-plugin-vue";
+const scorecardPackage = "eslint-plugin-vue-scorecard";
 const trackingIssue = 3223;
 // Code-point ordering, not localeCompare: the rule map is a checked-in artifact
 // that must be byte-identical across runners regardless of the host's ICU locale
@@ -59,6 +60,10 @@ const explicitPatinaAliases = new Map([
   ["vue/attributes-order", "vue/attribute-order"],
   ["vue/block-order", "vue/sfc-element-order"],
   ["vue/no-async-in-computed-properties", "script/no-async-in-computed"],
+  ["vue/no-duplicate-class-names", "html/no-duplicate-class"],
+  ["vue/no-parsing-error", "parser/template"],
+  ["vue/no-undef-components", "vue/require-component-registration"],
+  ["vue/prefer-separate-static-class", "vapor/prefer-static-class"],
 ]);
 const intentionalDivergenceOverrides = new Map([
   [
@@ -79,8 +84,8 @@ function loadUpstream(): { ruleIds: string[]; version: string } {
   const requireFromBench = createRequire(
     path.join(repoRoot, "tools", "benchmarks", "scripts", "package.json"),
   );
-  const plugin: unknown = requireFromBench(upstreamPackage);
-  const version = field(requireFromBench(`${upstreamPackage}/package.json`), "version");
+  const plugin: unknown = requireFromBench(scorecardPackage);
+  const version = field(requireFromBench(`${scorecardPackage}/package.json`), "version");
   const rules = field(plugin, "rules");
   assert.ok(typeof version === "string" && rules != null && typeof rules === "object");
   const benchManifest: unknown = JSON.parse(
@@ -88,9 +93,9 @@ function loadUpstream(): { ruleIds: string[]; version: string } {
   );
 
   assert.equal(
-    field(field(benchManifest, "devDependencies"), upstreamPackage),
-    version,
-    `${upstreamPackage} must stay exactly pinned in tools/benchmarks/scripts/package.json`,
+    field(field(benchManifest, "devDependencies"), scorecardPackage),
+    `npm:${upstreamPackage}@${version}`,
+    `${scorecardPackage} must stay exactly pinned in tools/benchmarks/scripts/package.json`,
   );
 
   return {
@@ -141,6 +146,13 @@ async function loadPatinaRules(): Promise<Map<string, PatinaRuleMeta>> {
       presets: (presets as readonly unknown[]).map(String).sort(byCodePoint),
     });
   }
+  // Parser diagnostics are an always-on operational channel rather than a
+  // configurable registry rule, but they are the native counterpart of
+  // vue/no-parsing-error and belong in the migration inventory.
+  rules.set("parser/template", {
+    defaultSeverity: "error",
+    presets: [],
+  });
   return rules;
 }
 
@@ -237,7 +249,7 @@ export function validateRuleMap(ruleMap: RuleMap = readRuleMap()): RuleMap {
   for (const [ruleId, entry] of Object.entries(ruleMap.entries)) {
     assert.equal(typeof entry, "object", `${ruleId} must have a structured map entry`);
     if (entry.status === "mapped") {
-      assert.match(entry.patinaRule, /^(?:script|vue)\/[a-z0-9-]+$/u);
+      assert.match(entry.patinaRule, /^(?:html|parser|script|vapor|vue)\/[a-z0-9-]+$/u);
       assert.deepEqual(Object.keys(entry).sort(), [
         "patinaPresets",
         "patinaRule",

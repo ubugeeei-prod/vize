@@ -86,13 +86,12 @@ impl Linter {
         };
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
         let l2 = L2Template::lower(&allocator, source);
-        let errors = l2.surface_errors();
-        let fatal = Self::has_fatal_l1_template_parse_errors(errors);
+        let fatal = Self::has_fatal_l1_template_parse_errors(&l2);
         let analysis = summary
             .as_deref()
             .filter(|_| !fatal)
             .map(|script| analysis::variant(&l2, script, self.has_unused_bindings_demand()));
-        let mut parsed = Self::l1_template_parse_lint_result(filename, source, errors);
+        let mut parsed = Self::l1_template_parse_lint_result(filename, source, &l2);
         offset_result(&mut parsed, offset);
         let linted = l2.lint_template().with_compatibility_root(|root| {
             self.lint_template_root(

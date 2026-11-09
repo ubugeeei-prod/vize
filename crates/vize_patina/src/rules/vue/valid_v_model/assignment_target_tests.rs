@@ -1,5 +1,5 @@
 use super::ValidVModel;
-use crate::linter::Linter;
+use crate::linter::{LintResult, Linter};
 use crate::rule::RuleRegistry;
 
 fn create_linter() -> Linter {
@@ -8,18 +8,26 @@ fn create_linter() -> Linter {
     Linter::with_registry(registry)
 }
 
+fn rule_error_count(result: &LintResult) -> usize {
+    result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-model")
+        .count()
+}
+
 #[test]
 fn invalid_v_model_call_expression() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<input v-model="foo()">"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]
 fn invalid_v_model_binary_expression() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<input v-model="foo + bar">"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]
@@ -66,14 +74,14 @@ fn invalid_v_model_this_expression() {
 fn invalid_v_model_with_trailing_tokens() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<input v-model="foo;bar">"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]
 fn invalid_v_model_malformed_expression() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<input v-model="foo(">"#, "test.vue");
-    assert_eq!(result.error_count, 1);
+    assert_eq!(rule_error_count(&result), 1);
 }
 
 #[test]

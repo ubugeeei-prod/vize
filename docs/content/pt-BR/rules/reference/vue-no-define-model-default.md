@@ -17,7 +17,7 @@ Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exi
 
 O model filho declara um padrão que pode dessincronizar o pai.
 
-```vue annotate="remove:2"
+```vue annotate="remove:1,2"
 <script setup>
 const model = defineModel({ default: "draft" })
 </script>
@@ -28,8 +28,8 @@ const model = defineModel({ default: "draft" })
 
 O pai fornece o valor inicial do model.
 
-```vue annotate="add:2"
-<script setup>
+```vue annotate="add:1,2"
+<script setup lang="ts">
 const model = defineModel<string>()
 </script>
 <template />

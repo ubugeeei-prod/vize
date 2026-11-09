@@ -113,13 +113,21 @@ fn is_empty_expression(exp: &ExpressionNode) -> bool {
 #[cfg(test)]
 mod tests {
     use super::ValidVIf;
-    use crate::linter::Linter;
+    use crate::linter::{LintResult, Linter};
     use crate::rule::RuleRegistry;
 
     fn create_linter() -> Linter {
         let mut registry = RuleRegistry::new();
         registry.register(Box::new(ValidVIf));
         Linter::with_registry(registry)
+    }
+
+    fn rule_error_count(result: &LintResult) -> usize {
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/valid-v-if")
+            .count()
     }
 
     #[test]
@@ -140,14 +148,30 @@ mod tests {
     fn test_invalid_v_if_no_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-if></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(rule_error_count(&result), 1);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "parser/template")
+                .count(),
+            1
+        );
     }
 
     #[test]
     fn test_invalid_v_if_empty_expression() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-if=""></div>"#, "test.vue");
-        assert_eq!(result.error_count, 1);
+        assert_eq!(rule_error_count(&result), 1);
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "parser/template")
+                .count(),
+            1
+        );
     }
 
     #[test]

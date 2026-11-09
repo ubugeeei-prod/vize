@@ -17,7 +17,7 @@ Champ d’application : Templates et blocs des SFC Vue, avec le contexte du scri
 
 Le model enfant déclare une valeur pouvant désynchroniser le parent.
 
-```vue annotate="remove:2"
+```vue annotate="remove:1,2"
 <script setup>
 const model = defineModel({ default: "draft" })
 </script>
@@ -28,8 +28,8 @@ const model = defineModel({ default: "draft" })
 
 Le parent fournit la valeur initiale du model.
 
-```vue annotate="add:2"
-<script setup>
+```vue annotate="add:1,2"
+<script setup lang="ts">
 const model = defineModel<string>()
 </script>
 <template />

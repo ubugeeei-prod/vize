@@ -104,10 +104,30 @@ export function parseRuleDescriptions(source: string): Array<[string, string]> {
     if (literal === undefined) throw new Error(`Unresolved RuleMeta string: ${expression}`);
     return rustString(literal);
   };
-  return [...source.matchAll(meta)].map((match) => [
+  const descriptions: Array<[string, string]> = [...source.matchAll(meta)].map((match) => [
     resolveString(match[1]),
     resolveString(match[2]),
   ]);
+
+  // These local macros keep compatibility-rule families uniform. Their
+  // invocations still declare concrete RuleMeta values, so include their
+  // literal name and description arguments in the source-level catalogue.
+  const metaInvocation = new RegExp(
+    String.raw`\bRuleMeta\s*=\s*meta!\(\s*(${stringLiteral})\s*,\s*(${stringLiteral})\s*,?\s*\)`,
+    "gsu",
+  );
+  for (const match of source.matchAll(metaInvocation)) {
+    descriptions.push([rustString(match[1]), rustString(match[2])]);
+  }
+  const coreRuleInvocation = new RegExp(
+    String.raw`\bcore_rule!\(\s*[A-Za-z_][A-Za-z0-9_]*\s*,\s*[A-Z][A-Z0-9_]*\s*,\s*(${stringLiteral})\s*,\s*(${stringLiteral})\s*,`,
+    "gsu",
+  );
+  for (const match of source.matchAll(coreRuleInvocation)) {
+    descriptions.push([rustString(match[1]), rustString(match[2])]);
+  }
+
+  return descriptions;
 }
 
 /** Every lint rule's name and `RuleMeta`-family English description. */

@@ -307,4 +307,28 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "`/` を書けるのは、タグを自己終了させる `>` の直前だけです",
         "`/` 只能出现在 `>` 之前，用于自闭合标签",
     ),
+    (
+        "compiler/missing-semicolon-after-character-reference.message",
+        "Missing semicolon after character reference.",
+        "文字参照の末尾にセミコロンがありません。",
+        "字符引用后缺少分号。",
+    ),
+    (
+        "compiler/missing-semicolon-after-character-reference.help",
+        "terminate the character reference with `;`, for example `&amp;`",
+        "`&amp;` のように、文字参照を `;` で終えてください",
+        "请用 `;` 结束字符引用，例如 `&amp;`",
+    ),
+    (
+        "compiler/unknown-named-character-reference.message",
+        "Unknown named character reference.",
+        "不明な名前付き文字参照です。",
+        "未知的命名字符引用。",
+    ),
+    (
+        "compiler/unknown-named-character-reference.help",
+        "use a defined HTML character reference, or escape the leading `&` as `&amp;`",
+        "定義済みの HTML 文字参照を使うか、先頭の `&` を `&amp;` としてエスケープしてください",
+        "请使用已定义的 HTML 字符引用，或将开头的 `&` 转义为 `&amp;`",
+    ),
 ];

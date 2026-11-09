@@ -13,7 +13,7 @@ use super::ErrorCode;
 
 impl ErrorCode {
     /// Every code, in declaration order.
-    pub const ALL: [Self; 56] = [
+    pub const ALL: [Self; 58] = [
         Self::AbruptClosingOfEmptyComment,
         Self::CdataInHtmlContent,
         Self::DuplicateAttribute,
@@ -70,6 +70,8 @@ impl ErrorCode {
         Self::ScopeIdNotSupported,
         Self::UnhandledCodePath,
         Self::ExtendPoint,
+        Self::MissingSemicolonAfterCharacterReference,
+        Self::UnknownNamedCharacterReference,
     ];
 
     /// The code a diagnostic shows and `vize explain` accepts.
@@ -148,6 +150,10 @@ impl ErrorCode {
             Self::ScopeIdNotSupported => "compiler/scope-id-not-supported",
             Self::UnhandledCodePath => "compiler/unhandled-code-path",
             Self::ExtendPoint => "compiler/extend-point",
+            Self::MissingSemicolonAfterCharacterReference => {
+                "compiler/missing-semicolon-after-character-reference"
+            }
+            Self::UnknownNamedCharacterReference => "compiler/unknown-named-character-reference",
         }
     }
 

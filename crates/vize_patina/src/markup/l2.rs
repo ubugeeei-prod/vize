@@ -19,7 +19,9 @@ use vize_l0::side_table::SideTable;
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 use vize_l1_to_l2::lower::TextParts;
 use vize_l1_to_l2::{Lowered, lower_preserving_comments};
+use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Op, Region, SlotOp};
+use vize_l2::walk::{PageWalk, visit_nodes};
 
 pub(super) mod binding;
 pub(super) mod bound;
@@ -222,6 +224,35 @@ impl<'a> L2Template<'a> {
     /// The tokenizer errors the L1 parse reported.
     pub fn surface_errors(&self) -> &[SurfaceError] {
         &self.errors
+    }
+
+    /// Visit every authored expression that the existing L1 -> L2 admission
+    /// rejected. This reads the retained expression payloads; it never parses
+    /// template text a second time.
+    pub fn for_each_invalid_expression(&self, mut visit: impl FnMut(vize_l0::Span)) {
+        let mut inspect = |expression: ExprRef<'a>| {
+            if let ExprRef::Opaque(opaque) = expression
+                && matches!(
+                    opaque.reason,
+                    OpaqueReason::ParseRejected | OpaqueReason::NestingRefused
+                )
+            {
+                visit(opaque.span);
+            }
+        };
+        let mut walk = PageWalk::new();
+        let visited = visit_nodes(
+            &mut walk,
+            &self.lowered.artifact.root.ops,
+            &mut |_, node| node.for_each_expression(&mut inspect),
+        );
+        debug_assert!(
+            visited.is_ok(),
+            "lowered template exceeds the L2 node limit"
+        );
+        for expression in &self.lowered.consumed_expressions {
+            inspect(*expression);
+        }
     }
 
     /// The lowered artifact.

@@ -294,8 +294,29 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         };
 
         if let Some((decoded, consumed)) = try_decode_entity(raw, context) {
+            if raw
+                .get(..consumed)
+                .is_some_and(|reference| !reference.ends_with(b";"))
+            {
+                self.sink.on_error(
+                    LexErrorCode::MissingSemicolonAfterCharacterReference,
+                    self.entity_start.saturating_add(consumed),
+                );
+            }
             self.emit_entity_value(decoded, consumed);
         } else {
+            let name_len = raw
+                .get(1..)
+                .unwrap_or_default()
+                .iter()
+                .take_while(|byte| byte.is_ascii_alphanumeric())
+                .count();
+            if name_len > 0 && raw.get(name_len + 1) == Some(&b';') {
+                self.sink.on_error(
+                    LexErrorCode::UnknownNamedCharacterReference,
+                    self.entity_start.saturating_add(name_len + 1),
+                );
+            }
             self.index = self.entity_start;
         }
         self.state = self.base_state;

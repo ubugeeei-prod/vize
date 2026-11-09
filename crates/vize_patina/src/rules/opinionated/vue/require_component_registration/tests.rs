@@ -58,6 +58,29 @@ import { LibraryWidget as RenamedWidget } from '@example/widgets'
 }
 
 #[test]
+fn test_allows_namespace_import_members_and_reports_vue_is_components() {
+    let linter = create_linter();
+    let sfc = r#"<script setup lang="ts">
+import * as Form from './form-components'
+</script>
+
+<template>
+  <Form.Input />
+  <Form.Label />
+  <div is="vue:MissingWidget" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "Registration.vue");
+
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(
+        result.diagnostics[0]
+            .message
+            .contains("not explicitly imported")
+    );
+}
+
+#[test]
 fn test_allows_async_component_defined_in_script_setup() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">

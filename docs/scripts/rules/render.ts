@@ -12,6 +12,7 @@ import { renderRulePage, ruleSlug } from "./rule-page.ts";
 import { ruleTranslator } from "./rule-translations.ts";
 import { generateRuleIndexes, writeOutput, type IndexedRule } from "./rule-index.ts";
 import { localizeLinks } from "./localized-links.ts";
+import { operationalDiagnosticPages } from "./operational-diagnostics.ts";
 
 const prefix = (locale: RuleLocale) => (locale === "en" ? "" : `${locale}/`);
 const sourcePurpose = (page: string) => {
@@ -75,7 +76,10 @@ export function generateRulePages({ workspaceRoot: root, rules }: RulePageOption
     });
   }
 
-  const names = new Set(rules.map((rule) => rule.name));
+  const names = new Set([
+    ...rules.map((rule) => rule.name),
+    ...operationalDiagnosticPages.map(([name]) => name),
+  ]);
   for (const locale of ["en", "ja"] as const)
     page(locale, "migration.md", migrationPage(root, names, locale === "ja"));
   generateRuleIndexes(root, indexed, checking, page);
