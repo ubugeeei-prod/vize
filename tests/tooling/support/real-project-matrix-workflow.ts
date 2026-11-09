@@ -59,6 +59,12 @@ export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
   ) as RealProjectMatrixWorkflow;
 }
 
+export function readDivergenceWorkflow(): RealProjectMatrixWorkflow {
+  return parse(
+    readRepoFile(".github", "workflows", "canonical-corpus-divergence.yml"),
+  ) as RealProjectMatrixWorkflow;
+}
+
 export function realProjectMatrixSteps(): WorkflowStep[] {
   return readRealProjectMatrixWorkflow().jobs?.["real-project-matrix"]?.steps ?? [];
 }

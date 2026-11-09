@@ -6,6 +6,9 @@ import {
   createReductionPlan,
   runReduction,
 } from "../../tools/support/compat/github/canonical-corpus-divergence-reduction.mjs";
+import { divergenceObservers } from "../../tools/support/compat/github/canonical-corpus-divergence-observers.ts";
+
+const { dom } = divergenceObservers;
 
 const fixture = "tests/_fixtures/_git/airi";
 const ledger = {
@@ -28,9 +31,10 @@ function log(divergences, samples = []) {
 }
 
 await test("clean evidence does not request a reducer", () => {
-  assert.deepEqual(createReductionPlan(log(0), ledger, `${fixture}\n`, context), {
+  assert.deepEqual(createReductionPlan(dom, log(0), ledger, `${fixture}\n`, context), {
     schema: "vize.realProjectDivergenceReductionPlan",
     version: 1,
+    observer: "dom",
     status: "clean",
     divergenceCount: 0,
     sourceCommit: context.sourceCommit,
@@ -40,6 +44,7 @@ await test("clean evidence does not request a reducer", () => {
 
 await test("the first fixture-owned sample becomes a bounded reduction plan", () => {
   const plan = createReductionPlan(
+    dom,
     log(1, [
       `${fixture}/src/A.vue: old_len=20 new_len=21 first_diff=4 old_window=old new_window=new`,
     ]),
@@ -69,6 +74,7 @@ await test("a reducer invocation records only the minimized witness and provenan
     const plan = {
       schema: "vize.realProjectDivergenceReductionPlan",
       version: 1,
+      observer: "dom",
       status: "required",
       divergenceCount: 1,
       fingerprint: "abc123abc123",

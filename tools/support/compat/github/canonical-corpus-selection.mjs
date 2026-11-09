@@ -27,7 +27,7 @@ const inputs = [
   /^tests\/_fixtures\/davinci-pug\//,
   // Compiled into the shared Rust tool library used by the corpus recorder.
   /^tests\/_fixtures\/differential\/lsp\/template-expression-globals-8015\/globals\.expected\.json$/,
-  /^tests\/_fixtures\/differential\/compiler\/(?:ssr-builtins-7891|typed-slot-handler-scope-8142|n8n-if-key-regression|maybe-ref-authored-handlers-10164|real-project-dom-reductions)\//,
+  /^tests\/_fixtures\/differential\/compiler\/(?:ssr-builtins-7891|typed-slot-handler-scope-8142|n8n-if-key-regression|maybe-ref-authored-handlers-10164|real-project-dom-reductions|real-project-ssr-reductions)\//,
   /^tests\/_fixtures\/(?:vue-ecosystem-fixtures|davinci-baseline)\.json$/,
   /^docs\/davinci\/plan\/(?:phase-3\.md|reach-budgets\.toml|corpus-baseline-notes\.md|corpus-baseline-unstable\.json)$/,
   /^tests\/davinci_test_support\//,

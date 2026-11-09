@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   findStep,
   readCanonicalCorpusWorkflow,
+  readDivergenceWorkflow,
   readRealProjectMatrixWorkflow,
   realProjectMatrixSteps,
 } from "./support/real-project-matrix-workflow.ts";
@@ -109,33 +110,62 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   });
   const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
   assert.ok(corpus);
-  const reducer = workflow.jobs?.["davinci-dom-divergence-reduction"];
+  for (const [observer, evidence] of [
+    ["dom", "canonical-corpus-dom"],
+    ["ssr", "canonical-corpus-ssr-pug"],
+  ]) {
+    const caller = workflow.jobs?.[`${observer}-divergence`];
+    assert.ok(caller);
+    assert.equal(
+      caller.if,
+      "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+    );
+    assert.equal(caller.needs, "davinci-dom-corpus");
+    assert.equal(caller.uses, "./.github/workflows/canonical-corpus-divergence.yml");
+    assert.deepEqual(caller.with, { observer, evidence });
+  }
+  const divergence = readDivergenceWorkflow();
+  const run = "${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}";
+  const reducer = divergence.jobs?.reduce;
   assert.ok(reducer);
-  assert.equal(reducer.name, "reduce canonical DOM divergence");
-  assert.equal(reducer.needs, "davinci-dom-corpus");
   assert.deepEqual(reducer.permissions, { contents: "read", actions: "read" });
   assert.equal(reducer["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   const reducerSteps = reducer.steps ?? [];
+  assert.equal(
+    findStep(reducerSteps, "Download canonical observer evidence").with?.name,
+    `${"${{ inputs.evidence }}"}-${run}`,
+  );
   const planReduction = findStep(reducerSteps, "Plan one bounded reduction");
   assert.equal(planReduction.id, "reduction");
-  assert.match(planReduction.run ?? "", /canonical-corpus-divergence-reduction\.mjs plan/);
+  assert.match(
+    planReduction.run ?? "",
+    /canonical-corpus-divergence-reduction\.mjs\s+plan "\$OBSERVER"/,
+  );
   const hydrateReduction = findStep(reducerSteps, "Hydrate the selected pinned fixture");
   assert.equal(hydrateReduction.if, "${{ steps.reduction.outputs.required == 'true' }}");
   assert.equal(hydrateReduction.run, 'git submodule update --init --depth 1 -- "$FIXTURE_PATH"');
+  const predicate = findStep(reducerSteps, "Build SSR divergence predicate");
+  assert.equal(
+    predicate.if,
+    "${{ steps.reduction.outputs.required == 'true' && inputs.observer == 'ssr' }}",
+  );
+  assert.match(
+    predicate.run ?? "",
+    /-p vize_atelier_ssr --features legacy-differential --example ssr_lane_divergence$/,
+  );
   assert.match(
     findStep(reducerSteps, "Reduce the first divergence witness").run ?? "",
-    /canonical-corpus-divergence-reduction\.mjs run/,
+    /canonical-corpus-divergence-reduction\.mjs\s+run .* target\/ci\/vize$/,
   );
   const reductionUpload = findStep(reducerSteps, "Upload reduced witness and provenance");
   assert.equal(reductionUpload.if, "${{ always() }}");
   assert.equal(
     reductionUpload.with?.name,
-    "canonical-corpus-dom-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
+    `canonical-corpus-${"${{ inputs.observer }}"}-reduction-${run}`,
   );
-  const promotion = workflow.jobs?.["davinci-dom-divergence-promotion"];
+  const promotion = divergence.jobs?.promote;
   assert.ok(promotion);
-  assert.equal(promotion.name, "promote canonical DOM divergence fixture");
-  assert.equal(promotion.needs, "davinci-dom-divergence-reduction");
+  assert.equal(promotion.needs, "reduce");
   assert.deepEqual(promotion.permissions, {
     actions: "read",
     contents: "write",
@@ -147,18 +177,15 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   );
   assert.deepEqual(promotionStep.env, { GH_TOKEN: "${{ github.token }}" });
   assert.match(promotionStep.run ?? "", /canonical-corpus-divergence-promotion\.mjs publish/);
-  const publisher = workflow.jobs?.["davinci-dom-divergence-issue"];
+  const publisher = divergence.jobs?.["file-issue"];
   assert.ok(publisher);
-  assert.equal(publisher.name, "file canonical DOM divergence");
-  assert.equal(
-    publisher.if,
-    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
-  );
-  assert.deepEqual(publisher.needs, [
-    "davinci-dom-corpus",
-    "davinci-dom-divergence-reduction",
-    "davinci-dom-divergence-promotion",
-  ]);
+  for (const job of [reducer, promotion, publisher]) {
+    assert.equal(
+      job.if,
+      "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+    );
+  }
+  assert.deepEqual(publisher.needs, ["reduce", "promote"]);
   assert.deepEqual(publisher.permissions, {
     contents: "read",
     actions: "read",
@@ -167,18 +194,14 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   assert.equal(publisher["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(publisher["timeout-minutes"], 5);
   const publisherSteps = publisher.steps ?? [];
-  const download = findStep(publisherSteps, "Download canonical DOM evidence");
+  const download = findStep(publisherSteps, "Download canonical observer evidence");
   assert.equal(download.uses, "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c");
-  assert.deepEqual(download.with, {
-    name: "canonical-corpus-dom-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}",
-    path: "real-project-davinci-dom-corpus",
-  });
-  const issue = findStep(publisherSteps, "File canonical DOM divergence issue");
+  const issue = findStep(publisherSteps, "File canonical divergence issue");
   assert.deepEqual(issue.env, { GH_TOKEN: "${{ github.token }}" });
   assert.equal(issue.shell, "bash");
   assert.match(
     issue.run ?? "",
-    /if \[\[ -s real-project-davinci-dom-promotion\/promotion\.json \]\]/,
+    /if \[\[ -s "real-project-\$OBSERVER-promotion\/promotion\.json" \]\]/,
   );
   assert.match(issue.run ?? "", /canonical-corpus-divergence-issue\.mjs "\$\{args\[@\]\}"/);
   for (const checkout of [
