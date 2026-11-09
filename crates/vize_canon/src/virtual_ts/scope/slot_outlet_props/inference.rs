@@ -184,7 +184,10 @@ impl SlotOutletChecks {
             types.push(if matches!(scope.kind, ScopeKind::VFor) {
                 cstr!("NonNullable<typeof __vize_slot_scope_{id}[number]>")
             } else {
-                cstr!("ReturnType<typeof __vize_slot_scope_{id}>")
+                cstr!(
+                    "{}<typeof __vize_slot_scope_{id}>",
+                    crate::virtual_ts::generated_names::lib("ReturnType")
+                )
             });
         }
         if types.is_empty() {

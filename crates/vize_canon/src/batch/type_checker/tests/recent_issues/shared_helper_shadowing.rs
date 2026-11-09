@@ -262,11 +262,19 @@ fn helper_isolation_preserves_the_authored_prop_diagnostic_anchor() {
 /// Lib types the projection reaches through `globalThis` once the SFC binds
 /// the same name (#12536): a same-arity `never` poison, and how many
 /// references the parent fixture's projection generates.
-const QUALIFIED_LIB_TYPES: &[(&str, &str, usize)] = &[(
-    "Parameters",
-    "type Parameters<T extends (...args: any) => any> = never",
-    4,
-)];
+const QUALIFIED_LIB_TYPES: &[(&str, &str, usize)] = &[
+    ("Awaited", "type Awaited<T> = never", 2),
+    (
+        "Parameters",
+        "type Parameters<T extends (...args: any) => any> = never",
+        4,
+    ),
+    (
+        "ReturnType",
+        "type ReturnType<T extends (...args: any) => any> = never",
+        3,
+    ),
+];
 
 const LIB_CHILD: &str = r#"<script setup lang="ts" generic="T extends string | number">
 const props = withDefaults(defineProps<{
@@ -331,11 +339,12 @@ const count = ref(0)
 const slotName = ref('extra')
 const button = useTemplateRef('button')
 function onPick(item: 'a' | 'b', index: number) {{ count.value = index; void item }}
+export type PublicCount = typeof count
 </script>
 
 <template>
   <Child value="ok" :transform="item => item.toUpperCase()" @save="item => item.toUpperCase()">
-    <template #default="{{ item }}">{{{{ item.toUpperCase() }}}}</template>
+    <template #default="{{ item }}">{{{{ item.toUpperCase() }}}}<slot name="inner" :item="item" /></template>
     <template #named="{{ label }}">{{{{ label.toUpperCase() }}}}</template>
   </Child>
   <Picker v-model="chosen" :items="[...options]" label="pick" @pick="onPick">

@@ -177,9 +177,12 @@ pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str
     }
 }
 
-/// Every lib type [`lib`] spells, checked against the SFC's bindings once per projection.
+/// Every lib type [`lib`] spells or [`push_lib_text`] rewrites, checked against
+/// the SFC's bindings once per projection.
 const LIB_TYPES: &[&str] = &[
     "Awaited",
+    "InstanceType",
+    "NoInfer",
     "Omit",
     "Parameters",
     "Partial",
@@ -201,6 +204,52 @@ pub(crate) fn lib(name: &'static str) -> String {
     } else {
         String::const_new(name)
     }
+}
+
+/// Append generated helper `text` with each [`LIB_TYPES`] reference [`lib`]
+/// would qualify spelled `globalThis.{name}`. Never pass authored text.
+pub(crate) fn push_lib_text(ts: &mut crate::virtual_ts::TextBuf, text: &str) {
+    let qualified: Vec<&'static str> = CURRENT.with_borrow(|projection| {
+        LIB_TYPES
+            .iter()
+            .copied()
+            .filter(|name| {
+                projection.shadowed.contains(name)
+                    || projection.bound.iter().any(|bound| bound == *name)
+            })
+            .collect()
+    });
+    if qualified.is_empty() {
+        ts.push_str(text);
+        return;
+    }
+    let is_word = |byte: u8| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$';
+    let bytes = text.as_bytes();
+    let (mut copied, mut index) = (0, 0);
+    while let Some(&byte) = bytes.get(index) {
+        if !is_word(byte) {
+            index += 1;
+            continue;
+        }
+        let start = index;
+        while bytes.get(index).is_some_and(|&byte| is_word(byte)) {
+            index += 1;
+        }
+        let member = start
+            .checked_sub(1)
+            .and_then(|before| bytes.get(before))
+            .is_some_and(|&before| before == b'.');
+        if !member
+            && text
+                .get(start..index)
+                .is_some_and(|word| qualified.contains(&word))
+        {
+            ts.push_str(text.get(copied..start).unwrap_or_default());
+            ts.push_str("globalThis.");
+            copied = start;
+        }
+    }
+    ts.push_str(text.get(copied..).unwrap_or_default());
 }
 
 /// The awaited return of `__setup` instantiated with `arguments` (`<T>` or
@@ -345,6 +394,24 @@ mod tests {
         assert_eq!(
             ts,
             "export type { Props_2 as Props };\ntype $PublicEmit_1<__A0> = $PublicEmit<__A0>;\ntype $NativeElement_1<__A0 extends PropertyKey> = $NativeElement<__A0>;\n"
+        );
+    }
+
+    #[test]
+    fn helper_text_qualifies_only_bound_lib_references() {
+        let text = "type $A<C> = $IsAny<InstanceType<C>> extends true ? C.InstanceType : $InstanceTypes<NoInfer<C>>;\n";
+        let render = || {
+            let mut ts = crate::virtual_ts::TextBuf::default();
+            push_lib_text(&mut ts, text);
+            ts
+        };
+        let _unbound = bind_names(None, []);
+        assert_eq!(render(), text);
+        let parameters = GenericParameters::parse("InstanceType");
+        let _bound = bind_names(Some(&parameters), []);
+        assert_eq!(
+            render(),
+            "type $A<C> = $IsAny<globalThis.InstanceType<C>> extends true ? C.InstanceType : $InstanceTypes<NoInfer<C>>;\n"
         );
     }
 
