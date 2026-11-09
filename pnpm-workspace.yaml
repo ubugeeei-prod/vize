@@ -22,6 +22,7 @@ packages:
   - "tests"
   - "tools"
   - "tests/tooling/jsx-vapor-oracle"
+  - "tests/tooling/tsrx-oracle"
   - "tests/tooling/vue-setup-await-oracle"
   - "tools/benchmarks/scripts"
   - "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
@@ -126,6 +127,13 @@ catalogs:
   jsx-vapor-oracle:
     vue: "3.6.0-rc.10"
     vue-jsx-vapor: "3.2.26"
+
+  # Reference TSRX compiler for the Vue host profile, used only by the TSRX
+  # differential oracle (tests/tooling/tsrx-oracle). Bump deliberately: a
+  # version change re-records tests/_fixtures/tsrx/reference.json.
+  tsrx-oracle:
+    "@tsrx/core": "0.5.5"
+    "@tsrx/vue": "0.3.5"
 
   # Official legacy Vue compiler baselines used by the formatter's
   # dialect-aware SFC semantic-preservation oracle. These aliases must remain
