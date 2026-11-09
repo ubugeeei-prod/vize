@@ -59,7 +59,7 @@ pub(super) enum Probe {
 }
 
 impl ProbedDirectory {
-    #[cfg(test)]
+    #[cfg(all(test, target_os = "linux"))]
     pub(super) fn listed(&self) -> bool {
         self.files.get().is_some()
     }
@@ -81,19 +81,27 @@ impl ProbedDirectory {
         Some(files)
     }
 
-    /// The listing, once this directory has earned one.
-    fn files(&self, canonical: &Path) -> Option<&FxHashSet<OsString>> {
+    /// The listing, once this directory has earned one: a request's snapshot
+    /// defers it, any other snapshot lists on the first probe.
+    fn files(
+        &self,
+        snapshot: &TypeSourceSnapshot,
+        canonical: &Path,
+    ) -> Option<&FxHashSet<OsString>> {
         if let Some(files) = self.files.get() {
             return files.as_ref();
         }
         #[cfg(target_os = "linux")]
-        if self
-            .probes
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-            < PROBES_BEFORE_LISTING
+        if snapshot.held.enabled()
+            && self
+                .probes
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+                < PROBES_BEFORE_LISTING
         {
             return None;
         }
+        #[cfg(not(target_os = "linux"))]
+        let _ = snapshot;
         self.files.get_or_init(|| Self::list(canonical)).as_ref()
     }
 
@@ -101,7 +109,7 @@ impl ProbedDirectory {
     /// probed again, so files created after the listing still resolve.
     fn probe(&self, snapshot: &TypeSourceSnapshot, canonical: &Path, name: &OsStr) -> Probe {
         if self
-            .files(canonical)
+            .files(snapshot, canonical)
             .is_some_and(|files| files.contains(name))
         {
             return Probe::Found(canonical.join(name));

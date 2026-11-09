@@ -4,55 +4,68 @@
 //! dentry nothing references once a call returns, so the next call walks its
 //! path again from the working directory: a round trip per component, and
 //! another to release each. A snapshot that serves one request holds the
-//! handle of each root, walked directory and found file it resolved, so later
-//! calls below them walk only the names under them. A held entry is not
+//! handle of its root and of each directory and file it then resolves, so
+//! later calls below them walk only the names under them. A held entry is not
 //! revalidated while the snapshot lives, which is the moment the snapshot
 //! already stands for (it freezes canonical directories and hits as well);
 //! the next snapshot walks again. The content mapper drops a snapshot after
-//! its reply is written, so the releases leave the reply path. Long-lived
-//! snapshots (an editor revision) hold nothing: a held directory could keep
-//! a Windows program from removing it.
+//! its reply is written, so the releases leave the reply path.
+//!
+//! Long-lived snapshots (an editor revision) hold nothing: a held directory
+//! could keep a Windows program from removing it. A request snapshot that a
+//! host burst shares stops holding at its second root and goes back to
+//! `stat` and listings shared per directory, which cost a burst less.
+
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Mutex, OnceLock};
 
 /// Handles one snapshot may hold: a transform needs a few.
-#[cfg(target_os = "linux")]
 const MAX_HELD: usize = 64;
 
 /// Handles all snapshots may hold at once, far below the usual soft limit of
 /// 1024 descriptors, so holding never starves a read of one.
-#[cfg(target_os = "linux")]
 const MAX_HELD_IN_PROCESS: usize = 256;
 
-#[cfg(target_os = "linux")]
-static HELD_IN_PROCESS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+static HELD_IN_PROCESS: AtomicUsize = AtomicUsize::new(0);
 
 #[derive(Debug, Default)]
 pub(super) struct HeldHandles {
     /// `None` for snapshots that hold nothing.
-    #[cfg(target_os = "linux")]
-    handles: Option<std::sync::Mutex<Vec<std::fs::File>>>,
+    handles: Option<Mutex<Vec<std::fs::File>>>,
+    first_root: OnceLock<PathBuf>,
+    shared: AtomicBool,
 }
 
 impl HeldHandles {
     pub(super) fn holding() -> Self {
         Self {
-            #[cfg(target_os = "linux")]
-            handles: Some(std::sync::Mutex::default()),
+            handles: Some(Mutex::default()),
+            first_root: OnceLock::new(),
+            shared: AtomicBool::new(false),
         }
     }
-}
 
-#[cfg(target_os = "linux")]
-impl HeldHandles {
-    /// Whether a probe should open a handle to hold rather than `lstat`.
+    /// Whether this snapshot serves one request's root, so its lookups open
+    /// handles to hold rather than `lstat` and list.
     pub(super) fn enabled(&self) -> bool {
-        self.handles.is_some()
+        self.handles.is_some() && !self.shared.load(Ordering::Relaxed)
+    }
+
+    /// Record a root this snapshot resolves.
+    pub(super) fn note_root(&self, root: &Path) {
+        if self.handles.is_some() && self.first_root.get_or_init(|| root.to_path_buf()) != root {
+            self.shared.store(true, Ordering::Relaxed);
+        }
     }
 
     /// Keep `file` open until the snapshot drops, within both limits;
     /// otherwise it closes now.
     pub(super) fn hold(&self, file: std::fs::File) {
-        use std::sync::atomic::Ordering;
-        let Some(Ok(mut handles)) = self.handles.as_ref().map(|handles| handles.lock()) else {
+        if !self.enabled() {
+            return;
+        }
+        let Some(Ok(mut handles)) = self.handles.as_ref().map(Mutex::lock) else {
             return;
         };
         if handles.len() >= MAX_HELD {
@@ -64,9 +77,16 @@ impl HeldHandles {
         }
         handles.push(file);
     }
+
+    #[cfg(test)]
+    pub(super) fn len(&self) -> usize {
+        self.handles
+            .as_ref()
+            .and_then(|handles| handles.lock().ok().map(|handles| handles.len()))
+            .unwrap_or(0)
+    }
 }
 
-#[cfg(target_os = "linux")]
 impl Drop for HeldHandles {
     fn drop(&mut self) {
         let held = self
@@ -74,16 +94,6 @@ impl Drop for HeldHandles {
             .as_mut()
             .and_then(|handles| handles.get_mut().ok().map(|handles| handles.len()))
             .unwrap_or(0);
-        HELD_IN_PROCESS.fetch_sub(held, std::sync::atomic::Ordering::Relaxed);
-    }
-}
-
-#[cfg(all(test, target_os = "linux"))]
-impl HeldHandles {
-    pub(super) fn len(&self) -> usize {
-        self.handles
-            .as_ref()
-            .and_then(|handles| handles.lock().ok().map(|handles| handles.len()))
-            .unwrap_or(0)
+        HELD_IN_PROCESS.fetch_sub(held, Ordering::Relaxed);
     }
 }

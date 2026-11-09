@@ -9,6 +9,7 @@ mod canonical_walk;
 mod directory_index;
 #[cfg(test)]
 mod directory_index_tests;
+#[cfg(target_os = "linux")]
 mod held;
 #[cfg(test)]
 mod probe_tests;
@@ -61,11 +62,8 @@ pub struct TypeSourceSnapshot {
     physical_directories: Mutex<FxHashMap<(u64, u64), PhysicalDirectoryCell>>,
     /// Directory paths known to be their own `realpath` in this snapshot.
     canonical_directories: Mutex<FxHashSet<PathBuf>>,
-    /// Handles on the roots, directories and files a request resolved.
-    #[cfg_attr(
-        not(target_os = "linux"),
-        expect(dead_code, reason = "only Linux holds O_PATH handles")
-    )]
+    /// Handles on the root, directories and files a request resolved.
+    #[cfg(target_os = "linux")]
     held: held::HeldHandles,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Dependency module facts, parsed once per snapshot with their targets
@@ -93,6 +91,7 @@ impl TypeSourceSnapshot {
     /// dentry cache walks each path once per request.
     pub fn for_request() -> Self {
         Self {
+            #[cfg(target_os = "linux")]
             held: held::HeldHandles::holding(),
             ..Self::default()
         }

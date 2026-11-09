@@ -93,6 +93,40 @@ fn request_snapshots_hold_bounded_handles_until_they_drop() {
     assert_eq!(editor.held.len(), 0);
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+fn a_second_root_shares_a_request_snapshot_without_holding_more() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    fs::create_dir_all(root.join("app")).unwrap();
+    fs::create_dir_all(root.join("shared")).unwrap();
+    for name in ["First.vue", "Second.vue"] {
+        fs::write(root.join("app").join(name), "").unwrap();
+    }
+    fs::write(root.join("shared/types.ts"), "").unwrap();
+    fs::write(root.join("shared/other.ts"), "").unwrap();
+    let sources = TypeSourceSnapshot::for_request();
+    let types = Some(root.join("shared/types.ts"));
+    assert_eq!(
+        sources.resolve_import(&root.join("app/First.vue"), "../shared/types"),
+        types
+    );
+    assert_eq!(
+        sources.resolve_import(&root.join("app/First.vue"), "../shared/types"),
+        types
+    );
+    assert!(sources.held.enabled());
+    assert_eq!(sources.held.len(), 3);
+    // A host burst: the second root shares the snapshot, which lists and
+    // stats as other snapshots do and holds nothing more.
+    assert_eq!(
+        sources.resolve_import(&root.join("app/Second.vue"), "../shared/other"),
+        Some(root.join("shared/other.ts"))
+    );
+    assert!(!sources.held.enabled());
+    assert_eq!(sources.held.len(), 3);
+}
+
 #[test]
 fn linked_roots_keep_their_target_identity_and_directory() {
     let dir = tempfile::tempdir().unwrap();

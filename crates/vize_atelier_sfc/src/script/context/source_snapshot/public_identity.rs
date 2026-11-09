@@ -1,12 +1,13 @@
 //! Caller-supplied roots and importers, canonicalized without a full `realpath`.
 //!
 //! A transform root or public importer must follow a retargeted directory link
-//! on every call, so its identity is never frozen by spelling. On Linux one
-//! `O_PATH` open walks the root once and `/proc/self/fd` names it: a root that
-//! is its own `realpath` needs nothing else, and its handle keeps its
-//! directories resolved for the snapshot. Otherwise one `stat` resolves every
-//! link on the way and names the physical directory; that directory's
-//! canonical path and probes are then shared by every root in it.
+//! on every call, so its identity is never frozen by spelling. For a request's
+//! snapshot on Linux, one `O_PATH` open walks the root once and
+//! `/proc/self/fd` names it: a root that is its own `realpath` needs nothing
+//! else, and its held handle keeps its directories resolved for the request.
+//! Otherwise one `stat` resolves every link on the way and names the physical
+//! directory; that directory's canonical path and probes are then shared by
+//! every root in it.
 
 use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
@@ -41,11 +42,16 @@ impl TypeSourceSnapshot {
         let name = path.file_name()?;
         let directory = path.parent()?;
         #[cfg(target_os = "linux")]
-        if let Some(handle) = super::realpath::canonical_handle(path) {
-            // The root and every directory above it are their own `realpath`.
-            self.note_canonical_directory(directory);
-            self.held.hold(handle);
-            return Some(path.to_path_buf());
+        {
+            self.held.note_root(path);
+            if self.held.enabled()
+                && let Some(handle) = super::realpath::canonical_handle(path)
+            {
+                // The root and every directory above it are their own `realpath`.
+                self.note_canonical_directory(directory);
+                self.held.hold(handle);
+                return Some(path.to_path_buf());
+            }
         }
         let metadata = std::fs::metadata(directory).ok()?;
         let cell = Arc::clone(
