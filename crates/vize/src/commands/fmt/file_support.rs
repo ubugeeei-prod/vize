@@ -1,13 +1,9 @@
 use std::path::Path;
 
-use super::patterns::is_unimplemented_document_extension;
+use super::patterns::is_unimplemented_document;
 
 pub(super) fn validate(path: &Path) -> Result<(), &'static str> {
-    if path
-        .extension()
-        .and_then(|extension| extension.to_str())
-        .is_some_and(is_unimplemented_document_extension)
-    {
+    if is_unimplemented_document(path) {
         return Err(
             "YAML and Markdown formatting is not implemented; these formats are excluded from default discovery",
         );
