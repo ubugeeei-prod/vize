@@ -132,15 +132,15 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const emit = defineEmits<Emits>()
-  
-  function handleClick() {
-    emit('update', 42)
-  }
-  
-  // @vize-map: 16069:16171 -> 0:163
+
+
+const emit = defineEmits<Emits>()
+
+function handleClick() {
+  emit('update', 42)
+}
+
+  // @vize-map: 16069:16155 -> 0:163
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

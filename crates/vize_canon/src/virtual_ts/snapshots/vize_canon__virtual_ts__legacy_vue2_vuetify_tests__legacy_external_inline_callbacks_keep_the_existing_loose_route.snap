@@ -77,8 +77,8 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  // @vize-map: 6585:6588 -> 0:0
+
+  // @vize-map: 6585:6586 -> 0:0
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

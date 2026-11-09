@@ -75,11 +75,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function onClick(event: string) {
-    void event
-  }
-  
-  // @vize-map: 6534:6592 -> 0:83
+function onClick(event: string) {
+  void event
+}
+
+  // @vize-map: 6534:6584 -> 0:83
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -378,11 +378,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function onClick(event: string) {
-    void event
-  }
-  
-  // @vize-map: 6534:6592 -> 0:83
+function onClick(event: string) {
+  void event
+}
+
+  // @vize-map: 6534:6584 -> 0:83
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -681,11 +681,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function onClick(event: string) {
-    void event
-  }
-  
-  // @vize-map: 6534:6592 -> 0:83
+function onClick(event: string) {
+  void event
+}
+
+  // @vize-map: 6534:6584 -> 0:83
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -129,13 +129,13 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const status = ref<'loading' | 'error' | 'success'>('loading')
-  const message = ref('')
-  const data = ref<string[]>([])
-  
-  // @vize-map: 16017:16150 -> 0:146
+
+
+const status = ref<'loading' | 'error' | 'success'>('loading')
+const message = ref('')
+const data = ref<string[]>([])
+
+  // @vize-map: 16017:16138 -> 0:146
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

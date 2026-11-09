@@ -74,18 +74,18 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function updateRange(
-    calendarDate: { start: string; end: string },
-    highlightSelectedDate: () => void,
-  ) {
-    void calendarDate
-    highlightSelectedDate()
-  }
-  function submitHooks(hooks: { before?: () => void; after?: () => void }) {
-    hooks.before?.()
-  }
-  
-  // @vize-map: 6548:6826 -> 0:303
+function updateRange(
+  calendarDate: { start: string; end: string },
+  highlightSelectedDate: () => void,
+) {
+  void calendarDate
+  highlightSelectedDate()
+}
+function submitHooks(hooks: { before?: () => void; after?: () => void }) {
+  hooks.before?.()
+}
+
+  // @vize-map: 6548:6804 -> 0:303
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

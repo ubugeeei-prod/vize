@@ -32,14 +32,14 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  
-  const __default__ = defineComponent({
-    name: "OptionsApi",
-  });
-  
+
+
+const __default__ = defineComponent({
+  name: "OptionsApi",
+});
+
   void __default__;
-  // @vize-map: 1120:1219 -> 0:100
+  // @vize-map: 1120:1207 -> 0:100
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

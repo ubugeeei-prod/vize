@@ -34,11 +34,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  
-  const local = 1;
+
+const local = 1;
   type __vize_ambient_0_type_0 = typeof local;
-  
-  // @vize-map: 1269:1341 -> 0:153
+
+  // @vize-map: 1269:1335 -> 0:153
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

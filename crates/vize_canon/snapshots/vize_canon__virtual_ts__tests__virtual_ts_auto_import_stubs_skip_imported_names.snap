@@ -132,9 +132,9 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const count = 1
-  
-  // @vize-map: 16116:16137 -> 0:54
+const count = 1
+
+  // @vize-map: 16116:16133 -> 0:54
 
 }
 

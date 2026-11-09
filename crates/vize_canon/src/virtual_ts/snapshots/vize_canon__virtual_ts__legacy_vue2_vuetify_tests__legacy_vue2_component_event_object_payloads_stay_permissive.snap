@@ -75,11 +75,11 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  function moveToDetail(item: Manager) {
-    void item
-  }
-  
-  // @vize-map: 6625:6687 -> 0:178
+function moveToDetail(item: Manager) {
+  void item
+}
+
+  // @vize-map: 6625:6679 -> 0:178
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

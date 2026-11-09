@@ -78,13 +78,13 @@ function __setup() {
   // User setup code
 
 
-  defineProps<{
-    test: string
-  }>()
+defineProps<{
+  test: string
+}>()
 
-  const count = ref(0)
+const count = ref(0)
 
-  // @vize-map: 6542:6617 -> 0:84
+  // @vize-map: 6542:6601 -> 0:84
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
