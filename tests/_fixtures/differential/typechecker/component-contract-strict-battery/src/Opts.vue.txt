@@ -1,0 +1,8 @@
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+export default defineComponent({
+  props: { level: { type: Number, required: true }, mode: { type: String as PropType<'a' | 'b'>, default: 'a' }, flag: Boolean },
+  emits: { change: (n: number) => n > 0 },
+})
+</script>
+<template><i>{{ level }} {{ mode }}</i></template>

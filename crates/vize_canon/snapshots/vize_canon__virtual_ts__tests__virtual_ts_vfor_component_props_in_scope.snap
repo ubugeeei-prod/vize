@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -207,9 +206,8 @@ function __setup() {
   type __TodoItem_CheckProps_0 = __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & $RequiredFallthroughProps<__TodoItem_Component_0>;
   type __TodoItem_CheckTail_0 = $ComponentCheckTail<__TodoItem_Component_0>;
   type __TodoItem_ValueProps_0 = $IsLibraryGenericExport<__TodoItem_Component_0> extends true ? Record<string, any> : __TodoItem_Props_0 & $EmitListeners<__TodoItem_Component_0> & $PublicComponentAttrs;
-  type __TodoItem_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__TodoItem_Component_0, K>;
   type __TodoItem_Check_0 = $PropChecker<__TodoItem_Component_0, __TodoItem_CheckProps_0, __TodoItem_CheckTail_0>;
-  type __TodoItem_0_prop_item = $PropValue<__TodoItem_ValueProps_0, 'item', __TodoItem_FallthroughValue_0<'item'>>;
+  type __TodoItem_0_prop_item = $PropValue<__TodoItem_ValueProps_0, 'item', $FallthroughValue<__TodoItem_Component_0, 'item'>>;
 
   // Component template navigation references
   void TodoItem;

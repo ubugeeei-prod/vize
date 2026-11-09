@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs
-assertion_line: 223
 expression: "format!(\"=== standard ===\\n{standard}\\n=== legacy ===\\n{legacy}\")"
 ---
 === standard ===
@@ -215,10 +214,9 @@ function __setup() {
   type __v_select_CheckProps_0 = __v_select_Props_0 & $EmitListeners<__v_select_Component_0> & $RequiredFallthroughProps<__v_select_Component_0>;
   type __v_select_CheckTail_0 = $ComponentCheckTail<__v_select_Component_0>;
   type __v_select_ValueProps_0 = $IsLibraryGenericExport<__v_select_Component_0> extends true ? Record<string, any> : __v_select_Props_0 & $EmitListeners<__v_select_Component_0> & $PublicComponentAttrs;
-  type __v_select_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__v_select_Component_0, K>;
   type __v_select_Check_0 = $PropChecker<__v_select_Component_0, __v_select_CheckProps_0, __v_select_CheckTail_0>;
-  type __v_select_0_prop_width = $PropValue<__v_select_ValueProps_0, 'width', __v_select_FallthroughValue_0<'width'>>;
-  type __v_select_0_prop_hide_details = $PropValue<__v_select_ValueProps_0, 'hide-details', $PropValue<__v_select_ValueProps_0, 'hideDetails', __v_select_FallthroughValue_0<'hide-details'>>>;
+  type __v_select_0_prop_width = $PropValue<__v_select_ValueProps_0, 'width', $FallthroughValue<__v_select_Component_0, 'width'>>;
+  type __v_select_0_prop_hide_details = $PropValue<__v_select_ValueProps_0, 'hide-details', $PropValue<__v_select_ValueProps_0, 'hideDetails', $FallthroughValue<__v_select_Component_0, 'hide-details'>>>;
 
   // Component template navigation references
   void v_select;

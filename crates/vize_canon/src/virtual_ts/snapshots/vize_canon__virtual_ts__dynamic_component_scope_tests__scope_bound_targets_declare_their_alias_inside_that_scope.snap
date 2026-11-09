@@ -257,9 +257,8 @@ expression: template
   type ____vize_dynamic_is_35_CheckProps_0 = ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $RequiredFallthroughProps<____vize_dynamic_is_35_Component_0>;
   type ____vize_dynamic_is_35_CheckTail_0 = $ComponentCheckTail<____vize_dynamic_is_35_Component_0>;
   type ____vize_dynamic_is_35_ValueProps_0 = $IsLibraryGenericExport<____vize_dynamic_is_35_Component_0> extends true ? Record<string, any> : ____vize_dynamic_is_35_Props_0 & $EmitListeners<____vize_dynamic_is_35_Component_0> & $PublicComponentAttrs;
-  type ____vize_dynamic_is_35_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<____vize_dynamic_is_35_Component_0, K>;
   type ____vize_dynamic_is_35_Check_0 = $PropChecker<____vize_dynamic_is_35_Component_0, ____vize_dynamic_is_35_CheckProps_0, ____vize_dynamic_is_35_CheckTail_0>;
-  type ____vize_dynamic_is_35_0_prop_x = $PropValue<____vize_dynamic_is_35_ValueProps_0, 'x', ____vize_dynamic_is_35_FallthroughValue_0<'x'>>;
+  type ____vize_dynamic_is_35_0_prop_x = $PropValue<____vize_dynamic_is_35_ValueProps_0, 'x', $FallthroughValue<____vize_dynamic_is_35_Component_0, 'x'>>;
   void __vize_dynamic_is_35;
   const { } = undefined as unknown as $ComponentNavigationProps<____vize_dynamic_is_35_Props_0>;
   const __vize_props_nav_0 = undefined as unknown as ____vize_dynamic_is_35_Props_0 & Record<string, unknown>;

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ title: string; count?: number; items: string[]; ariaLabel?: string; 'data-owned'?: string; onPick?: (id: number) => void; modelValue?: string; tone?: 'cold' | 'warm' }>()
+defineEmits<{ close: [value: number]; 'update:modelValue': [v: string]; select: [id: string, index: number] }>()
+</script>
+<template><div>{{ title }}</div></template>
