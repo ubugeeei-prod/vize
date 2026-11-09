@@ -57,6 +57,13 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     compareText(left.message, right.message) ||
     compareText(left.help ?? "", right.help ?? "") ||
     compareText(JSON.stringify(left.labels ?? []), JSON.stringify(right.labels ?? []));
+  const withCurrentReservedKeys = (entry, findings) => {
+    const reservedKeys = reservedKeysPackets.get(entry.id);
+    if (!reservedKeys) return findings;
+    assert.equal(reservedKeys.filename, entry.filename);
+    assert.equal(reservedKeys.sourceSha256, entry.sourceSha256);
+    return [...findings, ...reservedKeys.diagnostics].sort(compareDiagnostic);
+  };
   const withCurrentDefault = (entry, findings, { includeReservedKeys = true } = {}) => {
     const successor = defaultPackets.get(entry.id);
     const unused = unusedPackets.get(entry.id);
@@ -211,7 +218,10 @@ await test("exact reserved membership and groups preserve complete CLI packets",
         const current = companionPackets.get(entry.id).combinedCliDiagnostics;
         const findings =
           preset === "essential"
-            ? current.filter((diagnostic) => diagnostic.rule_name !== "vue/prop-name-casing")
+            ? withCurrentReservedKeys(
+                entry,
+                current.filter((diagnostic) => diagnostic.rule_name !== "vue/prop-name-casing"),
+              )
             : withCurrentDefault(entry, current);
         return {
           entry,

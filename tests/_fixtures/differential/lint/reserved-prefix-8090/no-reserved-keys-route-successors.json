@@ -20,7 +20,7 @@
   "routes": {
     "default": "current successor beside script/no-reserved-props",
     "recommended": "current successor beside script/no-reserved-props",
-    "essential": "equivalent script/no-reserved-props finding owns the final packet",
+    "essential": "current successor beside script/no-reserved-props",
     "ecosystem": "current successor beside script/no-reserved-props",
     "explicitIncremental": "current successor",
     "explicitTargetOff": "absent",
