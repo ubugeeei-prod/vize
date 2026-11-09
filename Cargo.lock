@@ -2946,6 +2946,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "poc-angular"
+version = "0.474.0"
+dependencies = [
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_span",
+ "poc-support",
+ "vize_l0",
+ "vize_l1",
+ "vize_l2",
+ "vize_l3",
+ "vize_l4",
+ "vize_oxc_parser",
+]
+
+[[package]]
+name = "poc-astro"
+version = "0.474.0"
+dependencies = [
+ "oxc_ast",
+ "oxc_ast_visit",
+ "oxc_span",
+ "poc-support",
+ "vize_l0",
+ "vize_l1",
+ "vize_l2",
+ "vize_l3",
+ "vize_l4",
+ "vize_oxc_parser",
+]
+
+[[package]]
 name = "poc-python"
 version = "0.474.0"
 dependencies = [
@@ -4868,6 +4900,7 @@ dependencies = [
  "vize_l0",
  "vize_l1",
  "vize_oxc_parser",
+ "vize_relief",
 ]
 
 [[package]]
@@ -5131,6 +5164,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "rayon",
+ "regex",
  "serde",
  "serde_json",
  "tempfile",

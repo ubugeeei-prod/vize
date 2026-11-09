@@ -27,8 +27,10 @@ use vize_l0::diag::Diagnostic;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::BudgetObserver;
 use vize_l1::markup::parse;
-use vize_l1_to_l2::pass::{L2Facts, run_transform};
-use vize_l1_to_l2::{LegacyCaps, LoweringFeatures, OpFamily, lower, lower_with_caps};
+use vize_l1_to_l2::pass::run_transform;
+use vize_l1_to_l2::{LegacyCaps, lower, lower_with_caps};
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::artifact::{ArtifactParts, LoweringFeatures, OpFamily};
 use vize_l2::dump::Page as L2Page;
 
 /// Controls whose absent families the planner is supposed to save walks on.
@@ -55,7 +57,7 @@ const DECLINED_PASS_CASES: &[(&str, &str, u32)] = &[
 fn features_of(source: &str) -> LoweringFeatures {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
-    lower(&allocator, &tree, &errors).features
+    lower(&allocator, &tree, &errors).artifact.features
 }
 
 /// A family's name, a template that builds its op, and the bit it must set.
@@ -201,6 +203,7 @@ fn products(
     folio: &L2Page,
     diagnostics: &[Diagnostic],
     provenance: usize,
+    artifact: &ArtifactParts<'_>,
     facts: &L2Facts,
 ) -> Products {
     Products {
@@ -210,10 +213,10 @@ fn products(
             .map(|diagnostic| format!("{diagnostic:?}"))
             .collect(),
         provenance,
-        if_facts: facts.if_facts.len(),
-        for_facts: facts.for_facts.len(),
+        if_facts: artifact.if_facts.len(),
+        for_facts: artifact.for_facts.len(),
         slot_facts: facts.slot_facts.len(),
-        text_facts: facts.text_facts.len(),
+        text_facts: artifact.texts.len(),
         model_faults: facts.model_faults.len(),
         static_facts: facts.static_facts.len(),
         complexity: facts.complexity.clone(),
@@ -227,7 +230,7 @@ fn run(source: &str, force_every_pass: bool) -> (Products, u32) {
     let (tree, errors) = parse(&allocator, source);
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, LegacyCaps::VUE3);
     if force_every_pass {
-        lowered.features = [
+        lowered.artifact.features = [
             OpFamily::If,
             OpFamily::For,
             OpFamily::SlotCarrier,
@@ -239,10 +242,16 @@ fn run(source: &str, force_every_pass: bool) -> (Products, u32) {
     }
     let mut budget = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.root.ops);
-    let provenance = lowered.provenance.len();
+    let folio = L2Page::of(&lowered.artifact.root.ops);
+    let provenance = lowered.artifact.provenance.len();
     (
-        products(&folio, &lowered.diagnostics, provenance, &facts),
+        products(
+            &folio,
+            &lowered.diagnostics,
+            provenance,
+            &lowered.artifact,
+            &facts,
+        ),
         budget.passes,
     )
 }

@@ -6,8 +6,8 @@ export const portugueseRules0: Record<string, readonly [string, string, string]>
   ],
   "a11y/anchor-has-content": [
     "Exigir conteúdo acessível nos elementos de âncora",
-    "O link `/settings` não tem texto nem outro conteúdo que lhe dê um nome, então seu destino não tem uma descrição acessível.",
-    "O texto visível `Settings` fornece conteúdo para o link com o mesmo destino.",
+    "O link `/app` não tem texto nem outro conteúdo que lhe dê um nome, então seu destino não tem uma descrição acessível.",
+    "O texto `alt` da imagem nativa fornece conteúdo acessível ao link com o mesmo destino.",
   ],
   "a11y/anchor-is-valid": [
     "Exigir um href válido nos elementos de âncora",
@@ -67,7 +67,7 @@ export const portugueseRules0: Record<string, readonly [string, string, string]>
   "a11y/label-has-for": [
     "Exigir controles de formulário associados aos rótulos",
     "O rótulo separado não está associado por meio de `for` nem envolve o campo.",
-    '`for="email"` corresponde ao ID do campo e associa explicitamente os dois elementos.',
+    "O input nativo aninhado fica implicitamente associado ao label que o envolve.",
   ],
   "a11y/landmark-roles": [
     "Validar a posição e a unicidade dos papéis de regiões de referência",

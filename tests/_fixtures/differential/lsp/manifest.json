@@ -382,6 +382,46 @@
       }
     },
     {
+      "id": "lsp/fix-history/folding-styl-line-comments-12328",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-styl-line-comments-12328",
+        "files": [
+          {
+            "path": "StylLineComments.vue.txt",
+            "sha256": "ff7bef444634da93b796fb657df878a886d84396563cd3060ef1df00c498f7cb"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-styl-line-comments-12328/case.json",
+        "sha256": "95f32079f9fcf3105f0b820eafedfa1cc03bae9d2e9c184bf4c48a771c266377"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "stylus-style"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/folding-unclosed-element",
       "state": "active",
       "targets": [
@@ -1431,6 +1471,55 @@
         "editor": true,
         "lint": false,
         "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lsp/regression/component-api-hover",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "component-api-hover",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "14dc9415956dcef94b2e89f113b4a9a737b5c26829df1b21ac34fd098cf4ba27"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "aa4ddea4790925a9c5bf9dacfb4c6ae08c0ec0ba71d52c4fbe659572c5605c77"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31"
+          }
+        ]
+      },
+      "case": {
+        "path": "component-api-hover/case.json",
+        "sha256": "c86ad8c184aa369253e3ee1033d24a2ad4bd88484346aa8fb94e1c78ae0b4d1e"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
       },
       "dialectCoverage": {
         "state": "source-inspected",

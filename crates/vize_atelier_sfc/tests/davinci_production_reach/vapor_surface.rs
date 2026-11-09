@@ -23,6 +23,7 @@ pub fn first_cause(template: &str) -> String {
         return format!("diagnostic:{}", message_shape(&diagnostic.message));
     }
     lowered
+        .artifact
         .provenance
         .iter()
         .find(|record| keeps_retained_lane(&record.rule, template, record.span.start))

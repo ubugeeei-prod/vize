@@ -23,5 +23,5 @@ pub use vize_l2::analysis::template_complexity::{
 /// Panics only when the L2 walk and the lowering's minted node count diverge.
 #[must_use]
 pub fn run(lowered: &Lowered<'_>) -> ComplexityFacts {
-    vize_l2::analysis::template_complexity::run(&lowered.root, lowered.op_count)
+    vize_l2::analysis::template_complexity::run(&lowered.artifact.root, lowered.op_count)
 }

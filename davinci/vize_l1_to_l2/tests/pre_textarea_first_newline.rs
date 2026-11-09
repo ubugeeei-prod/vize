@@ -69,7 +69,7 @@ fn native_comment_option_controls_first_visible_text_without_changing_spans() {
             vize_l1_to_l2::lower(&allocator, &tree, &errors)
         };
         assert!(lowered.diagnostics.is_empty());
-        let page = vize_l2::dump::Page::of(&lowered.root.ops);
+        let page = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
         let [Op::Element(element)] = page.ops.as_slice() else {
             panic!("expected pre");
         };

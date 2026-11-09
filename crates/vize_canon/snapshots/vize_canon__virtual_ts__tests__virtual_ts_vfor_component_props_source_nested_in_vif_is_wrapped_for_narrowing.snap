@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -203,9 +202,8 @@ function __setup() {
   type __Test_CheckProps_0 = __Test_Props_0 & $EmitListeners<__Test_Component_0> & $RequiredFallthroughProps<__Test_Component_0>;
   type __Test_CheckTail_0 = $ComponentCheckTail<__Test_Component_0>;
   type __Test_ValueProps_0 = $IsLibraryGenericExport<__Test_Component_0> extends true ? Record<string, any> : __Test_Props_0 & $EmitListeners<__Test_Component_0> & $PublicComponentAttrs;
-  type __Test_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__Test_Component_0, K>;
   type __Test_Check_0 = $PropChecker<__Test_Component_0, __Test_CheckProps_0, __Test_CheckTail_0>;
-  type __Test_0_prop_value1 = $PropValue<__Test_ValueProps_0, 'value1', __Test_FallthroughValue_0<'value1'>>;
+  type __Test_0_prop_value1 = $PropValue<__Test_ValueProps_0, 'value1', $FallthroughValue<__Test_Component_0, 'value1'>>;
 
   // Component template navigation references
   void Test;

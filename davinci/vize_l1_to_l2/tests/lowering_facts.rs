@@ -220,6 +220,7 @@ fn page_order_ids_key_every_table_and_match_the_folio_count() {
             // div=0, for=1 (page order: the wrap precedes the element),
             // span=2, interpolation=3; the scope keys the ui.for.
             let keys: Vec<u32> = lowered
+                .artifact
                 .scopes
                 .sorted_entries()
                 .into_iter()

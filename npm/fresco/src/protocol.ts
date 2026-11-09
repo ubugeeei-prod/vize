@@ -51,6 +51,8 @@ export type FrescoAlignContent =
 export interface FrescoCanonicalStyle<Dimension extends FrescoDimension = FrescoDimension> {
   display?: FrescoDisplay;
   position?: FrescoPosition;
+  /** Signed 32-bit paint and pointer-target order among siblings. Higher values are topmost. @default 0 */
+  zIndex?: number;
   top?: Dimension;
   right?: Dimension;
   bottom?: Dimension;
@@ -91,6 +93,7 @@ export interface FrescoCanonicalStyle<Dimension extends FrescoDimension = Fresco
 
 /** Compatibility aliases accepted by intrinsic host-node style bags. */
 export interface FrescoSnakeStyleAliases<Dimension extends FrescoDimension = FrescoDimension> {
+  z_index?: number;
   overflow_x?: FrescoOverflow;
   overflow_y?: FrescoOverflow;
   flex_direction?: FrescoFlexDirection;
@@ -257,6 +260,8 @@ export type FrescoMouseEventKind =
   | "up"
   | "drag"
   | "moved"
+  | "enter"
+  | "leave"
   | "scroll-up"
   | "scroll-down"
   | "scroll-left"

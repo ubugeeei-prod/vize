@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-styl-line-comments-12328",
+  "provenance": {
+    "fixCommit": "383a94d4be8f026af8769cab46c9538dff54a043",
+    "witnessPath": "crates/vize_maestro/src/server/document_structure/folding/tests.rs",
+    "witnessTest": "stylus_spellings_skip_braces_in_line_comments",
+    "inputOrigin": "exact styl source bytes from the fix's folding regression test",
+    "contractOrigin": "line regions from the fix's folding regression test; `// }` stays a comment for the styl spelling"
+  },
+  "input": {
+    "source": "StylLineComments.vue.txt",
+    "runtimePath": "StylLineComments.vue",
+    "sha256": "ff7bef444634da93b796fb657df878a886d84396563cd3060ef1df00c498f7cb"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "60b9495b7b635f8c43ab7a78a96b63e6815cd6eb64734c4a1f1b094acfe4311b"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "legacy response contract; selected witnesses do not establish full fix history or native acceptance"
+}

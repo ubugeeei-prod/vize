@@ -134,6 +134,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         corsa_path: effective_corsa_path,
         servers: corsa_servers,
         checkers: args.checkers.map(std::num::NonZero::get),
+        program_concurrency: 1,
         options_api,
         legacy_vue2,
         jsx_typecheck,
@@ -165,7 +166,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // sharing a mirror take turns, since its materialize lock wait times out.
     let (checked, preparation_error) = super::overlap::prepare_and_check_overlapped(
         candidates,
-        |candidate| {
+        |candidate, program_concurrency| {
+            let mut settings = settings.clone();
+            settings.program_concurrency = program_concurrency;
             let prepared = prepare_candidate(
                 args,
                 candidate,

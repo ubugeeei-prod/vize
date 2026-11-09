@@ -61,8 +61,8 @@ export const frenchVue0 = {
   ],
   "vue/no-bare-strings-in-template": [
     "Interdire le texte brut destiné aux utilisateurs dans les templates lorsqu’il devrait être internationalisé",
-    "Le texte visible et les attributs de nommage contiennent des chaînes non traduites directement dans le template.",
-    "Le contenu traduisible appelle $t ; les exemples de ponctuation et de valeurs uniquement numériques sont des exceptions autorisées.",
+    "Le texte visible contient une chaîne non traduite directement dans le template.",
+    "Le libellé de la touche provient de `$t` au lieu d’une chaîne brute dans le template.",
   ],
   "vue/no-boolean-attr-value": [
     "Interdire les valeurs explicites des attributs HTML booléens",

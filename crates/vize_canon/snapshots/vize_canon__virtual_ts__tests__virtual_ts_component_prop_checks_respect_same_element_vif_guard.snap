@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/virtual_ts/tests.rs
-assertion_line: 39
 expression: value
 ---
 /// <reference lib="es2022" />
@@ -200,9 +199,8 @@ function __setup() {
   type __LinkComp_CheckProps_0 = __LinkComp_Props_0 & $EmitListeners<__LinkComp_Component_0> & $RequiredFallthroughProps<__LinkComp_Component_0>;
   type __LinkComp_CheckTail_0 = $ComponentCheckTail<__LinkComp_Component_0>;
   type __LinkComp_ValueProps_0 = $IsLibraryGenericExport<__LinkComp_Component_0> extends true ? Record<string, any> : __LinkComp_Props_0 & $EmitListeners<__LinkComp_Component_0> & $PublicComponentAttrs;
-  type __LinkComp_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__LinkComp_Component_0, K>;
   type __LinkComp_Check_0 = $PropChecker<__LinkComp_Component_0, __LinkComp_CheckProps_0, __LinkComp_CheckTail_0>;
-  type __LinkComp_0_prop_to = $PropValue<__LinkComp_ValueProps_0, 'to', __LinkComp_FallthroughValue_0<'to'>>;
+  type __LinkComp_0_prop_to = $PropValue<__LinkComp_ValueProps_0, 'to', $FallthroughValue<__LinkComp_Component_0, 'to'>>;
 
   // Component template navigation references
   void LinkComp;

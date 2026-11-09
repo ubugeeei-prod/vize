@@ -1,6 +1,6 @@
 use vize_l0::Span;
 
-use crate::lower::TextPart;
+use vize_l2::analysis::text_facts::TextPart;
 
 use super::{EmitCx, EmitError, Reason, emit_compound_parts};
 use crate::emit::buf::Buf;

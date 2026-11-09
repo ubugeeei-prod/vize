@@ -9,8 +9,8 @@ use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
 use crate::lower::Lowered;
-use crate::pass::L2Facts;
-use crate::pass::walk::PageWalk;
+use vize_l2::analysis::pass_facts::L2Facts;
+use vize_l2::walk::PageWalk;
 
 use super::buf::Buf;
 use super::fragment::emit_root;
@@ -83,18 +83,20 @@ pub(super) fn emit_dom_observed<'f, P>(
     let static_cache = options.inline
         || (options.hoist_static
             && static_cache::enabled(
-                &lowered.root,
+                &lowered.artifact.root,
                 facts,
-                &lowered.wrappers,
+                &lowered.artifact.branch_fragments,
                 options.hoisted_scope_id.is_none(),
             ));
     let mut cx = EmitCx {
         buf: Buf::new(options.inline),
-        source: lowered.source,
+        source: lowered.artifact.source,
         facts,
-        scopes: &lowered.scopes,
-        wrappers: &lowered.wrappers,
-        for_wrappers: &lowered.for_wrappers,
+        texts: &lowered.artifact.texts,
+        if_facts: &lowered.artifact.if_facts,
+        scopes: &lowered.artifact.scopes,
+        wrappers: &lowered.artifact.branch_fragments,
+        for_wrappers: &lowered.artifact.loop_fragments,
         patch_facts: super::patch::PatchFactsTable::new(),
         walk: PageWalk::new(),
         scope_names: StdVec::new(),
@@ -117,8 +119,8 @@ pub(super) fn emit_dom_observed<'f, P>(
         static_cache,
         parent_ns: Namespace::Html,
         prefix_identifiers: options.prefix_identifiers,
-        untracked_children: lowered.features.has_jsx_child_values(),
-        jsx_class: lowered.features.has_jsx_class_bindings(),
+        untracked_children: lowered.artifact.features.has_jsx_child_values(),
+        jsx_class: lowered.artifact.features.has_jsx_class_bindings(),
         hoist_static: options.hoist_static,
         is_ts: options.is_ts,
         strict_slot_params,
@@ -140,15 +142,16 @@ pub(super) fn emit_dom_observed<'f, P>(
         ),
     };
     cx.scope.enable_vdom_setup_writes();
-    let filters = &facts.legacy.filters;
-    if facts.legacy.filter_helper_precedes_components {
+    let filters = &facts.filters.names;
+    if facts.filters.resolve_before_components {
         cx.buf.prefer(Helper::ResolveFilter);
     }
     let mut helper_walk = PageWalk::new();
     let prefer_cx = helper_preference::PreferCx {
-        source: lowered.source,
+        source: lowered.artifact.source,
         facts,
-        for_wrappers: &lowered.for_wrappers,
+        texts: &lowered.artifact.texts,
+        for_wrappers: &lowered.artifact.loop_fragments,
         bindings: options.bindings,
         inline: options.inline,
         authored_eager_unref: core::cell::Cell::new(u32::MAX),
@@ -156,19 +159,24 @@ pub(super) fn emit_dom_observed<'f, P>(
         first_for_source_unref: core::cell::Cell::new(false),
         early_transition_slot_for: core::cell::Cell::new(false),
     };
-    helper_preference::prefer_helpers(&mut cx.buf, &prefer_cx, &mut helper_walk, &lowered.root);
+    helper_preference::prefer_helpers(
+        &mut cx.buf,
+        &prefer_cx,
+        &mut helper_walk,
+        &lowered.artifact.root,
+    );
     let authored_eager_unref = prefer_cx.authored_eager_unref.get();
     let authored_for = prefer_cx.authored_for.get();
     let first_for_source_unref = prefer_cx.first_for_source_unref.get();
     let early_transition_slot_for = prefer_cx.early_transition_slot_for.get();
-    fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
+    fragment::prefer_root_fragment(&mut cx.buf, &lowered.artifact.root);
     cx.buf
         .push(options.mode.render_signature(options.bindings.is_some()));
     cx.buf.indent();
     cx.buf.newline();
     let assets_start = cx.buf.code.len();
-    let names = component::collect_names(&lowered.root, lowered.source);
-    let dirs = directive::collect_names(&lowered.root);
+    let names = component::collect_names(&lowered.artifact.root, lowered.artifact.source);
+    let dirs = directive::collect_names(&lowered.artifact.root);
     let mut resolved_assets = false;
     if !names.is_empty() {
         resolved_assets |= component::emit_resolves(&mut cx, &names);
@@ -187,7 +195,7 @@ pub(super) fn emit_dom_observed<'f, P>(
     }
     cx.buf.push("return ");
     let return_expr_start = cx.buf.code.len();
-    emit_root(&mut cx, &lowered.root)?;
+    emit_root(&mut cx, &lowered.artifact.root)?;
     let return_expr_end = cx.buf.code.len();
     cx.buf.deindent();
     cx.buf.newline();

@@ -96,6 +96,7 @@ mod spell;
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
+use vize_l2::artifact::ArtifactParts;
 
 /// The pass name in pipeline strings and folio pages.
 pub const NAME: &str = "v-slot";
@@ -150,19 +151,23 @@ pub use vize_l2::analysis::slot_facts::{
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<SlotFacts> {
     let Lowered {
-        root,
+        artifact:
+            ArtifactParts {
+                root,
+                provenance,
+                scopes,
+                branch_fragments,
+                loop_fragments,
+                ..
+            },
         op_count,
         diagnostics,
-        provenance,
-        scopes,
-        wrappers,
-        for_wrappers,
         ..
     } = lowered;
     let mut channels = consume::Channels {
         scopes,
-        wrappers,
-        for_wrappers,
+        wrappers: branch_fragments,
+        for_wrappers: loop_fragments,
         diagnostics,
         provenance,
         seen_tags: StdVec::new(),

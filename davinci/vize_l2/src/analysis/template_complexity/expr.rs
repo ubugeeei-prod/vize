@@ -107,6 +107,7 @@ struct Run {
 }
 
 impl<'a> Scorer<'_, 'a> {
+    #[inline]
     fn file_span(&mut self, span: oxc_span::Span) -> Option<Span> {
         // Identity load-path AST offsets already address the decoded text.
         // `authored_span` checks that range and its UTF-8 boundaries, so avoid

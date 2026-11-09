@@ -4,9 +4,9 @@ use vize_atelier_sfc::{SfcError, SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
 use super::parity::parity_failures;
-use super::shapes::{Shape, compile};
 use super::tally::{Lane, SURFACE_SEMANTICS, Tally, classify};
 use crate::Sweep;
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile};
 
 #[test]
 fn original_vapor_parser_rejections_keep_their_identity_and_complete_diagnostics() {

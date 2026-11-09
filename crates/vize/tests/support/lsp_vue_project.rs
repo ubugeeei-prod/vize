@@ -86,6 +86,15 @@ impl Fixture {
         Self::new_with_options_and_files(source, false, false, true, false, (name, files, None))
     }
 
+    /// The server's default: Options API children are analyzed.
+    pub fn new_with_vue_options_api_component_project(
+        source: &str,
+        name: &str,
+        files: &[(&str, &str)],
+    ) -> Self {
+        Self::new_with_options_and_files(source, false, false, true, true, (name, files, None))
+    }
+
     pub fn new_with_cross_file_component_project(
         source: &str,
         name: &str,

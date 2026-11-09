@@ -20,7 +20,7 @@ impl<'a> Builder<'a> {
             .frames
             .last()
             .ok_or(ArtifactError::BindingWithoutOwner { span })?;
-        if matches!(&frame.owner, super::Owner::OriginalFor(_)) {
+        if !frame.owner.accepts_bindings() {
             return Err(ArtifactError::BindingWithoutOwner { span });
         }
         if frame.children_started {
@@ -54,6 +54,44 @@ impl<'a> Builder<'a> {
         frame.bindings.push(BindingOp::Bind(Box::new_in(
             BindOp {
                 name: Some(DynamicName::Static(name)),
+                modifiers: vize_l0::Vec::new_in(&self.allocator),
+                value: Some(value),
+                span,
+            },
+            &self.allocator,
+        )));
+        Ok(id)
+    }
+
+    /// Attach an object spread (`{...value}`), ordered by span among bindings.
+    pub(super) fn spread(
+        &mut self,
+        value: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        let frame = self
+            .frames
+            .last()
+            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+        if !frame.owner.accepts_bindings() {
+            return Err(ArtifactError::BindingWithoutOwner { span });
+        }
+        if frame.children_started {
+            return Err(ArtifactError::BindingAfterChild {
+                node: frame.id,
+                span,
+            });
+        }
+        let id = self.prepare(span)?;
+        check::expression(self.parts.source, id, value, span)?;
+        let frame = self
+            .frames
+            .last_mut()
+            .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+        let _ = self.walk.mint_attached();
+        frame.bindings.push(BindingOp::Bind(Box::new_in(
+            BindOp {
+                name: None,
                 modifiers: vize_l0::Vec::new_in(&self.allocator),
                 value: Some(value),
                 span,

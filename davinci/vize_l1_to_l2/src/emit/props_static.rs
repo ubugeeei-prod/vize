@@ -8,7 +8,7 @@ use vize_l0::String;
 use vize_l0::id::NodeId;
 use vize_l2::op::{Attribute, BindingOp};
 
-use crate::pass::{StaticFacts, StaticLevel};
+use vize_l2::analysis::static_facts::{StaticFacts, StaticLevel};
 
 use super::EmitCx;
 use super::EmitError;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { h, ref } from "vue";
+import { h, ref, shallowRef } from "vue";
 
 import { dispatchKey, findNodes, mountFresco, typeChars } from "../testing/mount.js";
 import { List } from "./List.js";
@@ -69,6 +69,59 @@ test("Select typeahead cycles matching enabled options and ignores input while b
   mounted.unmount();
 });
 
+test("Select keeps keyboard and typeahead targets inside a bounded viewport", async () => {
+  const mounted = mountFresco(() =>
+    h(Select, {
+      options: [
+        { label: "Alpha", value: "alpha" },
+        { label: "Beta", value: "beta", disabled: true },
+        { label: "Charlie", value: "charlie" },
+        { label: "Delta", value: "delta" },
+      ],
+      focused: true,
+      maxHeight: 2,
+    }),
+  );
+
+  assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  await dispatchKey({ key: "down" });
+  assert.deepEqual(textLines(mounted), ["  ...", "  Beta", "> Charlie", "  ..."]);
+  await typeChars("d");
+  assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
+  await dispatchKey({ key: "home" });
+  assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  mounted.unmount();
+});
+
+test("Select preserves object values through keyed equality and activation", async () => {
+  const ada = { id: 1, name: "Ada" };
+  const grace = { id: 2, name: "Grace" };
+  const modelValue = shallowRef({ id: 2, name: "Grace copy" });
+  const selected: (typeof ada)[] = [];
+  const mounted = mountFresco(() =>
+    h(Select, {
+      options: [
+        { label: "Ada", value: ada },
+        { label: "Grace", value: grace },
+      ],
+      modelValue: modelValue.value,
+      by: "id",
+      focused: true,
+      "onUpdate:modelValue": (next: typeof ada) => {
+        modelValue.value = next;
+      },
+      onSelect: (next: typeof ada) => selected.push(next),
+    }),
+  );
+
+  assert.equal(textLines(mounted).at(1), "> Grace (selected)");
+  await dispatchKey({ key: "home" });
+  await dispatchKey({ key: "enter" });
+  assert.equal(modelValue.value, ada);
+  assert.deepEqual(selected, [ada]);
+  mounted.unmount();
+});
+
 test("List keeps keyboard navigation visible and selects by stable key", async () => {
   const value = ref("a");
   const mounted = mountFresco(() =>
@@ -101,5 +154,33 @@ test("List keeps keyboard navigation visible and selects by stable key", async (
   assert.deepEqual(textLines(mounted), ["  ...", "  Charlie", "> Delta"]);
   await dispatchKey({ key: "pageup" });
   assert.deepEqual(textLines(mounted), ["> Alpha", "  Beta", "  ..."]);
+  mounted.unmount();
+});
+
+test("List preserves object values through keyed equality and activation", async () => {
+  const ada = { id: 1, name: "Ada" };
+  const grace = { id: 2, name: "Grace" };
+  const modelValue = shallowRef({ id: 2, name: "Grace copy" });
+  const selected: (typeof ada)[] = [];
+  const mounted = mountFresco(() =>
+    h(List, {
+      items: [
+        { key: "ada", label: "Ada", value: ada },
+        { key: "grace", label: "Grace", value: grace },
+      ],
+      modelValue: modelValue.value,
+      by: "id",
+      focused: true,
+      "onUpdate:modelValue": (next: typeof ada) => {
+        modelValue.value = next;
+      },
+      onSelect: (next: typeof ada) => selected.push(next),
+    }),
+  );
+
+  await dispatchKey({ key: "home" });
+  await dispatchKey({ key: "enter" });
+  assert.equal(modelValue.value, ada);
+  assert.deepEqual(selected, [ada]);
   mounted.unmount();
 });

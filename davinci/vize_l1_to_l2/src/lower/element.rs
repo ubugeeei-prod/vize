@@ -9,8 +9,8 @@
 //! their **children** to HTML. This approximates the HTML tree-construction
 //! namespace algorithm the way the shipped compiler-dom logic does.
 
-use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
+use vize_l2::artifact::OpFamily;
 
 use vize_l0::{Box, String, Vec, cstr, is_native_tag};
 use vize_l1::markup::Element;

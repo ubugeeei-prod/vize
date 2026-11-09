@@ -118,6 +118,12 @@ impl BatchTypeChecker {
         self.executor.set_checker_count(count);
     }
 
+    /// Size the default checker width for this program against the number of
+    /// programs that its caller will check concurrently.
+    pub fn set_program_concurrency(&mut self, count: usize) {
+        self.executor.set_program_concurrency(count);
+    }
+
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub fn enable_options_api(&mut self) {
         self.project.set_options_api(true);

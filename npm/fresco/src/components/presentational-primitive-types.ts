@@ -125,6 +125,8 @@ export interface TooltipProps {
   visible?: boolean;
   /** Tooltip position */
   position?: TooltipPosition;
+  /** Gap in terminal cells between the anchor and tooltip. */
+  offset?: number;
   /** Border style */
   border?: "single" | "rounded" | "none";
   /** Background color */

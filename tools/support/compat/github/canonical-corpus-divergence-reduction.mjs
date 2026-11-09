@@ -60,6 +60,7 @@ export function createReductionPlan(observer, log, ledger, selectedGitlinks, con
     fingerprint: issue.fingerprint,
     fixturePath: safeRepositoryPath(sample.fixturePath),
     sourcePath: safeRepositoryPath(sample.sourcePath),
+    oracle: observer.oracle(sample),
     sourceCommit: context.sourceCommit,
     runUrl: context.runUrl,
   };
@@ -110,7 +111,7 @@ export function runReduction(planPath, outputDirectory, vizeBin) {
     [
       "reduce",
       sourcePath,
-      ...observer.reducerArguments(sourcePath, vizeBin),
+      ...observer.reducerArguments({ sourcePath, oracle: plan.oracle }, vizeBin),
       "--out",
       reducedPath,
       "--max-runs",
@@ -138,6 +139,7 @@ export function runReduction(planPath, outputDirectory, vizeBin) {
     divergenceCount: plan.divergenceCount,
     fingerprint: plan.fingerprint,
     sourcePath,
+    oracle: plan.oracle ?? {},
     sourceBytes: source.length,
     reducedFile: status === "reduced" ? basename(reducedPath) : null,
     reducedBytes,

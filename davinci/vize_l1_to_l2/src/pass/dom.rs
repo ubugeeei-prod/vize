@@ -8,7 +8,9 @@ use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline}
 use crate::lower::Lowered;
 use vize_l2::provenance::ProvenanceSink;
 
-use super::{L2_STAGE, L2Facts, TransformProfile, hoist, legacy, text, vfor, vif, vmodel, vslot};
+use vize_l2::analysis::pass_facts::L2Facts;
+
+use super::{L2_STAGE, TransformProfile, hoist, legacy, vmodel, vslot};
 
 const DOM_LEGACY_PASSES: &[PassDesc] = &[legacy::DESC];
 const DOM_LEGACY_TRANSFORM: Pipeline = Pipeline::new(L2_STAGE, DOM_LEGACY_PASSES);
@@ -27,21 +29,16 @@ pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
     observer: &mut O,
     profile: TransformProfile,
 ) -> L2Facts {
-    let mut facts = L2Facts {
-        if_facts: vif::facts_from_lowering(lowered),
-        for_facts: vfor::facts_from_lowering(lowered),
-        text_facts: text::facts_from_lowering(lowered),
-        ..L2Facts::default()
-    };
+    let mut facts = L2Facts::default();
 
     if lowered.caps.needs_sugar() {
         run_dom_legacy_transform(lowered, observer, &mut facts);
     }
 
-    if lowered.features.has_slot_carriers() {
+    if lowered.artifact.features.has_slot_carriers() {
         facts.slot_facts = vslot::run(lowered);
     }
-    if lowered.features.has_model_bindings() {
+    if lowered.artifact.features.has_model_bindings() {
         facts.model_faults = vmodel::run(lowered);
     }
     if profile.includes_static_analysis() {
@@ -63,26 +60,20 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         if event.desc().name != legacy::DESC.name {
             return Err(PassFailure::new("pipeline pass has no registered body"));
         }
-        facts.legacy = legacy::run(lowered);
-        facts.if_facts = vif::facts_from_lowering(lowered);
-        facts.for_facts = vfor::facts_from_lowering(lowered);
-        facts.text_facts = text::facts_from_lowering(lowered);
+        facts.filters = legacy::run(lowered);
 
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
             verify.check(event, &folio);
-            verify.check_table(event, &folio, &lowered.scopes);
-            verify.check_table(event, &folio, &lowered.texts);
-            verify.check_table(event, &folio, &lowered.if_facts);
-            verify.check_table(event, &folio, &lowered.for_facts);
-            verify.check_table(event, &folio, &lowered.wrappers);
-            verify.check_table(event, &folio, &lowered.for_wrappers);
-            verify.check_table(event, &folio, &facts.if_facts);
-            verify.check_table(event, &folio, &facts.for_facts);
+            verify.check_table(event, &folio, &lowered.artifact.scopes);
+            verify.check_table(event, &folio, &lowered.artifact.texts);
+            verify.check_table(event, &folio, &lowered.artifact.if_facts);
+            verify.check_table(event, &folio, &lowered.artifact.for_facts);
+            verify.check_table(event, &folio, &lowered.artifact.branch_fragments);
+            verify.check_table(event, &folio, &lowered.artifact.loop_fragments);
             verify.check_table(event, &folio, &facts.slot_facts);
-            verify.check_table(event, &folio, &facts.text_facts);
             verify.check_table(event, &folio, &facts.model_faults);
             verify.check_table(event, &folio, &facts.static_facts);
         }

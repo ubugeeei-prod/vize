@@ -6,7 +6,7 @@ use vize_l2::op::{BindingOp, ElementOp, ForOp, IfBranch, IfOp, Op, Region, SlotC
 
 use super::EmitCx;
 use super::slots::is_whitespace_text;
-use crate::pass::walk::PageWalk;
+use vize_l2::walk::PageWalk;
 
 pub(super) fn slot_content<'a>(element: &'a ElementOp<'a>) -> Option<&'a SlotContentOp<'a>> {
     element.bindings.iter().find_map(|binding| match binding {

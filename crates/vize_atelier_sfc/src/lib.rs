@@ -50,6 +50,9 @@ pub use native_vapor_setup::{
     NativeVaporSetupSfcCompilation, NativeVaporSetupSfcCompileError, NativeVaporSetupSfcOutput,
     compile_native_vapor_setup_sfc,
 };
+#[cfg(feature = "legacy-dom-differential")]
+#[doc(hidden)]
+pub mod dom_differential;
 pub mod native;
 pub mod native_scoped_ssr;
 pub mod native_ssr;

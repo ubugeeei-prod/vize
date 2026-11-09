@@ -6,6 +6,31 @@
 use vize_l0::is_native_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
+/// Normalize a configured component name once, outside template traversal.
+pub(crate) fn canonical_component_name(name: &str) -> vize_l0::String {
+    vize_l0::hyphenate(name).to_ascii_lowercase()
+}
+
+/// Compare an authored tag with pre-normalized component names without allocating.
+pub(crate) fn matches_configured_component(tag: &str, configured: &[vize_l0::String]) -> bool {
+    configured
+        .iter()
+        .any(|canonical| tag_matches_canonical_component(tag, canonical))
+}
+
+fn tag_matches_canonical_component(tag: &str, canonical: &str) -> bool {
+    let mut expected = canonical.bytes();
+    for (index, byte) in tag.bytes().enumerate() {
+        if byte.is_ascii_uppercase() && index > 0 && expected.next() != Some(b'-') {
+            return false;
+        }
+        if expected.next() != Some(byte.to_ascii_lowercase()) {
+            return false;
+        }
+    }
+    expected.next().is_none()
+}
+
 /// Check if an element should be treated as a component or custom element.
 ///
 /// Lint rules run on the parsed template before compiler transforms promote

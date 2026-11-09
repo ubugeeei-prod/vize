@@ -19,6 +19,19 @@ function clipsDescendants(node: FrescoHostNode): boolean {
   return clipsOverflow(style?.overflow ?? style?.overflowX ?? style?.overflowY);
 }
 
+function zIndex(node: FrescoHostNode): number {
+  const style = node.props.style;
+  if (typeof style !== "object" || style === null) return 0;
+  const record = style as Record<string, unknown>;
+  const value = record.zIndex !== undefined ? record.zIndex : record.z_index;
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= -2_147_483_648 &&
+    value <= 2_147_483_647
+    ? value
+    : 0;
+}
+
 function containsPoint(layout: LayoutResultNapi, clip: HitRegion, x: number, y: number): boolean {
   return (
     x >= layout.x &&
@@ -63,11 +76,21 @@ export function hitTest(
         }
       : ancestorClip;
 
-    for (let index = node.children.length - 1; index >= 0; index -= 1) {
-      const child = node.children[index];
-      if (!child) continue;
-      const target = visit(child, childClip);
-      if (target) return target;
+    if (node.children.some((child) => zIndex(child) !== 0)) {
+      const children = node.children
+        .map((child, index) => ({ child, index, zIndex: zIndex(child) }))
+        .sort((left, right) => right.zIndex - left.zIndex || right.index - left.index);
+      for (const { child } of children) {
+        const target = visit(child, childClip);
+        if (target) return target;
+      }
+    } else {
+      for (let index = node.children.length - 1; index >= 0; index--) {
+        const child = node.children[index];
+        if (!child) continue;
+        const target = visit(child, childClip);
+        if (target) return target;
+      }
     }
     if (!layout || !nodes.has(node.id)) return undefined;
     return containsPoint(layout, ancestorClip, x, y) ? node : undefined;

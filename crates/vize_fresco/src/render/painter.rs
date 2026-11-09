@@ -70,8 +70,20 @@ impl<'a> Painter<'a> {
             } else {
                 node_clip
             };
-            for &child_id in &node.children {
-                self.paint_node_clipped(tree, child_id, child_clip);
+            let child_z_index = |child_id| tree.get(child_id).map_or(0, |child| child.z_index);
+            if node.children.windows(2).all(|pair| match pair {
+                [first, second] => child_z_index(*first) <= child_z_index(*second),
+                _ => true,
+            }) {
+                for &child_id in &node.children {
+                    self.paint_node_clipped(tree, child_id, child_clip);
+                }
+            } else {
+                let mut children = node.children.clone();
+                children.sort_by_key(|child_id| child_z_index(*child_id));
+                for child_id in children {
+                    self.paint_node_clipped(tree, child_id, child_clip);
+                }
             }
         }
     }
@@ -402,6 +414,56 @@ mod tests {
         {
             assert_eq!(buffer.get(x as u16, 0).unwrap().symbol.as_str(), symbol);
         }
+    }
+
+    #[test]
+    fn sibling_z_index_controls_stable_paint_order() {
+        let mut tree = RenderTree::new();
+        let root_id = tree.next_id();
+        let mut root = RenderNode::box_node(root_id);
+        root.layout = Some(Rect::new(0, 0, 1, 1));
+        tree.insert_root(root);
+
+        let front_id = tree.next_id();
+        let mut front = RenderNode::text_node(front_id, "F");
+        front.z_index = 2;
+        front.layout = Some(Rect::new(0, 0, 1, 1));
+        tree.insert(front);
+        tree.add_child(root_id, front_id);
+
+        let back_id = tree.next_id();
+        let mut back = RenderNode::text_node(back_id, "B");
+        back.z_index = -1;
+        back.layout = Some(Rect::new(0, 0, 1, 1));
+        tree.insert(back);
+        tree.add_child(root_id, back_id);
+
+        let mut buffer = Buffer::new(1, 1);
+        Painter::new(&mut buffer).paint_tree(&tree);
+
+        assert_eq!(buffer.get(0, 0).unwrap().symbol.as_str(), "F");
+    }
+
+    #[test]
+    fn equal_sibling_z_index_preserves_source_order() {
+        let mut tree = RenderTree::new();
+        let root_id = tree.next_id();
+        let mut root = RenderNode::box_node(root_id);
+        root.layout = Some(Rect::new(0, 0, 1, 1));
+        tree.insert_root(root);
+
+        for text in ["A", "B"] {
+            let id = tree.next_id();
+            let mut child = RenderNode::text_node(id, text);
+            child.layout = Some(Rect::new(0, 0, 1, 1));
+            tree.insert(child);
+            tree.add_child(root_id, id);
+        }
+
+        let mut buffer = Buffer::new(1, 1);
+        Painter::new(&mut buffer).paint_tree(&tree);
+
+        assert_eq!(buffer.get(0, 0).unwrap().symbol.as_str(), "B");
     }
 
     #[test]

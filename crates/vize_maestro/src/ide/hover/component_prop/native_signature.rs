@@ -44,6 +44,41 @@ pub(super) fn documented_prop_signature(
     builder.description(&content.value)
 }
 
+/// Whether the instantiated prop key is required, read from native quick info.
+///
+/// Resident metadata cannot see every declaration form (an Options API child
+/// with the option disabled reads as optional); the checker's key can.
+pub(super) fn native_requirement(native: Option<&Hover>) -> Option<bool> {
+    let Some(Hover {
+        contents: HoverContents::Markup(content),
+        ..
+    }) = native
+    else {
+        return None;
+    };
+    let (signature, _) = content
+        .value
+        .strip_prefix("```typescript\n")?
+        .split_once("\n```")?;
+    // The open generic anchor's `unknown` key says nothing about optionality.
+    if is_unknown_signature(signature) {
+        return None;
+    }
+    let member = signature.strip_prefix("(property) ")?;
+    let after_name = if let Some(quoted) = member.strip_prefix('"') {
+        quoted.get(quoted.find('"')? + 1..)?
+    } else {
+        member.trim_start_matches(|character: char| {
+            character == '_' || character == '$' || character == '.' || character.is_alphanumeric()
+        })
+    };
+    match after_name.as_bytes().first()? {
+        b'?' => Some(false),
+        b':' => Some(true),
+        _ => None,
+    }
+}
+
 fn is_unknown_signature(signature: &str) -> bool {
     let signature = signature.trim();
     signature == "unknown"
@@ -112,6 +147,35 @@ mod tests {
                 assert_eq!(serde_json::to_value(actual).unwrap(), expected);
             }
         }
+    }
+
+    #[test]
+    fn requirement_follows_the_instantiated_native_key() {
+        for (value, required) in [
+            ("```typescript\n(property) title: string\n```", Some(true)),
+            (
+                "```typescript\n(property) count?: number | undefined\n```",
+                Some(false),
+            ),
+            (
+                "```typescript\n(property) SharedProps.title: string\n```",
+                Some(true),
+            ),
+            (
+                "```typescript\n(property) \"item-kind\"?: string\n```",
+                Some(false),
+            ),
+            ("```typescript\nconst title: string\n```", None),
+            ("unknown", None),
+            ("```typescript\n(property) title: unknown\n```", None),
+        ] {
+            assert_eq!(
+                super::native_requirement(Some(&native(value))),
+                required,
+                "{value}"
+            );
+        }
+        assert_eq!(super::native_requirement(None), None);
     }
 
     #[test]

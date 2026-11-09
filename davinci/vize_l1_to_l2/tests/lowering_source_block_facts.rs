@@ -47,16 +47,17 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
         .block(block_source, block_start as u32)
         .expect("block is an exact root slice");
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(
-        verify_table(&folio, &lowered.scopes),
+        verify_table(&folio, &lowered.artifact.scopes),
         Vec::<Violation>::new()
     );
     let provenance_ids: SideTable<()> = lowered
+        .artifact
         .provenance
         .iter()
         .filter_map(|record| record.node.map(|node| (node, ())))
@@ -70,8 +71,9 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
         folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
-        provenance: lowered.provenance.clone(),
+        provenance: lowered.artifact.provenance.clone(),
         scopes: lowered
+            .artifact
             .scopes
             .sorted_entries()
             .into_iter()

@@ -5,14 +5,12 @@ use alloc::vec::Vec as StdVec;
 use core::fmt;
 
 use vize_l0::diag::Diagnostic;
-use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 
-use vize_l2::analysis::fragment_facts::{BranchFragments, LoopFragment};
+use vize_l2::artifact::ArtifactParts;
 use vize_l2::op::Region;
 use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
-use vize_l2::scope::ScopeFacts;
 
 #[cfg(any())]
 mod caps;
@@ -25,7 +23,7 @@ pub use bindop::{BindValue, bind_value};
 pub use caps::LegacyCaps;
 pub use element::identity::{children_ns, enter_ns};
 pub use element::{BranchKind, Structure, frozen_attribute_name, structure};
-pub use features::{LoweringFeatures, OpFamily};
+
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
 #[doc(hidden)]
 pub use frozen::lower_with_frozen_element_spans;
@@ -44,7 +42,6 @@ pub use text::{
     RunShape, TextAction, TextLane, TextPart, TextParts, TextRun, TextSource, branch_gap_text,
     branch_gap_text_at, rebuild_source,
 };
-pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
 #[derive(Clone, Copy)]
 pub(crate) struct LowerPolicy {
@@ -75,19 +72,19 @@ pub(super) fn directive_values_are_clauses(
     cx.caps.directive_arg_style == vize_l1::dialect::DirectiveArgStyle::Clause
 }
 
-/// The L2 artifact one lowering produces: the op tree plus the three
-/// fact channels, all live even when diagnostics are present (the
-/// Lean-InfoTree survival property — kept fragments, not rollback).
-/// `P` is the provenance sink the consumer chose; by default every
-/// decision is kept.
+/// The canonical L2 artifact one lowering produces, beside the conversion
+/// bookkeeping that never leaves this crate. Every channel is live even
+/// when diagnostics are present (the Lean-InfoTree survival property —
+/// kept fragments, not rollback). `P` is the provenance sink the consumer
+/// chose; by default every decision is kept.
 pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// The compile arena this artifact was lowered into. The legalizing
     /// pass allocates rewritten expressions and inserted listeners here.
     pub allocator: &'a Allocator,
-    /// The complete authored source that L0 spans are measured against.
-    pub source: &'a str,
-    /// The root region's ops, in document order.
-    pub root: Region<'a>,
+    /// The canonical artifact: source, ops, provenance, scopes, compound
+    /// text, `ui.for` / `ui.if` facts, fragment carriers and op families,
+    /// all validated and published by lowering.
+    pub artifact: ArtifactParts<'a, P>,
     /// How many ops were numbered (page order: every region op and
     /// attached binding, top to bottom). Equals the folio's `ops=`
     /// header.
@@ -96,38 +93,12 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// the lowering's own, in decision order. Owned and `'static` — they
     /// outlive the arena.
     pub diagnostics: StdVec<Diagnostic>,
-    /// One record per lowering decision, in decision order, dropped
-    /// content included (`vize_l2::provenance`), when `P` keeps records.
-    pub provenance: P,
-    /// Hygiene scope facts per binding-introducing op
-    /// (`vize_l2::scope`).
-    pub scopes: SideTable<ScopeFacts>,
-    /// The recorded parts of every merged text/interpolation run, keyed
-    /// by its compound `ui.interpolation` op (P2-9 installment 4,
-    /// [`lower::text`](text)); validated and published by lowering.
-    pub texts: SideTable<TextParts>,
     /// Retained expressions consumed into compound text ops. They no longer
     /// have a direct op slot, but lint/editor consumers still need their
     /// authentic AST and authored coordinates without reparsing L1 text.
     /// Compile-only lowerings leave this empty and avoid parsing expressions
     /// that the emitter will parse from the compound text facts.
     pub consumed_expressions: StdVec<vize_l2::expr::ExprRef<'a>>,
-    /// Consumed `ui.for` scope views, keyed by the `ui.for` op's
-    /// page-order id; validated and published by lowering.
-    pub for_facts: SideTable<ForParts>,
-    /// Per-`ui.if` branch-key facts, keyed by the `ui.if` op's
-    /// page-order id; validated and published by lowering.
-    pub if_facts: SideTable<IfFacts>,
-    /// Captured `<template v-if>` wrapper keys, keyed by the `ui.if`
-    /// op's page-order id (P2-9 series 5, [`BranchFragments`]).
-    /// `fragment` is the P2-11 emit signal for template-fragment
-    /// vs branch-root blocks.
-    pub wrappers: SideTable<BranchFragments>,
-    /// Captured `<template v-for>` unwrap facts, keyed by the `ui.for`
-    /// op's page-order id. Presence means the carrier was a template.
-    pub for_wrappers: SideTable<LoopFragment>,
-    /// Lowering-observed feature bits used by the L2 pass planner.
-    pub features: LoweringFeatures,
     /// Vue dialect sugar the lowering (and the legalizing pass) consult.
     /// [`LegacyCaps::VUE3`] unless the caller used [`lower_with_caps`].
     pub caps: LegacyCaps,
@@ -291,24 +262,18 @@ fn oversized_source<'a, P: Default>(
 ) -> Lowered<'a, P> {
     Lowered {
         allocator,
-        source,
-        root: Region {
-            ops: vize_l0::Vec::new_in(&allocator),
-        },
+        artifact: ArtifactParts::new(
+            source,
+            Region {
+                ops: vize_l0::Vec::new_in(&allocator),
+            },
+        ),
         op_count: 0,
         diagnostics: alloc::vec![crate::exemptions::lowering(
             Span::new(0, 0),
             "the template source is too large to address with u32 offsets; nothing was lowered",
         )],
-        provenance: P::default(),
-        scopes: SideTable::new(),
-        texts: SideTable::new(),
         consumed_expressions: StdVec::new(),
-        for_facts: SideTable::new(),
-        if_facts: SideTable::new(),
-        wrappers: SideTable::new(),
-        for_wrappers: SideTable::new(),
-        features: LoweringFeatures::EMPTY,
         caps,
     }
 }
@@ -328,18 +293,10 @@ fn surface_error_span(block: SourceBlock<'_>, offset: u32) -> Span {
 impl<P: fmt::Debug> fmt::Debug for Lowered<'_, P> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Lowered")
-            .field("root", &self.root)
+            .field("artifact", &self.artifact)
             .field("op_count", &self.op_count)
             .field("diagnostics", &self.diagnostics)
-            .field("provenance", &self.provenance)
-            .field("scopes", &self.scopes)
-            .field("texts", &self.texts)
             .field("consumed_expressions", &self.consumed_expressions)
-            .field("for_facts", &self.for_facts)
-            .field("if_facts", &self.if_facts)
-            .field("wrappers", &self.wrappers)
-            .field("for_wrappers", &self.for_wrappers)
-            .field("features", &self.features)
             .field("caps", &self.caps)
             .finish_non_exhaustive()
     }

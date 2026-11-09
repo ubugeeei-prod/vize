@@ -31,6 +31,7 @@ import {
 } from "./composables/useStreams.js";
 import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import type { FrescoDevtools } from "./devtools.js";
+import { defaultInputAction, routeFocusedInput } from "./focusRouting.js";
 import { getLastRenderLayouts, updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import { routeAndPublishMouseInput as routeMouseEvent } from "./mouseRouting.js";
@@ -741,21 +742,21 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         break;
       case "paste":
         lastPasteEvent.value = normalized;
-        break;
+        return routeFocusedInput(renderer, rootElement, focusManager?.activeId.value, normalized);
       case "mouse":
         routeMouseEvent(renderer, rootElement, normalized, getLastRenderLayouts(), lastMouseEvent);
         break;
       case "focus":
         lastFocusEvent.value = normalized;
-        break;
+        return routeFocusedInput(renderer, rootElement, focusManager?.activeId.value, normalized);
       case "compositionstart":
       case "compositionupdate":
       case "compositionend":
         lastCompositionEvent.value = normalized;
-        break;
+        return routeFocusedInput(renderer, rootElement, focusManager?.activeId.value, normalized);
       case "key":
         lastKeyEvent.value = normalized;
-        break;
+        return routeFocusedInput(renderer, rootElement, focusManager?.activeId.value, normalized);
     }
   }
 
@@ -774,24 +775,16 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
             needsRender = true;
           }
 
-          dispatchEvent(event);
+          const dispatchResult = dispatchEvent(event);
 
-          // Handle focus traversal
-          if (event.eventType === "key" && event.key === "tab") {
+          const defaultAction = defaultInputAction(event, dispatchResult, exitOnCtrlC);
+          if (defaultAction === "focus-next") {
             focusManager?.focusNext();
             needsRender = true;
-          } else if (event.eventType === "key" && event.key === "backtab") {
+          } else if (defaultAction === "focus-previous") {
             focusManager?.focusPrevious();
             needsRender = true;
-          }
-
-          // Handle Ctrl+C
-          if (
-            exitOnCtrlC &&
-            event.eventType === "key" &&
-            event.char === "c" &&
-            event.modifiers?.ctrl
-          ) {
+          } else if (defaultAction === "exit") {
             await unmount();
             break;
           }

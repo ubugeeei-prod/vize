@@ -5,6 +5,7 @@ pub mod for_facts;
 pub mod fragment_facts;
 pub mod if_facts;
 pub mod model_facts;
+pub mod pass_facts;
 pub mod slot_facts;
 pub mod static_facts;
 pub mod template_complexity;

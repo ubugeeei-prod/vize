@@ -59,7 +59,7 @@ fn span_of(source: &str, needle: &str, occurrence: usize) -> Span {
 #[test]
 fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
     let source = r#"<div v-if="a" key="x">1</div><div v-else key="y">2</div>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         // The attribute surface no longer carries the keys: both branch
         // roots hold exactly no attributes (exact oracle, TS-13).
         for index in [0usize, 1] {
@@ -71,7 +71,7 @@ fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
         }
         // The fact rides beside the tree, keyed by the `ui.if` op (%0).
         assert_eq!(
-            facts.if_facts.sorted_entries(),
+            lowered.artifact.if_facts.sorted_entries(),
             vec![(
                 NodeId::from_index(0).expect("op 0 has an id"),
                 &vif::IfFacts {
@@ -94,6 +94,7 @@ fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
         // series-6 analysis pass records its per-owner facts behind them
         // (both carriers fully static once their keys moved to facts).
         let rules: Vec<(&str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| {
@@ -117,9 +118,9 @@ fn extraction_moves_the_key_from_the_attribute_surface_to_a_fact() {
 #[test]
 fn a_bare_key_is_a_fact_that_never_collides() {
     let source = r#"<p v-if="a" key>1</p><p v-else key>2</p>"#;
-    with_transformed(source, |lowered, _, facts, _| {
+    with_transformed(source, |lowered, _, _, _| {
         assert_eq!(lowered.diagnostics, vec![]);
-        let entries = facts.if_facts.sorted_entries();
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         let branches = &entries[0].1.branches;
         assert_eq!(branches.len(), 2);
@@ -153,6 +154,7 @@ fn duplicate_authored_keys_flag_every_later_branch_exactly() {
             assert_eq!(diagnostic.span, span_of(source, r#"key="dup""#, occurrence));
         }
         let errors: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "error.v-if-same-key")
@@ -169,8 +171,11 @@ fn a_for_wrapped_branch_keeps_its_key_with_the_iteration() {
     // the `ui.for` and the key belongs to the iteration - exactly the
     // legacy transform's has-v-for skip.
     let source = r#"<li v-if="a" v-for="i in xs" key="k">{{ i }}</li>"#;
-    with_transformed(source, |_, folio, facts, _| {
-        assert!(facts.if_facts.is_empty(), "no branch fact may exist");
+    with_transformed(source, |lowered, folio, _, _| {
+        assert!(
+            lowered.artifact.if_facts.is_empty(),
+            "no branch fact may exist"
+        );
         // The iterated element keeps exactly its key (exact oracle).
         assert_eq!(
             branch_root(folio, 0, 0).attributes,
@@ -191,8 +196,11 @@ fn an_unwrapped_single_child_keeps_its_own_key() {
     // belongs to its own vnode, exactly as the legacy transform leaves
     // it. The span-identity guard is what this pins.
     let source = r#"<template v-if="a"><div key="z">x</div></template><p v-else>y</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
-        assert!(facts.if_facts.is_empty(), "no branch fact may exist");
+    with_transformed(source, |lowered, folio, _, _| {
+        assert!(
+            lowered.artifact.if_facts.is_empty(),
+            "no branch fact may exist"
+        );
         // The inner element keeps exactly its own key (exact oracle).
         assert_eq!(
             branch_root(folio, 0, 0).attributes,
@@ -236,7 +244,7 @@ fn lowering_publishes_vif_facts_before_transform() {
     let source = r#"<p v-if="a" key="x">1</p><p v-else>2</p>"#;
     with_lowered(source, |lowered, folio| {
         assert!(!folio.ops.is_empty(), "the chain lowered to an op");
-        let entries = lowered.if_facts.sorted_entries();
+        let entries = lowered.artifact.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(
             entries[0].1.branches[0]

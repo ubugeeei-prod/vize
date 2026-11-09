@@ -40,12 +40,16 @@ fn count_fors(ops: &[DumpOp]) -> usize {
 #[test]
 fn consumption_publishes_the_scope_view_per_position() {
     let source = r#"<li v-for="(item, k, idx) in items">{{ item }}</li>"#;
-    with_transformed(source, |lowered, _, facts, _| {
+    with_transformed(source, |lowered, _, _, _| {
         assert_eq!(lowered.diagnostics, vec![]);
         let id = NodeId::from_index(0).expect("op 0 has an id");
-        let recorded = lowered.scopes.get(id).expect("the lowering scoped it");
+        let recorded = lowered
+            .artifact
+            .scopes
+            .get(id)
+            .expect("the lowering scoped it");
         assert_eq!(
-            facts.for_facts.sorted_entries(),
+            lowered.artifact.for_facts.sorted_entries(),
             vec![(
                 id,
                 &ForFacts {
@@ -61,6 +65,7 @@ fn consumption_publishes_the_scope_view_per_position() {
         // record behind it (the iterated element: dynamic text, no
         // hoistable props).
         let records: Vec<(&str, &str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| {
@@ -99,14 +104,14 @@ fn a_destructuring_alias_is_pending_and_named_positions_still_enumerate() {
     // not enumerated anywhere, so the position is pending (pessimize),
     // while the simple-identifier index is the one validated name.
     let source = r#"<tr v-for="({ id, name }, i) in rows">{{ id }}</tr>"#;
-    with_transformed(source, |lowered, _, facts, _| {
-        let entries = facts.for_facts.sorted_entries();
+    with_transformed(source, |lowered, _, _, _| {
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         let fact = entries[0].1;
         assert_eq!(fact.value, ForName::Pending);
         assert_eq!(fact.key, ForName::Named("i".into()));
         assert_eq!(fact.index, ForName::Absent);
-        let recorded = lowered.scopes.get(entries[0].0).expect("scoped");
+        let recorded = lowered.artifact.scopes.get(entries[0].0).expect("scoped");
         assert_eq!(recorded.bindings.len(), 1, "only `i` is enumerated");
     });
     assert_transformed_sound(source, "destructure");
@@ -120,14 +125,14 @@ fn an_absent_alias_consumes_as_absent_never_synthesized() {
     // `ScopeOrigin::Synthesized` producer stays slot normalization
     // (the P2-8 record's assignment).
     let source = r#"<div v-for=" in xs">x</div>"#;
-    with_transformed(source, |lowered, _, facts, _| {
+    with_transformed(source, |lowered, _, _, _| {
         assert_eq!(lowered.diagnostics, vec![]);
-        let entries = facts.for_facts.sorted_entries();
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].1.value, ForName::Absent);
         assert_eq!(entries[0].1.key, ForName::Absent);
         assert_eq!(entries[0].1.index, ForName::Absent);
-        for (_, scope) in lowered.scopes.sorted_entries() {
+        for (_, scope) in lowered.artifact.scopes.sorted_entries() {
             for binding in &scope.bindings {
                 assert!(
                     matches!(binding.origin, ScopeOrigin::Authored { .. }),
@@ -146,14 +151,14 @@ fn an_undecomposable_value_is_pessimally_pending() {
     // position is *pending*, not absent — under the opaque laws the
     // alias is unknowable, unlike the valid absent alias above.
     let source = r#"<p v-for="items">kept</p>"#;
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         assert_eq!(lowered.diagnostics.len(), 1, "the lowering's error");
         assert_eq!(
             lowered.diagnostics[0].message.as_str(),
             "v-for has invalid expression."
         );
         assert_eq!(count_fors(&folio.ops), 1, "op and region kept");
-        let entries = facts.for_facts.sorted_entries();
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].1.value, ForName::Pending);
         assert_eq!(entries[0].1.key, ForName::Absent);
@@ -168,7 +173,7 @@ fn the_iterated_elements_key_stays_on_its_attribute_surface() {
     // element's `key` — codegen reads it per vnode (P2-11's business).
     // The pass must leave the surface untouched.
     let source = r#"<li v-for="item in items" key="row">{{ item }}</li>"#;
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         let DumpOp::For(for_op) = &folio.ops[0] else {
             panic!("root op is not ui.for");
         };
@@ -184,8 +189,11 @@ fn the_iterated_elements_key_stays_on_its_attribute_surface() {
                 span: element.attributes[0].span,
             }
         );
-        assert!(facts.if_facts.is_empty(), "no branch fact may exist");
-        assert_eq!(facts.for_facts.len(), 1);
+        assert!(
+            lowered.artifact.if_facts.is_empty(),
+            "no branch fact may exist"
+        );
+        assert_eq!(lowered.artifact.for_facts.len(), 1);
     });
     assert_transformed_sound(source, "iterated-key");
 }
@@ -195,9 +203,9 @@ fn every_ui_for_is_consumed_with_a_fresh_tag() {
     // Dense consumption (every `ui.for` is an introduction site), tags
     // pairwise distinct — the hygiene freshness law as data.
     let source = r#"<ul v-for="row in grid"><li v-for="cell in row">{{ cell }}</li></ul><template v-for="n of five"><b>{{ n }}</b></template>"#;
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         assert_eq!(count_fors(&folio.ops), 3);
-        let entries = facts.for_facts.sorted_entries();
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 3);
         let mut tags: Vec<u32> = entries.iter().map(|(_, fact)| fact.tag.index()).collect();
         tags.sort_unstable();
@@ -231,9 +239,9 @@ fn a_for_wrapped_branch_is_consumed_behind_the_vif_pass() {
     // and the lowering-published facts consume the wrapped `ui.for`
     // like any other.
     let source = r#"<li v-if="ok" v-for="i in xs" key="k">{{ i }}</li>"#;
-    with_transformed(source, |_, _, facts, _| {
-        assert!(facts.if_facts.is_empty());
-        let entries = facts.for_facts.sorted_entries();
+    with_transformed(source, |lowered, _, _, _| {
+        assert!(lowered.artifact.if_facts.is_empty());
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].1.value, ForName::Named("i".into()));
     });

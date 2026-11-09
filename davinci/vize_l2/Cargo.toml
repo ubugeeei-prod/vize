@@ -26,6 +26,7 @@ harness = false
 serde_json.workspace = true
 vize_armature.workspace = true
 vize_croquis.workspace = true
+vize_relief.workspace = true
 
 [lints]
 workspace = true

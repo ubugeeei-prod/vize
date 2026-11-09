@@ -9,31 +9,29 @@ Signaler les directives personnalisées nécessitant un enregistrement.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Non | Aucune |
+| `warning` | `nuxt`, `opinionated` | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
+Listez les noms exacts des directives enregistrées globalement, sans le préfixe v-. Les bindings vName locaux de script-setup restent détectés automatiquement. Les options n'activent pas la règle ; les couches suivantes remplacent la liste entière et [] efface les noms hérités.
+
 ## Mauvais
 
-`v-focus`, `v-mask` et `v-click-outside` nécessitent des implémentations de directives propres au projet, signalées par cette convention facultative.
+`v-focus` nécessite une implémentation propre au projet ; cette convention facultative le signale.
 
-```vue annotate="remove:2,3,4"
+```vue annotate="remove:2"
 <template>
-  <input v-focus />
-  <input v-mask="'###-####'" />
-  <div v-click-outside="handleClose"></div>
+<button type="button" v-focus>Focus</button>
 </template>
 ```
 
 ## Bon
 
-L’exemple utilise les directives intégrées `v-if`, `v-model` et `v-on`. Une directive personnalisée correctement enregistrée peut rester valide en Vue lorsque cette politique est désactivée.
+`v-show` est une directive Vue intégrée qui ne nécessite aucun enregistrement dans le projet.
 
-```vue annotate="add:2,3,4"
+```vue annotate="add:2"
 <template>
-  <div v-if="ready"></div>
-  <input v-model="value" />
-  <button type="button" @click="onClick">Save</button>
+<button type="button" v-show="visible">Copy</button>
 </template>
 ```
 
@@ -47,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/warn-custom-directive": "warn"
+    },
+    "ruleOptions": {
+      "vue/warn-custom-directive": {
+        "ignore": [
+          "hover-tooltip"
+        ]
+      }
     }
   },
 });
@@ -57,5 +62,6 @@ Lancez ensuite `vp run lint`.
 ## Voir aussi
 
 - [Règles Vue](../vue.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44)

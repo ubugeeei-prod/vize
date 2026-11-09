@@ -5,7 +5,7 @@ use crate::emit::create_slots_walk::{
 };
 use crate::emit::slots::is_whitespace_text;
 use crate::emit::{EmitCx, EmitError};
-use crate::pass::walk::PageWalk;
+use vize_l2::walk::PageWalk;
 
 pub(super) fn peek_id(cx: &EmitCx<'_>) -> Option<vize_l0::id::NodeId> {
     let mut walk = cx.walk.clone();

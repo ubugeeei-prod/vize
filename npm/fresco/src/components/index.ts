@@ -71,7 +71,8 @@ export type { LinkProps } from "./display-primitive-types.js";
 // Input
 export { TextInput, type TextInputProps } from "./TextInput.js";
 export { TextArea, type TextAreaProps } from "./TextArea.js";
-export { Select, type SelectProps, type SelectOption } from "./Select.js";
+export { default as Select } from "./FrescoSelect.vue";
+export type { SelectBy, SelectOption, SelectProps, SelectValueKey } from "./Select.js";
 export { Checkbox, type CheckboxProps } from "./Checkbox.js";
 export { RadioGroup, type RadioGroupProps, type RadioOption } from "./RadioGroup.js";
 export { Confirm, type ConfirmProps } from "./Confirm.js";
@@ -99,7 +100,8 @@ export { default as Tooltip } from "./FrescoTooltip.vue";
 export type { TooltipPosition, TooltipProps } from "./presentational-primitive-types.js";
 
 // Data Display
-export { List, type ListProps, type ListItem } from "./List.js";
+export { default as List } from "./FrescoList.vue";
+export type { ListBy, ListItem, ListProps, ListValueKey } from "./List.js";
 export {
   Table,
   type TableAlignment,
@@ -110,11 +112,14 @@ export {
   type TableSortDirection,
   type TableViewportRange,
 } from "./Table.js";
-export { Tree, type TreeProps, type TreeNode } from "./Tree.js";
+export { default as Tree } from "./FrescoTree.vue";
+export type { TreeBy, TreeNode, TreeProps, TreeValueKey } from "./Tree.js";
 
 // Navigation
-export { Menu, type MenuProps, type MenuItem } from "./Menu.js";
-export { Tabs, type TabsProps, type Tab } from "./Tabs.js";
+export { default as Menu } from "./FrescoMenu.vue";
+export type { MenuItem, MenuProps } from "./Menu.js";
+export { default as Tabs } from "./FrescoTabs.vue";
+export type { Tab, TabsBy, TabsProps, TabsValueKey } from "./Tabs.js";
 export { default as Breadcrumb } from "./FrescoBreadcrumb.vue";
 export type { BreadcrumbItem, BreadcrumbProps } from "./presentational-primitive-types.js";
 export { Stepper, type StepperProps, type Step, type StepStatus } from "./Stepper.js";
@@ -122,6 +127,8 @@ export { Stepper, type StepperProps, type Step, type StepStatus } from "./Steppe
 // Overlay
 export { default as Modal } from "./FrescoModal.vue";
 export type { ModalProps } from "./modal-types.js";
+export { default as Popover } from "./FrescoPopover.vue";
+export type { PopoverPlacement, PopoverProps } from "./popover-types.js";
 
 // Status
 export { StatusBar, type StatusBarProps, type StatusBarItem } from "./StatusBar.js";

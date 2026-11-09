@@ -9,33 +9,29 @@ description: "テンプレートに直接書かれた、国際化の対象とな
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | なし | なし | なし |
+| `warning` | なし | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
+allowlist を指定すると、eslint-plugin-vue の既定の記号一覧を置き換えます。各項目はリテラルな部分文字列または Rust の正規表現構文を使う `/pattern/flags` 形式で、残りのテキストを検査する前に除外します。コンパイルできないパターンはリテラルとして扱います。既定値を保つには allowlist を省略し、[] で既定値を消します。オプションだけではルールを有効にしません。
+
 ## 悪い例
 
-表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。
+表示するテキストに、翻訳されない文字列をテンプレート内で直接書いています。
 
-```vue annotate="remove:2,3,4,5"
+```vue annotate="remove:2"
 <template>
-<div>hello</div>
-<img alt="a cat" />
-<input placeholder="Search" />
-<button title="Close">x</button>
+<p>Translate me</p>
 </template>
 ```
 
 ## 良い例
 
-翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
+キーのラベルを裸の文字列ではなく `$t` から取得します。
 
-```vue annotate="add:2,3,4,5"
+```vue annotate="add:2"
 <template>
-<div>{{ $t('hello') }}</div>
-<img :alt="$t('cat')" />
-<div>-</div>
-<button :title="$t('close')">{{ $t('x') }}</button>
+<kbd>{{ $t("keyboard.forward") }}</kbd>
 </template>
 ```
 
@@ -49,6 +45,13 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-bare-strings-in-template": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-bare-strings-in-template": {
+        "allowlist": [
+          "/^[DRWXYmvx]$/u"
+        ]
+      }
     }
   },
 });
@@ -59,5 +62,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [Vue ルール](../vue.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L50)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L52)

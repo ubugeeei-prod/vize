@@ -244,9 +244,8 @@ function __setup() {
   type __TrendChart_CheckProps_0 = __TrendChart_Props_0 & $EmitListeners<__TrendChart_Component_0> & $RequiredFallthroughProps<__TrendChart_Component_0>;
   type __TrendChart_CheckTail_0 = $ComponentCheckTail<__TrendChart_Component_0>;
   type __TrendChart_ValueProps_0 = $IsLibraryGenericExport<__TrendChart_Component_0> extends true ? Record<string, any> : __TrendChart_Props_0 & $EmitListeners<__TrendChart_Component_0> & $PublicComponentAttrs;
-  type __TrendChart_FallthroughValue_0<K extends PropertyKey> = $FallthroughValue<__TrendChart_Component_0, K>;
   type __TrendChart_Check_0 = $PropChecker<__TrendChart_Component_0, __TrendChart_CheckProps_0, __TrendChart_CheckTail_0>;
-  type __TrendChart_0_prop_class = $PropValue<__TrendChart_ValueProps_0, 'class', __TrendChart_FallthroughValue_0<'class'>>;
+  type __TrendChart_0_prop_class = $PropValue<__TrendChart_ValueProps_0, 'class', $FallthroughValue<__TrendChart_Component_0, 'class'>>;
 
   // Component template navigation references
   void TrendChart;

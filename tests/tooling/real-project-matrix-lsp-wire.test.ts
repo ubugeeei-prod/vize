@@ -192,6 +192,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   for (const [observer, evidence] of [
     ["dom", "canonical-corpus-dom"],
     ["ssr", "canonical-corpus-ssr-pug"],
+    ["reach", "canonical-corpus-reach"],
   ]) {
     assert.deepEqual(current.jobs[`${observer}-divergence`], {
       if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",

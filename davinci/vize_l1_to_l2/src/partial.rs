@@ -125,7 +125,7 @@ pub fn partial_facts_of(source: &str) -> PartialFacts {
 }
 
 /// Facts for an already-lowered page. `tree` is the L1 tree `lowered` came
-/// from; hole spans are measured against `lowered.source`.
+/// from; hole spans are measured against `lowered.artifact.source`.
 #[must_use]
 pub fn partial_facts(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> PartialFacts {
     let page = collect(lowered, tree);

@@ -1,9 +1,9 @@
 //! Strict selection accounting and whole-module parity failures.
 
-use super::diff::divergence;
-use super::shapes::{Shape, compile};
 use super::tally::{EMIT_REFUSED, Lane, Tally, classify};
 use crate::Sweep;
+use vize_atelier_sfc::dom_differential::diff::divergence;
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile};
 use vize_atelier_sfc::{SfcCompileResult, SfcDescriptor};
 use vize_l0::profiler::global_profiler;
 

@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 8,
+      "character": 10
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) change: (value: string) => any\n```\n\nFired on change."
+      },
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 8
+        },
+        "start": {
+          "character": 10,
+          "line": 8
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 8,
+      "character": 39
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) item?: ((props: {\n    row: number;\n}) => any) | undefined\n```\n\nRow slot."
+      },
+      "range": {
+        "end": {
+          "character": 43,
+          "line": 8
+        },
+        "start": {
+          "character": 39,
+          "line": 8
+        }
+      }
+    }
+  }
+]

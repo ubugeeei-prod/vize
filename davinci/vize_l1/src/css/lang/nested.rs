@@ -8,8 +8,9 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
-use super::super::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
+use super::super::structure::{Interpolation, Lexis, StyleSheet, shared};
+use super::super::{AuthoredClasses, StyleNodeKind};
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;
@@ -20,116 +21,70 @@ pub(super) enum Dialect {
     Less,
 }
 
+pub(super) const SCSS: Lexis = Lexis {
+    line_comments: true,
+    interpolation: Interpolation::Hash,
+    indented: false,
+    indented_comments: false,
+    colonless_declarations: false,
+    construct: shared,
+};
+
+pub(super) const LESS: Lexis = Lexis {
+    interpolation: Interpolation::At,
+    ..SCSS
+};
+
 /// Class names the rules declare, or `None` when the source is unbalanced.
 /// Less mixin definitions (`.m() {}`) emit no rules and add no names.
-pub(super) fn authored_classes(scss: &str, dialect: Dialect) -> Option<AuthoredClasses> {
-    let bytes = scss.as_bytes();
-    let interpolation = match dialect {
-        Dialect::Scss => b'#',
-        Dialect::Less => b'@',
-    };
+pub(super) fn authored_classes(
+    sheet: &StyleSheet<'_>,
+    dialect: Dialect,
+) -> Option<AuthoredClasses> {
+    if !sheet.is_balanced() || !sheet.is_terminated() {
+        return None;
+    }
     let mut classes = BTreeSet::new();
     let mut complete = true;
-    // The resolved selectors of every open block; `None` is an unknown context.
-    let mut blocks: Vec<Option<Vec<String>>> = Vec::new();
-    let mut prelude = Vec::new();
-    let mut interpolated = false;
-    let mut parens = 0usize;
-    let mut quote = None;
-    let mut index = 0usize;
-
-    while let Some(&byte) = bytes.get(index) {
-        if let Some(open) = quote {
-            if byte == b'\\' {
-                index += 2;
-                continue;
-            }
-            if byte == open {
-                quote = None;
-            }
-            prelude.push(byte);
-            index += 1;
+    // The resolved selectors of every node that opens a block; `None` is an
+    // unknown context.
+    let mut resolved: Vec<Option<Vec<String>>> = Vec::with_capacity(sheet.nodes().len());
+    for node in sheet.nodes() {
+        // A declaration adds no rules.
+        if node.block().is_none() && matches!(sheet.kind(node), StyleNodeKind::Declaration { .. }) {
+            resolved.push(None);
             continue;
         }
-        let next = bytes.get(index + 1).copied();
-        match (byte, next) {
-            (b'/', Some(b'*')) => {
-                index += scss.get(index + 2..)?.find("*/")? + 4;
-                continue;
+        let parent = match node.parent() {
+            Some(parent) => resolved.get(parent)?.clone(),
+            None => Some(Vec::new()),
+        };
+        let known = parent.is_some();
+        let prelude = sheet.code(node.prelude());
+        let prelude = prelude.as_bytes();
+        if node.block().is_none() {
+            if known && statement_adds_rules(prelude, dialect) {
+                complete = false;
             }
-            // `//` inside `url(...)` is part of the value.
-            (b'/', Some(b'/')) if parens == 0 => {
-                index += scss.get(index..)?.find('\n').unwrap_or(bytes.len() - index);
-                continue;
-            }
-            (opener, Some(b'{')) if opener == interpolation => {
-                index += scss.get(index..)?.find('}')? + 1;
-                interpolated = true;
-                prelude.extend_from_slice(b"#");
-                continue;
-            }
-            (b'\'' | b'"', _) => quote = Some(byte),
-            (b'(', _) => parens += 1,
-            (b')', _) => parens = parens.saturating_sub(1),
-            (b'{', _) => {
-                let parent = match blocks.last() {
-                    Some(parent) => parent.clone(),
-                    None => Some(Vec::new()),
-                };
-                let known = parent.is_some();
-                let resolved = resolve(&prelude, parent, interpolated, dialect);
-                if known && block_hides_rules(&prelude, resolved.is_some(), dialect) {
-                    complete = false;
-                }
-                for selector in resolved.iter().flatten() {
-                    // A rule outside the supported selector grammar adds no names.
-                    let mut rule = BTreeSet::new();
-                    if collect_classes_from_selector_prelude(selector.as_bytes(), &mut rule)
-                        .is_some()
-                    {
-                        classes.extend(rule);
-                    } else {
-                        complete = false;
-                    }
-                }
-                blocks.push(resolved);
-                prelude.clear();
-                interpolated = false;
-                parens = 0;
-                index += 1;
-                continue;
-            }
-            (b';', _) => {
-                if known_context(&blocks) && statement_adds_rules(&prelude, dialect) {
-                    complete = false;
-                }
-                prelude.clear();
-                interpolated = false;
-                parens = 0;
-                index += 1;
-                continue;
-            }
-            (b'}', _) => {
-                if known_context(&blocks) && statement_adds_rules(&prelude, dialect) {
-                    complete = false;
-                }
-                blocks.pop()?;
-                prelude.clear();
-                interpolated = false;
-                parens = 0;
-                index += 1;
-                continue;
-            }
-            _ => {}
+            resolved.push(None);
+            continue;
         }
-        prelude.push(byte);
-        index += 1;
+        let selectors = resolve(prelude, parent, node.is_interpolated(), dialect);
+        if known && block_hides_rules(prelude, selectors.is_some(), dialect) {
+            complete = false;
+        }
+        for selector in selectors.iter().flatten() {
+            // A rule outside the supported selector grammar adds no names.
+            let mut rule = BTreeSet::new();
+            if collect_classes_from_selector_prelude(selector.as_bytes(), &mut rule).is_some() {
+                classes.extend(rule);
+            } else {
+                complete = false;
+            }
+        }
+        resolved.push(selectors);
     }
-    (quote.is_none() && blocks.is_empty()).then(|| AuthoredClasses::new(classes, complete))
-}
-
-fn known_context(blocks: &[Option<Vec<String>>]) -> bool {
-    blocks.last().is_none_or(Option::is_some)
+    Some(AuthoredClasses::new(classes, complete))
 }
 
 /// Whether a block in a known context can hold rules this scan cannot name:

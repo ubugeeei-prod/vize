@@ -8,8 +8,8 @@
 //! `_filter_*(...)`. Vue 3 never enters ([`pipeline_for`]): the 3-pass
 //! table is unchanged, a single `needs_sugar()` read.
 
-use vize_l0::String;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
+use vize_l2::analysis::pass_facts::FilterAssets;
 
 use super::LegacyCaps;
 use crate::lower::Lowered;
@@ -54,17 +54,6 @@ pub const LEGACY: Pipeline = Pipeline::new(crate::pass::L2_STAGE, LEGACY_PASSES)
 const _: () = assert!(LEGACY.group_count() == 4);
 const _: () = assert!(!LEGACY.is_fully_serialized());
 
-/// Facts produced by the legacy-sugar pass.
-#[derive(Debug, Default)]
-pub struct LegacyFacts {
-    /// Vue 2 filter names, first-seen order, for `_resolveFilter` assets.
-    pub filters: alloc::vec::Vec<String>,
-    /// A component's own binding surface referenced a Vue 2 filter, which
-    /// makes the shipped helper preamble rank `_resolveFilter` before
-    /// `_resolveComponent` while keeping component constants first.
-    pub filter_helper_precedes_components: bool,
-}
-
 /// Vue 3 is the 4-pass table; every legacy dialect prepends this pass.
 #[must_use]
 pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
@@ -72,12 +61,12 @@ pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
 }
 
 /// Legalize Vue 2 sugar in place, then recount and rekey.
-pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
-    let mut facts = LegacyFacts::default();
+pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> FilterAssets {
+    let mut facts = FilterAssets::default();
     let allocator = lowered.allocator;
     let patterns = crate::registry::legalization_patterns(lowered.caps);
-    let sync_ids = ids::collect_sync_ids(&lowered.root.ops);
-    tree::map_binding_lists(&mut lowered.root.ops, &mut |bindings| {
+    let sync_ids = ids::collect_sync_ids(&lowered.artifact.root.ops);
+    tree::map_binding_lists(&mut lowered.artifact.root.ops, &mut |bindings| {
         sync::expand(allocator, bindings);
         slot::convert(allocator, bindings);
         if patterns.vue2_events() {
@@ -88,9 +77,9 @@ pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> LegacyFacts {
     if patterns.filters() {
         filter::rewrite(
             allocator,
-            lowered.source,
-            &mut lowered.root.ops,
-            &mut lowered.texts,
+            lowered.artifact.source,
+            &mut lowered.artifact.root.ops,
+            &mut lowered.artifact.texts,
             &mut facts,
         );
     }

@@ -24,6 +24,46 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure custom directives known to be registered by the application.
+    pub fn with_warn_custom_directive_ignore(mut self, names: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/warn-custom-directive") {
+            self.registry.replace(Box::new(
+                crate::rules::vue::WarnCustomDirective::with_ignore(names),
+            ));
+        }
+        self
+    }
+
+    /// Configure the exact bare-string allowlist without enabling the rule.
+    pub fn with_no_bare_strings_allowlist(mut self, allowlist: Option<Vec<String>>) -> Self {
+        if self.registry.has_rule("vue/no-bare-strings-in-template") {
+            self.registry.replace(Box::new(
+                crate::rules::vue::NoBareStringsInTemplate::with_allowlist(allowlist),
+            ));
+        }
+        self
+    }
+
+    /// Configure components that always provide accessible anchor content.
+    pub fn with_anchor_accessible_children(mut self, components: Vec<String>) -> Self {
+        if self.registry.has_rule("a11y/anchor-has-content") {
+            self.registry.replace(Box::new(
+                crate::rules::a11y::AnchorHasContent::with_accessible_children(components),
+            ));
+        }
+        self
+    }
+
+    /// Configure components that render a native form control for labels.
+    pub fn with_label_control_components(mut self, components: Vec<String>) -> Self {
+        if self.registry.has_rule("a11y/label-has-for") {
+            self.registry.replace(Box::new(
+                crate::rules::a11y::LabelHasFor::with_control_components(components),
+            ));
+        }
+        self
+    }
+
     /// Configure `script/define-macros-order` without enabling the rule.
     #[inline]
     pub fn with_define_macros_order(

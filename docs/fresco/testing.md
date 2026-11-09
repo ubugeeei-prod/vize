@@ -25,9 +25,9 @@ Run TypeScript examples directly with `node --import tsx --test`. In Vitest, imp
 
 ## Frames and input
 
-`renderTui` records a plain terminal frame, a serializable host tree, and the exact native protocol
-nodes for every explicit capture. Its `input` driver covers keys, printable text, paste, resize,
-mouse, terminal focus, and IME composition events.
+`renderTui` records a plain terminal frame, deterministic screen-reader output, a serializable host
+tree, and the exact native protocol nodes for every explicit capture. Its `input` driver covers
+keys, printable text, paste, resize, mouse, terminal focus, and IME composition events.
 
 ```ts
 const rendered = renderTui(() => h(TextInput, { modelValue: "", focused: true }));
@@ -35,6 +35,7 @@ const rendered = renderTui(() => h(TextInput, { modelValue: "", focused: true })
 await rendered.input.text("hello");
 assert.equal(rendered.lastFrame(), "hello");
 assert.equal(rendered.frameSnapshot().protocolNodes[0]?.nodeType, "root");
+assert.equal(rendered.frameSnapshot().screenReaderOutput, "hello");
 rendered.unmount();
 ```
 

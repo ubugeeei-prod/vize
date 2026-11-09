@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { h, ref } from "vue";
+import { h, ref, shallowRef } from "vue";
 
 import { dispatchKey, findNodes, mountFresco, typeChars } from "../testing/mount.js";
 import { Tree } from "./Tree.js";
@@ -10,6 +10,12 @@ function highlightedText(mounted: ReturnType<typeof mountFresco>): string | unde
     mounted.root,
     (node) => node.type === "text" && node.props.underline === true,
   ).at(0)?.text;
+}
+
+function textLines(mounted: ReturnType<typeof mountFresco>): string[] {
+  return findNodes(mounted.root, (node) => node.type === "text")
+    .map((node) => node.text)
+    .filter((text): text is string => text !== undefined);
 }
 
 test("Tree navigates visible enabled nodes and owns expansion through controlled updates", async () => {
@@ -85,5 +91,42 @@ test("Tree wraps around disabled nodes and supports visible-label typeahead", as
   assert.equal(highlightedText(mounted), "• Alpha");
   await dispatchKey({ key: "end" });
   assert.equal(highlightedText(mounted), "• Charlie");
+  mounted.unmount();
+});
+
+test("Tree preserves object values while keeping the active node visible", async () => {
+  const alpha = { id: 1, name: "Alpha" };
+  const charlie = { id: 3, name: "Charlie" };
+  const delta = { id: 4, name: "Delta" };
+  const selected = shallowRef({ id: 1, name: "Alpha copy" });
+  const selections: (typeof alpha)[] = [];
+  const mounted = mountFresco(() =>
+    h(Tree, {
+      data: [
+        { key: "alpha", label: "Alpha", value: alpha },
+        { key: "bravo", label: "Bravo", disabled: true, value: { id: 2, name: "Bravo" } },
+        { key: "charlie", label: "Charlie", value: charlie },
+        { key: "delta", label: "Delta", value: delta },
+      ],
+      selected: selected.value,
+      by: "id",
+      focused: true,
+      maxHeight: 2,
+      "onUpdate:selected": (value: typeof alpha) => {
+        selected.value = value;
+      },
+      onSelect: (value: typeof alpha) => selections.push(value),
+    }),
+  );
+
+  assert.deepEqual(textLines(mounted), ["• Alpha", "• Bravo", "  ..."]);
+  await dispatchKey({ key: "down" });
+  assert.deepEqual(textLines(mounted), ["  ...", "• Bravo", "• Charlie", "  ..."]);
+  await dispatchKey({ key: "enter" });
+  assert.equal(selected.value, charlie);
+  assert.equal(selections[0], charlie);
+
+  await typeChars("d");
+  assert.deepEqual(textLines(mounted), ["  ...", "• Charlie", "• Delta"]);
   mounted.unmount();
 });

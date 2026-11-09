@@ -182,8 +182,8 @@ export const portugueseVue2: Record<string, readonly [purpose: string, bad: stri
     ],
     "vue/warn-custom-directive": [
       "Alertar sobre diretivas personalizadas que precisam de registro",
-      "`v-focus`, `v-mask` e `v-click-outside` exigem implementações de diretivas específicas do projeto, que esta convenção opcional sinaliza.",
-      "O exemplo usa as diretivas nativas `v-if`, `v-model` e `v-on`. Uma diretiva personalizada registrada corretamente ainda pode ser válida no Vue quando esta política estiver desativada.",
+      "`v-focus` exige uma implementação de diretiva específica do projeto, que esta convenção opcional reporta.",
+      "`v-show` é uma diretiva nativa do Vue e não precisa de registro no projeto.",
     ],
   };
 

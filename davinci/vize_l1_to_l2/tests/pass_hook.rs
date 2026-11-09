@@ -17,7 +17,7 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::markup::parse(&allocator, SOURCE);
     let mut lowered = lower(&allocator, &tree, &errors);
-    let before = L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full);
+    let before = L2Page::of(&lowered.artifact.root.ops).print_to_string(DumpMode::Full);
 
     let mut seen: Vec<(String, usize, usize, String)> = Vec::new();
     let mut budget = BudgetObserver::new();
@@ -30,7 +30,7 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
                 String::from(event.desc().name),
                 event.group_index,
                 event.pass_index,
-                L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
+                L2Page::of(&lowered.artifact.root.ops).print_to_string(DumpMode::Full),
             ));
         },
     );
@@ -79,15 +79,15 @@ fn the_hook_only_observes() {
 
     assert_eq!(hooked_budget, plain_budget);
     assert_eq!(hooked.diagnostics, plain.diagnostics);
-    assert_eq!(hooked.provenance, plain.provenance);
+    assert_eq!(hooked.artifact.provenance, plain.artifact.provenance);
     assert_eq!(
-        L2Page::of(&hooked.root.ops).print_to_string(DumpMode::Full),
-        L2Page::of(&plain.root.ops).print_to_string(DumpMode::Full)
+        L2Page::of(&hooked.artifact.root.ops).print_to_string(DumpMode::Full),
+        L2Page::of(&plain.artifact.root.ops).print_to_string(DumpMode::Full)
     );
     assert_eq!(hooked_facts.slot_facts, plain_facts.slot_facts);
     assert_eq!(hooked_facts.model_faults, plain_facts.model_faults);
     assert_eq!(hooked_facts.static_facts, plain_facts.static_facts);
-    assert_eq!(hooked_facts.if_facts, plain_facts.if_facts);
-    assert_eq!(hooked_facts.for_facts, plain_facts.for_facts);
-    assert_eq!(hooked_facts.text_facts, plain_facts.text_facts);
+    assert_eq!(hooked.artifact.if_facts, plain.artifact.if_facts);
+    assert_eq!(hooked.artifact.for_facts, plain.artifact.for_facts);
+    assert_eq!(hooked.artifact.texts, plain.artifact.texts);
 }

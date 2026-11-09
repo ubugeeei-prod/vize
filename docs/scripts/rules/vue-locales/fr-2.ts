@@ -181,8 +181,8 @@ export const frenchVue2 = {
   ],
   "vue/warn-custom-directive": [
     "Signaler les directives personnalisées nécessitant un enregistrement",
-    "`v-focus`, `v-mask` et `v-click-outside` nécessitent des implémentations de directives propres au projet, signalées par cette convention facultative.",
-    "L’exemple utilise les directives intégrées `v-if`, `v-model` et `v-on`. Une directive personnalisée correctement enregistrée peut rester valide en Vue lorsque cette politique est désactivée.",
+    "`v-focus` nécessite une implémentation propre au projet ; cette convention facultative le signale.",
+    "`v-show` est une directive Vue intégrée qui ne nécessite aucun enregistrement dans le projet.",
   ],
 } satisfies Record<string, readonly [purpose: string, bad: string, good: string]>;
 

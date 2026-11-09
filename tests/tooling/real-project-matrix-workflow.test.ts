@@ -113,6 +113,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
   for (const [observer, evidence] of [
     ["dom", "canonical-corpus-dom"],
     ["ssr", "canonical-corpus-ssr-pug"],
+    ["reach", "canonical-corpus-reach"],
   ]) {
     const caller = workflow.jobs?.[`${observer}-divergence`];
     assert.ok(caller);

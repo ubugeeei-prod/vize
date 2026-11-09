@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ rows: { id: number; name: string }[]; dense?: boolean }>()
+defineSlots<{ row(props: { row: { id: number; name: string }; index: number }): any; empty?(): any }>()
+</script>
+<template><ul><li v-for="(r, i) in rows" :key="r.id"><slot name="row" :row="r" :index="i" /></li><slot name="empty" /></ul></template>

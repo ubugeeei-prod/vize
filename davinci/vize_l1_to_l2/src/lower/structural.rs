@@ -13,8 +13,8 @@
 //! conditional evaluates outside the iteration, so the branch region
 //! holds the `ui.for` which holds the element.
 
-use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
+use vize_l2::artifact::OpFamily;
 
 use vize_l0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
 use vize_l1::markup::{Attribute, Element, SurfaceChild};

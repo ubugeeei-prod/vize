@@ -1,7 +1,7 @@
 //! Whole-product accounting for the current compiler fixture sweep.
 
-use super::shapes::Shape;
 use crate::Sweep;
+use vize_atelier_sfc::dom_differential::shapes::Shape;
 
 /// Every template compile in this sweep consumes the descriptor produced by
 /// `vize_croquis::sfc::parse_sfc` in `sweep`. Backend selection and parity do

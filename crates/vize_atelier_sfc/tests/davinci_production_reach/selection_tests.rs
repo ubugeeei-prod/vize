@@ -4,9 +4,9 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::{CounterEntry, CounterSummary, global_profiler};
 
 use super::parity::parity_failures;
-use super::shapes::{Shape, compile, explicit_vapor_source};
 use super::tally::{Lane, Tally, classify_route};
 use crate::Sweep;
+use vize_atelier_sfc::dom_differential::shapes::{Shape, compile, explicit_vapor_source};
 
 fn vapor_counter() -> CounterSummary {
     CounterSummary {

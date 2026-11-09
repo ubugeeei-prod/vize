@@ -34,6 +34,27 @@ exit 0
     fs::set_permissions(root.join("corsa.sh"), fs::Permissions::from_mode(0o755))
 }
 
+fn write_independent_projects(root: &Path) -> std::io::Result<()> {
+    write_project(root)?;
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"./first"},{"path":"./second"}]}"#,
+    )?;
+    for name in ["first", "second"] {
+        let project = root.join(name);
+        fs::create_dir_all(&project)?;
+        fs::write(
+            project.join("tsconfig.json"),
+            r#"{"compilerOptions":{"strict":true,"composite":true,"module":"ESNext","moduleResolution":"Bundler"},"include":["*.vue"]}"#,
+        )?;
+        fs::write(
+            project.join("App.vue"),
+            include_str!("fixtures/import-registration/Child.vue"),
+        )?;
+    }
+    Ok(())
+}
+
 #[test]
 fn cli_checker_count_overrides_environment_for_single_and_sharded_programs() {
     let default_width = std::thread::available_parallelism()
@@ -106,4 +127,39 @@ fn invalid_checker_counts_fail_before_starting_corsa() {
         assert!(!output.status.success());
         assert!(!log.exists());
     }
+}
+
+#[test]
+fn independent_programs_share_the_default_machine_checker_budget() {
+    let case = tempfile::tempdir().unwrap();
+    let root = case.path();
+    write_independent_projects(root).unwrap();
+    let log = root.join("checkers.log");
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(root)
+        .env_remove("VIZE_CHECKERS")
+        .env("VIZE_CHECK_SHARE_DECLARATIONS", "0")
+        .env("VIZE_TEST_CHECKER_LOG", &log)
+        .args([
+            "check",
+            "--no-config",
+            "--quiet",
+            "--format",
+            "json",
+            "--servers",
+            "1",
+            "--tsconfig",
+            "tsconfig.json",
+            "--corsa-path",
+        ])
+        .arg(root.join("corsa.sh"))
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    let threads = std::thread::available_parallelism().map_or(1, usize::from);
+    let expected = 8.min((threads / 2).max(1)).to_string();
+    assert_eq!(
+        fs::read_to_string(log).unwrap().lines().collect::<Vec<_>>(),
+        vec![expected.as_str(), expected.as_str()]
+    );
 }

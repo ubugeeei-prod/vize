@@ -200,6 +200,14 @@ const note = (id: string): string => {
 
 export const catalogueAdditionNotes: Record<TranslatedLocale, Record<string, string>> = {
   "zh-CN": {
+    "List component names whose rendered subtree always supplies accessible anchor content. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "列出其渲染子树始终提供可访问链接内容的组件名。PascalCase 与 kebab-case 写法等价。选项不会启用规则；后续配置层会替换整个列表，[] 会清除继承的名称。",
+    "List component names that render a native form control and therefore satisfy label nesting. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "列出会渲染原生表单控件、因而满足 label 嵌套条件的组件名。PascalCase 与 kebab-case 写法等价。选项不会启用规则；后续配置层会替换整个列表，[] 会清除继承的名称。",
+    "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or `/pattern/flags` values using Rust regex syntax and are removed before the remaining text is checked; patterns that do not compile remain literals. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.":
+      "指定 allowlist 时，它会替换 eslint-plugin-vue 默认的标点列表。各项是字面子字符串或使用 Rust 正则表达式语法的 `/pattern/flags` 值，并在检查剩余文本前移除；无法编译的模式会按字面量处理。省略 allowlist 可保留默认值；[] 会清空它们。选项不会启用规则。",
+    "List exact globally registered directive names without the v- prefix. Local script-setup vName bindings are still discovered automatically. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "列出全局注册指令的精确名称，不包含 v- 前缀。仍会自动发现 script-setup 中本地的 vName 绑定。选项不会启用规则；后续配置层会替换整个列表，[] 会清除继承的名称。",
     [note("vue/comment-directive")]:
       "只有启用 `reportUnusedDisableDirectives: true` 时，才会报告未使用的模板抑制注释。示例删除了无用的注释；实际抑制诊断的注释仍然有用。列出的规则名称只有在 Vize 执行这些规则时才参与使用情况判定。",
     [note("vue/html-end-tags")]:
@@ -224,6 +232,14 @@ export const catalogueAdditionNotes: Record<TranslatedLocale, Record<string, str
       "这条按需启用的规则检查 Vue 2 的 `model` 选项。只接受静态键 `prop` 和 `event`，不验证它们的值。Vue 3 使用较新的组件 `v-model` 约定，而不是这个选项。",
   },
   "pt-BR": {
+    "List component names whose rendered subtree always supplies accessible anchor content. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Liste os componentes cuja subárvore renderizada sempre fornece conteúdo acessível ao link. As grafias PascalCase e kebab-case são equivalentes. As opções não ativam a regra; camadas posteriores substituem a lista inteira, e [] remove os nomes herdados.",
+    "List component names that render a native form control and therefore satisfy label nesting. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Liste os componentes que renderizam um controle de formulário nativo e satisfazem o aninhamento do label. As grafias PascalCase e kebab-case são equivalentes. As opções não ativam a regra; camadas posteriores substituem a lista inteira, e [] remove os nomes herdados.",
+    "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or `/pattern/flags` values using Rust regex syntax and are removed before the remaining text is checked; patterns that do not compile remain literals. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.":
+      "Quando presente, allowlist substitui os padrões de pontuação do eslint-plugin-vue. As entradas são substrings literais ou valores `/pattern/flags` na sintaxe de regex do Rust, removidos antes da verificação do texto restante; padrões que não compilam permanecem literais. Omita allowlist para manter os padrões; [] os remove. As opções não ativam a regra.",
+    "List exact globally registered directive names without the v- prefix. Local script-setup vName bindings are still discovered automatically. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Liste os nomes exatos das diretivas registradas globalmente, sem o prefixo v-. Bindings vName locais de script-setup continuam sendo descobertos automaticamente. As opções não ativam a regra; camadas posteriores substituem a lista inteira, e [] remove os nomes herdados.",
     [note("vue/comment-directive")]:
       "Comentários de supressão não utilizados no template só são reportados quando `reportUnusedDisableDirectives: true` está ativado. O exemplo remove um comentário sem uso; comentários que realmente suprimem um diagnóstico continuam úteis. Nomes de regras listados só contam quando o Vize executa essas regras.",
     [note("vue/html-end-tags")]:
@@ -248,6 +264,14 @@ export const catalogueAdditionNotes: Record<TranslatedLocale, Record<string, str
       "Esta regra opcional verifica a opção `model` do Vue 2. Apenas as chaves estáticas `prop` e `event` são aceitas; seus valores não são validados. O Vue 3 usa o contrato mais recente de `v-model` de componentes em vez dessa opção.",
   },
   fr: {
+    "List component names whose rendered subtree always supplies accessible anchor content. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Listez les composants dont le sous-arbre rendu fournit toujours un contenu de lien accessible. Les écritures PascalCase et kebab-case sont équivalentes. Les options n'activent pas la règle ; les couches suivantes remplacent la liste entière et [] efface les noms hérités.",
+    "List component names that render a native form control and therefore satisfy label nesting. PascalCase and kebab-case spellings are equivalent. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Listez les composants qui rendent un contrôle de formulaire natif et satisfont donc l'imbrication du label. Les écritures PascalCase et kebab-case sont équivalentes. Les options n'activent pas la règle ; les couches suivantes remplacent la liste entière et [] efface les noms hérités.",
+    "The allowlist replaces eslint-plugin-vue's punctuation defaults when present. Entries are literal substrings or `/pattern/flags` values using Rust regex syntax and are removed before the remaining text is checked; patterns that do not compile remain literals. Omit allowlist to retain the defaults; [] clears them. Options do not enable the rule.":
+      "Lorsqu'elle est présente, allowlist remplace les valeurs de ponctuation par défaut d'eslint-plugin-vue. Les entrées sont des sous-chaînes littérales ou des valeurs `/pattern/flags` utilisant la syntaxe regex de Rust, retirées avant la vérification du texte restant ; les motifs qui ne se compilent pas restent littéraux. Omettez allowlist pour conserver les valeurs par défaut ; [] les efface. Les options n'activent pas la règle.",
+    "List exact globally registered directive names without the v- prefix. Local script-setup vName bindings are still discovered automatically. Options do not enable the rule; later config layers replace the complete list, and [] clears inherited names.":
+      "Listez les noms exacts des directives enregistrées globalement, sans le préfixe v-. Les bindings vName locaux de script-setup restent détectés automatiquement. Les options n'activent pas la règle ; les couches suivantes remplacent la liste entière et [] efface les noms hérités.",
     [note("vue/comment-directive")]:
       "Les commentaires de suppression inutilisés dans le template ne sont signalés que si `reportUnusedDisableDirectives: true` est activé. L'exemple supprime un commentaire inutile ; les commentaires qui suppriment réellement un diagnostic restent utiles. Les noms de règles listés ne comptent que lorsque Vize exécute ces règles.",
     [note("vue/html-end-tags")]:

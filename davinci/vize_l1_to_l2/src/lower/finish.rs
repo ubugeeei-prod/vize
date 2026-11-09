@@ -3,6 +3,7 @@
 use super::{Lowered, cx::Cx, structural, surface_error_span};
 use vize_l0::SourceBlock;
 use vize_l1::markup::{SurfaceError, SurfaceTree};
+use vize_l2::artifact::ArtifactParts;
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceSink;
 
@@ -52,21 +53,24 @@ fn materialize<'a, P: ProvenanceSink>(
     block: SourceBlock<'a>,
     ops: vize_l0::Vec<'a, vize_l2::op::Op<'a>>,
 ) -> Lowered<'a, P> {
+    let op_count = cx.op_count();
     Lowered {
         allocator: cx.allocator,
-        source: block.root_source(),
-        root: Region { ops },
-        op_count: cx.op_count(),
+        artifact: ArtifactParts {
+            source: block.root_source(),
+            root: Region { ops },
+            provenance: cx.provenance,
+            scopes: cx.scopes,
+            texts: cx.texts,
+            for_facts: cx.for_facts,
+            if_facts: cx.if_facts,
+            branch_fragments: cx.wrappers,
+            loop_fragments: cx.for_wrappers,
+            features: cx.features,
+        },
+        op_count,
         diagnostics: cx.diagnostics,
-        provenance: cx.provenance,
-        scopes: cx.scopes,
-        texts: cx.texts,
         consumed_expressions: cx.consumed_expressions,
-        for_facts: cx.for_facts,
-        if_facts: cx.if_facts,
-        wrappers: cx.wrappers,
-        for_wrappers: cx.for_wrappers,
-        features: cx.features,
         caps: cx.caps,
     }
 }

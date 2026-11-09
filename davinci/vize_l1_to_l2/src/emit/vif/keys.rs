@@ -194,7 +194,7 @@ impl SlotKeys {
     ) -> Result<(), EmitError> {
         if self.enabled
             && let Some(key) = id
-                .and_then(|id| cx.facts.if_facts.get(id))
+                .and_then(|id| cx.if_facts.get(id))
                 .and_then(|facts| facts.branches.get(index))
                 .and_then(Option::as_ref)
         {

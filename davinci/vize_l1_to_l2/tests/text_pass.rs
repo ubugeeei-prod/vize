@@ -3,7 +3,7 @@
 //!
 //! Exact-equality oracles over the installment's three products — the
 //! condensed surface, the compound ops with their recorded parts, and
-//! the published [`TextFacts`] view — plus the comment-boundary parity
+//! the artifact's [`TextParts`] table — plus the comment-boundary parity
 //! cases the port's lowering-absorption argument rests on. The TS-17
 //! folio snapshots live in `text_pass_snapshot.rs`.
 
@@ -16,7 +16,7 @@ use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::parse;
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::lower_preserving_comments;
-use vize_l1_to_l2::pass::TextFacts;
+use vize_l2::analysis::text_facts::TextParts;
 use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
 use vize_l2::expr::ExprRef;
 
@@ -38,7 +38,7 @@ fn span_of(source: &str, needle: &str) -> Span {
 #[test]
 fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
     let source = "<p>Hi {{ name }}! You have {{ n }} new  mails.</p>";
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         // The tree: one element, one compound interpolation child.
         let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("root is not the element: {:?}", folio.ops);
@@ -91,17 +91,17 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
             },
         ];
         assert_eq!(
-            facts.text_facts.sorted_entries(),
+            lowered.artifact.texts.sorted_entries(),
             vec![(
                 id(1),
-                &TextFacts {
+                &TextParts {
                     parts: expected.clone()
                 }
             )]
         );
         // The consumed view is the recorded view, validated.
         assert_eq!(
-            lowered.texts.sorted_entries(),
+            lowered.artifact.texts.sorted_entries(),
             vec![(
                 id(1),
                 &vize_l1_to_l2::lower::TextParts {
@@ -120,6 +120,7 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
         );
         // The lowering-published fact left its record.
         let rules: Vec<(&str, &str, &str)> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "lower.text-fact")
@@ -184,9 +185,9 @@ fn lone_nodes_never_compound() {
     // A single interpolation and a single text stay themselves — the
     // legacy run grouping's own rule, and the pass's ≥2-parts law.
     let source = "<p>{{ a }}</p><q>b</q>";
-    with_transformed(source, |lowered, folio, facts, _| {
-        assert!(facts.text_facts.is_empty());
-        assert!(lowered.texts.is_empty());
+    with_transformed(source, |lowered, folio, _, _| {
+        assert!(lowered.artifact.texts.is_empty());
+        assert!(lowered.artifact.texts.is_empty());
         let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
@@ -211,7 +212,7 @@ fn a_dropped_comment_is_not_a_run_boundary() {
     // `vize_atelier_dom/tests/dropped_comment_text_runs.rs` pins the
     // compiled form; this pins the op the lowering mints.
     let source = "<p>a<!--c-->b {{ x }}</p>";
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
@@ -222,7 +223,7 @@ fn a_dropped_comment_is_not_a_run_boundary() {
                 if matches!(&node.expression, DumpExpr::Opaque { source, .. }
                     if source == "ab {{ x }}")
         ));
-        assert_eq!(facts.text_facts.len(), 1);
+        assert_eq!(lowered.artifact.texts.len(), 1);
     });
     assert_transformed_sound(source, "comment-boundary");
 }
@@ -286,7 +287,7 @@ fn pre_and_textarea_keep_their_remaining_whitespace() {
     // Merging still applies inside `<pre>` (the legacy codegen
     // grouping never checked pre), with the parts uncondensed.
     let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
-    with_transformed(source, |_, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         let DumpOp::Element(pre) = &folio.ops[0] else {
             panic!("no pre element");
         };
@@ -296,7 +297,7 @@ fn pre_and_textarea_keep_their_remaining_whitespace() {
                 if matches!(&node.expression, DumpExpr::Opaque { source, .. }
                     if source == "  a   {{ x }}  b ")
         ));
-        assert_eq!(facts.text_facts.len(), 1);
+        assert_eq!(lowered.artifact.texts.len(), 1);
         let DumpOp::Element(textarea) = &folio.ops[1] else {
             panic!("no textarea element: {:?}", folio.ops);
         };
@@ -343,7 +344,7 @@ fn entities_stay_undecoded_the_l1_scope() {
     // comparing it.
     let source = "<p>a &amp; b {{ x }}</p>";
     with_transformed(source, |lowered, _, _, _| {
-        let entry = lowered.texts.sorted_entries();
+        let entry = lowered.artifact.texts.sorted_entries();
         assert_eq!(entry.len(), 1);
         assert_eq!(entry[0].1.parts[0].text.as_str(), "a &amp; b ");
     });

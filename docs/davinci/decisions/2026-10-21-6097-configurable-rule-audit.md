@@ -34,6 +34,12 @@ The following cohort adds `vue/mustache-interpolation-spacing`, another strongly
 fixable rule, bringing the typed surface to 16 configured mapped rules and leaving 42. It accepts
 `"always"` or `"never"` and preserves the rule's independent, safe fixes for both delimiters.
 
+The real-project false-positive cohort adds the upstream-compatible `allowlist` for
+`vue/no-bare-strings-in-template`, bringing the current audited surface to 18 configured mapped
+rules and leaving 43. The same delivery adds application allowances for the Patina-specific
+`vue/warn-custom-directive` mapping and the accessibility rules `a11y/anchor-has-content` and
+`a11y/label-has-for`; those three do not change this eslint-plugin-vue-only census.
+
 ## Provider boundary
 
 The executable differential provider remains pinned to 10.9.2. Moving it to 10.11.1 changes

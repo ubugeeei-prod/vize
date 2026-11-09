@@ -65,12 +65,71 @@ void test("only enabled type-aware rules survive in the pass configuration", () 
     new Set(["typescript/no-floating-promises", "typescript/await-thenable"]),
   );
   assert.ok(config);
-  assert.deepEqual(config.rules, { "typescript/no-floating-promises": "deny" });
+  assert.deepEqual(config.rules, {
+    "typescript/no-floating-promises": "deny",
+    "typescript/await-thenable": "allow",
+  });
   assert.deepEqual(config.plugins, ["typescript", "vue"]);
   assert.equal((config.categories as Record<string, string>).correctness, "off");
   assert.equal(
     typeAwareOnlyConfig({ rules: { "no-debugger": "deny" } }, new Set(["typescript/x"])),
     null,
+  );
+});
+
+void test("type-aware overrides are projected from authored paths to script shims", () => {
+  const config = typeAwareOnlyConfig(
+    {
+      rules: { "typescript/no-floating-promises": "error" },
+      overrides: [
+        {
+          files: ["src/**/*.vue", "src/**/*.ts"],
+          excludeFiles: ["src/generated/**"],
+          rules: {
+            "typescript/no-floating-promises": "off",
+            "typescript/no-explicit-any": "warn",
+          },
+        },
+      ],
+    },
+    new Set(["typescript/no-floating-promises"]),
+  );
+  assert.ok(config);
+  assert.deepEqual(config.overrides, [
+    {
+      files: [
+        "src/**/*.vue.ts",
+        "src/**/*.vue.tsx",
+        "src/**/*.vue.js",
+        "src/**/*.vue.jsx",
+        "src/**/*.ts.ts",
+        "src/**/*.ts.tsx",
+        "src/**/*.ts.js",
+        "src/**/*.ts.jsx",
+      ],
+      excludeFiles: [
+        "src/generated/**.ts",
+        "src/generated/**.tsx",
+        "src/generated/**.js",
+        "src/generated/**.jsx",
+      ],
+      rules: { "typescript/no-floating-promises": "off" },
+    },
+  ]);
+
+  assert.ok(
+    typeAwareOnlyConfig(
+      {
+        overrides: [
+          {
+            files: ["**/*.vue"],
+            rules: { "typescript/no-floating-promises": "error" },
+          },
+        ],
+      },
+      new Set(["typescript/no-floating-promises"]),
+    ),
+    "a rule enabled only by an override still schedules the type-aware pass",
   );
 });
 
@@ -145,6 +204,62 @@ void test("oxlint-vize reports type-aware rules inside Vue script blocks at auth
     }
     assert.doesNotMatch(output, /B\.vue\.ts/u, "shim paths must be rewritten to the SFC");
     assert.equal(fs.existsSync(path.join(root, "src/B.vue.ts")), false, "shims are removed");
+    assert.equal(result.status, 1);
+  } finally {
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+void test("Vue type-aware overrides honor include and exclude paths without matching TS globs", () => {
+  const tsgolint = findTsgolint();
+  assert.ok(tsgolint, "oxlint-tsgolint must be installed in the workspace for this test");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vize-type-aware-overrides-"));
+  try {
+    fs.symlinkSync(path.join(workspaceRoot, "node_modules"), path.join(root, "node_modules"));
+    fs.mkdirSync(path.join(root, "src/legacy"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "tsconfig.json"),
+      JSON.stringify({
+        compilerOptions: { strict: true, target: "ES2022", module: "ESNext", noEmit: true },
+        include: ["src/**/*.ts", "src/**/*.vue"],
+      }),
+    );
+    fs.writeFileSync(
+      path.join(root, ".oxlintrc.json"),
+      JSON.stringify({
+        plugins: ["typescript", "vue"],
+        categories: { correctness: "off" },
+        rules: { "typescript/no-floating-promises": "error" },
+        overrides: [
+          {
+            files: ["src/**/*.vue"],
+            excludeFiles: ["src/Strict.vue"],
+            rules: { "typescript/no-floating-promises": "off" },
+          },
+          {
+            files: ["src/**/*.ts"],
+            rules: { "typescript/no-floating-promises": "off" },
+          },
+        ],
+      }),
+    );
+    const source = '<script setup lang="ts">\nasync function work() {}\nwork();\n</script>\n';
+    fs.writeFileSync(path.join(root, "src/Strict.vue"), source);
+    fs.writeFileSync(path.join(root, "src/legacy/Legacy.vue"), source);
+
+    const result = spawnSync(
+      process.execPath,
+      [cliEntry, "--type-aware", "--format", "unix", "src"],
+      {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, OXLINT_TSGOLINT_PATH: tsgolint, GITHUB_ACTIONS: "" },
+      },
+    );
+    const output = `${result.stdout}${result.stderr}`;
+    assert.match(output, /src\/Strict\.vue:3:1: .*no-floating-promises/u, output);
+    assert.doesNotMatch(output, /Legacy\.vue/u, output);
+    assert.doesNotMatch(output, /\.vue\.ts/u, output);
     assert.equal(result.status, 1);
   } finally {
     fs.rmSync(root, { force: true, recursive: true });

@@ -182,6 +182,14 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return [restrictedMembersSchema()];
     case "vue/no-mutating-props":
       return [noMutatingPropsSchema()];
+    case "vue/warn-custom-directive":
+      return [objectSchema({ ignore: stringArraySchema() })];
+    case "vue/no-bare-strings-in-template":
+      return [objectSchema({ allowlist: stringArraySchema() })];
+    case "a11y/anchor-has-content":
+      return [objectSchema({ accessibleChildren: stringArraySchema() })];
+    case "a11y/label-has-for":
+      return [objectSchema({ controlComponents: stringArraySchema() })];
     case "script/define-macros-order":
       return [defineMacrosOrderSchema()];
     case "vue/sfc-element-order":

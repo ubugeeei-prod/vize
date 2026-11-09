@@ -10,10 +10,10 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
   ],
   [
     "a11y/anchor-has-content",
-    "The `/settings` link has no text or other naming content, so its destination has no accessible description.",
-    "The visible `Settings` text supplies content for the same destination link.",
-    "`/settings` へのリンクが空で、移動先を説明する内容がありません。",
-    "同じリンクに `Settings` の文字を入れ、移動先を示します。",
+    "The `/app` link has no text or other naming content, so its destination has no accessible description.",
+    "The native image's `alt` text supplies accessible content for the same destination link.",
+    "`/app` へのリンクが空で、移動先を説明する内容がありません。",
+    "標準の画像の `alt` テキストが、同じ移動先へのリンクにアクセシブルな内容を提供します。",
   ],
   [
     "a11y/anchor-is-valid",
@@ -95,9 +95,9 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
   [
     "a11y/label-has-for",
     "The separate label is neither associated through `for` nor wrapped around the input.",
-    '`for="email"` matches the input ID and explicitly associates the two elements.',
+    "The nested native input is implicitly associated with its wrapping label.",
     "離れた label に for がなく、入力欄を囲んでもいないため関連付けがありません。",
-    '`for="email"` を入力欄の ID と一致させて関連付けます。',
+    "標準の input を label の内側に置き、暗黙的に関連付けます。",
   ],
   [
     "a11y/landmark-roles",

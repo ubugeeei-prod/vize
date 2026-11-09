@@ -36,7 +36,7 @@ fn fixture(name: &str) -> vize_l0::String {
 #[test]
 fn the_loops_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("loops.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
+    with_transformed(&source, |lowered, folio, _, budget| {
         // The oracle: the full normalized folio after the pipeline ran.
         assert_dump_snapshot!(*folio);
 
@@ -52,7 +52,7 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
         // Three loops, consumed in document order with fresh tags: the
         // keyed `li`, the destructuring `<template v-for>`, the
         // absent-alias `p`.
-        let entries = facts.for_facts.sorted_entries();
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 3);
         assert_eq!(
             entries
@@ -82,7 +82,7 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
         );
         // The vif pass still extracted the `dt` branch key inside the
         // template loop; the two passes compose.
-        assert_eq!(facts.if_facts.len(), 1);
+        assert_eq!(lowered.artifact.if_facts.len(), 1);
         // All three loops are valid Vue: no diagnostics.
         assert_eq!(lowered.diagnostics, vec![]);
     });
@@ -92,7 +92,7 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
 #[test]
 fn the_holes_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("holes.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
+    with_transformed(&source, |lowered, folio, _, _| {
         // The undecomposable value keeps its op (pessimal escape); the
         // expressionless v-for keeps only its element. Both errors are
         // the lowering's — the fact mirror adds none.
@@ -106,7 +106,7 @@ fn the_holes_fixture_snapshots_the_post_pass_folio() {
             lowered.diagnostics[1].message.as_str(),
             "v-for is missing expression."
         );
-        let entries = facts.for_facts.sorted_entries();
+        let entries = lowered.artifact.for_facts.sorted_entries();
         assert_eq!(entries.len(), 1, "only the kept op is a consumption site");
         assert_eq!(entries[0].1.value, ForName::Pending);
     });

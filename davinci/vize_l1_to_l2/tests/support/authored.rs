@@ -15,29 +15,29 @@ use vize_l2::scope::{ScopeFacts, ScopeOrigin};
 
 pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     let root = SourceRoot::new(source).expect("authored source");
-    for op in &lowered.root.ops {
+    for op in &lowered.artifact.root.ops {
         assert_op(source, root, op);
     }
     for diagnostic in &lowered.diagnostics {
         assert_span(source, root, diagnostic.span, "diagnostic");
     }
-    for record in &lowered.provenance {
+    for record in &lowered.artifact.provenance {
         assert_provenance(source, root, record);
     }
-    for (_, facts) in lowered.scopes.iter() {
+    for (_, facts) in lowered.artifact.scopes.iter() {
         assert_scope_facts(source, root, facts);
     }
-    for (_, parts) in lowered.texts.iter() {
+    for (_, parts) in lowered.artifact.texts.iter() {
         for part in &parts.parts {
             assert_text_part(source, root, part);
         }
     }
-    for (_, keys) in lowered.wrappers.iter() {
+    for (_, keys) in lowered.artifact.branch_fragments.iter() {
         for key in keys.branches.iter().flatten() {
             assert_wrapper_key(source, root, key);
         }
     }
-    for (_, wrapper) in lowered.for_wrappers.iter() {
+    for (_, wrapper) in lowered.artifact.loop_fragments.iter() {
         if let Some(key) = &wrapper.key {
             assert_wrapper_key(source, root, key);
         }
@@ -343,6 +343,7 @@ fn exceptional_native_scope_origins_pass_the_complete_authored_artifact_law() {
     let lowered = vize_l1_to_l2::lower(&arena, &tree, &errors);
     assert_authored_artifact(source, &lowered);
     let (_, scope) = lowered
+        .artifact
         .scopes
         .iter()
         .next()

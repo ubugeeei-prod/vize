@@ -45,7 +45,8 @@ fn actual_native_and_compatibility_producers_agree_on_complete_encoded_expressio
                 let (tree, errors) = vize_l1::markup::parse(&a, body);
                 assert!(errors.is_empty());
                 let compatibility = lower_source_block(&a, &tree, &errors, block);
-                let facts = template_complexity::run(&compatibility.root, compatibility.op_count);
+                let facts =
+                    template_complexity::run(&compatibility.artifact.root, compatibility.op_count);
                 let expected = ComplexityFacts {
                     cyclomatic: 5,
                     cognitive: 4,
@@ -89,7 +90,7 @@ fn once_decoding_unknown_references_and_partial_entity_refusals_keep_original_ge
     let (tree, errors) = vize_l1::markup::parse(&a, source);
     let block = SourceRoot::new(source).unwrap().whole_block();
     let lowered = lower_source_block(&a, &tree, &errors, block);
-    let [Op::Element(element)] = lowered.root.ops.as_slice() else {
+    let [Op::Element(element)] = lowered.artifact.root.ops.as_slice() else {
         panic!("element")
     };
     let [BindingOp::Bind(binding)] = element.bindings.as_slice() else {
@@ -113,7 +114,7 @@ fn once_decoding_unknown_references_and_partial_entity_refusals_keep_original_ge
         value.authored_span(Span::new(1, 3)),
         Some(span(source, "&fjlig;"))
     );
-    let facts = template_complexity::run(&lowered.root, lowered.op_count);
+    let facts = template_complexity::run(&lowered.artifact.root, lowered.op_count);
     assert_eq!(
         facts.contributions,
         vec![
@@ -130,7 +131,7 @@ fn once_decoding_unknown_references_and_partial_entity_refusals_keep_original_ge
         &errors,
         SourceRoot::new(source).unwrap().whole_block(),
     );
-    let [Op::Element(element)] = lowered.root.ops.as_slice() else {
+    let [Op::Element(element)] = lowered.artifact.root.ops.as_slice() else {
         panic!("element")
     };
     let [BindingOp::Bind(binding)] = element.bindings.as_slice() else {

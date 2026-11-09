@@ -14,7 +14,7 @@
 //!
 //! Ops are numbered densely in page order as they are decided
 //! ([`lower::cx`]); [`Lowered::op_count`] equals
-//! `L2Page::of(&lowered.root.ops).op_count()` on every input —
+//! `L2Page::of(&lowered.artifact.root.ops).op_count()` on every input —
 //! the law the side tables and the L2 verifier's `verify_table` key on.
 //!
 //! Physical Vue-policy ownership lives under `dialect/vue`; these ordinary
@@ -35,7 +35,6 @@ mod cx;
 mod directive;
 mod element;
 mod expr;
-mod features;
 mod finish;
 mod foreign;
 mod forop;

@@ -100,7 +100,7 @@ pub(super) fn apply(lowered: &mut Lowered<'_>, reply: &Reply, plugin: &str) -> V
     let mut applied = Vec::new();
     let mut records = Vec::new();
     let mut count = 0;
-    walk::visit(&mut lowered.root, &mut count, &mut |id, op| {
+    walk::visit(&mut lowered.artifact.root, &mut count, &mut |id, op| {
         let Op::Element(owner) = op else {
             return;
         };
@@ -130,6 +130,6 @@ pub(super) fn apply(lowered: &mut Lowered<'_>, reply: &Reply, plugin: &str) -> V
         count, lowered.op_count,
         "transform reader's page numbering diverged"
     );
-    lowered.provenance.extend(records);
+    lowered.artifact.provenance.extend(records);
     applied
 }

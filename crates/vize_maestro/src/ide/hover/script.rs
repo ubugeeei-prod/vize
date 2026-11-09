@@ -124,10 +124,19 @@ impl HoverService {
         let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
         let (line, character) =
             corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
-        let hover = bridge
+        let mut hover = bridge
             .hover(&doc.request_uri, line, character)
             .await
             .ok()??;
+        if super::corsa::is_member_quick_info(&hover) {
+            super::corsa::adopt_declaration_documentation(
+                bridge,
+                &doc.request_uri,
+                (line, character),
+                &mut hover,
+            )
+            .await;
+        }
         let mapped_range = hover
             .range
             .as_ref()

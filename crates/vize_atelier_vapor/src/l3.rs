@@ -195,13 +195,15 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             vize_l1_to_l2::lower(&scratch, &tree, &errors)
         );
         capture.page(Level::L2, "lower", || {
-            vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.root.ops))
+            vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.artifact.root.ops))
         });
         capture.page(Level::L2, "provenance", || {
-            vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(&s2.provenance))
+            vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(
+                &s2.artifact.provenance,
+            ))
         });
         if !s2.diagnostics.is_empty()
-            || s2.provenance.iter().any(|record| {
+            || s2.artifact.provenance.iter().any(|record| {
                 !record.rule.starts_with("lower.")
                     && !record.rule.starts_with("condense.")
                     && record.rule != "drop.vue-is"
@@ -222,7 +224,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         }
         let mut s3 = bridge_profile!(
             "atelier.vapor.bridge.s2_to_s3",
-            vize_l2_to_l3::lower(allocator, &s2.root)
+            vize_l2_to_l3::lower(allocator, &s2.artifact.root)
         );
         let recoveries = match bridge_profile!(
             "atelier.vapor.bridge.markup_admission",
@@ -233,7 +235,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         };
         let mut retained = bridge_profile!(
             "atelier.vapor.bridge.retained_index",
-            retained::Retained::collect(allocator, &s2.root)
+            retained::Retained::collect(allocator, &s2.artifact.root)
         );
         if retained.has_invalid_parse_rejection() {
             return VaporL3BridgeStatus::SourceError(std::vec![String::from(

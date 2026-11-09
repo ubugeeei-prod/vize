@@ -60,7 +60,7 @@ fn lower_and_emit_plain(
     let frozen_slots = match request.frozen {
         Some((root, carrier)) => {
             let facts = FrozenTemplate::new(root, source, carrier)
-                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.root));
+                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.artifact.root));
             match facts {
                 Ok(facts) => Some(facts),
                 Err(message) => {
@@ -72,14 +72,14 @@ fn lower_and_emit_plain(
     };
     let artifact = select::L2Artifact {
         source,
-        root: &s2.root,
+        root: &s2.artifact.root,
         root_origin: None,
         facts: emit::PlanFacts {
-            scopes: &s2.scopes,
-            texts: &s2.texts,
-            for_wrappers: &s2.for_wrappers,
-            wrappers: &s2.wrappers,
-            if_facts: &s2.if_facts,
+            scopes: &s2.artifact.scopes,
+            texts: &s2.artifact.texts,
+            for_wrappers: &s2.artifact.loop_fragments,
+            wrappers: &s2.artifact.branch_fragments,
+            if_facts: &s2.artifact.if_facts,
             frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
@@ -110,10 +110,11 @@ fn lower_and_emit_plain(
             // by itself keep the template on that walker.
             if s2.diagnostics.iter().any(blocks_surface)
                 || s2
+                    .artifact
                     .provenance
                     .iter()
                     .any(|record| !admitted_rule(record) || drops_directive(record))
-                || surface_gate::slot_v_pre_interpolates(source, &s2.root.ops)
+                || surface_gate::slot_v_pre_interpolates(source, &s2.artifact.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
             }
@@ -181,15 +182,15 @@ fn lower_and_emit<C: CaptureSink>(
         }
     };
     capture.page(Level::L2, "lower", || {
-        vize_l2::dump::Page::of(&s2.root.ops).print_to_string(DumpMode::Full)
+        vize_l2::dump::Page::of(&s2.artifact.root.ops).print_to_string(DumpMode::Full)
     });
     capture.page(Level::L2, "provenance", || {
-        vize_l2::dump::ProvenancePage::of(&s2.provenance).print_to_string(DumpMode::Full)
+        vize_l2::dump::ProvenancePage::of(&s2.artifact.provenance).print_to_string(DumpMode::Full)
     });
     let frozen_slots = match request.frozen {
         Some((root, carrier)) => {
             let facts = FrozenTemplate::new(root, source, carrier)
-                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.root));
+                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.artifact.root));
             match facts {
                 Ok(facts) => Some(facts),
                 Err(message) => {
@@ -201,14 +202,14 @@ fn lower_and_emit<C: CaptureSink>(
     };
     let artifact = select::L2Artifact {
         source,
-        root: &s2.root,
+        root: &s2.artifact.root,
         root_origin: None,
         facts: emit::PlanFacts {
-            scopes: &s2.scopes,
-            texts: &s2.texts,
-            for_wrappers: &s2.for_wrappers,
-            wrappers: &s2.wrappers,
-            if_facts: &s2.if_facts,
+            scopes: &s2.artifact.scopes,
+            texts: &s2.artifact.texts,
+            for_wrappers: &s2.artifact.loop_fragments,
+            wrappers: &s2.artifact.branch_fragments,
+            if_facts: &s2.artifact.if_facts,
             frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
@@ -240,10 +241,11 @@ fn lower_and_emit<C: CaptureSink>(
             // by itself keep the template on that walker.
             if s2.diagnostics.iter().any(blocks_surface)
                 || s2
+                    .artifact
                     .provenance
                     .iter()
                     .any(|record| !admitted_rule(record) || drops_directive(record))
-                || surface_gate::slot_v_pre_interpolates(source, &s2.root.ops)
+                || surface_gate::slot_v_pre_interpolates(source, &s2.artifact.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
             }

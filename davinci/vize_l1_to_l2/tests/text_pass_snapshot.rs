@@ -31,7 +31,7 @@ fn fixture(name: &str) -> vize_l0::String {
 #[test]
 fn the_merge_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("merge.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
+    with_transformed(&source, |lowered, folio, _, budget| {
         // The oracle: the whitespace-only indentation runs are gone,
         // the greeting merged into one `opaque(compound …)` op with the
         // interior run condensed, and the comment-punched `<p>` keeps
@@ -47,13 +47,14 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Two compounds, five and two parts, all validated and published.
-        let entries = facts.text_facts.sorted_entries();
+        let entries = lowered.artifact.texts.sorted_entries();
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].1.parts.len(), 5);
         assert_eq!(entries[1].1.parts.len(), 2);
-        assert_eq!(lowered.texts.len(), 2);
+        assert_eq!(lowered.artifact.texts.len(), 2);
         // The fact publication trail, in page order.
         let records: Vec<&str> = lowered
+            .artifact
             .provenance
             .iter()
             .filter(|record| record.rule.as_str() == "lower.text-fact")
@@ -70,28 +71,30 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
 #[test]
 fn the_condense_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("condense.vue");
-    with_transformed(&source, |lowered, folio, facts, _| {
+    with_transformed(&source, |lowered, folio, _, _| {
         // The oracle: the no-newline run between the spans survives as
         // one `ui.text " "`; the newline runs between elements are
         // gone; the div's mixed text collapsed and merged with its
         // interpolation; the `<pre>` content merged **uncondensed**
         // (the shipped `is_pre_tag` exemption).
         assert_dump_snapshot!(*folio);
-        assert_eq!(facts.text_facts.len(), 2);
+        assert_eq!(lowered.artifact.texts.len(), 2);
         // The pre compound keeps its bytes verbatim in every part.
-        let entries = facts.text_facts.sorted_entries();
+        let entries = lowered.artifact.texts.sorted_entries();
         let pre = entries[1].1;
         assert_eq!(pre.parts[0].text.as_str(), "  keep   ");
         assert_eq!(pre.parts[2].text.as_str(), "   bytes  ");
         // The condense decisions left their records.
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "condense.drop-whitespace")
         );
         assert!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .any(|record| record.rule.as_str() == "condense.whitespace")

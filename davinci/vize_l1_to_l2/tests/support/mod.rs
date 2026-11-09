@@ -58,8 +58,9 @@ pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
         folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
-        provenance: lowered.provenance.clone(),
+        provenance: lowered.artifact.provenance.clone(),
         scopes: lowered
+            .artifact
             .scopes
             .sorted_entries()
             .into_iter()
@@ -83,7 +84,7 @@ pub fn with_lowered_caps<R>(
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     f(&lowered, &folio)
 }
 
@@ -94,7 +95,7 @@ pub fn with_transformed<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l1_to_l2::pass::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Facts,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -119,7 +120,7 @@ pub fn with_transformed_caps<R>(
     f: impl FnOnce(
         &Lowered<'_>,
         &L2Page,
-        &vize_l1_to_l2::pass::L2Facts,
+        &vize_l2::analysis::pass_facts::L2Facts,
         &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
@@ -128,7 +129,7 @@ pub fn with_transformed_caps<R>(
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let mut budget = vize_l0::pass::BudgetObserver::new();
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     f(&lowered, &folio, &facts, &budget)
 }
 
@@ -155,17 +156,17 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
             "verifier rejected post-pass output: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.scopes),
+            verify_table(folio, &lowered.artifact.scopes),
             Vec::<Violation>::new(),
             "a scope key dangles post-pass: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.if_facts),
+            verify_table(folio, &lowered.artifact.if_facts),
             Vec::<Violation>::new(),
             "an if-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &facts.for_facts),
+            verify_table(folio, &lowered.artifact.for_facts),
             Vec::<Violation>::new(),
             "a for-facts key dangles: {context}"
         );
@@ -175,14 +176,9 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
             "a slot-facts key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.texts),
+            verify_table(folio, &lowered.artifact.texts),
             Vec::<Violation>::new(),
             "a recorded text-run key dangles: {context}"
-        );
-        assert_eq!(
-            verify_table(folio, &facts.text_facts),
-            Vec::<Violation>::new(),
-            "a text-facts key dangles: {context}"
         );
         assert_eq!(
             verify_table(folio, &facts.model_faults),
@@ -235,26 +231,27 @@ pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
             "verifier rejected lowered output: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.scopes),
+            verify_table(folio, &lowered.artifact.scopes),
             Vec::<Violation>::new(),
             "a scope key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.texts),
+            verify_table(folio, &lowered.artifact.texts),
             Vec::<Violation>::new(),
             "a recorded text-run key dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.wrappers),
+            verify_table(folio, &lowered.artifact.branch_fragments),
             Vec::<Violation>::new(),
             "a wrapper-key fact dangles: {context}"
         );
         assert_eq!(
-            verify_table(folio, &lowered.for_wrappers),
+            verify_table(folio, &lowered.artifact.loop_fragments),
             Vec::<Violation>::new(),
             "a for-wrapper fact dangles: {context}"
         );
         let provenance_ids: SideTable<()> = lowered
+            .artifact
             .provenance
             .iter()
             .filter_map(|record| record.node.map(|node| (node, ())))

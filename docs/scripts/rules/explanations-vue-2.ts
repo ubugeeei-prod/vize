@@ -254,9 +254,9 @@ export const vue2Explanations: readonly ExplanationRecord[] = [
   ],
   [
     "vue/warn-custom-directive",
-    "`v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.",
-    "The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.",
-    "`v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有のディレクティブの実装を必要とし、この任意の規約で警告されます。",
-    "組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録したカスタムディレクティブは有効な Vue として使えます。",
+    "`v-focus` requires a project-specific directive implementation, so this optional convention reports it.",
+    "`v-show` is a built-in Vue directive and needs no project registration.",
+    "`v-focus` はプロジェクト固有のディレクティブ実装を必要とするため、この任意の規約で報告されます。",
+    "`v-show` は Vue の組み込みディレクティブなので、プロジェクトでの登録は不要です。",
   ],
 ];

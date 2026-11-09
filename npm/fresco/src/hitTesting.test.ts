@@ -84,3 +84,102 @@ test("hit testing selects the topmost node within ancestor overflow clips", () =
   );
   axisAlias.unmount();
 });
+
+test("hit testing follows sibling z-index before source order", () => {
+  const mounted = mountFresco(() =>
+    h("box", [
+      h("text", { text: "front", style: { zIndex: 2 } }),
+      h("text", { text: "back", style: { zIndex: -1 } }),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const front = root.children[0];
+  const back = root.children[1];
+  assert.ok(front && back);
+
+  assert.equal(
+    mounted.renderer.hitTest(root, 0, 0, [
+      { id: root.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: front.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: back.id, x: 0, y: 0, width: 5, height: 1 },
+    ]),
+    front,
+  );
+  mounted.unmount();
+});
+
+test("equal sibling z-index keeps reverse source order", () => {
+  const mounted = mountFresco(() =>
+    h("box", [
+      h("text", { text: "under", style: { zIndex: 2 } }),
+      h("text", { text: "front", style: { zIndex: 2 } }),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const under = root.children[0];
+  const front = root.children[1];
+  assert.ok(under && front);
+
+  assert.equal(
+    mounted.renderer.hitTest(root, 0, 0, [
+      { id: root.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: under.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: front.id, x: 0, y: 0, width: 5, height: 1 },
+    ]),
+    front,
+  );
+  mounted.unmount();
+});
+
+test("explicit null z-index does not fall through to the native alias", () => {
+  const mounted = mountFresco(() =>
+    h("box", [
+      h("text", { text: "under", style: { zIndex: null, z_index: 1 } }),
+      h("text", { text: "front" }),
+    ]),
+  );
+  const root = firstChild(mounted);
+  const under = root.children[0];
+  const front = root.children[1];
+  assert.ok(under && front);
+
+  assert.equal(
+    mounted.renderer.hitTest(root, 0, 0, [
+      { id: root.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: under.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: front.id, x: 0, y: 0, width: 5, height: 1 },
+    ]),
+    front,
+  );
+  mounted.unmount();
+});
+
+test("default stacking skips full style normalization for untouched siblings", () => {
+  const mounted = mountFresco(() =>
+    h("box", [h("text", { text: "under" }), h("text", { text: "front" })]),
+  );
+  const root = firstChild(mounted);
+  const under = root.children[0];
+  const front = root.children[1];
+  assert.ok(under && front);
+
+  (under.props as Record<string, unknown>).style = new Proxy(
+    { zIndex: 0 },
+    {
+      get(target, property, receiver) {
+        assert.ok(property === "zIndex" || property === "z_index");
+        return Reflect.get(target, property, receiver);
+      },
+    },
+  );
+
+  assert.equal(
+    mounted.renderer.hitTest(root, 0, 0, [
+      { id: root.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: under.id, x: 0, y: 0, width: 5, height: 1 },
+      { id: front.id, x: 0, y: 0, width: 5, height: 1 },
+    ]),
+    front,
+  );
+  mounted.unmount();
+});

@@ -42,6 +42,12 @@ export function createPromotionPlan(reductionDirectory) {
   assert.equal(receipt?.version, 1, "Unknown reduction receipt version");
   if (receipt.status !== "reduced") return null;
   const observer = divergenceObserver(receipt.observer);
+  assert(
+    receipt.oracle !== null &&
+      typeof receipt.oracle === "object" &&
+      Object.values(receipt.oracle).every((value) => typeof value === "string"),
+    "Invalid reduction oracle",
+  );
   assert(/^[a-f0-9]{12}$/.test(receipt.fingerprint ?? ""), "Invalid divergence fingerprint");
   assert(/^[a-f0-9]{40}$/.test(receipt.sourceCommit ?? ""), "Invalid reduction source commit");
   assert.equal(receipt.reducedFile, reducedFileName(observer), "Unexpected reduced witness name");
@@ -70,6 +76,7 @@ export function createPromotionPlan(reductionDirectory) {
     observer: observer.id,
     fingerprint: receipt.fingerprint,
     sourcePath: receipt.sourcePath,
+    ...receipt.oracle,
     sourceCommit: receipt.sourceCommit,
     sourceRunUrl: receipt.runUrl,
     sourceBytes: receipt.sourceBytes,

@@ -24,7 +24,7 @@
 use vize_l0::pass::{
     PassDesc, PassEvent, PassFailure, PassObserver, Pipeline, run_pipeline_remarked,
 };
-use vize_l0::side_table::SideTable;
+use vize_l2::analysis::pass_facts::L2Facts;
 
 use crate::lower::Lowered;
 
@@ -33,7 +33,6 @@ mod dom;
 pub mod hoist;
 pub mod legacy;
 mod plan;
-pub mod text;
 pub mod vfor;
 pub mod vif;
 pub mod vmodel;
@@ -44,7 +43,6 @@ pub use cfg::{ComplexityFacts, Contribution, DecisionKind};
 pub use dom::run_dom_transform_with_profile;
 pub use hoist::{StaticFacts, StaticLevel};
 pub use plan::TransformProfile;
-pub use text::TextFacts;
 pub use vfor::{ForFacts, ForName};
 pub use vif::{BranchKey, BranchKeyKind, IfFacts};
 pub use vmodel::{ModelFacts, ModelFault};
@@ -58,8 +56,8 @@ pub const L2_STAGE: &str = "s2";
 ///
 /// Four passes ([`vslot::DESC`], [`vmodel::DESC`], [`hoist::DESC`], then
 /// [`cfg::DESC`]). Text, `v-for`, and `v-if` facts are now
-/// lowering-published (`pass::text`/`pass::vfor` mirror their tables
-/// without an L2 walk), so the transform table only contains passes
+/// lowering-published on the canonical artifact (no L2 walk and no
+/// copy), so the transform table only contains passes
 /// that still need one. Later installments append here, and the `const`
 /// pins below are the grouping regression guard (the P2-2 convention: a
 /// fusion-plan change is a compile error, not a surprise).
@@ -82,40 +80,6 @@ const _: () = {
     };
     assert!(group.start == 2 && group.len == 2 && !group.is_barrier);
 };
-
-/// The facts the L2 transform pipeline produces beside the tree.
-///
-/// One field per fact family, so a later installment's facts land as new
-/// fields rather than a second bag type.
-#[derive(Debug, Default)]
-pub struct L2Facts {
-    /// Facts from the Vue 2 sugar-legalizing pass, empty on Vue 3.
-    pub legacy: legacy::LegacyFacts,
-    /// Per-`ui.if` branch-key facts, keyed by the op's page-order id
-    /// ([`vif`]).
-    pub if_facts: SideTable<IfFacts>,
-    /// Per-`ui.for` consumed-scope facts, keyed by the op's page-order
-    /// id ([`vfor`]).
-    pub for_facts: SideTable<ForFacts>,
-    /// Per-`ui.component` canonical slot grouping, keyed by the op's
-    /// page-order id ([`vslot`]).
-    pub slot_facts: SideTable<SlotFacts>,
-    /// Per-compound merged-run parts, keyed by the compound
-    /// `ui.interpolation` op's page-order id ([`text`]).
-    pub text_facts: SideTable<TextFacts>,
-    /// Per-`ui.model` validation faults, keyed by the binding op's
-    /// page-order id ([`vmodel`]); sparse — entries only for models the
-    /// legacy lane would remove.
-    pub model_faults: SideTable<ModelFacts>,
-    /// Per-owner static-analysis facts, keyed by the `ui.element` /
-    /// `ui.component` op's page-order id ([`hoist`]); dense over the
-    /// owner family. The series' first `Optional` product: skipping the
-    /// pass loses these and nothing else.
-    pub static_facts: SideTable<StaticFacts>,
-    /// The component's own template complexity ([`cfg`], P4-9a); `None`
-    /// when the plan declined the `Optional` analysis.
-    pub complexity: Option<ComplexityFacts>,
-}
 
 /// Run the artifact-selected L2 transform pipeline over `lowered`, firing
 /// `observer`'s hooks around each pass.
@@ -163,23 +127,15 @@ where
     O: PassObserver,
     H: FnMut(&PassEvent<'_>, &Lowered<'a>),
 {
-    let mut facts = L2Facts {
-        if_facts: vif::facts_from_lowering(lowered),
-        for_facts: vfor::facts_from_lowering(lowered),
-        text_facts: text::facts_from_lowering(lowered),
-        ..L2Facts::default()
-    };
+    let mut facts = L2Facts::default();
     #[cfg(debug_assertions)]
     let mut verify = vize_l2::verify::VerifyObserver::new();
 
-    let pipeline = plan::pipeline_for_profile(lowered.caps, lowered.features, profile);
+    let pipeline = plan::pipeline_for_profile(lowered.caps, lowered.artifact.features, profile);
     let outcome = run_pipeline_remarked(&pipeline, observer, |event, remarks| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
-            facts.legacy = legacy::run(lowered);
-            facts.if_facts = vif::facts_from_lowering(lowered);
-            facts.for_facts = vfor::facts_from_lowering(lowered);
-            facts.text_facts = text::facts_from_lowering(lowered);
+            facts.filters = legacy::run(lowered);
         } else if name == vslot::DESC.name {
             facts.slot_facts = vslot::run(lowered);
         } else if name == vmodel::DESC.name {
@@ -198,18 +154,15 @@ where
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
             verify.check(event, &folio);
-            verify.check_table(event, &folio, &lowered.scopes);
-            verify.check_table(event, &folio, &lowered.texts);
-            verify.check_table(event, &folio, &lowered.if_facts);
-            verify.check_table(event, &folio, &lowered.for_facts);
-            verify.check_table(event, &folio, &lowered.wrappers);
-            verify.check_table(event, &folio, &lowered.for_wrappers);
-            verify.check_table(event, &folio, &facts.if_facts);
-            verify.check_table(event, &folio, &facts.for_facts);
+            verify.check_table(event, &folio, &lowered.artifact.scopes);
+            verify.check_table(event, &folio, &lowered.artifact.texts);
+            verify.check_table(event, &folio, &lowered.artifact.if_facts);
+            verify.check_table(event, &folio, &lowered.artifact.for_facts);
+            verify.check_table(event, &folio, &lowered.artifact.branch_fragments);
+            verify.check_table(event, &folio, &lowered.artifact.loop_fragments);
             verify.check_table(event, &folio, &facts.slot_facts);
-            verify.check_table(event, &folio, &facts.text_facts);
             verify.check_table(event, &folio, &facts.model_faults);
             verify.check_table(event, &folio, &facts.static_facts);
         }

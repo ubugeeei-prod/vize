@@ -19,10 +19,10 @@
     "gitBlob": "2f2780ba34b1731212ce111edde94fa12ed89fbc"
   },
   "latest": {
-    "source": "be4d51dc8a00495858d18ae9cddd3714811c55cb",
-    "bytes": 16838,
-    "sha256": "0bfb38a074d3f8fe4b22aa7a27dde16ba6fcb65ef351fb49be93942584009abf",
-    "gitBlob": "af68aadd5541c04fcace279218ad54b05df2d662"
+    "source": "e8d781b3f2cc647f9e0f0f0243c8e925b7b7a49e",
+    "bytes": 16871,
+    "sha256": "9560ef6e61e147c9395f4a1fead9f3766577c7c07f89e2e5ed316d3a55b6d6d0",
+    "gitBlob": "916b70bfc06a11a401249724de56a477921554fc"
   },
   "changes": [
     {
@@ -43,6 +43,24 @@
       "ruleId": "vue/component-name-in-template-casing",
       "before": "\"endColumn\": 15,\n                        \"help\": \"Use kebab-case for component names\"",
       "after": "\"endColumn\": 12,\n                        \"help\": \"Use kebab-case for component names\"",
+      "occurrences": 1
+    },
+    {
+      "ruleId": "real-project-rule-allowances",
+      "before": "fn temp_project_dir() -> PathBuf {",
+      "after": "pub(super) fn temp_project_dir() -> PathBuf {",
+      "occurrences": 1
+    },
+    {
+      "ruleId": "real-project-rule-allowances",
+      "before": "fn write_project_file(root: &Path, path: &str, content: &str) {",
+      "after": "pub(super) fn write_project_file(root: &Path, path: &str, content: &str) {",
+      "occurrences": 1
+    },
+    {
+      "ruleId": "real-project-rule-allowances",
+      "before": "fn output_details(output: &Output) -> vize_l0::String {",
+      "after": "pub(super) fn output_details(output: &Output) -> vize_l0::String {",
       "occurrences": 1
     }
   ]

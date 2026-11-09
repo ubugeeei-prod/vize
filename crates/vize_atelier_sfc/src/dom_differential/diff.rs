@@ -1,7 +1,35 @@
 //! Whole-module byte comparison for the production-parity oracle.
-#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    clippy::string_slice,
+    reason = "differential reports are std strings; windows slice at char boundaries"
+)]
 
-use vize_atelier_sfc::{SfcCompileResult, SfcError};
+use vize_atelier_dom::differential::{with_croquis_projection, with_legacy_lane};
+
+use super::shapes::{Shape, compile};
+use crate::{SfcCompileResult, SfcDescriptor, SfcError};
+
+/// How the production compile of `descriptor` on a DOM `shape` differs from
+/// the pinned legacy lane: the selected lane, a selected compile error, or the
+/// Croquis projection the production-reach gate also holds to parity.
+pub fn production_divergence(
+    descriptor: &SfcDescriptor<'_>,
+    name: &str,
+    shape: Shape,
+) -> Option<String> {
+    let legacy = with_legacy_lane(|| compile(descriptor, name, shape));
+    match compile(descriptor, name, shape) {
+        Err(error) => error_divergence(&error, &legacy),
+        Ok(selected) => divergence(&selected, &legacy).or_else(|| {
+            with_croquis_projection(|| compile(descriptor, name, shape))
+                .ok()
+                .and_then(|projected| divergence(&projected, &legacy))
+        }),
+    }
+}
 
 /// The first field on which the L2-selected and forced-legacy modules differ.
 pub fn divergence(
@@ -92,7 +120,7 @@ fn window(source: &str, other: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vize_atelier_sfc::BlockLocation;
+    use crate::BlockLocation;
 
     fn error(code: &str, message: &str) -> SfcError {
         SfcError {

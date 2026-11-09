@@ -12,7 +12,7 @@ const read = (path: string) => readFileSync(join(root, path));
 void test("the casing source keeps the complete original and its exact finite successors", () => {
   const source = componentNameSource(root);
   assert.equal(source.historical.length, 16768);
-  assert.equal(source.current.length, 16838);
+  assert.equal(source.current.length, 16871);
   assert.deepEqual(asArray(source.successor.changes), [
     {
       ruleId: "vue/component-name-in-template-casing",
@@ -34,6 +34,24 @@ void test("the casing source keeps the complete original and its exact finite su
         '"endColumn": 15,\n                        "help": "Use kebab-case for component names"',
       after:
         '"endColumn": 12,\n                        "help": "Use kebab-case for component names"',
+      occurrences: 1,
+    },
+    {
+      ruleId: "real-project-rule-allowances",
+      before: "fn temp_project_dir() -> PathBuf {",
+      after: "pub(super) fn temp_project_dir() -> PathBuf {",
+      occurrences: 1,
+    },
+    {
+      ruleId: "real-project-rule-allowances",
+      before: "fn write_project_file(root: &Path, path: &str, content: &str) {",
+      after: "pub(super) fn write_project_file(root: &Path, path: &str, content: &str) {",
+      occurrences: 1,
+    },
+    {
+      ruleId: "real-project-rule-allowances",
+      before: "fn output_details(output: &Output) -> vize_l0::String {",
+      after: "pub(super) fn output_details(output: &Output) -> vize_l0::String {",
       occurrences: 1,
     },
   ]);

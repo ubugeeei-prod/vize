@@ -302,7 +302,7 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
     let caps = LegacyCaps::for_version(config.vue_version);
     let (tree, errors) = vize_l1::markup::parse(&allocator, source.text.as_str());
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.artifact.root.ops);
     Some(PageArtifact {
         key: ArtifactKey::of(&folio, 0),
         folio,

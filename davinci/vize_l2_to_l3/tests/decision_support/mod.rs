@@ -49,10 +49,8 @@ pub fn seal_scoped<'a>(
         })
         .collect();
     Artifact::try_new(ArtifactParts {
-        source: "%",
-        root,
-        provenance: std::vec::Vec::new(),
         scopes,
+        ..ArtifactParts::new("%", root)
     })
     .expect("native fixture has valid spans and canonical controls")
 }

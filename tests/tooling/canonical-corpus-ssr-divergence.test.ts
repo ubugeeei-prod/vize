@@ -175,6 +175,7 @@ void test("a reduced SSR witness is promoted beside its observer's fixture test"
         divergenceCount: 1,
         fingerprint: "abc123abc123",
         sourcePath: `${fixtureA}/src/App.vue`,
+        oracle: {},
         sourceBytes: 200,
         reducedFile: "canonical-ssr-divergence.reduced.vue",
         reducedBytes: Buffer.byteLength(witness),

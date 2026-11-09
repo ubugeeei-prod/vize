@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, Box};
-use vize_l1_to_l2::lower::OpFamily;
+use vize_l2::artifact::OpFamily;
 use vize_l2::op::{BindingOp, ComponentOp, DynamicName, ElementOp, Namespace, Op, Region};
 use vize_relief::{ElementNode, ElementType, Namespace as ReliefNamespace};
 

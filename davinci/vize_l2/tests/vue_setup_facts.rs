@@ -2,17 +2,17 @@
 //! on every `<script setup>` in the repository corpus (#6844). Croquis is
 //! only this test's oracle.
 
-use std::path::{Path, PathBuf};
+mod support {
+    pub mod vue_setup;
+}
 
+use support::vue_setup::{corpus, observe, slice, text};
 use vize_l0::{
     Allocator, String,
     config::{VueDialect, VueVersion},
     cstr,
 };
-use vize_l1::container::{
-    Vue,
-    vue::{DescriptorOptions, ScriptRole},
-};
+use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::embed::{
     EmbedSource,
     syntax::{ProgramOptions, parse_program_once},
@@ -20,17 +20,6 @@ use vize_l1::embed::{
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{MACROS, MacroCall, MacroKind, SetupFactsIncomplete, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
-
-/// Repository trees holding `.vue` files, relative to the workspace root.
-const CORPUS: &[&str] = &[
-    "tests/_fixtures",
-    "tests/fixtures",
-    "crates",
-    "playground",
-    "examples",
-    "npm",
-];
-const SKIPPED_DIRECTORIES: &[&str] = &["node_modules", "target", "dist", ".git"];
 
 /// Files where Croquis disagrees with Vue, which is the authority. Croquis
 /// records no macro in an object-pattern declarator except `defineProps`;
@@ -40,29 +29,6 @@ const CROQUIS_DEFECTS: &[&str] =
 
 /// `(name, start, end, runtime arguments, type arguments)`, script-relative.
 type Row = (String, u32, u32, Option<String>, Option<String>);
-
-fn collect(directory: &Path, files: &mut Vec<PathBuf>) {
-    let Ok(entries) = std::fs::read_dir(directory) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let name = entry.file_name();
-        if path.is_dir() {
-            if !SKIPPED_DIRECTORIES.iter().any(|skip| name == *skip) {
-                collect(&path, files);
-            }
-        } else if path.extension().is_some_and(|extension| extension == "vue") {
-            files.push(path);
-        }
-    }
-}
-
-fn slice(source: &str, base: u32, span: vize_l0::Span) -> Option<String> {
-    source
-        .get((span.start - base) as usize..(span.end - base) as usize)
-        .map(String::from)
-}
 
 /// Croquis records Vue's macros and `defineArt` only.
 fn croquis_records(kind: MacroKind) -> bool {
@@ -106,57 +72,15 @@ fn croquis_rows(content: &str) -> Vec<Row> {
         .collect()
 }
 
-/// The native calls of the file's `<script setup>` with its content and
-/// start, or `None` when the native levels refuse the file first.
-fn observe(source: &str) -> Option<(String, u32, Result<Vec<MacroCall>, SetupFactsIncomplete>)> {
-    let arena = Allocator::default();
-    let descriptor = Vue.observe_descriptor(
-        &arena,
-        source,
-        DescriptorOptions {
-            version: VueVersion::V3,
-            dialect: VueDialect::Vue,
-            template: SurfaceParseOptions::default(),
-        },
-    );
-    let view = descriptor.admitted().ok()?;
-    let script = view.setup()?;
-    assert_eq!(script.role(), ScriptRole::Setup);
-    let block = script.block();
-    let syntax = parse_program_once(
-        &arena,
-        EmbedSource::authored(source, block.span()).ok()?,
-        ProgramOptions::module(script.lang()),
-    );
-    let admitted = syntax.admitted_program()?;
-    let mut producer = FileProducer::new(&arena, descriptor.source()).ok()?;
-    let mut observer = SetupObserver::new();
-    producer
-        .program_observed(
-            ProgramInput::checked(admitted, block, script.container_index()).ok()?,
-            ProgramScope::Nested,
-            &mut observer,
-        )
-        .ok()?;
-    let calls = observer.finish().map(|facts| facts.macro_calls().to_vec());
-    let content = source.get(block.span().start as usize..block.span().end as usize)?;
-    Some((String::from(content), block.span().start, calls))
-}
-
 fn native(source: &str) -> Option<(String, Result<Vec<Row>, SetupFactsIncomplete>)> {
     let (content, base, calls) = observe(source)?;
-    let rows = calls.map(|calls| native_rows(&content, base, &calls));
+    let rows = calls.map(|facts| native_rows(&content, base, facts.macro_calls()));
     Some((content, rows))
 }
 
 #[test]
 fn every_corpus_setup_matches_croquis() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut files = Vec::new();
-    for tree in CORPUS {
-        collect(&root.join(tree), &mut files);
-    }
-    files.sort();
+    let (root, files) = corpus();
     let mut compared = 0usize;
     let mut with_calls = 0usize;
     let mut mismatches = Vec::new();
@@ -192,6 +116,7 @@ fn shapes(script: &str) -> Option<Vec<(MacroKind, String, Option<String>)>> {
     let (content, base, calls) = observe(&source)?;
     let rows = calls
         .ok()?
+        .macro_calls()
         .iter()
         .map(|call| {
             (
@@ -202,10 +127,6 @@ fn shapes(script: &str) -> Option<Vec<(MacroKind, String, Option<String>)>> {
         })
         .collect();
     Some(rows)
-}
-
-fn text(value: &str) -> String {
-    String::from(value)
 }
 
 #[test]

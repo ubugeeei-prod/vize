@@ -18,7 +18,7 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
             "日本語\n  😀",
         ),
     ] {
-        with_transformed(source, |lowered, folio, facts, _| {
+        with_transformed(source, |lowered, folio, _, _| {
             let start = source.find(raw).unwrap() as u32;
             let span = Span::new(start, start + raw.len() as u32);
             let DumpOp::Element(element) = &folio.ops[0] else {
@@ -26,9 +26,10 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
             };
             assert!(matches!(element.children.last(), Some(DumpOp::Text(text))
                 if text.content == rendered && text.span == span));
-            assert!(lowered.texts.is_empty());
-            assert!(facts.text_facts.is_empty());
+            assert!(lowered.artifact.texts.is_empty());
+            assert!(lowered.artifact.texts.is_empty());
             let mut records = lowered
+                .artifact
                 .provenance
                 .iter()
                 .filter(|record| record.span == span);
@@ -50,7 +51,7 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
 #[test]
 fn final_interpolation_keeps_its_retained_expression_and_authored_span() {
     let source = "<p><i/>{{ 日本語 + 1 }}</p>";
-    with_transformed(source, |lowered, folio, facts, _| {
+    with_transformed(source, |lowered, folio, _, _| {
         let DumpOp::Element(element) = &folio.ops[0] else {
             panic!("expected an element");
         };
@@ -61,10 +62,11 @@ fn final_interpolation_keeps_its_retained_expression_and_authored_span() {
         assert!(matches!(&interpolation.expression,
             DumpExpr::Js { source, span, .. }
                 if source == "日本語 + 1" && *span == Span::new(10, 23)));
-        assert!(lowered.texts.is_empty());
-        assert!(facts.text_facts.is_empty());
+        assert!(lowered.artifact.texts.is_empty());
+        assert!(lowered.artifact.texts.is_empty());
         assert_eq!(
             lowered
+                .artifact
                 .provenance
                 .iter()
                 .filter(|record| record.rule == "lower.interpolation"

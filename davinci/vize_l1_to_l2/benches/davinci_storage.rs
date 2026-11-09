@@ -61,7 +61,7 @@ fn davinci_storage(criterion: &mut Criterion) {
                 (
                     lowered.op_count,
                     lowered.diagnostics.len(),
-                    lowered.scopes.len(),
+                    lowered.artifact.scopes.len(),
                 )
             })
         },

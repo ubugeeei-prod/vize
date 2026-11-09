@@ -41,17 +41,21 @@ pub(crate) struct PartialPage {
 
 pub(crate) fn collect(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> PartialPage {
     debug_assert!(
-        tree.source.as_ptr() >= lowered.source.as_ptr()
+        tree.source.as_ptr() >= lowered.artifact.source.as_ptr()
             && tree.source.as_ptr() as usize + tree.source.len()
-                <= lowered.source.as_ptr() as usize + lowered.source.len(),
+                <= lowered.artifact.source.as_ptr() as usize + lowered.artifact.source.len(),
         "hole spans are measured against the lowering's source"
     );
-    let holes = collect_holes(lowered.source, tree);
+    let holes = collect_holes(lowered.artifact.source, tree);
     let mut fragments = Vec::new();
     let mut walk = PageWalk::new();
-    visit_ops(&mut walk, &mut lowered.root.ops[..], &mut |id, op| {
-        note(&mut fragments, id, op);
-    });
+    visit_ops(
+        &mut walk,
+        &mut lowered.artifact.root.ops[..],
+        &mut |id, op| {
+            note(&mut fragments, id, op);
+        },
+    );
     let names = scope_names(lowered);
     PartialPage {
         holes,
@@ -62,7 +66,7 @@ pub(crate) fn collect(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> Part
 
 fn scope_names(lowered: &Lowered<'_>) -> Vec<KeptName> {
     let mut names = Vec::new();
-    for (id, facts) in lowered.scopes.iter() {
+    for (id, facts) in lowered.artifact.scopes.iter() {
         for (index, binding) in facts.bindings.iter().enumerate() {
             let span = match binding.origin {
                 ScopeOrigin::Authored { span } => span,

@@ -48,3 +48,19 @@ The remaining #6838 slices follow from the same rule:
   sugar legalization stays in `vize_l1_to_l2`.
 - The DOM emitter reads only `vize_l2` types, which lets it move into
   `vize_l4::targets::dom` without `vize_l1_to_l2` internals.
+
+## The canonical artifact owner
+
+`vize_l2::artifact::ArtifactParts` is the one canonical artifact. It already
+carried the source, ops, provenance and scopes for native producers; it now
+also carries compound text, `ui.for` and `ui.if` facts, both fragment-carrier
+tables and the op-family `LoweringFeatures` (moved from the lowering
+unchanged). It is generic over the provenance sink, so the transitional
+lowering keeps its record-free sink, while `Artifact::try_new` still seals only
+the record-keeping default and now also rejects a dangling fact key.
+
+`vize_l1_to_l2::Lowered` holds that artifact as `artifact` beside the
+conversion residue that never leaves the crate: the arena, the minted op
+count, diagnostics, lint-only consumed expressions and Vue capabilities.
+Consumers read `lowered.artifact.*`; there is no second copy and no extra
+walk, so construction cost is unchanged.

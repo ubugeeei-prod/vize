@@ -2,7 +2,7 @@
  * Tabs Component - Tab navigation
  */
 
-import { computed, defineComponent, h, ref, type PropType, type VNode, watch } from "vue";
+import { computed, defineComponent, h, ref, toRaw, type PropType, type VNode, watch } from "vue";
 import { useInput } from "../composables/useInput.js";
 import {
   adjacentEnabledIndex,
@@ -10,21 +10,38 @@ import {
   firstEnabledIndex,
   lastEnabledIndex,
   typeaheadIndex,
+  visibleCollectionOffset,
 } from "./collection-navigation.js";
+import {
+  collectionValuesEqual,
+  type CollectionBy,
+  type CollectionValueKey,
+  type RuntimeCollectionBy,
+} from "./collection-values.js";
 
-export interface Tab {
+interface TabBase {
   key: string;
   label: string;
   disabled?: boolean;
 }
 
-export interface TabsProps {
+export type Tab<Value = string> = TabBase &
+  ([Value] extends [string] ? { value?: Value } : { value: Value });
+
+export type TabsValueKey<Value> = CollectionValueKey<Value>;
+export type TabsBy<Value> = CollectionBy<Value>;
+
+export interface TabsProps<Value = string> {
   /** Tab definitions */
-  tabs: Tab[];
-  /** Currently active tab key */
-  modelValue?: string;
+  tabs: readonly Tab<Value>[];
+  /** Currently active tab value */
+  modelValue?: Value;
+  /** Compare active values by an object key or a custom equality function */
+  by?: TabsBy<Value>;
   /** Whether the tab list owns keyboard input */
   focused?: boolean;
+  /** Maximum visible tabs before the tab strip scrolls */
+  maxItems?: number;
   /** Tab bar position */
   position?: "top" | "bottom";
   /** Separator between tabs */
@@ -39,18 +56,28 @@ export interface TabsProps {
   underline?: boolean;
 }
 
+export interface RuntimeTab extends TabBase {
+  value?: unknown;
+}
+
+function tabValue(tab: RuntimeTab): unknown {
+  return Object.hasOwn(tab, "value") ? tab.value : tab.key;
+}
+
 export const Tabs = defineComponent({
   name: "Tabs",
   props: {
     tabs: {
-      type: Array as PropType<Tab[]>,
+      type: Array as PropType<readonly RuntimeTab[]>,
       required: true,
     },
-    modelValue: String,
+    modelValue: null as unknown as PropType<unknown>,
+    by: [String, Number, Symbol, Function] as PropType<RuntimeCollectionBy>,
     focused: {
       type: Boolean,
       default: false,
     },
+    maxItems: Number,
     position: {
       type: String as PropType<"top" | "bottom">,
       default: "top",
@@ -72,12 +99,17 @@ export const Tabs = defineComponent({
   },
   emits: ["update:modelValue", "change"],
   setup(props, { slots, emit }) {
+    const scrollOffset = ref(0);
     const highlightedIndex = ref(-1);
     const typeahead = createTypeaheadBuffer();
+    const viewportSize = computed(() => {
+      if (props.maxItems === undefined || !Number.isFinite(props.maxItems)) return undefined;
+      return props.maxItems > 0 ? Math.max(1, Math.floor(props.maxItems)) : undefined;
+    });
 
     const syncHighlight = () => {
       const activeIndex = props.tabs.findIndex(
-        (tab) => tab.key === props.modelValue && !tab.disabled,
+        (tab) => collectionValuesEqual(tabValue(tab), props.modelValue, props.by) && !tab.disabled,
       );
       if (activeIndex >= 0) {
         highlightedIndex.value = activeIndex;
@@ -90,16 +122,29 @@ export const Tabs = defineComponent({
       }
     };
 
-    watch([() => props.modelValue, () => props.tabs], syncHighlight, {
+    watch([() => props.modelValue, () => props.by, () => props.tabs], syncHighlight, {
       deep: true,
       immediate: true,
     });
+    watch(
+      [highlightedIndex, viewportSize, () => props.tabs.length],
+      ([index, windowSize]) => {
+        scrollOffset.value = visibleCollectionOffset(
+          index,
+          scrollOffset.value,
+          windowSize,
+          props.tabs.length,
+        );
+      },
+      { immediate: true },
+    );
 
     const activate = () => {
       const tab = props.tabs[highlightedIndex.value];
       if (!tab || tab.disabled) return;
-      emit("update:modelValue", tab.key);
-      emit("change", tab.key);
+      const value = toRaw(tabValue(tab));
+      emit("update:modelValue", value);
+      emit("change", value);
     };
 
     useInput({
@@ -131,16 +176,40 @@ export const Tabs = defineComponent({
       onSubmit: activate,
     });
 
+    const visibleTabs = computed(() => {
+      const windowSize = viewportSize.value;
+      const start = windowSize === undefined ? 0 : scrollOffset.value;
+      const end = windowSize === undefined ? props.tabs.length : start + windowSize;
+      return props.tabs.slice(start, end).map((tab, visibleIndex) => ({
+        tab,
+        index: start + visibleIndex,
+      }));
+    });
+
+    const scrollIndicator = computed(() => {
+      const windowSize = viewportSize.value;
+      if (windowSize === undefined || props.tabs.length <= windowSize) {
+        return { showBefore: false, showAfter: false };
+      }
+      return {
+        showBefore: scrollOffset.value > 0,
+        showAfter: scrollOffset.value + windowSize < props.tabs.length,
+      };
+    });
+
     return () => {
       // Tab bar
       const tabItems: VNode[] = [];
+      if (scrollIndicator.value.showBefore) {
+        tabItems.push(h("text", { key: "scroll-before", dim: true }, "…"));
+      }
 
-      props.tabs.forEach((tab, index) => {
-        if (index > 0) {
+      visibleTabs.value.forEach(({ tab, index }, visibleIndex) => {
+        if (visibleIndex > 0) {
           tabItems.push(h("text", { key: `sep-${index}`, dim: true }, props.separator));
         }
 
-        const isActive = tab.key === props.modelValue;
+        const isActive = collectionValuesEqual(tabValue(tab), props.modelValue, props.by);
         const isHighlighted = index === highlightedIndex.value;
 
         tabItems.push(
@@ -153,11 +222,16 @@ export const Tabs = defineComponent({
               bold: isActive,
               underline: (isActive && props.underline) || (props.focused && isHighlighted),
               dim: tab.disabled,
+              "data-tab-index": index,
             },
             tab.label,
           ),
         );
       });
+
+      if (scrollIndicator.value.showAfter) {
+        tabItems.push(h("text", { key: "scroll-after", dim: true }, "…"));
+      }
 
       const tabBar = h(
         "box",

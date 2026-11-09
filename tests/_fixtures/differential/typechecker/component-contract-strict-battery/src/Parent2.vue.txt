@@ -1,0 +1,42 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import ChildA from './ChildA.vue'
+import GenChild from './GenChild.vue'
+import SlotChild from './SlotChild.vue'
+import ChildB from './ChildB.vue'
+const rows = ref([{ id: 1, name: 'a' }])
+const things = ref([{ id: 1, label: 'x' }, { id: 2, label: 'y' }])
+const flag = ref<boolean>(false)
+const pick = (n: number) => n
+const which = ref<'a' | 'b'>('a')
+</script>
+<template>
+  <div v-for="(t, i) in things" :key="t.id">
+    <ChildA :title="t.label" :items="[t.label]" :count="i" />
+    <ChildA :title="t.id" :items="[t.label]" />
+    <GenChild :item="t" :render="(v) => v.label" />
+    <GenChild :item="t" :render="(v) => v.nope" />
+    <GenChild :item="t" :render="(v) => v.id" />
+    <GenChild :item="t" :render="(v) => v.label" extra="label" />
+    <GenChild :item="t" :render="(v) => v.label" extra="bogus" />
+  </div>
+  <SlotChild :rows="rows">
+    <template #row="{ row, index }">
+      <ChildA :title="row.name" :items="[row.name]" :count="index" />
+      <ChildA :title="row.id" :items="[row.name]" />
+      <ChildB :size="row.name" />
+    </template>
+  </SlotChild>
+  <SlotChild :rows="things" />
+  <SlotChild />
+  <template v-if="flag">
+    <ChildA title="in-if" :items="[]" :count="pick(1)" />
+    <ChildA title="in-if" :items="[]" :count="String(pick(1))" />
+  </template>
+  <ChildA v-else-if="which === 'a'" title="elif" :items="[]" :tone="which" />
+  <component :is="flag ? ChildA : ChildB" title="dyn" :items="[]" />
+  <component :is="flag ? ChildA : ChildB" :size="'x'" />
+  <GenChild :item="{ id: 1, extra: true }" :render="(v) => String(v.extra)" @chosen="(v) => v.id.toFixed()" />
+  <GenChild :item="{ id: 'x' }" :render="(v) => v.id" />
+  <GenChild :item="{ id: 3 }" :render="(v) => v.id" v-slot="{ value }">{{ value.id.toFixed() }} {{ value.nope }}</GenChild>
+</template>
