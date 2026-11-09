@@ -58,6 +58,7 @@ pub(super) fn emit_slot_outlet_helpers(
         return;
     }
     let needs_spread = needs_static_spread || needs_dynamic_spread;
+    let parameters = crate::virtual_ts::generated_names::lib("Parameters");
 
     // Match Vue's functional-slot normalization without erasing overloaded call signatures.
     ts.push_str("  function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }\n");
@@ -69,8 +70,9 @@ pub(super) fn emit_slot_outlet_helpers(
         ts.push_str(
             "  type $SlotOutletTarget<__S, __K extends PropertyKey> = Extract<NonNullable<__S[__K & keyof __S]>, $SlotOutletFn>;\n",
         );
-        ts.push_str(
-            "  type $SlotOutletArgs<__S, __K extends PropertyKey> = [$SlotOutletTarget<__S, __K>] extends [never] ? [] : Parameters<$SlotOutletTarget<__S, __K>>;\n",
+        append!(
+            *ts,
+            "  type $SlotOutletArgs<__S, __K extends PropertyKey> = [$SlotOutletTarget<__S, __K>] extends [never] ? [] : {parameters}<$SlotOutletTarget<__S, __K>>;\n"
         );
         ts.push_str(
             "  type $SlotOutletPayload<__S, __K extends PropertyKey> = [$SlotOutletArgs<__S, __K>] extends [[]] ? unknown : $SlotOutletArgs<__S, __K>[0];\n",
@@ -80,8 +82,9 @@ pub(super) fn emit_slot_outlet_helpers(
         ts.push_str(
             "  type $AnySlotOutletTarget<__S> = Extract<NonNullable<__S[keyof __S]>, $SlotOutletFn>;\n",
         );
-        ts.push_str(
-            "  type $AnySlotOutletArgs<__S> = [$AnySlotOutletTarget<__S>] extends [never] ? [] : Parameters<$AnySlotOutletTarget<__S>>;\n",
+        append!(
+            *ts,
+            "  type $AnySlotOutletArgs<__S> = [$AnySlotOutletTarget<__S>] extends [never] ? [] : {parameters}<$AnySlotOutletTarget<__S>>;\n"
         );
         ts.push_str(
             "  type $AnySlotOutletPayload<__S> = [$AnySlotOutletArgs<__S>] extends [[]] ? unknown : $AnySlotOutletArgs<__S>[0];\n",

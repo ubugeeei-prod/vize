@@ -13985,6 +13985,55 @@
       }
     },
     {
+      "id": "typechecker/regression/lib-type-shadowing-12536",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "lib-type-shadowing-12536/Child.vue.txt",
+          "sha256": "5140653d8a1bc8609ea117633c1785eaede9f865a0125acb548f4f17a6697bf2",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/Parent.vue.txt",
+          "sha256": "37f64f73c1789e83bb3dd7cbdf6c3568c00d7b0a0bdec479b9a850b7cbf2d62e",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/Picker.vue.txt",
+          "sha256": "65863801b031d678c640416a462f75b34c27308db4db3df82b01f02752981b6f",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/lib-types.ts.txt",
+          "sha256": "aeeca1d6f7f2736d7e7329035c23088a974234c8d4b3505e1ad4268b001c3a60",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "lib-type-shadowing-12536/tsconfig.json.txt",
+          "sha256": "8f4cc08b465ddf6df35387e36be46136f6b6f7f5f19085ca9d6a3fcc1cda9b31",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "shared_helper_shadowing::authored_lib_types_cannot_capture_the_projection; a lib type name (Parameters) declared or imported by the SFC must not capture listener or slot outlet projection types. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/library-generic-event-payload-11447",
       "state": "active",
       "targets": [

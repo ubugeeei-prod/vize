@@ -8,10 +8,12 @@
 //! - a module declaration it owns takes the first `{name}_{n}` no parameter
 //!   binds, and public names are re-exported from it (an authored type of the
 //!   same name is the SFC's own declaration and keeps its spelling);
-//! - a lib type is reached through `globalThis`, which no parameter can bind;
+//! - a lib type is reached through `globalThis`, which no parameter or
+//!   authored declaration can bind;
 //! - a shared helper is reached through a module alias with a fresh name.
 //!
-//! Without such a parameter every name is spelled as before.
+//! A lib type the SFC declares or imports itself is reached the same way
+//! (#12536). Without either binding every name is spelled as before.
 
 use core::fmt;
 use std::cell::RefCell;
@@ -26,6 +28,8 @@ use vize_croquis::Croquis;
 struct Projection {
     bound: Vec<String>,
     authored: Vec<String>,
+    /// Entries of [`LIB_TYPES`] an authored binding shadows.
+    shadowed: Vec<&'static str>,
     /// Helper forwarding aliases `(fresh, helper, constraints)` emitted once.
     forwarded: Vec<(String, &'static str, &'static [&'static str])>,
 }
@@ -50,7 +54,14 @@ impl Drop for Binding {
 /// module types the SFC declares itself.
 pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) -> Binding {
     let authored = summary.type_exports.iter();
-    bind_names(parameters, authored.map(|export| export.name.as_str()))
+    let binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
+    let shadowed = LIB_TYPES
+        .iter()
+        .copied()
+        .filter(|name| crate::virtual_ts::helpers::hygiene::authored_binding(summary, name))
+        .collect();
+    CURRENT.with_borrow_mut(|projection| projection.shadowed = shadowed);
+    binding
 }
 
 fn bind_names<'a>(
@@ -70,6 +81,7 @@ fn bind_names<'a>(
     let projection = Projection {
         bound,
         authored,
+        shadowed: Vec::new(),
         forwarded: Vec::new(),
     };
     Binding(Some(CURRENT.with_borrow_mut(|current| {
@@ -165,9 +177,26 @@ pub(crate) fn reexport(ts: &mut crate::virtual_ts::TextBuf, public: &'static str
     }
 }
 
+/// Every lib type [`lib`] spells, checked against the SFC's bindings once per projection.
+const LIB_TYPES: &[&str] = &[
+    "Awaited",
+    "Omit",
+    "Parameters",
+    "Partial",
+    "Pick",
+    "Record",
+    "ReturnType",
+];
+
 /// A lib type, global in every program.
 pub(crate) fn lib(name: &'static str) -> String {
-    if CURRENT.with_borrow(|projection| projection.bound.iter().any(|bound| bound == name)) {
+    debug_assert!(
+        LIB_TYPES.contains(&name),
+        "{name} is missing from LIB_TYPES"
+    );
+    if CURRENT.with_borrow(|projection| {
+        projection.bound.iter().any(|bound| bound == name) || projection.shadowed.contains(&name)
+    }) {
         cstr!("globalThis.{name}")
     } else {
         String::const_new(name)

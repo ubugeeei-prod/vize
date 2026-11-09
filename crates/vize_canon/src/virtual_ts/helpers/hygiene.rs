@@ -3,7 +3,7 @@
 use vize_carton::{String, cstr};
 use vize_croquis::Croquis;
 
-fn authored_binding(summary: &Croquis, name: &str) -> bool {
+pub(in crate::virtual_ts) fn authored_binding(summary: &Croquis, name: &str) -> bool {
     let definitions = summary.types.definitions();
     definitions.type_aliases.contains_key(name)
         || definitions.interfaces.contains_key(name)
