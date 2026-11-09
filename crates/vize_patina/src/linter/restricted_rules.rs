@@ -10,8 +10,8 @@ use super::config::Linter;
 use crate::preset::LintPreset;
 use crate::rules::opinionated::vue::{
     ComponentCasing, ComponentNameInTemplateCasing, ComponentNameInTemplateCasingNuxt,
-    HtmlSelfClosing, HtmlSelfClosingNuxt, HtmlSelfClosingOptions, VOnEventHyphenation,
-    VOnEventHyphenationStyle,
+    HtmlSelfClosing, HtmlSelfClosingNuxt, HtmlSelfClosingOptions, SlotNameCasing,
+    SlotNameCasingStyle, VOnEventHyphenation, VOnEventHyphenationStyle,
 };
 use crate::rules::script::{CustomEventNameCasing, EventNameCasing};
 use crate::rules::script::{DefineMacrosOrder, NoRestrictedMembers, RestrictedGlobals};
@@ -255,6 +255,14 @@ impl Linter {
     pub fn with_prop_name_casing(mut self, casing: PropNameCasingOption) -> Self {
         if self.registry.has_rule("vue/prop-name-casing") {
             self.registry.replace(Box::new(PropNameCasing { casing }));
+        }
+        self
+    }
+
+    /// Configure rendered slot outlet casing without enabling an unselected rule.
+    pub fn with_slot_name_casing(mut self, style: SlotNameCasingStyle) -> Self {
+        if self.registry.has_rule("vue/slot-name-casing") {
+            self.registry.replace(Box::new(SlotNameCasing::new(style)));
         }
         self
     }

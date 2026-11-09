@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados."
+description: "Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados."
 ---
 
 # `vue/slot-name-casing`
 
-Exigir camelCase nos nomes estáticos de pontos de inserção de slot renderizados.
+Exigir a capitalização configurada nos nomes estáticos de pontos de inserção de slot renderizados. O padrão é `camelCase`.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | `nuxt`, `opinionated` | Não | `camelCase`, `kebab-case`, `singleword` |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
@@ -45,12 +45,17 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "kebab-case"
     }
   },
 });
 ```
 
 Depois, execute `vp run lint`.
+
+Omita `ruleOptions` para usar o padrão `camelCase`.
 
 ## Páginas relacionadas
 

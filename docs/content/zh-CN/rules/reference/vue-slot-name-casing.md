@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "要求渲染的插槽出口静态名称采用 camelCase。"
+description: "要求渲染的插槽出口静态名称采用配置的命名方式。"
 ---
 
 # `vue/slot-name-casing`
 
-要求渲染的插槽出口静态名称采用 camelCase。
+要求渲染的插槽出口静态名称采用配置的命名方式。默认值为 `camelCase`。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | 不支持 | 无 |
+| `warning` | `nuxt`, `opinionated` | 不支持 | `camelCase`, `kebab-case`, `singleword` |
 
 适用范围：Vue SFC 模板和代码块，包括规则所需的脚本上下文。
 
@@ -45,12 +45,17 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "kebab-case"
     }
   },
 });
 ```
 
 然后运行 `vp run lint`。
+
+省略 `ruleOptions` 时使用默认值 `camelCase`。
 
 ## 相关页面
 

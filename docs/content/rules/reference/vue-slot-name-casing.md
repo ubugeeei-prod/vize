@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "Enforce camelCase for rendered slot names."
+description: "Enforce configured casing for rendered slot names."
 ---
 
 # `vue/slot-name-casing`
 
-Enforce camelCase for rendered slot names.
+Enforce a configured casing for rendered slot names. The default is `camelCase`.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | No | None |
+| `warning` | `nuxt`, `opinionated` | No | `camelCase`, `kebab-case`, `singleword` |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
@@ -45,12 +45,18 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "kebab-case"
     }
   },
 });
 ```
 
 Then run `vp run lint`.
+
+Omit `ruleOptions` to use the default `camelCase` policy. Use `kebab-case` for
+names such as `row-actions`, or `singleword` to permit lowercase words only.
 
 ## Related
 

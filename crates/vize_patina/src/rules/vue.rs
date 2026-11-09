@@ -167,6 +167,7 @@ pub use crate::rules::opinionated::vue::ThisInTemplate;
 pub use crate::rules::opinionated::vue::{
     HtmlSelfClosing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
+pub use crate::rules::opinionated::vue::{SlotNameCasing, SlotNameCasingStyle};
 pub use crate::rules::opinionated::vue::{VBindStyle, VBindStyleOption};
 pub use attribute_hyphenation::{AttributeHyphenation, HyphenationStyle};
 pub use comment_directive::CommentDirective;

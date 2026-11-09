@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "描画する slot outlet の静的な名前を camelCase に揃えます。"
+description: "描画する slot outlet の静的な名前を設定したケースに揃えます。"
 ---
 
 # `vue/slot-name-casing`
 
-描画する slot outlet の静的な名前を camelCase に揃えます。
+描画する slot outlet の静的な名前を設定したケースに揃えます。既定値は `camelCase` です。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | なし | なし |
+| `warning` | `nuxt`, `opinionated` | なし | `camelCase`, `kebab-case`, `singleword` |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -45,12 +45,17 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "kebab-case"
     }
   },
 });
 ```
 
 設定したら `vp run lint` を実行します。
+
+`ruleOptions` を省略すると、既定の `camelCase` が使われます。
 
 ## 関連ページ
 

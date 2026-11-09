@@ -1,15 +1,15 @@
 ---
 title: "vue/slot-name-casing"
-description: "Imposer camelCase aux noms statiques des points d’insertion de slot rendus."
+description: "Imposer la casse configurée aux noms statiques des points d’insertion de slot rendus."
 ---
 
 # `vue/slot-name-casing`
 
-Imposer camelCase aux noms statiques des points d’insertion de slot rendus.
+Imposer la casse configurée aux noms statiques des points d’insertion de slot rendus. La valeur par défaut est `camelCase`.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Non | Aucune |
+| `warning` | `nuxt`, `opinionated` | Non | `camelCase`, `kebab-case`, `singleword` |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
@@ -45,12 +45,17 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/slot-name-casing": "warn"
+    },
+    "ruleOptions": {
+      "vue/slot-name-casing": "kebab-case"
     }
   },
 });
 ```
 
 Lancez ensuite `vp run lint`.
+
+Omettez `ruleOptions` pour utiliser la valeur par défaut `camelCase`.
 
 ## Voir aussi
 
