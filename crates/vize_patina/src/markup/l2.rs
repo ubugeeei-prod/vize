@@ -317,3 +317,19 @@ impl<'a> L2ElementOp<'a> {
         tag < start || tag > start + source.len()
     }
 }
+
+/// The lint projection view of a lowered template.
+pub(crate) fn lint_template<'t, 'a>(
+    surface: &'t SurfaceTree<'a>,
+    lowered: &'t Lowered<'a>,
+) -> vize_croquis::drawer::LintTemplate<'t, 'a> {
+    vize_croquis::drawer::LintTemplate::new(
+        surface,
+        vize_croquis::drawer::LintLowering {
+            allocator: lowered.allocator,
+            root: &lowered.root,
+            consumed_expressions: &lowered.consumed_expressions,
+            legacy_slot_bindings: lowered.caps.scoped_slot_attrs,
+        },
+    )
+}

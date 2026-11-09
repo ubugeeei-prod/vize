@@ -32,7 +32,7 @@ pub(crate) use template_extract::extract_template_fast;
 
 use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_croquis::{Croquis, drawer::LintTemplate};
+use vize_croquis::Croquis;
 use vize_l0::Allocator;
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -436,8 +436,8 @@ impl Linter {
         let has_fatal_parse_errors = Self::has_fatal_l1_template_parse_errors(parse_errors);
 
         let parse_result = Self::l1_template_parse_lint_result(filename, source, parse_errors);
-        let lint_result =
-            LintTemplate::new(l2.surface(), l2.lowered()).with_compatibility_root(|root| {
+        let lint_result = crate::markup::lint_template(l2.surface(), l2.lowered())
+            .with_compatibility_root(|root| {
                 self.lint_template_root(
                     template::TemplateExecution {
                         allocator,

@@ -31,23 +31,25 @@ mod tests;
 #[derive(Clone, Copy)]
 pub struct LintTemplate<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
-    allocator: &'a Allocator,
-    root: &'t Region<'a>,
+    lowering: LintLowering<'t, 'a>,
+}
+
+/// The L2 lowering facts the lint projection reads.
+#[derive(Clone, Copy)]
+pub struct LintLowering<'t, 'a> {
+    pub allocator: &'a Allocator,
+    pub root: &'t Region<'a>,
+    /// Expressions lowering folded away; spans still resolve to them.
+    pub consumed_expressions: &'t [ExprRef<'a>],
+    /// Vue 2 `slot-scope` / `scope` attributes are bindings.
+    pub legacy_slot_bindings: bool,
 }
 
 impl<'t, 'a> LintTemplate<'t, 'a> {
     /// Pair the lossless L1 surface with the L2 lowering produced from it.
     #[must_use]
-    pub const fn new(
-        surface: &'t SurfaceTree<'a>,
-        allocator: &'a Allocator,
-        root: &'t Region<'a>,
-    ) -> Self {
-        Self {
-            surface,
-            allocator,
-            root,
-        }
+    pub const fn new(surface: &'t SurfaceTree<'a>, lowering: LintLowering<'t, 'a>) -> Self {
+        Self { surface, lowering }
     }
 
     /// Original template source shared by both stages.
@@ -104,7 +106,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     fn new(template: LintTemplate<'t, 'a>) -> Self {
         let mut expressions = std::vec::Vec::new();
         let mut elements = std::vec::Vec::new();
-        collect_region(template.root, &mut expressions, &mut elements);
+        collect_region(template.lowering.root, &mut expressions, &mut elements);
         let mut expression_index = FxHashMap::default();
         expression_index.reserve(expressions.len());
         for expression in expressions {
@@ -113,7 +115,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
                 .entry((span.start, span.end))
                 .or_insert(expression);
         }
-        for expression in &template.lowered.consumed_expressions {
+        for expression in template.lowering.consumed_expressions {
             let expression = *expression;
             let span = expression.span();
             expression_index
@@ -126,11 +128,11 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             element_index.entry(identity.start).or_insert(identity);
         }
         Self {
-            allocator: template.allocator,
+            allocator: template.lowering.allocator,
             surface: template.surface,
             expressions: expression_index,
             elements: element_index,
-            legacy_slot_bindings: template.lowered.caps.scoped_slot_attrs,
+            legacy_slot_bindings: template.lowering.legacy_slot_bindings,
         }
     }
 
@@ -434,5 +436,20 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
             cursor = end.saturating_add(1);
         }
     }
+}
 
+#[cfg(test)]
+pub(crate) fn lowered_lint_template<'t, 'a>(
+    surface: &'t SurfaceTree<'a>,
+    lowered: &'t vize_l1_to_l2::Lowered<'a>,
+) -> LintTemplate<'t, 'a> {
+    LintTemplate::new(
+        surface,
+        LintLowering {
+            allocator: lowered.allocator,
+            root: &lowered.root,
+            consumed_expressions: &lowered.consumed_expressions,
+            legacy_slot_bindings: lowered.caps.scoped_slot_attrs,
+        },
+    )
 }

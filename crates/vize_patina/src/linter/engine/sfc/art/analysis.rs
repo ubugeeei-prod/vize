@@ -4,7 +4,7 @@ use crate::context::LintContext;
 use crate::linter::config::{LintResult, Linter};
 use crate::rules::facts::{NoUnusedSetupBindings, v_for_source_reads};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, Drawer, DrawerOptions, drawer::LintTemplate};
+use vize_croquis::{Croquis, Drawer, DrawerOptions};
 use vize_l0::Allocator;
 
 pub(super) fn script_summary(
@@ -34,7 +34,7 @@ pub(super) fn script_summary(
     );
     if let Some(l2) = admitted {
         let lowered = l2.lowered();
-        let reads = LintTemplate::new(l2.surface(), lowered.allocator, &lowered.root)
+        let reads = crate::markup::lint_template(l2.surface(), lowered)
             .with_compatibility_root(v_for_source_reads);
         summary.unused_bindings.retain(|name| !reads.contains(name));
     }
@@ -60,14 +60,10 @@ pub(super) fn variant(
         drawer = drawer.with_unused_bindings();
     }
     let lowered = l2.lowered();
-    drawer.draw_lint_template(LintTemplate::new(
-        l2.surface(),
-        lowered.allocator,
-        &lowered.root,
-    ));
+    drawer.draw_lint_template(crate::markup::lint_template(l2.surface(), lowered));
     let mut analysis = drawer.finish();
     if unused {
-        let reads = LintTemplate::new(l2.surface(), l2.lowered())
+        let reads = crate::markup::lint_template(l2.surface(), l2.lowered())
             .with_compatibility_root(v_for_source_reads);
         analysis
             .unused_bindings

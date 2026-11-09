@@ -2,8 +2,9 @@
 
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
-use vize_l0::{Box, Span};
+use vize_l0::{Box, Span, String};
 use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
 use vize_l2::expr::ExprRef;
 use vize_relief::{
@@ -79,7 +80,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
         let raw = value.content.text;
         if raw.contains('&') {
             self.allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_attribute_entities(raw).as_str())
+                .alloc_str(decode_entities(raw, EntityContext::Attribute).as_str())
         } else {
             raw
         }
@@ -88,7 +89,7 @@ impl<'t, 'a> CompatibilityRoot<'t, 'a> {
     pub(super) fn decoded_text(&self, raw: &'a str) -> &'a str {
         if raw.contains('&') {
             self.allocator
-                .alloc_str(vize_l1_to_l2::emit::decode_html_entities(raw).as_str())
+                .alloc_str(decode_entities(raw, EntityContext::Text).as_str())
         } else {
             raw
         }
@@ -225,4 +226,25 @@ pub(super) fn is_v_pre_head(name: &str) -> bool {
         .is_some_and(|directive| {
             directive.prefix == DirectivePrefix::Full && directive.name.slice(name) == "pre"
         })
+}
+
+fn decode_entities(source: &str, context: EntityContext) -> String {
+    let mut decoded = String::with_capacity(source.len());
+    let mut rest = source;
+    while !rest.is_empty() {
+        if let Some((entity, after)) = decode_one(rest.as_bytes(), context)
+            .and_then(|(entity, consumed)| rest.get(consumed..).map(|after| (entity, after)))
+        {
+            entity.for_each(|character| decoded.push(character));
+            rest = after;
+            continue;
+        }
+        let mut characters = rest.chars();
+        let Some(character) = characters.next() else {
+            break;
+        };
+        decoded.push(character);
+        rest = characters.as_str();
+    }
+    decoded
 }

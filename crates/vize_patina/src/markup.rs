@@ -97,6 +97,7 @@ pub use binding::{MarkupBinding, MarkupBindingKind};
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
 pub use element::MarkupElement;
+pub(crate) use l2::lint_template;
 pub use l2::{L2Markup, L2Template};
 pub use node::{MarkupNode, MarkupText};
 pub use rule::{MarkupLevel, MarkupRule, MarkupTraversal};

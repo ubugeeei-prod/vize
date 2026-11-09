@@ -2,7 +2,7 @@
 
 use crate::markup::L2Template;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, drawer::LintTemplate};
+use vize_croquis::Croquis;
 use vize_l0::{Allocator, SourceRoot};
 
 use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
@@ -94,8 +94,8 @@ impl Linter {
             .map(|script| analysis::variant(&l2, script, self.has_unused_bindings_demand()));
         let mut parsed = Self::l1_template_parse_lint_result(filename, source, errors);
         offset_result(&mut parsed, offset);
-        let linted =
-            LintTemplate::new(l2.surface(), l2.lowered()).with_compatibility_root(|root| {
+        let linted = crate::markup::lint_template(l2.surface(), l2.lowered())
+            .with_compatibility_root(|root| {
                 self.lint_template_root(
                     super::super::template::TemplateExecution {
                         allocator: &allocator,

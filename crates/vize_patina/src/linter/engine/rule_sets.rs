@@ -99,7 +99,6 @@ use crate::linter::sfc_scripts::SfcScripts;
 use crate::markup::L2Template;
 use vize_atelier_sfc::croquis::SfcCroquisOptions;
 use vize_croquis::Croquis;
-use vize_croquis::drawer::LintTemplate;
 use vize_l0::dialect::VueDialect;
 
 /// Document-level inputs shared by the template-rule passes.
@@ -152,7 +151,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
     };
     let template = template.map(|template| {
         let lowered = template.lowered();
-        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+        crate::markup::lint_template(template.surface(), lowered)
     });
     match resolve_filename {
         Some(filename) => {
@@ -207,7 +206,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
     };
     let template = template.map(|template| {
         let lowered = template.lowered();
-        LintTemplate::new(template.surface(), lowered.allocator, &lowered.root)
+        crate::markup::lint_template(template.surface(), lowered)
     });
     let (mut analysis, packet) = match resolve_filename {
         Some(filename) => {

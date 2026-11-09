@@ -211,10 +211,7 @@ fn inert_script_markers_remain_complete_in_the_checker_document() {
     let document = super::document::project_type_aware(
         &descriptor,
         script.content.as_ref(),
-        Some(vize_croquis::drawer::LintTemplate::new(
-            l2.surface(),
-            l2.lowered(),
-        )),
+        Some(crate::markup::lint_template(l2.surface(), l2.lowered())),
         script.loc.start as u32,
         template.loc.start as u32,
         "SafeInertMarkers.vue",
